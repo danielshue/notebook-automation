@@ -48,6 +48,7 @@ from pathlib import Path
 import html2text
 import shutil
 import sys
+from datetime import datetime
 
 # Icons for different content types
 ICONS = {
@@ -202,6 +203,11 @@ def should_include(path):
 def classify_file(file):
     """Classify a file into a content category"""
     fname = file.name.lower()
+    
+    # Skip any index files or files that should not be listed in indexes
+    if "index" in fname.lower() or file.name == "Live-Session Index.md":
+        return None
+        
     # Check for video files first
     if file.suffix in ['.mp4', '.mov', '.avi', '.mkv', '.webm']:
         return "videos"
@@ -268,105 +274,105 @@ def build_backlink(depth, folder):
     
     # Get parent folder
     parent_folder = folder.parent
-    parent_index_name = f"{parent_folder.name.replace('-', ' ').title().replace(' ', '-')} Index"
+    parent_name = parent_folder.name.replace("-", " ").title()
+    parent_index_filename = f"{parent_folder.name}-Index.md"
     
-    if depth == 3:
-        return f"[[../{parent_index_name}|← Back to Module Index]]"
-    elif depth == 2:
-        return f"[[../{parent_index_name}|← Back to Course Index]]"
-    elif depth == 1:
-        return f"[[../{parent_index_name}|← Back to Main Index]]"
+    if depth == 3:  # Lesson level - link back to module
+        return f"[← Back to Module Index](../)"
+    elif depth == 2:  # Module level - link back to course
+        return f"[← Back to Course Index](../)"
+    elif depth == 1:  # Course level - link back to main
+        return f"[← Back to Main Index](../)"
     return ""
 
 def write_index(folder: Path, depth: int):
     """Write an index file for the given folder"""
     index_type = get_index_type(depth)
-      # The index filename uses the folder name with proper capitalization
     folder_name_formatted = folder.name.replace("-", " ").title().replace(" ", "-")
-    index_file = folder / f"{folder_name_formatted} Index.md"
+    index_file = folder / f"{folder_name_formatted}-Index.md"
     if index_file.exists():
-        # Check the auto-generated-state property in the frontmatter
         with index_file.open("r", encoding="utf-8") as f:
             content = f.read()
-            
-            # More robust check for the auto-generated-state property
             frontmatter_match = re.search(r'---\s(.*?)\s---', content, re.DOTALL)
             if frontmatter_match:
                 frontmatter = frontmatter_match.group(1)
-                # Check specifically for readonly state with proper regex
                 if re.search(r'auto-generated-state\s*:\s*readonly', frontmatter, re.IGNORECASE):
                     print(f"Skipping readonly index: {index_file}")
                     return
-                    
+
     backlink = build_backlink(depth, folder)
-    
-    # Create a nice title for the index
+
     if index_type == "main-index":
-        title = "Main Index"
+        metadata = f"---\nauto-generated-state: writable\ntemplate-type: main-index\ntemplate-description: Top-level folder for the entire MBA program.\ntitle: MBA Program Index\ntype: index\nindex-type: main\ntags: [index, mba]\ndate: {datetime.now().strftime('%Y-%m-%d')}\n---"
     elif index_type == "course-index":
-        title = f"{folder.name.replace('-', ' ').title()} Course"
+        metadata = f"---\nauto-generated-state: writable\ntemplate-type: course-index\ntemplate-description: Top-level folder for a single course.\ntitle: {title}\ntype: index\nindex-type: course\ntags: [index, course]\ndate: {datetime.now().strftime('%Y-%m-%d')}\nbacklinks: [MBA Program Index](../Mba-Index.md)\ncourse: {title}\n---"
     elif index_type == "module-index":
-        title = f"{folder.name.replace('-', ' ').title()} Module"
+        metadata = f"---\nauto-generated-state: writable\ntemplate-type: module-index\ntemplate-description: Groups together lessons or topics within a course.\ntitle: {title}\ntype: index\nindex-type: module\ntags: [index, module]\ndate: {datetime.now().strftime('%Y-%m-%d')}\nbacklinks: [{course_title} Index](../{course_title.replace(' ', '-')}-Index.md)\ncourse: {course_title}\nmodule: {title}\ncontains:\n  assignments: 0\n  notes: 0\n  quizzes: 0\n  readings: 0\n  transcripts: 0\n  videos: 0\n---"
+    elif index_type == "lesson-index":
+        metadata = f"---\nauto-generated-state: writable\ntemplate-type: lesson-index\ntemplate-description: A single lesson's landing page.\ntitle: {title}\ntype: index\nindex-type: lesson\ntags: [lesson, course-materials]\ndate: {datetime.now().strftime('%Y-%m-%d')}\nbacklinks: [{module_title} Index](../{module_title.replace(' ', '-')}-Index.md)\ncourse: {course_title}\nlesson: {title}\nstatus: complete\nconcepts:\n  - \ntopics:\n  - \n---"
+    elif index_type == "live-session-note":
+        metadata = f"---\nauto-generated-state: writable\ntemplate-type: live-session-note\ntemplate-description: Notes for a live session.\ntitle: {title}\ntype: live-session\ntags: [live-session, notes, interactive]\ndate: {datetime.now().strftime('%Y-%m-%d')}\nconcepts:\n  - \nrelated:\n  - \nstatus: complete\n---"
     else:
-        title = f"{folder.name.replace('-', ' ').title()} Lesson"
-        
-    metadata = f"---\nauto-generated-state: writable\ntemplate-type: {index_type}\ntitle: {title}\n---"
+        metadata = f"---\nauto-generated-state: writable\ntemplate-type: {index_type}\ntitle: {title}\n---"
+
     lines = [metadata]
-    
-    # Add title as a heading
+
     lines.append(f"\n# {title}")
-    
+
     if backlink:
         lines.append(backlink)
-    
-    # Main index only shows course indexes
+
     if index_type == "main-index":
         lines.append("\n## Courses\n")
         for item in sorted(folder.iterdir()):
             if item.is_dir() and should_include(item):
                 name = item.name.replace("-", " ").title()
-                # Create proper index filename for course link
-                item_index_filename = f"{item.name} Index"
-                lines.append(f"- {ICONS['folder']} [[{item.name}/{item_index_filename}|{name}]]")
-    
-    # Course index only shows module indexes
+                item_index_filename = f"{item.name}-Index"
+                # URL-encode the folder name for proper linking
+                encoded_folder_name = item.name.replace(" ", "%20")
+                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename}.md)")
+
     elif index_type == "course-index":
         lines.append("\n## Modules\n")
         for item in sorted(folder.iterdir()):
             if item.is_dir() and should_include(item):
                 name = item.name.replace("-", " ").title()
-                # Create proper index filename for module link
-                item_index_filename = f"{item.name} Index"
-                lines.append(f"- {ICONS['folder']} [[{item.name}/{item_index_filename}|{name}]]")
-    
-    # Module index only shows lesson indexes
+                item_index_filename = f"{item.name}-Index"
+                # URL-encode the folder name for proper linking
+                encoded_folder_name = item.name.replace(" ", "%20")
+                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename}.md)")
+
     elif index_type == "module-index":
+        live_session_dir = folder / "Live Session"
+        if live_session_dir.exists() and should_include(live_session_dir):
+            lines.append("\n## Live Session\n")
+            lines.append(f"- {ICONS['folder']} [Live Session](Live%20Session/Live-Session-Index.md)")
+
         lines.append("\n## Lessons\n")
         for item in sorted(folder.iterdir()):
-            if item.is_dir() and should_include(item):
+            if item.is_dir() and should_include(item) and item.name != "Live Session":
                 name = item.name.replace("-", " ").title()
-                # Create proper index filename for lesson link
-                item_index_filename = f"{item.name} Index"
-                lines.append(f"- {ICONS['folder']} [[{item.name}/{item_index_filename}|{name}]]")
-    
-    # Lesson index shows categorized files
+                item_index_filename = f"{item.name}-Index"
+                # URL-encode the folder name for proper linking
+                encoded_folder_name = item.name.replace(" ", "%20")
+                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename}.md)")
+
     else:
-        # Handle detailed categories for lesson indexes
         categorized = {k: [] for k in ORDER}
 
         for item in sorted(folder.iterdir()):
             if not should_include(item):
                 continue
             if item.is_dir():
-                continue  # Only list files for now
+                continue
             ctype = classify_file(item)
             if ctype:
                 display = item.stem.replace("-", " ").title()
-                # Get appropriate tags for this file
                 tags = get_tags_for_file(item, ctype)
                 tags_str = " ".join(tags) if tags else ""
-                # Use Obsidian style linking format with tags
-                categorized[ctype].append(f"- {ICONS[ctype]} [[{item.name}|{display}]] {tags_str}")
+                # URL-encode the filename for proper linking
+                encoded_filename = item.name.replace(" ", "%20")
+                categorized[ctype].append(f"- {ICONS[ctype]} [{display}]({encoded_filename}) {tags_str}")
 
         for cat in ORDER:
             lines.append(f"\n### {cat.title()}\n")
@@ -380,17 +386,36 @@ def write_index(folder: Path, depth: int):
     try:
         relative_path = index_file.relative_to(Path.cwd())
     except ValueError:
-        # If the paths don't have a parent-child relationship, just use the absolute path
         relative_path = index_file
     print(f"Wrote index: {relative_path}")
 
-def walk_directory(root: Path, depth=0):
+def walk_directory(root: Path, depth=0, create_live_session=False):
     """Walk the directory tree and generate indexes at each level"""
     if is_hidden(root):
         return
         
+    # Skip processing if this is a Live Session folder at lesson level
+    if root.name == "Live Session" and depth == 3:
+        return
+        
     # Generate the appropriate index for this folder based on depth
-    write_index(root, depth)
+    write_index(root, depth)# If at module level (depth 2) and create_live_session flag is True, create a "Live Session" directory
+    if depth == 2 and create_live_session:
+        live_session_dir = root / "Live Session"
+        if not live_session_dir.exists():
+            live_session_dir.mkdir()
+            print(f"Created 'Live Session' directory in module: {root.name}")
+            # Get a formatted module name for the Live Session note title
+            module_name = root.name.replace('-', ' ').title()
+            # Create a Live Session note and index in the new directory
+            create_live_session_note(live_session_dir, module_name)
+            create_live_session_index(live_session_dir, module_name)
+        else:
+            # If the directory already exists but the index doesn't, create the index
+            module_name = root.name.replace('-', ' ').title()
+            index_path = live_session_dir / "Live-Session-Index.md"
+            if not index_path.exists():
+                create_live_session_index(live_session_dir, module_name)
     
     # Only process child directories if at appropriate levels
     # depth 0 = main index - proceed to courses
@@ -400,12 +425,12 @@ def walk_directory(root: Path, depth=0):
     if depth < 3:  # Only process children for main, course, and module levels
         for child in sorted(root.iterdir()):
             if child.is_dir() and not is_hidden(child):
-                walk_directory(child, depth + 1)
+                walk_directory(child, depth + 1, create_live_session)
 
-def process_directory_index(source_path):
+def process_directory_index(source_path, create_live_session=False):
     """Process the directory tree to generate indexes"""
     root = Path(source_path).resolve()
-    walk_directory(root)
+    walk_directory(root, create_live_session=create_live_session)
 
 def process_single_index(index_path):
     """Process a single specific folder to regenerate its index"""
@@ -455,6 +480,98 @@ def copy_templater_folder(source_path):
         print(f"❌ Error copying Templater folder: {e}")
         return False
 
+def create_live_session_note(live_session_dir, module_name):
+    """Create a new Live Session note file in the given Live Session directory using the Templater template"""
+    # Create a descriptive filename for the Live Session note
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    note_filename = f"{current_date} Live-Session.md"
+    note_path = live_session_dir / note_filename
+    
+    # If the note already exists, don't overwrite it
+    if note_path.exists():
+        return False
+    
+    # Get the script directory path
+    script_dir = Path(os.path.dirname(os.path.abspath(sys.argv[0]))).resolve()
+    
+    # Path to the Live Session Note template in the Templater folder
+    template_path = script_dir / "Templater" / "Live Session Note.md"
+    
+    if not template_path.exists():
+        print(f"Warning: Live Session Note template not found at {template_path}")
+        print("Using basic default template instead")
+        # Create basic frontmatter and content as fallback
+        content = f"""---
+template-type: live-session-note
+auto-generated-state: writable
+date-created: {current_date}
+title: {module_name} Live Session
+tags: 
+ - live-session 
+ - notes
+---
+
+# {module_name} Live Session
+"""
+    else:
+        # Read the template from the Templater folder
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template_content = f.read()
+        
+        # Replace Templater variables with actual values
+        # Replace <%* ... -%> blocks (Templater script) with empty string
+        content = re.sub(r'<%\*.*?-%>', '', template_content, flags=re.DOTALL)
+        # Replace <% creationDate %> with actual date
+        content = content.replace('<% creationDate %>', current_date)
+        # Replace <% fileName %> with the module name + Live Session
+        content = content.replace('<% fileName %>', f"{module_name} Live Session")
+    
+    # Write the note file
+    with open(note_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+        
+    print(f"Created Live Session note: {note_path} (using template)")
+    return True
+
+def create_live_session_index(live_session_dir, module_name):
+    """Create an index file for the Live Session directory"""
+    index_path = live_session_dir / "Live-Session Index.md"
+    
+    # If the index already exists, don't overwrite it
+    if index_path.exists():
+        return False
+    
+    # Create basic frontmatter and content for the Live Session index
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    title = f"{module_name} Live Sessions"
+    
+    content = f"""---
+auto-generated-state: writable
+template-type: live-session-index
+title: {title}
+---
+
+# {title}
+
+This index contains notes from live sessions for the {module_name} module.
+
+## Live Session Notes
+
+"""
+    
+    # Look for any existing live session notes and add links to them
+    for file in sorted(live_session_dir.iterdir()):
+        if file.is_file() and file.suffix == ".md" and file.stem != "Live-Session Index":
+            display_name = file.stem.replace("-", " ")
+            content += f"- [[{file.name}|{display_name}]]\n"
+    
+    # Write the index file
+    with open(index_path, 'w', encoding='utf-8') as f:
+        f.write(content)
+        
+    print(f"Created Live Session index: {index_path}")
+    return True
+
 # ======= MAIN FUNCTION ========
 
 def main():
@@ -492,12 +609,12 @@ def main():
         # When using --all flag, copy Templater folder, then convert files, then generate indexes
         print(f"\n== Copying Templater folder to {source_path} ==\n")
         copy_templater_folder(source_path)
-        
         print(f"\n== Converting files in {source_path} ==\n")
         process_directory_conversion(source_path)
         
         print(f"\n== Generating indexes for {source_path} ==\n")
-        process_directory_index(source_path)    
+        # Pass True for create_live_session when using --all flag
+        process_directory_index(source_path, create_live_session=True)    
     else:
         # Handle individual operations
         if args.convert:

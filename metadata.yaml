@@ -1,0 +1,97 @@
+---
+auto-generated-state: writable
+backlinks: [MBA Program Index](../Mba-Index.md)
+course: Accounting For Managers
+date-created: 2025-04-12
+index-type: course
+tags: 
+ - index
+ - module
+template-type: course-index
+template-description: Top-level folder for a single course (e.g., Accounting for Managers).
+title: Accounting For Managers Index
+type: index
+---
+
+---
+auto-generated-state: writable
+backlinks: [Accounting For Managers Index](../Accounting-For-Managers-Index.md)
+course: Accounting For Managers
+date-created: 2025-04-12
+index-type: module
+tags: 
+ - index
+ - module
+template-type: module-index
+template-description: Groups together lessons or topics within a course.
+title: Module 1 Overview Index
+type: index
+module: Module 1
+contains:
+  assignments: 0
+  notes: 0
+  quizzes: 0
+  readings: 0
+  transcripts: 0
+  videos: 0
+---
+
+---
+auto-generated-state: writable
+backlinks: [Module 1 Overview Index](../01_course-overview-and-introduction-to-managerial-accounting/Module-1-Overview-Index.md)
+course: Accounting For Managers
+date-created: 2025-04-12
+index-type: lesson
+tags: 
+ - lesson
+ - course-materials
+template-type: lesson-index
+template-description: A single lesson's landing page.
+title: About The Course And Your Classmates
+type: index
+lesson: About The Course And Your Classmates
+status: complete
+concepts:
+  - peer interaction
+  - syllabus review
+topics:
+  - Course Introduction
+  - Course Structure
+  - Online Learning
+---
+
+---
+date-created: 2025-04-13
+backlinks: [](../01_course-overview-and-introduction-to-managerial-accounting/01_about-the-course-and-your-classmates/01_About-The-Course-And-Your-Classmates-Index.md)
+course: 
+lesson: 
+module: 
+status: in-progress
+tags: [transcript, course-introduction]
+template-description: A Markdown transcript or note.
+title: 
+type: transcript
+---
+
+---
+auto-generated-state: writable
+backlinks: [Module 1 Overview Index](../01_course-overview-and-introduction-to-managerial-accounting/Module-1-Overview-Index.md)
+course: 
+date-created: 2025-04-11
+module: 
+tags:
+  - notes
+  - interactive
+template-type: live-session-note
+template-description: Notes for a live session.
+title: 
+type: live-session
+concepts:
+  - 
+related:
+  -   
+status: complete
+topics:
+  - 
+---
+
