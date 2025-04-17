@@ -1,6 +1,6 @@
 # MBA Notebook Automation Tool
 
-A comprehensive tool for managing course notes in an Obsidian vault. This script automates the process of converting course materials, generating index files, and organizing content for easy navigation and retrieval.
+A comprehensive tool for managing MBA course notes in an Obsidian vault. This script automates the process of converting course materials, generating index files, and organizing content for easy navigation and retrieval.
 
 ## Features
 
@@ -22,20 +22,9 @@ A comprehensive tool for managing course notes in an Obsidian vault. This script
 - Automatically categorizes content into readings, videos, transcripts, etc.
 - Adds appropriate icons for different content types
 - Implements a tagging system for enhanced content discovery
-- Supports structural and cognitive tags
+- Supports structural, cognitive, and workflow tags
 
-## Index File Naming and Linking
-
-- Index files are named using the pattern: `<Folder-Name-Formatted>-Index.md`, where the folder name is converted to Title Case and spaces are replaced with dashes.
-- All navigation and backlink links use the same filename formatting logic to ensure links work correctly.
-- Example: A folder named `accounting-course` will have an index file named `Accounting-Course-Index.md` and links will point to this exact filename.
-
-## Backlink Navigation
-
-- Each index file includes a "Back to ... Index" link at the top, which points to the parent index file using the correct filename formatting.
-- Example: A module index will have `[← Back to Class Index](../Class-Name-Index.md)` at the top, where `Class-Name-Index.md` matches the parent folder's formatted index filename.
-
-## Updated Directory Structure
+## Directory Structure
 
 The tool expects and generates the following directory structure:
 ```
@@ -59,7 +48,7 @@ git clone https://github.com/danielshue/notebook-automation.git
 
 2. Install the required dependencies:
 ```
-pip install html2text
+pip install pyyaml html2text
 ```
 
 ## Usage
@@ -115,7 +104,7 @@ The tool includes Templater templates for Obsidian that can be used to create st
 ## Requirements
 
 - Python 3.6+
-- html2text library
+- pyyaml, html2text libraries
 - Obsidian (for viewing and working with the generated files)
 
 ## License
