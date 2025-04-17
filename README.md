@@ -1,6 +1,6 @@
 # MBA Notebook Automation Tool
 
-A comprehensive tool for managing MBA course notes in an Obsidian vault. This script automates the process of converting course materials, generating index files, and organizing content for easy navigation and retrieval.
+A comprehensive tool for managing course notes in an Obsidian vault. This script automates the process of converting course materials, generating index files, and organizing content for easy navigation and retrieval.
 
 ## Features
 
@@ -13,9 +13,9 @@ A comprehensive tool for managing MBA course notes in an Obsidian vault. This sc
 
 ### Index Generation
 - Creates a hierarchical structure of index files for easy navigation
-- Supports a 4-level hierarchy: Main → Course → Module → Lesson
+- Supports a 6-level hierarchy: Main → Program → Course → Class → Module → Lesson
 - Generates Obsidian-compatible wiki-links between index levels
-- Creates back-navigation links for seamless browsing
+- Creates back-navigation links for seamless browsing (with correct filenames)
 - Respects "readonly" marked files to prevent overwriting customized content
 
 ### Content Organization
@@ -24,15 +24,30 @@ A comprehensive tool for managing MBA course notes in an Obsidian vault. This sc
 - Implements a tagging system for enhanced content discovery
 - Supports structural and cognitive tags
 
-## Directory Structure
+## Index File Naming and Linking
+
+- Index files are named using the pattern: `<Folder-Name-Formatted>-Index.md`, where the folder name is converted to Title Case and spaces are replaced with dashes.
+- All navigation and backlink links use the same filename formatting logic to ensure links work correctly.
+- Example: A folder named `accounting-course` will have an index file named `Accounting-Course-Index.md` and links will point to this exact filename.
+
+## Backlink Navigation
+
+- Each index file includes a "Back to ... Index" link at the top, which points to the parent index file using the correct filename formatting.
+- Example: A module index will have `[← Back to Class Index](../Class-Name-Index.md)` at the top, where `Class-Name-Index.md` matches the parent folder's formatted index filename.
+
+## Updated Directory Structure
 
 The tool expects and generates the following directory structure:
 ```
 - Root (main-index)
-  - Course Folders (course-index)
-    - Module Folders (module-index)
-      - Lesson Folders (lesson-index)
-        - Content Files (readings, videos, transcripts, etc.)
+  - Program Folders (program-index)
+    - Course Folders (course-index)
+      - Class Folders (class-index)
+        - Case Study Folders (case-study-index)
+        - Module Folders (module-index)
+          - Live Session Folder (live-session-index)
+          - Lesson Folders (lesson-index)
+            - Content Files (readings, videos, transcripts, etc.)
 ```
 
 ## Installation
