@@ -15,7 +15,7 @@ Key features:
 
 2. Index Generation
    - Creates a hierarchical structure of index files for easy navigation
-   - Supports a 4-level hierarchy: Main → Course → Module → Lesson
+   - Supports a 6-level hierarchy: Main → Program → Course → Class → Module → Lesson
    - Generates Obsidian-compatible wiki-links between index levels
    - Creates back-navigation links for seamless browsing
    - Respects "readonly" marked files to prevent overwriting customized content
@@ -29,10 +29,16 @@ Key features:
 Directory Structure:
 -------------------
 - Root (main-index)
-  - Course Folders (course-index)
-    - Module Folders (module-index)
-      - Lesson Folders (lesson-index)
-        - Content Files (readings, videos, transcripts, etc.)
+  - Program Folders (program-index)
+    - Course Folders (course-index)
+      - Class Folders (class-index)
+        - Case Study Folders (case-study-index)
+        - Module Folders (module-index)
+          - Live Session Folder (live-session-index)
+          - Lesson Folders (lesson-index)
+            - Content Files (readings, videos, transcripts, etc.)
+
+pip install pyyaml html2text
 
 Usage:
 -------
@@ -41,14 +47,61 @@ Usage:
   python mba_notebook_tool.py --all --source <path>  # Do both operations
 """
 
-import os
-import argparse
 import re
-from pathlib import Path
-import html2text
-import shutil
+import os
 import sys
+import yaml  # For metadata parsing
+import argparse  # For command line arguments
+import html2text  # For HTML to Markdown conversion
+import shutil  # For file operations
+from pathlib import Path
 from datetime import datetime
+
+# Function to load metadata templates from YAML file
+def load_metadata_templates():
+    """Load metadata templates from the metadata.yaml file"""
+    script_dir = Path(os.path.dirname(os.path.abspath(sys.argv[0]))).resolve()
+    yaml_path = script_dir / "metadata.yaml"
+    
+    if not yaml_path.exists():
+        print(f"Warning: metadata.yaml not found at {yaml_path}")
+        return {}
+    else:
+        print(f"Found metadata.yaml at {yaml_path}")
+    
+    # Read the YAML file content
+    with open(yaml_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+    
+    # Split the content into documents (separated by ---)
+    yaml_docs = content.split('---\n')
+    print(f"Found {len(yaml_docs)} YAML documents in metadata.yaml")
+    
+    # Parse each document
+    templates = {}
+    for doc in yaml_docs:
+        if not doc.strip():
+            continue
+        
+        try:
+            # Parse the YAML document
+            metadata = yaml.safe_load(doc)
+            
+            # Skip if not a dictionary or doesn't have template-type
+            if not isinstance(metadata, dict) or 'template-type' not in metadata:
+                continue
+            
+            template_type = metadata['template-type']
+            templates[template_type] = metadata
+            print(f"Loaded template: {template_type}")
+        except Exception as e:
+            print(f"Error parsing YAML document: {e}")
+    
+    print(f"Total templates loaded: {len(templates)}")
+    return templates
+
+# Load the metadata templates at module import time
+METADATA_TEMPLATES = load_metadata_templates()
 
 # Icons for different content types
 ICONS = {
@@ -188,9 +241,15 @@ def process_directory_conversion(course_path):
 
 # ======= INDEX GENERATION FUNCTIONS ========
 
-def get_index_type(depth):
-    """Determine the type of index based on directory depth"""
-    return ["main-index", "course-index", "module-index", "lesson-index"][depth] if depth < 4 else "lesson-index"
+def get_index_type(depth, folder_name=None):
+    """Determine the type of index based on directory depth and folder name"""
+    index_types = ["main-index", "program-index", "course-index", "class-index", "module-index", "lesson-index"]
+    
+    # Special case for depth 4 (module level) - check if it's a case study
+    if depth == 4 and folder_name and ("case" in folder_name.lower() or "case-study" in folder_name.lower()):
+        return "case-study-index"
+    
+    return index_types[depth] if depth < len(index_types) else "lesson-index"
 
 def is_hidden(p):
     """Check if a path is hidden (starts with .) or is in Templater folder"""
@@ -271,27 +330,50 @@ def build_backlink(depth, folder):
     """Build backlink for navigation between index levels"""
     if depth == 0:
         return ""
-    
-    # Get parent folder
+
     parent_folder = folder.parent
     parent_name = parent_folder.name.replace("-", " ").title()
-    parent_index_filename = f"{parent_folder.name}-Index.md"
-    
-    if depth == 3:  # Lesson level - link back to module
-        return f"[← Back to Module Index](../)"
-    elif depth == 2:  # Module level - link back to course
-        return f"[← Back to Course Index](../)"
-    elif depth == 1:  # Course level - link back to main
-        return f"[← Back to Main Index](../)"
+    # Use the same logic as index file creation for the filename
+    parent_index_filename = parent_folder.name.replace("-", " ").title().replace(" ", "-") + "-Index.md"
+    encoded_folder_name = parent_folder.name.replace(" ", "%20")
+
+    if depth == 5:  # Lesson level - link back to module
+        return f"[\u2190 Back to Module Index](../{parent_index_filename})"
+    elif depth == 4:  # Module level - link back to class
+        return f"[\u2190 Back to Class Index](../{parent_index_filename})"
+    elif depth == 3:  # Class level - link back to course
+        return f"[\u2190 Back to Course Index](../{parent_index_filename})"
+    elif depth == 2:  # Course level - link back to program
+        return f"[\u2190 Back to Program Index](../{parent_index_filename})"
+    elif depth == 1:  # Program level - link back to main
+        return f"[\u2190 Back to Main Index](../{parent_index_filename})"
     return ""
+
+def generate_metadata_from_template(index_type, folder, depth):
+    """Generate metadata using templates from metadata.yaml with dynamic values filled in"""
+    # Default if template not found
+    if index_type not in METADATA_TEMPLATES:
+        return f"---\nauto-generated-state: writable\ntemplate-type: {index_type}\ntitle: {folder.name.replace('-', ' ').title()}\n---"
+    
+    # Get the template and create a copy to modify
+    template = METADATA_TEMPLATES[index_type].copy()
+    
+    # Always update these dynamic values
+    template['date-created'] = datetime.now().strftime('%Y-%m-%d')
+    template['title'] = folder.name.replace('-', ' ').title()
+    # Do NOT add backlinks to YAML frontmatter; backlinks only go in the body
+    
+    # Convert to YAML and return as a string
+    yaml_text = yaml.dump(template, sort_keys=False)
+    return f"---\n{yaml_text}---"
 
 def write_index(folder: Path, depth: int):
     """Write an index file for the given folder"""
-    index_type = get_index_type(depth)
+    index_type = get_index_type(depth, folder.name)
     folder_name_formatted = folder.name.replace("-", " ").title().replace(" ", "-")
     index_file = folder / f"{folder_name_formatted}-Index.md"
     if index_file.exists():
-        with index_file.open("r", encoding="utf-8") as f:
+        with index_file.open("r", encoding='utf-8') as f:
             content = f.read()
             frontmatter_match = re.search(r'---\s(.*?)\s---', content, re.DOTALL)
             if frontmatter_match:
@@ -301,46 +383,53 @@ def write_index(folder: Path, depth: int):
                     return
 
     backlink = build_backlink(depth, folder)
+    title = folder.name.replace("-", " ").title()
 
-    if index_type == "main-index":
-        metadata = f"---\nauto-generated-state: writable\ntemplate-type: main-index\ntemplate-description: Top-level folder for the entire MBA program.\ntitle: MBA Program Index\ntype: index\nindex-type: main\ntags: [index, mba]\ndate: {datetime.now().strftime('%Y-%m-%d')}\n---"
-    elif index_type == "course-index":
-        metadata = f"---\nauto-generated-state: writable\ntemplate-type: course-index\ntemplate-description: Top-level folder for a single course.\ntitle: {title}\ntype: index\nindex-type: course\ntags: [index, course]\ndate: {datetime.now().strftime('%Y-%m-%d')}\nbacklinks: [MBA Program Index](../Mba-Index.md)\ncourse: {title}\n---"
-    elif index_type == "module-index":
-        metadata = f"---\nauto-generated-state: writable\ntemplate-type: module-index\ntemplate-description: Groups together lessons or topics within a course.\ntitle: {title}\ntype: index\nindex-type: module\ntags: [index, module]\ndate: {datetime.now().strftime('%Y-%m-%d')}\nbacklinks: [{course_title} Index](../{course_title.replace(' ', '-')}-Index.md)\ncourse: {course_title}\nmodule: {title}\ncontains:\n  assignments: 0\n  notes: 0\n  quizzes: 0\n  readings: 0\n  transcripts: 0\n  videos: 0\n---"
-    elif index_type == "lesson-index":
-        metadata = f"---\nauto-generated-state: writable\ntemplate-type: lesson-index\ntemplate-description: A single lesson's landing page.\ntitle: {title}\ntype: index\nindex-type: lesson\ntags: [lesson, course-materials]\ndate: {datetime.now().strftime('%Y-%m-%d')}\nbacklinks: [{module_title} Index](../{module_title.replace(' ', '-')}-Index.md)\ncourse: {course_title}\nlesson: {title}\nstatus: complete\nconcepts:\n  - \ntopics:\n  - \n---"
-    elif index_type == "live-session-note":
-        metadata = f"---\nauto-generated-state: writable\ntemplate-type: live-session-note\ntemplate-description: Notes for a live session.\ntitle: {title}\ntype: live-session\ntags: [live-session, notes, interactive]\ndate: {datetime.now().strftime('%Y-%m-%d')}\nconcepts:\n  - \nrelated:\n  - \nstatus: complete\n---"
-    else:
-        metadata = f"---\nauto-generated-state: writable\ntemplate-type: {index_type}\ntitle: {title}\n---"
-
+    # Generate metadata using the template from metadata.yaml
+    metadata = generate_metadata_from_template(index_type, folder, depth)
+    
     lines = [metadata]
-
     lines.append(f"\n# {title}")
 
     if backlink:
         lines.append(backlink)
 
     if index_type == "main-index":
+        lines.append("\n## Programs\n")
+        for item in sorted(folder.iterdir()):
+            if item.is_dir() and should_include(item):
+                name = item.name.replace("-", " ").title()
+                encoded_folder_name = item.name.replace(" ", "%20")
+                # Use the same logic as index file creation for the filename
+                item_index_filename = item.name.replace("-", " ").title().replace(" ", "-") + "-Index.md"
+                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename})")
+
+    elif index_type == "program-index":
         lines.append("\n## Courses\n")
         for item in sorted(folder.iterdir()):
             if item.is_dir() and should_include(item):
                 name = item.name.replace("-", " ").title()
-                item_index_filename = f"{item.name}-Index"
-                # URL-encode the folder name for proper linking
                 encoded_folder_name = item.name.replace(" ", "%20")
-                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename}.md)")
+                item_index_filename = item.name.replace("-", " ").title().replace(" ", "-") + "-Index.md"
+                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename})")
 
     elif index_type == "course-index":
+        lines.append("\n## Classes\n")
+        for item in sorted(folder.iterdir()):
+            if item.is_dir() and should_include(item):
+                name = item.name.replace("-", " ").title()
+                encoded_folder_name = item.name.replace(" ", "%20")
+                item_index_filename = item.name.replace("-", " ").title().replace(" ", "-") + "-Index.md"
+                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename})")
+
+    elif index_type == "class-index":
         lines.append("\n## Modules\n")
         for item in sorted(folder.iterdir()):
             if item.is_dir() and should_include(item):
                 name = item.name.replace("-", " ").title()
-                item_index_filename = f"{item.name}-Index"
-                # URL-encode the folder name for proper linking
                 encoded_folder_name = item.name.replace(" ", "%20")
-                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename}.md)")
+                item_index_filename = f"{item.name}-Index.md"
+                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename})")
 
     elif index_type == "module-index":
         live_session_dir = folder / "Live Session"
@@ -352,11 +441,38 @@ def write_index(folder: Path, depth: int):
         for item in sorted(folder.iterdir()):
             if item.is_dir() and should_include(item) and item.name != "Live Session":
                 name = item.name.replace("-", " ").title()
-                item_index_filename = f"{item.name}-Index"
-                # URL-encode the folder name for proper linking
                 encoded_folder_name = item.name.replace(" ", "%20")
-                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename}.md)")
+                item_index_filename = f"{item.name}-Index.md"
+                lines.append(f"- {ICONS['folder']} [{name}]({encoded_folder_name}/{item_index_filename})")
 
+    elif index_type == "case-study-index":
+        lines.append("\n## Case Study Materials\n")
+        
+        # Add sections for different case study materials
+        categorized = {k: [] for k in ORDER}
+        
+        for item in sorted(folder.iterdir()):
+            if not should_include(item):
+                continue
+            if item.is_dir():
+                continue
+            ctype = classify_file(item)
+            if ctype:
+                display = item.stem.replace("-", " ").title()
+                tags = get_tags_for_file(item, ctype, "case-study")
+                tags_str = " ".join(tags) if tags else ""
+                # URL-encode the filename for proper linking
+                encoded_filename = item.name.replace(" ", "%20")
+                categorized[ctype].append(f"- {ICONS[ctype]} [{display}]({encoded_filename}) {tags_str}")
+
+        for cat in ORDER:
+            if cat in ["readings", "videos", "notes"]:  # Most common case study material types
+                lines.append(f"\n### {cat.title()}\n")
+                if categorized[cat]:
+                    lines.extend(categorized[cat])
+                else:
+                    lines.append(f"- {ICONS[cat]} *(none)*")
+    
     else:
         categorized = {k: [] for k in ORDER}
 
@@ -395,12 +511,14 @@ def walk_directory(root: Path, depth=0, create_live_session=False):
         return
         
     # Skip processing if this is a Live Session folder at lesson level
-    if root.name == "Live Session" and depth == 3:
+    if root.name == "Live Session" and depth == 5:  # Updated from depth == 3 for the new hierarchy
         return
-        
-    # Generate the appropriate index for this folder based on depth
-    write_index(root, depth)# If at module level (depth 2) and create_live_session flag is True, create a "Live Session" directory
-    if depth == 2 and create_live_session:
+          # Generate the appropriate index for this folder based on depth and folder name
+    write_index(root, depth)
+    
+    # If at module level (depth 4) and create_live_session flag is True, create a "Live Session" directory
+    # Updated from depth == 2 for the new hierarchy
+    if depth == 4 and create_live_session:
         live_session_dir = root / "Live Session"
         if not live_session_dir.exists():
             live_session_dir.mkdir()
@@ -418,11 +536,14 @@ def walk_directory(root: Path, depth=0, create_live_session=False):
                 create_live_session_index(live_session_dir, module_name)
     
     # Only process child directories if at appropriate levels
-    # depth 0 = main index - proceed to courses
-    # depth 1 = course index - proceed to modules
-    # depth 2 = module index - proceed to lessons
-    # depth 3 = lesson index - don't go deeper (stop recursion)
-    if depth < 3:  # Only process children for main, course, and module levels
+    # New hierarchy depth levels:
+    # depth 0 = main index - proceed to programs
+    # depth 1 = program index - proceed to courses
+    # depth 2 = course index - proceed to classes
+    # depth 3 = class index - proceed to modules
+    # depth 4 = module index - proceed to lessons
+    # depth 5 = lesson index - don't go deeper (stop recursion)
+    if depth < 5:  # Updated from depth < 3 for the new hierarchy
         for child in sorted(root.iterdir()):
             if child.is_dir() and not is_hidden(child):
                 walk_directory(child, depth + 1, create_live_session)

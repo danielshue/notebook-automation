@@ -1,6 +1,35 @@
+# filepath: d:\repos\mba-notebook-automation\metadata.yaml
 ---
 auto-generated-state: writable
-backlinks: [MBA Program Index](../Mba-Index.md)
+template-type: main-index
+template-description: Top-level folder for the entire MBA program.
+title: MBA Program Index
+type: index
+index-type: main
+tags: 
+ - index
+ - mba
+date-created: 2025-04-16
+---
+
+---
+auto-generated-state: writable
+backlinks: '[MBA Index](../Mba-Index.md)'
+program: Value Chain Management
+date-created: 2025-04-16
+index-type: program
+tags: 
+ - index
+ - program
+template-type: program-index
+template-description: Program area folder within the MBA curriculum.
+title: Program Index
+type: index
+---
+
+---
+auto-generated-state: writable
+backlinks: '[Value Chain Management Program Index](../Index.md)'
 course: Accounting For Managers
 date-created: 2025-04-12
 index-type: course
@@ -8,14 +37,32 @@ tags:
  - index
  - module
 template-type: course-index
-template-description: Top-level folder for a single course (e.g., Accounting for Managers).
+template-description: Top-level folder for a single course (e.g., Managerial Accounting Business Decisions).
 title: Accounting For Managers Index
 type: index
+program: MBA Program
 ---
 
 ---
 auto-generated-state: writable
-backlinks: [Accounting For Managers Index](../Accounting-For-Managers-Index.md)
+backlinks: '[Accounting For Managers Index](../Accounting-For-Managers-Index.md)'
+course: Accounting For Managers
+program: MBA Program
+date-created: 2025-04-16
+index-type: class
+tags: 
+ - index
+ - class
+template-type: class-index
+template-description: A class within a course.
+title: Class Index
+type: index
+class: Class Name
+---
+
+---
+auto-generated-state: writable
+backlinks: '[Accounting For Managers Index](../Accounting-For-Managers-Index.md)'
 course: Accounting For Managers
 date-created: 2025-04-12
 index-type: module
@@ -38,7 +85,7 @@ contains:
 
 ---
 auto-generated-state: writable
-backlinks: [Module 1 Overview Index](../01_course-overview-and-introduction-to-managerial-accounting/Module-1-Overview-Index.md)
+backlinks: '[Module 1 Overview Index](../01_course-overview-and-introduction-to-managerial-accounting/Module-1-Overview-Index.md)'
 course: Accounting For Managers
 date-created: 2025-04-12
 index-type: lesson
@@ -61,24 +108,11 @@ topics:
 ---
 
 ---
-date-created: 2025-04-13
-backlinks: [](../01_course-overview-and-introduction-to-managerial-accounting/01_about-the-course-and-your-classmates/01_About-The-Course-And-Your-Classmates-Index.md)
-course: 
-lesson: 
-module: 
-status: in-progress
-tags: [transcript, course-introduction]
-template-description: A Markdown transcript or note.
-title: 
-type: transcript
----
-
----
 auto-generated-state: writable
-backlinks: [Module 1 Overview Index](../01_course-overview-and-introduction-to-managerial-accounting/Module-1-Overview-Index.md)
-course: 
+backlinks: '[Module 1 Overview Index](../01_course-overview-and-introduction-to-managerial-accounting/Module-1-Overview-Index.md)'
+course: Accounting For Managers
 date-created: 2025-04-11
-module: 
+module: Module Name
 tags:
   - notes
   - interactive
@@ -92,6 +126,37 @@ related:
   -   
 status: complete
 topics:
-  - 
+  -
+---
+
+---
+date-created: 2025-04-13
+backlinks: '[About The Course And Your Classmates Index](../01_course-overview-and-introduction-to-managerial-accounting/01_about-the-course-and-your-classmates/01_About-The-Course-And-Your-Classmates-Index.md)'
+course: Accounting For Managers
+lesson: Lession Name
+module: Module Name
+status: in-progress
+tags: [transcript, course-introduction]
+template-description: A Markdown transcript or note.
+title: Transcript Name
+type: transcript
+template-type: transcript
+---
+
+---
+auto-generated-state: writable
+backlinks: '[Accounting For Managers Index](../Accounting-For-Managers-Index.md)'
+course: Accounting For Managers
+program: MBA Program
+date-created: 2025-04-16
+index-type: case-study
+tags: 
+ - index
+ - case-study
+template-type: case-study-index
+template-description: A case study within a course.
+title: Case Study Index
+type: index
+class: Class Name
 ---
 
