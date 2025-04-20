@@ -158,5 +158,31 @@ template-description: A case study within a course.
 title: Case Study Index
 type: index
 class: Class Name
----
 
+---
+auto-generated-state: writable
+course: Course Name
+program: Program Name
+module: Module Name
+lesson: Lesson Name
+class: Class Name
+date-created: YYYY-MM-DD
+template-type: video-reference
+template-description: Links to a video file stored in OneDrive for improved sharing and accessibility.
+title: Video Title
+type: reference
+video-link: https://example.com/video-link
+onedrive-path: /path/to/video.mp4
+video-duration: 4 minutes 3 seconds
+video-uploaded: 2025-04-19
+video-size: 16.57 MB
+tags:
+  - video
+  - onedrive
+  - course-materials
+status: unwatched
+completion-date: 
+review-date: 
+comprehension: 
+transcript: path/to/transcript.md
+---

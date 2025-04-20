@@ -18,3 +18,7 @@ build/
 .vscode/
 *.swp
 *.swo
+.env
+failed_files.log
+video_links_generator.log
+video_links_results.json

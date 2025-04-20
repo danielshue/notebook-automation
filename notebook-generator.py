@@ -704,19 +704,31 @@ def main():
     parser.add_argument("--convert", action="store_true", help="Convert HTML and TXT files to Markdown")
     parser.add_argument("--generate-indexes", action="store_true", help="Generate indexes for the directory structure") 
     parser.add_argument("--single-index", action="store_true", help="Regenerate only the index for the directory specified by --source")
-    parser.add_argument("--all", action="store_true", help="Perform both conversion and index generation")
+    parser.add_argument("--generate-video-links", action="store_true", help="Generate shareable links for videos in OneDrive and create reference notes")
+    parser.add_argument("--resources-path", type=str, help="Path to the OneDrive resources folder (required for --generate-video-links)")
+    parser.add_argument("--onedrive-path", type=str, default="/Education/MBA Resources", help="Path to videos in OneDrive (default: /Education/MBA Resources)")
+    parser.add_argument("--all", action="store_true", help="Perform all operations (conversion, index generation, and video links)")
     args = parser.parse_args()
-      # Validate arguments
-    if not (args.convert or args.generate_indexes or args.all or args.single_index):
+    
+    # Validate arguments
+    if not (args.convert or args.generate_indexes or args.generate_video_links or args.all or args.single_index):
         parser.print_help()
-        print("\nError: At least one action (--convert, --generate-indexes, --single-index, or --all) must be specified.")
+        print("\nError: At least one action (--convert, --generate-indexes, --single-index, --generate-video-links, or --all) must be specified.")
+        return
+        
+    # Validate video link arguments
+    if args.generate_video_links and not args.resources_path and not args.all:
+        parser.print_help()
+        print("\nError: --resources-path is required when using --generate-video-links")
         return
     
     source_path = Path(args.source).resolve()
     
     if not source_path.exists() or not source_path.is_dir():
         print(f"Error: Source directory '{source_path}' does not exist or is not a directory.")
-        return    # Process single index if specified
+        return
+    
+    # Process single index if specified
     if args.single_index:
         # Just use the source path directly
         print(f"\n== Regenerating single index for {source_path} ==\n")
@@ -725,22 +737,52 @@ def main():
         
         # Since single-index is now a standalone operation, return after processing
         return
-      # Execute requested actions for full directory or individual operations
+    
+    # Execute requested actions for full directory or individual operations
     if args.all:
-        # When using --all flag, copy Templater folder, then convert files, then generate indexes
+        # When using --all flag, perform all operations
         print(f"\n== Copying Templater folder to {source_path} ==\n")
         copy_templater_folder(source_path)
+        
         print(f"\n== Converting files in {source_path} ==\n")
         process_directory_conversion(source_path)
         
         print(f"\n== Generating indexes for {source_path} ==\n")
         # Pass True for create_live_session when using --all flag
-        process_directory_index(source_path, create_live_session=True)    
+        process_directory_index(source_path, create_live_session=True)
+        
+        # Also generate video links if resources_path is provided
+        if args.resources_path:
+            resources_path = Path(args.resources_path).resolve()
+            if resources_path.exists() and resources_path.is_dir():
+                print(f"\n== Generating video links from OneDrive to {source_path} ==\n")
+                generate_video_links(source_path, resources_path, args.onedrive_path)
+            else:
+                print(f"Warning: Resources directory '{resources_path}' does not exist or is not a directory. Skipping video link generation.")
+        else:
+            # Try to use a default resources path
+            default_resources = Path("C:/Users/danielshue/OneDrive/Education/MBA Resources")
+            if default_resources.exists() and default_resources.is_dir():
+                print(f"\n== Generating video links from OneDrive to {source_path} (using default resources path) ==\n")
+                generate_video_links(source_path, default_resources, args.onedrive_path)
+            else:
+                print("Warning: No resources path provided and default path not found. Skipping video link generation.")
     else:
         # Handle individual operations
         if args.convert:
             print(f"\n== Converting files in {source_path} ==\n")
             process_directory_conversion(source_path)
+        
+        if args.generate_video_links:
+            if args.resources_path:
+                resources_path = Path(args.resources_path).resolve()
+                if resources_path.exists() and resources_path.is_dir():
+                    print(f"\n== Generating video links from OneDrive to {source_path} ==\n")
+                    generate_video_links(source_path, resources_path, args.onedrive_path)
+                else:
+                    print(f"Error: Resources directory '{resources_path}' does not exist or is not a directory.")
+            else:
+                print("Error: --resources-path is required when using --generate-video-links")
         
         if args.generate_indexes:
             print(f"\n== Generating indexes for {source_path} ==\n")
@@ -750,3 +792,451 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# ======= VIDEO LINKS GENERATION FUNCTIONS ========
+
+def authenticate_graph_api(client_id, authority, scopes):
+    """Authenticate to Microsoft Graph API and return access token."""
+    try:
+        from msal import PublicClientApplication
+        app = PublicClientApplication(client_id, authority=authority)
+        result = app.acquire_token_interactive(scopes)
+        return result['access_token']
+    except ImportError:
+        print("MSAL library not found. Please install with: pip install msal")
+        return None
+    except Exception as e:
+        print(f"Authentication error: {e}")
+        return None
+
+def get_onedrive_items(access_token, folder_path, base_url="https://graph.microsoft.com/v1.0"):
+    """Get all items within a OneDrive folder recursively."""
+    import requests
+    headers = {"Authorization": f"Bearer {access_token}"}
+    all_items = []
+    
+    def fetch_folder_items(folder_path):
+        encoded_path = folder_path.replace('/', '%2F')
+        url = f"{base_url}/me/drive/root:{encoded_path}:/children"
+        items = []
+        
+        while url:
+            resp = requests.get(url, headers=headers)
+            if resp.status_code != 200:
+                print(f"Error fetching items from {folder_path}: {resp.text}")
+                break
+                
+            data = resp.json()
+            items.extend(data.get('value', []))
+            
+            # Check for next page
+            url = data.get('@odata.nextLink', None)
+            
+        return items
+
+    def process_folder(folder_path):
+        print(f"Processing OneDrive folder: {folder_path}")
+        items = fetch_folder_items(folder_path)
+        
+        for item in items:
+            if item.get('file', None):
+                # It's a file
+                all_items.append(item)
+            elif item.get('folder', None):
+                # It's a folder, process recursively
+                subfolder_path = f"{folder_path}/{item['name']}"
+                process_folder(subfolder_path)
+    
+    # Start recursive processing
+    process_folder(folder_path)
+    return all_items
+
+def create_share_link(file_id, access_token, base_url="https://graph.microsoft.com/v1.0"):
+    """Create a shareable link for the file with specified ID."""
+    import requests
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"{base_url}/me/drive/items/{file_id}/createLink"
+    resp = requests.post(url, headers=headers, json={"type": "view", "scope": "anonymous"})
+    if resp.status_code == 200:
+        return resp.json()['link']['webUrl']
+    return None
+
+def infer_course_and_program(path):
+    """Attempt to infer course and program from file path."""
+    from pathlib import Path
+    path_parts = Path(path).parts
+    
+    # MBA Program structure:
+    # - Program folders (Value Chain Management, Financial Management, etc.)
+    # - Course folders within programs
+    # - Module folders (01_xxx, 02_xxx)
+    # - Lesson folders within modules
+    # - Class folders (sometimes)
+    
+    # Initialize with default values
+    info = {
+        'program': 'MBA Program',
+        'course': 'Unknown Course',
+        'module': None,
+        'lesson': None,
+        'class': None
+    }
+    
+    # Known program folders from your MBA structure
+    program_folders = [
+        'Value Chain Management',
+        'Financial Management',
+        'Focus Area Specialization',
+        'Strategic Leadership and Management',
+        'Managerial Economics and Business Analysis'
+    ]
+    
+    # Try to identify components from path
+    path_str = str(path).lower()
+    
+    # First, identify the program
+    for program in program_folders:
+        if program.lower() in path_str:
+            info['program'] = program
+            break
+    
+    # Find course by examining path parts
+    for i, part in enumerate(path_parts):
+        # Look for program folder, and the next folder is usually the course
+        if part.lower() in [p.lower() for p in program_folders] and i+1 < len(path_parts):
+            info['course'] = path_parts[i+1]
+            # Once we find the course, break to avoid further matches
+            break
+            
+    # Extract module info - typically follows pattern like 01_module-name
+    module_match = re.search(r'(\d+[_\-][\w-]+)', path_str)
+    if module_match:
+        module_part = module_match.group(1)
+        # Clean up the module name
+        module_name = module_part.replace('_', ' ').replace('-', ' ').title()
+        # If it starts with a number, format as "Module X"
+        if re.match(r'^\d+\s', module_name):
+            num = module_name.split()[0]
+            module_name = f"Module {num}"
+        info['module'] = module_name
+    
+    # Extract lesson info - usually after module in path
+    for i, part in enumerate(path_parts):
+        if module_match and module_match.group(1).lower() in part.lower() and i+1 < len(path_parts):
+            potential_lesson = path_parts[i+1]
+            # Clean up lesson name
+            lesson_name = potential_lesson.replace('_', ' ').replace('-', ' ').title()
+            # Remove numbers at start if present
+            lesson_name = re.sub(r'^\d+[\s_-]*', '', lesson_name)
+            if lesson_name:
+                info['lesson'] = lesson_name
+    
+    # Look for class identifiers
+    class_match = re.search(r'class[\s-_]*(\w+)', path_str, re.IGNORECASE)
+    if class_match:
+        info['class'] = f"Class {class_match.group(1)}"
+    
+    # If we couldn't identify specific components, try to extract meaningful names
+    # from the path parts directly
+    if info['course'] == 'Unknown Course':
+        for part in path_parts:
+            clean_part = part.replace('_', ' ').replace('-', ' ').title()
+            if any(keyword in clean_part.lower() for keyword in ['accounting', 'economics', 'finance', 'marketing', 'operations', 'management']):
+                info['course'] = clean_part
+                break
+    
+    print(f"Extracted metadata from path: {info}")
+    return info
+
+def create_video_reference_note(video_path, share_link, vault_root, templates):
+    """Create a markdown note in the Obsidian vault for the video using the Templater Video Reference Note template."""
+    from pathlib import Path
+    import os
+
+    # If video_path is a string, convert it to Path
+    if isinstance(video_path, str):
+        video_path = Path(video_path)
+    
+    # Extract the relative path from the resources folder
+    try:
+        # Try to extract the common path components that match the MBA folder structure
+        rel_parts = []
+        for part in video_path.parts:
+            if any(part.lower() in program.lower() for program in ["value chain", "financial", "strategic leadership", "managerial economics"]):
+                rel_parts = video_path.parts[video_path.parts.index(part):]
+                break
+        
+        if rel_parts:
+            rel_path = Path(*rel_parts)
+        else:
+            # Fallback to just using the filename
+            rel_path = Path(video_path.name)
+            
+    except Exception:
+        # Just use the filename if we can't determine a proper path
+        rel_path = Path(video_path.name)
+        
+    # Determine the corresponding vault path, preserving the folder structure
+    vault_path = vault_root / rel_path
+    vault_dir = vault_path.parent
+    
+    # Create the directories if they don't exist
+    os.makedirs(vault_dir, exist_ok=True)
+    
+    # Prepare the markdown file name - same name as video but with .md extension
+    video_name = video_path.stem
+    note_name = f"{video_name}.md"
+    note_path = vault_dir / note_name
+    
+    # Infer course and program information from the file path
+    path_info = infer_course_and_program(rel_path)
+    
+    # Get the template file path
+    template_path = vault_root / "Templater" / "MBA" / "Video Reference Note.md"
+    
+    # Check if the template exists
+    if not os.path.exists(template_path):
+        print(f"Video Reference Note template not found at {template_path}. Using default template.")
+        # Use default template content if the Templater template isn't available
+        
+        # Build the frontmatter based on the template and path information
+        frontmatter = {
+            'auto-generated-state': 'writable',
+            'template-type': 'video-reference',
+            'template-description': 'Links to a video file stored in OneDrive for improved sharing and accessibility.',
+            'type': 'reference',  # Match the template type
+            'title': video_name,
+            'video-link': share_link,
+            'onedrive-path': str(video_path),
+            'date-created': datetime.now().strftime('%Y-%m-%d'),
+            'tags': ['video', 'onedrive', 'course-materials'],
+            'program': path_info['program'],
+            'course': path_info['course']
+        }
+        
+        # Add module, lesson, and class if available
+        if path_info['module']:
+            frontmatter['module'] = path_info['module']
+        if path_info['lesson']:
+            frontmatter['lesson'] = path_info['lesson']
+        if path_info['class']:
+            frontmatter['class'] = path_info['class']
+        
+        # Format the frontmatter as YAML
+        frontmatter_text = "---\n"
+        for key, value in frontmatter.items():
+            if isinstance(value, list):
+                frontmatter_text += f"{key}: \n"
+                for item in value:
+                    frontmatter_text += f" - {item}\n"
+            else:
+                frontmatter_text += f"{key}: {value}\n"
+        frontmatter_text += "---\n\n"
+        
+        # Create the main content
+        content = f"""# {video_name}
+
+This note links to a video file that is stored in OneDrive for improved sharing and accessibility.
+
+## Video
+
+[Watch Video]({share_link})
+
+## Notes
+
+Add your notes about the video here.
+
+"""
+        
+        full_content = frontmatter_text + content
+    else:
+        # Read the template file
+        with open(template_path, 'r', encoding='utf-8') as f:
+            template_content = f.read()
+        
+        # Remove Templater syntax blocks - everything between <%* and %>
+        template_content = re.sub(r'<%\*(.*?)%>', '', template_content, flags=re.DOTALL)
+        
+        # Current date in required format
+        today = datetime.now().strftime('%Y-%m-%d')
+        
+        # Replace template variables with actual values
+        # The template uses <%= variable %> syntax
+        class_name = path_info.get('module', path_info.get('lesson', 'Unknown Class'))
+        
+        template_content = template_content.replace('<%= title %>', video_name)
+        template_content = template_content.replace('<%= course %>', path_info['course'])
+        template_content = template_content.replace('<%= program %>', path_info['program'])
+        template_content = template_content.replace('<%= className %>', class_name)
+        template_content = template_content.replace('<%= source %>', 'OneDrive')
+        template_content = template_content.replace('<%= video_url %>', share_link)
+        template_content = template_content.replace('<%= today %>', today)
+        
+        full_content = template_content
+    
+    # Check if the file already exists
+    if os.path.exists(note_path):
+        print(f"Note already exists at {note_path}. Appending OneDrive link.")
+        # Read existing content
+        with open(note_path, 'r', encoding='utf-8') as f:
+            existing_content = f.read()
+        
+        # Check if the link is already in the file
+        if share_link not in existing_content:
+            # Find where to insert the link
+            if "## Video" in existing_content:
+                # Insert after the Video heading
+                modified_content = existing_content.replace(
+                    "## Video", 
+                    f"## Video\n\n[Watch Video]({share_link})"
+                )
+            else:
+                # Append to the end
+                modified_content = existing_content + f"\n\n## Video\n\n[Watch Video]({share_link})\n"
+                
+            # Write the modified content
+            with open(note_path, 'w', encoding='utf-8') as f:
+                f.write(modified_content)
+        return note_path
+    
+    # Write the file
+    with open(note_path, 'w', encoding='utf-8') as f:
+        f.write(full_content)
+    
+    return note_path
+
+def generate_video_links(vault_root, resources_root, onedrive_base_path):
+    """Generate shareable links for videos in OneDrive and create notes in the vault."""
+    import json
+    from pathlib import Path
+    
+    # Configuration for Microsoft Graph API
+    CLIENT_ID = "489ad055-e4b0-4898-af27-53506ce83db7"
+    AUTHORITY = "https://login.microsoftonline.com/common"
+    SCOPES = ["Files.ReadWrite.All", "Sites.Read.All"]
+    
+    print("Starting video link generation process...")
+    
+    # Authenticate to Microsoft Graph API
+    access_token = authenticate_graph_api(CLIENT_ID, AUTHORITY, SCOPES)
+    if not access_token:
+        print("Failed to authenticate with Microsoft Graph API. Cannot generate video links.")
+        return False
+    
+    print("Authenticated to Microsoft Graph API")
+    processed_videos = []
+    errors = []
+    
+    # Get all items from OneDrive
+    print(f"Fetching items from OneDrive path: {onedrive_base_path}")
+    onedrive_items = get_onedrive_items(access_token, onedrive_base_path)
+    print(f"Found {len(onedrive_items)} items in OneDrive")
+    
+    # Filter for video files
+    video_extensions = {'.mp4', '.mov', '.avi', '.mkv', '.webm'}
+    video_items = [
+        item for item in onedrive_items if 
+        item.get('file', {}).get('mimeType', '').startswith('video/') or
+        Path(item.get('name', '')).suffix.lower() in video_extensions
+    ]
+    print(f"Found {len(video_items)} video files in OneDrive")
+    
+    # Process each video
+    for item in video_items:
+        try:
+            item_path = item.get('parentReference', {}).get('path', '') + '/' + item['name']
+            
+            # Extract the path relative to onedrive_base_path
+            if onedrive_base_path in item_path:
+                rel_path = item_path[item_path.find(onedrive_base_path) + len(onedrive_base_path):].lstrip('/')
+            else:
+                rel_path = item['name']
+                
+            print(f"Processing video: {rel_path}")
+            
+            # Create local file path reference
+            local_path = resources_root / rel_path.replace('/', os.path.sep)
+            
+            # Create a shareable link
+            share_link = create_share_link(item['id'], access_token)
+            if not share_link:
+                print(f"Could not create share link for: {rel_path}")
+                errors.append(f"Could not create share link: {rel_path}")
+                continue
+            
+            print(f"Created shareable link: {share_link}")
+            
+            # Create a markdown note in the vault
+            note_path = create_video_reference_note(local_path, share_link, vault_root, METADATA_TEMPLATES)
+            print(f"Created/updated markdown note: {note_path}")
+            
+            processed_videos.append({
+                'file': rel_path,
+                'share_link': share_link,
+                'note_path': str(note_path),
+                'modified_date': datetime.now().strftime('%Y-%m-%d')
+            })
+            
+        except Exception as e:
+            print(f"Error processing {item.get('name', 'unknown')}: {str(e)}")
+            errors.append(f"Error: {item.get('name', 'unknown')} - {str(e)}")
+    
+    # Save results to a JSON file for reference
+    results_file = 'video_links_results.json'
+    
+    # Check if the file exists and update it if so
+    existing_results = {}
+    if os.path.exists(results_file):
+        try:
+            with open(results_file, 'r') as f:
+                existing_results = json.load(f)
+                
+            # Merge the existing processed videos with the new ones
+            if 'processed_videos' in existing_results:
+                # Create a map of file paths to processed videos
+                existing_map = {v['file']: v for v in existing_results['processed_videos']}
+                
+                # Update the map with new processed videos
+                for video in processed_videos:
+                    existing_map[video['file']] = video
+                
+                # Convert back to list
+                all_videos = list(existing_map.values())
+            else:
+                all_videos = processed_videos
+                
+            # Update the results
+            existing_results['processed_videos'] = all_videos
+            existing_results['last_run'] = datetime.now().strftime('%Y-%m-%d')
+            
+        except Exception as e:
+            print(f"Error updating existing results: {e}")
+            existing_results = {
+                'processed_videos': processed_videos,
+                'errors': errors,
+                'timestamp': datetime.now().strftime('%Y-%m-%d')
+            }
+    else:
+        existing_results = {
+            'processed_videos': processed_videos,
+            'errors': errors,
+            'timestamp': datetime.now().strftime('%Y-%m-%d')
+        }
+    
+    # Save all results including any errors from this run
+    existing_results['errors'] = errors
+    
+    # Write the updated results
+    with open(results_file, 'w') as f:
+        json.dump(existing_results, f, indent=2)
+    
+    # Print summary
+    print("\n===== Video Link Generation Summary =====")
+    print(f"Processed {len(processed_videos)} videos")
+    print(f"Total videos with links: {len(existing_results.get('processed_videos', []))}")
+    if errors:
+        print(f"Encountered {len(errors)} errors:")
+        for error in errors:
+            print(f"  - {error}")
+    
+    return len(processed_videos) > 0
