@@ -1,188 +1,135 @@
-# filepath: d:\repos\mba-notebook-automation\metadata.yaml
----
-auto-generated-state: writable
 template-type: main-index
+auto-generated-state: writable
 template-description: Top-level folder for the entire MBA program.
 title: MBA Program Index
 type: index
 index-type: main
 tags: 
- - index
- - mba
-date-created: 2025-04-16
+  - index
+  - mba
+date-created: 2025-04-19
 ---
-
----
-auto-generated-state: writable
-backlinks: '[MBA Index](../Mba-Index.md)'
-program: Value Chain Management
-date-created: 2025-04-16
-index-type: program
-tags: 
- - index
- - program
 template-type: program-index
+auto-generated-state: writable
 template-description: Program area folder within the MBA curriculum.
 title: Program Index
 type: index
+index-type: program
+tags: 
+  - index
+  - program
+date-created: 2025-04-19
 ---
-
----
+template-type: course-index
 auto-generated-state: writable
-backlinks: '[Value Chain Management Program Index](../Index.md)'
-course: Accounting For Managers
-date-created: 2025-04-12
+template-description: Top-level folder for a single course.
+title: Course Index
+type: index
 index-type: course
 tags: 
- - index
- - module
-template-type: course-index
-template-description: Top-level folder for a single course (e.g., Managerial Accounting Business Decisions).
-title: Accounting For Managers Index
-type: index
-program: MBA Program
+  - index
+  - course
+date-created: 2025-04-19
 ---
-
----
+template-type: module-index
 auto-generated-state: writable
-backlinks: '[Accounting For Managers Index](../Accounting-For-Managers-Index.md)'
-course: Accounting For Managers
-program: MBA Program
-date-created: 2025-04-16
-index-type: class
-tags: 
- - index
- - class
-template-type: class-index
-template-description: A class within a course.
-title: Class Index
+template-description: Groups together lessons or topics within a course.
+title: Module Index
 type: index
-class: Class Name
----
-
----
-auto-generated-state: writable
-backlinks: '[Accounting For Managers Index](../Accounting-For-Managers-Index.md)'
-course: Accounting For Managers
-date-created: 2025-04-12
 index-type: module
 tags: 
- - index
- - module
-template-type: module-index
-template-description: Groups together lessons or topics within a course.
-title: Module 1 Overview Index
-type: index
-module: Module 1
-contains:
-  assignments: 0
-  notes: 0
-  quizzes: 0
-  readings: 0
-  transcripts: 0
-  videos: 0
+  - index
+  - module
+date-created: 2025-04-19
 ---
-
----
+template-type: lesson-index
 auto-generated-state: writable
-backlinks: '[Module 1 Overview Index](../01_course-overview-and-introduction-to-managerial-accounting/Module-1-Overview-Index.md)'
-course: Accounting For Managers
-date-created: 2025-04-12
+template-description: A single lesson's landing page.
+title: Lesson Index
+type: index
 index-type: lesson
 tags: 
- - lesson
- - course-materials
-template-type: lesson-index
-template-description: A single lesson's landing page.
-title: About The Course And Your Classmates
-type: index
-lesson: About The Course And Your Classmates
-status: complete
-concepts:
-  - peer interaction
-  - syllabus review
-topics:
-  - Course Introduction
-  - Course Structure
-  - Online Learning
+  - lesson
+  - course-materials
+date-created: 2025-04-19
 ---
-
----
-auto-generated-state: writable
-backlinks: '[Module 1 Overview Index](../01_course-overview-and-introduction-to-managerial-accounting/Module-1-Overview-Index.md)'
-course: Accounting For Managers
-date-created: 2025-04-11
-module: Module Name
-tags:
-  - notes
-  - interactive
 template-type: live-session-note
-template-description: Notes for a live session.
-title: 
-type: live-session
-concepts:
-  - 
-related:
-  -   
-status: complete
-topics:
-  -
----
-
----
-date-created: 2025-04-13
-backlinks: '[About The Course And Your Classmates Index](../01_course-overview-and-introduction-to-managerial-accounting/01_about-the-course-and-your-classmates/01_About-The-Course-And-Your-Classmates-Index.md)'
-course: Accounting For Managers
-lesson: Lession Name
-module: Module Name
-status: in-progress
-tags: [transcript, course-introduction]
-template-description: A Markdown transcript or note.
-title: Transcript Name
-type: transcript
-template-type: transcript
----
-
----
 auto-generated-state: writable
-backlinks: '[Accounting For Managers Index](../Accounting-For-Managers-Index.md)'
-course: Accounting For Managers
-program: MBA Program
-date-created: 2025-04-16
+template-description: Notes from a live class session.
+title: Live Session Notes
+type: note
+tags: 
+  - live-session
+  - course-materials
+date-created: 2025-04-19
+---
+template-type: transcript
+auto-generated-state: writable
+template-description: Transcript of a video lecture.
+title: Transcript
+type: transcript
+tags: 
+  - transcript
+  - course-materials
+date-created: 2025-04-19
+---
+template-type: case-study-index
+auto-generated-state: writable
+template-description: Index page for a case study.
+title: Case Study
+type: index
 index-type: case-study
 tags: 
- - index
- - case-study
-template-type: case-study-index
-template-description: A case study within a course.
-title: Case Study Index
-type: index
-class: Class Name
-
+  - case-study
+  - course-materials
+date-created: 2025-04-19
 ---
-auto-generated-state: writable
-course: Course Name
-program: Program Name
-module: Module Name
-lesson: Lesson Name
-class: Class Name
-date-created: YYYY-MM-DD
 template-type: video-reference
+auto-generated-state: writable
 template-description: Links to a video file stored in OneDrive for improved sharing and accessibility.
-title: Video Title
 type: reference
-video-link: https://example.com/video-link
-onedrive-path: /path/to/video.mp4
-video-duration: 4 minutes 3 seconds
-video-uploaded: 2025-04-19
-video-size: 16.57 MB
-tags:
+title: Video Reference
+tags: 
   - video
   - onedrive
   - course-materials
+date-created: 2025-04-19
 status: unwatched
+completion-date: ""
+review-date: ""
+comprehension: ""
+---
+auto-generated-state: writable
+template-type: pdf-reference
+template-description: Reference to a PDF file in the vault.
+title: PDF Title
+type: reference
+pdf-path: path/to/file.pdf
+sharing-link: path/to/sharing-link
+program: Program Name
+course: Course Name
+date-created: YYYY-MM-DD
+tags:
+  - pdf
+  - reading
+  - course-materials
+pdf-uploaded: YYYY-MM-DD
+pdf-size: 1.23 MB
+status: unread
 completion-date: 
 review-date: 
-comprehension: 
-transcript: path/to/transcript.md
+comprehension:
 ---
+template-type: case-studies-index
+auto-generated-state: writable
+template-description: Index page for a collection of case studies within a course or class.
+title: Case Studies Index
+type: index
+program: Program Name
+course: Course Name
+index-type: case-studies
+tags:
+  - index
+  - case-studies
+  - course-materials
+date-created: 2025-04-20

@@ -1,14 +1,16 @@
 {
 	"folders": [
 		{
-			"path": "../../../MBA"
-		},
-		{
 			"path": ".."
 		},
 		{
 			"path": "C:/Users/danielshue/OneDrive/Education"
+		},
+		{
+			"path": "../../../Vault"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"powershell.cwd": "mba-notebook-automation"
+	}
 }

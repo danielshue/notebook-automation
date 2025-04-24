@@ -220,7 +220,7 @@ def normalize_wsl_path(path):
 
 # Define paths with proper WSL normalization
 RESOURCES_ROOT = Path(normalize_wsl_path(r'/mnt/c/Users/danielshue/OneDrive/Education/MBA Resources'))  # The folder containing your videos in OneDrive
-VAULT_ROOT = Path(normalize_wsl_path(r'/mnt/d/MBA'))  # Your Obsidian vault root
+VAULT_ROOT = Path(normalize_wsl_path(r'/mnt/d/Vault/01_Projects/MBA'))  # Your Obsidian vault root
 ONEDRIVE_BASE = '/Education/MBA Resources'  # OneDrive path to your MBA Resources (this is a URL path, not a file system path)
 METADATA_FILE = Path(normalize_wsl_path(r'/mnt/d/repos/mba-notebook-automation/metadata.yaml'))  # Path to metadata templates
 
@@ -254,10 +254,9 @@ def load_templates():
         
         # Split the file by the YAML document separator
         yaml_docs = content.split('---\n')
-        
-        # Filter out empty documents and parse each YAML document
+          # Filter out empty documents and parse each YAML document
         templates = {}
-        successful_templates = []
+        successful_templates = []        
         for doc in yaml_docs:
             # Skip empty documents or those that only contain comments
             doc = doc.strip()
@@ -270,6 +269,9 @@ def load_templates():
                     doc = '---\n' + doc
                 
                 yaml_content = yaml.safe_load(doc)
+                # Debug output to see what's being loaded
+                logger.debug(f"Loaded YAML content: {yaml_content}")
+                
                 # Check if parsing produced a valid dictionary
                 if yaml_content and isinstance(yaml_content, dict):
                     template_type = yaml_content.get('template-type')
@@ -278,12 +280,12 @@ def load_templates():
                         successful_templates.append(template_type)
                         logger.debug(f"Successfully loaded template: {template_type}")
                     else:
-                        logger.warning(f"Skipping YAML document without template-type")
+                        logger.warning(f"Skipping YAML document without template-type: {yaml_content}")
                 else:
                     logger.warning(f"Skipping invalid YAML content (not a dictionary)")
             except yaml.YAMLError as e:
                 logger.warning(f"Error parsing YAML document: {e}")
-                continue
+                return
         
         logger.info(f"Loaded {len(templates)} templates from metadata file: {', '.join(successful_templates)}")
         return templates
@@ -576,7 +578,7 @@ def create_share_link(file_id, headers):
                 retry_after = int(resp.headers.get('Retry-After', retry_delay))
                 logger.warning(f"Rate limited. Retrying after {retry_after} seconds.")
                 time.sleep(retry_after)
-                continue
+                return
             else:
                 # Log the error details
                 try:
@@ -590,7 +592,7 @@ def create_share_link(file_id, headers):
                     logger.info(f"Retrying in {retry_delay} seconds...")
                     time.sleep(retry_delay)
                     retry_delay *= 2  # Exponential backoff
-                    continue
+                    return
         except Exception as e:
             logger.error(f"Exception during share link creation: {str(e)}")
             if attempt < max_retries - 1:
@@ -668,25 +670,49 @@ def infer_course_and_program(path):
             # Remove numbers at start if present
             lesson_name = re.sub(r'^\d+[\s_-]*', '', lesson_name)
             if lesson_name:
-                info['lesson'] = lesson_name      # Look for class identifiers - try multiple detection methods
-    # Method 1: Direct "class X" pattern
-    class_match = re.search(r'class[\s_-]*(\w+)', path_str, re.IGNORECASE)
-    if class_match:
-        info['class'] = f"Class {class_match.group(1)}"
-    else:
-        # Method 2: Look for patterns like "01_class" or "class_01" in directory names
-        for part in path_parts:
-            # Check for common class patterns in folder names
-            class_pattern_match = re.search(r'(?:^|\D)((?:\d+[\s_-]*class)|(?:class[\s_-]*\d+))(?:$|\D)', part.lower(), re.IGNORECASE)
-            if class_pattern_match:
-                class_str = class_pattern_match.group(1).replace('_', ' ').replace('-', ' ').title()
-                info['class'] = class_str
+                info['lesson'] = lesson_name    # Look for class identifiers - try multiple detection methods
+    
+    # Method 1: In MBA structure, the class is typically the second part of the path
+    # Example: "Value Chain Management/Managerial Accounting Business Decisions/accounting-for-managers/..."
+    # Here "Managerial Accounting Business Decisions" is the class
+    program_found = False
+    for i, part in enumerate(path_parts):
+        # First identify if this part is a program
+        if part in program_folders:
+            program_found = True
+            # The next part after the program should be the class
+            if i+1 < len(path_parts):
+                info['class'] = path_parts[i+1]
+                logger.debug(f"Found class from path structure: {info['class']}")
                 break
-        
-        # Method 3: If we found a lesson but no class yet, check if any directory after the lesson looks like a class
-        if info['class'] == "Unknown Class" and info['lesson'] != "Unknown Lesson":
-            lesson_found = False
-            for i, part in enumerate(path_parts):
+    
+    # Method 2: If we couldn't determine class from path structure, try other approaches
+    if info['class'] == "Unknown Class" and info['course'] != "Unknown Course":
+        # Use the course as the class (since course and class are often the same in MBA structures)
+        info['class'] = info['course']
+        logger.debug(f"Using course as class: {info['class']}")
+    
+    # Method 3: Direct "class X" pattern as fallback
+    if info['class'] == "Unknown Class":
+        class_match = re.search(r'class[\s_-]*(\w+)', path_str, re.IGNORECASE)
+        if class_match:
+            info['class'] = f"Class {class_match.group(1)}"
+            logger.debug(f"Found class from explicit pattern: {info['class']}")
+    
+    # Method 4: Extract from structured folder names
+    if info['class'] == "Unknown Class":
+        for part in path_parts:
+            # Look for parts with common class naming patterns
+            if "class" in part.lower() or "course" in part.lower():
+                potential_class = part.replace('-', ' ').replace('_', ' ').title()
+                info['class'] = potential_class
+                logger.debug(f"Found class from folder name: {info['class']}")
+                break
+    
+    # Method 4: If we found a lesson but no class yet, check if any directory after the lesson looks like a class
+    if info['class'] == "Unknown Class" and info['lesson'] != "Unknown Lesson":
+        lesson_found = False
+        for i, part in enumerate(path_parts):
                 if lesson_found and i+1 < len(path_parts):
                     next_part = path_parts[i+1].lower()
                     # Check if the next folder after a lesson might be a class
@@ -940,15 +966,30 @@ def create_markdown_note_for_video(video_path, share_link, vault_root, item=None
             print(f"  │  └─ Note marked as {auto_gen_state}, skipping updates")
             return note_path
             
-        logger.info(f"Note is writable, updating content and metadata.")
-        
-        # Extract Notes section to preserve it if it exists
+        logger.info(f"Note is writable, updating content and metadata.")        # Extract Notes section to preserve it if it exists
         notes_section = ""
-        notes_pattern = re.compile(r'(#\s*📝\s*Notes[\s\S]*?)(?=^#|$)', re.MULTILINE)
-        match = notes_pattern.search(content_without_frontmatter)
-        if match:
-            notes_section = match.group(1)
-            logger.info(f"Found existing notes section to preserve ({len(notes_section)} chars)")
+        notes_heading_pattern = re.compile(r'^#\s*📝\s*Notes', re.MULTILINE)
+        notes_match = notes_heading_pattern.search(content_without_frontmatter)
+        
+        if notes_match:
+            # Find the position of the Notes heading
+            notes_start_pos = notes_match.start()
+            # Get everything from the Notes heading to the end of the document
+            notes_section = content_without_frontmatter[notes_start_pos:]
+            
+            # Count lines in the notes section for better logging
+            notes_line_count = notes_section.count('\n') + 1
+            user_content = notes_section.replace("# 📝 Notes\nAdd your notes about the video here.\n", "").strip()
+            has_user_content = len(user_content) > 0
+            
+            logger.info(f"Found existing notes section to preserve ({len(notes_section)} chars, {notes_line_count} lines)")
+            logger.info(f"Notes section has user-added content: {has_user_content}")
+            logger.debug(f"Notes content starts with: {notes_section[:100].replace(chr(10), ' ')}")
+            if has_user_content:
+                logger.info(f"User content size: {len(user_content)} chars")
+                # First few lines of user content (with newlines replaced by spaces)
+                first_content_lines = ' '.join(user_content.split('\n')[:3])
+                logger.debug(f"User content preview: {first_content_lines[:100]}...")
       # Update frontmatter with new tags and other metadata
         # Keep existing values for keys we don't want to overwrite
         for key, value in frontmatter.items():
@@ -1019,45 +1060,67 @@ def create_markdown_note_for_video(video_path, share_link, vault_root, item=None
         if summary_text and "# 🎓 Educational Video Summary (AI Generated)" not in content_without_frontmatter:
             content_without_frontmatter += f"\n{summary_text}\n"        # Create new content based on the template but preserve notes section
         if notes_section:
-            # First ensure that the notes section is removed from the content we're updating
-            content_without_notes = re.sub(r'#\s*📝\s*Notes[\s\S]*?(?=^#|$)', '', content_without_frontmatter, flags=re.MULTILINE)
+            # Find where the notes section begins in the original content
+            notes_heading_pattern = re.compile(r'^#\s*📝\s*Notes', re.MULTILINE)
+            notes_match = notes_heading_pattern.search(content_without_frontmatter)
             
-            # Extract the user-added content sections
-            # We need to identify where the notes section was located in the original content
-            parts = content_without_frontmatter.split('# 📝 Notes')
-            
-            if len(parts) > 1:
-                # Content before the notes section
-                content_before_notes = parts[0].strip()
+            if notes_match:
+                # Get only the content before the notes section
+                notes_start_pos = notes_match.start()
+                content_before_notes = content_without_frontmatter[:notes_start_pos].strip()
                 
-                # Any content after the notes section marker should be part of the notes
-                # (this would handle the case where user has added sub-sections under Notes)
-                # But we already have the full notes section from our earlier extraction
-                
-                # Use the content before notes and append the preserved notes section
+                # Create updated content by combining:
+                # 1. Updated frontmatter
+                # 2. Content before notes section
+                # 3. Preserved notes section (with ALL user content)
                 modified_content_body = f"{content_before_notes}\n\n{notes_section}"
+                
+                # Analyze content structure for logging
+                sections_before_notes = re.findall(r'^#{1,2}\s+(.*?)$', content_before_notes, re.MULTILINE)
+                section_count = len(sections_before_notes)
+                
+                # Log what sections are being preserved in what order
+                logger.info(f"Document structure: {section_count} sections before notes section")
+                if section_count > 0:
+                    section_names = ", ".join([f"'{s}'" for s in sections_before_notes[:5]])
+                    if section_count > 5:
+                        section_names += f", and {section_count-5} more"
+                    logger.info(f"Sections being preserved in order: {section_names}")
+                
+                logger.info(f"Content before notes: {len(content_before_notes)} chars")
+                logger.info(f"Preserving complete notes section at end of document")
+                logger.debug(f"Final document structure: frontmatter → {section_count} content sections → notes section")
             else:
-                # If we can't clearly identify where the notes section was,
-                # just add it at the end as before
+                # Fallback - should not typically happen since we already found the notes section
+                logger.warning("Notes section position couldn't be determined for reinsertion - using fallback method")
+                # Remove any existing notes section to avoid duplication
+                content_without_notes = re.sub(r'#\s*📝\s*Notes[\s\S]*?$', '', content_without_frontmatter, flags=re.MULTILINE)
                 modified_content_body = f"{content_without_notes.strip()}\n\n{notes_section}"
+                logger.info(f"Using fallback method to preserve notes section")
             
             # Combine updated frontmatter and content with preserved notes
             modified_content = f"{updated_frontmatter_text}{modified_content_body}"
+            
+            # Log final content stats
+            modified_body_lines = modified_content_body.count('\n') + 1
+            logger.info(f"Created updated document with {len(modified_content)} chars ({modified_body_lines} lines in body)")
         else:
             # No notes section found, use standard update
             modified_content = updated_frontmatter_text + content_without_frontmatter
         
-        # Write the modified content
+    # Write the modified content
         with open(note_path, 'w', encoding='utf-8') as f:
             f.write(modified_content)
         
         logger.info(f"Updated note with new metadata including tags: {', '.join(custom_tags)}")
+        logger.info(f"{'='*80}\n✅ COMPLETED: {video_name}\n{'='*80}")
         return note_path
     
     # Write the file
     with open(note_path, 'w', encoding='utf-8') as f:
         f.write(full_content)
     
+    logger.info(f"{'='*80}\n✅ CREATED: {video_name}\n{'='*80}")
     return note_path
 
 def get_onedrive_items(access_token, folder_path='/Education/MBA Resources'):
@@ -1101,7 +1164,7 @@ def get_onedrive_items(access_token, folder_path='/Education/MBA Resources'):
     process_folder(folder_path)
     return all_items
 
-def process_single_video(item, headers, templates, results_file='video_links_results.json'):
+def process_single_video(item, headers, templates, results_file='video_links_results.json', args=None):
     """Process a single video file through its complete lifecycle."""
     try:
         # Extract video path information
@@ -1134,45 +1197,18 @@ def process_single_video(item, headers, templates, results_file='video_links_res
         vault_path = VAULT_ROOT / rel_path_for_vault
         vault_dir = vault_path.parent
         note_path = vault_dir / note_name
-        
-        # Early check if the file exists and has non-writable auto-generated-state
-        if note_path.exists():
-            try:
-                with open(note_path, 'r', encoding='utf-8') as f:
-                    existing_content = f.read()
-                
-                # Check if the content has YAML frontmatter
-                if existing_content.startswith('---'):
-                    # Find the end of frontmatter
-                    end_frontmatter = existing_content.find('---', 3)
-                    if end_frontmatter > 0:
-                        frontmatter_text = existing_content[3:end_frontmatter].strip()
-                        existing_frontmatter = yaml.safe_load(frontmatter_text) or {}
-                          # Check auto-generated-state
-                        auto_gen_state = existing_frontmatter.get('auto-generated-state', 'writable')
-                        if auto_gen_state != 'writable':
-                            logger.info(f"Note {note_path} has auto-generated-state={auto_gen_state}, skipping all processing")
-                            print(f"  └─ Note exists with auto-generated-state={auto_gen_state}, skipping processing")
-                            
-                            # Get existing share link from frontmatter if available
-                            share_link = existing_frontmatter.get('video-link', None)
-                            
-                            # Still create a result record but mark it as skipped
-                            result = {
-                                'file': rel_path,
-                                'note_path': str(note_path),
-                                'share_link': share_link,
-                                'success': True,
-                                'skipped': True,
-                                'reason': f"auto-generated-state={auto_gen_state}",
-                                'modified_date': datetime.now().isoformat()
-                            }
-                            
-                            # Update the results file
-                            update_results_file(results_file, result)
-                            return result
-            except Exception as e:
-                logger.warning(f"Error checking existing note frontmatter: {e}, will continue processing")
+        # Check if note exists and --force is not set
+        if note_path.exists() and not (args and getattr(args, 'force', False)):
+            logger.info(f"Skipping {video_name}: note already exists and --force not set.")
+            print(f"Skipping: {video_name} (note exists, use --force to overwrite)")
+            return {
+                'file': rel_path,
+                'note_path': str(note_path),
+                'success': True,
+                'skipped': True,
+                'reason': 'already_exists',
+                'modified_date': datetime.now().isoformat()
+            }
         
         # Step 1: Create a shareable link
         print("  ├─ Creating shareable link...")
@@ -1362,7 +1398,7 @@ def update_results_file(results_file, new_result):
     except Exception as e:
         logger.error(f"Error updating results file: {e}")
 
-def process_videos_for_sharing():
+def process_videos_for_sharing(args=None):
     """Main function to find videos in OneDrive, generate links, and create notes."""
     # Load templates first
     templates = load_templates()
@@ -1382,20 +1418,31 @@ def process_videos_for_sharing():
         logger.error(f"Authentication failed: {e}")
         print(f"\n❌ Authentication failed: {e}\n")
         return [], [f"Authentication error: {str(e)}"]
-    
-    # Get all items from OneDrive
+      # Get all items from OneDrive
     print("📂 Fetching files from OneDrive...")
     try:
         onedrive_items = get_onedrive_items(access_token, ONEDRIVE_BASE)
         logger.info(f"Found {len(onedrive_items)} items in OneDrive")
         print(f"✅ Found {len(onedrive_items)} files in OneDrive\n")
+        
+        # Debug: Print some sample items to check what's being returned
+        if len(onedrive_items) > 0:
+            logger.debug(f"First 5 items from OneDrive:")
+            for i, item in enumerate(onedrive_items[:5]):
+                logger.debug(f"  Item {i+1}: {item.get('name')} - Type: {item.get('file', {}).get('mimeType', 'folder')}")
+        else:
+            logger.warning("No items found in OneDrive - check path configuration")
     except Exception as e:
         logger.error(f"Failed to fetch OneDrive items: {e}")
         print(f"❌ Failed to fetch files from OneDrive: {e}\n")
         return [], [f"OneDrive API error: {str(e)}"]
-    
-    # Filter for video files
-    video_items = [item for item in onedrive_items if item.get('file', {}).get('mimeType', '').startswith('video/')]
+      # Filter for video files
+    video_extensions = {'.mp4', '.mov', '.avi', '.mkv', '.webm', '.wmv', '.mpg', '.mpeg', '.m4v'}
+    video_items = [
+        item for item in onedrive_items if 
+        item.get('file', {}).get('mimeType', '').startswith('video/') or
+        (item.get('name', '').lower().endswith(tuple(video_extensions)))
+    ]
     total_videos = len(video_items)
     logger.info(f"Found {total_videos} video files in OneDrive")
     print(f"🎬 Found {total_videos} video files to process\n")
@@ -1410,13 +1457,40 @@ def process_videos_for_sharing():
     # Process each video individually through its complete lifecycle
     processed_videos = []
     errors = []
-    
     for index, item in enumerate(video_items):
         video_name = item.get('name', f"Video {index+1}")
-        print(f"[{index+1}/{total_videos}] Processing: {video_name}")
+        # Determine the expected note path
+        item_path = item.get('parentReference', {}).get('path', '') + '/' + item['name']
+        if ONEDRIVE_BASE in item_path:
+            rel_path = item_path[item_path.find(ONEDRIVE_BASE) + len(ONEDRIVE_BASE):].lstrip('/')
+        else:
+            rel_path = item['name']
+        local_path = RESOURCES_ROOT / rel_path.replace('/', os.path.sep)
+        note_name = f"{local_path.stem}-video.md"
+        try:
+            rel_path_for_vault = os.path.relpath(local_path, RESOURCES_ROOT)
+        except ValueError:
+            rel_path_for_vault = Path(local_path.parts[-2]) / local_path.name
+        vault_path = VAULT_ROOT / rel_path_for_vault
+        vault_dir = vault_path.parent
+        note_path = vault_dir / note_name
+        # Check if note exists and --force is not set
+        if note_path.exists() and not (args and getattr(args, 'force', False)):
+            logger.info(f"Skipping {video_name}: note already exists and --force not set.")
+            print(f"Skipping: {video_name} (note exists, use --force to overwrite)")
+            errors.append({
+                'file': rel_path,
+                'note_path': str(note_path),
+                'success': True,
+                'skipped': True,
+                'reason': 'already_exists',
+                'modified_date': datetime.now().isoformat()
+            })
+            continue
         
-        # Process this video through its full lifecycle
-        result = process_single_video(item, headers, templates, results_file)
+        print(f"[{index+1}/{total_videos}] Processing: {video_name}")
+        # Process this video through its full lifecycle - pass args to respect --force flag
+        result = process_single_video(item, headers, templates, results_file, args)
         
         if result.get('success', False):
             processed_videos.append(result)
@@ -1645,12 +1719,12 @@ def generate_summary_with_openai(transcript_text, video_name="", course_name="")
         user_prompt = f"This is a transcript from a video titled '{video_name}' from the course '{course_name}'. Please summarize it following the format in your instructions:\n\n{transcript_text}"
         
         response = openai.chat.completions.create(
-            model="gpt-4",  # Using GPT-4 for best quality summaries
+            model="gpt-4.1",  # Using GPT-4 for best quality summaries
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            max_tokens=1500,  # Increased token limit for comprehensive summaries
+            max_tokens=2000,  # Increased token limit for comprehensive summaries
             temperature=0.5
         )
         
@@ -1686,6 +1760,7 @@ def retry_failed_files(headers, templates, results_file='video_links_results.jso
         with open(failed_file, 'r') as f:
             failed_list = json.load(f)
     except Exception as e:
+    
         logger.error(f"Error reading failed files: {e}")
         print(f"Error reading failed files: {e}")
         return 0, 0
@@ -1697,7 +1772,6 @@ def retry_failed_files(headers, templates, results_file='video_links_results.jso
     
     # Get access token
     access_token = headers['Authorization'].replace('Bearer ', '')
-    
     processed = 0
     errors = 0
     
@@ -1741,7 +1815,8 @@ def retry_failed_files(headers, templates, results_file='video_links_results.jso
         except Exception as e:
             logger.error(f"Error updating failed files: {e}")
     
-    return processed, errors
+    # Ensure this is inside a function or replace with appropriate logic
+    print(f"Processed: {processed}, Errors: {errors}")
 
 def find_file_in_onedrive(file_path, access_token):
     """Find a file in OneDrive by its path relative to ONEDRIVE_BASE."""
@@ -1771,8 +1846,7 @@ def find_file_in_onedrive(file_path, access_token):
     # If direct path fails, search by name as fallback
     file_name = os.path.basename(file_path)
     logger.info(f"Direct path lookup failed. Searching by filename: {file_name}")
-    
-    # Use search endpoint to find the file
+      # Use search endpoint to find the file
     search_url = f"https://graph.microsoft.com/v1.0/me/drive/root/search(q='{file_name}')"
     
     try:
@@ -1861,6 +1935,12 @@ def parse_arguments():
         "--retry-failed",
         action="store_true",
         help="Retry only previously failed files from failed_files.json"
+    )
+    
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force processing of videos that already have notes (overwrite existing)"
     )
     
     parser.add_argument(
@@ -1967,8 +2047,8 @@ if __name__ == "__main__":
             else:
                 print(f"❌ File not found: {args.single_file}")
     else:
-        # Process all videos
-        processed_videos, errors = process_videos_for_sharing()
+        # Process all videos - pass the args to respect the --force flag
+        processed_videos, errors = process_videos_for_sharing(args)
         
         # If there were errors, suggest the retry option
         if errors:
