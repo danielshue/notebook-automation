@@ -101,11 +101,12 @@ comprehension: ""
 ---
 auto-generated-state: writable
 template-type: pdf-reference
-template-description: Reference to a PDF file in the vault.
+template-description: Reference to a PDF file in OneDrive.
 title: PDF Title
 type: reference
-pdf-path: path/to/file.pdf
-sharing-link: path/to/sharing-link
+vault-path: path/to/file/in/vault
+onedrive-path: path/to/file.pdf
+onedrive-sharing-link: path/to/sharing-link
 program: Program Name
 course: Course Name
 date-created: YYYY-MM-DD

@@ -22,3 +22,13 @@ build/
 failed_files.log
 video_links_generator.log
 video_links_results.json
+
+# log files
+*.log
+
+# back up files
+*.bak
+
+# don't track these files
+*.DS_Store
+token_cache.bin

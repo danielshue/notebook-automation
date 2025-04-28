@@ -1,0 +1,17 @@
+{
+  "paths": {
+    "resources_root": "C:\\Users\\danielshue\\OneDrive\\Education\\MBA-Resources",
+    "vault_root": "D:\\Vault\\01_Projects\\MBA",
+    "metadata_file": "D:\\repos\\mba-notebook-automation\\metadata.yaml"
+  },
+  "onedrive": {
+    "base_path": "/Education/MBA-Resources"
+  },
+  "microsoft_graph": {
+    "client_id": "489ad055-e4b0-4898-af27-53506ce83db7",
+    "api_endpoint": "https://graph.microsoft.com/v1.0",
+    "authority": "https://login.microsoftonline.com/common",
+    "scopes": ["Files.ReadWrite.All", "Sites.Read.All"]
+  },
+  "video_extensions": [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv", ".mpg", ".mpeg", ".m4v"]
+}

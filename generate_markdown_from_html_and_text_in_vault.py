@@ -26,7 +26,7 @@ SRC_DIRS = ['.', './notebooks']
 DEST_DIR = './markdown'
 
 # Pattern to match notebook files
-NOTEBOOK_PATTERN = r'.*\.(ipynb|html|txt)$'
+NOTEBOOK_PATTERN = r'.*\\.(html|txt)$'
 
 # --- End of configurable settings ---
 
