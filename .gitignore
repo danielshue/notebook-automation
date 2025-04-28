@@ -32,3 +32,21 @@ video_links_results.json
 # don't track these files
 *.DS_Store
 token_cache.bin
+
+# Visual Studio 
+.vs/*.*
+.vs/
+
+
+# Reports
+tests/*.txt
+
+
+failed_files.json
+failed_PDF_files.json
+graph_api_auth_troubleshooting.ipynb
+yaml_test_result.txt
+debug_transcript.sh
+pdf_notes_results.json
+tests/test_transcript.sh
+tests/test_tools_modules.ipynb
