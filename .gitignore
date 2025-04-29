@@ -16,6 +16,7 @@ build/
 # IDE specific files
 .idea/
 .vscode/
+.vs/*
 *.swp
 *.swo
 .env
@@ -32,11 +33,6 @@ video_links_results.json
 # don't track these files
 *.DS_Store
 token_cache.bin
-
-# Visual Studio 
-.vs/*.*
-.vs/
-
 
 # Reports
 tests/*.txt

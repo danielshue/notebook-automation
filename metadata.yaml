@@ -134,3 +134,32 @@ tags:
   - case-studies
   - course-materials
 date-created: 2025-04-20
+---
+template-type: readings-index
+auto-generated-state: writable
+template-description: Index page for required readings within a course or class.
+title: Required Readings Index
+type: index
+program: Program Name
+course: Course Name
+index-type: readings
+tags:
+  - index
+  - readings
+  - required-readings
+  - course-materials
+date-created: 2025-04-29
+---
+template-type: resources-index
+auto-generated-state: writable
+template-description: Index page for additional resources within a course or class.
+title: Resources Index
+type: index
+program: Program Name
+course: Course Name
+index-type: resources
+tags:
+  - index
+  - resources
+  - course-materials
+date-created: 2025-04-29

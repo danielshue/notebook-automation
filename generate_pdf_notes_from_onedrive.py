@@ -76,7 +76,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from tools.utils.config import setup_logging
 
 # Import from the tools package
-from tools.utils.config import setup_logging, VAULT_ROOT, RESOURCES_ROOT
+from tools.utils.config import setup_logging, VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
 from tools.utils.file_operations import get_vault_path_for_pdf, find_all_pdfs, get_scan_root
 from tools.auth.microsoft_auth import authenticate_graph_api
 from tools.onedrive.file_operations import create_share_link
@@ -140,7 +140,7 @@ def _process_single_pdf(pdf_path, vault_dir, args=None, access_token=None, dry_r
     """
     try:
         pdf_stem = pdf_path.stem
-        rel_path = pdf_path.relative_to(RESOURCES_ROOT)
+        rel_path = pdf_path.relative_to(ONEDRIVE_LOCAL_RESOURCES_ROOT)
         note_name = f"{pdf_stem}-Notes.md"
         os.makedirs(vault_dir, exist_ok=True)
         note_path = vault_dir / note_name        # Early exit if note exists and not forced
@@ -265,7 +265,7 @@ def _process_single_pdf(pdf_path, vault_dir, args=None, access_token=None, dry_r
                 'file': str(pdf_path)
             }
         logger.info(f"Created markdown note: {note_result.get('note_path')}")
-        logger.info("  │  └─ Note created at: " + str(note_result.get('note_path', note_path)).replace(str(VAULT_ROOT), "").lstrip('/\\'))
+        logger.info("  │  └─ Note created at: " + str(note_result.get('note_path', note_path)).replace(str(VAULT_LOCAL_ROOT), "").lstrip('/\\'))
 
         # Step 7: Record the result
         result = {
@@ -492,7 +492,7 @@ def _process_single_file(file_path, args=None, access_token=None):
     # Check if this is a relative or absolute path
     file_path = Path(file_path)
     if not file_path.is_absolute():
-        file_path = RESOURCES_ROOT / file_path
+        file_path = ONEDRIVE_LOCAL_RESOURCES_ROOT / file_path
     
     if not file_path.exists():
         logger.error(f"File not found: {file_path}")

@@ -124,8 +124,8 @@ try:
     # Load and normalize paths from the configuration
     # WSL path normalization ensures proper path handling in Windows Subsystem for Linux
     # Converting string paths to Path objects provides better path manipulation capabilities
-    RESOURCES_ROOT = Path(normalize_wsl_path(config_data['paths']['resources_root']))
-    VAULT_ROOT = Path(normalize_wsl_path(config_data['paths']['vault_root']))
+    ONEDRIVE_LOCAL_RESOURCES_ROOT = Path(normalize_wsl_path(config_data['paths']['resources_root']))
+    VAULT_LOCAL_ROOT = Path(normalize_wsl_path(config_data['paths']['vault_root']))
     METADATA_FILE = Path(normalize_wsl_path(config_data['paths']['metadata_file']))
     
     # Other configuration settings

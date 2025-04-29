@@ -16,7 +16,7 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 
-from ..utils.config import RESOURCES_ROOT, OPENAI_API_KEY
+from ..utils.config import ONEDRIVE_LOCAL_RESOURCES_ROOT, OPENAI_API_KEY
 from ..transcript.processor import find_transcript_file, get_transcript_content
 from ..ai.summarizer import generate_summary_with_openai
 from ..utils.config import logger
@@ -35,7 +35,7 @@ def create_or_update_markdown_note_for_video(video_path, share_link, vault_root,
 
     # Determine the corresponding vault path (preserve OneDrive structure under VAULT_ROOT)
     try:
-        rel_path = video_path.relative_to(RESOURCES_ROOT)
+        rel_path = video_path.relative_to(ONEDRIVE_LOCAL_RESOURCES_ROOT)
     except ValueError:
         rel_path = Path(video_path.parts[-2]) / video_path.name
     vault_path = vault_root / rel_path
@@ -258,7 +258,7 @@ comprehension: # high, medium, low
     )
     
     # Write the note file
-    logger.debug(f"RESOURCES_ROOT: {RESOURCES_ROOT}")
+    logger.debug(f"RESOURCES_ROOT: {ONEDRIVE_LOCAL_RESOURCES_ROOT}")
     logger.debug(f"video_path: {video_path}")
     logger.debug(f"rel_path for vault: {rel_path}")
     logger.debug(f"vault_root: {vault_root}")

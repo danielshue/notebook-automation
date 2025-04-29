@@ -70,7 +70,7 @@ import logging
 from pathlib import Path
 
 # Import configuration settings for path constants
-from tools.utils.config import VAULT_ROOT, RESOURCES_ROOT
+from tools.utils.config import VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
 from ..utils.config import logger
 
 def find_all_pdfs(root):
@@ -140,11 +140,11 @@ def get_vault_path_for_pdf(onedrive_pdf_path):
     try:
         # Get the relative path from OneDrive root
         # This extracts the subfolder structure that should be preserved in the vault
-        rel_path = onedrive_pdf_path.relative_to(RESOURCES_ROOT)
+        rel_path = onedrive_pdf_path.relative_to(ONEDRIVE_LOCAL_RESOURCES_ROOT)
         
         # Create the same path structure in the Vault
         # This maps the OneDrive structure into the Obsidian vault
-        vault_path = VAULT_ROOT / rel_path
+        vault_path = VAULT_LOCAL_ROOT / rel_path
         
         # Return the directory where the note should be placed
         # We use parent() to get the directory, not the file itself
@@ -201,7 +201,7 @@ def get_scan_root(folder_path):
         ```
     """
     # Start with the default scan root from configuration
-    scan_root = RESOURCES_ROOT
+    scan_root = ONEDRIVE_LOCAL_RESOURCES_ROOT
     
     # If a specific folder path is provided, resolve it appropriately
     if folder_path:
@@ -210,7 +210,7 @@ def get_scan_root(folder_path):
         
         # If it's a relative path, resolve it against the RESOURCES_ROOT
         if not scan_root.is_absolute():
-            scan_root = RESOURCES_ROOT / scan_root
+            scan_root = ONEDRIVE_LOCAL_RESOURCES_ROOT / scan_root
         
         # Get the canonical absolute path with symlinks resolved
         scan_root = scan_root.resolve()

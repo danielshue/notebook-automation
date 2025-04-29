@@ -68,7 +68,7 @@ else:
 import re
 from pathlib import Path
 
-from ..utils.config import RESOURCES_ROOT, logger
+from ..utils.config import ONEDRIVE_LOCAL_RESOURCES_ROOT, logger
 
 # Use the logger from config module instead of creating a new one
 
@@ -168,7 +168,7 @@ def find_transcript_file(video_path, vault_root):
     # 1. First, check if transcript exists in the same directory as where the video reference would be in the vault
     try:
         # Determine vault directory from video path
-        rel_path = video_path.relative_to(RESOURCES_ROOT)
+        rel_path = video_path.relative_to(ONEDRIVE_LOCAL_RESOURCES_ROOT)
         vault_dir = vault_root / rel_path.parent
         logger.debug(f"Checking vault directory: {vault_dir}")
         

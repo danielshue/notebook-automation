@@ -28,7 +28,7 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 
-from ..utils.config import VAULT_ROOT
+from ..utils.config import VAULT_LOCAL_ROOT
 from ..utils.config import logger
 from ..metadata.path_metadata import load_metadata_templates
 from ..metadata.yaml_metadata_helper import yaml_to_string
@@ -133,10 +133,10 @@ def _build_pdf_yaml_frontmatter(pdf_name, pdf_path, sharing_link=None, metadata=
         
     # Set PDF-specific fields
     try:
-        rel_path = pdf_path.relative_to(VAULT_ROOT) #RESOURCES_ROOT
-        yaml_dict["vault-pdf-path"] = str(rel_path).replace("\\", "/")
+        rel_path = pdf_path.relative_to(VAULT_LOCAL_ROOT) #RESOURCES_ROOT
+        yaml_dict["vault-path"] = str(rel_path).replace("\\", "/")
     except (ValueError, AttributeError):
-        yaml_dict["vault-pdf-path"] = str(pdf_path).replace("\\", "/")
+        yaml_dict["vault-path"] = str(pdf_path).replace("\\", "/")
     
     
     yaml_dict["onedrive-path"] = pdf_path
