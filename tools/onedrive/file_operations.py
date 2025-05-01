@@ -98,21 +98,41 @@ def check_if_file_exists(file_path, access_token, session=None):
     
     # Normalize path by replacing backslashes with forward slashes
     file_path = file_path.replace("\\", "/")
-    
-    # Clean up the path - remove trailing/leading spaces and slashes
+      # Clean up the path - remove trailing/leading spaces and slashes
     file_path = file_path.strip(" /\\")
     
-    # Make sure the path has the correct base
-    if not file_path.lower().startswith(ONEDRIVE_BASE.lower()):
-        file_path = f"{ONEDRIVE_BASE}/{file_path}"
+    # Check if path contains MBA-Resources to handle various path formats
+    if "MBA-Resources" in file_path:
+        # Extract everything from MBA-Resources onwards to avoid duplication
+        if not file_path.startswith("Education/MBA-Resources"):
+            mba_index = file_path.find("MBA-Resources")
+            if mba_index >= 0:
+                # Path already has MBA-Resources but might be missing Education prefix
+                if mba_index == 0:
+                    file_path = f"Education/{file_path}"
+                else:
+                    # There's something before MBA-Resources, check if it's "Education/"
+                    before_part = file_path[:mba_index].rstrip('/')
+                    if before_part.lower() != "education":
+                        file_path = f"Education/{file_path[mba_index:]}"
+    else:
+        # Path doesn't contain MBA-Resources, assume it needs the base path
+        onedrive_base_clean = ONEDRIVE_BASE.strip('/')
+        if not file_path.lower().startswith(onedrive_base_clean.lower()):
+            file_path = f"{onedrive_base_clean}/{file_path}"
     
     # Make sure there are no duplicate slashes in the path
     file_path = re.sub(r'/{2,}', '/', file_path)
     
+    # Remove any leading slash for Graph API compatibility
+    file_path = file_path.lstrip('/')
+      # Now construct the API endpoint - ensure no leading slash in file path part
+    file_path = file_path.lstrip('/')
     api_endpoint = f"{GRAPH_API_ENDPOINT}/me/drive/root:/{file_path}"
     
     logger.debug(f"Checking if file exists: {file_path}")
     logger.debug(f"API endpoint: {api_endpoint}")
+    logger.debug(f"ONEDRIVE_BASE setting: {ONEDRIVE_BASE}")
     
     try:
         response = requester.get(api_endpoint, headers=headers, timeout=15)
@@ -675,13 +695,20 @@ def create_share_link(file_id_or_path, headers, session=None):
         
         # With file path:
         link = create_share_link("Education/MBA Resources/Marketing/slides.pdf", headers)
-    """
-    # Determine if this is a file ID (no slashes) or path (contains slashes)
+    """    # Determine if this is a file ID (no slashes) or path (contains slashes)
+    logger.debug(f"create_share_link called with: {file_id_or_path}")
+    
     if isinstance(file_id_or_path, str) and '/' not in file_id_or_path and '\\' not in file_id_or_path:
         # This is a file ID - use the ID-based approach
+        logger.debug(f"Treating as file ID: {file_id_or_path}")
         return create_share_link_by_id(file_id_or_path, headers, session)
     else:
         # This is a file path - use the path-based approach
+        logger.debug(f"Treating as file path: {file_id_or_path}")
+        # Make sure path has no leading slash for Graph API compatibility
+        if isinstance(file_id_or_path, str):
+            file_id_or_path = file_id_or_path.lstrip('/')
+            logger.debug(f"Cleaned path for API: {file_id_or_path}")
         return create_share_link_by_path(file_id_or_path, headers, session)
 
 def get_onedrive_items(access_token, folder_path=ONEDRIVE_BASE):

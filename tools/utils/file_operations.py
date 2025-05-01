@@ -232,3 +232,74 @@ def get_scan_root(folder_path):
 # - File type detection beyond extension matching
 # - Content-based file validation (e.g., PDF structure verification)
 # - Support for additional file types beyond PDFs
+
+def find_files_by_extension(root_path, extension=".pdf", case_sensitive=False):
+    """
+    Recursively find all files with a specific extension within a directory tree.
+    
+    This function performs a recursive traversal of the provided directory
+    tree, identifying all files with the specified extension. It filters out 
+    non-file objects (like symbolic links or directories) and returns only 
+    true files. The search is case-insensitive by default, but can be made 
+    case-sensitive if needed.
+    
+    Use Cases:
+    - Finding media files (videos, images, audio) in resource directories
+    - Locating documents of specific types (PDFs, Word docs, spreadsheets)
+    - Building file indexes for processing pipelines
+    - Creating file type inventories for content management
+    
+    Args:
+        root_path (Path or str): The root directory to begin the recursive search from.
+                              Should be a pathlib.Path object or a string path to a valid directory.
+        extension (str): The file extension to search for, including the period (e.g., ".mp4").
+                         Defaults to ".pdf".
+        case_sensitive (bool): Whether to perform case-sensitive matching on extensions.
+                            Defaults to False (case-insensitive).
+        
+    Returns:
+        list: A list of Path objects for each matching file found in the directory tree.
+              Returns an empty list if no matching files are found or if the root doesn't exist.
+              Each Path in the list is an absolute path to a file.
+    
+    Example:
+        ```python
+        # Find all MP4 videos
+        videos = find_files_by_extension("/path/to/videos", ".mp4")
+        
+        # Find all Excel files (case-sensitive)
+        excel_files = find_files_by_extension(Path("/path/to/data"), ".XLSX", case_sensitive=True)
+        ```
+    
+    Performance Note:
+        For very large directory trees with many files, this function may take
+        significant time to complete. Consider using more targeted subdirectories
+        when working with extensive file collections.
+    """
+    # Convert string path to Path object if needed
+    if isinstance(root_path, str):
+        root_path = Path(root_path)
+        
+    # Check if directory exists
+    if not root_path.exists() or not root_path.is_dir():
+        logger.warning(f"Directory {root_path} does not exist or is not a directory")
+        return []
+        
+    result_files = []
+    logger.debug(f"Searching for *{extension} files in {root_path}")
+    
+    # Recursively walk through directory tree
+    for root, _, files in os.walk(root_path):
+        for file in files:
+            # Perform case-sensitive or case-insensitive comparison as specified
+            if case_sensitive and file.endswith(extension):
+                file_path = Path(os.path.join(root, file))
+                result_files.append(file_path)
+                logger.debug(f"Found file: {file_path}")
+            elif not case_sensitive and file.lower().endswith(extension.lower()):
+                file_path = Path(os.path.join(root, file))
+                result_files.append(file_path)
+                logger.debug(f"Found file: {file_path}")
+    
+    logger.info(f"Found {len(result_files)} files with extension {extension} in {root_path}")
+    return result_files

@@ -68,11 +68,11 @@ else:
 import re
 from pathlib import Path
 
-from ..utils.config import ONEDRIVE_LOCAL_RESOURCES_ROOT, logger
+from ..utils.config import ONEDRIVE_LOCAL_RESOURCES_ROOT, VAULT_LOCAL_ROOT, logger
 
 # Use the logger from config module instead of creating a new one
 
-def find_transcript_file(video_path, vault_root):
+def find_transcript_file(video_path, vault_root_or_onedrive_root):
     """
     Find a transcript file that corresponds to a video file using multi-stage search.
     
@@ -97,8 +97,8 @@ def find_transcript_file(video_path, vault_root):
     Args:
         video_path (str or Path): Path to the video file for which to find a transcript.
                                  Can be an absolute path or relative path.
-        vault_root (Path): Root directory of the Obsidian vault where the processed
-                          notes will be stored.
+        vault_root_or_onedrive_root (Path): Root directory of the Obsidian vault where the processed
+                                    transcripts will be stored or OneDrive.
         
     Returns:
         Path: A Path object pointing to the transcript file if found.
@@ -121,6 +121,15 @@ def find_transcript_file(video_path, vault_root):
     # Print video path info for debugging
     logger.info(f"Searching for transcript file for video: {video_path}")
     logger.info(f"Video parent directory: {video_path.parent}")
+    logger.debug(f"Using root path for search: {vault_root_or_onedrive_root}")
+    
+    # Log which root path we're using for clarity
+    if vault_root_or_onedrive_root == ONEDRIVE_LOCAL_RESOURCES_ROOT:
+        logger.debug(f"Using OneDrive resources root: {ONEDRIVE_LOCAL_RESOURCES_ROOT}")
+    elif vault_root_or_onedrive_root == VAULT_LOCAL_ROOT:
+        logger.debug(f"Using Vault root: {VAULT_LOCAL_ROOT}")
+    else:
+        logger.debug(f"Using custom root path: {vault_root_or_onedrive_root}")
     
     # First check: Direct exact match in same directory (same name, different extension)
     direct_txt_match = video_path.with_suffix('.txt')
@@ -166,24 +175,56 @@ def find_transcript_file(video_path, vault_root):
     logger.debug(f"Searching with patterns: {', '.join(transcript_name_patterns[:5])}...")
     
     # 1. First, check if transcript exists in the same directory as where the video reference would be in the vault
+    vault_or_onedrive_dir = None
     try:
         # Determine vault directory from video path
-        rel_path = video_path.relative_to(ONEDRIVE_LOCAL_RESOURCES_ROOT)
-        vault_dir = vault_root / rel_path.parent
-        logger.debug(f"Checking vault directory: {vault_dir}")
+        rel_path = None
         
-        if vault_dir.exists():
+        # Check if the video path is relative to the provided root
+        try:
+            rel_path = video_path.relative_to(vault_root_or_onedrive_root)
+            logger.debug(f"Video path is relative to provided root: {rel_path}")
+        except ValueError:
+            # If that fails, try the standard roots based on the provided root
+            if vault_root_or_onedrive_root == ONEDRIVE_LOCAL_RESOURCES_ROOT:
+                try:
+                    # If the video path is relative to the OneDrive root, use it directly
+                    rel_path = video_path.relative_to(ONEDRIVE_LOCAL_RESOURCES_ROOT)
+                    logger.debug(f"Video path is relative to ONEDRIVE_LOCAL_RESOURCES_ROOT: {rel_path}")
+                except ValueError:
+                    logger.debug(f"Video path is not relative to ONEDRIVE_LOCAL_RESOURCES_ROOT: {video_path}")
+                    raise
+            else:  # Assuming it's VAULT_LOCAL_ROOT
+                try:
+                    # If the video path is relative to the vault root, use it directly
+                    rel_path = video_path.relative_to(VAULT_LOCAL_ROOT)
+                    logger.debug(f"Video path is relative to VAULT_LOCAL_ROOT: {rel_path}")
+                except ValueError:
+                    logger.debug(f"Video path is not relative to VAULT_LOCAL_ROOT: {video_path}")
+                    raise
+        
+        if rel_path:
+            vault_or_onedrive_dir = vault_root_or_onedrive_root / rel_path.parent
+        else:
+            raise ValueError(f"Could not determine relative path for {video_path}")
+            
+        logger.debug(f"Checking vault directory: {vault_or_onedrive_dir}")
+        
+        if vault_or_onedrive_dir.exists():
             for pattern in transcript_name_patterns:
-                transcript_path = vault_dir / pattern
+                transcript_path = vault_or_onedrive_dir / pattern
                 if transcript_path.exists():
                     logger.info(f"Found transcript file in vault directory: {transcript_path}")
                     return transcript_path
     except ValueError:
         logger.debug(f"Video path not relative to RESOURCES_ROOT: {video_path}")
     
-    # 2. Check parent directory in vault
-    parent_dir = vault_dir.parent
-    if parent_dir.exists():
+    parent_dir = None
+    # 2. Check parent directory in vault if vault_dir was determined
+    if vault_or_onedrive_dir is not None:
+        parent_dir = vault_or_onedrive_dir.parent
+    
+    if parent_dir is not None and parent_dir.exists():
         logger.debug(f"Checking vault parent directory: {parent_dir}")
         for pattern in transcript_name_patterns:
             transcript_path = parent_dir / pattern
@@ -224,15 +265,16 @@ def find_transcript_file(video_path, vault_root):
     common_transcript_dirs = ["Transcripts", "Transcript", "transcripts", "transcript"]
     
     # Check in vault directory's potential transcript subdirectories
-    for subdir in common_transcript_dirs:
-        transcript_subdir = vault_dir / subdir
-        if transcript_subdir.exists():
-            logger.debug(f"Searching vault transcript subdirectory: {transcript_subdir}")
-            for pattern in transcript_name_patterns:
-                transcript_path = transcript_subdir / pattern
-                if transcript_path.exists():
-                    logger.info(f"Found transcript file in transcript subdirectory: {transcript_path}")
-                    return transcript_path
+    if vault_or_onedrive_dir is not None:
+        for subdir in common_transcript_dirs:
+            transcript_subdir = vault_or_onedrive_dir / subdir
+            if transcript_subdir.exists():
+                logger.debug(f"Searching vault transcript subdirectory: {transcript_subdir}")
+                for pattern in transcript_name_patterns:
+                    transcript_path = transcript_subdir / pattern
+                    if transcript_path.exists():
+                        logger.info(f"Found transcript file in transcript subdirectory: {transcript_path}")
+                        return transcript_path
     
     # Check in OneDrive directory's potential transcript subdirectories
     try:
