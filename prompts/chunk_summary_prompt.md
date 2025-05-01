@@ -3,13 +3,13 @@ Generate a clear and insightful summary of the following chunk from the PDF docu
 
 Please format your response in markdown using the following structure:
 
-# 📝 PDF Summary (AI Generated)
+# 📝 Notes 
 
-## 🧩 Topics Covered
+## 🧩 Topics Covered 
 - Identify 3–5 specific topics discussed in this chunk
 - Use clear bullet points
 
-## 📝 Key Concepts Explained
+## 🔑 Key Concepts Explained
 - Provide 1–2 concise paragraphs explaining the most relevant ideas
 - Focus on concepts that are strategic, analytical, or decision-relevant
 

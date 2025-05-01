@@ -49,10 +49,10 @@ def test_config():
     logger.info("\n=== Testing Configuration Access ===")
     
     try:
-        from tools.utils.config import RESOURCES_ROOT, VAULT_ROOT, ONEDRIVE_BASE
+        from tools.utils.config import ONEDRIVE_LOCAL_RESOURCES_ROOT, VAULT_LOCAL_ROOT, ONEDRIVE_BASE
         logger.info(f"✅ Config values:")
-        logger.info(f"  - RESOURCES_ROOT: {RESOURCES_ROOT}")
-        logger.info(f"  - VAULT_ROOT: {VAULT_ROOT}")
+        logger.info(f"  - RESOURCES_ROOT: {ONEDRIVE_LOCAL_RESOURCES_ROOT}")
+        logger.info(f"  - VAULT_ROOT: {VAULT_LOCAL_ROOT}")
         logger.info(f"  - ONEDRIVE_BASE: {ONEDRIVE_BASE}")
     except Exception as e:
         logger.info(f"❌ Error accessing config values: {e}")

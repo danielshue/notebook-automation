@@ -1,148 +1,90 @@
 #!/usr/bin/env python3
 """
-Standalone transcript finder script for debugging.
-This script tests the transcript finding functionality without running the entire process.
+Debug script to test the transcript file finder functionality.
+
+This script provides a simple way to test the transcript finder with a specific video
+file to see if it can properly locate the corresponding transcript.
 """
 
-import os
 import sys
 import logging
-import re
 from pathlib import Path
-import argparse
-from tools.utils.config import logger
-from tools.utils.config import RESOURCES_ROOT, VAULT_ROOT, ONEDRIVE_BASE
 
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler('transcript_finder_debug.log')
+    ]
+)
+logger = logging.getLogger()
 
-def find_transcript_file(video_path):
+# Import the functionality we want to test
+from tools.transcript.processor import find_transcript_file, get_transcript_content
+from tools.utils.config import ONEDRIVE_LOCAL_RESOURCES_ROOT, VAULT_LOCAL_ROOT
+
+def test_find_transcript(video_path):
     """
-    Find a transcript file that corresponds to a video file.
-    Standalone version for debugging.
+    Test finding a transcript for the specified video path.
+    
+    Args:
+        video_path (str): Path to the video file
     """
+    logger.info(f"Testing transcript finder with video: {video_path}")
+    
+    # Convert to Path object if string
     if isinstance(video_path, str):
         video_path = Path(video_path)
-    
-    print(f"\n{'='*80}")
-    print(f"TRANSCRIPT FINDER DEBUG")
-    print(f"{'='*80}")
-    print(f"Video path: {video_path}")
-    print(f"Video exists: {video_path.exists()}")
-    print(f"Video parent: {video_path.parent}")
-    print(f"Video parent exists: {video_path.parent.exists()}")
-    print(f"{'='*80}")
-    
-    # First check: Direct exact match in same directory (same name, different extension)
-    direct_txt_match = video_path.with_suffix('.txt')
-    print(f"Checking direct match: {direct_txt_match}")
-    print(f"Direct match exists: {direct_txt_match.exists()}")
-    
-    if direct_txt_match.exists():
-        print(f"FOUND TRANSCRIPT: Direct match at {direct_txt_match}")
-        return direct_txt_match
-    
-    # Generate possible transcript file names with a wider range of patterns
-    video_name = video_path.stem
-    print(f"Video stem name: {video_name}")
-    
-    # Add more patterns to make transcript detection more robust
-    transcript_name_patterns = [
-        # Standard formats - most common first
-        f"{video_name}.txt",
-        f"{video_name}.md",
-        # Additional formats
-        f"{video_name} Transcript.md",
-        f"{video_name}-Transcript.md",
-        f"{video_name} transcript.md",
-        f"{video_name}-transcript.md",
-        f"{video_name}_Transcript.md",
-        f"{video_name}_transcript.md",
         
-        # Common variations
-        f"{video_name} Transcript.txt",
-        f"{video_name}-Transcript.txt",
-        f"{video_name} transcript.txt",
-        f"{video_name}-transcript.txt",
-        f"{video_name}_Transcript.txt",
-        f"{video_name}_transcript.txt",
-    ]
+    logger.info(f"Video parent directory: {video_path.parent}")
     
-    # List files in the directory
-    onedrive_dir = video_path.parent
-    if onedrive_dir.exists():
-        print(f"\nListing files in directory: {onedrive_dir}")
-        files = list(onedrive_dir.iterdir())
-        for file in files:
-            print(f"  - {file.name}")
-        
-        # List only txt files
-        txt_files = list(onedrive_dir.glob("*.txt"))
-        print(f"\nTXT files in directory ({len(txt_files)}):")
-        for file in txt_files:
-            print(f"  - {file.name}")
-        
-        # Check each pattern systematically
-        print(f"\nChecking patterns:")
-        for pattern in transcript_name_patterns:
-            transcript_path = onedrive_dir / pattern
-            print(f"  - Checking: {transcript_path.name} (exists: {transcript_path.exists()})")
-            if transcript_path.exists():
-                print(f"\nFOUND TRANSCRIPT: Pattern match at {transcript_path}")
-                return transcript_path
-        
-        # If no match found with standard patterns, use a more direct approach
-        # If there's exactly one .txt file in the folder, it's likely the transcript
-        if len(txt_files) == 1:
-            print(f"\nFOUND TRANSCRIPT: Single TXT file in directory: {txt_files[0]}")
-            return txt_files[0]
+    # Try to find the transcript using OneDrive root
+    logger.info(f"Searching using OneDrive root: {ONEDRIVE_LOCAL_RESOURCES_ROOT}")
+    transcript_path = find_transcript_file(video_path, ONEDRIVE_LOCAL_RESOURCES_ROOT)
     
-    print(f"\nNo transcript file found for {video_name}")
-    return None
+    if transcript_path:
+        logger.info(f"✅ Found transcript using OneDrive root: {transcript_path}")
+        # Try to read the content
+        content = get_transcript_content(transcript_path)
+        content_preview = content[:200] + "..." if content else None
+        logger.info(f"Transcript content preview: {content_preview}")
+    else:
+        logger.warning(f"❌ No transcript found using OneDrive root")
+    
+    # Try to find the transcript using Vault root
+    logger.info(f"Searching using Vault root: {VAULT_LOCAL_ROOT}")
+    transcript_path = find_transcript_file(video_path, VAULT_LOCAL_ROOT)
+    
+    if transcript_path:
+        logger.info(f"✅ Found transcript using Vault root: {transcript_path}")
+        # Try to read the content
+        content = get_transcript_content(transcript_path)
+        content_preview = content[:200] + "..." if content else None
+        logger.info(f"Transcript content preview: {content_preview}")
+    else:
+        logger.warning(f"❌ No transcript found using Vault root")
+        
+    return transcript_path
 
 def main():
-    parser = argparse.ArgumentParser(description="Test transcript finding for a video file")
-    parser.add_argument("video_path", help="Path to the video file (relative to OneDrive base)")
-    args = parser.parse_args()
+    """Main function to run the transcript finder test."""
+    if len(sys.argv) < 2:
+        print("Usage: python debug_transcript_finder.py <path_to_video_file>")
+        sys.exit(1)
     
-    # Normalize path
-    video_path = args.video_path.strip("/")
+    video_path = sys.argv[1]
+    logger.info(f"Starting transcript finder debug for: {video_path}")
     
-    # Build full path
-    if not video_path.startswith("/"):
-        full_path = RESOURCES_ROOT / video_path
+    transcript_path = test_find_transcript(video_path)
+    
+    if transcript_path:
+        print(f"✅ Found transcript: {transcript_path}")
     else:
-        full_path = Path(video_path)
+        print(f"❌ No transcript found for: {video_path}")
     
-    # Find transcript
-    transcript = find_transcript_file(full_path)
-    
-    if transcript:
-        print(f"\nTRANSCRIPT FOUND: {transcript}")
-        print(f"File exists: {transcript.exists()}")
-        if transcript.exists():
-            try:
-                size_kb = transcript.stat().st_size / 1024
-                print(f"File size: {size_kb:.2f} KB")
-                
-                # Try to read the first few lines
-                try:
-                    with open(transcript, 'r', encoding='utf-8', errors='ignore') as f:
-                        first_lines = []
-                        for i in range(5):
-                            line = f.readline().strip()
-                            if line:
-                                first_lines.append(line)
-                            if i >= 4:
-                                break
-                    
-                    print(f"\nFirst lines of transcript:")
-                    for i, line in enumerate(first_lines):
-                        print(f"{i+1}: {line[:80]}")
-                except Exception as e:
-                    print(f"Error reading file: {e}")
-            except Exception as e:
-                print(f"Error getting file stats: {e}")
-    else:
-        print("\nNo transcript found.")
+    print(f"Details logged to transcript_finder_debug.log")
 
 if __name__ == "__main__":
     main()

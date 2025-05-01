@@ -81,7 +81,7 @@ from tools.utils.file_operations import get_vault_path_for_pdf, find_all_pdfs, g
 from tools.auth.microsoft_auth import authenticate_graph_api
 from tools.onedrive.file_operations import create_share_link
 from tools.pdf.processor import extract_pdf_text
-from tools.notes.pdf_note_generator import create_or_update_markdown_note_for_pdf
+from tools.notes.note_markdown_generator import create_or_update_markdown_note_for_pdf
 from tools.ai.summarizer import generate_summary_with_openai
 from tools.utils.error_handling import update_failed_files, update_results_file, categorize_error, ErrorCategories
 from tools.metadata.path_metadata import infer_course_and_program

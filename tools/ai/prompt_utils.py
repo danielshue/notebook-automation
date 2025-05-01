@@ -174,18 +174,22 @@ def format_final_user_prompt_for_pdf(metadata):
     Returns:
         str: Formatted final prompt for PDF summarization
     """
-    # Use FINAL_PROMPT_TEMPLATE and format with metadata    
-    yaml_frontmatter = yaml_to_string(metadata)
+    # Use DEFAULT_SYSTEM_PROMPT as the base
+    user_prompt = DEFAULT_SYSTEM_PROMPT
     
-    # Note: The variable names were swapped in the original code
-    # Fixed to match the actual keys in the metadata dictionary
-    onedrive_path = metadata.get('onedrive-path', '')
-    onedrive_sharing_link = metadata.get('onedrive-sharing-link', '')
+    # Use FINAL_PROMPT_TEMPLATE and format with metadata if metadata is provided
+    if metadata:
+        yaml_frontmatter = yaml_to_string(metadata)
+        
+        # Note: The variable names were swapped in the original code
+        # Fixed to match the actual keys in the metadata dictionary
+        onedrive_path = str(metadata.get('onedrive-path', ''))
+        onedrive_sharing_link = str(metadata.get('onedrive-sharing-link', ''))
+        
+        user_prompt = FINAL_PROMPT_TEMPLATE.replace("{{yaml-frontmatter}}", yaml_frontmatter)
+        user_prompt = user_prompt.replace("{{onedrive-path}}", onedrive_path)
+        user_prompt = user_prompt.replace("{{onedrive-sharing-link}}", onedrive_sharing_link)   
     
-    user_prompt = FINAL_PROMPT_TEMPLATE.replace("{{yaml-frontmatter}}", yaml_frontmatter)
-    user_prompt = user_prompt.replace("{{onedrive-path}}", onedrive_path)
-    user_prompt = user_prompt.replace("{{onedrive-sharing-link}}", onedrive_sharing_link)   
-     
     return user_prompt
 
 def format_chuncked_user_prompt_for_pdf(metadata):

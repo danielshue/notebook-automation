@@ -30,8 +30,15 @@ Integration Points:
 - Ensures consistent metadata formatting across the entire system
 - Provides utilities for both simple variable substitution and complex template processing
 """
+
+import os
 import re
 import yaml
+from pathlib import Path
+from datetime import datetime
+
+from ..utils.config import VAULT_LOCAL_ROOT
+from ..utils.config import logger
 
 def replace_template_variables(template, meta_info):
     """
@@ -281,3 +288,98 @@ def yaml_to_string(yaml_dict):
     # Join all lines with newlines for the final YAML string
     # No trailing newline is added to avoid extra blank lines in frontmatter
     return "\n".join(yaml_lines)
+
+def build_yaml_frontmatter(friendly_filename, file_path, sharing_link=None, metadata=None, template=None, template_type=None):
+    """
+    Build YAML frontmatter for a note using the template-type reference template.
+    
+    This function constructs a comprehensive YAML frontmatter dictionary for reference notes
+    based off the template-type by combining data from multiple sources:
+    
+    1. Base template (provided or fallback)
+    2. File metadata (size, creation date)
+    3. Course/program hierarchical context
+    4. OneDrive linking information
+    
+    The resulting frontmatter follows the consistent structure expected by the Obsidian vault
+    and maintains compatibility with the broader notebook organization system.
+    
+    Args:
+        friendly_filename (str): Name of the file without extension, used as the note title
+        file_path (str or Path): Path to the file in the filesystem
+        sharing_link (str, optional): OneDrive sharing link for external access
+        metadata (dict, optional): Additional metadata like program/course hierarchical info
+                                  Can include: program, course, class, module
+        template (dict, optional): Base template dictionary to start with
+        
+    Returns:
+        dict: Complete frontmatter dictionary with all required fields populated
+              including template-type, title, file paths, size info, and metadata
+    """
+    title = Path(friendly_filename)
+    
+      # Handle the template
+    # Start with a copy of the template (or empty dict if none)
+    yaml_dict = template.copy() if template else {}
+    
+    # Set required fields (overwrite if they already exist)
+    # If template_type is provided, use it; otherwise, try to infer from template or default to "pdf-reference"
+    if template_type:
+        yaml_dict["template-type"] = template_type
+    elif template and template.get("template-type"):
+        yaml_dict["template-type"] = template.get("template-type")
+    else:
+        # Default as a fallback only if nothing else is provided
+        yaml_dict["template-type"] = "pdf-reference"
+    
+    yaml_dict["auto-generated-state"] = "writable"
+    yaml_dict["title"] = title
+    yaml_dict["date-created"] = datetime.now().strftime("%Y-%m-%d")
+        
+    # Set specific fields
+    try:
+        rel_path = file_path.relative_to(VAULT_LOCAL_ROOT) #RESOURCES_ROOT
+        yaml_dict["vault-path"] = str(rel_path).replace("\\", "/")
+    except (ValueError, AttributeError):
+        yaml_dict["vault-path"] = str(file_path).replace("\\", "/")
+    
+    
+    yaml_dict["onedrive-path"] = file_path
+            
+    # Set sharing link if provided
+    if sharing_link:
+        yaml_dict["onedrive-sharing-link"] = sharing_link
+        
+    # Set PDF specific metadata
+    if template_type == "pdf-reference":
+        try:
+            yaml_dict["pdf-size"] = f"{round(file_path.stat().st_size / (1024 * 1024), 2)} MB"
+            yaml_dict["pdf-uploaded"] = datetime.fromtimestamp(file_path.stat().st_ctime).strftime("%Y-%m-%d")
+        except:
+            yaml_dict["pdf-size"] = "Unknown"
+            yaml_dict["pdf-uploaded"] = "Unknown"
+    elif template_type == "video-reference":
+        try:
+            yaml_dict["video-size"] = f"{round(file_path.stat().st_size / (1024 * 1024), 2)} MB"
+            yaml_dict["video-uploaded"] = datetime.fromtimestamp(file_path.stat().st_ctime).strftime("%Y-%m-%d")
+        except:
+            yaml_dict["video-size"] = "Unknown"
+            yaml_dict["video-uploaded"] = "Unknown"
+            
+    
+    
+    
+    # Set course/program metadata if provided
+    if metadata:
+        for key in ["program", "course", "class", "module"]:
+            if key in metadata and metadata[key]:
+                yaml_dict[key] = metadata[key]
+    
+    # Set default values for other fields if not already set
+    if not yaml_dict.get("status"):
+        yaml_dict["status"] = "unread"
+    #if not yaml_dict.get("tags"):
+    
+    yaml_dict["tags"] = []
+    
+    return yaml_dict

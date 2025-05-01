@@ -343,7 +343,7 @@ def generate_summary_with_openai(text_to_summarize, system_prompt, chunked_syste
         logger.debug(f"Successfully generated consolidated summary from all chunks with OpenAI:\n {summary}")
         return summary
     else:
-        # For shorter files, process directly
+        # For shorter files, process directly        
         try:
             variables = metadata.copy() if metadata else {}
             
@@ -353,7 +353,8 @@ def generate_summary_with_openai(text_to_summarize, system_prompt, chunked_syste
             logger.error(f"Error formatting user_prompt with metadata: {e}")
             user_prompt_filled = user_prompt
             
-        final_system_prompt = format_final_user_prompt_for_pdf(system_prompt, variables)
+        # Use format_final_user_prompt_for_pdf with only the metadata/variables
+        final_system_prompt = format_final_user_prompt_for_pdf(variables)
             
         logger.debug(f"*** executing generate_summary_with_openai (shorter files) - FINAL PROMPTS *** \n")        
         logger.debug(f"system_prompt: {final_system_prompt}\n")

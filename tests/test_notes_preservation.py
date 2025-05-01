@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # We'll mock these functions to avoid API calls and external dependencies
-from tools.notes.pdf_note_generator import create_or_update_markdown_note_for_pdf
+from tools.notes.note_markdown_generator import create_or_update_markdown_note_for_pdf
 
 def test_notes_preservation():
     """Test that existing notes are preserved when updating a markdown file."""

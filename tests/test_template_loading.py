@@ -14,8 +14,7 @@ logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
 # Import the functions to test
-from tools.notes.pdf_note_generator import _get_pdf_reference_template
-from tools.metadata.path_metadata import load_metadata_templates
+from tools.metadata.path_metadata import load_metadata_templates, get_reference_template
 
 def test_pdf_template_dict():
     """Test that _get_pdf_reference_template can handle dictionary templates."""
@@ -32,7 +31,7 @@ def test_pdf_template_dict():
         }
     }
     
-    template = _get_pdf_reference_template(templates_dict)
+    template = get_reference_template(templates_dict)
     
     print("Test 1: Dictionary of templates")
     if template and template.get("template-type") == "pdf-reference" and template.get("test-field") == "dict-version":
@@ -56,7 +55,7 @@ def test_pdf_template_list():
         }
     ]
     
-    template = _get_pdf_reference_template(templates_list)
+    template = get_reference_template(templates_list)
     
     print("Test 2: List of templates")
     if template and template.get("template-type") == "pdf-reference" and template.get("test-field") == "list-version":
@@ -81,7 +80,7 @@ def test_actual_templates():
         print(f"Templates is of unexpected type: {type(templates)}")
     
     # Try to get the PDF template
-    template = _get_pdf_reference_template(templates)
+    template = get_reference_template(templates)
     
     if template and template.get("template-type") == "pdf-reference":
         print("✅ Success: Found PDF template from actual templates")

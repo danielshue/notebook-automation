@@ -31,7 +31,7 @@ Your output structure must exactly follow this format:
 
 ---
 
-# 📝 PDF Summary (AI Generated)
+# 📝 Notes 
 
 ## 🧠 Summary
 - Write a **1-paragraph synthesis** of the entire document
@@ -45,7 +45,7 @@ Your output structure must exactly follow this format:
 
 ---
 
-## 📝 Key Concepts Explained
+## 🔑 Key Concepts Explained
 - Summarize the **most important ideas** in **3–5 well-structured paragraphs**
 - Aim to **synthesize insights** rather than merely list facts
 - Highlight how concepts relate to **MBA-level thinking** or business application
