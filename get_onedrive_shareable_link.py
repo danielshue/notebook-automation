@@ -25,11 +25,15 @@ import webbrowser
 from datetime import datetime
 
 # Setup logging
+logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
+if not os.path.exists(logs_dir):
+    os.makedirs(logs_dir)
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("onedrive_sharing.log"),
+        logging.FileHandler(os.path.join(logs_dir, "onedrive_sharing.log")),
         logging.StreamHandler()
     ]
 )

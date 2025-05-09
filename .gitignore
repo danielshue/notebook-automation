@@ -26,6 +26,7 @@ video_links_results.json
 
 # log files
 *.log
+logs/*
 
 # back up files
 *.bak

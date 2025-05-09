@@ -243,7 +243,15 @@ def setup_logging(debug=False, log_file=None, failed_log_file="failed_files.log"
         
         # Add console handler to root logger for all modules
         logging.getLogger('').addHandler(console_handler)
-      
+        # Create logs directory if it doesn't exist
+    logs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'logs')
+    if not os.path.exists(logs_dir):
+        try:
+            os.makedirs(logs_dir)
+            logging.info(f"Created logs directory: {logs_dir}")
+        except Exception as e:
+            logging.warning(f"Failed to create logs directory: {e}")
+    
     # Determine the appropriate log file name if not specified
     # This intelligent naming derives the log file name from the calling module
     # which provides better context than using a generic name for all logs
@@ -253,7 +261,10 @@ def setup_logging(debug=False, log_file=None, failed_log_file="failed_files.log"
         # Extract just the base name without path or extension
         base_name = os.path.splitext(os.path.basename(caller_filename))[0]
         # Use the module name as the log file name
-        log_file = f"{base_name}.log"
+        log_file = os.path.join(logs_dir, f"{base_name}.log")
+    elif not os.path.isabs(log_file):
+        # If a relative path was provided, put it in the logs directory
+        log_file = os.path.join(logs_dir, log_file)
     
     # Create a file handler for persistent logging to file
     # This ensures all log entries are recorded for later analysis
@@ -307,9 +318,13 @@ def setup_logging(debug=False, log_file=None, failed_log_file="failed_files.log"
     # This ensures clean behavior when setup_logging is called multiple times
     while failed_logger.handlers:
         failed_logger.removeHandler(failed_logger.handlers[0])
-        
-    # Add a dedicated file handler for failed operations
+          # Add a dedicated file handler for failed operations
     # This creates a separate log file specifically for tracking failures
+    if not os.path.isabs(failed_log_file):
+        # If a relative path was provided, put it in the logs directory
+        logs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'logs')
+        failed_log_file = os.path.join(logs_dir, failed_log_file)
+    
     failed_file_handler = logging.FileHandler(failed_log_file)
     failed_file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     failed_logger.addHandler(failed_file_handler)

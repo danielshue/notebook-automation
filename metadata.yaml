@@ -75,6 +75,9 @@ tags:
   - transcript
   - course-materials
 date-created: 2025-04-19
+class: Class Name
+course: Course Name
+program: Program Name
 ---
 template-type: case-study-index
 auto-generated-state: writable
@@ -90,7 +93,7 @@ date-created: 2025-04-19
 template-type: video-reference
 auto-generated-state: writable
 template-description: Links to a video file stored in OneDrive for improved sharing and accessibility.
-type: reference
+type: video-reference
 title: Video Reference
 tags: 
   - video
@@ -104,6 +107,9 @@ onedrive-sharing-link: path/to/sharing-link
 completion-date: ""
 review-date: ""
 comprehension: ""
+class: Class Name
+course: Course Name
+program: Program Name
 ---
 auto-generated-state: writable
 template-type: pdf-reference
@@ -115,6 +121,7 @@ onedrive-path: path/to/file.pdf
 onedrive-sharing-link: path/to/sharing-link
 program: Program Name
 course: Course Name
+class: Class Name
 date-created: YYYY-MM-DD
 tags:
   - pdf
@@ -169,3 +176,67 @@ tags:
   - resources
   - course-materials
 date-created: 2025-04-29
+
+--- 
+
+title: Assignment 
+template-type: assignment-individual
+auto-generated-state: writable
+template-description: Individual Assignment for the course or class.
+type: assignment/individual
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: in-progress
+
+---
+
+title: Assignment 
+template-type: assignment-group
+auto-generated-state: writable
+template-description: Group Assignment for the course or class.
+type: group/individual
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: in-progress
+
+---
+
+title: Quiz 1 
+template-type: assignment/quiz
+auto-generated-state: writable
+template-description: Quiz 1 for the course or class.
+type: assignment/quiz
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: in-progress
+
+---
+
+title: Case Study 1 
+template-type: note/case-study
+auto-generated-state: writable
+template-description: Case Study 1 for the course or class.
+type: note/case-study
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: not-started
+
+---
+
+title: Required Reading 1
+template-type: resource/reading
+auto-generated-state: writable
+template-description: Required Reading 1 for the course or class.
+type: resource/reading
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: not-started
+pages: 10-15
+source: RequiredReading.pdf
+
+---
