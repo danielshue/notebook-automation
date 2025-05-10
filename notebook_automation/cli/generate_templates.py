@@ -5,16 +5,36 @@ Generate Obsidian Templates with Nested Tags
 This script creates Obsidian template files with the nested tag structure
 for different types of notes.
 
+The script generates several template types:
+- MBA Lecture Note
+- MBA Case Study
+- MBA Assignment
+- MBA Group Project
+- MBA Course Dashboard
+- MBA Finance Note
+- MBA Literature Review
+
 Usage:
-    python generate_obsidian_templates.py <template_folder_path>
+    python generate_obsidian_templates.py [--template-path PATH] [--force] [--verbose]
+
+Arguments:
+    --template-path PATH  Path to the template folder. If not specified, uses default locations
+    --force              Force overwrite existing templates
+    --verbose, -v        Print detailed information about template generation
+
+Examples:
+    python generate_obsidian_templates.py
+    python generate_obsidian_templates.py --template-path "/path/to/templates"
+    python generate_obsidian_templates.py --force --verbose
 """
 
 import os
 import sys
 import yaml
+import argparse
 from pathlib import Path
 
-def create_template(template_path, template_name, tags, template_content):
+def create_template(template_path, template_name, tags, template_content, force=False, verbose=False):
     """
     Create an Obsidian template with the specified tags.
     
@@ -23,6 +43,8 @@ def create_template(template_path, template_name, tags, template_content):
         template_name (str): Name of the template file (without extension)
         tags (list): List of tags to include
         template_content (str): Content to include after the frontmatter
+        force (bool): Whether to overwrite existing templates
+        verbose (bool): Whether to print detailed information
         
     Returns:
         bool: True if successful, False otherwise
@@ -30,6 +52,12 @@ def create_template(template_path, template_name, tags, template_content):
     os.makedirs(template_path, exist_ok=True)
     
     file_path = os.path.join(template_path, f"{template_name}.md")
+    
+    # Check if file exists and force not set
+    if os.path.exists(file_path) and not force:
+        if verbose:
+            print(f"Skipping existing template: {file_path} (use --force to overwrite)")
+        return False
     
     try:
         # Create YAML frontmatter
@@ -44,24 +72,33 @@ def create_template(template_path, template_name, tags, template_content):
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(content)
             
-        print(f"Created template: {file_path}")
+        if verbose:
+            if os.path.exists(file_path):
+                print(f"Updated template: {file_path}")
+            else:
+                print(f"Created template: {file_path}")
         return True
         
     except Exception as e:
         print(f"Error creating template {template_name}: {e}")
         return False
 
-def generate_all_templates(template_folder):
+def generate_all_templates(template_folder, force=False, verbose=False):
     """
     Generate all templates for the MBA vault.
     
     Args:
         template_folder (str): Path to the template folder
+        force (bool): Whether to overwrite existing templates
+        verbose (bool): Whether to print detailed information
         
     Returns:
         int: Number of templates created
     """
     created = 0
+    if verbose:
+        print(f"Generating templates in: {template_folder}")
+        print("Force overwrite:", "enabled" if force else "disabled")
     
     # Define templates with their tags and content
     templates = [
@@ -255,25 +292,64 @@ Source:
 """
         }
     ]
-    
-    # Create each template
+      # Create each template
     for template in templates:
-        if create_template(template_folder, template["name"], template["tags"], template["content"]):
+        if create_template(
+            template_folder,
+            template["name"],
+            template["tags"],
+            template["content"],
+            force=force,
+            verbose=verbose
+        ):
             created += 1
+    
+    if verbose:
+        print(f"Generation complete.")
+        if created == 0:
+            print("No templates were created.")
+        elif created == 1:
+            print("1 template was created.")
+        else:
+            print(f"{created} templates were created.")
     
     return created
 
-if __name__ == "__main__":
+def main():
+    """Main entry point for the script."""
+    parser = argparse.ArgumentParser(description="Generate Obsidian templates with nested tags.")
+    parser.add_argument(
+        "--template-path",
+        default=None,
+        help="Path to the template folder. If not specified, uses default locations based on OS."
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force overwrite existing templates"
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Print detailed information about template generation"
+    )
+    
+    args = parser.parse_args()
+    
     # Determine template folder path
-    if len(sys.argv) > 1:
-        template_path = sys.argv[1]
-    else:
-        # Default template folder locations
+    template_path = args.template_path
+    if not template_path:
         if os.name == 'nt':  # Windows
             template_path = "D:\\Vault\\01_Projects\\MBA\\Templates"
         else:  # WSL or Linux
             template_path = "/mnt/d/Vault/01_Projects/MBA/Templates"
-    
-    # Generate templates
-    num_created = generate_all_templates(template_path)
-    print(f"Successfully created {num_created} templates in {template_path}")
+      # Generate templates
+    num_created = generate_all_templates(
+        template_path,
+        force=args.force,
+        verbose=args.verbose
+    )
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
