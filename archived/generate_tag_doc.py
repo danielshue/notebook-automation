@@ -1,4 +1,8 @@
 """
+DEPRECATED: This script has been migrated to mba_notebook_automation/cli/generate_tag_doc.py
+Please use the new CLI package version for all future work.
+"""
+"""
 Obsidian Tag Documentation Generator.
 
 This script scans an Obsidian vault directory and generates documentation

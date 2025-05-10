@@ -19,7 +19,11 @@ date-modified: Thursday, May 8th 2025, 3:15:00 pm
 Before you can start using the MBA Notebook Automation tools, you need to set up your environment properly:
 
 1. **Configure the workspace** by running:
-   ```bash
+   ```pwsh
+   notebook-configure show
+   ```
+   Or, for interactive setup:
+   ```pwsh
    python configure.py
    ```
    This interactive script will:
@@ -34,8 +38,8 @@ Before you can start using the MBA Notebook Automation tools, you need to set up
    - `mba_vault_folder`: The folder within your vault where MBA notes are stored
 
 3. **Install required Python packages**:
-   ```bash
-   pip install -r requirements.txt
+   ```pwsh
+   pip install -e .
    ```
 
 ## General Process Flow for Onboarding a New Course
@@ -48,26 +52,26 @@ TODO: This process should be automated.
    - Example path: `[UserAccount]\OneDrive\Education\MBA-Resources`
 
 3. Convert HTML files to Markdown by running:
-   ```bash
+   ```pwsh
    python generate_markdown_from_html_and_text_in_vault.py /path/to/downloaded/course
    ```
    This places newly created markdown files into a mirrored folder location in the Vault. Vault definition is configurable in `config.json`.
 
 4. Ensure metadata consistency by running:
-   ```bash
+   ```pwsh
    python ensure_consistent_metadata.py
    ```
    This makes sure the Course, Class, and Program metadata fields are correctly set. Note: this may need to be run again after any manual edits.
 
 5. Convert videos & transcripts to markdown by running:
-   ```bash
+   ```pwsh
    python generate_video_meta_from_onedrive.py /path/to/downloaded/course
    ```
    - After creating the video notes, update tags by running:
-     ```bash
-     python tags/add_nested_tags.py /path/to/downloaded/course
+     ```pwsh
+     notebook-add-nested-tags /path/to/downloaded/course --verbose
      ```
-	 
+    
 
 ## Onboard New Class Steps
 
@@ -80,21 +84,21 @@ TODO: This process should be automated.
 3. Download and parse all required reading into PDF files based on assignments.
 
 4. Process PDF files by running:
-   ```bash
+   ```pwsh
    python generate_pdf_notes_from_onedrive.py
    ```
 
 5. (Optional) Upload PDF files to Readwise Reader for additional processing.
 
 6. Create assignments using the Templater script:
-   ```bash
+   ```pwsh
    # In Obsidian, use the template from:
    Templater/class_assignments.md
    ```
    Fill out all required TODOs along with due dates.
 
 7. Create a class dashboard using the Templater script:
-   ```bash
+   ```pwsh
    # In Obsidian, use the template from:
    Templater/class_dashboard.md
    ```
@@ -103,15 +107,15 @@ TODO: This process should be automated.
 ## Ad-hoc Utilities to Run
 
 1. Ensure proper tag structure throughout your vault:
-   ```bash
+   ```pwsh
    # Add nested tags based on frontmatter
-   python tags/add_nested_tags.py
-   
+   notebook-add-nested-tags . --verbose
+
    # Clean tags from index files
-   python tags/clean_index_tags.py
-   
+   notebook-clean-index-tags . --verbose
+
    # Consolidate tags to reduce duplication
-   python tags/consolidate_tags.py
+   notebook-consolidate-tags . --verbose
    ```
 
 2. After attending a "Live Class", import the video and transcript note files:
@@ -209,7 +213,19 @@ If you encounter issues with any script:
    - **Authentication errors**: Delete the `cache/token_cache.bin` file and run the script again to re-authenticate
    - **File not found errors**: Ensure the paths in `config.json` are correct and files exist in the specified locations
    - **Import errors**: Make sure you're running the scripts from the root directory of the project
-   - **Tag issues**: Run `tags/add_nested_tags.py` to rebuild tag structure if tags are missing or malformed
+   - **Tag issues**: Run `notebook-add-nested-tags . --verbose` to rebuild tag structure if tags are missing or malformed
+## CLI Tools Quick Reference
+
+All major tag and note management tasks are now available as CLI entry points after installation:
+
+- `notebook-add-nested-tags`      — Add nested tags to notes based on YAML frontmatter
+- `notebook-clean-index-tags`     — Remove all tags from index files
+- `notebook-consolidate-tags`     — Consolidate/sort tags in notes, remove duplicates
+- `notebook-generate-tag-doc`     — Generate tag usage and hierarchy documentation
+- `notebook-restructure-tags`     — Restructure tags for consistency (e.g., lowercase, dashes)
+- `notebook-tag-manager`          — Advanced tag management, refactoring, and analysis
+
+All tools support `--help` for usage and `--verbose` for colorized, detailed output.
 
 ## Regular Maintenance Tasks
 

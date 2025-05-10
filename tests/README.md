@@ -1,6 +1,6 @@
-# Test Suite for MBA Notebook Automation
+# Test Suite for Notebook Automation
 
-This directory contains test scripts for verifying the functionality of the MBA Notebook Automation system. These tests help ensure that various components of the system are working correctly and help identify issues when making changes to the codebase.
+This directory contains test scripts for verifying the functionality of the Notebook Automation system. These tests help ensure that various components of the system are working correctly and help identify issues when making changes to the codebase.
 
 ## Key Test Categories
 

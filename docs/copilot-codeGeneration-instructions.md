@@ -49,10 +49,46 @@
 - Implement proper logging using the built-in logging module
 - Use argparse for command-line argument parsing
 - Follow the existing directory structure for new code:
+
   - `/tags` for tag manipulation scripts
   - `/obsidian` for Obsidian-specific tools
   - `/utilities` for general helper functions
   - `/tools` for core functionality modules
+
+## CLI Output Standards
+- All command-line tools (CLI) must provide clear, colorized, and highly readable output in any ANSI-compatible terminal.
+- Use ANSI color codes for section headers, keys, and important values to improve scanability.
+- Align keys and values for readability; use bold and background colors for section titles and tips.
+- Each configuration or output parameter should include a concise, indented description or hint for the user.
+- Use Unicode arrows (e.g., ↳) or similar symbols to visually connect descriptions to their parameters.
+- Always include a usage tip or help message at the end of CLI output where appropriate.
+- Maintain consistency in formatting and color usage across all CLI tools in the project.
+- For any CLI that performs long-running or multi-step operations, display a clear, colorized progress indicator:
+  - Use a dynamic progress bar (e.g., tqdm) or update the terminal with status lines for each major step.
+  - Print status lines in color (green for success, yellow for warnings, red for errors) for each processed item or file.
+  - Show a summary at the end (e.g., total processed, successes, failures) in a visually distinct format.
+  - Ensure progress output is readable and does not flood the terminal.
+  - Example:
+
+```text
+\033[94m\033[1m== Progress ==\033[0m
+  [#####-----] 50% Complete (Processed 50/100 files)
+  \033[92m✔ File1.md processed successfully\033[0m
+  \033[91m✖ File2.md failed: [error message]\033[0m
+  ...
+\033[1mSummary:\033[0m 48 succeeded, 2 failed
+```
+- Example:
+
+```text
+\033[44m\033[1m\033[95m   MBA Notebook Automation Configuration   \033[0m
+
+\033[94m\033[1m== Paths ==\033[0m
+  \033[96m\033[1mresources_root  \033[0m: \033[92mC:\\Users\\username\\OneDrive\\Education\\MBA-Resources\033[0m
+    \033[90m↳ Top-level folder in OneDrive for your resources.\033[0m
+```
+
+This standard applies to all new and updated CLI tools, including but not limited to: mba-configure, mba-add-nested-tags, mba-generate-pdf-notes, mba-generate-video-metadata, etc.
 
 ## Error Handling
 - Use explicit exception types rather than catching generic exceptions

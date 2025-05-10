@@ -15,7 +15,7 @@ The project has been reorganized into a proper Python package structure for bett
 ### Package Organization
 
 ```
-mba_notebook_automation/
+notebook_automation/
 ├── __init__.py              # Package metadata and version info
 ├── configure.py             # Configuration management
 ├── tools/                   # Core functionality modules
@@ -30,48 +30,57 @@ mba_notebook_automation/
 └── utilities/               # General helper scripts
 ```
 
+
 ### Getting Started
 
-```bash
+```pwsh
 # Install in development mode
 pip install -e .
 
-# Run commands using entry points
-mba-configure show
-mba-add-nested-tags --dry-run --verbose
-mba-generate-pdf-notes --help
-mba-generate-video-metadata --help
+# Run CLI tools using entry points (recommended)
+notebook-add-nested-tags --help
+notebook-clean-index-tags --help
+notebook-consolidate-tags --help
+notebook-generate-tag-doc --help
+notebook-restructure-tags --help
+notebook-tag-manager --help
 
-# Or run modules directly
-python -m mba_notebook_automation.configure show
-python -m mba_notebook_automation.tags.add_nested_tags --dry-run --verbose
+# Example: Add nested tags with verbose output
+notebook-add-nested-tags . --dry-run --verbose
+
+# Example: Clean tags from index files
+notebook-clean-index-tags . --verbose
+
+# Example: Consolidate tags in all notes
+notebook-consolidate-tags . --verbose
+
+# Example: Generate tag documentation
+notebook-generate-tag-doc --help
+
+# All CLI tools support --help and --verbose for colorized, detailed output.
 ```
 
 ### Configuration
 
-Configuration files are now stored in `~/.mba_notebook_automation/config.json` by default, making it easier to work with the package when installed system-wide.
+Configuration files are now stored in `~/.notebook_automation/config.json` by default, making it easier to work with the package when installed system-wide.
 
-### Migrating to the New Structure
 
-For help migrating from the old structure, run:
+## CLI Tools Overview
 
-```bash
-python migrate_to_package.py
-```
+The toolkit provides the following CLI entry points (available after installation):
 
-This script will guide you through the process and help update import statements in your custom scripts.
+| Command                       | Purpose                                                      |
+|-------------------------------|--------------------------------------------------------------|
+| notebook-add-nested-tags      | Add nested tags to notes based on YAML frontmatter           |
+| notebook-clean-index-tags     | Remove all tags from index files                             |
+| notebook-consolidate-tags     | Consolidate/sort tags in notes, remove duplicates            |
+| notebook-generate-tag-doc     | Generate tag usage and hierarchy documentation               |
+| notebook-restructure-tags     | Restructure tags for consistency (e.g., lowercase, dashes)   |
+| notebook-tag-manager          | Advanced tag management, refactoring, and analysis           |
 
-## Primary Scripts
+All tools support `--help` for usage and `--verbose` for colorized, detailed output.
 
-The core functionality of this toolkit is provided by these primary scripts:
-
-1. **`configure.py`**: Sets up the automation environment and configures paths
-2. **`generate_markdown_from_html_and_text_in_vault.py`**: Converts HTML and text files to Markdown
-3. **`generate_pdf_notes_from_onedrive.py`**: Creates notes from PDF files stored in OneDrive
-4. **`generate_video_meta_from_onedrive.py`**: Extracts metadata from video files in OneDrive
-5. **`generate-index_in_vault.py`**: Creates the hierarchical index structure for navigation
-6. **`ensure_consistent_metadata.py`**: Ensures all files have consistent metadata
-7. **`tags/add_nested_tags.py`**: Adds nested tags based on YAML frontmatter fields
+Legacy scripts (e.g., `generate_pdf_notes_from_onedrive.py`, `generate_video_meta_from_onedrive.py`, etc.) are still available for advanced workflows, but most tag and note management should use the CLI entry points above.
 
 ## Workspace Organization
 
@@ -166,34 +175,31 @@ git clone https://github.com/danielshue/notebook-automation.git
 pip install pyyaml html2text requests msal openai python-dotenv cryptography urllib3
 ```
 
+
 ## Usage
 
-The toolkit provides several command-line options across its scripts:
+After installation, use the CLI entry points for all tag and note management tasks. For example:
 
-- **Convert files only**:
-  ```
-  python generate_markdown_from_html_and_text_in_vault.py --convert --source <path>
-  ```
+```pwsh
+# Add nested tags to all notes in the current directory (dry run, verbose)
+notebook-add-nested-tags . --dry-run --verbose
 
-- **Generate indexes only**:
-  ```
-  python generate-index_in_vault.py --generate-index --source <path>
-  ```
+# Clean tags from all index files in a directory
+notebook-clean-index-tags ./notes --verbose
 
-- **Generate PDF notes from OneDrive**:
-  ```
-  python generate_pdf_notes_from_onedrive.py --folder <folder> [--force] [--dry-run] [--no-share-links]
-  ```
+# Consolidate tags in all notes
+notebook-consolidate-tags ./notes --verbose
 
-- **Generate video notes from OneDrive**:
-  ```
-  python generate_video_meta_from_onedrive.py --folder <folder> [--force] [--dry-run] [--no-summary]
-  ```
+# Generate tag documentation
+notebook-generate-tag-doc --help
+```
 
-- **Perform both conversion and index generation**:
-  ```
-  python generate-index_in_vault.py --all --source <path>
-  ```
+For PDF and video processing, you may still use the legacy scripts directly:
+
+```pwsh
+python generate_pdf_notes_from_onedrive.py --folder <folder> [--force] [--dry-run]
+python generate_video_meta_from_onedrive.py --folder <folder> [--force] [--dry-run]
+```
 
 ## Examples
 
@@ -218,21 +224,17 @@ The tool includes Templater templates for Obsidian that can be used to create st
 
 - **Lesson Note**: Template for creating structured lesson notes with sections for summary, key points, questions, and action items.
 
-## Command Line Arguments
 
-- `--source`: Directory to process - can be any level in the hierarchy (required for most scripts)
-- `--convert`: Convert HTML and TXT files to Markdown
-- `--generate-index`: Generate indexes for the directory structure
-- `--all`: Perform both conversion and index generation
-- `--folder`: Process all PDFs or videos in a specific OneDrive subfolder
-- `-f`, `--single-file`: Process only a single PDF or video file
-- `--force`: Overwrite existing notes/files if they exist
-- `--dry-run`: Test without making changes
-- `--no-share-links`: Skip OneDrive shared links (for PDF script)
-- `--no-summary`: Skip OpenAI summary generation (for video script)
-- `--retry-failed`: Only retry previously failed files
-- `--timeout`: Set custom API request timeout (seconds)
-- `--debug`: Enable debug logging
+## CLI Arguments
+
+All CLI tools support `--help` for full argument details. Common options include:
+
+- `--verbose` : Enable colorized, detailed output (per-file progress, summary)
+- `--dry-run` : Show what would be changed, but do not modify files
+- `--folder`  : Specify a folder to process (for PDF/video tools)
+- `--force`   : Overwrite existing files/notes
+
+See each tool's `--help` for more options.
 
 ## Requirements
 

@@ -1,3 +1,6 @@
+DEPRECATED: This script has been migrated to mba_notebook_automation/cli/add_nested_tags.py
+Please use the new CLI package version for all future work.
+"""
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
@@ -13,6 +16,28 @@ Example:
     $ python add_nested_tags.py /path/to/folder --verbose
     $ python add_nested_tags.py /path/to/folder --dry-run
 
+"""
+
+"""
+DEPRECATED: This script has been superseded by a new CLI version.
+Please use the updated CLI in mba_notebook_automation/cli/add_nested_tags.py for future work.
+
+General Markdown Tag Automation Tool
+-----------------------------------
+This script recursively scans a directory for markdown (.md) files, extracts fields from YAML frontmatter,
+and generates nested tags in the format #field/value. Tags are added to the existing tags field or a new
+tags field is created if missing.
+
+Features:
+- Recursively process markdown files in a directory
+- Extract and convert YAML frontmatter fields to nested tags
+- Supports dry-run and verbose output modes
+- Preserves YAML formatting when ruamel.yaml is available
+
+Usage Examples:
+  python add_nested_tags.py /path/to/folder --verbose
+  python add_nested_tags.py /path/to/folder --dry-run
+  python add_nested_tags.py --help
 """
 
 import argparse
@@ -324,22 +349,36 @@ def main():
     """Main entry point for the script."""
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-        description="Process markdown files to add nested tags based on frontmatter fields."
+        description="""
+DEPRECATED: Use the new CLI version if available.
+
+Automate the addition of nested tags to markdown files based on YAML frontmatter fields.
+Recursively scans a directory, extracts frontmatter fields, and generates #field/value tags.
+
+Features:
+  - Recursively process markdown files
+  - Extract and convert YAML frontmatter fields to nested tags
+  - Supports dry-run and verbose output
+
+Examples:
+  python add_nested_tags.py /path/to/folder --verbose
+  python add_nested_tags.py /path/to/folder --dry-run
+        """
     )
     parser.add_argument(
-        "directory", 
+        "directory",
         nargs="?",
-        help="Directory to recursively scan for markdown files (defaults to Obsidian vault)"
+        help="Directory to recursively scan for markdown files (default: configured vault root)"
     )
     parser.add_argument(
-        "--dry-run", 
-        action="store_true", 
-        help="Don't write changes to files, just simulate"
+        "--dry-run",
+        action="store_true",
+        help="Simulate changes without writing to files"
     )
     parser.add_argument(
-        "--verbose", "-v", 
-        action="store_true", 
-        help="Print detailed information about changes"
+        "--verbose", "-v",
+        action="store_true",
+        help="Show detailed information about tag processing"
     )
     
     args = parser.parse_args()
