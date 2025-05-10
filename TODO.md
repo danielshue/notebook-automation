@@ -78,8 +78,9 @@ Quick reference for key tasks and improvements. For the full backlog, see [Proje
 - [ ] **Clean up and finalize**
   - [x] Remove old standalone CLI scripts from the root or other locations
   - [x] Consolidate duplicate video processing tools and remove video directory
+  - [x] Reorganize CLI files and utilities into proper directory structure
   - [ ] Ensure all code follows project coding standards and docstring conventions
-  - [ ] Commit changes with clear, conventional commit messages
+  - [x] Commit changes with clear, conventional commit messages
 
 # TODO: Generalize for Any Program
 - [x] Remove or generalize all references to "MBA" in CLI names, documentation, code comments, and configuration keys/values
