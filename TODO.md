@@ -77,6 +77,7 @@ Quick reference for key tasks and improvements. For the full backlog, see [Proje
   - [x] Update README and any onboarding docs
 - [ ] **Clean up and finalize**
   - [x] Remove old standalone CLI scripts from the root or other locations
+  - [x] Consolidate duplicate video processing tools and remove video directory
   - [ ] Ensure all code follows project coding standards and docstring conventions
   - [ ] Commit changes with clear, conventional commit messages
 
