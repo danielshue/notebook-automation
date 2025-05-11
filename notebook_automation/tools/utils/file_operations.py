@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-File System Operations Module for MBA Notebook Automation System
+File System Operations Module for Notebook Automation System
 
 This module provides comprehensive file system utilities for managing the relationship
 between OneDrive resources and the Obsidian Vault structure. It handles path mapping,
@@ -68,14 +68,14 @@ for pdf_path in pdfs:
 import os
 import logging
 from pathlib import Path
+from typing import List, Optional, Tuple, Union, Dict
 
 # Import configuration settings for path constants
 from notebook_automation.tools.utils.config import VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
 from ..utils.config import logger
 
-def find_all_pdfs(root):
-    """
-    Recursively discover all PDF documents within a specified directory tree.
+def find_all_pdfs(root: Path) -> list[Path]:
+    """Recursively discover all PDF documents within a specified directory tree.
     
     This function performs an efficient recursive traversal of the provided directory
     tree, identifying all PDF files using extension matching. It filters out non-file
@@ -83,21 +83,21 @@ def find_all_pdfs(root):
     returns only true files. The search is case-insensitive to handle PDFs with
     uppercase extensions.
     
-    Use Cases:
-    - Initial scanning of resource directories for processing
-    - Identifying new PDFs added to monitored directories
-    - Building PDF indexes for processing pipelines
-    - Validating document availability before processing
-    
     Args:
         root (Path): The root directory to begin the recursive search from.
                     Should be a pathlib.Path object pointing to a valid directory.
         
     Returns:
-        list: A list of Path objects for each PDF file found in the directory tree.
+        list[Path]: A list of Path objects for each PDF file found in the directory tree.
               Returns an empty list if no PDFs are found or if the root doesn't exist.
               Each Path in the list is an absolute path to a PDF file.
     
+    Example:
+        >>> from pathlib import Path
+        >>> pdfs = find_all_pdfs(Path("./course_materials"))
+        >>> print(f"Found {len(pdfs)} PDFs")
+        Found 12 PDFs
+              
     Performance Note:
         For very large directory trees with many files, this function may take
         significant time to complete. Consider using more targeted subdirectories
@@ -108,9 +108,8 @@ def find_all_pdfs(root):
     # This one-liner efficiently combines finding and filtering in a list comprehension
     return [p for p in root.rglob("*.pdf") if p.is_file()]
 
-def get_vault_path_for_pdf(onedrive_pdf_path):
-    """
-    Map an OneDrive PDF path to its corresponding location in the Obsidian Vault.
+def get_vault_path_for_pdf(onedrive_pdf_path: Path) -> Path:
+    """Map an OneDrive PDF path to its corresponding location in the Obsidian Vault.
     
     This function implements a strategic path translation system that preserves the
     organizational structure from OneDrive within the Obsidian Vault. It ensures that
@@ -130,6 +129,13 @@ def get_vault_path_for_pdf(onedrive_pdf_path):
     Returns:
         Path: The corresponding directory path in the Vault where related notes
               should be placed. This is the parent directory where the PDF would
+              
+    Example:
+        >>> from pathlib import Path
+        >>> pdf_path = Path("/onedrive/courses/finance/lecture1.pdf")
+        >>> vault_path = get_vault_path_for_pdf(pdf_path)
+        >>> print(vault_path)
+        /vault/courses/finance
               be located if it were in the Vault, preserving the folder structure.
               
     Error Handling:
@@ -155,9 +161,8 @@ def get_vault_path_for_pdf(onedrive_pdf_path):
         logger.warning(f"Path {onedrive_pdf_path} is not within OneDrive root")
         return onedrive_pdf_path.parent
 
-def get_scan_root(folder_path):
-    """
-    Intelligently resolve the root directory to use for file scanning operations.
+def get_scan_root(folder_path: Optional[Union[str, Path]] = None) -> Optional[Path]:
+    """Intelligently resolve the root directory to use for file scanning operations.
     
     This function provides flexible directory resolution for scanning operations,
     supporting both absolute paths and paths relative to the configured RESOURCES_ROOT.
@@ -233,9 +238,10 @@ def get_scan_root(folder_path):
 # - Content-based file validation (e.g., PDF structure verification)
 # - Support for additional file types beyond PDFs
 
-def find_files_by_extension(root_path, extension=".pdf", case_sensitive=False):
-    """
-    Recursively find all files with a specific extension within a directory tree.
+def find_files_by_extension(root_path: Union[str, Path], 
+                      extension: str = ".pdf", 
+                      case_sensitive: bool = False) -> List[Path]:
+    """Recursively find all files with a specific extension within a directory tree.
     
     This function performs a recursive traversal of the provided directory
     tree, identifying all files with the specified extension. It filters out 
@@ -243,35 +249,32 @@ def find_files_by_extension(root_path, extension=".pdf", case_sensitive=False):
     true files. The search is case-insensitive by default, but can be made 
     case-sensitive if needed.
     
-    Use Cases:
-    - Finding media files (videos, images, audio) in resource directories
-    - Locating documents of specific types (PDFs, Word docs, spreadsheets)
-    - Building file indexes for processing pipelines
-    - Creating file type inventories for content management
-    
     Args:
-        root_path (Path or str): The root directory to begin the recursive search from.
-                              Should be a pathlib.Path object or a string path to a valid directory.
-        extension (str): The file extension to search for, including the period (e.g., ".mp4").
-                         Defaults to ".pdf".
-        case_sensitive (bool): Whether to perform case-sensitive matching on extensions.
-                            Defaults to False (case-insensitive).
+        root_path (Union[str, Path]): The root directory to begin the recursive search from.
+            Should be a pathlib.Path object or a string path to a valid directory.
+        extension (str, optional): The file extension to search for, including the period.
+            Defaults to ".pdf".
+        case_sensitive (bool, optional): Whether to perform case-sensitive matching on extensions.
+            Defaults to False (case-insensitive).
         
     Returns:
-        list: A list of Path objects for each matching file found in the directory tree.
-              Returns an empty list if no matching files are found or if the root doesn't exist.
-              Each Path in the list is an absolute path to a file.
+        List[Path]: A list of Path objects for each matching file found in the directory tree.
+            Returns an empty list if no matching files are found or if the root doesn't exist.
+            Each Path in the list is an absolute path to a file.
     
+    Raises:
+        None: The function handles directory existence checks internally, returning an empty list
+            if the directory doesn't exist or isn't a directory.
+            
     Example:
-        ```python
-        # Find all MP4 videos
-        videos = find_files_by_extension("/path/to/videos", ".mp4")
+        >>> # Find all MP4 videos
+        >>> videos = find_files_by_extension("/path/to/videos", ".mp4")
+        >>> print(f"Found {len(videos)} video files")
         
-        # Find all Excel files (case-sensitive)
-        excel_files = find_files_by_extension(Path("/path/to/data"), ".XLSX", case_sensitive=True)
-        ```
+        >>> # Find all Excel files (case-sensitive)
+        >>> excel_files = find_files_by_extension(Path("/path/to/data"), ".XLSX", case_sensitive=True)
     
-    Performance Note:
+    Notes:
         For very large directory trees with many files, this function may take
         significant time to complete. Consider using more targeted subdirectories
         when working with extensive file collections.

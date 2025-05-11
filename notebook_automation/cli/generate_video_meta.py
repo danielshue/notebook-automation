@@ -38,8 +38,21 @@ RESULTS_FILE = 'video_links_results.json'
 FAILED_FILES_JSON = 'failed_video_files.json'
 
 
-def _parse_arguments():
-    """Parse command-line arguments for video note generation."""
+def _parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments for video note generation.
+    
+    Sets up the argument parser with all supported options for the video metadata
+    generator tool, including file selection, resource paths, authentication options,
+    and processing controls.
+    
+    Returns:
+        argparse.Namespace: Object containing all parsed command line arguments
+        
+    Example:
+        >>> args = _parse_arguments()
+        >>> print(args.verbose)
+        True
+    """
     parser = argparse.ArgumentParser(
         description="Generate shareable OneDrive links for videos and create reference notes in Obsidian vault."
     )
@@ -110,7 +123,19 @@ def _parse_arguments():
 def main() -> None:
     """Main entry point for the Video Metadata Generator CLI.
     
-    Parses arguments, sets up logging, and coordinates the video metadata generation workflow.
+    Parses command line arguments, sets up logging, authenticates with OneDrive if needed,
+    and processes video files to generate markdown notes with metadata, transcripts, and
+    shareable links. Handles failures gracefully and maintains a record of processed files.
+    
+    Args:
+        None
+        
+    Returns:
+        None: This function doesn't return a value but creates files in the filesystem
+        
+    Example:
+        When called from the command line:
+        $ vault-generate-video-meta --folder "MBA/Finance" --verbose
     """
     global logger, failed_logger
     args = _parse_arguments()

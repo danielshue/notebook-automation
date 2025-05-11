@@ -27,12 +27,31 @@ from notebook_automation.cli.utils import OKGREEN, FAIL, WARNING, ENDC
 from notebook_automation.tools.utils.config import setup_logging
 
 def generate_tag_doc(directory: Path) -> Dict[str, int]:
-    """
-    Generate tag documentation from markdown files in a directory.
+    """Generate tag documentation from markdown files in a directory.
+    
+    This function recursively scans a directory for markdown files, extracts
+    tags from their YAML frontmatter, and analyzes their usage patterns.
+    It creates a structured view of the tag hierarchy and their distribution
+    across the repository.
+    
     Args:
-        directory (Path): The directory to process.
+        directory (Path): The directory to process recursively
+        
     Returns:
-        Dict[str, int]: Statistics about the processing.
+        Dict[str, int]: Statistics about the processing, including:
+            - files_processed: Total number of markdown files analyzed
+            - files_with_errors: Files that couldn't be processed properly
+            - tags_found: Total number of unique tags identified
+            - hierarchical_tags: Number of tags containing hierarchy separators
+            
+    Raises:
+        FileNotFoundError: If the directory doesn't exist
+        PermissionError: If there are permission issues accessing files
+            
+    Example:
+        >>> stats = generate_tag_doc(Path("/path/to/notes"))
+        >>> print(f"Processed {stats['files_processed']} files with {stats['files_with_errors']} errors")
+        >>> print(f"Found {stats['tags_found']} unique tags")
     """
     yaml_frontmatter_pattern = re.compile(r'^---\s*\n(.*?)\n---\s*\n', re.DOTALL)
     tag_usage = {}
@@ -81,9 +100,18 @@ def generate_tag_doc(directory: Path) -> Dict[str, int]:
     return stats
 
 def main() -> None:
-    """
-    Main entry point for the script.
-    Parses command line arguments and calls the generate_tag_doc function.
+    """Main entry point for the tag documentation generation script.
+    
+    Parses command line arguments, sets up logging, and calls the
+    generate_tag_doc function with the specified directory. If no
+    directory is provided, uses the current working directory.
+    
+    Command Line Arguments:
+        directory: Optional path to the directory containing markdown files
+        --verbose: Enable verbose logging output
+    
+    Example:
+        $ python generate_tag_doc.py /path/to/notes --verbose
     """
     parser = argparse.ArgumentParser(
         description='Generate tag usage documentation from markdown files.'

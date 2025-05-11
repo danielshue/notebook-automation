@@ -26,12 +26,22 @@ from ..tools.pdf.utils import is_pdf_file
 def parse_page_range(page_range_str: str, max_page: int) -> List[int]:
     """Parse a page range string into a list of page numbers.
     
+    Converts a human-readable page range string into a list of actual page indices
+    for PDF extraction. Handles comma-separated values and hyphenated ranges.
+    
     Args:
-        page_range_str: String like "1-5,7,9-12"
-        max_page: Maximum page number in the document
+        page_range_str (str): String specifying page ranges like "1-5,7,9-12"
+        max_page (int): Maximum page number in the document (for validation)
         
     Returns:
-        List of page numbers (0-based for PyPDF2)
+        List[int]: List of page numbers (0-based for PyPDF2)
+        
+    Raises:
+        ValueError: If the page range format is invalid or exceeds document bounds
+        
+    Example:
+        >>> parse_page_range("1-3,5", 10)
+        [0, 1, 2, 4]
     """
     pages = set()
     
@@ -84,11 +94,20 @@ def parse_page_range(page_range_str: str, max_page: int) -> List[int]:
 def find_pdf_files(path: str) -> List[str]:
     """Find PDF files in a given path.
     
+    Locates PDF files from a path that could be a single file, directory,
+    or glob pattern. Returns a sorted list of all matching PDF file paths.
+    
     Args:
-        path: Path to a file or directory
+        path (str): Path to a file, directory, or glob pattern
         
     Returns:
-        List of paths to PDF files found
+        List[str]: Sorted list of paths to PDF files found
+        
+    Example:
+        >>> find_pdf_files("./documents/")
+        ['/documents/doc1.pdf', '/documents/doc2.pdf']
+        >>> find_pdf_files("./documents/report.pdf")
+        ['/documents/report.pdf']
     """
     if os.path.isfile(path) and path.lower().endswith('.pdf'):
         return [path]
@@ -113,15 +132,32 @@ def find_pdf_files(path: str) -> List[str]:
 
 
 def extract_pdf_pages(input_pdf: str, output_pdf: str, page_range_str: str) -> bool:
-    """Extract specified pages from a PDF file.
+    """Extract specified pages from a PDF file into a new PDF document.
+    
+    This function processes a source PDF file, extracts the pages specified in the
+    page range string, and saves them to a new PDF file. It provides detailed
+    validation and progress information during processing.
     
     Args:
-        input_pdf: Path to the input PDF file
-        output_pdf: Path to save the extracted pages
-        page_range_str: Range of pages to extract (e.g., "1-5,7,9-12")
+        input_pdf (str): Path to the input PDF file to extract pages from
+        output_pdf (str): Path where the extracted pages will be saved as a new PDF
+        page_range_str (str): Range of pages to extract in the format "1-5,7,9-12"
+            where ranges are specified with hyphens and individual pages with commas
         
     Returns:
-        bool: True if successful, False otherwise
+        bool: True if the extraction completed successfully, False on any error
+        
+    Raises:
+        No exceptions are raised as all errors are handled internally and
+        result in returning False with an error message printed
+        
+    Example:
+        >>> extract_pdf_pages("lecture.pdf", "summary.pdf", "1-3,10")
+        Processing: lecture.pdf
+        PDF has 20 pages
+        Extracting pages: 1, 2, 3, 10
+        Successfully created summary.pdf with 4 pages
+        True
     """
     try:
         print(f"Processing: {input_pdf}")
@@ -193,8 +229,24 @@ def generate_output_filename(input_path: str, page_range: str) -> str:
     return f"{base}_pages_{page_range.replace(',', '_')}.pdf"
 
 
-def main():
-    """Main entry point for the CLI tool."""
+def main() -> None:
+    """Main entry point for the PDF page extraction command-line tool.
+    
+    Parses command-line arguments, finds PDF files matching the input path,
+    extracts the specified pages, and saves the result to the output file.
+    Handles various error conditions and provides user feedback during processing.
+    
+    Usage:
+        When run directly: python -m notebook_automation.cli.extract_pdf_pages input.pdf 1-5
+        When installed: vault-extract-pdf-pages input.pdf 1-5
+        
+    Example:
+        $ vault-extract-pdf-pages lectures/week1.pdf 5-10
+        Processing: lectures/week1.pdf
+        PDF has 30 pages
+        Extracting pages: 5, 6, 7, 8, 9, 10
+        Successfully created lectures/week1_pages_5-10.pdf with 6 pages
+    """
     parser = argparse.ArgumentParser(
         description="Extract pages from a PDF file",
         formatter_class=argparse.RawDescriptionHelpFormatter,

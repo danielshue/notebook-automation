@@ -49,9 +49,24 @@ MBA_RESOURCES_PATH = "/c/Users/danielshue/OneDrive/Education/MBA-Resources"
 ONEDRIVE_MBA_PATH = "Education/MBA-Resources"
 
 def authenticate_interactive():
-    """
-    Authenticate with Microsoft Graph API using interactive authentication.
-    Returns an access token if successful, None otherwise.
+    """Authenticate with Microsoft Graph API using interactive authentication.
+
+    Initiates an interactive authentication flow with Microsoft Graph API using MSAL.
+    Loads and saves a token cache to avoid repeated logins. If a valid token is found in the cache,
+    it is used; otherwise, the user is prompted to authenticate in a browser window.
+
+    Returns:
+        str | None: Access token if successful, None otherwise.
+
+    Raises:
+        Exception: If authentication fails or the token cannot be acquired.
+
+    Example:
+        >>> token = authenticate_interactive()
+        >>> if token:
+        ...     print("Authenticated!")
+        ... else:
+        ...     print("Authentication failed.")
     """
     logger.info("Starting interactive authentication flow...")
     
@@ -120,15 +135,25 @@ def authenticate_interactive():
     return result.get("access_token") if result and "access_token" in result else None
 
 def list_items_in_folder(access_token, folder_path=""):
-    """
-    List items in a OneDrive folder.
-    
+    """List items in a OneDrive folder.
+
+    Lists the files and folders in a specified OneDrive folder using the Microsoft Graph API.
+    If the path is a file, not a folder, prints a message and returns an empty list.
+
     Args:
-        access_token: Valid access token for Microsoft Graph API
-        folder_path: Path to the folder in OneDrive (default: root)
-        
+        access_token (str): Valid access token for Microsoft Graph API.
+        folder_path (str, optional): Path to the folder in OneDrive (default: root).
+
     Returns:
-        List of items in the folder
+        list[dict]: List of items (files/folders) in the folder, or an empty list on error.
+
+    Raises:
+        requests.exceptions.HTTPError: If the API call fails with an HTTP error.
+
+    Example:
+        >>> items = list_items_in_folder(token, "Documents")
+        >>> for item in items:
+        ...     print(item["name"])
     """
     # Normalize path by replacing backslashes with forward slashes
     folder_path = folder_path.replace("\\", "/")
@@ -190,15 +215,24 @@ def list_items_in_folder(access_token, folder_path=""):
     return []
 
 def create_sharing_link(access_token, file_path):
-    """
-    Create a shareable link for a file in OneDrive.
-    
+    """Create a shareable link for a file in OneDrive.
+
+    Uses the Microsoft Graph API to create a view-only, anonymous sharing link for a file.
+    Prints the link and returns it if successful.
+
     Args:
-        access_token: Valid access token for Microsoft Graph API
-        file_path: Path to the file in OneDrive
-        
+        access_token (str): Valid access token for Microsoft Graph API.
+        file_path (str): Path to the file in OneDrive.
+
     Returns:
-        Shareable link URL if successful, None otherwise
+        str | None: Shareable link URL if successful, None otherwise.
+
+    Raises:
+        requests.exceptions.HTTPError: If the API call fails with an HTTP error.
+
+    Example:
+        >>> link = create_sharing_link(token, "Documents/report.pdf")
+        >>> print(link)
     """
     # Normalize path by replacing backslashes with forward slashes
     file_path = file_path.replace("\\", "/")
@@ -254,7 +288,18 @@ def create_sharing_link(access_token, file_path):
     return None
 
 def main():
-    """Main function to parse arguments and execute the appropriate action."""
+    """Main function to parse arguments and execute the appropriate action.
+
+    Parses command-line arguments, authenticates with Microsoft Graph, and either lists
+    folder contents or creates a shareable link for a file, depending on the arguments.
+
+    Returns:
+        None
+
+    Example:
+        When called from the command line:
+            $ python get_onedrive_shareable_link.py --file "Documents/report.pdf"
+    """
     parser = argparse.ArgumentParser(description="OneDrive Personal File Sharing Tool")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--file", help="Path to the file in OneDrive to create a shareable link")

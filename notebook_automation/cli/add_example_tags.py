@@ -27,14 +27,30 @@ except ImportError:
 from notebook_automation.cli.utils import OKGREEN, FAIL, WARNING, ENDC
 
 def add_example_tags(file_path: Path, verbose: bool = False) -> bool:
-    """
-    Add example nested tags to an existing markdown file.
+    """Add example nested tags to an existing markdown file.
+
+    Opens a markdown file, parses its YAML frontmatter (if present), and adds a set
+    of example hierarchical tags to demonstrate the nested tag structure. Uses the
+    appropriate YAML library to preserve formatting and quotes where possible.
 
     Args:
-        file_path (Path): Path to markdown file to update
+        file_path (Path): Path to the markdown file to update.
+        verbose (bool, optional): Whether to print detailed progress information. Defaults to False.
 
     Returns:
-        bool: True if successful, False otherwise
+        bool: True if the file was successfully updated, False otherwise.
+
+    Raises:
+        OSError: If there is an error writing to the file, the exception is caught and False is returned.
+
+    Example:
+        >>> from pathlib import Path
+        >>> success = add_example_tags(Path("./notes/sample.md"), verbose=True)
+        >>> if success:
+        ...     print("Tags added successfully")
+        ... else:
+        ...     print("Failed to add tags")
+        Tags added successfully
     """
     if not file_path.exists():
         print(f"{FAIL}File does not exist: {file_path}{ENDC}")
@@ -128,9 +144,20 @@ def add_example_tags(file_path: Path, verbose: bool = False) -> bool:
 
 
 def main() -> None:
-    """
-    Main entry point for the script.
-    Parses command line arguments and calls the add_example_tags function.
+    """Main entry point for the example tag adding CLI tool.
+
+    Parses command line arguments, sets up the file path, and invokes the add_example_tags
+    function with the specified file. Exits with code 1 if the operation fails.
+
+    Args:
+        None
+
+    Returns:
+        None: This function doesn't return a value.
+
+    Example:
+        When called from the command line:
+            $ notebook-add-example-tags ./notes/sample.md --verbose
     """
     parser = argparse.ArgumentParser(
         description='Add example nested tags to a markdown file.'

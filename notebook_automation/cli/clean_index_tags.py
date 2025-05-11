@@ -27,12 +27,25 @@ except ImportError:
     USE_RUAMEL = False
 
 def clean_index_tags(directory: Path, logger) -> Dict[str, int]:
-    """
-    Remove all tags from markdown files with 'index-type' in frontmatter.
+    """Remove all tags from markdown files with 'index-type' in frontmatter.
+    
+    Index files should not have tags as they serve as structural elements in the
+    knowledge base rather than content. This function scans all markdown files in the
+    specified directory and removes tags from any file identified as an index.
+    Works with both ruamel.yaml (preferred) and PyYAML as fallback.
+    
     Args:
-        directory (Path): The directory to process.
+        directory (Path): The directory containing markdown files to process
+        logger: Logger instance for output and error reporting
+    
     Returns:
-        Dict[str, int]: Statistics about the processing.
+        Dict[str, int]: Statistics about the processing, including counts of
+            files processed, modified, and any errors encountered
+            
+    Example:
+        >>> stats = clean_index_tags(Path("./notes"), logger)
+        >>> print(f"Modified {stats['files_modified']} of {stats['files_processed']} files")
+        Modified 5 of 30 files
     """
     yaml_frontmatter_pattern = re.compile(r'^---\s*\n(.*?)\n---\s*\n', re.DOTALL)
     stats = {
@@ -84,9 +97,21 @@ def clean_index_tags(directory: Path, logger) -> Dict[str, int]:
 
 
 def main() -> None:
-    """
-    Main entry point for the script.
-    Parses command line arguments and calls the clean_index_tags function.
+    """Main entry point for the index tag cleaning CLI tool.
+    
+    Parses command line arguments, sets up logging, and invokes the clean_index_tags
+    function with the specified directory. Outputs statistics about the processing
+    results to provide feedback to the user on the files processed and modified.
+    
+    Args:
+        None
+        
+    Returns:
+        None: This function doesn't return a value
+        
+    Example:
+        When called from the command line:
+        $ notebook-clean-index-tags ~/notes --verbose
     """
     parser = argparse.ArgumentParser(
         description='Remove all tags from markdown files with index-type in YAML frontmatter.'

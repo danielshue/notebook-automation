@@ -26,12 +26,25 @@ except ImportError:
 from notebook_automation.cli.utils import OKGREEN, FAIL, WARNING, ENDC
 
 def restructure_tags(directory: Path, verbose: bool = False) -> Dict[str, int]:
-    """
-    Restructure tags in markdown files in a directory.
+    """Restructure tags in markdown files in a directory.
+    
+    Scans all markdown files in the specified directory and applies tag restructuring
+    rules, updating the YAML frontmatter while preserving its format. Works with both
+    ruamel.yaml (preferred) and PyYAML as fallback.
+    
     Args:
-        directory (Path): The directory to process.
+        directory (Path): The directory containing markdown files to process
+        verbose (bool): Whether to print detailed progress information. 
+            Defaults to False.
+    
     Returns:
-        Dict[str, int]: Statistics about the processing.
+        Dict[str, int]: Statistics about the processing, including counts of
+            files processed, modified, and any errors encountered
+            
+    Example:
+        >>> stats = restructure_tags(Path("./notes"), verbose=True)
+        >>> print(f"Modified {stats['files_modified']} of {stats['files_processed']} files")
+        Modified 15 of 30 files
     """
     from notebook_automation.cli.utils import OKGREEN, OKCYAN, WARNING, FAIL, ENDC
     yaml_frontmatter_pattern = re.compile(r'^---\s*\n(.*?)\n---\s*\n', re.DOTALL)
@@ -101,9 +114,21 @@ def restructure_tags(directory: Path, verbose: bool = False) -> Dict[str, int]:
     return stats
 
 def main() -> None:
-    """
-    Main entry point for the script.
-    Parses command line arguments and calls the restructure_tags function.
+    """Main entry point for the tag restructuring CLI tool.
+    
+    Parses command line arguments and invokes the restructure_tags function
+    with the specified directory. Outputs statistics about the processing
+    results to provide feedback to the user.
+    
+    Args:
+        None
+        
+    Returns:
+        None: This function doesn't return a value
+        
+    Example:
+        When called from the command line:
+        $ notebook-restructure-tags ~/notes --verbose
     """
     parser = argparse.ArgumentParser(
         description='Restructure tags in markdown files (lowercase, dashes, etc).'

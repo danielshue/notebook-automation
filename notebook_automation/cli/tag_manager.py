@@ -26,20 +26,43 @@ from notebook_automation.tools.utils.config import setup_logging
 from notebook_automation.cli.utils import remove_timestamps_from_logger
 
 def tag_manager(directory: Path, logger) -> None:
-    """
-    Placeholder for tag management operations.
+    """Placeholder for tag management operations.
+    
+    This function serves as an extension point for implementing custom tag management
+    operations. It currently only logs the target directory but can be extended to
+    perform complex tag transformations, analysis, or validation.
+    
     Args:
-        directory (Path): The directory to process.
-        logger: Logger instance for output.
+        directory (Path): The directory containing markdown files to process
+        logger: Logger instance for output and error reporting
+        
+    Returns:
+        None: This function currently only outputs a log message
+        
+    Example:
+        >>> tag_manager(Path("/path/to/notes"), logger)
+        Tag manager operations would be performed on: /path/to/notes
     """
     logger.info(f"Tag manager operations would be performed on: {directory}")
     # Implement advanced tag management logic here as needed.
 
 
 def main() -> None:
-    """
-    Main entry point for the script.
-    Parses command line arguments and calls the tag_manager function.
+    """Main entry point for the tag manager CLI tool.
+    
+    Parses command line arguments, sets up logging, and invokes the tag_manager
+    function with the specified directory. Acts as the controller for the CLI
+    interface to the tag management functionality.
+    
+    Args:
+        None
+        
+    Returns:
+        None: This function doesn't return a value
+        
+    Example:
+        When called from the command line:
+        $ notebook-tag-manager ~/my-notes --verbose
     """
     parser = argparse.ArgumentParser(
         description='Perform advanced tag management operations on markdown files.'

@@ -126,20 +126,31 @@ class MetadataUpdater:
                 logger.warning(f"Found duplicate keys in frontmatter, attempting to fix: {e}")
                 # Manual parsing to handle duplicate keys (keeping the last occurrence)
                 frontmatter_dict = self._parse_frontmatter_with_duplicates(frontmatter_yaml)
-                return frontmatter_dict, frontmatter_text, remaining_content
+                return frontmatter_dict, frontmatter_text, remaining_content            
             else:
                 logger.warning(f"Error parsing YAML frontmatter: {e}")
                 return None, frontmatter_text, remaining_content
-                
-    def _parse_frontmatter_with_duplicates(self, yaml_content: str) -> Dict:
-        """
-        Parse YAML frontmatter manually, handling duplicate keys by keeping the last occurrence.
+            
+    def _parse_frontmatter_with_duplicates(self, yaml_content: str) -> Dict[str, Any]:
+        """Parse YAML frontmatter manually, handling duplicate keys by keeping the last occurrence.
+        
+        This function provides a fallback parsing method when the standard YAML parser
+        fails due to duplicate keys in the frontmatter. It implements a simple line-by-line
+        parser that extracts key-value pairs while overwriting previous values when
+        duplicate keys are encountered.
         
         Args:
-            yaml_content (str): The YAML content to parse
+            yaml_content (str): The YAML content to parse as a string
             
         Returns:
-            dict: Parsed frontmatter as dictionary
+            Dict[str, Any]: Parsed frontmatter as dictionary with all keys normalized
+                and duplicate keys resolved (keeping the last occurrence)
+                
+        Example:
+            >>> yaml_text = "title: Document\\ntags: [tag1]\\ntitle: Updated Title"
+            >>> updater = MetadataUpdater()
+            >>> updater._parse_frontmatter_with_duplicates(yaml_text)
+            {'title': 'Updated Title', 'tags': ['tag1']}
         """
         result = {}
         # Simple line-by-line parser to handle duplicate keys
@@ -242,7 +253,7 @@ class MetadataUpdater:
         # If program is still None but we have a reasonable guess based on directory structure
         if info['program'] is None and file_path.parts:
             # Look in the path structure for potential program names
-            # We assume programs are at the base of the MBA directory
+            # We assume programs are at the base of the Notebook directory
             mba_parts = []
             for part in file_path.parts:
                 if part.lower() == "mba":

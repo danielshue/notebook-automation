@@ -3,7 +3,7 @@
 PDF Processing Module for Intelligent Text Extraction and Metadata Analysis
 
 This module provides a comprehensive set of utilities for working with PDF files
-within the MBA Notebook Automation system. It implements multi-library extraction 
+within the Notebook Automation system. It implements multi-library extraction 
 strategies with graceful degradation, intelligent text processing, and extensive 
 metadata handling capabilities.
 
@@ -59,6 +59,7 @@ import re
 import os.path
 from pathlib import Path
 from datetime import datetime
+from typing import Dict, List, Optional, Tuple, Union, Any
 from ..utils.config import logger
 
 # Try to import pdfplumber for text extraction, with a fallback to PyPDF2
@@ -73,12 +74,15 @@ except ImportError:
     except ImportError:
         HAS_PYPDF2 = False
 
-def extract_pdf_text(pdf_path, max_pages=None, start_page=0, page_range=None, force=False):
-    """
-    Extract text from a PDF file with intelligent caching and error handling.
+def extract_pdf_text(pdf_path: Union[str, Path], 
+                  max_pages: Optional[int] = None, 
+                  start_page: int = 0, 
+                  page_range: Optional[Tuple[int, int]] = None, 
+                  force: bool = False) -> str:
+    """Extract text from a PDF file with intelligent caching and error handling.
     
     This function serves as the main entry point for PDF text extraction in the
-    notebook automation system. It implements a caching mechanism for performance
+    automation system. It implements a caching mechanism for performance
     optimization and handles various error conditions gracefully.
     
     The extraction process follows these steps:
@@ -88,23 +92,31 @@ def extract_pdf_text(pdf_path, max_pages=None, start_page=0, page_range=None, fo
     4. Save extracted text to cache for future use
     
     Args:
-        pdf_path (str or Path): Path to the PDF file to process
-        max_pages (int, optional): Maximum number of pages to extract. 
-                                  Useful for large documents where only a sample is needed.
-                                  Defaults to None (all pages).
-        start_page (int, optional): First page to extract (0-indexed). 
-                                   Useful for skipping cover pages or front matter.
-                                   Defaults to 0 (beginning of document).
-        page_range (tuple, optional): Specific range of pages to extract as (start, end).
-                                     If provided, overrides max_pages and start_page.
-                                     Defaults to None.
-        force (bool, optional): If True, forces re-extraction even if cached 
-                               version exists. Useful when PDF content has changed.
-                               Defaults to False.
-        
+        pdf_path (Union[str, Path]): Path to the PDF file to process
+        max_pages (Optional[int]): Maximum number of pages to extract. 
+            Useful for large documents where only a sample is needed.
+            Defaults to None (all pages).
+        start_page (int): First page to extract (0-indexed). 
+            Useful for skipping cover pages or front matter.
+            Defaults to 0 (beginning of document).
+        page_range (Optional[Tuple[int, int]]): Specific range of pages to extract as (start, end).
+            If provided, overrides max_pages and start_page.
+            Defaults to None.
+        force (bool): If True, forces re-extraction even if cached
+            version exists. Useful when PDF content has changed.
+            Defaults to False.
+            
     Returns:
         str: Extracted text from the PDF with preserved paragraph structure.
              Returns empty string if extraction fails completely.
+        
+    Raises:
+        FileNotFoundError: If the PDF file does not exist
+        ValueError: If the PDF file cannot be read or is invalid
+        
+    Example:
+        >>> text = extract_pdf_text("path/to/document.pdf")
+        >>> text = extract_pdf_text("path/to/document.pdf", page_range=(10, 20))
     
     Performance Notes:
         - Uses caching to disk for repeated access to the same PDF

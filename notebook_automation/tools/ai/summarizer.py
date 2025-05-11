@@ -55,32 +55,28 @@ else:
     logger.warning("OpenAI API key not found in environment variables. Summary and tag generation will be disabled.")
 
 def _chunk_text(text, max_chunk_size=2000, overlap=500):
-    """
-    Split a long text into overlapping chunks for efficient API processing.
+    """Split a long text into overlapping chunks for efficient API processing.
     
     This function divides large text documents into smaller, manageable chunks
     with configurable overlap between chunks to maintain context and coherence.
     The chunking algorithm ensures that no information is lost during the splitting
     process while optimizing for the token limits of the OpenAI API.
     
-    The function includes built-in optimization for single-chunk processing when
-    the text is small enough to fit within the maximum chunk size, avoiding
-    unnecessary processing overhead.
-    
     Args:
         text (str): The text content to split into chunks
         max_chunk_size (int, optional): Maximum characters per chunk, designed 
-                                       to work within API token limits. Defaults to 2000.
+            to work within API token limits. Defaults to 2000.
         overlap (int, optional): Number of characters to overlap between adjacent chunks
-                                to maintain context continuity. Defaults to 500.
+            to maintain context continuity. Defaults to 500.
     
     Returns:
-        list: List of text chunks ready for processing by the summarization functions.
-              Each chunk contains a portion of the original text with specified overlap.
-    
-    Note:
-        The function includes internal debugging logs that track chunk sizes and counts
-        for troubleshooting and performance optimization.
+        List[str]: List of text chunks ready for processing by summarization functions
+        
+    Example:
+        >>> text = "This is a very long document that needs to be split into chunks..."
+        >>> chunks = _chunk_text(text, max_chunk_size=1000, overlap=200)
+        >>> print(f"Created {len(chunks)} chunks")
+        Created 3 chunks
     """
     if len(text) <= max_chunk_size:
         #logger.debug(f"Text fits in one chunk: {len(text)} chars")
@@ -105,34 +101,49 @@ def _chunk_text(text, max_chunk_size=2000, overlap=500):
     return chunks
 
 def _summarize_chunk(chunk, system_prompt, chunked_system_prompt, user_prompt, metadata=None, is_first_chunk=False, is_final_chunk=False, chunk_num=1, total_chunks=1):
-    """
-    Summarize a single chunk of content using OpenAI API with context awareness.
+    """Summarize a single chunk of content using OpenAI API with context awareness.
     
     This function processes an individual text chunk through the OpenAI API
     with specialized contextual handling to ensure coherent summaries. It dynamically
     builds context information based on the chunk's position in the document
     (beginning, middle, or end) and injects this context into the prompts.
     
-    The function handles template variable substitution for prompts and includes
-    comprehensive error handling and logging for production reliability.
-    
     Args:
         chunk (str): The content text chunk to summarize
         system_prompt (str): System prompt for OpenAI API that defines the AI's role
-        chunked_system_prompt (str): Template for chunk-specific instructions with variable placeholders
-        user_prompt (str): User prompt template with variable placeholders (including {chunk})
-        metadata (dict, optional): Dictionary of metadata values to expand in prompt templates.
-                                  Typically includes document title, course info, etc. Defaults to None.
-        is_first_chunk (bool, optional): Flag indicating if this is the first chunk, triggering
-                                        special handling for introductory content. Defaults to False.
-        is_final_chunk (bool, optional): Flag indicating if this is the final chunk, triggering
-                                        special handling for concluding content. Defaults to False.
-        chunk_num (int, optional): Current chunk number for context and logging. Defaults to 1.
-        total_chunks (int, optional): Total number of chunks for context and progress tracking. Defaults to 1.
+        chunked_system_prompt (str): Template for chunk-specific instructions with 
+            variable placeholders
+        user_prompt (str): User prompt template with variable placeholders 
+            (including {chunk})
+        metadata (dict, optional): Dictionary of metadata values to expand in prompt 
+            templates. Typically includes document title, course info. Defaults to None.
+        is_first_chunk (bool, optional): Flag indicating if this is the first chunk, 
+            triggering special handling for introductory content. Defaults to False.
+        is_final_chunk (bool, optional): Flag indicating if this is the final chunk, 
+            triggering special handling for concluding content. Defaults to False.
+        chunk_num (int, optional): Current chunk number for context and logging. 
+            Defaults to 1.
+        total_chunks (int, optional): Total number of chunks for context and progress 
+            tracking. Defaults to 1.
     
     Returns:
         str: The AI-generated summary for this specific chunk, or an error message
-             if the API call fails (allowing the overall process to continue)
+            if the API call fails (allowing the overall process to continue)
+            
+    Raises:
+        No exceptions are raised as they are caught and returned as error messages
+        
+    Example:
+        >>> chunk_summary = _summarize_chunk(
+        ...     chunk="This is the introduction to the topic...",
+        ...     system_prompt="You are an educational content summarizer",
+        ...     chunked_system_prompt="Summarize this {chunk_context}: {chunk}",
+        ...     user_prompt="Create a summary of {file_name}",
+        ...     metadata={'file_name': 'Chapter 1'},
+        ...     is_first_chunk=True,
+        ...     chunk_num=1,
+        ...     total_chunks=3
+        ... )
     """
     chunk_context = ""
     if total_chunks > 1:
@@ -182,22 +193,12 @@ def _summarize_chunk(chunk, system_prompt, chunked_system_prompt, user_prompt, m
         return f"Error processing chunk {chunk_num}: {str(e)}"
 
 def _chunked_summary_with_openai(text, system_prompt, chunked_system_prompt, user_prompt, metadata=None, max_chunk_chars=2000, overlap=500):
-    """
-    Orchestrates multi-stage chunked summarization workflow for large documents.
+    """Orchestrates multi-stage chunked summarization workflow for large documents.
     
     This intermediate-level function manages the complete chunking and summarization
     workflow for large documents. It splits the text into chunks, processes each chunk
     individually with position awareness, and combines the results into a structured
     intermediate summary that preserves the document's logical flow.
-    
-    The function serves as the coordination layer between the low-level chunking
-    and single-chunk processing, handling progress tracking and consolidation logic.
-    
-    Process Flow:
-    1. Split input text into overlapping chunks using _chunk_text()
-    2. Process each chunk with contextual awareness (first/last chunk handling)
-    3. Combine individual summaries with clear chunk demarcation
-    4. Return the combined result for final consolidation
     
     Args:
         text (str): The complete text content to summarize
@@ -205,13 +206,32 @@ def _chunked_summary_with_openai(text, system_prompt, chunked_system_prompt, use
         chunked_system_prompt (str): Template for chunk-specific instructions
         user_prompt (str): User prompt template with variable placeholders
         metadata (dict, optional): Dictionary of metadata values for prompt templates.
-                                  Typically includes document title, course info, etc. Defaults to None.
-        max_chunk_chars (int, optional): Maximum characters per chunk for API processing. Defaults to 2000.
-        overlap (int, optional): Character overlap between chunks for context continuity. Defaults to 500.
+            Typically includes document title and content info. Defaults to None.
+        max_chunk_chars (int, optional): Maximum characters per chunk for API processing.
+            Defaults to 2000.
+        overlap (int, optional): Character overlap between chunks for context continuity.
+            Defaults to 500.
     
     Returns:
         str: Combined intermediate summary with clearly marked chunk divisions,
-             ready for final consolidation processing
+            ready for final consolidation processing
+            
+    Example:
+        >>> metadata = {'title': 'Financial Analysis', 'author': 'John Doe'}
+        >>> combined = _chunked_summary_with_openai(
+        ...     text=long_document_text,
+        ...     system_prompt="You are a content summarizer.",
+        ...     chunked_system_prompt="Summarize this part: {chunk}",
+        ...     user_prompt="Summarize the document titled {title}",
+        ...     metadata=metadata
+        ... )
+        
+    Notes:
+        Process Flow:
+        1. Splits input text into overlapping chunks using _chunk_text()
+        2. Processes each chunk with contextual awareness (first/last chunk handling)
+        3. Combines individual summaries with clear chunk demarcation
+        4. Returns the combined result for final consolidation
     """
 
     chunks = _chunk_text(text, max_chunk_chars, overlap)
@@ -239,29 +259,12 @@ def _chunked_summary_with_openai(text, system_prompt, chunked_system_prompt, use
     return combined_summary
 
 def generate_summary_with_openai(text_to_summarize, system_prompt, chunked_system_prompt, user_prompt, metadata=None, max_chunk_chars=2000, overlap=500, dry_run=False):
-    """
-    Main entry point for intelligent content summarization with OpenAI API.
+    """Main entry point for intelligent content summarization with OpenAI API.
     
     This top-level function provides a unified interface for content summarization,
     automatically selecting the appropriate processing strategy based on content length
     and complexity. It handles both direct summarization for shorter content and
-    multi-stage chunked processing for longer documents, ensuring optimal results
-    regardless of input size.
-    
-    Key Features:
-    - Automatic processing strategy selection based on content length
-    - Complete error handling and validation
-    - Support for dry-run mode for testing without API calls
-    - Detailed logging throughout the summarization process
-    - Preservation of document context and metadata in summaries
-    - Final consolidation of chunk summaries for long documents
-    
-    Processing Workflow:
-    1. Initial validation (API key, content length)
-    2. Processing strategy selection (direct vs. chunked)
-    3. For long content: chunk processing followed by final consolidation
-    4. For shorter content: direct single-pass processing
-    5. Return formatted summary with proper markdown structure
+    multi-stage chunked processing for longer documents.
     
     Args:
         text_to_summarize (str): The complete text content to summarize
@@ -269,23 +272,47 @@ def generate_summary_with_openai(text_to_summarize, system_prompt, chunked_syste
         chunked_system_prompt (str): Template for chunk-specific instructions
         user_prompt (str): User prompt template with variable placeholders
         metadata (dict, optional): Dictionary of metadata values for templates.
-                                 May include document title, course info, etc. Defaults to None.
+            May include document title, course info, etc. Defaults to None.
         max_chunk_chars (int, optional): Maximum characters per chunk for API processing.
-                                        Affects chunking strategy. Defaults to 2000.
+            Affects chunking strategy. Defaults to 2000.
         overlap (int, optional): Character overlap between chunks for context continuity.
-                               Affects chunking strategy. Defaults to 500.
+            Affects chunking strategy. Defaults to 500.
         dry_run (bool, optional): If True, simulates processing without making API calls.
-                                Useful for testing and debugging. Defaults to False.
+            Useful for testing and debugging. Defaults to False.
     
     Returns:
         str: AI-generated comprehensive summary with proper markdown structure,
-             or None if processing cannot be completed due to validation failures,
-             or a placeholder message if in dry_run mode
+            or None if processing cannot be completed due to validation failures,
+            or a placeholder message if in dry_run mode
+            
+    Raises:
+        None: All exceptions are caught and logged internally
     
-    Integration Notes:
-    - Requires properly configured OpenAI API key in environment variables
-    - Designed to be called by PDF and video processing pipelines
-    - Works with the prompt_utils module for template management
+    Example:
+        >>> metadata = {
+        ...     'file_name': 'Lecture 5 - Financial Analysis',
+        ...     'course_name': 'Corporate Finance 101'
+        ... }
+        >>> system_prompt = "You are an educational content summarizer."
+        >>> chunked_prompt = "Analyze this section: {chunk}"
+        >>> user_prompt = "Create a summary for {file_name} from {course_name}"
+        >>> summary = generate_summary_with_openai(
+        ...     lecture_text,
+        ...     system_prompt,
+        ...     chunked_prompt,
+        ...     user_prompt,
+        ...     metadata=metadata
+        ... )
+            
+    Notes:
+        Processing Workflow:
+        1. Initial validation (API key, content length)
+        2. Processing strategy selection (direct vs. chunked)
+        3. For long content: chunk processing followed by final consolidation
+        4. For shorter content: direct single-pass processing
+        5. Return formatted summary with proper markdown structure
+        
+        Requires properly configured OpenAI API key in environment variables
     """
     if not OPENAI_API_KEY:
         logger.warning("OpenAI API key not set. Cannot generate summary.")

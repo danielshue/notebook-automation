@@ -6,13 +6,13 @@ This script creates Obsidian template files with the nested tag structure
 for different types of notes.
 
 The script generates several template types:
-- MBA Lecture Note
-- MBA Case Study
-- MBA Assignment
-- MBA Group Project
-- MBA Course Dashboard
-- MBA Finance Note
-- MBA Literature Review
+- Lecture Note
+- Case Study
+- Assignment
+- Group Project
+- Course Dashboard
+- Finance Note
+- Literature Review
 
 Usage:
     python generate_obsidian_templates.py [--template-path PATH] [--force] [--verbose]
@@ -34,20 +34,30 @@ import yaml
 import argparse
 from pathlib import Path
 
-def create_template(template_path, template_name, tags, template_content, force=False, verbose=False):
-    """
-    Create an Obsidian template with the specified tags.
+def create_template(template_path: str, template_name: str, tags: list, 
+                template_content: str, force: bool = False, verbose: bool = False) -> bool:
+    """Create an Obsidian template with the specified tags.
+    
+    Generates a markdown template file with YAML frontmatter containing the specified
+    tags and template content. Creates the template directory if it doesn't exist
+    and handles file existence checks based on the force parameter.
     
     Args:
         template_path (str): Path to the template folder
         template_name (str): Name of the template file (without extension)
-        tags (list): List of tags to include
+        tags (list): List of tags to include in the frontmatter
         template_content (str): Content to include after the frontmatter
-        force (bool): Whether to overwrite existing templates
-        verbose (bool): Whether to print detailed information
+        force (bool): Whether to overwrite existing templates. Defaults to False.
+        verbose (bool): Whether to print detailed information. Defaults to False.
         
     Returns:
-        bool: True if successful, False otherwise
+        bool: True if template was created successfully, False otherwise
+        
+    Example:
+        >>> create_template("/templates", "lecture-note", ["type/lecture", "course/finance"], 
+        ...                "# Lecture Notes\\n\\n## Summary", force=True)
+        Created template: /templates/lecture-note.md
+        True
     """
     os.makedirs(template_path, exist_ok=True)
     
@@ -83,17 +93,32 @@ def create_template(template_path, template_name, tags, template_content, force=
         print(f"Error creating template {template_name}: {e}")
         return False
 
-def generate_all_templates(template_folder, force=False, verbose=False):
-    """
-    Generate all templates for the MBA vault.
+def generate_all_templates(template_folder: str, force: bool = False, verbose: bool = False) -> int:
+    """Generate all templates for the MBA vault.
+    
+    Creates a set of predefined templates with appropriate tags and content structure
+    for various MBA note types including lecture notes, case studies, assignments,
+    and more. Each template includes YAML frontmatter and markdown content structure.
     
     Args:
-        template_folder (str): Path to the template folder
-        force (bool): Whether to overwrite existing templates
-        verbose (bool): Whether to print detailed information
+        template_folder (str): Path to the template folder where files will be created
+        force (bool): Whether to overwrite existing templates. Defaults to False.
+        verbose (bool): Whether to print detailed information during generation. 
+            Defaults to False.
         
     Returns:
-        int: Number of templates created
+        int: Number of templates successfully created
+        
+    Example:
+        >>> count = generate_all_templates("/path/to/templates", force=True, verbose=True)
+        Generating templates in: /path/to/templates
+        Force overwrite: enabled
+        Created template: /path/to/templates/Lecture Note.md
+        Created template: /path/to/templates/Case Study.md
+        Generation complete.
+        2 templates were created.
+        >>> print(count)
+        2
     """
     created = 0
     if verbose:
@@ -315,8 +340,23 @@ Source:
     
     return created
 
-def main():
-    """Main entry point for the script."""
+def main() -> None:
+    """Main entry point for the template generation CLI tool.
+    
+    Parses command line arguments, determines the template destination directory
+    based on the current operating system or user specification, and invokes
+    the template generation functions. Provides summary output of the results.
+    
+    Args:
+        None
+        
+    Returns:
+        None: This function doesn't return a value
+        
+    Example:
+        When called from the command line:
+        $ notebook-generate-templates --force --verbose
+    """
     parser = argparse.ArgumentParser(description="Generate Obsidian templates with nested tags.")
     parser.add_argument(
         "--template-path",

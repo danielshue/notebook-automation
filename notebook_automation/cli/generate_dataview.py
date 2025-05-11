@@ -112,12 +112,25 @@ GROUP BY "Summary"
 def generate_query_document(output_path: Path, dry_run: bool = False) -> bool:
     """Generate a markdown document with example Dataview queries.
     
+    Creates a comprehensive reference document containing example Dataview queries
+    organized by category. The document includes proper YAML frontmatter, descriptions
+    for each query, and usage tips. This serves as a reference guide for users to
+    leverage the nested tag structure in their own Obsidian vault.
+    
     Args:
-        output_path: Path to save the output document
-        dry_run: If True, show what would be written without making changes
+        output_path (Path): Path where the output document should be saved
+        dry_run (bool, optional): If True, show what would be written without
+            actually making changes to the filesystem. Defaults to False.
         
     Returns:
-        bool: True if successful, False otherwise
+        bool: True if document was successfully generated or simulated in dry run,
+            False if any errors were encountered
+            
+    Example:
+        >>> generate_query_document(Path("Reference/Dataview Queries.md"))
+        Creating document: Reference/Dataview Queries.md
+        Successfully created Dataview query reference document!
+        True
     """
     try:
         # Prepare document content

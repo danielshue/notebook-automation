@@ -81,7 +81,6 @@ def process_video_file(video_path):
         
         # Re-raise or return error indication based on needs
         return None
-```
 """
 
 import os
@@ -89,36 +88,45 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union, Any
 from .config import ErrorCategories
 from ..utils.config import logger
 
 failed_logger = logging.getLogger("failed_files")
 
-def categorize_error(error, status_code=None):
-    """
-    Intelligently categorize an error based on its type, message pattern, or HTTP status code.
+def categorize_error(error: Union[Exception, str], status_code: Optional[int] = None) -> str:
+    """Intelligently categorize an error based on its type, message pattern, or HTTP status code.
     
     This function analyzes errors through multiple approaches to determine the most
     appropriate error category from ErrorCategories. It performs semantic analysis
     of error messages, interprets HTTP status codes, and recognizes common error patterns
     to provide consistent categorization across the entire automation system.
     
-    Categorization Strategy:
-    1. First checks for network connectivity issues (timeouts, connection errors)
-    2. Then examines authentication-related problems (tokens, credentials)
-    3. Looks for permission and access issues
-    4. Interprets HTTP status codes when available
-    5. Detects rate limiting and throttling indicators
-    6. Falls back to UNKNOWN category if no patterns match
-    
-    This categorization enables:
-    - Intelligent retry strategies based on error type
-    - Accurate error reporting and aggregation
-    - Automated handling of specific error types
-    - Better diagnostics and troubleshooting
-    
     Args:
-        error (Exception or str): The error object or error message to analyze.
+        error (Union[Exception, str]): The error object or error message to analyze
+        status_code (Optional[int], optional): HTTP status code if applicable. 
+            Defaults to None.
+    
+    Returns:
+        str: The error category string from ErrorCategories constants
+        
+    Example:
+        >>> try:
+        ...     response = requests.get("https://api.example.com")
+        ...     response.raise_for_status()
+        ... except Exception as e:
+        ...     category = categorize_error(e, response.status_code)
+        ...     print(f"Error category: {category}")
+        Error category: NETWORK_ERROR
+        
+    Notes:
+        Categorization Strategy:
+        1. First checks for network connectivity issues (timeouts, connection errors)
+        2. Then examines authentication-related problems (tokens, credentials)
+        3. Looks for permission and access issues
+        4. Interprets HTTP status codes when available
+        5. Detects rate limiting and throttling indicators
+        6. Falls back to UNKNOWN category if no patterns match
                                  Can be any exception type or string representation.
         status_code (int, optional): HTTP status code if the error occurred
                                     during an API call. Provides more precise
@@ -183,52 +191,46 @@ def categorize_error(error, status_code=None):
     # This ensures every error gets categorized, even if we can't determine specifics
     return ErrorCategories.UNKNOWN
 
-def update_failed_files(file_info, error, category=ErrorCategories.UNKNOWN):
-    """
-    Update the centralized failed files tracking system with a new failure record.
+def update_failed_files(file_info: Dict[str, Any], error: Union[Exception, str], category: str = ErrorCategories.UNKNOWN) -> None:
+    """Update the centralized failed files tracking system with a new failure record.
     
     This function maintains a comprehensive JSON-based record of all processing failures
     in the system. It handles record creation, duplicate detection, error categorization,
     and persistent storage. The tracking system enables post-processing analysis, 
     retry operations, and systematic error resolution across the automation pipeline.
     
-    Key Features:
-    1. Persistent JSON-based failure tracking
-    2. Automatic deduplication of repeat failures
-    3. Structured error information with timestamps
-    4. Integration with the logging system
-    5. Support for later retry operations
-    
     Args:
-        file_info (dict): Information about the failed file with these keys:
-                         - 'file': Filename or identifier (required)
-                         - 'path': Full path to the file (optional)
-                         - Other metadata fields as needed (optional)
-        
-        error (str or Exception): The error message or exception object describing
-                                 the failure. Will be converted to string if needed.
-        
+        file_info (Dict[str, Any]): Information about the failed file with these keys:
+            - 'file': Filename or identifier (required)
+            - 'path': Full path to the file (optional)
+            - Other metadata fields as needed (optional)
+        error (Union[Exception, str]): The error message or exception object describing
+            the failure. Will be converted to string if needed.
         category (str, optional): Error category from ErrorCategories constants.
-                                 Defaults to ErrorCategories.UNKNOWN if not specified.
-                                 Used for aggregating similar errors.
+            Defaults to ErrorCategories.UNKNOWN. Used for aggregating similar errors.
     
-    Side Effects:
+    Returns:
+        None
+        
+    Raises:
+        None: Any internal exceptions are caught and logged but not propagated
+    
+    Example:
+        >>> try:
+        ...     process_video_file('/path/to/video.mp4')
+        ... except Exception as e:
+        ...     category = categorize_error(e)
+        ...     update_failed_files(
+        ...         {'file': 'video.mp4', 'path': '/path/to/video.mp4'},
+        ...         e,
+        ...         category
+        ...     )
+        
+    Notes:
+        Side Effects:
         - Updates the central failed_files.json in the project root
         - Logs the failure to the dedicated failed_logger
         - Creates the tracking file if it doesn't exist
-    
-    Example:
-        ```python
-        try:
-            process_video_file('/path/to/video.mp4')
-        except Exception as e:
-            category = categorize_error(e)
-            update_failed_files(
-                {'file': 'video.mp4', 'path': '/path/to/video.mp4'},
-                e,
-                category
-            )
-        ```
     """
     # Derive the path to the failed files tracking JSON
     # This is stored at the project root level for centralized tracking
@@ -291,25 +293,39 @@ def update_failed_files(file_info, error, category=ErrorCategories.UNKNOWN):
         # Log but don't raise to prevent cascading failures
         logger.error(f"Error writing failed files: {e}")
 
-def update_results_file(results_file, new_result):
-    """
-    Update the structured results tracking system with new processing outcomes.
+def update_results_file(results_file: str, new_result: Dict[str, Any]) -> None:
+    """Update the structured results tracking system with new processing outcomes.
     
     This function manages a comprehensive JSON-based tracking system for all processing
     results in the automation pipeline. It maintains both successful and failed operations,
     handles result deduplication, manages error lists, and ensures consistent timestamp
     tracking. The system provides a complete audit trail of all processing operations.
     
-    Key Features:
-    1. Consolidated success/failure tracking
-    2. Automatic file creation if not present
-    3. Update of existing entries rather than duplication
-    4. Separate error collection for analysis
-    5. Run timestamp recording for audit trails
+    Args:
+        results_file (str): Path to the JSON results file to update.
+            Will be created if it doesn't exist.
+        new_result (Dict[str, Any]): A dictionary containing the new processing result.
+            Must contain at least a 'file' key to identify the processed item. 
+            Should include a 'success' boolean to indicate processing status.
     
-    Data Structure:
+    Returns:
+        None
+        
+    Raises:
+        None: Any internal exceptions are caught and logged but not propagated
+        
+    Example:
+        >>> update_results_file('video_processing_results.json', {
+        ...     'file': 'lecture1.mp4',
+        ...     'path': '/videos/lecture1.mp4',
+        ...     'success': True,
+        ...     'processing_time': 45.2,
+        ...     'timestamp': datetime.now().isoformat()
+        ... })
+    
+    Notes:
+        Data Structure:
         The results file maintains this structure:
-        ```
         {
             "processed_videos": [
                 {
@@ -333,16 +349,6 @@ def update_results_file(results_file, new_result):
             "timestamp": "2023-09-01T14:30:25.123456",
             "last_run": "2023-09-01T14:30:25.123456"
         }
-        ```
-    
-    Args:
-        results_file (str): Path to the JSON results file to update.
-                           Will be created if it doesn't exist.
-                           
-        new_result (dict): A dictionary containing the new processing result.
-                          Must contain at least a 'file' key to identify the
-                          processed item. Should include a 'success' boolean
-                          to indicate processing status.
     
     Side Effects:
         - Creates or updates the specified results_file
@@ -359,7 +365,6 @@ def update_results_file(results_file, new_result):
             'output_file': 'notes_lecture3.md'
         }
         update_results_file('video_processing_results.json', result)
-        ```
     """
     # Ensure the results file exists with a valid initial structure
     # This provides a clean starting point for first-time runs

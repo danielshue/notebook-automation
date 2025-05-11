@@ -1,4 +1,3 @@
-
 """
 CLI for adding nested tags to notebook files.
 Generalized for any program or course structure.
@@ -43,14 +42,30 @@ except ImportError:
 
 
 class MarkdownFrontmatterProcessor:
-    """Process markdown files to extract and update YAML frontmatter tags."""
+    """Process markdown files to extract and update YAML frontmatter tags.
+    
+    This class handles the extraction, transformation, and updating of YAML frontmatter
+    in markdown files, specifically focused on tag management. It can convert
+    frontmatter fields to nested tags and properly handle existing tag structures.
+    
+    Attributes:
+        dry_run (bool): If True, changes are not written to files
+        verbose (bool): If True, displays detailed processing information
+        stats (Dict[str, int]): Tracks statistics about processed files
+        tag_fields (list): List of frontmatter fields to process for tags
+        logger: Logger instance for reporting processing details
+    """
 
-    def __init__(self, dry_run: bool = False, verbose: bool = False):
-        """
-        Initialize the markdown frontmatter processor.
+    def __init__(self, dry_run: bool = False, verbose: bool = False) -> None:
+        """Initialize the markdown frontmatter processor.
+        
         Args:
-            dry_run (bool): If True, no files will be modified.
-            verbose (bool): If True, additional information will be logged.
+            dry_run (bool): If True, changes are not written to files
+            verbose (bool): If True, displays detailed processing information
+            
+        Example:
+            >>> processor = MarkdownFrontmatterProcessor(dry_run=True, verbose=True)
+            >>> processor.process_file(Path("path/to/note.md"))
         """
         self.dry_run = dry_run
         self.verbose = verbose
@@ -67,14 +82,25 @@ class MarkdownFrontmatterProcessor:
             'course', 'lecture', 'topic', 'subjects', 'professor', 'university',
             'program', 'assignment', 'type', 'author'
         ]
-
+        
     def process_directory(self, directory: Path) -> Dict[str, int]:
-        """
-        Recursively process markdown files in a directory.
+        """Recursively process markdown files in a directory.
+        
+        Walks through the specified directory and all its subdirectories, 
+        finding markdown files (.md) and processing each one to update tags
+        based on YAML frontmatter fields.
+        
         Args:
-            directory (Path): The directory to process.
+            directory (Path): The directory to process recursively
+            
         Returns:
-            Dict[str, int]: Statistics about the processing.
+            Dict[str, int]: Statistics about the processing including counts of 
+                files processed, modified, tags added, and errors encountered
+                
+        Example:
+            >>> processor = MarkdownFrontmatterProcessor()
+            >>> stats = processor.process_directory(Path("/path/to/notes"))
+            >>> print(f"Modified {stats['files_modified']} out of {stats['files_processed']} files")
         """
         for item in directory.glob('**/*.md'):
             if item.is_file():
@@ -84,12 +110,23 @@ class MarkdownFrontmatterProcessor:
                     logger.error(f"Error processing {item}: {str(e)}")
                     self.stats['files_with_errors'] += 1
         return self.stats
-
+        
     def process_file(self, file_path: Path) -> None:
-        """
-        Process a single markdown file.
+        """Process a single markdown file to update its tags based on frontmatter.
+        
+        Extracts YAML frontmatter from the markdown file, identifies fields
+        that should be converted to tags, and updates the file with new nested tags.
+        For index files (with 'index-type' in frontmatter), tags are removed.
+        
         Args:
-            file_path (Path): Path to the markdown file.
+            file_path (Path): Path to the markdown file to process
+            
+        Raises:
+            Exception: If there are errors reading the file, parsing YAML, or updating the file
+            
+        Example:
+            >>> processor = MarkdownFrontmatterProcessor()
+            >>> processor.process_file(Path("notes/example.md"))
         """
         from notebook_automation.cli.utils import OKGREEN, OKCYAN, WARNING, FAIL, ENDC
         self.stats['files_processed'] += 1
@@ -167,14 +204,29 @@ class MarkdownFrontmatterProcessor:
 
     def update_file_frontmatter(self, file_path: Path, content: str,
                                frontmatter: Dict[str, Any], start: int, end: int) -> None:
-        """
-        Update the YAML frontmatter in a file.
+        """Update the YAML frontmatter in a file.
+        
+        Replaces the existing YAML frontmatter in a file with updated content,
+        preserving all other content in the file.
+        
         Args:
-            file_path (Path): Path to the file to update.
-            content (str): Current file content.
-            frontmatter (Dict[str, Any]): Updated frontmatter.
-            start (int): Start index of YAML content in the file.
-            end (int): End index of YAML content in the file.
+            file_path (Path): Path to the file to update
+            content (str): Current file content
+            frontmatter (Dict[str, Any]): Updated frontmatter
+            start (int): Start index of YAML content in the file
+            end (int): End index of YAML content in the file
+            
+        Raises:
+            Exception: If there are errors writing to the file
+            
+        Example:
+            >>> with open("note.md", "r") as f:
+            ...     content = f.read()
+            >>> match = re.search(r'^---\\s*\\n(.*?)\\n---\\s*\\n', content, re.DOTALL)
+            >>> frontmatter = {"tags": ["new", "tags"]}
+            >>> processor = MarkdownFrontmatterProcessor()
+            >>> processor.update_file_frontmatter(Path("note.md"), content, frontmatter, 
+            ...                                  match.start(1), match.end(1))
         """
         try:
             if USE_RUAMEL:
@@ -193,14 +245,23 @@ class MarkdownFrontmatterProcessor:
 
 
 def add_nested_tags(directory: Path, dry_run: bool = False, verbose: bool = False) -> Dict[str, int]:
-    """
-    Add nested tags to markdown files in a directory.
+    """Add nested tags to markdown files in a directory.
+    
+    Recursively processes all markdown files in the given directory to extract
+    frontmatter fields and convert them to nested tags.
+    
     Args:
-        directory (Path): The directory to process.
-        dry_run (bool): If True, no files will be modified.
-        verbose (bool): If True, additional information will be logged.
+        directory (Path): The directory to process recursively
+        dry_run (bool, optional): If True, no files will be modified. Defaults to False.
+        verbose (bool, optional): If True, additional information will be logged. Defaults to False.
+        
     Returns:
-        Dict[str, int]: Statistics about the processing.
+        Dict[str, int]: Statistics about the processing including counts of files 
+            processed, modified, tags added, and errors encountered
+            
+    Example:
+        >>> stats = add_nested_tags(Path("/path/to/notes"), dry_run=True, verbose=True)
+        >>> print(f"Found {stats['files_processed']} files and would add tags to {stats['files_modified']} files")
     """
     processor = MarkdownFrontmatterProcessor(dry_run=dry_run, verbose=verbose)
     if dry_run:
@@ -212,9 +273,14 @@ def add_nested_tags(directory: Path, dry_run: bool = False, verbose: bool = Fals
 
 
 def main() -> None:
-    """
-    Main entry point for the script.
-    Parses command line arguments and calls the add_nested_tags function.
+    """Process command line arguments and run the tag processor.
+    
+    Parses command line arguments, sets up logging, validates the input directory,
+    and runs the nested tag processor on the specified directory.
+    
+    Example:
+        >>> # Run from command line:
+        >>> # python -m notebook_automation.cli.add_nested_tags --verbose /path/to/notes
     """
     parser = argparse.ArgumentParser(
         description='Process markdown files to add nested tags based on YAML frontmatter.'

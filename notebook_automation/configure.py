@@ -81,9 +81,8 @@ DEFAULT_CONFIG = {
     "video_extensions": [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv", ".mpg", ".mpeg", ".m4v"]
 }
 
-def create_default_config():
-    """
-    Create a default configuration file if none exists.
+def create_default_config() -> bool:
+    """Create a default configuration file if none exists.
     
     This function generates a new configuration file with sensible defaults at the
     standard location. It checks if a configuration file already exists to prevent
@@ -93,12 +92,19 @@ def create_default_config():
     
     Returns:
         bool: True if a new configuration file was created, False if the file already 
-              exists or if there was an error during creation.
+            exists or if there was an error during creation.
               
     Side Effects:
         - Creates a new config.json file at the repository root if one doesn't exist
         - Prints status messages about the configuration creation process
-    """    # Check if the configuration file already exists to prevent overwriting
+        
+    Example:
+        >>> if create_default_config():
+        ...     print("New configuration created. Please update with your settings.")
+        ... else:
+        ...     print("Using existing configuration.")
+    """
+    # Check if the configuration file already exists to prevent overwriting
     if not os.path.exists(CONFIG_FILE_PATH):
         try:
             # Create the config directory if it doesn't exist

@@ -26,8 +26,21 @@ from ..tools.auth.microsoft_auth import authenticate_graph_api
 def list_drives(headers: Dict[str, str]) -> None:
     """List available OneDrive drives.
     
+    Queries the Microsoft Graph API to retrieve all available drives
+    for the authenticated user and displays them with their types and IDs.
+    
     Args:
-        headers: Request headers with auth token
+        headers (Dict[str, str]): Request headers containing the authentication token
+        
+    Returns:
+        None: This function prints results to stdout but doesn't return a value
+        
+    Example:
+        >>> list_drives({"Authorization": "Bearer token123"})
+        Found 2 drives:
+        Drive: OneDrive
+          Type: personal
+          ID: drive123456
     """
     resp = requests.get("https://graph.microsoft.com/v1.0/me/drives", 
                        headers=headers, timeout=15)
@@ -46,8 +59,21 @@ def list_drives(headers: Dict[str, str]) -> None:
 def get_root_items(headers: Dict[str, str]) -> None:
     """List items in the OneDrive root.
     
+    Queries Microsoft Graph API to retrieve all files and folders in the
+    root directory of the user's OneDrive and displays them with their
+    type (folder/file) and creation date.
+    
     Args:
-        headers: Request headers with auth token
+        headers (Dict[str, str]): Request headers containing the authentication token
+        
+    Returns:
+        None: This function prints results to stdout but doesn't return a value
+        
+    Example:
+        >>> get_root_items({"Authorization": "Bearer token123"})
+        Files and folders in OneDrive root:
+        📁 Documents (folder)
+        📄 Resume.pdf (file, created: 2023-05-10)
     """
     resp = requests.get("https://graph.microsoft.com/v1.0/me/drive/root/children", 
                        headers=headers, timeout=15)
@@ -66,9 +92,23 @@ def get_root_items(headers: Dict[str, str]) -> None:
 def direct_file_access(file_id: str, headers: Dict[str, str]) -> None:
     """Access a file directly by its ID.
     
+    Retrieves and displays detailed metadata for a specific OneDrive file
+    using its unique identifier. This is useful when you already know the
+    file ID and need to examine its properties.
+    
     Args:
-        file_id: OneDrive file ID
-        headers: Request headers with auth token
+        file_id (str): OneDrive file ID to look up
+        headers (Dict[str, str]): Request headers containing the authentication token
+        
+    Returns:
+        None: This function prints results to stdout but doesn't return a value
+        
+    Example:
+        >>> direct_file_access("ABC123fileID", {"Authorization": "Bearer token123"})
+        File details:
+          Name: Important Document.docx
+          Size: 245KB
+          Created: 2023-05-11
     """
     url = f"https://graph.microsoft.com/v1.0/me/drive/items/{file_id}"
     resp = requests.get(url, headers=headers, timeout=15)
@@ -90,9 +130,25 @@ def direct_file_access(file_id: str, headers: Dict[str, str]) -> None:
 def search_for_file(filename: str, headers: Dict[str, str]) -> None:
     """Search for a file across all of OneDrive.
     
+    Performs a search across the entire OneDrive account for files matching 
+    the specified filename or pattern. Displays detailed results including
+    file paths, sizes, and IDs.
+    
     Args:
-        filename: Name of file to search for
-        headers: Request headers with auth token
+        filename (str): Name or partial name of file to search for
+        headers (Dict[str, str]): Request headers containing the authentication token
+        
+    Returns:
+        None: This function prints results to stdout but doesn't return a value
+        
+    Example:
+        >>> search_for_file("report", {"Authorization": "Bearer token123"})
+        Found 3 matching items:
+        
+        Name: quarterly_report.pdf
+        Path: /Documents/Finance
+        ID: 12345ABC
+        Size: 1.25 MB
     """
     search_url = "https://graph.microsoft.com/v1.0/me/drive/root/search(q=?)"
     resp = requests.get(search_url, 
@@ -154,14 +210,28 @@ def list_folder_contents(relative_path: str,
                         onedrive_base: str = '') -> List[Dict[str, Any]]:
     """List contents of a OneDrive folder.
     
+    Retrieves and displays the files and folders in a specified OneDrive directory.
+    The function supports various path formats and handles error conditions
+    gracefully, with multiple API approaches as fallbacks.
+    
     Args:
-        relative_path: Path relative to onedrive_base
-        headers: Request headers with auth token
-        search_filename: Optional filename to search for
-        onedrive_base: Base path in OneDrive
+        relative_path (str): Path relative to onedrive_base to list contents from
+        headers (Dict[str, str]): Request headers containing the authentication token
+        search_filename (Optional[str]): If provided, only show items matching this name pattern.
+            Defaults to None (show all items).
+        onedrive_base (str): Base path in OneDrive to prepend to the relative path.
+            Defaults to empty string (use root as base).
         
     Returns:
-        List of items in the folder
+        List[Dict[str, Any]]: List of item objects from the OneDrive API, each containing
+            metadata about a file or folder such as name, id, size, and web URL.
+            
+    Example:
+        >>> items = list_folder_contents("Documents/MBA", {"Authorization": "Bearer token123"})
+        Listing contents of folder: /Documents/MBA
+        Found 15 items:
+        📁 Finance (folder)
+        📄 Schedule.xlsx (2.1 MB)
     """
     # Clean up the path
     clean_path = relative_path.strip('/')

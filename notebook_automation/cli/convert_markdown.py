@@ -30,14 +30,28 @@ def process_file(
 ) -> Tuple[bool, Optional[str]]:
     """Process a single file for conversion to markdown.
     
+    Detects the file type based on extension and applies the appropriate conversion
+    method. Currently supports HTML and text files. Creates the output directory
+    if it doesn't exist and handles various error conditions.
+    
     Args:
-        src_file: Path to the source file
-        dest_file: Path where to save the converted file
-        dry_run: If True, don't write any files
-        verbose: If True, show detailed progress
+        src_file (str): Path to the source file to be converted
+        dest_file (str): Path where to save the converted markdown file
+        dry_run (bool): If True, don't write any files, just simulate. Defaults to False.
+        verbose (bool): If True, show detailed progress information. Defaults to False.
         
     Returns:
-        Tuple[bool, Optional[str]]: Success status and error message if any
+        Tuple[bool, Optional[str]]: A tuple containing:
+            - bool: Success status (True if conversion succeeded)
+            - Optional[str]: Error message if an error occurred, None otherwise
+            
+    Example:
+        >>> success, error = process_file("document.html", "document.md")
+        >>> if success:
+        ...     print("Conversion successful")
+        ... else:
+        ...     print(f"Conversion failed: {error}")
+        Conversion successful
     """
     try:
         if verbose:
@@ -86,14 +100,27 @@ def process_files(
 ) -> Tuple[int, int]:
     """Process multiple files or directories for conversion.
     
+    Handles a list of source paths which could be files, directories, or glob patterns.
+    For each path, identifies the appropriate files to convert and processes them
+    with the process_file function. Tracks and returns statistics about the conversion
+    process.
+    
     Args:
-        src_paths: List of source files or directories
-        dest_dir: Optional destination directory
-        dry_run: If True, don't write any files
-        verbose: If True, show detailed progress
+        src_paths (List[str]): List of source files, directories, or glob patterns
+        dest_dir (Optional[str]): Optional destination directory for converted files.
+            If None, converted files are placed alongside source files.
+        dry_run (bool): If True, don't write any files, just simulate. Defaults to False.
+        verbose (bool): If True, show detailed progress information. Defaults to False.
         
     Returns:
-        Tuple[int, int]: Count of (successful, failed) conversions
+        Tuple[int, int]: A tuple containing:
+            - int: Number of successful conversions
+            - int: Number of failed conversions
+            
+    Example:
+        >>> success, failed = process_files(["docs/*.html", "notes.txt"], "markdown_output")
+        >>> print(f"Converted {success} files successfully, {failed} files failed")
+        Converted 5 files successfully, 0 files failed
     """
     success_count = 0
     fail_count = 0
@@ -147,8 +174,23 @@ def process_files(
     return success_count, fail_count
 
 
-def main():
-    """Main entry point for the CLI tool."""
+def main() -> None:
+    """Main entry point for the markdown conversion CLI tool.
+    
+    Parses command line arguments, collects source files to process (either individual
+    files or all supported files in a directory), and performs the conversions.
+    Provides summary statistics about the conversion process.
+    
+    Args:
+        None
+        
+    Returns:
+        None: This function doesn't return a value
+        
+    Example:
+        When called from the command line:
+        $ vault-convert-markdown --src-dir ./documents --verbose
+    """
     parser = argparse.ArgumentParser(
         description="Convert HTML and text files to Markdown format",
         formatter_class=argparse.RawDescriptionHelpFormatter,

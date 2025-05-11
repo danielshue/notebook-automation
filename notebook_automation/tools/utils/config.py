@@ -1,12 +1,8 @@
-# Vault and OneDrive root paths (update as appropriate for your environment)
-from pathlib import Path
-VAULT_LOCAL_ROOT = Path.home() / "ObsidianVault"
-ONEDRIVE_LOCAL_RESOURCES_ROOT = Path.home() / "OneDrive" / "Education" / "MBA-Resources"
 #!/usr/bin/env python3
 """
-Configuration Module for MBA Notebook Automation System
+Configuration Module for Notebook Automation System
 
-This module provides a centralized configuration system for the MBA Notebook
+This module provides a centralized configuration system for the Notebook
 Automation platform. It handles environment detection, configuration loading,
 path normalization, logging setup, and error categorization for the entire system.
 
@@ -69,8 +65,10 @@ import os
 import logging
 import inspect
 import colorlog
-
+import json
+import os.path
 from pathlib import Path
+from typing import Dict, List, Optional, Tuple, Union, Any, Set
 from dotenv import load_dotenv
 from .paths import normalize_wsl_path
 
@@ -82,23 +80,34 @@ load_dotenv()
 
 # Error categories for standardized error classification across the system
 class ErrorCategories:
-    """
-    Standardized error categories for consistent error handling and reporting.
+    """Standardized error categories for consistent error handling and reporting.
     
     This class defines string constants for various error types encountered
-    throughout the MBA Notebook Automation system. Using these standardized
+    throughout the Notebook Automation system. Using these standardized
     categories enables consistent error handling, improved error reporting,
     and makes it possible to aggregate error statistics across different
     modules and components.
     
-    Usage:
-        from notebook_automation.tools.utils.config import ErrorCategories
-        
-        try:
-            # Operation that might fail
-        except ConnectionError as e:
-            error_type = ErrorCategories.NETWORK
-            logger.error(f"{error_type}: {str(e)}")
+    Attributes:
+        NETWORK (str): Network connectivity issues like DNS failures or timeouts.
+        AUTHENTICATION (str): Authentication failures with external services.
+        PERMISSION (str): Permission-denied errors for files or APIs.
+        TIMEOUT (str): Timeout errors when operations take too long.
+        RATE_LIMIT (str): Rate limiting or throttling errors from external APIs.
+        SERVER (str): Remote server errors (5xx HTTP codes).
+        INVALID_REQUEST (str): Client-side errors in request formation (4xx HTTP codes).
+        FILE_NOT_FOUND (str): File not found errors when accessing local or remote files.
+        DATA_ERROR (str): Data validation or parsing errors.
+        UNKNOWN (str): Unclassified errors that don't match other categories.
+    
+    Example:
+        >>> try:
+        ...     # Operation that might fail
+        ...     response = requests.get('https://api.example.com/data')
+        ...     response.raise_for_status()
+        ... except requests.exceptions.RequestException as e:
+        ...     error_type = ErrorCategories.NETWORK
+        ...     logger.error(f"{error_type}: {str(e)}")
     """
     NETWORK = "network_error"          # Network connectivity issues
     AUTHENTICATION = "authentication_error"  # Login/token problems
@@ -123,27 +132,25 @@ try:
     # This is the primary source of configuration for the system
     with open(config_file_path, 'r') as config_file:
         config_data = json.load(config_file)
-    
-    # Load and normalize paths from the configuration
+      # Load and normalize paths from the configuration
     # WSL path normalization ensures proper path handling in Windows Subsystem for Linux
     # Converting string paths to Path objects provides better path manipulation capabilities
-    ONEDRIVE_LOCAL_RESOURCES_ROOT = Path(normalize_wsl_path(config_data['paths']['resources_root']))
-    VAULT_LOCAL_ROOT = Path(normalize_wsl_path(config_data['paths']['vault_root']))
-    METADATA_FILE = Path(normalize_wsl_path(config_data['paths']['metadata_file']))
+    ONEDRIVE_LOCAL_RESOURCES_ROOT: Path = Path(normalize_wsl_path(config_data['paths']['resources_root']))
+    VAULT_LOCAL_ROOT: Path = Path(normalize_wsl_path(config_data['paths']['vault_root']))
+    METADATA_FILE: Path = Path(normalize_wsl_path(config_data['paths']['metadata_file']))
     
     # Other configuration settings
-    ONEDRIVE_BASE = config_data['onedrive']['base_path']    # Base path for OneDrive operations
-    VIDEO_EXTENSIONS = set(config_data['video_extensions']) # Set for O(1) extension lookups
+    ONEDRIVE_BASE: str = config_data['onedrive']['base_path']    # Base path for OneDrive operations
+    VIDEO_EXTENSIONS: Set[str] = set(config_data['video_extensions']) # Set for O(1) extension lookups
     
     # Microsoft Graph API configuration for OneDrive integration
     # These settings control authentication and API access
-    MICROSOFT_GRAPH_API_CLIENT_ID = config_data['microsoft_graph']['client_id']
-    GRAPH_API_ENDPOINT = config_data['microsoft_graph']['api_endpoint']
-    AUTHORITY = config_data['microsoft_graph']['authority']
-    SCOPES = config_data['microsoft_graph']['scopes'] # API permissions requested
-    
-    # Static configuration (not from JSON)
-    TOKEN_CACHE_FILE = "token_cache.bin"
+    MICROSOFT_GRAPH_API_CLIENT_ID: str = config_data['microsoft_graph']['client_id']
+    GRAPH_API_ENDPOINT: str = config_data['microsoft_graph']['api_endpoint']
+    AUTHORITY: str = config_data['microsoft_graph']['authority']
+    SCOPES: List[str] = config_data['microsoft_graph']['scopes'] # API permissions requested
+      # Static configuration (not from JSON)
+    TOKEN_CACHE_FILE: str = "token_cache.bin"
     
     logger.debug(f"Loaded configuration from {config_file_path}")
 except Exception as e:
@@ -157,20 +164,20 @@ except Exception as e:
 # Token cache location for Microsoft Graph API authentication
 # This is not moved to config.json as it's a derived path based on the module location
 # The token cache enables persistent authentication between sessions
-TOKEN_CACHE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "token_cache.bin")
+TOKEN_CACHE_FILE: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "token_cache.bin")
 
 # OpenAI API integration configuration
 # The API key is loaded from environment variables for security
 # This approach keeps sensitive credentials out of the code and config files
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
 
 # Additional OpenAI configuration could be added here in the future
 # For example: model selection, temperature settings, etc.
 
 # Setup logging
-def setup_logging(debug=False, log_file=None, failed_log_file="failed_files.log", console_output=True):
-    """
-    Configure comprehensive logging for the MBA Notebook Automation system.
+def setup_logging(debug: bool = False, log_file: Optional[str] = None, 
+               failed_log_file: str = "failed_files.log", console_output: bool = True) -> Tuple[logging.Logger, logging.Logger]:
+    """Configure comprehensive logging for the Notebook Automation system.
     
     This function sets up a sophisticated logging system with multiple output streams,
     color-coded console output, and separate tracking for failed operations. It provides

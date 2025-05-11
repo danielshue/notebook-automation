@@ -28,12 +28,24 @@ except ImportError:
     USE_RUAMEL = False
 
 def consolidate_tags(directory: Path, logger) -> Dict[str, int]:
-    """
-    Consolidate tags in markdown files in a directory.
+    """Consolidate tags in markdown files in a directory.
+    
+    Scans all markdown files in the specified directory and applies tag consolidation
+    rules, merging similar tags and standardizing the tag format in the YAML frontmatter.
+    Works with both ruamel.yaml (preferred) and PyYAML as fallback.
+    
     Args:
-        directory (Path): The directory to process.
+        directory (Path): The directory containing markdown files to process
+        logger: Logger instance for output and error reporting
+    
     Returns:
-        Dict[str, int]: Statistics about the processing.
+        Dict[str, int]: Statistics about the processing, including counts of
+            files processed, modified, and any errors encountered
+            
+    Example:
+        >>> stats = consolidate_tags(Path("./notes"), logger)
+        >>> print(f"Modified {stats['files_modified']} of {stats['files_processed']} files")
+        Modified 12 of 30 files
     """
     yaml_frontmatter_pattern = re.compile(r'^---\s*\n(.*?)\n---\s*\n', re.DOTALL)
     stats = {
@@ -94,9 +106,21 @@ def consolidate_tags(directory: Path, logger) -> Dict[str, int]:
 
 
 def main() -> None:
-    """
-    Main entry point for the script.
-    Parses command line arguments and calls the consolidate_tags function.
+    """Main entry point for the tag consolidation CLI tool.
+    
+    Parses command line arguments, sets up logging, and invokes the consolidate_tags
+    function with the specified directory. Outputs statistics about the processing
+    results to provide feedback to the user.
+    
+    Args:
+        None
+        
+    Returns:
+        None: This function doesn't return a value
+        
+    Example:
+        When called from the command line:
+        $ notebook-consolidate-tags ~/notes --verbose
     """
     parser = argparse.ArgumentParser(
         description='Consolidate tags in markdown files (remove duplicates, sort, etc).'
