@@ -12,7 +12,7 @@ Usage:
 import argparse
 import os
 from pathlib import Path
-from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_ROOT
+from notebook_automation.tools.utils.config import setup_logging, NOTEBOOK_VAULT_ROOT
 from notebook_automation.tools.utils.paths import normalize_wsl_path
 from notebook_automation.cli.ensure_metadata import MetadataUpdater
 
@@ -107,7 +107,7 @@ def main():
     args = parser.parse_args()
 
     logger, _ = setup_logging(debug=args.verbose)
-    notebook_vault_root = Path(normalize_wsl_path(args.vault)) if args.vault else Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
+    notebook_vault_root = Path(normalize_wsl_path(args.vault)) if args.vault else Path(normalize_wsl_path(NOTEBOOK_VAULT_ROOT))
     updater = MetadataUpdater(verbose=args.verbose)
 
     for class_folder in find_class_folders(notebook_vault_root):

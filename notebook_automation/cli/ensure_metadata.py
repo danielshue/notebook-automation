@@ -40,7 +40,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any
 
 # Import from tools package
-from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_ROOT
+from notebook_automation.tools.utils.config import setup_logging, NOTEBOOK_VAULT_ROOT
 from notebook_automation.tools.utils.paths import normalize_wsl_path
 
 # Set up logging
@@ -89,7 +89,7 @@ def normalize_path(path_str: str, allow_file: bool = False) -> Path:
     was_relative = False
     if not path.is_absolute():
         # If it's a relative path, prepend the Vault Root
-        notebook_vault_root = Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
+        notebook_vault_root = Path(normalize_wsl_path(NOTEBOOK_VAULT_ROOT))
         path = notebook_vault_root / path
         was_relative = True
     
@@ -108,11 +108,11 @@ def normalize_path(path_str: str, allow_file: bool = False) -> Path:
                     suggestion_msg += f"\n(and {len(potential_matches) - 5} more...)"
                 
                 raise ValueError(f"Path does not exist: {path}\n"
-                                f"The relative path '{path_str}' was not found inside the Vault Root '{VAULT_LOCAL_ROOT}'"
+                                f"The relative path '{path_str}' was not found inside the Vault Root '{NOTEBOOK_VAULT_ROOT}'"
                                 f"{suggestion_msg}")
             else:
                 raise ValueError(f"Path does not exist: {path}\n"
-                                f"The relative path '{path_str}' was not found inside the Vault Root '{VAULT_LOCAL_ROOT}'")
+                                f"The relative path '{path_str}' was not found inside the Vault Root '{NOTEBOOK_VAULT_ROOT}'")
         else:
             raise ValueError(f"Path does not exist: {path}")
     
@@ -140,7 +140,7 @@ def find_matching_directories(target_dir_name: str) -> list:
     Returns:
         list: A list of potential matching directory paths (relative to vault root).
     """
-    notebook_vault_root = Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
+    notebook_vault_root = Path(normalize_wsl_path(NOTEBOOK_VAULT_ROOT))
     matches = []
     
     # Split the target into parts for partial matching

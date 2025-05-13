@@ -76,7 +76,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from notebook_automation.tools.utils.config import setup_logging
 
 # Import from the tools package
-from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
+from notebook_automation.tools.utils.config import setup_logging, NOTEBOOK_VAULT_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
 from notebook_automation.tools.utils.file_operations import get_vault_path_for_pdf, find_all_pdfs, get_scan_root
 from notebook_automation.tools.auth.microsoft_auth import authenticate_graph_api
 from notebook_automation.tools.onedrive.file_operations import create_share_link
@@ -265,7 +265,7 @@ def _process_single_pdf(pdf_path, vault_dir, args=None, access_token=None, dry_r
                 'file': str(pdf_path)
             }
         logger.info(f"Created markdown note: {note_result.get('note_path')}")
-        logger.info("  │  └─ Note created at: " + str(note_result.get('note_path', note_path)).replace(str(VAULT_LOCAL_ROOT), "").lstrip('/\\'))
+        logger.info("  │  └─ Note created at: " + str(note_result.get('note_path', note_path)).replace(str(NOTEBOOK_VAULT_ROOT), "").lstrip('/\\'))
 
         # Step 7: Record the result
         result = {

@@ -37,7 +37,7 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 
-from ..utils.config import VAULT_LOCAL_ROOT
+from ..utils.config import NOTEBOOK_VAULT_ROOT
 from ..utils.config import logger
 
 def replace_template_variables(template, meta_info):
@@ -338,7 +338,7 @@ def build_yaml_frontmatter(friendly_filename, file_path, sharing_link=None, meta
         
     # Set specific fields
     try:
-        rel_path = file_path.relative_to(VAULT_LOCAL_ROOT) #RESOURCES_ROOT
+        rel_path = file_path.relative_to(NOTEBOOK_VAULT_ROOT) #RESOURCES_ROOT
         yaml_dict["vault-path"] = str(rel_path).replace("\\", "/")
     except (ValueError, AttributeError):
         yaml_dict["vault-path"] = str(file_path).replace("\\", "/")

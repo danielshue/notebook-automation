@@ -1,0 +1,48 @@
+# .github/workflows/build-exe.yml
+
+name: Build CLI EXEs
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Compile CLI scripts to EXE
+        run: |
+          pyinstaller --onefile notebook_automation/cli/add_nested_tags.py
+          pyinstaller --onefile notebook_automation/cli/clean_index_tags.py
+          pyinstaller --onefile notebook_automation/cli/consolidate_tags.py
+          pyinstaller --onefile notebook_automation/cli/generate_tag_doc.py
+          pyinstaller --onefile notebook_automation/cli/restructure_tags.py
+          pyinstaller --onefile notebook_automation/cli/generate_video_meta.py
+          pyinstaller --onefile notebook_automation/cli/ensure_metadata.py
+          pyinstaller --onefile notebook_automation/cli/create_class_dashboards.py
+
+      - name: Upload EXEs as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-executables
+          path: dist/*.exe

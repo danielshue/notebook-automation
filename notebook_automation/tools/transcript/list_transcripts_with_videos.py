@@ -22,7 +22,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Import from tools package
-from notebook_automation.tools.utils.config import setup_logging, ONEDRIVE_LOCAL_RESOURCES_ROOT, VAULT_LOCAL_ROOT
+from notebook_automation.tools.utils.config import setup_logging, ONEDRIVE_LOCAL_RESOURCES_ROOT, NOTEBOOK_VAULT_ROOT
 from notebook_automation.tools.utils.paths import normalize_path
 from notebook_automation.tools.transcript.processor import find_transcript_file
 from notebook_automation.tools.utils.file_operations import find_files_by_extension
@@ -237,7 +237,7 @@ def main():
     # Use the constants imported from tools.utils.config
     # Make sure we have Path objects
     try:
-        vault_path = Path(VAULT_LOCAL_ROOT)
+        vault_path = Path(NOTEBOOK_VAULT_ROOT)
         onedrive_path = Path(ONEDRIVE_LOCAL_RESOURCES_ROOT)
         
         logger.debug(f"Using vault path from config: {vault_path}")

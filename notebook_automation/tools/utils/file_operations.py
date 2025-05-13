@@ -71,7 +71,7 @@ from pathlib import Path
 from typing import List, Optional, Tuple, Union, Dict
 
 # Import configuration settings for path constants
-from notebook_automation.tools.utils.config import VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
+from notebook_automation.tools.utils.config import NOTEBOOK_VAULT_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
 from ..utils.config import logger
 
 def find_all_pdfs(root: Path) -> list[Path]:
@@ -150,7 +150,7 @@ def get_vault_path_for_pdf(onedrive_pdf_path: Path) -> Path:
         
         # Create the same path structure in the Vault
         # This maps the OneDrive structure into the Obsidian vault
-        vault_path = VAULT_LOCAL_ROOT / rel_path
+        vault_path = NOTEBOOK_VAULT_ROOT / rel_path
         
         # Return the directory where the note should be placed
         # We use parent() to get the directory, not the file itself

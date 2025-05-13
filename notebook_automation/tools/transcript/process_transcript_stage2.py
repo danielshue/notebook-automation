@@ -25,7 +25,7 @@ from pathlib import Path
 from datetime import datetime
 
 # Import from tools package
-from notebook_automation.tools.utils.config import setup_logging, ONEDRIVE_LOCAL_RESOURCES_ROOT, VAULT_LOCAL_ROOT
+from notebook_automation.tools.utils.config import setup_logging, ONEDRIVE_LOCAL_RESOURCES_ROOT, NOTEBOOK_VAULT_ROOT
 from notebook_automation.tools.utils.paths import normalize_path
 from notebook_automation.tools.onedrive.sharing import create_sharing_link
 
@@ -33,7 +33,7 @@ from notebook_automation.tools.onedrive.sharing import create_sharing_link
 logger, failed_logger = setup_logging()
 
 # Log the import paths
-logger.debug(f"VAULT_LOCAL_ROOT: {VAULT_LOCAL_ROOT}")
+logger.debug(f"NOTEBOOK_VAULT_ROOT: {NOTEBOOK_VAULT_ROOT}")
 logger.debug(f"ONEDRIVE_LOCAL_RESOURCES_ROOT: {ONEDRIVE_LOCAL_RESOURCES_ROOT}")
 
 def load_transcript_video_mapping(mapping_file="transcript_video_mapping.json"):
@@ -629,7 +629,7 @@ def main():
     
     # Get the vault and OneDrive paths from config
     try:
-        vault_path = Path(VAULT_LOCAL_ROOT)
+        vault_path = Path(NOTEBOOK_VAULT_ROOT)
         onedrive_path = Path(ONEDRIVE_LOCAL_RESOURCES_ROOT)
         
         logger.info(f"Using vault path from config: {vault_path}")
