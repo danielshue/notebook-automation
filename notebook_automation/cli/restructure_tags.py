@@ -134,15 +134,24 @@ def main() -> None:
         description='Restructure tags in markdown files (lowercase, dashes, etc).'
     )
     parser.add_argument(
-        'directory', nargs='?', default='.',
-        help='Directory to process (default: current directory)'
+        'directory', nargs='?', default=None,
+        help='Directory to process (default: notebook vault root)'
     )
     parser.add_argument(
         '--verbose', action='store_true',
         help='Show more detailed information about processing'
     )
+    parser.add_argument(
+        '-c', '--config', type=str, default=None, help='Path to config.json')
     args = parser.parse_args()
-    directory = Path(args.directory)
+    from notebook_automation.tools.utils import config as config_utils
+    config = config_utils.load_config_data(args.config)
+    if args.directory:
+        directory = Path(args.directory)
+    else:
+        from notebook_automation.tools.utils.paths import normalize_wsl_path
+        directory = Path(normalize_wsl_path(config['paths']['notebook_vault_root']))
+        print(f"No directory specified, using default vault: {directory}")
     stats = restructure_tags(directory, verbose=args.verbose)
     print(f"\n{OKGREEN}Tag restructuring complete!{ENDC}")
     print(f"  Files processed: {stats['files_processed']}")

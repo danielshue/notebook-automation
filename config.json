@@ -4,7 +4,8 @@
     "notebook_vault_root": "C:\\Users\\danshue.REDMOND\\MBA\\01_Projects\\MBA",
     "metadata_file": "D:\\repos\\mba-notebook-automation\\metadata.yaml",
     "obsidian_vault_root": "C:\\Users\\danshue.REDMOND\\MBA\\",
-    "onedrive_resources_basepath": "/Education/MBA-Resources"
+    "onedrive_resources_basepath": "/Education/MBA-Resources",
+    "logging_dir": "D:\\repos\\mba-notebook-automation\\logs"
   },
   "onedrive": {},
   "microsoft_graph": {

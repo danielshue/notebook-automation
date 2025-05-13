@@ -33,6 +33,7 @@ jobs:
       - name: Compile CLI scripts to EXE
         run: |
           pyinstaller --onefile notebook_automation/cli/add_nested_tags.py
+          pyinstaller --onefile notebook_automation/cli/add_example_tags.py
           pyinstaller --onefile notebook_automation/cli/clean_index_tags.py
           pyinstaller --onefile notebook_automation/cli/consolidate_tags.py
           pyinstaller --onefile notebook_automation/cli/generate_tag_doc.py
@@ -40,6 +41,16 @@ jobs:
           pyinstaller --onefile notebook_automation/cli/generate_video_meta.py
           pyinstaller --onefile notebook_automation/cli/ensure_metadata.py
           pyinstaller --onefile notebook_automation/cli/create_class_dashboards.py
+          pyinstaller --onefile notebook_automation/cli/generate_pdf_notes.py
+          pyinstaller --onefile notebook_automation/cli/generate_markdown.py
+          pyinstaller --onefile notebook_automation/cli/generate_templates.py
+          pyinstaller --onefile notebook_automation/cli/extract_pdf_pages.py
+          pyinstaller --onefile notebook_automation/cli/generate_dataview.py
+          pyinstaller --onefile notebook_automation/cli/list_folder_contents.py
+          pyinstaller --onefile notebook_automation/cli/onedrive_share.py
+          pyinstaller --onefile notebook_automation/cli/tag_manager.py
+          pyinstaller --onefile notebook_automation/cli/convert_markdown.py
+          pyinstaller --onefile notebook_automation/cli/configure_tool.py
 
       - name: Upload EXEs as workflow artifacts
         uses: actions/upload-artifact@v4

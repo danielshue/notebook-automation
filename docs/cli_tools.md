@@ -1,64 +1,52 @@
+
 # MBA Notebook Automation CLI Tools
 
-This document describes the available command-line tools in the MBA Notebook Automation package.
+This project provides a suite of command-line tools for automating and managing MBA course notes in Obsidian. Each tool is available as both a pip-installed command and a standalone executable (EXE) built via CI/CD.
 
-## CLI Tool Quick Reference
+## Available CLI Tools
 
-| Tool Name                  | Command                  | Primary Purpose                                                      |
-|----------------------------|--------------------------|----------------------------------------------------------------------|
-| Generate Markdown          | vault-generate-markdown  | Convert HTML/TXT files to Obsidian markdown                          |
-| Convert Markdown           | vault-convert-markdown   | Convert HTML/text files to markdown with more options                |
-| Generate Templates         | vault-generate-templates | Create Obsidian note templates with nested tags                      |
-| Generate Dataview Queries  | vault-generate-dataview  | Generate example Dataview queries for dashboards                     |
-| Ensure Metadata            | vault-ensure-metadata    | Ensure/update YAML frontmatter metadata in markdown files            |
-| Generate Index             | vault-generate-index     | Create hierarchical index files for vault navigation                 |
-| Extract PDF Pages          | vault-extract-pdf-pages  | Extract specific pages from PDF files                                |
-| List OneDrive Folders      | vault-list-folder        | List/search contents of OneDrive folders                             |
-| OneDrive Share/Resource    | vault-onedrive-share     | Create shareable links or list files in OneDrive/notebook resources  |
+| Command                        | Script Location                                         | Description                                 |
+|--------------------------------|--------------------------------------------------------|---------------------------------------------|
+| vault-add-nested-tags          | notebook_automation/cli/add_nested_tags.py              | Add nested tags to notes                    |
+| vault-add-example-tags         | notebook_automation/cli/add_example_tags.py             | Add example tags to notes                   |
+| vault-clean-index-tags         | notebook_automation/cli/clean_index_tags.py             | Clean up index tags                         |
+| vault-consolidate-tags         | notebook_automation/cli/consolidate_tags.py             | Consolidate tags across notes               |
+| vault-generate-tag-doc         | notebook_automation/cli/generate_tag_doc.py             | Generate tag documentation                  |
+| vault-restructure-tags         | notebook_automation/cli/restructure_tags.py             | Restructure tag hierarchies                 |
+| vault-generate-video-meta      | notebook_automation/cli/generate_video_meta.py          | Generate video metadata                     |
+| vault-ensure-metadata          | notebook_automation/cli/ensure_metadata.py              | Ensure consistent note metadata             |
+| vault-create-class-dashboards  | notebook_automation/cli/create_class_dashboards.py      | Create dashboards for classes               |
+| vault-generate-pdf-notes       | notebook_automation/cli/generate_pdf_notes.py           | Generate notes from PDFs                    |
+| vault-generate-markdown        | notebook_automation/cli/generate_markdown.py            | Generate markdown from source               |
+| vault-generate-templates       | notebook_automation/cli/generate_templates.py           | Generate note templates                     |
+| vault-extract-pdf-pages        | notebook_automation/cli/extract_pdf_pages.py            | Extract pages from PDFs                     |
+| vault-generate-dataview        | notebook_automation/cli/generate_dataview.py            | Generate dataview queries                   |
+| vault-list-folder              | notebook_automation/cli/list_folder_contents.py         | List contents of a folder                   |
+| vault-onedrive-share           | notebook_automation/cli/onedrive_share.py               | Share files via OneDrive                    |
+| vault-tag-manager              | notebook_automation/cli/tag_manager.py                  | Manage tags in notes                        |
+| vault-convert-markdown         | notebook_automation/cli/convert_markdown.py             | Convert markdown formats                    |
+| vault-configure                | notebook_automation/cli/configure.py                    | Configure vault settings                    |
+| vault-generate-index           | notebook_automation/cli/generate_vault_index.py         | Generate a vault index                      |
 
----
+## Usage
 
+After installing the package via pip, each tool can be run as a command:
 
-## Conversion Tools
-
-### vault-generate-markdown
-
-**Typical Use Cases:**
-- Quickly convert a batch of HTML or TXT files to markdown for import into Obsidian.
-- Prepare course materials, transcripts, or notes for vault organization.
-
-**Best Practices:**
-- Use `--dry-run` to preview changes before writing files.
-- Use `--src-dirs` to process multiple input folders at once.
-
-Convert HTML and TXT files to properly formatted markdown for Obsidian vault.
-
-```bash
-# Convert files in current directory to Obsidian vault
-vault-generate-markdown
-
-# Convert files from multiple sources
-vault-generate-markdown --src-dirs ./notes ./documents
-
-# Specify custom destination directory
-vault-generate-markdown --dest-dir /path/to/vault
-
-# Preview changes without modifying files
-vault-generate-markdown --dry-run --verbose
+```sh
+vault-add-nested-tags --help
+vault-generate-pdf-notes --input myfile.pdf --output notes.md
 ```
 
-### vault-convert-markdown
+Or use the standalone EXEs from the CI/CD build artifacts for direct execution on Windows.
 
-**Typical Use Cases:**
-- Convert legacy HTML or text notes to markdown for Obsidian.
-- Clean up formatting and ensure compatibility with markdown editors.
+## Adding New CLI Tools
+- Place new scripts in `notebook_automation/cli/`.
+- Ensure each script defines a `main()` function and an `if __name__ == "__main__": main()` block.
+- Add the tool to `setup.py` under `console_scripts` and to the build workflow for EXE generation.
 
-**Best Practices:**
-- Use `--verbose` to see detailed progress.
-- Use `--dest-dir` to control output location.
-
-Convert HTML and text files to properly formatted markdown.
-
+## See Also
+- [Development Guide](./development.md)
+- [Testing CLI Tools](./testing.md)
 ```bash
 # Convert a single file
 vault-convert-markdown file.html

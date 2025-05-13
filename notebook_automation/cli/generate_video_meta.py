@@ -144,6 +144,8 @@ def _parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="Skip creating OneDrive shared links (faster for testing)"
     )
+    parser.add_argument(
+        '-c', '--config', type=str, default=None, help='Path to config.json')
     return parser.parse_args()
 
 
@@ -166,7 +168,8 @@ def main() -> None:
     """
     global logger, failed_logger
     args = _parse_arguments()
-
+    from notebook_automation.tools.utils import config as config_utils
+    config = config_utils.load_config_data(args.config)
     # Set up logging based on CLI arguments
     logger, failed_logger = setup_logging(debug=args.debug)
     if args.debug:
@@ -188,7 +191,7 @@ def main() -> None:
     # Find video files to process (single file, folder, or retry failed)
     video_files = []
     # Determine resources root (for testability)
-    resources_root = Path(args.resources_root) if args.resources_root else ONEDRIVE_LOCAL_RESOURCES_ROOT
+    resources_root = Path(args.resources_root) if args.resources_root else Path(config['paths']['resources_root'])
     try:
         if args.retry_failed:
             logger.info("Retrying failed files from previous run...")

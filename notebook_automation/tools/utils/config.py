@@ -119,61 +119,64 @@ class ErrorCategories:
     FILE_ERROR = "file_error"          # File access/processing issues
     UNKNOWN = "unknown_error"          # Unclassified errors
 
-# Load settings from config.json file
-import json
-import os.path
 
-# Get the absolute path to the config file in the project root
-# This construction ensures the config is always found at the project root
-config_file_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'config.json'))
+# --- Centralized config file discovery and loading ---
+import sys
 
-try:
-    # Attempt to load and parse the JSON configuration file
-    # This is the primary source of configuration for the system
-    with open(config_file_path, 'r') as config_file:
-        config_data = json.load(config_file)
-      # Load and normalize paths from the configuration
-    # WSL path normalization ensures proper path handling in Windows Subsystem for Linux
-    # Converting string paths to Path objects provides better path manipulation capabilities
-    ONEDRIVE_LOCAL_RESOURCES_ROOT: Path = Path(normalize_wsl_path(config_data['paths']['resources_root']))
-    VAULT_LOCAL_ROOT: Path = Path(normalize_wsl_path(config_data['paths']['notebook_vault_root']))
-    METADATA_FILE: Path = Path(normalize_wsl_path(config_data['paths']['metadata_file']))
-    OBSIDIAN_VAULT_ROOT: Path = Path(normalize_wsl_path(config_data['paths']['obsidian_vault_root']))
-    
-    # Other configuration settings
-    ONEDRIVE_BASE: str = config_data['paths']['onedrive_resources_basepath']    # Base path for OneDrive operations
-    VIDEO_EXTENSIONS: Set[str] = set(config_data['video_extensions']) # Set for O(1) extension lookups
-    
-    # Microsoft Graph API configuration for OneDrive integration
-    # These settings control authentication and API access
-    MICROSOFT_GRAPH_API_CLIENT_ID: str = config_data['microsoft_graph']['client_id']
-    GRAPH_API_ENDPOINT: str = config_data['microsoft_graph']['api_endpoint']
-    AUTHORITY: str = config_data['microsoft_graph']['authority']
-    SCOPES: List[str] = config_data['microsoft_graph']['scopes'] # API permissions requested
-      # Static configuration (not from JSON)
-    TOKEN_CACHE_FILE: str = "token_cache.bin"
-    
-    logger.debug(f"Loaded configuration from {config_file_path}")
-except Exception as e:
-    # Robust error handling with fallback mechanism
-    # This ensures the system can still operate with defaults if the config is missing or invalid
-    logger.warning(f"Could not load config from {config_file_path}: {e}")
-    
-    # Fallback defaults could be defined here if needed
-    # These would provide minimum required functionality in absence of config.json
-    
+def find_config_path(filename: str = "config.json") -> str:
+    """Find config.json in the EXE/script directory, else prompt user for path.
+    Args:
+        filename (str): The config file name to look for.
+    Returns:
+        str: The absolute path to the config file.
+    """
+    # 1. Check EXE directory (if running as a PyInstaller EXE)
+    exe_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else None
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # 2. Check EXE dir, then script dir, then project root, then prompt
+    search_paths = []
+    if exe_dir:
+        search_paths.append(os.path.join(exe_dir, filename))
+    search_paths.append(os.path.join(script_dir, '..', '..', '..', filename))
+    search_paths.append(os.path.join(os.path.expanduser("~"), ".notebook_automation", filename))
+    for path in search_paths:
+        abs_path = os.path.abspath(path)
+        if os.path.isfile(abs_path):
+            return abs_path
+    # Prompt user interactively
+    print(f"Could not find {filename} in standard locations.")
+    while True:
+        user_path = input(f"Please enter the full path to your {filename}: ").strip('"')
+        if os.path.isfile(user_path):
+            return os.path.abspath(user_path)
+        print(f"File not found: {user_path}")
+
+def load_config_data(config_path: str = None) -> dict:
+    """Load config data from the given path, or auto-discover if not provided.
+    Args:
+        config_path (str): Path to config.json. If None, auto-discover.
+    Returns:
+        dict: Parsed config data.
+    Raises:
+        SystemExit: If config cannot be loaded.
+    """
+    if not config_path:
+        config_path = find_config_path()
+    try:
+        with open(config_path, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading config file: {e}")
+        sys.exit(1)
+
+# Example usage for CLI tools:
+#   config_data = load_config_data()
+
 # Token cache location for Microsoft Graph API authentication
-# This is not moved to config.json as it's a derived path based on the module location
-# The token cache enables persistent authentication between sessions
 TOKEN_CACHE_FILE: str = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "token_cache.bin")
 
 # OpenAI API integration configuration
-# The API key is loaded from environment variables for security
-# This approach keeps sensitive credentials out of the code and config files
 OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
-
-# Additional OpenAI configuration could be added here in the future
-# For example: model selection, temperature settings, etc.
 
 # Setup logging
 def setup_logging(debug: bool = False, log_file: Optional[str] = None, 
@@ -265,26 +268,32 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
         # Add console handler to root logger for all modules
         logging.getLogger('').addHandler(console_handler)
         # Create logs directory if it doesn't exist
-    logs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'logs')
+    # Try to get logging_dir from config.json if available
+    config_logging_dir = None
+    try:
+        config_data = load_config_data()
+        config_logging_dir = config_data.get('paths', {}).get('logging_dir')
+    except Exception:
+        pass
+
+    if config_logging_dir:
+        logs_dir = config_logging_dir
+    else:
+        logs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'logs')
+
     if not os.path.exists(logs_dir):
         try:
             os.makedirs(logs_dir)
             logging.info(f"Created logs directory: {logs_dir}")
         except Exception as e:
             logging.warning(f"Failed to create logs directory: {e}")
-    
+
     # Determine the appropriate log file name if not specified
-    # This intelligent naming derives the log file name from the calling module
-    # which provides better context than using a generic name for all logs
     if not log_file:
-        # Use introspection to get the filename of the calling module
         caller_filename = inspect.stack()[1].filename
-        # Extract just the base name without path or extension
         base_name = os.path.splitext(os.path.basename(caller_filename))[0]
-        # Use the module name as the log file name
         log_file = os.path.join(logs_dir, f"{base_name}.log")
     elif not os.path.isabs(log_file):
-        # If a relative path was provided, put it in the logs directory
         log_file = os.path.join(logs_dir, log_file)
     
     # Create a file handler for persistent logging to file
@@ -342,8 +351,6 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
           # Add a dedicated file handler for failed operations
     # This creates a separate log file specifically for tracking failures
     if not os.path.isabs(failed_log_file):
-        # If a relative path was provided, put it in the logs directory
-        logs_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), 'logs')
         failed_log_file = os.path.join(logs_dir, failed_log_file)
     
     failed_file_handler = logging.FileHandler(failed_log_file)

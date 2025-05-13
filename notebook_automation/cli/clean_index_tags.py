@@ -117,17 +117,26 @@ def main() -> None:
         description='Remove all tags from markdown files with index-type in YAML frontmatter.'
     )
     parser.add_argument(
-        'directory', nargs='?', default='.',
-        help='Directory to process (default: current directory)'
+        'directory', nargs='?', default=None,
+        help='Directory to process (default: notebook vault root)'
     )
     parser.add_argument(
         '--verbose', action='store_true',
         help='Enable verbose (debug) logging'
     )
+    parser.add_argument(
+        '-c', '--config', type=str, default=None, help='Path to config.json')
     args = parser.parse_args()
+    from notebook_automation.tools.utils import config as config_utils
+    config = config_utils.load_config_data(args.config)
     logger, _ = setup_logging(debug=args.verbose)
     remove_timestamps_from_logger(logger)
-    directory = Path(args.directory)
+    if args.directory:
+        directory = Path(args.directory)
+    else:
+        from notebook_automation.tools.utils.paths import normalize_wsl_path
+        directory = Path(normalize_wsl_path(config['paths']['notebook_vault_root']))
+        logger.info(f"No directory specified, using default vault: {directory}")
     logger.info(f"Starting index tag cleaning in: {directory}")
     stats = clean_index_tags(directory, logger)
     logger.info("Index tag cleaning complete!")

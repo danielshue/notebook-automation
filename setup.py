@@ -39,8 +39,8 @@ setup(    name="notebook_automation",
             "pylint",
         ]
     },    entry_points={
-        "console_scripts": [            
-            "vault-configure=notebook_automation.configure:main",
+        "console_scripts": [
+            "vault-configure=notebook_automation.cli.configure_tool:main",
             "vault-add-nested-tags=notebook_automation.cli.add_nested_tags:main",
             "vault-add-example-tags=notebook_automation.cli.add_example_tags:main",
             "vault-generate-pdf-notes=notebook_automation.cli.generate_pdf_notes:main",

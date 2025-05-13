@@ -297,15 +297,20 @@ def main() -> None:
         '--verbose', action='store_true',
         help='Show more detailed information about processing'
     )
+    parser.add_argument(
+        '-c', '--config', type=str, default=None, help='Path to config.json')
     args = parser.parse_args()
     global logger
     logger, _ = setup_logging(debug=args.verbose)
     remove_timestamps_from_logger(logger)
     logging.getLogger().propagate = False
+    from notebook_automation.tools.utils import config as config_utils
+    config = config_utils.load_config_data(args.config)
+    # Use config['paths']['notebook_vault_root'] if directory not specified
     if args.directory:
         directory = Path(args.directory)
     else:
-        directory = Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
+        directory = Path(normalize_wsl_path(config['paths']['notebook_vault_root']))
         logger.info(f"No directory specified, using default vault: {directory}")
     if not directory.exists() or not directory.is_dir():
         logger.error(f"Directory not found or is not a directory: {directory}")

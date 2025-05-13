@@ -39,11 +39,13 @@ import difflib
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any
 
+
 # Import from tools package
-from notebook_automation.tools.utils.config import setup_logging, NOTEBOOK_VAULT_ROOT
+from notebook_automation.tools.utils.config import setup_logging
 from notebook_automation.tools.utils.paths import normalize_wsl_path
 
-# Set up logging
+
+# Set up logging (will be re-initialized in main)
 logger, failed_logger = setup_logging(debug=False)
 
 # Try to import ruamel.yaml for better YAML formatting preservation
@@ -728,7 +730,8 @@ def main():
         "--program",
         help="Explicitly set program name for files (e.g., 'Value Chain Management')"
     )
-    
+    parser.add_argument(
+        '-c', '--config', type=str, default=None, help='Path to config.json')
     args = parser.parse_args()
       
     # Create the updater instance
@@ -738,7 +741,9 @@ def main():
         program=args.program  # Pass the program argument to the updater
     )
     
-    # Use specified path or default to VAULT_LOCAL_ROOT
+    # Use specified path or default to notebook_vault_root from config
+    from notebook_automation.tools.utils import config as config_utils
+    config = config_utils.load_config_data(args.config)
     if args.path:
         try:
             # Use the normalize_path function to handle both absolute and relative paths
@@ -751,8 +756,8 @@ def main():
             logger.error(f"Error with path: {e}")
             sys.exit(1)
     else:
-        # If no path is given, use the root of the vault
-        path = Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
+        # If no path is given, use the root of the vault from config
+        path = Path(normalize_wsl_path(config['paths']['notebook_vault_root']))
         logger.info(f"No path specified, using Obsidian vault: {path}")
         # Determine if it's a file or directory
         is_file = path.is_file()

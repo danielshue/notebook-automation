@@ -104,10 +104,17 @@ def main():
     parser.add_argument('vault', nargs='?', default=None, help="Vault root path (default: config)")
     parser.add_argument('--dry-run', action='store_true', help="Don't write files, just print actions")
     parser.add_argument('--verbose', '-v', action='store_true', help="Verbose output")
+    parser.add_argument('-c', '--config', type=str, default=None, help='Path to config.json')
     args = parser.parse_args()
 
+    from notebook_automation.tools.utils import config as config_utils
+    config = config_utils.load_config_data(args.config)
     logger, _ = setup_logging(debug=args.verbose)
-    notebook_vault_root = Path(normalize_wsl_path(args.vault)) if args.vault else Path(normalize_wsl_path(NOTEBOOK_VAULT_ROOT))
+    if args.vault:
+        notebook_vault_root = Path(normalize_wsl_path(args.vault))
+    else:
+        notebook_vault_root = Path(normalize_wsl_path(config['paths']['notebook_vault_root']))
+        logger.info(f"No vault specified, using default from config: {notebook_vault_root}")
     updater = MetadataUpdater(verbose=args.verbose)
 
     for class_folder in find_class_folders(notebook_vault_root):
