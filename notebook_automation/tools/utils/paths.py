@@ -55,7 +55,7 @@ def normalize_wsl_path(path: Union[str, Path]) -> str:
             current operating system or WSL context.
             
     Example:
-        >>> normalize_wsl_path(r"C:\Users\name\Documents")
+        >>> normalize_wsl_path(r"C:/Users/name/Documents")
         'C:/Users/name/Documents'  # When on WSL
         >>> normalize_wsl_path("/home/user/docs")
         '/home/user/docs'  # When on Windows

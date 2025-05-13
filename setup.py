@@ -59,6 +59,7 @@ setup(    name="notebook_automation",
             "vault-generate-templates=notebook_automation.cli.generate_templates:main",
             "vault-generate-markdown=notebook_automation.cli.generate_markdown:main",
             "vault-onedrive-share=notebook_automation.cli.onedrive_share:main",
+            "vault-create-class-dashboards=notebook_automation.cli.create_class_dashboards:main",
         ],
     },
 )

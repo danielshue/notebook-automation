@@ -20,8 +20,35 @@ from notebook_automation.cli.utils import HEADER, OKBLUE, OKCYAN, OKGREEN, WARNI
 # Import from the tools package
 from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
 from notebook_automation.tools.utils.file_operations import find_files_by_extension
-from notebook_automation.tools.auth.microsoft_auth import authenticate_graph_api
-from notebook_automation.tools.onedrive.onedrive_share import create_sharing_link as create_share_link
+from notebook_automation.cli.onedrive_share import create_sharing_link
+
+def create_share_link(video_path: Path, timeout: int = 15) -> str | None:
+    """Get a shareable link for the given file using the imported function from onedrive_share.py."""
+    # The function signature in onedrive_share.py is: create_sharing_link(access_token: str, file_path: str) -> str | None
+    # We need to authenticate and get an access token first.
+    from notebook_automation.cli.onedrive_share import authenticate_interactive
+    access_token = authenticate_interactive()
+    if not access_token:
+        return None
+    # file_path should be relative to OneDrive root, e.g. /Education/MBA-Resources/...
+    from notebook_automation.tools.utils.config import ONEDRIVE_BASE
+    video_path_str = str(video_path).replace("\\", "/")
+    marker = ONEDRIVE_BASE if ONEDRIVE_BASE.startswith("/") else "/" + ONEDRIVE_BASE
+    idx = video_path_str.find(marker)
+    if idx == -1:
+        # Try without leading slash
+        marker = ONEDRIVE_BASE.lstrip("/")
+        idx = video_path_str.find(marker)
+        if idx == -1:
+            # Fallback: use the filename only (will likely fail, but avoids crash)
+            rel_path = os.path.basename(video_path_str)
+        else:
+            rel_path = "/" + video_path_str[idx:]
+    else:
+        rel_path = video_path_str[idx:]
+        if not rel_path.startswith("/"):
+            rel_path = "/" + rel_path
+    return create_sharing_link(access_token, rel_path)
 from notebook_automation.tools.notes.note_markdown_generator import create_or_update_markdown_note_for_video
 from notebook_automation.tools.ai.summarizer import generate_summary_with_openai
 from notebook_automation.tools.utils.error_handling import update_failed_files, update_results_file, categorize_error, ErrorCategories
@@ -177,7 +204,18 @@ def main() -> None:
             video_files = [resources_root / args.single_file]
             logger.info(f"Processing single file: {video_files[0]}")
         elif args.folder:
-            folder_path = resources_root / args.folder
+            # If args.folder is an absolute path, use it directly. If it's relative and starts with the name of the resources root, don't join twice.
+            folder_arg = Path(args.folder)
+            if folder_arg.is_absolute():
+                folder_path = folder_arg
+            else:
+                # If the folder argument is the same as the resources root name, don't join twice
+                if folder_arg.parts and folder_arg.parts[0] == resources_root.name:
+                    folder_path = resources_root
+                    if len(folder_arg.parts) > 1:
+                        folder_path = resources_root.joinpath(*folder_arg.parts[1:])
+                else:
+                    folder_path = resources_root / folder_arg
             video_files = []
             for ext in VIDEO_EXTENSIONS:
                 video_files.extend(find_files_by_extension(folder_path, ext))
@@ -190,19 +228,13 @@ def main() -> None:
         logger.debug(traceback.format_exc())
         sys.exit(1)
 
-    # Authenticate with Microsoft Graph API if needed
-    graph_client = None
+    # No direct authentication here; handled by CLI if needed
     if not args.dry_run and not args.no_share_links:
-        try:
-            logger.info("Authenticating with Microsoft Graph API...")
-            graph_client = authenticate_graph_api(force_refresh=args.refresh_auth, timeout=args.timeout)
-            logger.info("Microsoft Graph API authentication successful.")
-        except Exception as auth_exc:
-            logger.error(f"Failed to authenticate with Microsoft Graph API: {auth_exc}")
-            logger.debug(traceback.format_exc())
-            sys.exit(1)
+        logger.info("Share links will be created using the onedrive_share.py CLI.")
+    elif args.no_share_links:
+        logger.info("Skipping share link creation (--no-share-links set).")
     else:
-        logger.info("Skipping Microsoft Graph API authentication (dry-run or no-share-links mode).")
+        logger.info("Skipping share link creation (dry-run mode).")
 
     # Process each video file
     results = []
@@ -214,39 +246,65 @@ def main() -> None:
             metadata = extract_metadata_from_path(video_path)
             logger.debug(f"Extracted metadata: {metadata}")
 
+
             # Optionally process transcript and summary
             transcript = None
             summary = None
             if not args.no_summary:
                 try:
-                    transcript = process_transcript(video_path)
-                    summary = generate_summary_with_openai(transcript) if transcript else None
-                    logger.debug("Transcript and summary generated.")
+                    # Look for transcript file with same stem as video, .txt extension
+                    transcript_path = video_path.with_suffix('.txt')
+                    if transcript_path.exists():
+                        with open(transcript_path, 'r', encoding='utf-8') as tf:
+                            transcript = tf.read()
+                        # Load prompts from the prompts directory
+                        chunk_prompt_path = Path(__file__).parent.parent.parent / 'prompts' / 'chunk_summary_prompt.md'
+                        if chunk_prompt_path.exists():
+                            with open(chunk_prompt_path, 'r', encoding='utf-8') as pf:
+                                chunked_system_prompt = pf.read()
+                        else:
+                            chunked_system_prompt = "Summarize the following transcript chunk."
+                        # Use a simple system/user prompt for now
+                        system_prompt = "You are an MBA course video summarizer."
+                        user_prompt = "Summarize the following transcript for MBA students."
+                        summary = generate_summary_with_openai(
+                            transcript,
+                            system_prompt,
+                            chunked_system_prompt,
+                            user_prompt
+                        ) if transcript else None
+                        logger.debug("Transcript and summary generated.")
+                    else:
+                        logger.info(f"Transcript file not found for {video_path}, expected at {transcript_path}")
                 except Exception as ts_exc:
                     logger.warning(f"Transcript/summary generation failed: {ts_exc}")
                     logger.debug(traceback.format_exc())
 
-            # Create OneDrive share link unless skipped
+            # Create OneDrive share link using imported function unless skipped
             share_link = None
             if not args.no_share_links and not args.dry_run:
-                try:
-                    share_link = create_share_link(graph_client, video_path, timeout=args.timeout)
+                share_link = create_share_link(video_path, timeout=args.timeout)
+                if share_link:
                     logger.debug(f"Share link created: {share_link}")
-                except Exception as link_exc:
-                    logger.warning(f"Failed to create share link: {link_exc}")
-                    logger.debug(traceback.format_exc())
+                else:
+                    logger.warning(f"Failed to create share link for {video_path}")
+
 
             # Generate or update the Obsidian markdown note
             if not args.dry_run:
                 try:
+                    # Compute output_path for the note in the vault
+                    # Place note in the same relative structure under VAULT_LOCAL_ROOT, with .md extension
+                    rel_path = video_path.relative_to(resources_root)
+                    note_name = video_path.stem + "-video.md"
+                    output_path = VAULT_LOCAL_ROOT / rel_path.parent / note_name
                     create_or_update_markdown_note_for_video(
-                        video_path=video_path,
-                        metadata=metadata,
-                        share_link=share_link,
-                        transcript=transcript,
-                        summary=summary,
-                        vault_root=VAULT_LOCAL_ROOT,
-                        force=args.force
+                        str(video_path),
+                        str(output_path),
+                        share_link,
+                        transcript,
+                        summary,
+                        metadata
                     )
                     logger.info(f"Note created/updated for {video_path.name}")
                 except Exception as note_exc:

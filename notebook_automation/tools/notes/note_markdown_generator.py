@@ -40,8 +40,7 @@ from typing import Dict, Optional, Any, List
 from ruamel.yaml import YAML
 
 from notebook_automation.tools.metadata.path_metadata import (
-    extract_metadata_from_path,
-    infer_course_and_program
+    extract_metadata_from_path
 )
 
 yaml = YAML()
@@ -76,50 +75,37 @@ tags:
   - type/reference
   - course/{course_tag}
 ---
-
 # {title}
 
-## Summary
+## References
+- [{title}]({pdf_link})
 
 {summary}
 
-## Key Points
+## Notes
+{notes}
 
-{key_points}
-
-## References
-
-- [{title}]({pdf_link})
 """,
         'video': """---
 title: {title}
 course: {course}
 program: {program}
-type: video-notes
+type: video-reference
 date: {date}
 video-link: {video_link}
 tags:
-  - type/reference
   - course/{course_tag}
 ---
-
 # {title}
 
-## Summary
+## References
+- [Video Recording]({video_link})
 
 {summary}
 
-## Key Points
+## Notes
+{notes}
 
-{key_points}
-
-## Transcript
-
-{transcript}
-
-## References
-
-- [Video Recording]({video_link})
 """
     }
     
@@ -176,8 +162,8 @@ def create_or_update_markdown_note_for_pdf(
         'date': metadata['date'],
         'pdf_link': pdf_link,
         'course_tag': course_tag,
-        'summary': summary or "TODO: Add summary",
-        'key_points': "TODO: Add key points"
+        'summary': summary or "\nAdd summary",
+        'notes': "\n"
     }
     
     # Get and fill template
@@ -187,10 +173,22 @@ def create_or_update_markdown_note_for_pdf(
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
+    # If the note exists, preserve everything after the '## Notes' section
+    if os.path.exists(output_path):
+        with open(output_path, 'r', encoding='utf-8') as f:
+            existing = f.read()
+        notes_idx = existing.find('## Notes')
+        if notes_idx != -1:
+            # Find the start of the notes content
+            notes_content_idx = existing.find('\n', notes_idx)
+            if notes_content_idx != -1:
+                notes_content = existing[notes_content_idx:]
+                # Remove trailing whitespace from generated note before appending
+                note_content = note_content.rstrip() + notes_content
+
     # Write the note
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(note_content)
-    
     return output_path
 
 def create_or_update_markdown_note_for_video(
@@ -247,8 +245,8 @@ def create_or_update_markdown_note_for_video(
         'date': metadata['date'],
         'video_link': video_link,
         'course_tag': course_tag,
-        'summary': summary or "TODO: Add summary",
-        'key_points': "TODO: Add key points",
+        'summary': summary or "\nAdd summary",
+        'notes': "\n",
         'transcript': transcript or "No transcript available."
     }
     
@@ -259,8 +257,19 @@ def create_or_update_markdown_note_for_video(
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     
+    # If the note exists, preserve everything after the '## Notes' section
+    if os.path.exists(output_path):
+        with open(output_path, 'r', encoding='utf-8') as f:
+            existing = f.read()
+        notes_idx = existing.find('## Notes')
+        if notes_idx != -1:
+            # Find the start of the notes content
+            notes_content_idx = existing.find('\n', notes_idx)
+            if notes_content_idx != -1:
+                notes_content = existing[notes_content_idx:]
+                # Remove trailing whitespace from generated note before appending
+                note_content = note_content.rstrip() + notes_content
     # Write the note
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(note_content)
-    
     return output_path
