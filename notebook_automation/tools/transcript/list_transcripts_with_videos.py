@@ -31,7 +31,7 @@ from notebook_automation.tools.utils.file_operations import find_files_by_extens
 logger, failed_logger = setup_logging()
 
 # We can remove the load_config function since we're importing
-# the configuration from tools.utils.config (RESOURCES_ROOT, VAULT_ROOT)
+# the configuration from tools.utils.config (RESOURCES_ROOT, NOTEBOOK_VAULT_ROOT)
 
 def find_transcript_files(vault_path, onedrive_path=None):
     """Find all transcript files

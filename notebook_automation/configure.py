@@ -58,8 +58,10 @@ DEFAULT_CONFIG = {
     # File system paths for content sources and destinations
     "paths": {
         "resources_root": "C:\\Users\\username\\OneDrive\\Education\\MBA-Resources",  # OneDrive resource location
-        "vault_root": "D:\\Vault\\01_Projects\\MBA",                                  # Obsidian vault location
-        "metadata_file": "D:\\repos\\mba-notebook-automation\\metadata.yaml"           # Metadata tracking file
+        "notebook_vault_root": "D:\\Vault\\01_Projects\\MBA",  # Obsidian vault location
+        "metadata_file": "D:\\repos\\mba-notebook-automation\\metadata.yaml",  # Metadata tracking file
+        "obsidian_vault_root": "C:\\Users\\username\\MBA\\",  # Obsidian vault root (optional, for compatibility)
+        "onedrive_resources_basepath": "/Education/MBA-Resources"  # Base path within OneDrive to work with
     },
     # Microsoft Graph API configuration for OneDrive access
     "microsoft_graph": {
@@ -74,9 +76,7 @@ DEFAULT_CONFIG = {
         ]
     },
     # OneDrive-specific configuration
-    "onedrive": {
-        "base_path": "/Education/MBA-Resources"  # Base path within OneDrive to work with
-    },
+    "onedrive": {},
     # File types recognized by the system as video files
     "video_extensions": [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv", ".mpg", ".mpeg", ".m4v"]
 }
@@ -262,7 +262,7 @@ def print_config(config):
         if key == "resources_root":
             print(f"  {OKCYAN}{BOLD}{key:<15}{ENDC}: {OKGREEN}{value}{ENDC}")
             print(f"    {GREY}↳ Top-level folder in cloud storage for your resources.{ENDC}")
-        elif key == "vault_root":
+        elif key == "notebook_vault_root":
             print(f"  {OKCYAN}{BOLD}{key:<15}{ENDC}: {OKGREEN}{value}{ENDC}")
             print(f"    {GREY}↳ Root folder of your knowledge vault for notes.{ENDC}")
         elif key == "metadata_file":
@@ -273,8 +273,9 @@ def print_config(config):
 
     # OneDrive section
     print(f"\n{OKBLUE}{BOLD}== OneDrive =={ENDC}")
-    print(f"  {OKCYAN}{BOLD}base_path      {ENDC}: {OKGREEN}{config['onedrive']['base_path']}{ENDC}")
-    print(f"    {GREY}↳ Path within OneDrive where resources are located (relative to your OneDrive root).{ENDC}")
+    if 'onedrive_resources_basepath' in config['paths']:
+        print(f"  {OKCYAN}{BOLD}onedrive_resources_basepath {ENDC}: {OKGREEN}{config['paths']['onedrive_resources_basepath']}{ENDC}")
+        print(f"    {GREY}↳ Path within OneDrive where resources are located (relative to your OneDrive root).{ENDC}")
 
     # Microsoft Graph API section
     print(f"\n{OKBLUE}{BOLD}== Microsoft Graph API =={ENDC}")
@@ -379,7 +380,7 @@ Examples:
     )
 update_parser.add_argument(
         "key",
-        help="Configuration key to update (e.g., resources_root, vault_root, metadata_file, client_id, etc.)"
+        help="Configuration key to update (e.g., resources_root, notebook_vault_root, metadata_file, client_id, etc.)"
     )
 update_parser.add_argument(
         "value",
@@ -433,5 +434,5 @@ $ vault-configure show
 $ vault-configure update resources_root "/path/to/cloud/resources"
 
 # Update the path to your notes vault
-$ vault-configure update vault_root "/path/to/vault"
+$ vault-configure update notebook_vault_root "/path/to/vault"
 """

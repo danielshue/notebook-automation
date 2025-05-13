@@ -89,8 +89,8 @@ def normalize_path(path_str: str, allow_file: bool = False) -> Path:
     was_relative = False
     if not path.is_absolute():
         # If it's a relative path, prepend the Vault Root
-        vault_root = Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
-        path = vault_root / path
+        notebook_vault_root = Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
+        path = notebook_vault_root / path
         was_relative = True
     
     # Resolve any symlinks, .. references, etc.
@@ -140,7 +140,7 @@ def find_matching_directories(target_dir_name: str) -> list:
     Returns:
         list: A list of potential matching directory paths (relative to vault root).
     """
-    vault_root = Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
+    notebook_vault_root = Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
     matches = []
     
     # Split the target into parts for partial matching
@@ -148,11 +148,11 @@ def find_matching_directories(target_dir_name: str) -> list:
     last_part = target_parts[-1].strip() if target_parts else ""
     
     # Walk through the vault directory
-    for root, dirs, _ in os.walk(vault_root):
+    for root, dirs, _ in os.walk(notebook_vault_root):
         for dir_name in dirs:
             # Match based on the last part of the path
             if (last_part and last_part in dir_name.lower()) or (target_dir_name.lower() in dir_name.lower()):
-                rel_path = os.path.relpath(os.path.join(root, dir_name), vault_root)
+                rel_path = os.path.relpath(os.path.join(root, dir_name), notebook_vault_root)
                 # Convert to forward slashes for consistency
                 rel_path = rel_path.replace('\\', '/')
                 # Don't include dot paths

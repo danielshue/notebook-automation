@@ -90,12 +90,12 @@ def render_dashboard(class_name: str, course_name: str, program_name: str) -> st
     )
 
 
-def find_class_folders(vault_root: Path):
+def find_class_folders(notebook_vault_root: Path):
     """Yield all likely class folders: folders whose name starts with 'Class' (case-insensitive) and are at least 3 levels deep (Program/Course/Class)."""
-    for root, dirs, files in os.walk(vault_root):
+    for root, dirs, files in os.walk(notebook_vault_root):
         path = Path(root)
         # Check for at least 3 levels deep (Program/Course/Class)
-        if len(path.relative_to(vault_root).parts) >= 3 and path.name.lower().startswith('class'):
+        if len(path.relative_to(notebook_vault_root).parts) >= 3 and path.name.lower().startswith('class'):
             yield path
 
 
@@ -107,10 +107,10 @@ def main():
     args = parser.parse_args()
 
     logger, _ = setup_logging(debug=args.verbose)
-    vault_root = Path(normalize_wsl_path(args.vault)) if args.vault else Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
+    notebook_vault_root = Path(normalize_wsl_path(args.vault)) if args.vault else Path(normalize_wsl_path(VAULT_LOCAL_ROOT))
     updater = MetadataUpdater(verbose=args.verbose)
 
-    for class_folder in find_class_folders(vault_root):
+    for class_folder in find_class_folders(notebook_vault_root):
         class_index = class_folder / 'class-index.md'
         meta = updater.find_parent_index_info(class_index)
         class_name = meta.get('class') or class_folder.name

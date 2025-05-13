@@ -42,18 +42,18 @@ Usage Example:
 ------------
 ```python
 # Import configuration module
-from notebook_automation.tools.utils.config import setup_logging, ErrorCategories, VAULT_ROOT
+from notebook_automation.tools.utils.config import setup_logging, ErrorCategories, NOTEBOOK_VAULT_ROOT
 
 # Set up logging for the module
 logger, failed_logger = setup_logging(debug=True)
 
 # Use configuration constants
-logger.info(f"Using vault at: {VAULT_ROOT}")
+logger.info(f"Using vault at: {NOTEBOOK_VAULT_ROOT}")
 
 # Process files with standardized error handling
 try:
     # Attempt to process files
-    process_files_in_directory(VAULT_ROOT)
+    process_files_in_directory(NOTEBOOK_VAULT_ROOT)
 except ConnectionError as e:
     # Use standardized error categorization
     logger.error(f"{ErrorCategories.NETWORK}: {str(e)}")
@@ -136,11 +136,12 @@ try:
     # WSL path normalization ensures proper path handling in Windows Subsystem for Linux
     # Converting string paths to Path objects provides better path manipulation capabilities
     ONEDRIVE_LOCAL_RESOURCES_ROOT: Path = Path(normalize_wsl_path(config_data['paths']['resources_root']))
-    VAULT_LOCAL_ROOT: Path = Path(normalize_wsl_path(config_data['paths']['vault_root']))
+    VAULT_LOCAL_ROOT: Path = Path(normalize_wsl_path(config_data['paths']['notebook_vault_root']))
     METADATA_FILE: Path = Path(normalize_wsl_path(config_data['paths']['metadata_file']))
+    OBSIDIAN_VAULT_ROOT: Path = Path(normalize_wsl_path(config_data['paths']['obsidian_vault_root']))
     
     # Other configuration settings
-    ONEDRIVE_BASE: str = config_data['onedrive']['base_path']    # Base path for OneDrive operations
+    ONEDRIVE_BASE: str = config_data['paths']['onedrive_resources_basepath']    # Base path for OneDrive operations
     VIDEO_EXTENSIONS: Set[str] = set(config_data['video_extensions']) # Set for O(1) extension lookups
     
     # Microsoft Graph API configuration for OneDrive integration
