@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation\\cli\\consolidate_tags.py'],
+    ['notebook_automation/cli/consolidate_tags.py'],
     pathex=[],
     binaries=[],
     datas=[],

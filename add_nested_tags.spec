@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation\\cli\\add_nested_tags.py'],
+    ['notebook_automation/cli/add_nested_tags.py'],
     pathex=[],
     binaries=[],
     datas=[],

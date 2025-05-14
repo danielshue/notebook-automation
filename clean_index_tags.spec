@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation\\cli\\clean_index_tags.py'],
+    ['notebook_automation/cli/clean_index_tags.py'],
     pathex=[],
     binaries=[],
     datas=[],

@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation\\cli\\generate_tag_doc.py'],
+    ['notebook_automation/cli/generate_tag_doc.py'],
     pathex=[],
     binaries=[],
     datas=[],

@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation\\cli\\restructure_tags.py'],
+    ['notebook_automation/cli/restructure_tags.py'],
     pathex=[],
     binaries=[],
     datas=[],

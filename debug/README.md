@@ -15,7 +15,7 @@ These scripts should only be used for debugging purposes when issues arise with 
 
 ### Examples
 
-```
+``` bash
 python debug/debug_transcript_finder.py "/path/to/video.mp4"
 python debug/debug_tag_doc.py "/path/to/vault"
 ```

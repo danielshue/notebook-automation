@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation\\cli\\configure_tool.py'],
+    ['notebook_automation/cli/configure_tool.py'],
     pathex=[],
     binaries=[],
     datas=[],
