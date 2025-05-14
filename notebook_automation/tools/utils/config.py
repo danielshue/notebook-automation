@@ -77,39 +77,49 @@ from .paths import normalize_wsl_path
 # Get the default logger
 logger = logging.getLogger(__name__)
 
-# --- Load config.json and export key paths as constants ---
-
 # --- Centralized config file discovery and loading ---
 
 import sys
 
 def find_config_path(filename: str = "config.json") -> str:
-    """Find config.json in the EXE/script directory, else prompt user for path.
+    """Find config.json in standard locations or return the provided absolute path.
+    
     Args:
-        filename (str): The config file name to look for.
+        filename (str): The config file name to look for, or an absolute path.
+        
     Returns:
         str: The absolute path to the config file.
+        
+    Note:
+        If an absolute path is provided, it will be returned as is without checking
+        if the file exists. The caller is responsible for handling non-existent files.
     """
+    # If the user passed an absolute path, return it immediately (for --config)
+    # Without prompting or printing, even if it doesn't exist
+    if os.path.isabs(filename):
+        return os.path.abspath(filename)
+
     # 1. Check EXE directory (if running as a PyInstaller EXE)
     exe_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else None
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    
     # 2. Check EXE dir, then script dir, then project root, then prompt
     search_paths = []
     if exe_dir:
         search_paths.append(os.path.join(exe_dir, filename))
     search_paths.append(os.path.join(script_dir, '..', '..', '..', filename))
     search_paths.append(os.path.join(os.path.expanduser("~"), ".notebook_automation", filename))
+    
     for path in search_paths:
         abs_path = os.path.abspath(path)
         if os.path.isfile(abs_path):
             return abs_path
-    # Prompt user interactively
+            
+    # Don't prompt user interactively, just show an error message and exit
     print(f"Could not find {filename} in standard locations.")
-    while True:
-        user_path = input(f"Please enter the full path to your {filename}: ").strip('"')
-        if os.path.isfile(user_path):
-            return os.path.abspath(user_path)
-        print(f"File not found: {user_path}")
+    print(f"Please provide a valid config file path using the --config option.")
+    print(f"Example: vault-configure --config /path/to/config.json show")
+    sys.exit(1)
 
 def load_config_data(config_path: str = None) -> dict:
     """Load config data from the given path, or auto-discover if not provided.
@@ -129,11 +139,13 @@ def load_config_data(config_path: str = None) -> dict:
         print(f"Error loading config file: {e}")
         sys.exit(1)
 
-# Now that load_config_data is defined, define config constants
+# Define this function before any constants are used
 def _get_config_data() -> dict:
     """Lazily load and cache config.json data for path constants."""
     global _config_data
     if '_config_data' not in globals() or _config_data is None:
+        # Import locally to avoid circular imports
+        from notebook_automation.tools.utils.config import load_config_data
         _config_data = load_config_data()
     return _config_data
 
@@ -209,34 +221,7 @@ class ErrorCategories:
 # --- Centralized config file discovery and loading ---
 import sys
 
-def find_config_path(filename: str = "config.json") -> str:
-    """Find config.json in the EXE/script directory, else prompt user for path.
-    Args:
-        filename (str): The config file name to look for.
-    Returns:
-        str: The absolute path to the config file.
-    """
-    # 1. Check EXE directory (if running as a PyInstaller EXE)
-    exe_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else None
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    # 2. Check EXE dir, then script dir, then project root, then prompt
-    search_paths = []
-    if exe_dir:
-        search_paths.append(os.path.join(exe_dir, filename))
-    search_paths.append(os.path.join(script_dir, '..', '..', '..', filename))
-    search_paths.append(os.path.join(os.path.expanduser("~"), ".notebook_automation", filename))
-    for path in search_paths:
-        abs_path = os.path.abspath(path)
-        if os.path.isfile(abs_path):
-            return abs_path
-    # Prompt user interactively
-    print(f"Could not find {filename} in standard locations.")
-    while True:
-        user_path = input(f"Please enter the full path to your {filename}: ").strip('"')
-        if os.path.isfile(user_path):
-            return os.path.abspath(user_path)
-        print(f"File not found: {user_path}")
-
+# Ensure load_config_data uses the updated find_config_path
 def load_config_data(config_path: str = None) -> dict:
     """Load config data from the given path, or auto-discover if not provided.
     Args:

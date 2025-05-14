@@ -46,12 +46,10 @@ Project Integration:
 - This CLI is the canonical tool for managing config.json for all notebook automation scripts.
 - Used by all major EXE/CLI tools for consistent configuration handling.
 - Included in CI/CD workflows for automated builds and artifact generation.
-
-Author: Dan Shue
-License: MIT
 """
 
 import argparse
+import json
 import sys
 from notebook_automation.tools.utils import config as config_utils
 
@@ -91,7 +89,9 @@ DEFAULT_CONFIG = {
 
 def create_default_config(config_path: str = None) -> bool:
     import os, json
-    if not config_path:
+    # Don't fall back to find_config_path() if a config_path was provided
+    # This prevents prompting the user when --config is specified
+    if config_path is None:
         config_path = config_utils.find_config_path()
     if not os.path.exists(config_path):
         try:
@@ -110,14 +110,24 @@ def create_default_config(config_path: str = None) -> bool:
 
 def load_config(config_path: str = None):
     try:
-        return config_utils.load_config_data(config_path)
+        # Pass config_path directly to prevent prompting in load_config_data
+        if config_path:
+            try:
+                with open(config_path, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                print(f"Error loading config file: {e}")
+                sys.exit(1)
+        else:
+            return config_utils.load_config_data()
     except Exception as e:
         print(f"Error loading config: {e}")
-        return DEFAULT_CONFIG
+        raise
 
 def save_config(config, config_path: str = None):
     import os, json
-    if not config_path:
+    # Don't fall back to find_config_path() if a config_path was provided
+    if config_path is None:
         config_path = config_utils.find_config_path()
     try:
         with open(config_path, 'w') as f:
@@ -257,26 +267,82 @@ Examples:
         "value",
         help="New value for the specified configuration key"
     )
+    # Add --config/-c argument to each subparser so it works in any position, but do NOT add to global parser
+    for subparser in [create_parser, show_parser, update_parser]:
+        subparser.add_argument(
+            "-c", "--config",
+            dest="config_path",
+            help="Path to config.json (optional; will use standard locations if not provided)",
+            default=None
+        )
 
-    args = parser.parse_args()
-
-    config_path = None
-    if args.command == "create":
-        config_path = config_utils.find_config_path()
-        if not create_default_config(config_path):
-            print(f"Config file already exists at {config_path}")
-            print("Use 'show' to view it or 'update' to modify values.")
-    elif args.command == "show":
-        config = load_config()
-        print_config(config)
-    elif args.command == "update":
-        config = load_config()
-        if update_path(config, args.key, args.value):
-            print(f"Updated {args.key} to {args.value}")
-            print_config(config)
+    args = parser.parse_args()    # Color codes
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    
+    config_path = args.config_path if hasattr(args, 'config_path') else None
+    
+    import os
+    import sys
+    from pathlib import Path
+    # If config_path is provided, normalize it and use directly (do not call find_config_path)
+    if config_path is not None:  # Check for None first
+        # Handle empty string or whitespace-only string
+        if not config_path or config_path.strip() == "":
+            print(f"{FAIL}{BOLD}Empty config path provided.{ENDC}")
+            print(f"{WARNING}Please provide a valid config file path or run without --config to use default locations.{ENDC}")
+            sys.exit(1)
+            
+        # Normalize and strip quotes/whitespace
+        try:
+            path = str(Path(config_path).expanduser().resolve())
+            if not os.path.isfile(path):
+                print(f"{FAIL}{BOLD}Config file does not exist:{ENDC} {path}")
+                print(f"{WARNING}Please provide a valid config file path or run without --config to use default locations.{ENDC}")
+                sys.exit(1)
+        except Exception as e:
+            print(f"{FAIL}{BOLD}Error processing config path:{ENDC} {config_path}")
+            print(f"{WARNING}Error details: {str(e)}{ENDC}")
+            print(f"{WARNING}Please provide a valid config file path or run without --config to use default locations.{ENDC}")
+            sys.exit(1)
     else:
-        config = load_config()
-        print_config(config)
+        path = config_utils.find_config_path()
+    # Always print which config file is being used or checked, for all commands    # Skip printing this message if path was provided via --config
+    # (we already printed it during validation)
+    if not config_path:
+        if os.path.isfile(path):
+            print(f"{OKGREEN}{BOLD}Using configuration file:{ENDC} {path}")
+        else:
+            print(f"{FAIL}{BOLD}No configuration file found. Looked for:{ENDC} {path}")
+    try:
+        if args.command == "create":
+            if not create_default_config(path):
+                print(f"Config file already exists at {path}")
+                print("Use 'show' to view it or 'update' to modify values.")
+        elif args.command == "show":
+            if os.path.isfile(path):
+                config = load_config(path)
+                print_config(config)
+            else:
+                print(f"{FAIL}No config file exists. Use 'vault-configure create' to generate one.{ENDC}")
+        elif args.command == "update":
+            config = load_config(path)
+            if update_path(config, args.key, args.value, path):
+                print(f"Updated {args.key} to {args.value}")
+                print_config(config)
+        else:
+            if os.path.isfile(path):
+                config = load_config(path)
+                print_config(config)
+            else:
+                print(f"{FAIL}No config file exists. Use 'vault-configure create' to generate one.{ENDC}")
+                print(f"{WARNING}Checked for config file at:{ENDC} {path}")
+    except KeyboardInterrupt:
+        print(f"\n{WARNING}Operation cancelled by user. Exiting gracefully.{ENDC}")
+        sys.exit(0)
 
 if __name__ == "__main__":
     main()
