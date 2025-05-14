@@ -70,7 +70,93 @@ import os.path
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any, Set
 from dotenv import load_dotenv
+
 from .paths import normalize_wsl_path
+
+# --- Load config.json and export key paths as constants ---
+# Get the default logger
+logger = logging.getLogger(__name__)
+
+# --- Load config.json and export key paths as constants ---
+
+# --- Centralized config file discovery and loading ---
+
+import sys
+
+def find_config_path(filename: str = "config.json") -> str:
+    """Find config.json in the EXE/script directory, else prompt user for path.
+    Args:
+        filename (str): The config file name to look for.
+    Returns:
+        str: The absolute path to the config file.
+    """
+    # 1. Check EXE directory (if running as a PyInstaller EXE)
+    exe_dir = os.path.dirname(sys.executable) if getattr(sys, 'frozen', False) else None
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    # 2. Check EXE dir, then script dir, then project root, then prompt
+    search_paths = []
+    if exe_dir:
+        search_paths.append(os.path.join(exe_dir, filename))
+    search_paths.append(os.path.join(script_dir, '..', '..', '..', filename))
+    search_paths.append(os.path.join(os.path.expanduser("~"), ".notebook_automation", filename))
+    for path in search_paths:
+        abs_path = os.path.abspath(path)
+        if os.path.isfile(abs_path):
+            return abs_path
+    # Prompt user interactively
+    print(f"Could not find {filename} in standard locations.")
+    while True:
+        user_path = input(f"Please enter the full path to your {filename}: ").strip('"')
+        if os.path.isfile(user_path):
+            return os.path.abspath(user_path)
+        print(f"File not found: {user_path}")
+
+def load_config_data(config_path: str = None) -> dict:
+    """Load config data from the given path, or auto-discover if not provided.
+    Args:
+        config_path (str): Path to config.json. If None, auto-discover.
+    Returns:
+        dict: Parsed config data.
+    Raises:
+        SystemExit: If config cannot be loaded.
+    """
+    if not config_path:
+        config_path = find_config_path()
+    try:
+        with open(config_path, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading config file: {e}")
+        sys.exit(1)
+
+# Now that load_config_data is defined, define config constants
+def _get_config_data() -> dict:
+    """Lazily load and cache config.json data for path constants."""
+    global _config_data
+    if '_config_data' not in globals() or _config_data is None:
+        _config_data = load_config_data()
+    return _config_data
+
+try:
+    NOTEBOOK_VAULT_ROOT = Path(_get_config_data()["paths"]["notebook_vault_root"])
+    ONEDRIVE_LOCAL_RESOURCES_ROOT = Path(_get_config_data()["paths"]["resources_root"])
+    # Alias for backward compatibility with CLI scripts
+    VAULT_LOCAL_ROOT = NOTEBOOK_VAULT_ROOT
+
+    # Microsoft Graph API constants
+    MICROSOFT_GRAPH_API_CLIENT_ID = _get_config_data()["microsoft_graph"]["client_id"]
+    AUTHORITY = _get_config_data()["microsoft_graph"]["authority"]
+    SCOPES = _get_config_data()["microsoft_graph"]["scopes"]
+    GRAPH_API_ENDPOINT = _get_config_data()["microsoft_graph"]["api_endpoint"]
+except Exception as e:
+    logger.error(f"Failed to load config constants: {e}")
+    NOTEBOOK_VAULT_ROOT = Path(".")
+    ONEDRIVE_LOCAL_RESOURCES_ROOT = Path(".")
+    VAULT_LOCAL_ROOT = NOTEBOOK_VAULT_ROOT
+    MICROSOFT_GRAPH_API_CLIENT_ID = ""
+    AUTHORITY = ""
+    SCOPES = []
+    GRAPH_API_ENDPOINT = ""
 
 # Get the default logger
 logger = logging.getLogger(__name__)

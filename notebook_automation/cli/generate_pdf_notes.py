@@ -77,7 +77,10 @@ from notebook_automation.cli.utils import HEADER, OKBLUE, OKCYAN, OKGREEN, WARNI
 from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
 from notebook_automation.tools.utils.file_operations import get_vault_path_for_pdf, find_all_pdfs, get_scan_root
 from notebook_automation.tools.auth.microsoft_auth import authenticate_graph_api
-from notebook_automation.tools.onedrive.onedrive_share import create_sharing_link as create_share_link
+# Use the CLI for OneDrive sharing instead of a direct import
+import subprocess
+def create_share_link(*args, **kwargs):
+    raise NotImplementedError("Use the 'vault-onedrive-share' CLI for OneDrive sharing operations.")
 from notebook_automation.tools.pdf.processor import extract_pdf_text
 from notebook_automation.tools.notes.note_markdown_generator import create_or_update_markdown_note_for_pdf
 from notebook_automation.tools.ai.summarizer import generate_summary_with_openai
@@ -451,7 +454,10 @@ from notebook_automation.cli.utils import HEADER, OKBLUE, OKCYAN, OKGREEN, WARNI
 from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
 from notebook_automation.tools.utils.file_operations import get_vault_path_for_pdf, find_all_pdfs, get_scan_root
 from notebook_automation.tools.auth.microsoft_auth import authenticate_graph_api
-from notebook_automation.tools.onedrive.onedrive_share import create_sharing_link as create_share_link
+# Use the CLI for OneDrive sharing instead of a direct import
+import subprocess
+def create_share_link(*args, **kwargs):
+    raise NotImplementedError("Use the 'vault-onedrive-share' CLI for OneDrive sharing operations.")
 from notebook_automation.tools.pdf.processor import extract_pdf_text
 from notebook_automation.tools.notes.note_markdown_generator import create_or_update_markdown_note_for_pdf
 from notebook_automation.tools.ai.summarizer import generate_summary_with_openai
