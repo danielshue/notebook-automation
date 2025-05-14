@@ -46,10 +46,16 @@ Before you can start using the MBA Notebook Automation tools, you need to set up
 
 TODO: This process should be automated.
 
-1. Download the course using the Windows application that scrapes all of the course content from Coursera.
+1. Download the class using the Windows application that scrapes all of the class content from Coursera. See https://coursera-downloader.rf.gd for more information.
 
-2. Move videos and transcripts to the MBA OneDrive location. For example, copy the contents into the OneDrive Resources folder that is defined in the configuration:
-   - Example path: `[UserAccount]\OneDrive\Education\MBA-Resources`
+   - This will create a folder structure where the HTML files, videos, and transcripts are stored.
+   Example path: `C:\Users\[UserAccount]\Downloads\Coursera\className`
+
+2. Typically, there are two classes for each course. Be sure to download both classes. Make a directory for the course in OneDrive Resources under the program name where that course falls under. For example, if the course is "Data Science" and the program is "Value Creation", create a directory for the course in OneDrive Resources under the MBA program called "Value Creation".
+   - Example path: `[UserAccount]\OneDrive\Education\MBA-Resources\ProgramName\CourseName`
+
+   - Move each class folder to that OneDrive Resources location you created for that course. For example, copy the contents into the OneDrive Resources folder that is defined in the configuration:
+     - Example path: `[UserAccount]\OneDrive\Education\MBA-Resources\Value Creation\CourseName`
 
 3. Convert HTML files to Markdown by running:
    ```pwsh

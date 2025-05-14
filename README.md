@@ -1,4 +1,3 @@
-
 # Notebook Automation
 
 Notebook Automation is a comprehensive Python toolkit for managing online course notes, resources, and metadata in an Obsidian vault. It automates the conversion, organization, and enrichment of course materials, supporting advanced workflows for PDF and video reference note generation, OneDrive integration, and AI-powered summaries.
@@ -9,6 +8,7 @@ Notebook Automation is a comprehensive Python toolkit for managing online course
 - [Installation](#installation)
 - [Configuration](#configuration)
 - [CLI Tools](#cli-tools)
+- [Building Executables](#building-executables)
 - [Usage](#usage)
 - [Examples](#examples)
 - [Directory Structure](#directory-structure)
@@ -34,11 +34,29 @@ Notebook Automation is a comprehensive Python toolkit for managing online course
    ```bash
    git clone https://github.com/danielshue/notebook-automation.git
    ```
-2. Install the required dependencies:
+
+2. Create and activate a virtual environment:
+   ```bash
+   # Navigate to project directory
+   cd notebook-automation
+
+   # Create virtual environment
+   python -m venv venv
+
+   # Activate virtual environment
+   # On Windows
+   venv\Scripts\activate
+
+   # On Linux/macOS
+   source venv/bin/activate
+   ```
+
+3. Install the required dependencies:
    ```bash
    pip install pyyaml html2text requests msal openai python-dotenv cryptography urllib3
    ```
-3. (Recommended) Install in development mode:
+
+4. (Recommended) Install in development mode:
    ```bash
    pip install -e .
    ```
@@ -77,6 +95,33 @@ All CLI tools are available as both pip-installed commands and standalone EXEs (
 | vault-update-glossary          | Update glossary pages with callouts         |
 
 See [docs/cli_tools.md](docs/cli_tools.md) for full details and usage examples.
+
+## Building Executables
+
+To build standalone executable files (.exe) for all CLI tools:
+
+1. Make sure you have PyInstaller installed:
+   ```bash
+   pip install pyinstaller
+   ```
+
+2. Build all executables using the included script:
+   ```bash
+   # On Linux/macOS
+   chmod +x build_all_exes.sh
+   ./build_all_exes.sh
+
+   # On Windows (using WSL or Git Bash)
+   bash build_all_exes.sh
+   ```
+
+3. After building, the executable files will be available in the `dist/` directory:
+   - `dist/add_nested_tags/add_nested_tags.exe`
+   - `dist/clean_index_tags/clean_index_tags.exe`
+   - `dist/configure/configure.exe`
+   - And others...
+
+These executables can be distributed and run on Windows systems without requiring Python installation.
 
 ## Usage
 
