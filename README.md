@@ -31,11 +31,13 @@ Notebook Automation is a comprehensive Python toolkit for managing online course
 ## Installation
 
 1. Clone this repository:
+
    ```bash
    git clone https://github.com/danielshue/notebook-automation.git
    ```
 
 2. Create and activate a virtual environment:
+
    ```bash
    # Navigate to project directory
    cd notebook-automation
@@ -52,11 +54,13 @@ Notebook Automation is a comprehensive Python toolkit for managing online course
    ```
 
 3. Install the required dependencies:
+
    ```bash
    pip install pyyaml html2text requests msal openai python-dotenv cryptography urllib3
    ```
 
 4. (Recommended) Install in development mode:
+
    ```bash
    pip install -e .
    ```
@@ -98,27 +102,33 @@ See [docs/cli_tools.md](docs/cli_tools.md) for full details and usage examples.
 
 ## Building Executables
 
-To build standalone executable files (.exe) for all CLI tools:
+**Recommended:** Build executables under a Bash shell (Linux, macOS, or Windows Subsystem for Linux/WSL). This ensures correct path handling and compatibility with the provided `.spec` files and accompanying longer file names that may not work well in Windows CMD or PowerShell.
 
-1. Make sure you have PyInstaller installed:
+**Note:** The `build_all_exes.sh` script is designed for Linux/macOS/WSL. If you are using Windows, consider using WSL or Git Bash to run the script.
+
+To build standalone executable files for all CLI tools:
+
+1. Make sure you have PyInstaller installed in your (activated) virtual environment:
+
    ```bash
    pip install pyinstaller
    ```
 
 2. Build all executables using the included script:
+
    ```bash
-   # On Linux/macOS
+   # On Linux/macOS/WSL (recommended)
    chmod +x build_all_exes.sh
    ./build_all_exes.sh
-
-   # On Windows (using WSL or Git Bash)
-   bash build_all_exes.sh
    ```
 
+   > **Note:** On Windows, it is strongly recommended to use WSL or Git Bash to run this script. Native Windows shells may not handle paths correctly for this project.
+
 3. After building, the executable files will be available in the `dist/` directory:
-   - `dist/add_nested_tags/add_nested_tags.exe`
-   - `dist/clean_index_tags/clean_index_tags.exe`
-   - `dist/configure/configure.exe`
+
+   - `dist/add_nested_tags`
+   - `dist/clean_index_tags`
+   - `dist/configure`
    - And others...
 
 These executables can be distributed and run on Windows systems without requiring Python installation.
@@ -153,23 +163,33 @@ All tools support `--help` for usage and `--verbose` for colorized, detailed out
 ## Examples
 
 Convert HTML/TXT files and generate indexes for a specific course:
+
 ```bash
 vault-generate-markdown --all --source /path/to/accounting-for-managers
 ```
 
 Generate PDF notes for all files in a OneDrive folder:
+
 ```bash
 vault-generate-pdf-notes --folder "Value Chain Management/Managerial Accounting Business Decisions/Case Studies" --force
 ```
 
 Generate video notes for a single video file:
+
 ```bash
 vault-generate-video-meta -f "Value Chain Management/Managerial Accounting Business Decisions/Module 1/Video1.mp4" --force
 ```
 
 ## Directory Structure
 
-```
+docs/                     # Documentation, guides, and feature docs
+tests/                    # Unit and integration tests
+archived/                 # Older and backup scripts
+debug/                    # Debugging and troubleshooting scripts
+data/, cache/, logs/      # Data, cache, and log directories
+config.json, metadata.yaml, setup.py, ...
+
+```text
 notebook_automation/
 ├── cli/                  # All CLI entry points (pip/EXE)
 ├── tools/                # Core functionality modules (utils, pdf, auth, etc.)
@@ -204,55 +224,11 @@ pytest
 - [Project Backlog & Roadmap](docs/project_backlog.md)
 - [Configuration Guide](docs/configuration_guide.md)
 
-
-## Usage
-
-After installation, use the CLI entry points for all tag and note management tasks. For example:
-
-```bash
-# Add nested tags to all notes in the current directory (dry run, verbose)
-vault-add-nested-tags . --dry-run --verbose
-
-# Clean tags from all index files in a directory
-vault-clean-index-tags ./notes --verbose
-
-# Consolidate tags in all notes
-vault-consolidate-tags ./notes --verbose
-
-# Generate tag documentation
-vault-generate-tag-doc --help
-```
-
-For PDF and video processing, use the following CLI tools:
-
-```bash
-vault-generate-pdf-notes --folder <folder> [--force] [--dry-run]
-vault-generate-video-meta --folder <folder> [--force] [--dry-run]
-```
-
-## Examples
-
-Convert HTML/TXT files and generate indexes for a specific course:
-```bash
-vault-generate-markdown --all --source /path/to/accounting-for-managers
-```
-
-Generate PDF notes for all files in a OneDrive folder:
-```bash
-vault-generate-pdf-notes --folder "Value Chain Management/Managerial Accounting Business Decisions/Case Studies" --force
-```
-
-Generate video notes for a single video file:
-```bash
-vault-generate-video-meta -f "Value Chain Management/Managerial Accounting Business Decisions/Module 1/Video1.mp4" --force
-```
-
 ## Templater Integration
 
 The tool includes Templater templates for Obsidian that can be used to create standardized notes:
 
 - **Lesson Note**: Template for creating structured lesson notes with sections for summary, key points, questions, and action items.
-
 
 ## CLI Arguments
 
@@ -271,8 +247,7 @@ See each tool's `--help` for more options.
 - pyyaml, html2text, requests, msal, openai, python-dotenv, cryptography, urllib3
 - Obsidian (for viewing and working with the generated files)
 
-
-## Testing
+## Testing for Non-Trivial Functions
 
 All non-trivial functions are covered by unit tests in `/tests`. Run tests with:
 
@@ -280,11 +255,10 @@ All non-trivial functions are covered by unit tests in `/tests`. Run tests with:
 pytest
 ```
 
-
 ## License
 
 MIT
 
 ## Author
 
-Daniel Shue
+Dan Shue
