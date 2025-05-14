@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation\\cli\\generate_video_meta.py'],
+    ['notebook_automation/cli/generate_video_meta.py'],
     pathex=[],
     binaries=[],
     datas=[],

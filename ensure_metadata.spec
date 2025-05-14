@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation\\cli\\ensure_metadata.py'],
+    ['notebook_automation/cli/ensure_metadata.py'],
     pathex=[],
     binaries=[],
     datas=[],

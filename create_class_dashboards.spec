@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation\\cli\\create_class_dashboards.py'],
+    ['notebook_automation/cli/create_class_dashboards.py'],
     pathex=[],
     binaries=[],
     datas=[],
