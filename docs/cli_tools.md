@@ -19,6 +19,7 @@ This project provides a suite of command-line tools for automating and managing 
 | vault-generate-pdf-notes       | notebook_automation/cli/generate_pdf_notes.py           | Generate notes from PDFs                    |
 | vault-generate-markdown        | notebook_automation/cli/generate_markdown.py            | Generate markdown from source               |
 | vault-generate-templates       | notebook_automation/cli/generate_templates.py           | Generate note templates                     |
+| vault-update-glossary          | notebook_automation/cli/update_glossary.py              | Update glossary pages with callouts         |
 | vault-extract-pdf-pages        | notebook_automation/cli/extract_pdf_pages.py            | Extract pages from PDFs                     |
 | vault-generate-dataview        | notebook_automation/cli/generate_dataview.py            | Generate dataview queries                   |
 | vault-list-folder              | notebook_automation/cli/list_folder_contents.py         | List contents of a folder                   |
@@ -267,6 +268,27 @@ vault-list-folder --file-id {id}
 
 # Use alternate base path
 vault-list-folder --base "alt/base" path/to/folder
+```
+
+### vault-update-glossary
+
+Update glossary pages by adding proper markdown callouts to definition entries.
+
+```bash
+# Update a specific glossary file
+vault-update-glossary path/to/glossary.md
+
+# Process multiple glossary files
+vault-update-glossary path/to/glossary1.md path/to/glossary2.md
+
+# Preview changes without modifying files (dry run)
+vault-update-glossary --dry-run path/to/glossary.md
+
+# Process all files in a directory matching a pattern
+vault-update-glossary --directory path/to/glossaries --pattern "*Glossary*.md"
+
+# Enable verbose logging
+vault-update-glossary --verbose path/to/glossary.md
 ```
 
 ## Installation

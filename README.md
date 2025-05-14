@@ -74,6 +74,7 @@ All CLI tools are available as both pip-installed commands and standalone EXEs (
 | vault-convert-markdown         | Convert markdown formats                    |
 | vault-configure                | Configure vault settings                    |
 | vault-generate-index           | Generate a vault index                      |
+| vault-update-glossary          | Update glossary pages with callouts         |
 
 See [docs/cli_tools.md](docs/cli_tools.md) for full details and usage examples.
 
