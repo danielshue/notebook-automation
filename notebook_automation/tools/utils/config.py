@@ -105,6 +105,11 @@ def find_config_path(filename: str = "config.json") -> str:
         If an absolute path is provided, it will be returned as is without checking
         if the file exists. The caller is responsible for handling non-existent files.
     """
+    # Check for environment variable first (highest priority)
+    env_config_path = os.environ.get("NOTEBOOK_CONFIG_PATH")
+    if env_config_path:
+        return os.path.abspath(env_config_path)
+    
     # If the user passed an absolute path, return it immediately (for --config)
     # Without prompting or printing, even if it doesn't exist
     if os.path.isabs(filename):

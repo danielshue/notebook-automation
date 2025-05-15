@@ -172,9 +172,16 @@ def main() -> None:
     Example:
         When called from the command line:
         $ vault-generate-video-meta --folder "MBA/Finance" --verbose
-    """
+    """    
     global logger, failed_logger
     args = _parse_arguments()
+    
+    # Set config path if provided via environment variable
+    if args.config:
+        # Use absolute path to ensure consistency
+        config_path = str(Path(args.config).absolute())
+        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
+        
     from notebook_automation.tools.utils import config as config_utils
     config = config_utils.load_config_data(args.config)
     
@@ -210,7 +217,6 @@ def main() -> None:
     # Also remove from our specific loggers to ensure consistency
     remove_timestamps_from_logger(logger)
     remove_timestamps_from_logger(failed_logger)
-    
     if args.debug:
         logger.debug("Debug logging enabled.")
     if args.verbose:
@@ -219,6 +225,15 @@ def main() -> None:
         logger.warning("Dry run mode: No files or links will be created.")
 
     logger.info("Starting Video Metadata Generator CLI...")
+    
+    # Display which config.json file is being used
+    try:
+        actual_config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or config_utils.find_config_path()
+        logger.info(f"Using configuration file: {actual_config_path}")
+        console.print(f"[cyan]Using configuration file: {actual_config_path}[/cyan]")
+    except Exception as e:
+        logger.warning(f"Could not determine config file path: {e}")
+        
     logger.debug(f"Parsed arguments: {args}")
 
     # Log all relevant CLI options for transparency
