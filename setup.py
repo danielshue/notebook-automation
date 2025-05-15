@@ -14,7 +14,8 @@ setup(    name="notebook_automation",
     author="Dan Shue",
     packages=find_packages(include=["notebook_automation", "notebook_automation.*"]),
     include_package_data=True,
-    python_requires=">=3.8",    install_requires=[
+    python_requires=">=3.8",
+    install_requires=[
         "requests",
         "ruamel.yaml",
         "pymsteams",
@@ -27,6 +28,8 @@ setup(    name="notebook_automation",
         "python-docx",
         "colorlog",
         "html2text>=2024.2.26",  # Required for markdown conversion
+        "pypandoc",  # Required for EPUB to Markdown conversion
+        "openai",  # Required for AI-powered summaries
     ],
     extras_require={
         "dev": [

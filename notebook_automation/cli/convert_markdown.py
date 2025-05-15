@@ -5,13 +5,16 @@ Markdown Converter CLI for MBA Notebook Automation
 This module provides a command-line interface for converting various file formats
 to markdown, with support for HTML and text files.
 
+**Note:** Files that have a corresponding `.mp4` file (with the same base name) in the same directory
+will be skipped and not converted. This is to allow a separate process to handle those files.
+
 Examples:
     vault-convert-markdown file.html                # Convert single file
     vault-convert-markdown --src-dir ./notes        # Convert all files in directory
     vault-convert-markdown --dry-run file.txt       # Preview conversion
     vault-convert-markdown --verbose *.html         # Show detailed progress
 """
-
+import re
 import os
 import sys
 import glob
@@ -92,6 +95,32 @@ def process_file(
         return False, str(e)
 
 
+def has_corresponding_mp4(file_path: Path) -> bool:
+    """
+    Return True if a corresponding .mp4 file exists for a given file, handling language codes and multi-dot names.
+    Handles files like foo.en.txt, foo.en.srt, foo.zh-cn.txt, foo.txt, foo.srt, etc.
+    """
+    name = file_path.name
+    # Try to match language code pattern (2-5 lowercase letters, optionally hyphenated, possibly multiple dots)
+    # Examples: foo.en.txt, foo.en.srt, foo.zh-cn.txt, foo.pt-br.srt, foo.txt, foo.srt
+    # We want to check for foo.mp4
+    # Remove all extensions until the first non-language extension
+    parts = name.split('.')
+    if len(parts) >= 3 and parts[-1] in {'txt', 'srt'}:
+        lang_part = parts[-2]
+        if re.fullmatch(r'[a-z]{2,5}(-[a-z]{2,5})?', lang_part, re.IGNORECASE):
+            base = '.'.join(parts[:-2])
+            mp4_file = file_path.with_name(base + '.mp4')
+        else:
+            base = '.'.join(parts[:-1])
+            mp4_file = file_path.with_name(base + '.mp4')
+    else:
+        mp4_file = file_path.with_suffix('.mp4')
+    # Debug output for troubleshooting
+    if os.environ.get('CONVERT_DEBUG') == '1':
+        print(f"[DEBUG] Checking for mp4: {mp4_file} (exists: {mp4_file.exists()}) for source: {file_path}")
+    return mp4_file.exists()
+
 def process_files(
     src_paths: List[str],
     dest_dir: Optional[str] = None,
@@ -124,7 +153,8 @@ def process_files(
     """
     success_count = 0
     fail_count = 0
-    
+    skipped_due_to_mp4 = 0
+
     for src_path in src_paths:
         # Handle glob patterns
         if '*' in src_path or '?' in src_path:
@@ -134,15 +164,29 @@ def process_files(
             
         for src_file in files:
             src_file = os.path.abspath(src_file)
-            
+
             if os.path.isfile(src_file):
+                file_path = Path(src_file)
+                # Only process .html and .txt files
+                ext = file_path.suffix.lower()
+                if ext not in {'.html', '.txt'}:
+                    if verbose:
+                        print(f"⏭️  Skipping {src_file} (unsupported file type)")
+                    continue
+                skip = has_corresponding_mp4(file_path)
+                if os.environ.get('CONVERT_DEBUG') == '1':
+                    print(f"[DEBUG] {src_file}: skip={skip}")
+                if skip:
+                    skipped_due_to_mp4 += 1
+                    if verbose:
+                        print(f"⏭️  Skipping {src_file} (corresponding .mp4 exists)")
+                    continue
                 # Determine destination path
                 if dest_dir:
                     rel_path = os.path.relpath(src_file, os.path.dirname(src_file))
                     dest_file = os.path.join(dest_dir, rel_path)
                 else:
                     dest_file = os.path.splitext(src_file)[0] + '.md'
-                    
                 # Process the file
                 success, error = process_file(src_file, dest_file, dry_run, verbose)
                 if success:
@@ -151,18 +195,28 @@ def process_files(
                     fail_count += 1
                     if error and verbose:
                         print(f"❌ Error processing {src_file}: {error}")
-                        
+
             elif os.path.isdir(src_file):
                 # Process all HTML and TXT files in directory
                 for ext in ['.html', '.txt']:
                     pattern = os.path.join(src_file, f'**/*{ext}')
                     for file in glob.glob(pattern, recursive=True):
+                        file_path = Path(file)
+                        ext_lc = file_path.suffix.lower()
+                        if ext_lc not in {'.html', '.txt'}:
+                            if verbose:
+                                print(f"⏭️  Skipping {file} (unsupported file type)")
+                            continue
+                        if has_corresponding_mp4(file_path):
+                            skipped_due_to_mp4 += 1
+                            if verbose:
+                                print(f"⏭️  Skipping {file} (corresponding .mp4 exists)")
+                            continue
                         rel_path = os.path.relpath(file, src_file)
                         if dest_dir:
                             dest_file = os.path.join(dest_dir, rel_path)
                         else:
                             dest_file = os.path.splitext(file)[0] + '.md'
-                            
                         success, error = process_file(file, dest_file, dry_run, verbose)
                         if success:
                             success_count += 1
@@ -170,8 +224,8 @@ def process_files(
                             fail_count += 1
                             if error and verbose:
                                 print(f"❌ Error processing {file}: {error}")
-                                
-    return success_count, fail_count
+
+    return success_count, fail_count, skipped_due_to_mp4
 
 
 def main() -> None:
@@ -226,21 +280,23 @@ Examples:
         sys.exit(1)
         
     # Process files
-    success_count, fail_count = process_files(
+    success_count, fail_count, skipped_due_to_mp4 = process_files(
         src_paths,
         args.dest_dir,
         args.dry_run,
         args.verbose
     )
-    
+
     # Print summary
-    total = success_count + fail_count
+    total = success_count + fail_count + skipped_due_to_mp4
     print(f"\nConversion Summary:")
-    print(f"  Total files processed: {total}")
+    print(f"  Total files considered: {total}")
     print(f"  Successfully converted: {success_count}")
+    if skipped_due_to_mp4:
+        print(f"  Skipped due to .mp4 present: {skipped_due_to_mp4}")
     if fail_count:
         print(f"  Failed to convert: {fail_count}")
-        
+
     sys.exit(1 if fail_count else 0)
 
 

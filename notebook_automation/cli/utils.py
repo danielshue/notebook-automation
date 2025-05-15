@@ -47,7 +47,14 @@ def remove_timestamps_from_logger(logger: logging.Logger) -> None:
     """
     no_timestamp_formatter = logging.Formatter('%(levelname)s - %(message)s')
     for handler in logger.handlers:
-        handler.setFormatter(no_timestamp_formatter)
+        # Handle RichHandler differently as it has its own formatting system
+        if handler.__class__.__name__ == 'RichHandler':
+            # For Rich handlers, just use the message portion
+            handler.setFormatter(logging.Formatter('%(message)s'))
+        else:
+            handler.setFormatter(no_timestamp_formatter)
+    
+    # Don't propagate to the parent logger to prevent duplicate entries
     logger.propagate = False
 
 # Add more shared CLI helpers as needed
