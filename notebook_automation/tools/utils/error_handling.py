@@ -191,29 +191,31 @@ def categorize_error(error: Union[Exception, str], status_code: Optional[int] = 
     # This ensures every error gets categorized, even if we can't determine specifics
     return ErrorCategories.UNKNOWN
 
-def update_failed_files(file_info: Dict[str, Any], error: Union[Exception, str], category: str = ErrorCategories.UNKNOWN) -> None:
-    """Update the centralized failed files tracking system with a new failure record.
+def update_failed_files(failed_file: str, file_info: Union[str, Dict[str, Any], List[str]], 
+                     error: Union[Exception, str] = "Unknown error", 
+                     category: str = ErrorCategories.UNKNOWN) -> None:
+    """Update the centralized tracking system for failed file operations.
     
-    This function maintains a comprehensive JSON-based record of all processing failures
-    in the system. It handles record creation, duplicate detection, error categorization,
-    and persistent storage. The tracking system enables post-processing analysis, 
-    retry operations, and systematic error resolution across the automation pipeline.
+    This function maintains a comprehensive error tracking system that records
+    which files failed processing, details about the error, error categorization,
+    and timestamps. It supports adding both individual files and batches of files,
+    handles deduplication, and maintains a persistent JSON record for later analysis
+    and retry operations.
     
     Args:
-        file_info (Dict[str, Any]): Information about the failed file with these keys:
-            - 'file': Filename or identifier (required)
-            - 'path': Full path to the file (optional)
-            - Other metadata fields as needed (optional)
-        error (Union[Exception, str]): The error message or exception object describing
-            the failure. Will be converted to string if needed.
-        category (str, optional): Error category from ErrorCategories constants.
-            Defaults to ErrorCategories.UNKNOWN. Used for aggregating similar errors.
+        failed_file (str): Path to the JSON file where failures are tracked.
+            Will be created if it doesn't exist.
+        file_info (Union[str, Dict[str, Any], List[str]]): Information about the failed file(s).
+            Can be a single file path string, a dictionary with file metadata, 
+            or a list of file paths for batch updates.
+        error (Union[Exception, str], optional): The error that occurred during processing.
+            Can be an exception object or a string description. Defaults to "Unknown error".
+        category (str, optional): The error category for classification.
+            Should be one of the constants from ErrorCategories. 
+            Defaults to ErrorCategories.UNKNOWN.
     
     Returns:
         None
-        
-    Raises:
-        None: Any internal exceptions are caught and logged but not propagated
     
     Example:
         >>> try:
@@ -221,6 +223,7 @@ def update_failed_files(file_info: Dict[str, Any], error: Union[Exception, str],
         ... except Exception as e:
         ...     category = categorize_error(e)
         ...     update_failed_files(
+        ...         'failed_files.json',
         ...         {'file': 'video.mp4', 'path': '/path/to/video.mp4'},
         ...         e,
         ...         category
@@ -228,20 +231,24 @@ def update_failed_files(file_info: Dict[str, Any], error: Union[Exception, str],
         
     Notes:
         Side Effects:
-        - Updates the central failed_files.json in the project root
+        - Updates the specified failed_files.json file
         - Logs the failure to the dedicated failed_logger
         - Creates the tracking file if it doesn't exist
     """
-    # Derive the path to the failed files tracking JSON
-    # This is stored at the project root level for centralized tracking
-    failed_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "failed_files.json")
+    # Use the provided failed_file path directly (don't override it)
+    failed_file_path = failed_file
     
     # Load existing failed files or create a new list
     # This ensures we maintain a comprehensive history and don't lose previous failures
     try:
-        if os.path.exists(failed_file):
-            with open(failed_file, 'r') as f:
-                failed_list = json.load(f)
+        if os.path.exists(failed_file_path):
+            with open(failed_file_path, 'r') as f:
+                failed_data = json.load(f)
+                # Handle both formats: direct list or {'failed_files': [...]} format
+                if isinstance(failed_data, dict) and 'failed_files' in failed_data:
+                    failed_list = failed_data.get('failed_files', [])
+                else:
+                    failed_list = failed_data if isinstance(failed_data, list) else []
         else:
             # Initialize a new list if this is the first recorded failure
             failed_list = []
@@ -251,43 +258,118 @@ def update_failed_files(file_info: Dict[str, Any], error: Union[Exception, str],
         logger.error(f"Error loading failed files: {e}")
         failed_list = []
     
-    # Create a structured failure record with consistent fields
-    # This standardized format enables better analysis and reporting
-    failed_record = {
-        'file': file_info.get('file', 'unknown'),  # Filename or identifier
-        'path': file_info.get('path', ''),         # Full path to the file
-        'error': str(error),                       # Error message
-        'category': category,                      # Standardized error category
-        'timestamp': datetime.now().isoformat(),   # When the failure occurred
-        'retried': False                           # Track retry status for later recovery
-    }
-    
-    # Check if this file is already in the list to prevent duplicates
-    # This deduplication logic ensures we track the latest error for each file
-    # rather than creating multiple entries for the same file
-    found = False
-    for i, item in enumerate(failed_list):
-        if item.get('file') == failed_record['file']:
-            # Update existing record with new error information
-            # This maintains history while ensuring the most recent error is tracked
-            failed_list[i] = failed_record
-            found = True
-            break
-    
-    # Add new record if not found
-    # This ensures all failed files are tracked, not just updated ones
-    if not found:
-        failed_list.append(failed_record)
-    
-    # Log to specialized failed files logger
-    # This creates a dedicated log stream just for failures that's easier to monitor
-    failed_logger.error(f"Failed file: {failed_record['file']}, Error: {failed_record['error']}, Category: {failed_record['category']}")
+    # Handle different input types for file_info
+    if isinstance(file_info, list):
+        # Handle case when file_info is a list of filenames/paths
+        files_to_add = []
+        for file_path in file_info:
+            # Handle each item in the list properly
+            if isinstance(file_path, str):
+                files_to_add.append({
+                    'file': os.path.basename(file_path),
+                    'path': str(file_path),
+                    'error': str(error),
+                    'category': category,
+                    'timestamp': datetime.now().isoformat(),
+                    'retried': False
+                })
+            elif isinstance(file_path, dict):
+                # Handle dictionaries in the list
+                files_to_add.append({
+                    'file': file_path.get('file', os.path.basename(str(file_path.get('path', 'unknown')))),
+                    'path': str(file_path.get('path', '')),
+                    'error': str(error),
+                    'category': category,
+                    'timestamp': datetime.now().isoformat(),
+                    'retried': False
+                })
+            else:
+                # Handle any other type
+                files_to_add.append({
+                    'file': 'unknown',
+                    'path': str(file_path),
+                    'error': str(error),
+                    'category': category,
+                    'timestamp': datetime.now().isoformat(),
+                    'retried': False
+                })
+                logger.warning(f"Unexpected type for file_path in list: {type(file_path)}. Using string conversion.")
+            
+        # Add all files to the failed list, avoiding duplicates
+        for new_record in files_to_add:
+            found = False
+            for i, item in enumerate(failed_list):
+                if isinstance(item, dict) and item.get('file') == new_record['file']:
+                    failed_list[i] = new_record  # Update existing record
+                    found = True
+                    break
+            if not found:
+                failed_list.append(new_record)  # Add new record
+            
+            # Log each failed file
+            failed_logger.error(f"Failed file: {new_record['file']}, Error: {new_record['error']}, Category: {new_record['category']}")
+    else:
+        # Create a structured failure record with consistent fields
+        # This standardized format enables better analysis and reporting
+        failed_record = {}
+        
+        if isinstance(file_info, str):
+            # Handle case when file_info is just a string (filename/path)
+            failed_record = {
+                'file': os.path.basename(file_info),
+                'path': file_info,
+                'error': str(error),
+                'category': category,
+                'timestamp': datetime.now().isoformat(),
+                'retried': False
+            }
+        elif isinstance(file_info, dict):
+            # Handle case when file_info is a dictionary
+            failed_record = {
+                'file': file_info.get('file', os.path.basename(str(file_info.get('path', 'unknown')))),
+                'path': str(file_info.get('path', '')),
+                'error': str(error),
+                'category': category,
+                'timestamp': datetime.now().isoformat(),
+                'retried': False
+            }
+        else:
+            # Handle unexpected type by creating a minimal record
+            failed_record = {
+                'file': 'unknown',
+                'path': str(file_info) if file_info is not None else '',
+                'error': str(error),
+                'category': category,
+                'timestamp': datetime.now().isoformat(),
+                'retried': False
+            }
+            logger.warning(f"Unexpected type for file_info: {type(file_info)}. Using minimal record.")
+        
+        # Check if this file is already in the list to prevent duplicates
+        # This deduplication logic ensures we track the latest error for each file
+        found = False
+        for i, item in enumerate(failed_list):
+            if isinstance(item, dict) and item.get('file') == failed_record['file']:
+                # Update existing record with new error information
+                failed_list[i] = failed_record
+                found = True
+                break
+        
+        # Add new record if not found
+        # This ensures all failed files are tracked, not just updated ones
+        if not found:
+            failed_list.append(failed_record)
+        
+        # Log to specialized failed files logger
+        # This creates a dedicated log stream just for failures that's easier to monitor
+        failed_logger.error(f"Failed file: {failed_record['file']}, Error: {failed_record['error']}, Category: {failed_record['category']}")
     
     # Write updated list back to the JSON file
     # This persists the failure information across process restarts
     try:
-        with open(failed_file, 'w') as f:
-            json.dump(failed_list, f, indent=2)  # Pretty-print for human readability
+        with open(failed_file_path, 'w') as f:
+            # Store as a container object with failed_files key for better structure
+            json.dump({'failed_files': failed_list}, f, indent=2)  # Pretty-print for human readability
     except Exception as e:
         # Handle errors in writing the failure record
         # Log but don't raise to prevent cascading failures
@@ -381,10 +463,14 @@ def update_results_file(results_file: str, new_result: Dict[str, Any]) -> None:
         # Read existing results to maintain history
         # This ensures we don't lose previous processing records
         with open(results_file, 'r') as f:
-            existing_results = json.load(f)
+            existing_results = json.load(f) or {}
+            
+            # Ensure existing_results is a dict
+            if not isinstance(existing_results, dict):
+                existing_results = {'processed_videos': []}
         
         # Get the file identifier from the new result
-        file_path = new_result.get('file')
+        file_path = new_result.get('file', 'unknown')
         
         # Ensure required structure exists in case of legacy or corrupted files
         # This backward compatibility check prevents errors with older result files
@@ -395,7 +481,8 @@ def update_results_file(results_file: str, new_result: Dict[str, Any]) -> None:
         # This ensures we maintain one record per file, with the latest result
         found = False
         for i, video in enumerate(existing_results['processed_videos']):
-            if video.get('file') == file_path:
+            video_file = video.get('file') if isinstance(video, dict) else None
+            if video_file == file_path:
                 # Update existing entry with new processing information
                 # This maintains the processing history while ensuring current data
                 existing_results['processed_videos'][i] = new_result

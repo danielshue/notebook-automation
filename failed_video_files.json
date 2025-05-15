@@ -1,0 +1,76 @@
+{
+  "failed_files": [
+    {
+      "file": "01_01_welcome-to-operations-management-organization-and-analysis.mp4",
+      "path": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources/Value Chain Management/Operations Management/operations-management-organization-and-analysis/01_course-orientation-operations-strategy/01_about-the-course-and-your-classmates/01_01_welcome-to-operations-management-organization-and-analysis.mp4",
+      "error": "Failed to process video",
+      "category": "unknown_error",
+      "timestamp": "2025-05-14T21:50:10.894286",
+      "retried": false
+    },
+    {
+      "file": "01_03_meet-professor-gopesh-anand.mp4",
+      "path": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources/Value Chain Management/Operations Management/operations-management-organization-and-analysis/01_course-orientation-operations-strategy/01_about-the-course-and-your-classmates/01_03_meet-professor-gopesh-anand.mp4",
+      "error": "Failed to process video",
+      "category": "unknown_error",
+      "timestamp": "2025-05-14T21:50:10.894297",
+      "retried": false
+    },
+    {
+      "file": "01_04_meet-professor-ujjal-mukherjee.mp4",
+      "path": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources/Value Chain Management/Operations Management/operations-management-organization-and-analysis/01_course-orientation-operations-strategy/01_about-the-course-and-your-classmates/01_04_meet-professor-ujjal-mukherjee.mp4",
+      "error": "Failed to process video",
+      "category": "unknown_error",
+      "timestamp": "2025-05-14T21:50:10.894299",
+      "retried": false
+    },
+    {
+      "file": "01_09_learn-on-your-terms.mp4",
+      "path": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources/Value Chain Management/Operations Management/operations-management-organization-and-analysis/01_course-orientation-operations-strategy/01_about-the-course-and-your-classmates/01_09_learn-on-your-terms.mp4",
+      "error": "Failed to process video",
+      "category": "unknown_error",
+      "timestamp": "2025-05-14T21:50:10.894301",
+      "retried": false
+    },
+    {
+      "file": "03_01_defining-operations-management.mp4",
+      "path": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources/Value Chain Management/Operations Management/operations-management-organization-and-analysis/01_course-orientation-operations-strategy/03_defining-operations-management/03_01_defining-operations-management.mp4",
+      "error": "Failed to process video",
+      "category": "unknown_error",
+      "timestamp": "2025-05-14T21:50:10.894302",
+      "retried": false
+    },
+    {
+      "file": "04_01_input-process-output-model.mp4",
+      "path": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources/Value Chain Management/Operations Management/operations-management-organization-and-analysis/01_course-orientation-operations-strategy/04_input-process-output-model/04_01_input-process-output-model.mp4",
+      "error": "Failed to process video",
+      "category": "unknown_error",
+      "timestamp": "2025-05-14T21:50:10.894304",
+      "retried": false
+    },
+    {
+      "file": "05_01_application-of-ipo.mp4",
+      "path": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources/Value Chain Management/Operations Management/operations-management-organization-and-analysis/01_course-orientation-operations-strategy/05_application-of-ipo/05_01_application-of-ipo.mp4",
+      "error": "Failed to process video",
+      "category": "unknown_error",
+      "timestamp": "2025-05-14T21:50:10.894306",
+      "retried": false
+    },
+    {
+      "file": "06_01_strategy-and-alignment.mp4",
+      "path": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources/Value Chain Management/Operations Management/operations-management-organization-and-analysis/01_course-orientation-operations-strategy/06_strategy-and-alignment/06_01_strategy-and-alignment.mp4",
+      "error": "Failed to process video",
+      "category": "unknown_error",
+      "timestamp": "2025-05-14T21:50:10.894308",
+      "retried": false
+    },
+    {
+      "file": "07_01_course-conclusion.mp4",
+      "path": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources/Value Chain Management/Operations Management/operations-management-quality-and-supply-chain/05_operations-resilience/07_congratulations/07_01_course-conclusion.mp4",
+      "error": "Failed to process video",
+      "category": "unknown_error",
+      "timestamp": "2025-05-14T21:50:10.894314",
+      "retried": false
+    }
+  ]
+}

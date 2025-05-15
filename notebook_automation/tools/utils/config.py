@@ -67,9 +67,20 @@ import inspect
 import colorlog
 import json
 import os.path
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any, Set
 from dotenv import load_dotenv
+
+# Add version check for Rich support
+RICH_AVAILABLE = False
+try:
+    from rich.logging import RichHandler
+    from rich.console import Console
+    from rich.theme import Theme
+    RICH_AVAILABLE = True
+except ImportError:
+    pass
 
 from .paths import normalize_wsl_path
 
@@ -149,17 +160,23 @@ def _get_config_data() -> dict:
         _config_data = load_config_data()
     return _config_data
 
+
+# --- Path and API constants ---
 try:
-    NOTEBOOK_VAULT_ROOT = Path(_get_config_data()["paths"]["notebook_vault_root"])
-    ONEDRIVE_LOCAL_RESOURCES_ROOT = Path(_get_config_data()["paths"]["resources_root"])
+    _config = _get_config_data()
+    NOTEBOOK_VAULT_ROOT = Path(_config["paths"]["notebook_vault_root"])
+    ONEDRIVE_LOCAL_RESOURCES_ROOT = Path(_config["paths"]["resources_root"])
     # Alias for backward compatibility with CLI scripts
     VAULT_LOCAL_ROOT = NOTEBOOK_VAULT_ROOT
 
     # Microsoft Graph API constants
-    MICROSOFT_GRAPH_API_CLIENT_ID = _get_config_data()["microsoft_graph"]["client_id"]
-    AUTHORITY = _get_config_data()["microsoft_graph"]["authority"]
-    SCOPES = _get_config_data()["microsoft_graph"]["scopes"]
-    GRAPH_API_ENDPOINT = _get_config_data()["microsoft_graph"]["api_endpoint"]
+    MICROSOFT_GRAPH_API_CLIENT_ID = _config["microsoft_graph"]["client_id"]
+    AUTHORITY = _config["microsoft_graph"]["authority"]
+    SCOPES = _config["microsoft_graph"]["scopes"]
+    GRAPH_API_ENDPOINT = _config["microsoft_graph"]["api_endpoint"]
+
+    # ONEDRIVE_BASE: the base path in OneDrive for resource files (used for share links)
+    ONEDRIVE_BASE = _config["paths"].get("onedrive_resources_basepath", "/Education/MBA-Resources")
 except Exception as e:
     logger.error(f"Failed to load config constants: {e}")
     NOTEBOOK_VAULT_ROOT = Path(".")
@@ -169,6 +186,7 @@ except Exception as e:
     AUTHORITY = ""
     SCOPES = []
     GRAPH_API_ENDPOINT = ""
+    ONEDRIVE_BASE = "/Education/MBA-Resources"
 
 # Get the default logger
 logger = logging.getLogger(__name__)
@@ -251,7 +269,8 @@ OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
 
 # Setup logging
 def setup_logging(debug: bool = False, log_file: Optional[str] = None, 
-               failed_log_file: str = "failed_files.log", console_output: bool = True) -> Tuple[logging.Logger, logging.Logger]:
+               failed_log_file: str = "failed_files.log", console_output: bool = True,
+               use_rich: bool = False) -> Tuple[logging.Logger, logging.Logger]:
     """Configure comprehensive logging for the Notebook Automation system.
     
     This function sets up a sophisticated logging system with multiple output streams,
@@ -265,6 +284,7 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
     4. Environment variable override for debug mode
     5. Log level filtering based on debug setting
     6. Custom formatters for different output destinations
+    7. Rich logging integration for enhanced terminal display
     
     Args:
         debug (bool): Enable debug logging level when True. When False, uses INFO level.
@@ -280,6 +300,10 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
         console_output (bool, optional): When True, logs are output to both console
                                         and log files. When False, logs only go to files.
                                         Defaults to True.
+                                        
+        use_rich (bool, optional): When True, uses Rich for enhanced terminal logging
+                                  with better formatting, color, and traceback display.
+                                  Defaults to False for backward compatibility.
         
     Returns:
         tuple: A tuple containing two configured loggers:
@@ -308,37 +332,71 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
         # Log failed operations separately
         failed_logger.error("Failed to process file.pdf: Permission denied")
         ```
-    """
-    # --- If DEBUG is set at the environment level, then set the logger to DEBUG level ---
+    """    # --- If DEBUG is set at the environment level, then set the logger to DEBUG level ---
     # Environment variable override for debug mode provides an external control mechanism
     # This allows enabling debug mode without code changes, useful for troubleshooting
     if os.environ.get("NOTEBOOK_DEBUG", "0") == "1":
         logger.setLevel(logging.DEBUG)
    
     # Base log level determined by function parameter or environment override
-    log_level = logging.DEBUG if debug else logging.INFO
-    
-    # Add console handler if requested
+    log_level = logging.DEBUG if debug else logging.INFO    # Create console handler based on whether we're using Rich or not
     if console_output:
-        # Create console handler with color formatting (no timestamp)
-        console_handler = logging.StreamHandler()
-        color_formatter = colorlog.ColoredFormatter(
-            '%(log_color)s%(levelname)s: %(message)s',
-            log_colors={
-                'DEBUG': 'cyan',      # Cyan for detailed debug information
-                'INFO': 'green',      # Green for normal operation messages
-                'WARNING': 'yellow',  # Yellow for warning conditions
-                'ERROR': 'red',       # Red for error conditions
-                'CRITICAL': 'bold_red',  # Bold red for critical failures
-            },
-            secondary_log_colors={},
-            style='%'
-        )
-        console_handler.setFormatter(color_formatter)
-        console_handler.setLevel(log_level)
-        # Add console handler to root logger for all modules
-        logging.getLogger('').addHandler(console_handler)
-        # Create logs directory if it doesn't exist
+        if use_rich and RICH_AVAILABLE:
+            try:
+                # Re-import Rich components to ensure they're available in this scope
+                from rich.console import Console
+                from rich.logging import RichHandler
+                
+                # Create a Rich console for enhanced display
+                console = Console()
+                
+                # Create a parameters dict that works across different Rich versions
+                rich_handler_kwargs = {
+                    "console": console,
+                    "rich_tracebacks": True,
+                    "markup": True
+                }
+                
+                # Optionally add parameters that might not be supported in all versions
+                if "show_time" in RichHandler.__init__.__code__.co_varnames:
+                    rich_handler_kwargs["show_time"] = False
+                if "show_path" in RichHandler.__init__.__code__.co_varnames:
+                    rich_handler_kwargs["show_path"] = False
+                
+                # Create the handler with the compatible parameters
+                console_handler = RichHandler(**rich_handler_kwargs)
+            except TypeError as e:
+                # If any parameter is not supported, fall back to minimal args
+                logging.warning(f"Rich logging fallback: {e}")
+                try:
+                    console_handler = RichHandler(console=console)
+                except Exception:
+                    # Last resort - create with no args
+                    console_handler = RichHandler()
+                    
+            # Simple format for Rich handler as it adds its own styling
+            console_handler.setFormatter(logging.Formatter('%(message)s'))
+        else:
+            # Traditional colorlog formatting for standard mode
+            console_handler = logging.StreamHandler()
+            color_formatter = colorlog.ColoredFormatter(
+                '%(log_color)s%(levelname)s: %(message)s',
+                log_colors={
+                    'DEBUG': 'cyan',      # Cyan for detailed debug information
+                    'INFO': 'green',      # Green for normal operation messages
+                    'WARNING': 'yellow',  # Yellow for warning conditions                    'ERROR': 'red',       # Red for error conditions
+                    'CRITICAL': 'bold_red',  # Bold red for critical failures
+                },
+                secondary_log_colors={},
+                style='%'
+            )
+            console_handler.setFormatter(color_formatter)
+            
+    # Set the log level and add to the root logger
+    console_handler.setLevel(log_level)
+    logging.getLogger('').addHandler(console_handler)
+    
+    # Create logs directory if it doesn't exist
     # Try to get logging_dir from config.json if available
     config_logging_dir = None
     try:
@@ -426,19 +484,70 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
     
     failed_file_handler = logging.FileHandler(failed_log_file)
     failed_file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-    failed_logger.addHandler(failed_file_handler)
-    # Add a visually distinct colored console handler for failed operations (no timestamp)
-    failed_console_handler = logging.StreamHandler()
-    failed_console_handler.setFormatter(colorlog.ColoredFormatter(
-        '%(log_color)sFAILED - %(message)s',
-        log_colors={
-            'DEBUG': 'cyan',
-            'INFO': 'green',
-            'WARNING': 'yellow',
-            'ERROR': 'red,bg_white',     # Red text on white background for high visibility
-            'CRITICAL': 'bold_red,bg_white',  # Bold red on white for critical failures
-        }
-    ))
+    failed_logger.addHandler(failed_file_handler)    # Add a visually distinct handler for failed operations
+    if use_rich and console_output:
+        try:
+            from rich.logging import RichHandler
+            from rich.console import Console
+            from rich.theme import Theme
+            
+            # Create a custom theme with emphasis on error formatting
+            custom_theme = Theme({
+                "failed.text": "bold red",
+                "failed.header": "red on white"
+            })
+            
+            # Create a dedicated console for failure messages
+            failed_console = Console(theme=custom_theme)
+            
+            # Handle different Rich versions by checking supported parameters
+            rich_handler_kwargs = {
+                "console": failed_console,
+                "rich_tracebacks": True,
+                "markup": True
+            }
+            
+            # Optionally add parameters that might not be supported in all versions
+            if "show_time" in RichHandler.__init__.__code__.co_varnames:
+                rich_handler_kwargs["show_time"] = False
+            if "show_path" in RichHandler.__init__.__code__.co_varnames:
+                rich_handler_kwargs["show_path"] = False
+                
+            # Create Rich handler with compatible parameters
+            failed_console_handler = RichHandler(**rich_handler_kwargs)
+              
+            # Custom format to make failures stand out with prefix
+            if hasattr(failed_console_handler, 'setFormatter'):
+                # For ERROR level, use a custom prefix to make failures stand out
+                formatter = logging.Formatter('[FAILED] %(message)s')
+                failed_console_handler.setFormatter(formatter)
+        except ImportError:
+            # Fallback to colorlog if Rich isn't available
+            failed_console_handler = logging.StreamHandler()
+            failed_console_handler.setFormatter(colorlog.ColoredFormatter(
+                '%(log_color)sFAILED - %(message)s',
+                log_colors={
+                    'DEBUG': 'cyan',
+                    'INFO': 'green',
+                    'WARNING': 'yellow',
+                    'ERROR': 'red,bg_white',     # Red text on white background for high visibility
+                    'CRITICAL': 'bold_red,bg_white',  # Bold red on white for critical failures
+                }
+            ))
+    else:
+        # Traditional colorlog formatting for failures in standard mode
+        failed_console_handler = logging.StreamHandler()
+        failed_console_handler.setFormatter(colorlog.ColoredFormatter(
+            '%(log_color)sFAILED - %(message)s',
+            log_colors={
+                'DEBUG': 'cyan',
+                'INFO': 'green',
+                'WARNING': 'yellow',
+                'ERROR': 'red,bg_white',     # Red text on white background for high visibility
+                'CRITICAL': 'bold_red,bg_white',  # Bold red on white for critical failures
+            }
+        ))
+        
     failed_logger.addHandler(failed_console_handler)
     failed_logger.propagate = False  # Don't propagate to root logger to avoid duplicate entries
     

@@ -84,6 +84,8 @@ def normalize_path(path_str: str, allow_file: bool = False) -> Path:
     # Normalize path separators (handle both / and \)
     path_str = os.path.normpath(path_str)
     
+    # Import NOTEBOOK_VAULT_ROOT from config at function scope
+    from notebook_automation.tools.utils.config import NOTEBOOK_VAULT_ROOT
     # Create a Path object
     path = Path(path_str)
     
@@ -824,34 +826,93 @@ def main():
                             print(f"Error: {metadata['error']}")
                         print("-")
     else:
-        # Process a single file or an entire directory
+        # Color codes and symbols
+        GREEN = '\033[92m'
+        YELLOW = '\033[93m'
+        RED = '\033[91m'
+        RESET = '\033[0m'
+        CHECK = '✅'
+        WARN = '⚠️'
+        CROSS = '❌'
+        # Helper for truncating paths, always relative to VAULT ROOT
+        from notebook_automation.tools.utils.config import VAULT_LOCAL_ROOT
+        def format_path(path, width=60):
+            try:
+                rel_path = Path(path).resolve().relative_to(Path(VAULT_LOCAL_ROOT).resolve())
+                path_str = str(rel_path)
+            except Exception:
+                path_str = str(path)
+            if len(path_str) <= width:
+                return path_str.ljust(width)
+            parts = path_str.split(os.sep)
+            if len(parts) > 2:
+                return ('...%s%s' % (os.sep, os.sep.join(parts[-2:]))).ljust(width)
+            return ('...' + path_str[-(width-3):]).ljust(width)
+
+        from tqdm import tqdm
         if is_file:
             print(f"{'[DRY RUN] ' if args.dry_run else ''}Processing file: {path}")
             file_stats = updater.process_file(path)
+            short_path = format_path(path)
             if file_stats['error']:
-                print(f"Error: {file_stats['error']}")
+                print(f"{RED}[ERROR]{CROSS} {short_path}{RESET} {file_stats['error']}")
             elif file_stats['modified']:
-                print("File was modified with the following updates:")
+                print(f"{GREEN}[UPDATED]{CHECK} {short_path}{RESET}")
                 if file_stats['program_updated']:
-                    print("  - Program field updated")
+                    print(f"    {GREEN}- Program field updated{RESET}")
                 if file_stats['course_updated']:
-                    print("  - Course field updated")
+                    print(f"    {GREEN}- Course field updated{RESET}")
                 if file_stats['class_updated']:
-                    print("  - Class field updated")
+                    print(f"    {GREEN}- Class field updated{RESET}")
             else:
-                print("No updates were needed - file already has correct metadata")
+                print(f"{YELLOW}[OK]{WARN} {short_path}{RESET} No updates needed.")
         else:
             print(f"{'[DRY RUN] ' if args.dry_run else ''}Ensuring consistent metadata in markdown files in: {path}")
-            stats = updater.process_directory(path)
-            print("\nSummary:")
-            print(f"Files processed: {stats['files_processed']}")
-            print(f"Files modified: {stats['files_modified']}")
-            print(f"Program fields updated: {stats['program_updated']}")
-            print(f"Course fields updated: {stats['course_updated']}")
-            print(f"Class fields updated: {stats['class_updated']}")
-            print(f"Files with errors: {stats['files_with_errors']}")
+            # Count total .md files for progress bar
+            total_files = sum(len([f for f in files if f.lower().endswith('.md')]) for _, _, files in os.walk(path))
+            stats = {
+                'files_processed': 0,
+                'files_modified': 0,
+                'files_with_errors': 0,
+                'program_updated': 0,
+                'course_updated': 0,
+                'class_updated': 0
+            }
+            with tqdm(total=total_files, desc="Processing files", unit="file", colour="green") as pbar:
+                for root, _, files in os.walk(path):
+                    for file in files:
+                        if file.lower().endswith('.md'):
+                            filepath = Path(root) / file
+                            file_stats = updater.process_file(filepath)
+                            stats['files_processed'] += 1
+                            short_path = format_path(filepath)
+                            if file_stats['error']:
+                                tqdm.write(f"{RED}[ERROR]{CROSS} {short_path}{RESET} {file_stats['error']}")
+                                stats['files_with_errors'] += 1
+                            elif file_stats['modified']:
+                                tqdm.write(f"{GREEN}[UPDATED]{CHECK} {short_path}{RESET}")
+                                stats['files_modified'] += 1
+                                if file_stats['program_updated']:
+                                    stats['program_updated'] += 1
+                                if file_stats['course_updated']:
+                                    stats['course_updated'] += 1
+                                if file_stats['class_updated']:
+                                    stats['class_updated'] += 1
+                            else:
+                                tqdm.write(f"{YELLOW}[OK]{WARN} {short_path}{RESET} No updates needed.")
+                            pbar.update(1)
+            # Print a clear, colorized summary with separator
+            SEP = '\n' + '-' * 48
+            print(f"{SEP}\nSummary:")
+            print(f"  {GREEN}Files processed:        {stats['files_processed']}{RESET}")
+            print(f"  {GREEN}Files modified:         {stats['files_modified']}{RESET}")
+            print(f"  {GREEN}Program fields updated: {stats['program_updated']}{RESET}")
+            print(f"  {GREEN}Course fields updated:  {stats['course_updated']}{RESET}")
+            print(f"  {GREEN}Class fields updated:   {stats['class_updated']}{RESET}")
+            print(f"  {RED}Files with errors:      {stats['files_with_errors']}{RESET}")
+            print(SEP)
             if args.dry_run:
-                print("\nThis was a dry run. No files were modified.")
+                print(f"{YELLOW}This was a dry run. No files were modified.{RESET}")
 
 if __name__ == "__main__":
     main()

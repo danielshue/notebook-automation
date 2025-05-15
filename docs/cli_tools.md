@@ -17,7 +17,26 @@ This project provides a suite of command-line tools for automating and managing 
 | vault-ensure-metadata          | notebook_automation/cli/ensure_metadata.py              | Ensure consistent note metadata             |
 | vault-create-class-dashboards  | notebook_automation/cli/create_class_dashboards.py      | Create dashboards for classes               |
 | vault-generate-pdf-notes       | notebook_automation/cli/generate_pdf_notes.py           | Generate notes from PDFs                    |
-| vault-generate-markdown        | notebook_automation/cli/generate_markdown.py            | Generate markdown from source               |
+| vault-generate-markdown        | notebook_automation/cli/generate_markdown.py            | Generate markdown from HTML, TXT, and EPUB sources |
+
+### vault-generate-markdown
+
+Convert HTML, TXT, and EPUB files to markdown notes for a course or folder. EPUB conversion requires both `pypandoc` and the [Pandoc](https://pandoc.org/installing.html) tool to be installed.
+
+```bash
+# Convert all HTML, TXT, and EPUB files in a directory (dry run)
+vault-generate-markdown --src-dirs /path/to/source --dry-run
+
+# Convert and write markdown files to the vault (mirroring OneDrive structure)
+vault-generate-markdown --src-dirs /path/to/source
+```
+
+**EPUB Conversion Requirements:**
+
+- Python package: `pypandoc` (installed automatically with the project)
+- System tool: [Pandoc](https://pandoc.org/installing.html) (must be installed separately)
+
+If you see errors about missing `pypandoc` or `pandoc`, follow the installation instructions in the main README.
 | vault-generate-templates       | notebook_automation/cli/generate_templates.py           | Generate note templates                     |
 | vault-update-glossary          | notebook_automation/cli/update_glossary.py              | Update glossary pages with callouts         |
 | vault-extract-pdf-pages        | notebook_automation/cli/extract_pdf_pages.py            | Extract pages from PDFs                     |
@@ -41,14 +60,18 @@ vault-generate-pdf-notes --input myfile.pdf --output notes.md
 Or use the standalone EXEs from the CI/CD build artifacts for direct execution on Windows.
 
 ## Adding New CLI Tools
+
 - Place new scripts in `notebook_automation/cli/`.
 - Ensure each script defines a `main()` function and an `if __name__ == "__main__": main()` block.
 - Add the tool to `setup.py` under `console_scripts` and to the build workflow for EXE generation.
 
 ## See Also
+
 - [Development Guide](./development.md)
 - [Testing CLI Tools](./testing.md)
+
 ```bash
+
 # Convert a single file
 vault-convert-markdown file.html
 
@@ -70,10 +93,12 @@ vault-convert-markdown --dest-dir /path/to/output file.html
 ### vault-generate-templates
 
 **Typical Use Cases:**
+
 - Generate consistent note templates for lectures, assignments, or case studies.
 - Standardize metadata and tag structure across your vault.
 
 **Best Practices:**
+
 - Use `--force` to overwrite existing templates if needed.
 
 Generate Obsidian templates with nested tags for different types of notes (MBA Lecture Notes, Case Studies, Assignments, etc.).
@@ -95,10 +120,12 @@ vault-generate-templates --verbose
 ### vault-generate-dataview
 
 **Typical Use Cases:**
+
 - Create dashboards or summary views in Obsidian using Dataview plugin.
 - Quickly generate queries for course, lecture, or assignment tracking.
 
 **Best Practices:**
+
 - Use `--dry-run` to preview generated queries.
 
 Generate example Dataview queries that leverage the MBA tag structure. These queries can be used to create dynamic views and dashboards in Obsidian.
@@ -119,15 +146,18 @@ vault-generate-dataview --dry-run
 ### vault-ensure-metadata
 
 **Typical Use Cases:**
+
 - Ensure all notes have consistent YAML frontmatter for program, course, and class.
 - Update metadata after reorganizing folders or importing new notes.
 
 **Best Practices:**
+
 - Use `--dry-run` to preview changes.
 
 Ensures consistent metadata in markdown files based on directory structure, updating program, course, and class fields in YAML frontmatter.
 
 ```bash
+
 # Update metadata in the default Obsidian vault
 vault-ensure-metadata
 
@@ -146,10 +176,12 @@ vault-ensure-metadata --verbose
 ### vault-generate-index
 
 **Typical Use Cases:**
+
 - Build or update navigation indexes for large vaults.
 - Generate lesson, course, or program indexes automatically.
 
 **Best Practices:**
+
 - Use `--generate-index --dry-run` to see what will be created.
 
 Generate hierarchical index files for an Obsidian vault, supporting multiple levels of organization.
@@ -173,10 +205,12 @@ vault-generate-index --source /path/to/vault --generate-index --dry-run
 ### vault-onedrive-share
 
 **Typical Use Cases:**
+
 - Instantly generate a shareable link for a OneDrive file for collaboration or sharing.
 - List and browse files in your OneDrive or notebook resources from the CLI.
 
 **Best Practices:**
+
 - Use `--notebook-resource` for files in your configured resources root.
 - Use `--verbose` and `--debug` for troubleshooting authentication or API issues.
 
@@ -203,6 +237,7 @@ vault-onedrive-share --file "Documents/resume.pdf" --debug
 ```
 
 **Options:**
+
 - `--file <path>`: Path to the file in OneDrive to create a shareable link
 - `--list <folder>`: Path to the folder in OneDrive to list contents
 - `--notebook-resource <path>`: Path to file in notebook resources root to create a shareable link
@@ -216,10 +251,12 @@ The first time you run this tool, you will be prompted to authenticate with Micr
 ### vault-extract-pdf-pages
 
 **Typical Use Cases:**
+
 - Extract specific pages or sections from large PDF files for study or sharing.
 - Batch process PDFs for course packets or reading assignments.
 
 **Best Practices:**
+
 - Use page ranges (e.g., `1-5`) and output file options for flexibility.
 
 Extract specific pages from a PDF file. Supports page ranges and multiple PDFs.
@@ -241,10 +278,12 @@ vault-extract-pdf-pages "path with spaces" 1-5
 ### vault-list-folder
 
 **Typical Use Cases:**
+
 - Browse or search OneDrive folders from the command line.
 - Find files by name, ID, or location for further processing.
 
 **Best Practices:**
+
 - Use `--search` to quickly locate files.
 - Use `--show-drives` or `--show-root` to explore your OneDrive structure.
 

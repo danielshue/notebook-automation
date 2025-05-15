@@ -56,7 +56,17 @@ Notebook Automation is a comprehensive Python toolkit for managing online course
 3. Install the required dependencies:
 
    ```bash
-   pip install pyyaml html2text requests msal openai python-dotenv cryptography urllib3
+   pip install -e .
+   ```
+
+   For EPUB conversion, you must also install [Pandoc](https://pandoc.org/installing.html):
+
+   ```bash
+   # On Ubuntu/WSL:
+   sudo apt-get install pandoc
+   # On MacOS (Homebrew):
+   brew install pandoc
+   # On Windows: Download and install from https://github.com/jgm/pandoc/releases
    ```
 
 4. (Recommended) Install in development mode:
@@ -243,8 +253,12 @@ See each tool's `--help` for more options.
 
 ## Requirements
 
-- Python 3.6+
-- pyyaml, html2text, requests, msal, openai, python-dotenv, cryptography, urllib3
+- Python 3.8+
+- ruamel.yaml, html2text, requests, msal, openai, python-dotenv, cryptography, urllib3
+- tqdm, retry, loguru, python-docx, colorlog, beautifulsoup4, pymsteams
+- pypandoc (for EPUB to Markdown conversion)
+- openai (for AI-powered summaries and transcript processing)
+- Pandoc (required for EPUB conversion, must be installed separately)
 - Obsidian (for viewing and working with the generated files)
 
 ## Testing for Non-Trivial Functions

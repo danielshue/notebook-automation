@@ -2,7 +2,7 @@
 
 
 a = Analysis(
-    ['notebook_automation/cli/ensure_metadata.py'],
+    ['notebook_automation/cli/generate_vault_index.py'],
     pathex=[],
     binaries=[],
     datas=[],
@@ -21,7 +21,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='ensure_metadata',
+    name='generate_vault_index',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -40,5 +40,5 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='ensure_metadata',
+    name='generate_vault_index',
 )
