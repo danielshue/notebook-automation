@@ -38,6 +38,7 @@ from pathlib import Path
 from typing import Dict, Optional, Any, List
 
 from ruamel.yaml import YAML
+import logging
 
 from notebook_automation.tools.metadata.path_metadata import (
     extract_metadata_from_path
@@ -77,10 +78,10 @@ tags:
 ---
 # {title}
 
+{summary}
+
 ## References
 - [{title}]({pdf_link})
-
-{summary}
 
 ## Notes
 {notes}
@@ -94,14 +95,15 @@ type: video-reference
 date: {date}
 video-link: {video_link}
 tags:
+  - type/video
   - course/{course_tag}
 ---
 # {title}
 
+{summary}
+
 ## References
 - [Video Recording]({video_link})
-
-{summary}
 
 ## Notes
 {notes}
@@ -110,6 +112,124 @@ tags:
     }
     
     return templates.get(note_type, templates['pdf'])
+
+def extract_yaml_tags(content: str) -> List[str]:
+    """Extract tags from a YAML block in the content.
+    
+    Args:
+        content (str): The markdown content that may contain YAML frontmatter
+        
+    Returns:
+        List[str]: List of tags found in the YAML frontmatter
+    """
+    tags = []
+    if not content:
+        return tags
+        
+    # Look for YAML frontmatter between --- markers
+    yaml_blocks = content.split('---')
+    for block in yaml_blocks:
+        if 'tags:' in block:
+            # Extract tags section
+            tag_lines = block.split('tags:')[1].split('\n')
+            for line in tag_lines:
+                # Look for lines that start with - and optional quote
+                if line.strip().startswith('-') and '"' in line:
+                    tag = line.split('"')[1].strip()
+                    if tag:
+                        tags.append(tag)
+                elif line.strip().startswith('-'):
+                    tag = line.strip()[1:].strip()
+                    if tag:
+                        tags.append(tag)
+    return tags
+
+def extract_content_after_yaml(content: str) -> str:
+    """Extract the actual content after YAML frontmatter blocks.
+    
+    Args:
+        content (str): The markdown content that may contain YAML frontmatter
+        
+    Returns:
+        str: Content with YAML frontmatter blocks removed
+    """
+    if not content:
+        return ""
+        
+    # Split on YAML markers
+    parts = content.split('---')
+    
+    # If no YAML markers, return as is
+    if len(parts) <= 2:
+        return content.strip()
+        
+    cleaned_parts = []
+    for i, part in enumerate(parts):
+        if i > 0:  # Skip first part (before first ---)
+            # Skip if this looks like YAML frontmatter
+            if ('tags:' in part or 
+                'title:' in part or 
+                'date:' in part or 
+                'type:' in part):
+                continue
+            # Keep actual content
+            cleaned_part = part.strip()
+            if cleaned_part:
+                cleaned_parts.append(cleaned_part)
+                
+    return '\n\n'.join(cleaned_parts)
+
+def merge_yaml_frontmatter(template_content: str, ai_content: str) -> str:
+    """Merge YAML frontmatter from AI content with template content.
+    
+    Args:
+        template_content (str): The template markdown with base frontmatter
+        ai_content (str): The AI-generated content that may have additional frontmatter
+        
+    Returns:
+        str: Merged content with combined frontmatter and tags
+    """
+    if not ai_content:
+        return template_content
+        
+    # Extract all tags from AI content
+    ai_tags = extract_yaml_tags(ai_content)
+    
+    # Remove any yaml blocks from AI content to avoid duplication
+    content_parts = ai_content.split('---')
+    cleaned_content = ''
+    for i, part in enumerate(content_parts):
+        if i > 0 and i < len(content_parts) - 1:  # Skip frontmatter blocks
+            if 'tags:' not in part:  # Keep non-tag content
+                cleaned_content += part
+        elif i == len(content_parts) - 1:  # Last part
+            cleaned_content += part
+            
+    # Extract the main content after YAML blocks
+    main_content = extract_content_after_yaml(cleaned_content)
+    
+    # Find the tags section in the template
+    template_parts = template_content.split('tags:')
+    if len(template_parts) != 2:
+        return template_content
+        
+    # Combine existing template tags with AI tags
+    existing_tags = extract_yaml_tags(template_content)
+    all_tags = list(set(existing_tags + ai_tags))  # Remove duplicates
+    all_tags.sort()  # Sort for consistency
+    
+    # Rebuild tags section
+    tags_section = 'tags:\n'
+    for tag in all_tags:
+        if tag.strip():
+            tags_section += f'  - "{tag}"\n'
+            
+    # Combine everything, making sure there's proper spacing
+    result = (template_parts[0].rstrip() + '\n' + 
+             tags_section + 
+             '---\n\n' + 
+             main_content)
+    return result
 
 def create_or_update_markdown_note_for_pdf(
     pdf_path: str,
@@ -154,21 +274,61 @@ def create_or_update_markdown_note_for_pdf(
     # Clean up course tag
     course_tag = metadata.get('course', '').lower().replace('-', '/')
     
-    # Prepare template variables
-    template_vars = {
-        'title': metadata.get('title', Path(pdf_path).stem),
-        'course': metadata.get('course', ''),
-        'program': metadata.get('program', 'MBA'),
-        'date': metadata['date'],
-        'pdf_link': pdf_link,
-        'course_tag': course_tag,
-        'summary': summary or "\nAdd summary",
-        'notes': "\n"
-    }
+    # Filter out generic OpenAI responses that aren't actual summaries
+    filtered_summary = summary
+    if summary:
+        # Check for common patterns in OpenAI responses that indicate it's not a real summary
+        generic_patterns = [
+            "please provide the transcript",
+            "certainly! please provide",
+            "once you share the relevant text",
+            "i'll generate a clear and insightful summary",
+            "i'd be happy to help you summarize",
+            "i would need the transcript",
+            "i need more information",
+            "without the content of the pdf",
+            "would need the actual content",
+            "without accessing the content"
+        ]
+        
+        contains_generic_response = any(pattern in summary.lower() for pattern in generic_patterns)
+        
+        # More detailed logging
+        if contains_generic_response:
+            logging.warning(f"Detected generic OpenAI response instead of actual summary for PDF {Path(pdf_path).name}. Replacing with placeholder.")
+            logging.warning(f"Original summary content: {summary[:100]}...")
+            filtered_summary = None
+        else:
+            # Check if the summary is unusually short (might be incomplete)
+            if len(summary.strip().split()) < 15:  # Fewer than 15 words
+                logging.warning(f"Summary appears too short ({len(summary.strip().split())} words). Replacing with placeholder.")
+                filtered_summary = None    # Create base note content from template
+    base_content = f"""---
+title: {metadata.get('title', Path(pdf_path).stem)}
+course: {metadata.get('course', '')}
+program: {metadata.get('program', 'MBA')}
+type: pdf-notes
+date: {metadata['date']}
+pdf-link: {pdf_link}
+permalink: {metadata.get('permalink', '')}
+tags:
+  - type/reference
+  - course/{course_tag}
+---
+# {metadata.get('title', Path(pdf_path).stem)}
+"""
+
+    # Merge the AI summary (which might contain YAML frontmatter) with our base content
+    merged_content = merge_yaml_frontmatter(base_content, filtered_summary if filtered_summary else "Add summary here")
     
-    # Get and fill template
-    template = get_note_template('pdf')
-    note_content = template.format(**template_vars)
+    # Add references and notes sections
+    note_content = f"""{merged_content.rstrip()}
+
+## References
+- [{Path(pdf_path).stem}]({pdf_link})
+
+## Notes
+"""
     
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -187,8 +347,13 @@ def create_or_update_markdown_note_for_pdf(
                 note_content = note_content.rstrip() + notes_content
 
     # Write the note
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(note_content)
+    try:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(note_content)
+    except OSError as e:
+        # Log the error and raise it for further handling
+        print(f"Error writing to file {output_path}: {e}")
+        raise
     return output_path
 
 def create_or_update_markdown_note_for_video(
@@ -237,22 +402,61 @@ def create_or_update_markdown_note_for_video(
     # Clean up course tag
     course_tag = metadata.get('course', '').lower().replace('-', '/')
     
-    # Prepare template variables
-    template_vars = {
-        'title': metadata.get('title', Path(video_path).stem),
-        'course': metadata.get('course', ''),
-        'program': metadata.get('program', 'MBA'),
-        'date': metadata['date'],
-        'video_link': video_link,
-        'course_tag': course_tag,
-        'summary': summary or "\nAdd summary",
-        'notes': "\n",
-        'transcript': transcript or "No transcript available."
-    }
+    # Filter out generic OpenAI responses that aren't actual summaries
+    filtered_summary = summary
+    if summary:
+        # Check for common patterns in OpenAI responses that indicate it's not a real summary
+        generic_patterns = [
+            "please provide the transcript",
+            "certainly! please provide",
+            "once you share the relevant text",
+            "i'll generate a clear and insightful summary",
+            "i'd be happy to help you summarize",
+            "i would need the transcript",
+            "i need more information",
+            "without the content of the video",
+            "would need the actual content",
+            "without accessing the content"
+        ]
+        
+        contains_generic_response = any(pattern in summary.lower() for pattern in generic_patterns)
+        
+        # More detailed logging
+        if contains_generic_response:
+            logging.warning(f"Detected generic OpenAI response instead of actual summary for video {Path(video_path).name}. Replacing with placeholder.")
+            logging.warning(f"Original summary content: {summary[:100]}...")
+            filtered_summary = None
+        else:
+            # Check if the summary is unusually short (might be incomplete)
+            if len(summary.strip().split()) < 15:  # Fewer than 15 words
+                logging.warning(f"Summary appears too short ({len(summary.strip().split())} words). Replacing with placeholder.")
+                filtered_summary = None    # Create base note content from template
+    base_content = f"""---
+title: {metadata.get('title', Path(video_path).stem)}
+course: {metadata.get('course', '')}
+program: {metadata.get('program', 'MBA')}
+type: video-reference
+date: {metadata['date']}
+video-link: {video_link}
+permalink: {metadata.get('permalink', '')}
+tags:
+  - type/video
+  - course/{course_tag}
+---
+# {metadata.get('title', Path(video_path).stem)}
+"""
+
+    # Merge the AI summary (which might contain YAML frontmatter) with our base content
+    merged_content = merge_yaml_frontmatter(base_content, filtered_summary if filtered_summary else "Add summary here")
     
-    # Get and fill template
-    template = get_note_template('video')
-    note_content = template.format(**template_vars)
+    # Add references and notes sections
+    note_content = f"""{merged_content.rstrip()}
+
+## References
+- [Video Recording]({video_link})
+
+## Notes
+"""
     
     # Ensure output directory exists
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -269,7 +473,14 @@ def create_or_update_markdown_note_for_video(
                 notes_content = existing[notes_content_idx:]
                 # Remove trailing whitespace from generated note before appending
                 note_content = note_content.rstrip() + notes_content
+
     # Write the note
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(note_content)
+    try:
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(note_content)
+    except OSError as e:
+        logging.error(
+            "Failed to write note to '%s': %s", output_path, e, exc_info=True
+        )
+        raise
     return output_path

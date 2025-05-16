@@ -21,6 +21,9 @@ from rich.live import Live
 from rich.logging import RichHandler
 import logging
 
+# Suppress logger output from external libraries
+logging.getLogger('openai').setLevel(logging.ERROR)
+
 # Import shared CLI utilities
 from notebook_automation.cli.utils import HEADER, OKBLUE, OKCYAN, OKGREEN, WARNING, FAIL, ENDC, BOLD, GREY, BG_BLUE, remove_timestamps_from_logger
 
@@ -172,16 +175,9 @@ def main() -> None:
     Example:
         When called from the command line:
         $ vault-generate-video-meta --folder "MBA/Finance" --verbose
-    """    
+    """
     global logger, failed_logger
     args = _parse_arguments()
-    
-    # Set config path if provided via environment variable
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
     from notebook_automation.tools.utils import config as config_utils
     config = config_utils.load_config_data(args.config)
     
@@ -217,6 +213,7 @@ def main() -> None:
     # Also remove from our specific loggers to ensure consistency
     remove_timestamps_from_logger(logger)
     remove_timestamps_from_logger(failed_logger)
+    
     if args.debug:
         logger.debug("Debug logging enabled.")
     if args.verbose:
@@ -225,15 +222,6 @@ def main() -> None:
         logger.warning("Dry run mode: No files or links will be created.")
 
     logger.info("Starting Video Metadata Generator CLI...")
-    
-    # Display which config.json file is being used
-    try:
-        actual_config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or config_utils.find_config_path()
-        logger.info(f"Using configuration file: {actual_config_path}")
-        console.print(f"[cyan]Using configuration file: {actual_config_path}[/cyan]")
-    except Exception as e:
-        logger.warning(f"Could not determine config file path: {e}")
-        
     logger.debug(f"Parsed arguments: {args}")
 
     # Log all relevant CLI options for transparency
@@ -395,20 +383,57 @@ def main() -> None:
                                 transcript = tf.read()
                             # Load prompts from the prompts directory
                             chunk_prompt_path = Path(__file__).parent.parent.parent / 'prompts' / 'chunk_summary_prompt.md'
+                            final_prompt_path = Path(__file__).parent.parent.parent / 'prompts' / 'final_summary_prompt_video.md'
+                            fallback_prompt_path = Path(__file__).parent.parent.parent / 'prompts' / 'final_summary_prompt.md'
+                            
+                            # Load chunk prompt
                             if chunk_prompt_path.exists():
                                 with open(chunk_prompt_path, 'r', encoding='utf-8') as pf:
                                     chunked_system_prompt = pf.read()
                             else:
                                 chunked_system_prompt = "Summarize the following transcript chunk."
-                            # Use a simple system/user prompt for now
-                            system_prompt = "You are an MBA course video summarizer."
-                            user_prompt = "Summarize the following transcript for MBA students."
+                                
+                            # Load final prompt - try video-specific first, then generic, then default
+                            if final_prompt_path.exists():
+                                with open(final_prompt_path, 'r', encoding='utf-8') as pf:
+                                    system_prompt = pf.read()
+                                logger.debug(f"Loaded video summary prompt from {final_prompt_path}")
+                            elif fallback_prompt_path.exists():
+                                with open(fallback_prompt_path, 'r', encoding='utf-8') as pf:
+                                    system_prompt = pf.read()
+                                logger.debug(f"Loaded generic summary prompt from {fallback_prompt_path}")
+                            else:
+                                system_prompt = "You are an MBA course video summarizer."
+                                logger.warning(f"No summary prompt files found, using default system prompt")
+                            
+
+                            # Use a template with placeholders for course and onedrive path
+                            user_prompt_template = (
+                                'You are an educational content summarizer for MBA course materials. '
+                                'Generate a clear and insightful summary of the following chunk from the video "{onedrive_path}", part of the course "{course}".'
+                            )
+                            # Prepare metadata for prompt formatting
+                            prompt_metadata = metadata.copy() if metadata else {}
+                            # Use share_link only if it has already been created, otherwise use video_path
+                            prompt_metadata['onedrive_path'] = str(video_path)
+                            prompt_metadata['course'] = metadata.get('course', '') if metadata else ''
+                            user_prompt = user_prompt_template.format(**prompt_metadata)
                             summary = generate_summary_with_openai(
                                 transcript,
                                 system_prompt,
                                 chunked_system_prompt,
-                                user_prompt                            ) if transcript else None
+                                user_prompt,
+                                metadata=metadata
+                            ) if transcript else None
                             transcript_files_processed += 1
+                            if summary:
+                                logger.debug(f"Summary returned from OpenAI (first 300 chars): {summary[:300]}")
+                                # Check if summary has proper structure with headers
+                                has_headers = any(line.startswith('#') for line in summary.split('\n') if line.strip())
+                                logger.debug(f"Summary has markdown headers: {has_headers}")
+                                logger.debug(f"Summary length: {len(summary)} chars, lines: {len(summary.split('\n'))}")
+                            else:
+                                logger.debug("No summary returned from OpenAI.")
                             logger.debug("Transcript and summary generated.")
                         else:
                             logger.info(f"Transcript file not found for {video_path}")
@@ -434,6 +459,7 @@ def main() -> None:
                         rel_path = video_path.relative_to(resources_root)
                         note_name = video_path.stem + "-video.md"
                         output_path = VAULT_LOCAL_ROOT / rel_path.parent / note_name
+                        
                         create_or_update_markdown_note_for_video(
                             str(video_path),
                             str(output_path),
@@ -478,12 +504,12 @@ def main() -> None:
             
             # Force refresh to ensure the progress bar updates correctly and stays at the top
             progress.refresh()
-            
             file_end = time.time()
             times.append(file_end - file_start)# Write results and failed files to JSON
     if not args.dry_run:
         try:
-            update_results_file(RESULTS_FILE, results)
+            # Update results file with a dictionary containing the results list
+            update_results_file(RESULTS_FILE, {'processed_videos': results, 'timestamp': datetime.now().isoformat()})
             logger.info(f"{OKGREEN}Results written to {RESULTS_FILE}{ENDC}")
         except Exception as res_exc:
             logger.error(f"{FAIL}Failed to write results: {res_exc}{ENDC}")

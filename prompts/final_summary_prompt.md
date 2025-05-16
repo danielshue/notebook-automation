@@ -10,10 +10,11 @@ IMPORTANT: If the frontmatter already has tags, DO NOT MODIFY them. Only add tag
    - Use all lowercase
    - For multi-word tags, use hyphens between words (e.g., "competitive-advantage")
    - Each tag must be in double quotes
-   - Each tag must be on its own line with proper YAML indentation 
+   - Each tag must be on its own line with proper YAML indentation
    - No duplicate tags
 
 Example of properly formatted tags in YAML:
+
 ```yaml
 tags:
   - "corporate-finance"
@@ -21,7 +22,6 @@ tags:
   - "discounted-cash-flow"
   - "capital-budgeting"
 ```
-
 
 Your output structure must exactly follow this format:
 
@@ -31,21 +31,24 @@ Your output structure must exactly follow this format:
 
 ---
 
-# 📝 Notes 
+# 📝 Notes
 
 ## 🧠 Summary
+
 - Write a **1-paragraph synthesis** of the entire document
 - Be **concise, clear, and high-level**
 
 ---
 
 ## 🧩 Topics Covered
+
 - List **3–5 specific topics** discussed in the PDF
 - Use concise, bullet-point format
 
 ---
 
 ## 🔑 Key Concepts Explained
+
 - Summarize the **most important ideas** in **3–5 well-structured paragraphs**
 - Aim to **synthesize insights** rather than merely list facts
 - Highlight how concepts relate to **MBA-level thinking** or business application
@@ -53,6 +56,7 @@ Your output structure must exactly follow this format:
 ---
 
 ## ⭐ Important Takeaways
+
 - List **3–5 actionable insights or conclusions**
 - Use bullet points
 - Focus on ideas that are practical, strategically useful, and memorable
@@ -60,6 +64,7 @@ Your output structure must exactly follow this format:
 ---
 
 ## 💬 Notable Quotes / Insights
+
 - Include **1–2 quotes or striking insights** from the PDF
 - Use markdown quote formatting:
   > "Example quote here."
@@ -67,6 +72,7 @@ Your output structure must exactly follow this format:
 ---
 
 ## ❓ Reflection & Questions
+
 - Encourage critical thinking with prompts such as:
   - *What did I learn from this material?*
   - *What remains unclear or could use more context?*

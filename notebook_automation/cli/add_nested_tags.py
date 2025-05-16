@@ -17,7 +17,6 @@ Example:
 """
 
 import argparse
-import os
 import re
 from pathlib import Path
 from typing import Dict, Any
@@ -274,18 +273,11 @@ def add_nested_tags(directory: Path, dry_run: bool = False, verbose: bool = Fals
 
 
 def main() -> None:
-    """Main entry point for the nested tag processing CLI tool.
+    """Process command line arguments and run the tag processor.
     
-    Parses command line arguments and processes the specified directory, adding
-    nested tags to markdown files based on their YAML frontmatter fields. Provides
-    summary statistics of the operations performed.
+    Parses command line arguments, sets up logging, validates the input directory,
+    and runs the nested tag processor on the specified directory.
     
-    Args:
-        None
-        
-    Returns:
-        None: This function doesn't return a value
-        
     Example:
         >>> # Run from command line:
         >>> # python -m notebook_automation.cli.add_nested_tags --verbose /path/to/notes
@@ -308,21 +300,6 @@ def main() -> None:
     parser.add_argument(
         '-c', '--config', type=str, default=None, help='Path to config.json')
     args = parser.parse_args()
-    
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
-    # Display which config.json file is being used
-    try:
-        from notebook_automation.tools.utils.config import find_config_path
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
-    
     global logger
     logger, _ = setup_logging(debug=args.verbose)
     remove_timestamps_from_logger(logger)

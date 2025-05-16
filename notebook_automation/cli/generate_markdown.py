@@ -38,7 +38,6 @@ from tqdm import tqdm
 from ..utils.converters import process_file as convert_to_markdown
 from ..tools.utils.config import setup_logging, VAULT_LOCAL_ROOT
 from ..tools.utils.paths import normalize_wsl_path
-from notebook_automation.cli.utils import OKCYAN, ENDC
 
 
 # Enhanced logging setup with colorlog
@@ -93,10 +92,6 @@ def parse_args():
         '--debug',
         action='store_true',
         help='Enable debug logging'
-    )
-    parser.add_argument(
-        '-c', '--config',
-        help='Path to config.json file (optional, will use default locations if not specified)'
     )
     return parser.parse_args()
 
@@ -346,20 +341,6 @@ def generate_markdown(src_dirs: list[str], dry_run: bool = False, verbose: bool 
 def main() -> int:
     """Main entry point for the script."""
     args = parse_args()
-
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-
-    # Display which config.json file is being used
-    try:
-        from notebook_automation.tools.utils.config import find_config_path
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
 
     # Set up color logging with debug if requested
     global logger, failed_logger

@@ -33,7 +33,7 @@ Integration Points:
 
 import os
 import re
-import yaml
+from ruamel.yaml import YAML
 from pathlib import Path
 from datetime import datetime
 
@@ -124,8 +124,9 @@ def replace_template_with_yaml_frontmatter(template, metadata):
     # Validate the generated YAML by parsing it back to ensure it's well-formed
     # This validation step helps catch any formatting issues early
     try:
-        yaml_dict = yaml.safe_load(yaml_as_string)
-    except yaml.YAMLError as e:
+        yaml = YAML(typ="safe")
+        yaml_dict = yaml.load(yaml_as_string)
+    except Exception as e:
         # If validation fails, we should log this but continue with the original string
         # This ensures the process doesn't fail completely due to YAML formatting issues
         import logging

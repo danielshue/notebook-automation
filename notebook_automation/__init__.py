@@ -11,6 +11,14 @@ This package provides tools for:
 - Integrating with Microsoft OneDrive
 """
 
+# Configure logging for external libraries
+import logging
+
+# Suppress noisy loggers from external libraries
+logging.getLogger('pdfplumber').setLevel(logging.ERROR)
+logging.getLogger('PyPDF2').setLevel(logging.ERROR)
+logging.getLogger('openai').setLevel(logging.ERROR)
+
 # Version information
 __version__ = "0.1.0"
 __author__ = "MBA Notebook Automation Team"

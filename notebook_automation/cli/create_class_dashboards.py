@@ -12,11 +12,9 @@ Usage:
 import argparse
 import os
 from pathlib import Path
-from datetime import date
 from notebook_automation.tools.utils.config import setup_logging, NOTEBOOK_VAULT_ROOT
 from notebook_automation.tools.utils.paths import normalize_wsl_path
 from notebook_automation.cli.ensure_metadata import MetadataUpdater
-from notebook_automation.cli.utils import OKCYAN, ENDC
 
 # Dashboard template (from Class Dashboard.md)
 DASHBOARD_TEMPLATE = '''---
@@ -78,6 +76,8 @@ sort by due
 ```
 '''
 
+from datetime import date
+
 def render_dashboard(class_name: str, course_name: str, program_name: str) -> str:
     today = date.today().isoformat()
     return (
@@ -106,20 +106,6 @@ def main():
     parser.add_argument('--verbose', '-v', action='store_true', help="Verbose output")
     parser.add_argument('-c', '--config', type=str, default=None, help='Path to config.json')
     args = parser.parse_args()
-
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
-    # Display which config.json file is being used
-    try:
-        from notebook_automation.tools.utils.config import find_config_path
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
 
     from notebook_automation.tools.utils import config as config_utils
     config = config_utils.load_config_data(args.config)

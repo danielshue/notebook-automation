@@ -57,10 +57,16 @@ summary = generate_summary(cleaned_text)
 import os
 import re
 import os.path
+import logging
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union, Any
 from ..utils.config import logger
+
+# Suppress logger output from external libraries
+logging.getLogger('pdfplumber').setLevel(logging.ERROR)
+logging.getLogger('PyPDF2').setLevel(logging.ERROR)
+logging.getLogger('openai').setLevel(logging.ERROR)
 
 # Try to import pdfplumber for text extraction, with a fallback to PyPDF2
 try:
