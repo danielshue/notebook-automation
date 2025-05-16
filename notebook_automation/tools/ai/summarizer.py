@@ -40,6 +40,7 @@ Integration Points:
 """
 
 import openai
+import logging
 from ..utils.config import OPENAI_API_KEY
 from ..utils.config import logger
 from ..metadata.yaml_metadata_helper import yaml_to_string
@@ -47,6 +48,9 @@ from ..ai.prompt_utils import CHUNK_PROMPT_TEMPLATE, FINAL_PROMPT_TEMPLATE
 from ..ai.prompt_utils import format_final_user_prompt_for_pdf, format_chuncked_user_prompt_for_pdf  
 from ..metadata.yaml_metadata_helper import replace_template_variables
 from ..metadata.yaml_metadata_helper import replace_template_with_yaml_frontmatter
+
+# Suppress logger output from OpenAI
+logging.getLogger('openai').setLevel(logging.ERROR)
 
 # Configure OpenAI API
 if OPENAI_API_KEY:
@@ -379,14 +383,13 @@ def generate_summary_with_openai(text_to_summarize, system_prompt, chunked_syste
         except Exception as e:
             logger.error(f"Error formatting user_prompt with metadata: {e}")
             user_prompt_filled = user_prompt
-            
-        # Use format_final_user_prompt_for_pdf with only the metadata/variables
+              # Use format_final_user_prompt_for_pdf with only the metadata/variables
         final_system_prompt = format_final_user_prompt_for_pdf(variables)
             
         logger.debug(f"*** executing generate_summary_with_openai (shorter files) - FINAL PROMPTS *** \n")        
         logger.debug(f"system_prompt: {final_system_prompt}\n")
         logger.debug(f"user_prompt: {user_prompt_filled}\n")
-    
+        
         response = openai.chat.completions.create(
             model="gpt-4.1",
             messages=[
@@ -398,4 +401,23 @@ def generate_summary_with_openai(text_to_summarize, system_prompt, chunked_syste
         )
         summary = response.choices[0].message.content
         logger.debug(f"Successfully generated comprehensive summary with OpenAI:\n {summary}")
-        return summary
+        
+        # Log summary structure details
+        lines = summary.split('\n')
+        logger.debug(f"Summary structure: {len(lines)} lines")
+        if lines:
+            # Enhanced logging for better debugging
+            logger.debug(f"First few lines: {lines[:5]}")
+            markdown_headers = [line for line in lines[:10] if line.strip().startswith('#')]
+            logger.debug(f"Contains markdown headers: {bool(markdown_headers)}")
+            if markdown_headers:
+                logger.debug(f"First few headers: {markdown_headers[:3]}")
+                
+            # Check for very short summary (might indicate an issue)
+            if len(" ".join(lines).strip().split()) < 30:  # Fewer than 30 words total
+                logger.warning(f"Summary appears unusually short ({len(' '.join(lines).strip().split())} words)")
+                
+            # Check if summary contains common phrases that indicate it's not a real summary
+            common_words = ["summarize", "transcript", "provided", "content"]
+            if all(word.lower() in summary.lower() for word in common_words):
+                logger.warning("Summary contains phrases suggesting it may be a request for content rather than an actual summary")

@@ -21,7 +21,6 @@ from typing import List, Set
 from PyPDF2 import PdfReader, PdfWriter
 
 from ..tools.pdf.utils import is_pdf_file
-from notebook_automation.cli.utils import OKCYAN, ENDC
 
 
 def parse_page_range(page_range_str: str, max_page: int) -> List[int]:
@@ -267,24 +266,8 @@ Examples:
                        help="Page range (e.g., 1-5,7,9-12)")
     parser.add_argument("output_pdf", nargs='?',
                        help="Output PDF path (optional)")
-    parser.add_argument("-c", "--config", type=str, default=None,
-                       help="Path to config.json file (optional)")
     
     args = parser.parse_args()
-    
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
-    # Display which config.json file is being used
-    try:
-        from notebook_automation.tools.utils.config import find_config_path
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
     
     # Find PDF files based on the input path
     pdf_files = find_pdf_files(args.input_path)

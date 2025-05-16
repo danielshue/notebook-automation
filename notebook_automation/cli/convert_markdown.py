@@ -24,9 +24,6 @@ from typing import List, Optional, Tuple
 
 from ..utils.converters import convert_html_to_markdown, convert_txt_to_markdown
 
-# Import needed for config display
-from notebook_automation.cli.utils import OKCYAN, ENDC
-
 
 def process_file(
     src_file: str,
@@ -270,24 +267,8 @@ Examples:
                        help='Preview changes without writing files')
     parser.add_argument('--verbose', action='store_true',
                        help='Show detailed progress')
-    parser.add_argument('-c', '--config', type=str, default=None,
-                       help='Path to config.json file')
     
     args = parser.parse_args()
-    
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-
-    # Display which config.json file is being used
-    try:
-        from notebook_automation.tools.utils.config import find_config_path
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
     
     # Collect source paths
     src_paths = list(args.files)

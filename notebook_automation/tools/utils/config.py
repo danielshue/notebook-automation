@@ -105,11 +105,6 @@ def find_config_path(filename: str = "config.json") -> str:
         If an absolute path is provided, it will be returned as is without checking
         if the file exists. The caller is responsible for handling non-existent files.
     """
-    # Check for environment variable first (highest priority)
-    env_config_path = os.environ.get("NOTEBOOK_CONFIG_PATH")
-    if env_config_path:
-        return os.path.abspath(env_config_path)
-    
     # If the user passed an absolute path, return it immediately (for --config)
     # Without prompting or printing, even if it doesn't exist
     if os.path.isabs(filename):
@@ -290,6 +285,7 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
     5. Log level filtering based on debug setting
     6. Custom formatters for different output destinations
     7. Rich logging integration for enhanced terminal display
+    8. Suppression of noisy third-party loggers (pdfplumber, PyPDF2, OpenAI)
     
     Args:
         debug (bool): Enable debug logging level when True. When False, uses INFO level.
@@ -337,7 +333,12 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
         # Log failed operations separately
         failed_logger.error("Failed to process file.pdf: Permission denied")
         ```
-    """    # --- If DEBUG is set at the environment level, then set the logger to DEBUG level ---
+    """    # Suppress noisy loggers from external libraries
+    logging.getLogger('pdfplumber').setLevel(logging.ERROR)
+    logging.getLogger('PyPDF2').setLevel(logging.ERROR)
+    logging.getLogger('openai').setLevel(logging.ERROR)
+    
+    # --- If DEBUG is set at the environment level, then set the logger to DEBUG level ---
     # Environment variable override for debug mode provides an external control mechanism
     # This allows enabling debug mode without code changes, useful for troubleshooting
     if os.environ.get("NOTEBOOK_DEBUG", "0") == "1":

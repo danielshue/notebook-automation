@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python3
 """
 OneDrive Personal File Sharing Script (CLI Version)
@@ -296,23 +297,8 @@ def main() -> None:
     group.add_argument("--notebook-resource-list", help="List contents of a subfolder in notebook resources root", nargs="?", const="", metavar="SUBFOLDER")
     parser.add_argument("--verbose", action="store_true", help="Show detailed output and progress information")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging output")
-    parser.add_argument("-c", "--config", type=str, default=None, help="Path to config.json file (optional)")
 
     args = parser.parse_args()
-
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
-    # Display which config.json file is being used
-    try:
-        from notebook_automation.tools.utils.config import find_config_path
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKGREEN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
 
     # Set logger level for debug mode
     if args.debug:

@@ -49,7 +49,6 @@ import argparse
 import importlib.metadata
 from pathlib import Path
 from datetime import datetime
-from notebook_automation.cli.utils import OKCYAN, ENDC
 import urllib.parse
 from typing import Dict, List, Optional, Union, Callable
 
@@ -270,13 +269,6 @@ def parse_arguments() -> argparse.Namespace:
         '--dry-run',
         action='store_true',
         help='Show what would be done without making changes'
-    )
-    
-    parser.add_argument(
-        '-c', '--config',
-        type=str,
-        default=None,
-        help='Path to config.json file (optional)'
     )
     
     args = parser.parse_args()
@@ -1102,21 +1094,6 @@ def main() -> int:
     """
     try:
         args = parse_arguments()
-        
-        # Set config path if provided
-        if args.config:
-            # Use absolute path to ensure consistency
-            config_path = str(Path(args.config).absolute())
-            os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
-        # Display which config.json file is being used
-        try:
-            from notebook_automation.tools.utils.config import find_config_path
-            config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-            print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-        except Exception as e:
-            print(f"Could not determine config file path: {e}")
-        
         setup_logging(args.debug)
         
         logging.info(f"Starting index generation script v{__version__}")

@@ -34,8 +34,6 @@ import yaml
 import argparse
 from pathlib import Path
 
-from notebook_automation.cli.utils import OKCYAN, ENDC
-
 def create_template(template_path: str, template_name: str, tags: list, 
                 template_content: str, force: bool = False, verbose: bool = False) -> bool:
     """Create an Obsidian template with the specified tags.
@@ -375,28 +373,8 @@ def main() -> None:
         action="store_true",
         help="Print detailed information about template generation"
     )
-    parser.add_argument(
-        "-c", "--config",
-        type=str,
-        default=None,
-        help="Path to config.json file (optional)"
-    )
     
     args = parser.parse_args()
-    
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
-    # Display which config.json file is being used
-    try:
-        from notebook_automation.tools.utils.config import find_config_path
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
     
     # Determine template folder path
     template_path = args.template_path
@@ -405,15 +383,7 @@ def main() -> None:
             template_path = "D:\\Vault\\01_Projects\\MBA\\Templates"
         else:  # WSL or Linux
             template_path = "/mnt/d/Vault/01_Projects/MBA/Templates"
-    
-    # Print config information
-    print(f"{OKCYAN}Using template path:{ENDC} {template_path}")
-    if args.force:
-        print(f"{OKCYAN}Force overwrite:{ENDC} enabled")
-    if args.verbose:
-        print(f"{OKCYAN}Verbose mode:{ENDC} enabled")
-    
-    # Generate templates
+      # Generate templates
     num_created = generate_all_templates(
         template_path,
         force=args.force,

@@ -1,0 +1,23 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "debugpy",
+      "request": "launch",
+      "name": "Launch generate_video_meta module (prompt for video file)",
+      "module": "notebook_automation.cli.generate_video_meta",
+      "args": [
+        "-f",
+        "${input:videoFilePath}",
+        "--debug"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "videoFilePath",
+      "type": "promptString",
+      "description": "Enter the relative path to the video file to process"
+    }
+  ]
+}

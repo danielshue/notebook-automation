@@ -38,7 +38,7 @@ except ImportError:
 
 # Import config utilities
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from notebook_automation.tools.utils.config import setup_logging, load_config_data, find_config_path
+from notebook_automation.tools.utils.config import setup_logging, load_config_data
 from notebook_automation.cli.utils import (
     HEADER, OKBLUE, OKCYAN, OKGREEN, WARNING, FAIL, ENDC, BOLD, BG_BLUE, remove_timestamps_from_logger
 )
@@ -173,9 +173,6 @@ def process_file(file_path, dry_run=False, force=False):
 def main():
     """Main entry point for the glossary update tool.
     
-    Parses command-line arguments, sets up logging, and processes glossary files
-    to update definition entries with proper markdown callout syntax.
-    
     Returns:
         int: Exit code (0 for success, non-zero for failure).
     """
@@ -185,7 +182,7 @@ def main():
     )
     
     # Define a mutually exclusive group for file input methods
-    input_group = parser.add_mutually_exclusive_group()
+    input_group = parser.add_mutually_exclusive_group(required=False)
     input_group.add_argument(
         'files',
         nargs='*',
@@ -196,7 +193,7 @@ def main():
     input_group.add_argument(
         '--directory', '-d',
         type=pathlib.Path,
-        help="Process all glossary files in this directory"
+        help="Process all glossary files in this directory (defaults to vault root)"
     )
     
     # Other arguments
@@ -227,19 +224,6 @@ def main():
     
     args = parser.parse_args()
     logger = configure_logging(args.verbose)
-    
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
-    # Display which config.json file is being used
-    try:
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
     
     try:
         # Get configuration
@@ -365,7 +349,7 @@ except ImportError:
 
 # Import config utilities
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from notebook_automation.tools.utils.config import setup_logging, load_config_data, find_config_path
+from notebook_automation.tools.utils.config import setup_logging, load_config_data
 from notebook_automation.cli.utils import (
     HEADER, OKBLUE, OKCYAN, OKGREEN, WARNING, FAIL, ENDC, BOLD, BG_BLUE, remove_timestamps_from_logger
 )
@@ -498,7 +482,7 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
     # Define a mutually exclusive group for file input methods
-    input_group = parser.add_mutually_exclusive_group()
+    input_group = parser.add_mutually_exclusive_group(required=False)
     input_group.add_argument(
         'files',
         nargs='*',
@@ -509,7 +493,7 @@ def main():
     input_group.add_argument(
         '--directory', '-d',
         type=pathlib.Path,
-        help="Process all glossary files in this directory"
+        help="Process all glossary files in this directory (defaults to vault root)"
     )
     # Other arguments
     parser.add_argument(
@@ -538,46 +522,28 @@ def main():
     )
     args = parser.parse_args()
     logger = configure_logging(args.verbose)
-    
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
-    # Display which config.json file is being used
-    try:
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
-    
     try:
         # Get configuration
         config = load_config_data(args.config)
         vault_path = Path(config.get("vault_root", "."))
-        
         files_to_process = []
-        
         # Get list of files to process
         if args.files:
             files_to_process = args.files
-            logger.info(f"{OKBLUE}Processing {len(files_to_process)} specified file(s){ENDC}")
+            print(f"{OKBLUE}Processing {len(files_to_process)} specified file(s){ENDC}")
         elif args.directory:
             directory = args.directory
             if not directory.exists() or not directory.is_dir():
-                logger.error(f"{FAIL}Directory not found or not a directory: {directory}{ENDC}")
+                print(f"{FAIL}Directory not found or not a directory: {directory}{ENDC}")
                 return 1
-                
-            logger.info(f"{OKBLUE}Searching for files in: {BOLD}{directory}{ENDC}")
+            print(f"{OKBLUE}Searching for files in: {BOLD}{directory}{ENDC}")
             files_to_process = list(directory.glob(args.pattern))
         else:
             # Use default vault path
             directory = vault_path
-            logger.info(f"{OKBLUE}Using default vault path: {BOLD}{directory}{ENDC}")
-            logger.info(f"{OKBLUE}Searching for files matching pattern: {BOLD}{args.pattern}{ENDC}")
+            print(f"{OKBLUE}Using default vault path: {BOLD}{directory}{ENDC}")
+            print(f"{OKBLUE}Searching for files matching pattern: {BOLD}{args.pattern}{ENDC}")
             files_to_process = list(directory.glob(f"**/{args.pattern}"))
-        
         print(f"[DEBUG] Files to process: {[str(f) for f in files_to_process]}")
         if not files_to_process:
             pattern_info = f"pattern '{args.pattern}'" if args.directory or not args.files else ""
@@ -585,18 +551,15 @@ def main():
             print(f"{WARNING}No files matching {pattern_info} found{location_info}{ENDC}")
             return 0
         print(f"{OKBLUE}Found {BOLD}{len(files_to_process)}{ENDC}{OKBLUE} potential glossary files{ENDC}")
-        
         # Process each file
         total_processed = 0
         total_modified = 0
         processed_files = 0
         skipped_files = 0
         found_files = len(files_to_process)
-        
         # Show a header for the processing phase
         mode_indicator = f"{OKCYAN}[DRY RUN]{ENDC} " if args.dry_run else ""
         print(f"\n{HEADER}{mode_indicator}Processing glossary files...{ENDC}")
-        
         for file_path in files_to_process:
             p, m = process_file(file_path, args.dry_run, args.force)
             if p > 0:
@@ -605,7 +568,6 @@ def main():
                 total_modified += m
             else:
                 skipped_files += 1
-        
         # Generate summary report
         print(f"\n{BG_BLUE}GLOSSARY UPDATE SUMMARY{ENDC}")
         print(f"{BOLD}Files:{ENDC}")
@@ -625,9 +587,7 @@ def main():
                 print(f"\n{OKGREEN}No definitions required updating across {processed_files} files.{ENDC}")
             else:
                 print(f"\n{WARNING}No definitions found in the specified files.{ENDC}")
-        
         return 0
-    
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
         if args.verbose:
@@ -759,57 +719,54 @@ def process_glossary_file(file_path: pathlib.Path, dry_run: bool = False, force:
     # Regular expression to find definition entries    # We'll work line by line instead of using regex
     lines = content.splitlines()
     new_lines = []
-    processed = 0
-    modified = 0
-    # Track terms being modified for detailed reporting
-    modified_terms = []
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        # Check if this line matches our definition pattern
-        if re.match(pattern, line):
-            processed += 1
+      # Process line by line to avoid pattern matching issues
+    content_lines = content.splitlines()
+    modified_lines = []
+    
+    # Keep track of stats
+    processed_count = 0
+    modified_count = 0
+    skip_next = False
+    
+    for line in content_lines:
+        # Skip lines that are already part of a definition callout
+        if skip_next:
+            skip_next = False
+            modified_lines.append(line)
+            continue
+              # Check if this line is a definition
+        if re.match(definition_pattern, line):
+            processed_count += 1
             
-            # Extract the term for better reporting
-            term_match = re.search(r'^\*\*([\w\s\-\'.,:()/\\]+)\*\*', line)
-            term = term_match.group(1) if term_match else "unknown term"
-            
-            # Check if it's already in a callout
-            if i > 0 and lines[i-1].strip() == '> [!definition]':
-                new_lines.append(line)
-            else:
-                # Add the callout
-                new_lines.append('> [!definition]')
-                new_lines.append(f'> {line}')
-                modified += 1
-                modified_terms.append(term.strip())
-                logger.debug(f"{OKGREEN}Adding callout for term: {BOLD}{term.strip()}{ENDC}")
+            # Check if it's already in a callout (previous line is the callout start)
+            if modified_lines and modified_lines[-1].startswith('> [!definition]'):
+                skip_next = True
+                modified_lines.append(line)
+                continue
+                
+            # Add the callout
+            modified_lines.append('> [!definition]')
+            modified_lines.append(f'> {line}')
+            modified_count += 1
         else:
-            new_lines.append(line)
-        
-        i += 1
+            modified_lines.append(line)
     
-    # Generate status message
-    if processed == 0:
-        logger.info(f"{WARNING}No definition entries found in {file_path}{ENDC}")
-        return 0, 0
+    modified_content = '\n'.join(modified_lines)
     
-    # Write the changes if not in dry_run mode
-    if modified > 0 and not dry_run:
+    if modified_count > 0 and not dry_run:
         try:
             with open(file_path, 'w', encoding='utf-8') as file:
-                file.write('\n'.join(new_lines))
-            terms_list = ", ".join(modified_terms[:3])
-            if len(modified_terms) > 3:
-                terms_list += f", and {len(modified_terms) - 3} more"
-            logger.info(f"{OKGREEN}Updated {modified} definitions in {file_path} ({terms_list}){ENDC}")
+                file.write(modified_content)
+            logging.info(f"Updated {modified_count} definitions in {file_path}")
         except Exception as e:
-            logger.error(f"{FAIL}Error writing to file {file_path}: {e}{ENDC}")
-            return processed, 0
-    status = f"{OKCYAN}Would update{ENDC}" if dry_run else f"{OKGREEN}Updated{ENDC}"
-    percentage = int((modified / processed) * 100) if processed > 0 else 0
-    logger.info(f"{status} {modified} of {processed} definitions ({percentage}%) in {file_path}")
-    return processed, modified
+            logging.error(f"Error writing to file {file_path}: {e}")
+            return processed_count, 0
+    
+    status = "Would update" if dry_run else "Updated"
+    logging.info(f"{status} {modified_count} of {processed_count} definitions in {file_path}")
+    
+    return processed_count, modified_count
+
 
 def parse_yaml_frontmatter(content: str) -> Tuple[Dict[str, Any], str]:
     """Parse YAML frontmatter from markdown content.
@@ -889,19 +846,6 @@ def main() -> int:
     
     args = parser.parse_args()
     configure_logging(args.verbose)
-    
-    # Set config path if provided
-    if args.config:
-        # Use absolute path to ensure consistency
-        config_path = str(Path(args.config).absolute())
-        os.environ["NOTEBOOK_CONFIG_PATH"] = config_path
-        
-    # Display which config.json file is being used
-    try:
-        config_path = os.environ.get("NOTEBOOK_CONFIG_PATH") or find_config_path()
-        print(f"{OKCYAN}Using configuration file: {config_path}{ENDC}")
-    except Exception as e:
-        print(f"Could not determine config file path: {e}")
     
     try:
         files_to_process: List[pathlib.Path] = []
