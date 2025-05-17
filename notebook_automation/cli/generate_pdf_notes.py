@@ -26,11 +26,13 @@ import json
 import logging
 import argparse
 import traceback
-import subprocess
 import statistics
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional, Union, Any
+
+# Check OpenAI API key at startup
+from notebook_automation.tools.utils.config import OPENAI_API_KEY
 
 # Import Rich components for better console rendering
 from rich.console import Console
@@ -41,10 +43,12 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.layout import Layout
 
+# Configure module logger
+logger = logging.getLogger(__name__)
+
 # Suppress logger output from external libraries
 logging.getLogger('pdfplumber').setLevel(logging.ERROR)
 logging.getLogger('PyPDF2').setLevel(logging.ERROR)
-logging.getLogger('openai').setLevel(logging.ERROR)
 
 # Import shared CLI utilities
 from notebook_automation.cli.utils import (
@@ -53,18 +57,31 @@ from notebook_automation.cli.utils import (
 )
 
 # Import from the tools package
-from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
+from notebook_automation.tools.utils.config import (
+    setup_logging, VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT, NOTEBOOK_VAULT_ROOT
+)
+
 from notebook_automation.tools.utils.file_operations import get_vault_path_for_pdf, find_all_pdfs, get_scan_root
+from notebook_automation.tools.utils.paths import normalize_wsl_path
 from notebook_automation.tools.auth.microsoft_auth import authenticate_graph_api
 from notebook_automation.tools.pdf.processor import extract_pdf_text
 from notebook_automation.tools.notes.note_markdown_generator import create_or_update_markdown_note_for_pdf
 from notebook_automation.tools.utils.error_handling import (
-    update_failed_files, update_results_file, categorize_error, ErrorCategories
+update_failed_files, update_results_file, categorize_error, ErrorCategories
 )
+
 from notebook_automation.tools.metadata.path_metadata import infer_course_and_program
 from notebook_automation.tools.ai.prompt_utils import (
     format_final_user_prompt_for_pdf, format_chuncked_user_prompt_for_pdf
 )
+from notebook_automation.tools.ai.summarizer import generate_summary_with_openai
+
+from notebook_automation.cli.onedrive_share import create_sharing_link
+
+# Constants
+PDF_EXTENSIONS = {'.pdf'}
+RESULTS_FILE = 'pdf_notes_results.json'
+FAILED_FILES_JSON = 'failed_PDF_files.json'
 
 # Initialize loggers as global variables to be populated in main()
 logger = None
@@ -72,6 +89,51 @@ failed_logger = None
 
 # Initialize Rich console for enhanced terminal output
 console = Console()
+
+def check_openai_requirements(args):
+    """Check if OpenAI API key is available when needed."""
+    if not OPENAI_API_KEY and not getattr(args, 'no_summary', False):
+        console = Console(stderr=True)
+        console.print("[red]Error:[/red] OpenAI API key not found and --no-summary flag not used.")
+        console.print("[yellow]Either:[/yellow]")
+        console.print("  1. Set the OPENAI_API_KEY environment variable")
+        console.print("  2. Use the --no-summary flag to skip summary generation")
+        sys.exit(1)
+        
+def create_share_link(video_path: Path, access_token: str = None, timeout: int = 15) -> str | None:
+    """Get a shareable link for the given file using the imported function from onedrive_share.py."""
+    # Use provided access token or authenticate if none provided
+    if not access_token:
+        # The function signature in onedrive_share.py is: create_sharing_link(access_token: str, file_path: str) -> str | None
+        # We need to authenticate and get an access token first.
+        from notebook_automation.cli.onedrive_share import authenticate_interactive
+        access_token = authenticate_interactive()
+        if not access_token:
+            logger.error("Failed to authenticate for OneDrive sharing")
+            return None
+    
+    # file_path should be relative to OneDrive root, e.g. /Education/MBA-Resources/...
+    from notebook_automation.tools.utils.config import ONEDRIVE_BASE
+    video_path_str = str(video_path).replace("\\", "/")
+    marker = ONEDRIVE_BASE if ONEDRIVE_BASE.startswith("/") else "/" + ONEDRIVE_BASE
+    idx = video_path_str.find(marker)
+    if idx == -1:
+        # Try without leading slash
+        marker = ONEDRIVE_BASE.lstrip("/")
+        idx = video_path_str.find(marker)
+        if idx == -1:
+            # Fallback: use the filename only (will likely fail, but avoids crash)
+            rel_path = os.path.basename(video_path_str)
+            logger.warning(f"Could not determine relative path for {video_path_str}, using filename only: {rel_path}")
+        else:
+            rel_path = "/" + video_path_str[idx:]
+    else:
+        rel_path = video_path_str[idx:]
+        if not rel_path.startswith("/"):
+            rel_path = "/" + rel_path
+    
+    logger.debug(f"Creating share link for relative path: {rel_path}")
+    return create_sharing_link(access_token, rel_path)
 
 # Helper function for statistics collection and reporting
 def create_statistics_panel(processed: int, total: int, processing_times: List[float], 
@@ -130,70 +192,7 @@ def create_statistics_panel(processed: int, total: int, processing_times: List[f
 
     return Panel(table, title="PDF Processing Statistics", border_style="blue")
 
-
-# Constants
-PDF_EXTENSIONS = {'.pdf'}
-RESULTS_FILE = 'pdf_notes_results.json'
-FAILED_FILES_JSON = 'failed_PDF_files.json'
-
-
-# === HELPER FUNCTIONS ===
-def create_share_link(relative_path: str, headers: Dict[str, str], embed: bool = False) -> Union[Dict[str, str], str]:
-    """Create a shareable OneDrive link by calling the vault-onedrive-share CLI tool.
-    
-    Uses the vault-onedrive-share command-line tool to generate shareable links for
-    OneDrive files. The function passes authentication headers to the CLI tool and
-    handles the output processing.
-    
-    Args:
-        relative_path: Path relative to OneDrive root
-        headers: Headers containing authorization token
-        embed: Whether to generate embed HTML. Defaults to False.
-        
-    Returns:
-        Sharing information with webUrl and optional embedHtml, or just URL string
-        
-    Raises:
-        ValueError: If no authorization token is provided
-        RuntimeError: If the CLI command fails or other errors occur
-    """
-    try:
-        cmd = ["vault-onedrive-share", relative_path]
-        if embed:
-            cmd.append("--embed")
-        
-        # Extract the authorization token from headers
-        auth_token = headers.get("Authorization", "").replace("Bearer ", "")
-        if not auth_token:
-            raise ValueError("No authorization token provided")
-            
-        # Pass the token via environment variables
-        env = os.environ.copy()
-        env["MS_AUTH_TOKEN"] = auth_token
-        
-        # Run the CLI command
-        result = subprocess.run(
-            cmd,
-            env=env,
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        
-        # Parse the output as JSON if possible
-        try:
-            return json.loads(result.stdout)
-        except json.JSONDecodeError:
-            # Fall back to plain text output
-            return result.stdout.strip()
-                
-    except subprocess.CalledProcessError as e:
-        raise RuntimeError(f"OneDrive share command failed: {e.stderr}")
-    except Exception as e:
-        raise RuntimeError(f"Failed to create share link: {str(e)}")
-
-
-def _record_failed_file(failed_data: Dict[str, Any]) -> None:
+def _log_failed_pdf_to_json(failed_data: Dict[str, Any]) -> None:
     """Record a failed file to the failed_files.json and log.
     
     Records the data about failed file processing attempts to both the log
@@ -230,8 +229,7 @@ def _record_failed_file(failed_data: Dict[str, Any]) -> None:
     except Exception as e:
         logger.error(f"Error recording failed file: {e}")
 
-
-def _process_single_pdf(pdf_path: Path, vault_dir: Path, args: Any = None, 
+def _generate_note_for_pdf(pdf_path: Path, vault_dir: Path, args: Any = None, 
                        access_token: Optional[str] = None, dry_run: bool = False) -> Dict[str, Any]:
     """Process a single PDF file to create a markdown note with OneDrive sharing link.
     
@@ -269,29 +267,30 @@ def _process_single_pdf(pdf_path: Path, vault_dir: Path, args: Any = None,
                 'note_path': str(note_path),
                 'success': True,
                 'skipped': True,
-                'reason': 'already_exists',
-                'modified_date': datetime.now().isoformat()
+                'reason': 'already_exists',            'modified_date': datetime.now().isoformat()
             }
 
-        logger.info(f"  ├─ Processing: {pdf_stem}")
-
-        # Step 1: Generate sharing link if requested and token available
+        logger.info(f"  ├─ Processing: {pdf_stem}")        # Step 1: Generate sharing link if requested and token available
         sharing_link = None
         embed_html = None
         if not getattr(args, 'no_share_links', False) and access_token:
             logger.info("  ├─ Generating OneDrive sharing and embed links...")
             onedrive_path = str(rel_path).replace('\\', '/')
-            try:
-                headers = {"Authorization": f"Bearer {access_token}"}
-                try:
-                    share_result = create_share_link(onedrive_path, headers, embed=True)
-                except TypeError:
-                    share_result = create_share_link(onedrive_path, headers)
+            try:                # Create share link only if not in dry run mode
+                if not getattr(args, 'dry_run', False):
+                    share_result = create_share_link(pdf_path, access_token=access_token, timeout=args.timeout)
+                    if share_result:
+                        logger.debug(f"Share link created: {share_result}")
+                    else:
+                        logger.warning(f"Failed to create share link for {pdf_path}")
+                
+                # Process the result
                 if isinstance(share_result, dict):
                     sharing_link = share_result.get('webUrl')
                     embed_html = share_result.get('embedHtml')
                 else:
-                    sharing_link = share_result
+                    sharing_link = str(share_result).strip()
+                    
                 if sharing_link:
                     logger.info(f"  │  └─ Shared link created ✓")
                 else:
@@ -308,19 +307,86 @@ def _process_single_pdf(pdf_path: Path, vault_dir: Path, args: Any = None,
         logger.info(f"  ├─ Extracting PDF text...")
         pdf_text = extract_pdf_text(pdf_path)
 
-        # Step 3: Infer course/program metadata
+        # Step 3: Infer course/program metadata using MetadataUpdater
         logger.info(f"  ├─ Inferring course/program metadata...")
-        course_program_metadata = infer_course_and_program(pdf_path)
-        if course_program_metadata is None:
-            course_program_metadata = {}
+
+        from notebook_automation.cli.ensure_metadata import MetadataUpdater
+        metadata_updater = MetadataUpdater()
+        metadata_info = metadata_updater.find_parent_index_info(pdf_path)
+
+        logger.debug(f"Debugging Program & Course Info looking at metadata_info:\n{metadata_info}")
+
+        course_program_metadata = {
+            'program': metadata_info['program'] or 'MBA Program',
+            'course': metadata_info['course'] or 'MBA Course',
+            'class': metadata_info['class']
+        }
+
         if args and hasattr(args, 'force'):
             course_program_metadata['force'] = getattr(args, 'force', False)
 
-        # Step 4: Generate summary with OpenAI (handled inside create_or_update_markdown_note_for_pdf)
+        # Step 4: Generate summary with OpenAI
         summary = None
         tags = []
         if not getattr(args, 'no_summary', False):
-            logger.info(f"  ├─ Generating summary and tags with OpenAI (handled in note creation)...")
+            logger.info(f"  ├─ Generating summary with OpenAI...")
+            try:                # Generate the summary using the OpenAI API and build metadata for prompts
+                course_name = course_program_metadata.get('course', 'MBA Course')
+                program_name = course_program_metadata.get('program', 'MBA Program')
+                prompt_metadata = {
+                    **course_program_metadata,
+                    'file_name': pdf_stem,
+                    'course_name': course_name,
+                    'program_name': program_name,
+                    'title': pdf_stem,
+                    'onedrive_path': str(pdf_path)
+                }
+
+                # Load prompts from the prompts directory - same approach as generate_video_meta.py
+                chunk_prompt_path = Path(__file__).parent.parent.parent / 'prompts' / 'chunk_summary_prompt.md'
+                final_prompt_path = Path(__file__).parent.parent.parent / 'prompts' / 'final_summary_prompt.md'
+                  # Load chunk prompt
+                if chunk_prompt_path.exists():
+                    with open(chunk_prompt_path, 'r', encoding='utf-8') as pf:
+                        chunked_system_prompt = pf.read()
+                else:
+                    chunked_system_prompt = format_chuncked_user_prompt_for_pdf(prompt_metadata)
+                
+                # Debug log the chunk prompt
+                logger.debug(f"Loaded chunk prompt: {len(chunked_system_prompt)} characters")
+
+                # Load final prompt - try PDF specific first, then generic, then default
+                if final_prompt_path.exists():
+                    with open(final_prompt_path, 'r', encoding='utf-8') as pf:
+                        system_prompt = pf.read()
+                    logger.debug(f"Loaded summary prompt from {final_prompt_path}")
+                else:
+                    system_prompt = "You are an MBA course summarizer."
+                    logger.debug("Using default system prompt")
+
+                # Use a template with placeholders for course and onedrive path
+                user_prompt = (
+                    'You are an educational content summarizer for MBA course materials. '
+                    f'Generate a clear and insightful summary of the following chunk from the file "{onedrive_path}", part of the course "{course_name}".'
+                )
+
+                # Call the generate_summary_with_openai function with the loaded prompts
+                summary = generate_summary_with_openai(
+                    text_to_summarize=pdf_text,
+                    system_prompt=system_prompt,
+                    chunked_system_prompt=chunked_system_prompt,
+                    user_prompt=user_prompt,
+                    metadata=prompt_metadata
+                )
+
+                if summary:
+                    logger.info("  │  └─ Summary generated successfully")
+                    logger.debug(f"Generated summary:\n{summary[:500]}...")  # Log first 500 chars of summary
+                else:
+                    logger.warning("  │  └─ No summary was generated")
+            except Exception as e:
+                logger.error(f"  │  └─ Error generating summary: {str(e)}")
+                summary = None
         else:
             logger.info("  ├─ Skipping summary generation (--no-summary is set)")
 
@@ -328,10 +394,10 @@ def _process_single_pdf(pdf_path: Path, vault_dir: Path, args: Any = None,
         include_embed = getattr(args, 'include_embed', True)
         embed_html_final = embed_html
         
-        try:
+        try:            
             # Construct the output path from vault_dir and pdf_stem
             output_path = vault_dir / f"{pdf_stem}-Notes.md"
-            
+
             # Don't actually create the file in dry run mode
             if dry_run:
                 note_result = {
@@ -342,15 +408,26 @@ def _process_single_pdf(pdf_path: Path, vault_dir: Path, args: Any = None,
                     'file': str(pdf_path)
                 }
             else:
+                # Add more detailed logging to diagnose issues
+                logger.debug(f"  │  ├─ Calling create_or_update_markdown_note_for_pdf with:")
+                logger.debug(f"  │  │  - pdf_path: {pdf_path}")
+                logger.debug(f"  │  │  - output_path: {output_path}")
+                logger.debug(f"  │  │  - pdf_link: {sharing_link or '[None]'}")
+                logger.debug(f"  │  │  - summary length: {len(summary) if summary else 0} chars")
+                logger.debug(f"  │  │  - metadata: {course_program_metadata}")
+                
                 # Call create_or_update_markdown_note_for_pdf with the correct parameters
                 note_result = create_or_update_markdown_note_for_pdf(
                     pdf_path=str(pdf_path),
                     output_path=str(output_path),
                     pdf_link=sharing_link or "",
-                    summary=None,  # Will be handled by the function or set to placeholder
+                    summary=summary,
                     metadata=course_program_metadata
                 )
+                logger.debug(f"  │  └─ Result from create_or_update_markdown_note_for_pdf: {type(note_result).__name__}")
+            
             if not isinstance(note_result, dict):
+                logger.debug(f"  │  ├─ Converting string result to dictionary: {note_result}")
                 note_result = {
                     'note_path': str(note_result),
                     'success': True,
@@ -359,17 +436,16 @@ def _process_single_pdf(pdf_path: Path, vault_dir: Path, args: Any = None,
                     'file': str(pdf_path)
                 }
         except Exception as e:
-            logger.error(f"Exception in create_or_update_markdown_note_for_pdf: {e}")
             error_message = traceback.format_exc()
-            logger.error(error_message)
+            logger.error(f"Exception in create_or_update_markdown_note_for_pdf: {e}")
+            logger.error(f"Traceback:\n{error_message}")
             note_result = {
                 'note_path': None,
                 'success': False,
                 'error': str(e),
                 'tags': [],
                 'file': str(pdf_path)
-            }
-        
+            }        # Check again if note_result is not a dictionary and convert if needed
         if not isinstance(note_result, dict):
             note_result = {
                 'note_path': str(note_result),
@@ -381,7 +457,7 @@ def _process_single_pdf(pdf_path: Path, vault_dir: Path, args: Any = None,
             
         logger.info(f"Created markdown note: {note_result.get('note_path')}")
         logger.info("  │  └─ Note created at: " + str(note_result.get('note_path', note_path)).replace(str(VAULT_LOCAL_ROOT), "").lstrip('/\\'))
-
+        
         result = {
             'file': str(rel_path),
             'onedrive_path': str(pdf_path),
@@ -409,7 +485,7 @@ def _process_single_pdf(pdf_path: Path, vault_dir: Path, args: Any = None,
             'category': error_category,
             'timestamp': datetime.now().isoformat()
         }
-        _record_failed_file(failed_data)
+        _log_failed_pdf_to_json(failed_data)
         return {
             'file': str(pdf_path),
             'success': False,
@@ -417,7 +493,6 @@ def _process_single_pdf(pdf_path: Path, vault_dir: Path, args: Any = None,
             'error_category': error_category,
             'timestamp': datetime.now().isoformat()
         }
-
 
 def _parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments for PDF note generation.
@@ -481,77 +556,10 @@ def _parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--no-share-links",
         action="store_true",
-        help="Skip creating OneDrive shared links (faster for testing)"
-    )
+        help="Skip creating OneDrive shared links (faster for testing)"    )
     return parser.parse_args()
 
-
-def _process_single_file(file_path: str, args: Optional[argparse.Namespace] = None, 
-                         access_token: Optional[str] = None) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """Process a single file specified by the --single-file argument.
-    
-    Args:
-        file_path: Path to the file (relative to OneDrive base path)
-        args: Command-line arguments
-        access_token: Microsoft Graph API access token
-        
-    Returns:
-        Lists of processed PDFs and errors
-    """
-    verbose = getattr(args, 'verbose', False)
-    
-    console.rule("[bold blue]🔍 SINGLE FILE PROCESSING")
-    
-    logger.info("\n" + "="*60)
-    logger.info("🔍 SINGLE FILE PROCESSING")
-    logger.info("="*60)
-    
-    file_path = Path(file_path)
-    if not file_path.is_absolute():
-        file_path = ONEDRIVE_LOCAL_RESOURCES_ROOT / file_path
-    
-    if not file_path.exists():
-        error_msg = f"File not found: {file_path}"
-        logger.error(error_msg)
-        console.print(f"[bold red]❌ {error_msg}")
-        return [], []
-        
-    if file_path.suffix.lower() not in PDF_EXTENSIONS:
-        error_msg = f"File is not a PDF: {file_path}"
-        logger.error(error_msg)
-        console.print(f"[bold red]❌ {error_msg}")
-        return [], []
-        
-    file_info = f"📄 Processing file: {file_path.name}"
-    logger.info(file_info)
-    console.print(f"[cyan]{file_info}")
-    
-    location_info = f"📂 Located at: {file_path}"
-    logger.info(location_info)
-    console.print(f"[blue]{location_info}")
-    
-    vault_dir = get_vault_path_for_pdf(file_path)
-    save_info = f"📝 Will save note to: {vault_dir}"
-    logger.info(save_info)
-    console.print(f"[green]{save_info}")
-    
-    logger.info("\n" + "-"*50)
-    console.rule()
-    
-    result = _process_single_pdf(file_path, vault_dir, args, access_token)
-    
-    if result.get('success', False):
-        if result.get('skipped', False):
-            console.print(f"[yellow]⏭️  Skipped (already exists): {file_path.name}")
-        else:
-            console.print(f"[green]✓ Processed: {file_path.name}")
-        return [result], []
-    else:
-        console.print(f"[red]✗ Failed: {file_path.name} - {result.get('error', 'Unknown error')}")
-        return [], [result]
-
-
-def _retry_failed_files(args: Optional[argparse.Namespace] = None, 
+def _retry_failed_pdf_note_generation(args: Optional[argparse.Namespace] = None, 
                        access_token: Optional[str] = None) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """Retry processing files that previously failed.
     
@@ -641,10 +649,11 @@ def _retry_failed_files(args: Optional[argparse.Namespace] = None,
                     
                 pdf_name = pdf_path.name
                 progress.update(retry_task, description=f"[cyan]Retrying {index+1}/{len(failed_pdfs)}: {pdf_name}")
-                logger.info(f"[{index+1}/{len(failed_pdfs)}] Retrying: {pdf_name}")
-                
+                logger.info(f"[{index+1}/{len(failed_pdfs)}] Retrying: {pdf_name}")                
                 vault_dir = get_vault_path_for_pdf(pdf_path)
-                result = _process_single_pdf(pdf_path, vault_dir, args, access_token)
+                result = _generate_note_for_pdf(
+                    pdf_path, vault_dir, args, access_token, getattr(args, 'dry_run', False)
+                )
                 
                 if result.get('success', False):
                     if result.get('skipped', False):
@@ -690,8 +699,7 @@ def _retry_failed_files(args: Optional[argparse.Namespace] = None,
     
     return processed, errors
 
-
-def _process_pdfs_for_notes(args: Optional[argparse.Namespace] = None, 
+def _batch_generate_notes_for_pdfs(args: Optional[argparse.Namespace] = None, 
                            folder_path: Optional[str] = None,
                            access_token: Optional[str] = None, 
                            dry_run: bool = False) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
@@ -862,7 +870,7 @@ def _process_pdfs_for_notes(args: Optional[argparse.Namespace] = None,
                 logger.info(f"[{index+1}/{total_pdfs}] Processing: {pdf_name}")
                 
                 vault_dir = get_vault_path_for_pdf(pdf_path)
-                result = _process_single_pdf(pdf_path, vault_dir, args, access_token, dry_run)
+                result = _generate_note_for_pdf(pdf_path, vault_dir, args, access_token, dry_run)
                 
                 # Calculate and record processing time
                 processing_time = (datetime.now() - file_start_time).total_seconds()
@@ -922,7 +930,6 @@ def _process_pdfs_for_notes(args: Optional[argparse.Namespace] = None,
     
     return processed_pdfs, errors
 
-
 # === CLI ENTRYPOINT ===
 def main() -> int:
     """Main entry point for the PDF note generation CLI.
@@ -933,7 +940,8 @@ def main() -> int:
     global logger, failed_logger
     args = _parse_arguments()
 
-    # Setup logging
+    # Check OpenAI requirements before proceeding
+    check_openai_requirements(args)    # Setup logging
     logger, failed_logger = setup_logging(
         debug=args.debug,
         log_file="generate_pdf_notes.log",
@@ -976,18 +984,69 @@ def main() -> int:
         mode_msg = "Retrying previously failed files..."
         logger.info(mode_msg)
         console.print(f"[cyan]{mode_msg}")
-        processed, errors = _retry_failed_files(args=args, access_token=access_token)
+        processed, errors = _retry_failed_pdf_note_generation(args=args, access_token=access_token)
     elif getattr(args, 'single_file', None):
         mode_msg = f"Processing single file: {args.single_file}"
         logger.info(mode_msg)
         console.print(f"[cyan]{mode_msg}")
-        processed, errors = _process_single_file(args.single_file, args=args, access_token=access_token)
+        
+        # Inline the former _process_single_file logic
+        verbose = getattr(args, 'verbose', False)
+        
+        console.rule("[bold blue]🔍 SINGLE FILE PROCESSING")
+        
+        logger.info("\n" + "="*60)
+        logger.info("🔍 SINGLE FILE PROCESSING")
+        logger.info("="*60)
+        
+        file_path = Path(args.single_file)
+        if not file_path.is_absolute():
+            file_path = ONEDRIVE_LOCAL_RESOURCES_ROOT / file_path
+        
+        if not file_path.exists():
+            error_msg = f"File not found: {file_path}"
+            logger.error(error_msg)
+            console.print(f"[bold red]❌ {error_msg}")
+            processed, errors = [], []
+        elif file_path.suffix.lower() not in PDF_EXTENSIONS:
+            error_msg = f"File is not a PDF: {file_path}"
+            logger.error(error_msg)
+            console.print(f"[bold red]❌ {error_msg}")
+            processed, errors = [], []
+        else:
+            file_info = f"📄 Processing file: {file_path.name}"
+            logger.info(file_info)
+            console.print(f"[cyan]{file_info}")
+            
+            location_info = f"📂 Located at: {file_path}"
+            logger.info(location_info)
+            console.print(f"[blue]{location_info}")
+            
+            vault_dir = get_vault_path_for_pdf(file_path)
+            save_info = f"📝 Will save note to: {vault_dir}"
+            logger.info(save_info)
+            console.print(f"[green]{save_info}")
+            
+            logger.info("\n" + "-"*50)
+            console.rule()
+            
+            result = _generate_note_for_pdf(file_path, vault_dir, args, access_token)
+            
+            if result.get('success', False):
+                if result.get('skipped', False):
+                    console.print(f"[yellow]⏭️  Skipped (already exists): {file_path.name}")
+                else:
+                    console.print(f"[green]✓ Processed: {file_path.name}")
+                processed, errors = [result], []
+            else:
+                console.print(f"[red]✗ Failed: {file_path.name} - {result.get('error', 'Unknown error')}")
+                processed, errors = [], [result]
     else:
         folder = getattr(args, 'folder', None)
         mode_msg = f"Processing folder: {folder if folder else '[default OneDrive root]'}"
         logger.info(mode_msg)
         console.print(f"[cyan]{mode_msg}")
-        processed, errors = _process_pdfs_for_notes(args=args, folder_path=folder, access_token=access_token, dry_run=args.dry_run)
+        processed, errors = _batch_generate_notes_for_pdfs(args=args, folder_path=folder, access_token=access_token, dry_run=args.dry_run)
 
     # Print Rich formatted summary to console
     console.rule("[bold cyan]PDF Note Generation Summary")
@@ -1002,7 +1061,6 @@ def main() -> int:
     console.print(f"\n[blue]📄 Results saved to: [bold]{RESULTS_FILE}")
     console.rule()
     return 0
-
 
 # Allow running as a script directly
 if __name__ == "__main__":

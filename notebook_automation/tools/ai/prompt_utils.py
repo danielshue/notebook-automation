@@ -29,7 +29,14 @@ FINAL_PROMPT_PATH = os.path.join(PROMPT_DIR, 'final_summary_prompt.md')  # For t
 # System prompt provides concise instructions about the AI's role and task
 # This is typically used as the "system message" in ChatGPT/OpenAI API calls
 # It establishes the AI's expertise domain and general guidance for all responses
-DEFAULT_SYSTEM_PROMPT = "You are an expert educational content summarizer specializing in MBA materials. Create clear, insightful summaries that highlight key concepts and strategic business implications."
+DEFAULT_SYSTEM_PROMPT = """You are an expert MBA educational content summarizer. Your task is to create clear, structured summaries with the following:
+
+1. A concise overview of the key points and main arguments
+2. Important business concepts and frameworks introduced
+3. Practical implications and applications
+4. Key takeaways for business strategy and management
+
+Always use proper markdown formatting with headers and bullet points. Structure your summary with clear sections to enhance readability."""
 
 def _load_prompt(path, default):
     """
@@ -200,28 +207,32 @@ def format_chuncked_user_prompt_for_pdf(metadata):
     It replaces template variables with actual values from the metadata dictionary.
     
     Template Variables Replaced:
-    - {{onedrive-pdf-path}}: Name of the PDF file 
-    - {{course}}: Name of the course the PDF belongs to
+    - file_name: Name of the PDF file 
+    - course_name: Name of the course the PDF belongs to
+    - program_name: Name of the program
     
     Args:
         metadata (dict): Dictionary containing PDF metadata including
-                         'onedrive-pdf-path' (or using 'title' as fallback)
-                         and 'course' information
+                         'file_name', 'course_name', and 'program_name'
                          
     Returns:
         str: Formatted chunk prompt for PDF summarization
-        
-    Note:
-        - This function is used in the chunked processing workflow where a PDF is
-          divided into smaller segments for more effective AI summarization.
-        - The function name contains a typo ("chuncked" instead of "chunked") but
-          is maintained for backward compatibility.
     """
+    # Ensure all required variables exist with defaults
+    variables = {
+        'file_name': metadata.get('file_name', 'Unknown File'),
+        'course_name': metadata.get('course_name', 'MBA Course'),
+        'program_name': metadata.get('program_name', 'MBA Program'),
+        'chunk_context': '',  # These will be filled in by the summarizer
+        'chunk_context_lower': '',
+        'chunk': ''
+    }
     
-    file_name = metadata.get('onedrive-pdf-path', metadata.get('title', 'Unknown File'))
-    course_name = metadata.get('course', 'Unknown Course')
-
-    user_prompt = CHUNK_PROMPT_TEMPLATE.replace("{{onedrive-pdf-path}}", file_name)    
-    user_prompt = user_prompt.replace("{{course}}", course_name)
-    
-    return user_prompt
+    try:
+        return DEFAULT_CHUNK_PROMPT.format(**variables)
+    except KeyError as e:
+        logger.error(f"Missing required metadata key: {e}")
+        return DEFAULT_CHUNK_PROMPT
+    except Exception as e:
+        logger.error(f"Error formatting chunk prompt: {e}")
+        return DEFAULT_CHUNK_PROMPT

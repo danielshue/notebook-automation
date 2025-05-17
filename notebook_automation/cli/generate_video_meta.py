@@ -32,6 +32,28 @@ from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_RO
 from notebook_automation.tools.utils.file_operations import find_files_by_extension
 from notebook_automation.cli.onedrive_share import create_sharing_link
 
+from notebook_automation.tools.notes.note_markdown_generator import create_or_update_markdown_note_for_video
+from notebook_automation.tools.ai.summarizer import generate_summary_with_openai
+from notebook_automation.tools.utils.error_handling import update_failed_files, update_results_file, categorize_error, ErrorCategories
+from notebook_automation.tools.metadata.path_metadata import extract_metadata_from_path
+from notebook_automation.tools.transcript.processor import process_transcript
+from typing import Dict, List, Tuple, Optional, Union, Any
+
+from notebook_automation.tools.utils import config as config_utils
+
+# Initialize loggers as global variables to be populated in main()
+logger = None
+failed_logger = None
+
+# Constants
+VIDEO_EXTENSIONS = ['.mp4', '.mov', '.avi', '.mkv', '.webm']
+RESULTS_FILE = 'video_links_results.json'
+FAILED_FILES_JSON = 'failed_video_files.json'
+
+
+# OpenAI API integration configuration
+OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
+
 def create_share_link(video_path: Path, timeout: int = 15) -> str | None:
     """Get a shareable link for the given file using the imported function from onedrive_share.py."""
     # The function signature in onedrive_share.py is: create_sharing_link(access_token: str, file_path: str) -> str | None
@@ -59,20 +81,16 @@ def create_share_link(video_path: Path, timeout: int = 15) -> str | None:
         if not rel_path.startswith("/"):
             rel_path = "/" + rel_path
     return create_sharing_link(access_token, rel_path)
-from notebook_automation.tools.notes.note_markdown_generator import create_or_update_markdown_note_for_video
-from notebook_automation.tools.ai.summarizer import generate_summary_with_openai
-from notebook_automation.tools.utils.error_handling import update_failed_files, update_results_file, categorize_error, ErrorCategories
-from notebook_automation.tools.metadata.path_metadata import extract_metadata_from_path
-from notebook_automation.tools.transcript.processor import process_transcript
 
-# Initialize loggers as global variables to be populated in main()
-logger = None
-failed_logger = None
-
-# Constants
-VIDEO_EXTENSIONS = ['.mp4', '.mov', '.avi', '.mkv', '.webm']
-RESULTS_FILE = 'video_links_results.json'
-FAILED_FILES_JSON = 'failed_video_files.json'
+def check_openai_requirements(args):
+    """Check if OpenAI API key is available when needed."""
+    if not OPENAI_API_KEY and not getattr(args, 'no_summary', False):
+        console = Console(stderr=True)
+        console.print("[red]Error:[/red] OpenAI API key not found and --no-summary flag not used.")
+        console.print("[yellow]Either:[/yellow]")
+        console.print("  1. Set the OPENAI_API_KEY environment variable")
+        console.print("  2. Use the --no-summary flag to skip summary generation")
+        sys.exit(1)
 
 
 def _parse_arguments() -> argparse.Namespace:
@@ -178,7 +196,10 @@ def main() -> None:
     """
     global logger, failed_logger
     args = _parse_arguments()
-    from notebook_automation.tools.utils import config as config_utils
+
+    # Check OpenAI requirements before proceeding
+    check_openai_requirements(args)
+
     config = config_utils.load_config_data(args.config)
     
     # Create Rich console for all output
@@ -403,20 +424,24 @@ def main() -> None:
                                     system_prompt = pf.read()
                                 logger.debug(f"Loaded generic summary prompt from {fallback_prompt_path}")
                             else:
-                                system_prompt = "You are an MBA course video summarizer."
+                                system_prompt = "You are an MBA course summarizer."
                                 logger.warning(f"No summary prompt files found, using default system prompt")
-                            
 
-                            # Use a template with placeholders for course and onedrive path
-                            user_prompt_template = (
-                                'You are an educational content summarizer for MBA course materials. '
-                                'Generate a clear and insightful summary of the following chunk from the video "{onedrive_path}", part of the course "{course}".'
-                            )
-                            # Prepare metadata for prompt formatting
                             prompt_metadata = metadata.copy() if metadata else {}
                             # Use share_link only if it has already been created, otherwise use video_path
                             prompt_metadata['onedrive_path'] = str(video_path)
                             prompt_metadata['course'] = metadata.get('course', '') if metadata else ''
+
+                            onedrive_path = prompt_metadata['onedrive_path']
+                            course = prompt_metadata['course']
+
+                            # Use a template with placeholders for course and onedrive path
+                            user_prompt_template = (
+                                'You are an educational content summarizer for MBA course materials. '
+                                f'Generate a clear and insightful summary of the following chunk from the video "{onedrive_path}", part of the course "{course}".'
+                            )
+
+                            # Prepare metadata for prompt formatting
                             user_prompt = user_prompt_template.format(**prompt_metadata)
                             summary = generate_summary_with_openai(
                                 transcript,

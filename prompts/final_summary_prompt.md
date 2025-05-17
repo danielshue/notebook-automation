@@ -38,14 +38,10 @@ Your output structure must exactly follow this format:
 - Write a **1-paragraph synthesis** of the entire document
 - Be **concise, clear, and high-level**
 
----
-
 ## 🧩 Topics Covered
 
 - List **3–5 specific topics** discussed in the PDF
 - Use concise, bullet-point format
-
----
 
 ## 🔑 Key Concepts Explained
 
@@ -53,23 +49,17 @@ Your output structure must exactly follow this format:
 - Aim to **synthesize insights** rather than merely list facts
 - Highlight how concepts relate to **MBA-level thinking** or business application
 
----
-
 ## ⭐ Important Takeaways
 
 - List **3–5 actionable insights or conclusions**
 - Use bullet points
 - Focus on ideas that are practical, strategically useful, and memorable
 
----
-
 ## 💬 Notable Quotes / Insights
 
-- Include **1–2 quotes or striking insights** from the PDF
+- Include **1–2 quotes or striking insights**
 - Use markdown quote formatting:
   > "Example quote here."
-
----
 
 ## ❓ Reflection & Questions
 

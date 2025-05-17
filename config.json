@@ -1,13 +1,12 @@
 {
   "paths": {
-    "resources_root": "/mnt/c/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources",
-    "notebook_vault_root": "/mnt/c/Users/danshue.REDMOND/MBA/01_Projects/MBA",
-    "metadata_file": "/mnt/d/repos/mba-notebook-automation/metadata.yaml",
-    "obsidian_vault_root": "/mnt/c/Users/danshue.REDMOND/MBA/",
+    "resources_root": "c:/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources",
+    "notebook_vault_root": "c:/Users/danshue.REDMOND/MBA/01_Projects/MBA",
+    "metadata_file": "d:/repos/mba-notebook-automation/metadata.yaml",
+    "obsidian_vault_root": "c:/Users/danshue.REDMOND/MBA/",
     "onedrive_resources_basepath": "/Education/MBA-Resources",
-    "logging_dir": "/mnt/d/repos/mba-notebook-automation/logs"
+    "logging_dir": "d:/repos/mba-notebook-automation/logs"
   },
-  "onedrive": {},
   "microsoft_graph": {
     "client_id": "489ad055-e4b0-4898-af27-53506ce83db7",
     "api_endpoint": "https://graph.microsoft.com/v1.0",

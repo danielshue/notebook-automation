@@ -103,10 +103,22 @@ def find_all_pdfs(root: Path) -> list[Path]:
         significant time to complete. Consider using more targeted subdirectories
         when working with extensive file collections.
     """
-    # Use pathlib's recursive glob (rglob) to find all files with .pdf extension
-    # Filter with is_file() to ensure we only get actual files, not directories or symlinks
-    # This one-liner efficiently combines finding and filtering in a list comprehension
-    return [p for p in root.rglob("*.pdf") if p.is_file()]
+    print(f"Scanning for PDFs in: {root}")
+    try:
+        # Use pathlib's recursive glob (rglob) to find all files with .pdf extension
+        # Filter with is_file() to ensure we only get actual files, not directories or symlinks
+        # This one-liner efficiently combines finding and filtering in a list comprehension
+        pdfs = [p for p in root.rglob("*.pdf") if p.is_file()]
+        print(f"Found {len(pdfs)} PDFs")
+        if pdfs:
+            print("First few PDFs found:")
+            for pdf in pdfs[:3]:
+                print(f"  - {pdf}")
+        return pdfs
+    except Exception as e:
+        print(f"Error scanning for PDFs: {e}")
+        return []
+        
 
 def get_vault_path_for_pdf(onedrive_pdf_path: Path) -> Path:
     """Map an OneDrive PDF path to its corresponding location in the Obsidian Vault.

@@ -436,12 +436,11 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
     file_handler = logging.FileHandler(log_file)
     file_handler.setLevel(log_level)
     # Standard timestamp-prefixed format for log files (keep timestamps in files)
-    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-    
-    # Create an enhanced console handler with color support
+    file_handler.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
+      # Create an enhanced console handler with color support
     # Colors improve readability by making log levels visually distinct
     color_formatter = colorlog.ColoredFormatter(
-        '%(log_color)s%(asctime)s - %(levelname)s - %(message)s',
+        '%(log_color)s%(levelname)s - %(message)s',
         log_colors={
             'DEBUG': 'cyan',      # Cyan for detailed debug information
             'INFO': 'green',      # Green for normal operation messages
@@ -486,11 +485,10 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
           # Add a dedicated file handler for failed operations
     # This creates a separate log file specifically for tracking failures
     if not os.path.isabs(failed_log_file):
-        failed_log_file = os.path.join(logs_dir, failed_log_file)
-    
+        failed_log_file = os.path.join(logs_dir, failed_log_file)    
     failed_file_handler = logging.FileHandler(failed_log_file)
-    failed_file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-    failed_logger.addHandler(failed_file_handler)    # Add a visually distinct handler for failed operations
+    failed_file_handler.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
+    failed_logger.addHandler(failed_file_handler)# Add a visually distinct handler for failed operations
     if use_rich and console_output:
         try:
             from rich.logging import RichHandler
