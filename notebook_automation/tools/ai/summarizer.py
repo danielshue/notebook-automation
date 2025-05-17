@@ -179,9 +179,8 @@ def _summarize_chunk(chunk, system_prompt, chunked_system_prompt, user_prompt, m
         logger.debug(f"*** executing _summarize_chunk - PROMPTS *** \n")        
         logger.debug(f"system_prompt: {system_prompt}\n")
         logger.debug(f"user_prompt: {formatted_user_prompt}\n")
-        
         response = openai.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": formatted_user_prompt}
@@ -360,9 +359,8 @@ def generate_summary_with_openai(text_to_summarize, system_prompt, chunked_syste
         logger.debug(f"*** executing generate_summary_with_openai - FINAL PROMPTS *** \n")        
         logger.debug(f"system_prompt: {system_prompt}\n")
         logger.debug(f"user_prompt: {final_user_prompt}\n")
-        
         response = openai.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": final_user_prompt}
@@ -389,9 +387,8 @@ def generate_summary_with_openai(text_to_summarize, system_prompt, chunked_syste
         logger.debug(f"*** executing generate_summary_with_openai (shorter files) - FINAL PROMPTS *** \n")        
         logger.debug(f"system_prompt: {final_system_prompt}\n")
         logger.debug(f"user_prompt: {user_prompt_filled}\n")
-        
         response = openai.chat.completions.create(
-            model="gpt-4.1",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": final_system_prompt},
                 {"role": "user", "content": user_prompt_filled}

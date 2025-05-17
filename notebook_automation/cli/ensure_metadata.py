@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 """
-Consistent Metadata Enforcer for Markdown Files
+Notebook Metadata Consistency Enforcer CLI.
 
-This script recursively scans a folder structure for markdown (.md) files and ensures 
-that each file has consistent program, course, and class metadata in its YAML frontmatter.
-The script determines the correct values based on the file's location in the directory
-structure and the index files found in parent directories.
+This CLI scans markdown files in a specified folder and ensures they have consistent program,
+course, and class metadata in their YAML frontmatter. It determines the correct values based
+on the file's location in the directory structure and the index files found in parent directories.
 
 Directory Structure Expected:
 - Root (main-index)
@@ -20,15 +19,21 @@ Directory Structure Expected:
           - Lesson Folders (lesson-index)
             - Content Files (readings, videos, transcripts, etc.)
 
-The script will find the appropriate program, course, and class for each markdown file
-by looking for index files in parent directories, and update the YAML frontmatter
-accordingly.
+Usage:
+    python -m notebook_automation.cli.ensure_metadata [options]
 
-Example:
-    $ python ensure_consistent_metadata.py /path/to/vault --verbose
-    $ python ensure_consistent_metadata.py /path/to/vault --dry-run
-    $ python ensure_consistent_metadata.py --verbose  # Uses default Obsidian vault path
+Examples:
+    # Process all markdown files in a folder
+    python -m notebook_automation.cli.ensure_metadata --folder "Value Chain Management/Operations Management/"
+    
+    # Process with verbose output
+    python -m notebook_automation.cli.ensure_metadata --folder "Value Chain Management" --verbose
+    
+    # Dry run to see what would change
+    python -m notebook_automation.cli.ensure_metadata --folder "Value Chain Management" --dry-run
 
+    # Process entire vault (uses default Obsidian vault path)
+    python -m notebook_automation.cli.ensure_metadata --verbose
 """
 
 import argparse
@@ -39,9 +44,15 @@ import difflib
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any
 
+# Import Rich components for better console rendering
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 # Import from tools package
-from notebook_automation.tools.utils.config import setup_logging
+from notebook_automation.tools.utils.config import (
+    setup_logging, NOTEBOOK_VAULT_ROOT, VAULT_LOCAL_ROOT
+)
 from notebook_automation.tools.utils.paths import normalize_wsl_path
 
 
@@ -578,18 +589,22 @@ class MetadataUpdater:
                     # Write the updated content back to the file
                     with open(filepath, 'w', encoding='utf-8') as f:
                         f.write(updated_content)
-                
-                # Output information if verbose mode is enabled
+                  # Output information if verbose mode is enabled
                 if self.verbose:
-                    print(f"\nFile: {filepath}")
-                    updates = []
+                    console = Console()
+                    table = Table(show_header=False, box=None)
+                    table.add_column("Property", style="cyan")
+                    table.add_column("Value", style="green")
+                    
+                    table.add_row("File", str(filepath))
                     if update_stats['program_updated']:
-                        updates.append(f"Program: {metadata_info['program']}")
+                        table.add_row("Program", metadata_info['program'])
                     if update_stats['course_updated']:
-                        updates.append(f"Course: {metadata_info['course']}")
+                        table.add_row("Course", metadata_info['course'])
                     if update_stats['class_updated']:
-                        updates.append(f"Class: {metadata_info['class']}")
-                    print(f"Updated: {', '.join(updates)}")
+                        table.add_row("Class", metadata_info['class'])
+                    
+                    console.print(Panel(table, title="File Updated", border_style="blue"))
             
         except Exception as e:
             file_stats['error'] = str(e)
@@ -700,16 +715,18 @@ class MetadataUpdater:
                 'frontmatter': None
             }
     
-def main():
-    """Main entry point for the script."""
-    # Parse command line arguments
+def _parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments for metadata consistency enforcement.
+    
+    Returns:
+        Parsed command-line arguments
+    """
     parser = argparse.ArgumentParser(
         description="Ensure consistent metadata in markdown files based on directory structure."
     )
     parser.add_argument(
-        "path", 
-        nargs="?",
-        help="Path to process - can be a directory (to recursively scan all .md files) "
+        "--folder",
+        help="Folder to process - can be a directory (to recursively scan all .md files) "
              "or a single .md file to check/update. Can be either an absolute path or "
              "a path relative to the Vault Root. Defaults to the entire Obsidian vault."
     )
@@ -733,186 +750,72 @@ def main():
         help="Explicitly set program name for files (e.g., 'Value Chain Management')"
     )
     parser.add_argument(
-        '-c', '--config', type=str, default=None, help='Path to config.json')
-    args = parser.parse_args()
+        '-c', '--config',
+        type=str,
+        default=None,
+        help='Path to config.json'
+    )
+    return parser.parse_args()
+
+def main():
+    """Main entry point for the script."""
+    # Parse command line arguments
+    args = _parse_arguments()
       
     # Create the updater instance
     updater = MetadataUpdater(
         dry_run=args.dry_run or args.inspect,  # Don't modify files in inspect mode
         verbose=args.verbose,
-        program=args.program  # Pass the program argument to the updater
+        program=args.program
     )
     
-    # Use specified path or default to notebook_vault_root from config
-    from notebook_automation.tools.utils import config as config_utils
-    config = config_utils.load_config_data(args.config)
-    if args.path:
-        try:
-            # Use the normalize_path function to handle both absolute and relative paths
-            # Allow file paths in addition to directories
-            path = normalize_path(args.path, allow_file=True)
-            logger.info(f"Using path: {path}")
-            # Determine if it's a file or directory
-            is_file = path.is_file()
-        except ValueError as e:
-            logger.error(f"Error with path: {e}")
-            sys.exit(1)
-    else:
-        # If no path is given, use the root of the vault from config
-        path = Path(normalize_wsl_path(config['paths']['notebook_vault_root']))
-        logger.info(f"No path specified, using Obsidian vault: {path}")
-        # Determine if it's a file or directory
-        is_file = path.is_file()
-    
-    # Handle inspection mode
-    if args.inspect:
-        if is_file:
-            # Inspect a single file
-            print(f"Inspecting metadata for: {path}")
-            metadata = updater.inspect_file(path)
-            print("\nFile Metadata Report:")
-            print(f"File: {metadata['file']}")
-            print("\nCurrent Frontmatter Values:")
-            print(f"  Program: {metadata['program'] or 'Not set'}")
-            print(f"  Course:  {metadata['course'] or 'Not set'}")
-            print(f"  Class:   {metadata['class'] or 'Not set'}")
-            print("\nDirectory Structure Values:")
-            print(f"  Program: {metadata['dir_program'] or 'Not found'}")
-            print(f"  Course:  {metadata['dir_course'] or 'Not found'}")
-            print(f"  Class:   {metadata['dir_class'] or 'Not found'}")
-            print("\nDiscrepancies:")
-            if metadata['program'] != metadata['dir_program']:
-                print(f"  Program: '{metadata['program']}' in file vs '{metadata['dir_program']}' from directory")
-            if metadata['course'] != metadata['dir_course']:
-                print(f"  Course: '{metadata['course']}' in file vs '{metadata['dir_course']}' from directory")
-            if metadata['class'] != metadata['dir_class']:
-                print(f"  Class: '{metadata['class']}' in file vs '{metadata['dir_class']}' from directory")
-            if (metadata['program'] == metadata['dir_program'] and 
-                metadata['course'] == metadata['dir_course'] and 
-                metadata['class'] == metadata['dir_class']):
-                print("  None - metadata is consistent with directory structure")
-            if 'error' in metadata and metadata['error']:
-                print(f"\nError: {metadata['error']}")
-        else:
-            # Inspect all markdown files in the directory recursively
-            print(f"Inspecting all markdown files in: {path}\n")
-            for root, _, files in os.walk(path):
-                for file in files:
-                    if file.lower().endswith('.md'):
-                        filepath = Path(root) / file
-                        metadata = updater.inspect_file(filepath)
-                        print("File Metadata Report:")
-                        print(f"File: {metadata['file']}")
-                        print("Current Frontmatter Values:")
-                        print(f"  Program: {metadata['program'] or 'Not set'}")
-                        print(f"  Course:  {metadata['course'] or 'Not set'}")
-                        print(f"  Class:   {metadata['class'] or 'Not set'}")
-                        print("Directory Structure Values:")
-                        print(f"  Program: {metadata['dir_program'] or 'Not found'}")
-                        print(f"  Course:  {metadata['dir_course'] or 'Not found'}")
-                        print(f"  Class:   {metadata['dir_class'] or 'Not found'}")
-                        print("Discrepancies:")
-                        if metadata['program'] != metadata['dir_program']:
-                            print(f"  Program: '{metadata['program']}' in file vs '{metadata['dir_program']}' from directory")
-                        if metadata['course'] != metadata['dir_course']:
-                            print(f"  Course: '{metadata['course']}' in file vs '{metadata['dir_course']}' from directory")
-                        if metadata['class'] != metadata['dir_class']:
-                            print(f"  Class: '{metadata['class']}' in file vs '{metadata['dir_class']}' from directory")
-                        if (metadata['program'] == metadata['dir_program'] and 
-                            metadata['course'] == metadata['dir_course'] and 
-                            metadata['class'] == metadata['dir_class']):
-                            print("  None - metadata is consistent with directory structure")
-                        if 'error' in metadata and metadata['error']:
-                            print(f"Error: {metadata['error']}")
-                        print("-")
-    else:
-        # Color codes and symbols
-        GREEN = '\033[92m'
-        YELLOW = '\033[93m'
-        RED = '\033[91m'
-        RESET = '\033[0m'
-        CHECK = '✅'
-        WARN = '⚠️'
-        CROSS = '❌'
-        # Helper for truncating paths, always relative to VAULT ROOT
-        from notebook_automation.tools.utils.config import VAULT_LOCAL_ROOT
-        def format_path(path, width=60):
-            try:
-                rel_path = Path(path).resolve().relative_to(Path(VAULT_LOCAL_ROOT).resolve())
-                path_str = str(rel_path)
-            except Exception:
-                path_str = str(path)
-            if len(path_str) <= width:
-                return path_str.ljust(width)
-            parts = path_str.split(os.sep)
-            if len(parts) > 2:
-                return ('...%s%s' % (os.sep, os.sep.join(parts[-2:]))).ljust(width)
-            return ('...' + path_str[-(width-3):]).ljust(width)
-
-        from tqdm import tqdm
-        if is_file:
-            print(f"{'[DRY RUN] ' if args.dry_run else ''}Processing file: {path}")
-            file_stats = updater.process_file(path)
-            short_path = format_path(path)
-            if file_stats['error']:
-                print(f"{RED}[ERROR]{CROSS} {short_path}{RESET} {file_stats['error']}")
-            elif file_stats['modified']:
-                print(f"{GREEN}[UPDATED]{CHECK} {short_path}{RESET}")
-                if file_stats['program_updated']:
-                    print(f"    {GREEN}- Program field updated{RESET}")
-                if file_stats['course_updated']:
-                    print(f"    {GREEN}- Course field updated{RESET}")
-                if file_stats['class_updated']:
-                    print(f"    {GREEN}- Class field updated{RESET}")
+    try:
+        # Normalize and verify the path
+        scan_path = args.folder
+        if not scan_path:
+            # Default to scanning vault root if no path specified
+            from notebook_automation.tools.utils.config import NOTEBOOK_VAULT_ROOT
+            scan_path = NOTEBOOK_VAULT_ROOT
+            
+        path = normalize_path(scan_path, allow_file=True)
+          # Process the path
+        if path.is_file():
+            if path.suffix != '.md':
+                print(f"Error: {path} is not a markdown file")
+                return 1
+            if args.inspect:
+                updater.inspect_file(path)
             else:
-                print(f"{YELLOW}[OK]{WARN} {short_path}{RESET} No updates needed.")
+                updater.process_file(path)
         else:
-            print(f"{'[DRY RUN] ' if args.dry_run else ''}Ensuring consistent metadata in markdown files in: {path}")
-            # Count total .md files for progress bar
-            total_files = sum(len([f for f in files if f.lower().endswith('.md')]) for _, _, files in os.walk(path))
-            stats = {
-                'files_processed': 0,
-                'files_modified': 0,
-                'files_with_errors': 0,
-                'program_updated': 0,
-                'course_updated': 0,
-                'class_updated': 0
-            }
-            with tqdm(total=total_files, desc="Processing files", unit="file", colour="green") as pbar:
-                for root, _, files in os.walk(path):
-                    for file in files:
-                        if file.lower().endswith('.md'):
-                            filepath = Path(root) / file
-                            file_stats = updater.process_file(filepath)
-                            stats['files_processed'] += 1
-                            short_path = format_path(filepath)
-                            if file_stats['error']:
-                                tqdm.write(f"{RED}[ERROR]{CROSS} {short_path}{RESET} {file_stats['error']}")
-                                stats['files_with_errors'] += 1
-                            elif file_stats['modified']:
-                                tqdm.write(f"{GREEN}[UPDATED]{CHECK} {short_path}{RESET}")
-                                stats['files_modified'] += 1
-                                if file_stats['program_updated']:
-                                    stats['program_updated'] += 1
-                                if file_stats['course_updated']:
-                                    stats['course_updated'] += 1
-                                if file_stats['class_updated']:
-                                    stats['class_updated'] += 1
-                            else:
-                                tqdm.write(f"{YELLOW}[OK]{WARN} {short_path}{RESET} No updates needed.")
-                            pbar.update(1)
-            # Print a clear, colorized summary with separator
-            SEP = '\n' + '-' * 48
-            print(f"{SEP}\nSummary:")
-            print(f"  {GREEN}Files processed:        {stats['files_processed']}{RESET}")
-            print(f"  {GREEN}Files modified:         {stats['files_modified']}{RESET}")
-            print(f"  {GREEN}Program fields updated: {stats['program_updated']}{RESET}")
-            print(f"  {GREEN}Course fields updated:  {stats['course_updated']}{RESET}")
-            print(f"  {GREEN}Class fields updated:   {stats['class_updated']}{RESET}")
-            print(f"  {RED}Files with errors:      {stats['files_with_errors']}{RESET}")
-            print(SEP)
-            if args.dry_run:
-                print(f"{YELLOW}This was a dry run. No files were modified.{RESET}")
+            updater.process_directory(path)
+            
+        # Create Rich console for colored output
+        console = Console()
+        
+        # Create statistics table
+        table = Table(title="Summary", show_header=False)
+        table.add_column("Metric", style="cyan")
+        table.add_column("Value", style="green")
+        
+        # Add statistics rows
+        table.add_row("Files processed", str(updater.stats['files_processed']))
+        table.add_row("Files modified", str(updater.stats['files_modified']))
+        table.add_row("Files with errors", str(updater.stats['files_with_errors']))
+        table.add_row("", "")  # Empty row for spacing
+        table.add_row("Program updated", str(updater.stats['program_updated']))
+        table.add_row("Course updated", str(updater.stats['course_updated']))
+        table.add_row("Class updated", str(updater.stats['class_updated']))
+        
+        # Print the table with a panel
+        console.print(Panel(table, title="Metadata Update Results", border_style="blue"))
+            
+    except Exception as e:
+        console = Console(stderr=True)
+        console.print(f"[red]Error:[/red] {str(e)}")
+        return 1
+        
+    return 0
 
 if __name__ == "__main__":
     main()

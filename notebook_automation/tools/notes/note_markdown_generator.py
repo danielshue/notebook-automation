@@ -36,13 +36,41 @@ import os
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Any, List
+import logging
+import re
 
 from ruamel.yaml import YAML
-import logging
-
 from notebook_automation.tools.metadata.path_metadata import (
     extract_metadata_from_path
 )
+
+# Configure module logger
+logger = logging.getLogger(__name__)
+logging.getLogger('openai').setLevel(logging.ERROR)
+logging.getLogger('requests').setLevel(logging.ERROR)
+
+# Regular expression to match ANSI escape codes (colors and formatting)
+ANSI_ESCAPE_PATTERN = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+
+# Alternative regex for non-escape sequences like [32m
+BRACKET_COLOR_PATTERN = re.compile(r'\[\d{1,2}m')
+
+def strip_ansi_codes(text: str) -> str:
+    """Remove ANSI escape codes (colors, formatting) from text.
+    
+    Args:
+        text (str): Text that may contain ANSI escape codes
+        
+    Returns:
+        str: Clean text without ANSI codes
+    """
+    if not text:
+        return ""
+    # First replace standard ANSI escape codes (starting with escape character)
+    result = ANSI_ESCAPE_PATTERN.sub('', text)
+    # Then replace bracket-style color codes like [32m
+    result = BRACKET_COLOR_PATTERN.sub('', result)
+    return result
 
 yaml = YAML()
 yaml.preserve_quotes = True
@@ -263,6 +291,14 @@ def create_or_update_markdown_note_for_pdf(
         ...     "This document covers basic financial concepts."
         ... )
     """
+
+    logger.debug(f"note_markdown_generator:Generated summary:\n{summary[:500]}...")
+    
+    # Clean the pdf_link by stripping any ANSI color/formatting codes
+    clean_pdf_link = strip_ansi_codes(pdf_link) if pdf_link else ""
+    logger.debug(f"PDF link before cleaning: {pdf_link}")
+    logger.debug(f"PDF link after cleaning: {clean_pdf_link}")
+    
     # Extract metadata from path if not provided
     if metadata is None:
         metadata = extract_metadata_from_path(pdf_path)
@@ -295,25 +331,26 @@ def create_or_update_markdown_note_for_pdf(
         
         # More detailed logging
         if contains_generic_response:
-            logging.warning(f"Detected generic OpenAI response instead of actual summary for PDF {Path(pdf_path).name}. Replacing with placeholder.")
-            logging.warning(f"Original summary content: {summary[:100]}...")
+            logger.warning(f"Detected generic OpenAI response instead of actual summary for PDF {Path(pdf_path).name}. Replacing with placeholder.")
+            logger.warning(f"Original summary content: {summary[:100]}...")
             filtered_summary = None
         else:
             # Check if the summary is unusually short (might be incomplete)
             if len(summary.strip().split()) < 15:  # Fewer than 15 words
-                logging.warning(f"Summary appears too short ({len(summary.strip().split())} words). Replacing with placeholder.")
-                filtered_summary = None    # Create base note content from template
+                logger.warning(f"Summary appears too short ({len(summary.strip().split())} words). Replacing with placeholder.")
+                filtered_summary = None
+
+    # Create base note content from template    
     base_content = f"""---
 title: {metadata.get('title', Path(pdf_path).stem)}
-course: {metadata.get('course', '')}
+course: {metadata.get('course', 'MBA Course')}
 program: {metadata.get('program', 'MBA')}
-type: pdf-notes
 date: {metadata['date']}
-pdf-link: {pdf_link}
+pdf-link: {clean_pdf_link}
 permalink: {metadata.get('permalink', '')}
 tags:
   - type/reference
-  - course/{course_tag}
+  - course/operations-management
 ---
 # {metadata.get('title', Path(pdf_path).stem)}
 """
@@ -325,7 +362,7 @@ tags:
     note_content = f"""{merged_content.rstrip()}
 
 ## References
-- [{Path(pdf_path).stem}]({pdf_link})
+- [{Path(pdf_path).stem}]({clean_pdf_link})
 
 ## Notes
 """
@@ -344,15 +381,13 @@ tags:
             if notes_content_idx != -1:
                 notes_content = existing[notes_content_idx:]
                 # Remove trailing whitespace from generated note before appending
-                note_content = note_content.rstrip() + notes_content
-
-    # Write the note
+                note_content = note_content.rstrip() + notes_content    # Write the note
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(note_content)
     except OSError as e:
         # Log the error and raise it for further handling
-        print(f"Error writing to file {output_path}: {e}")
+        logger.error(f"Error writing to file {output_path}: {e}")
         raise
     return output_path
 
@@ -391,6 +426,11 @@ def create_or_update_markdown_note_for_video(
         ...     "This lecture covers basic financial concepts."
         ... )
     """
+    # Clean the video_link by stripping any ANSI color/formatting codes
+    clean_video_link = strip_ansi_codes(video_link) if video_link else ""
+    logger.debug(f"Video link before cleaning: {video_link}")
+    logger.debug(f"Video link after cleaning: {clean_video_link}")
+    
     # Extract metadata from path if not provided
     if metadata is None:
         metadata = extract_metadata_from_path(video_path)
@@ -423,25 +463,25 @@ def create_or_update_markdown_note_for_video(
         
         # More detailed logging
         if contains_generic_response:
-            logging.warning(f"Detected generic OpenAI response instead of actual summary for video {Path(video_path).name}. Replacing with placeholder.")
-            logging.warning(f"Original summary content: {summary[:100]}...")
+            logger.warning(f"Detected generic OpenAI response instead of actual summary for video {Path(video_path).name}. Replacing with placeholder.")
+            logger.warning(f"Original summary content: {summary[:100]}...")
             filtered_summary = None
         else:
             # Check if the summary is unusually short (might be incomplete)
             if len(summary.strip().split()) < 15:  # Fewer than 15 words
-                logging.warning(f"Summary appears too short ({len(summary.strip().split())} words). Replacing with placeholder.")
+                logger.warning(f"Summary appears too short ({len(summary.strip().split())} words). Replacing with placeholder.")
                 filtered_summary = None    # Create base note content from template
     base_content = f"""---
 title: {metadata.get('title', Path(video_path).stem)}
-course: {metadata.get('course', '')}
+course: {metadata.get('course', 'Operations Management')}  # Provide default instead of null
 program: {metadata.get('program', 'MBA')}
 type: video-reference
 date: {metadata['date']}
-video-link: {video_link}
+video-link: {clean_video_link}
 permalink: {metadata.get('permalink', '')}
 tags:
   - type/video
-  - course/{course_tag}
+  - course/{course_tag or 'operations-management'} # Provide default if course_tag is empty
 ---
 # {metadata.get('title', Path(video_path).stem)}
 """
@@ -453,7 +493,7 @@ tags:
     note_content = f"""{merged_content.rstrip()}
 
 ## References
-- [Video Recording]({video_link})
+- [Video Recording]({clean_video_link})
 
 ## Notes
 """
@@ -472,14 +512,12 @@ tags:
             if notes_content_idx != -1:
                 notes_content = existing[notes_content_idx:]
                 # Remove trailing whitespace from generated note before appending
-                note_content = note_content.rstrip() + notes_content
-
-    # Write the note
+                note_content = note_content.rstrip() + notes_content    # Write the note
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(note_content)
     except OSError as e:
-        logging.error(
+        logger.error(
             "Failed to write note to '%s': %s", output_path, e, exc_info=True
         )
         raise
