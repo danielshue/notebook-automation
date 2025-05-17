@@ -761,6 +761,10 @@ def main():
     """Main entry point for the script."""
     # Parse command line arguments
     args = _parse_arguments()
+    
+    # Set up logging
+    global logger, failed_logger
+    logger, failed_logger = setup_logging(debug=args.verbose)
       
     # Create the updater instance
     updater = MetadataUpdater(

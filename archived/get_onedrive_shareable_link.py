@@ -16,28 +16,19 @@ Example:
 
 import os
 import sys
-import logging
-import json
 import argparse
 import requests
 import msal
-import webbrowser
-from datetime import datetime
+import logging
+import sys
+from pathlib import Path
 
-# Setup logging
-logs_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
-if not os.path.exists(logs_dir):
-    os.makedirs(logs_dir)
+# Ensure parent directory is in sys.path for absolute imports
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(os.path.join(logs_dir, "onedrive_sharing.log")),
-        logging.StreamHandler()
-    ]
-)
-logger = logging.getLogger(__name__)
+from notebook_automation.tools.utils.config import ensure_logger_configured
+logger = ensure_logger_configured(__name__)
+
 
 # Microsoft Graph API Configuration
 CLIENT_ID = "489ad055-e4b0-4898-af27-53506ce83db7"  # Using the same client ID from the troubleshooter

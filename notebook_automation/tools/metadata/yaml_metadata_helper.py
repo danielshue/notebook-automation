@@ -38,7 +38,6 @@ from pathlib import Path
 from datetime import datetime
 
 from ..utils.config import NOTEBOOK_VAULT_ROOT
-from ..utils.config import logger
 
 def replace_template_variables(template, meta_info):
     """

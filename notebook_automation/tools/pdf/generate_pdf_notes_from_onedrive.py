@@ -76,10 +76,9 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from notebook_automation.tools.utils.config import setup_logging
 
 # Import from the tools package
-from notebook_automation.tools.utils.config import setup_logging, NOTEBOOK_VAULT_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
+from notebook_automation.tools.utils.config import setup_logging, ensure_logger_configured, NOTEBOOK_VAULT_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
 from notebook_automation.tools.utils.file_operations import get_vault_path_for_pdf, find_all_pdfs, get_scan_root
 from notebook_automation.tools.auth.microsoft_auth import authenticate_graph_api
-from notebook_automation.tools.onedrive.file_operations import create_share_link
 from notebook_automation.tools.pdf.processor import extract_pdf_text
 from notebook_automation.tools.notes.note_markdown_generator import create_or_update_markdown_note_for_pdf
 from notebook_automation.tools.ai.summarizer import generate_summary_with_openai
@@ -88,8 +87,10 @@ from notebook_automation.tools.metadata.path_metadata import infer_course_and_pr
 from notebook_automation.tools.ai.prompt_utils import format_final_user_prompt_for_pdf, format_chuncked_user_prompt_for_pdf
 
 # Initialize loggers as global variables to be populated in main()
-logger = None
 failed_logger = None
+
+# Configure module logger with safe initialization
+logger = ensure_logger_configured(__name__)
 
 # Constants
 PDF_EXTENSIONS = {'.pdf'}

@@ -1,4 +1,4 @@
-## 2. copilot-code-generation.md
+# 2. copilot-code-generation.md
 
 ```markdown
 # GitHub Copilot Code Generation Instructions

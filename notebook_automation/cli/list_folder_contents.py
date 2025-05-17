@@ -16,11 +16,16 @@ import sys
 import json
 import requests
 import argparse
+import logging
 import msal
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 
 from ..tools.auth.microsoft_auth import authenticate_graph_api
+from notebook_automation.tools.utils.config import setup_logging
+
+# Configure module logger
+logger = logging.getLogger(__name__)
 
 
 def list_drives(headers: Dict[str, str]) -> None:
@@ -383,15 +388,20 @@ Examples:
                        help='Show available OneDrive drives')
     parser.add_argument('--show-root', action='store_true',
                        help='Show contents of OneDrive root')
+    parser.add_argument('--verbose', action='store_true',
+                       help='Enable verbose (debug) logging')
     
     args = parser.parse_args()
     
+    # Set up logging
+    global logger
+    logger, _ = setup_logging(debug=args.verbose)
+    
     # Authenticate
-    print("Authenticating with Microsoft Graph API...")
+    logger.info("Authenticating with Microsoft Graph API...")
     access_token = authenticate_graph_api(args.refresh)
     headers = {"Authorization": f"Bearer {access_token}"}
-    
-    # Show drives if requested
+      # Show drives if requested
     if args.show_drives:
         list_drives(headers)
     
@@ -401,15 +411,18 @@ Examples:
     
     # Direct file access if ID provided
     if args.file_id:
+        logger.info(f"Accessing file with ID: {args.file_id}")
         direct_file_access(args.file_id, headers)
         return
     
     # Search for file by name across all of OneDrive
     if args.search and not args.folder_path:
+        logger.info(f"Searching OneDrive for files matching: {args.search}")
         search_for_file(args.search, headers)
         return
     
     # List folder contents
+    logger.info(f"Listing contents of folder: {args.folder_path}")
     list_folder_contents(args.folder_path, headers, args.search, args.base)
 
 

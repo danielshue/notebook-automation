@@ -47,8 +47,9 @@
 ## Project-Specific Patterns
 - Use `ruamel.yaml` library for YAML operations to preserve formatting
 - Use pathlib for file path manipulations rather than os.path
-- Implement proper logging using the built-in logging module
+- Implement proper logging using the centralize logging module in the config.py
 - Use argparse for command-line argument parsing
+- Always use the centralized configuration system for settings
 - Follow the existing directory structure for new code:
   - `/tags` for tag manipulation scripts
   - `/obsidian` for Obsidian-specific tools
@@ -61,6 +62,7 @@
 - Log errors with appropriate severity levels
 - Propagate exceptions appropriately (don't hide errors)
 - Use explicit try/except blocks with specific exception types
+- Use the centralize error handling module for consistent error management
 
 ## Performance Guidelines
 - Prefer readable code over premature optimization

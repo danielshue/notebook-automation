@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """
 OneDrive Personal File Sharing Script (CLI Version)
@@ -33,9 +32,36 @@ from notebook_automation.tools.utils.config import (
     TOKEN_CACHE_FILE,
     GRAPH_API_ENDPOINT,
     ONEDRIVE_LOCAL_RESOURCES_ROOT,
-    logger,
+    ensure_logger_configured
 )
 from notebook_automation.cli.utils import OKGREEN, FAIL, WARNING, ENDC
+
+# Initialize logger with safe configuration
+logger = ensure_logger_configured(__name__)
+
+def log_and_print(message: str, level: str = 'info', style: str = OKGREEN, log_only: bool = False):
+    """Combines logging and console output in one function to avoid duplication.
+    
+    Args:
+        message: The message to log and print
+        level: Log level ('info', 'warning', 'error', 'debug')
+        style: ANSI color/style for console output
+        log_only: If True, only log the message without printing to console
+    """
+    # Always log
+    if level == 'info':
+        logger.info(message)
+    elif level == 'warning':
+        logger.warning(message)
+    elif level == 'error':
+        logger.error(message)
+    elif level == 'debug':
+        logger.debug(message)
+    
+    # Optionally print with styling
+    if not log_only:
+        print(f"{style}{message}{ENDC}")
+
 
 def authenticate_interactive() -> str | None:
     """Authenticate with Microsoft Graph API using interactive authentication.
@@ -68,17 +94,21 @@ def authenticate_interactive() -> str | None:
                     logger.info("Token cache loaded successfully")
         except Exception as e:
             logger.warning(f"Could not load token cache: {e}")
+    
     app = msal.PublicClientApplication(
         MICROSOFT_GRAPH_API_CLIENT_ID,
         authority=AUTHORITY,
         token_cache=cache
     )
+    
     accounts = app.get_accounts()
     result = None
     if accounts:
         logger.info(f"Account found in token cache, attempting to use existing token...")
+        # Use ANSI colors for console output but not duplicate the log message
         print(f"{OKGREEN}Account found in cache: {accounts[0]['username']}{ENDC}")
         result = app.acquire_token_silent(SCOPES, account=accounts[0])
+    
     if not result or "access_token" not in result:
         logger.info("No valid token in cache, initiating interactive authentication...")
         print(f"\n{OKGREEN}Initiating interactive authentication...\nA browser window will open for you to sign in.{ENDC}")
@@ -103,8 +133,8 @@ def authenticate_interactive() -> str | None:
             logger.error(f"Exception during interactive authentication: {type(e).__name__}: {e}")
             print(f"{FAIL}× Exception during authentication: {str(e)}{ENDC}")
             return None
+    
     return result.get("access_token") if result and "access_token" in result else None
-
 def check_if_file_exists(access_token: str, file_path: str) -> dict | None:
     """Check if a file exists in OneDrive and return its metadata.
 
@@ -181,7 +211,7 @@ def list_items_in_folder(access_token: str, folder_path: str = "") -> list[dict]
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
-    logger.info(f"Listing items in folder: {folder_path if folder_path else 'root'}")
+    log_and_print(f"Listing items in folder: {folder_path if folder_path else 'root'}")
     try:
         response = requests.get(api_endpoint, headers=headers)
         response.raise_for_status()
@@ -248,7 +278,7 @@ def create_sharing_link(access_token: str, file_path: str) -> str | None:
         "type": "view",
         "scope": "anonymous"
     }
-    logger.info(f"Creating sharing link for file: {file_path}")
+    log_and_print(f"Creating sharing link for file: {file_path}")
     try:
         response = requests.post(api_endpoint, headers=headers, json=body)
         response.raise_for_status()
@@ -290,20 +320,21 @@ def main() -> None:
             $ vault-onedrive-share --file "Documents/report.pdf"
     """
     parser = argparse.ArgumentParser(description="OneDrive Personal File Sharing Tool")
-    group = parser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group(required=True)    
     group.add_argument("--file", help="Path to the file in OneDrive to create a shareable link")
     group.add_argument("--list", help="Path to the folder in OneDrive to list contents", nargs="?", const="")
     group.add_argument("--notebook-resource", help="Path to file in notebook resources root to create a shareable link", metavar="RELATIVE_PATH")
     group.add_argument("--notebook-resource-list", help="List contents of a subfolder in notebook resources root", nargs="?", const="", metavar="SUBFOLDER")
     parser.add_argument("--verbose", action="store_true", help="Show detailed output and progress information")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging output")
-
+    
     args = parser.parse_args()
 
-    # Set logger level for debug mode
-    if args.debug:
-        logger.setLevel(10)  # logging.DEBUG
-        print(f"{OKGREEN}[DEBUG] Debug logging enabled{ENDC}")
+    # Set up logging
+    if args.debug or args.verbose:
+        # Use the setup_logging function from config.py to configure logging
+        from notebook_automation.tools.utils.config import setup_logging
+        _, _ = setup_logging(debug=args.debug)
 
     print(f"\n{OKGREEN}=== OneDrive Personal File Sharing Tool ==={ENDC}\n")
     access_token = authenticate_interactive()
