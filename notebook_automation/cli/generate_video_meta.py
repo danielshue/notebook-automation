@@ -28,9 +28,10 @@ logging.getLogger('openai').setLevel(logging.ERROR)
 from notebook_automation.cli.utils import HEADER, OKBLUE, OKCYAN, OKGREEN, WARNING, FAIL, ENDC, BOLD, GREY, BG_BLUE, remove_timestamps_from_logger
 
 # Import from the tools package
-from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
+from notebook_automation.tools.utils.config import setup_logging, VAULT_LOCAL_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT, ensure_logger_configured
 from notebook_automation.tools.utils.file_operations import find_files_by_extension
 from notebook_automation.cli.onedrive_share import create_sharing_link
+from notebook_automation.cli.onedrive_share_helper import create_share_link_once
 
 from notebook_automation.tools.notes.note_markdown_generator import create_or_update_markdown_note_for_video
 from notebook_automation.tools.ai.summarizer import generate_summary_with_openai
@@ -41,8 +42,9 @@ from typing import Dict, List, Tuple, Optional, Union, Any
 
 from notebook_automation.tools.utils import config as config_utils
 
-# Initialize loggers as global variables to be populated in main()
-logger = None
+# Initialize loggers - module-level logger is initialized for immediate use,
+# but will be replaced with a more comprehensive setup in main()
+logger = ensure_logger_configured(__name__)
 failed_logger = None
 
 # Constants
@@ -55,32 +57,25 @@ FAILED_FILES_JSON = 'failed_video_files.json'
 OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
 
 def create_share_link(video_path: Path, timeout: int = 15) -> str | None:
-    """Get a shareable link for the given file using the imported function from onedrive_share.py."""
-    # The function signature in onedrive_share.py is: create_sharing_link(access_token: str, file_path: str) -> str | None
-    # We need to authenticate and get an access token first.
-    from notebook_automation.cli.onedrive_share import authenticate_interactive
-    access_token = authenticate_interactive()
-    if not access_token:
-        return None
-    # file_path should be relative to OneDrive root, e.g. /Education/MBA-Resources/...
-    from notebook_automation.tools.utils.config import ONEDRIVE_BASE
-    video_path_str = str(video_path).replace("\\", "/")
-    marker = ONEDRIVE_BASE if ONEDRIVE_BASE.startswith("/") else "/" + ONEDRIVE_BASE
-    idx = video_path_str.find(marker)
-    if idx == -1:
-        # Try without leading slash
-        marker = ONEDRIVE_BASE.lstrip("/")
-        idx = video_path_str.find(marker)
-        if idx == -1:
-            # Fallback: use the filename only (will likely fail, but avoids crash)
-            rel_path = os.path.basename(video_path_str)
-        else:
-            rel_path = "/" + video_path_str[idx:]
-    else:
-        rel_path = video_path_str[idx:]
-        if not rel_path.startswith("/"):
-            rel_path = "/" + rel_path
-    return create_sharing_link(access_token, rel_path)
+    """
+    Get a shareable link for the given file using the onedrive_share_helper module.
+    
+    This function is a backward-compatible wrapper for create_share_link_once.
+    
+    Args:
+        video_path: Path to the video file
+        timeout: Request timeout in seconds
+        
+    Returns:
+        Share link URL or None if creation failed
+    """
+    # Use the shared implementation from onedrive_share_helper
+    result = create_share_link_once(video_path, access_token=None, timeout=timeout)
+    
+    # Handle the result based on its type (could be dict or string)
+    if isinstance(result, dict):
+        return result.get('webUrl')
+    return result
 
 def check_openai_requirements(args):
     """Check if OpenAI API key is available when needed."""
@@ -198,30 +193,14 @@ def main() -> None:
     args = _parse_arguments()
 
     # Check OpenAI requirements before proceeding
-    check_openai_requirements(args)
-
+    check_openai_requirements(args)    
     config = config_utils.load_config_data(args.config)
     
     # Create Rich console for all output
     console = Console()
-      # Configure Rich logging handler with version-compatible parameters
-    rich_handler_kwargs = {
-        "console": console
-    }
-    # Only add parameters supported by the installed rich version
-    if hasattr(RichHandler, "__init__"):
-        if "rich_tracebacks" in RichHandler.__init__.__code__.co_varnames:
-            rich_handler_kwargs["rich_tracebacks"] = True
-        if "markup" in RichHandler.__init__.__code__.co_varnames:
-            rich_handler_kwargs["markup"] = True
-            
-    # Set up basic logging with compatible RichHandler
-    logging.basicConfig(
-        level=logging.DEBUG if args.debug else logging.INFO,
-        format="%(message)s",
-        handlers=[RichHandler(**rich_handler_kwargs)]
-    )
-      # Set up enhanced logging with our custom configuration
+    
+    # Set up enhanced logging with our custom configuration
+    # The module logger is already initialized, but we need the full setup for consistent formatting
     logger, failed_logger = setup_logging(debug=args.debug, use_rich=True)
     
     # Remove timestamps from ALL loggers for cleaner console output

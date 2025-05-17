@@ -33,19 +33,25 @@ Usage:
 """
 
 import os
-from datetime import datetime
-from pathlib import Path
-from typing import Dict, Optional, Any, List
-import logging
 import re
+import json
+from pathlib import Path
+from datetime import datetime
+import logging
+from typing import Dict, List, Tuple, Optional, Union, Any
 
-from ruamel.yaml import YAML
-from notebook_automation.tools.metadata.path_metadata import (
-    extract_metadata_from_path
-)
+# Import ruamel.yaml for YAML handling with preservation of formatting
+try:
+    from ruamel.yaml import YAML
+except ImportError:
+    raise ImportError("ruamel.yaml package is required. Please install with 'pip install ruamel.yaml'")
 
-# Configure module logger
-logger = logging.getLogger(__name__)
+# Import function for metadata extraction
+from notebook_automation.tools.metadata.path_metadata import extract_metadata_from_path
+from notebook_automation.tools.utils.config import ensure_logger_configured
+
+# Configure module logger with safe initialization
+logger = ensure_logger_configured(__name__)
 logging.getLogger('openai').setLevel(logging.ERROR)
 logging.getLogger('requests').setLevel(logging.ERROR)
 
@@ -289,10 +295,13 @@ def create_or_update_markdown_note_for_pdf(
         ...     "notes/finance-basics.md",
         ...     "https://onedrive.com/link-to-pdf",
         ...     "This document covers basic financial concepts."
-        ... )
-    """
+        ... )    """
 
-    logger.debug(f"note_markdown_generator:Generated summary:\n{summary[:500]}...")
+    # Log summary information if available
+    if summary:
+        logger.debug(f"note_markdown_generator:Generated summary:\n{summary[:500]}...")
+    else:
+        logger.debug("No summary provided or generated")
     
     # Clean the pdf_link by stripping any ANSI color/formatting codes
     clean_pdf_link = strip_ansi_codes(pdf_link) if pdf_link else ""

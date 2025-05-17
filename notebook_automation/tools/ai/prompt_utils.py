@@ -15,9 +15,13 @@ Notebook Generator system. It handles:
 
 import re
 import os
+import logging
 from pathlib import Path
-from ..utils.config import logger
+from ..utils.config import ensure_logger_configured
 from ..metadata.yaml_metadata_helper import yaml_to_string
+
+# Initialize module logger
+logger = ensure_logger_configured(__name__)
 
 # Paths for loading external prompt templates
 # The system uses markdown files in the prompts directory to allow customization

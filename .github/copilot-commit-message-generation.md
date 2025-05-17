@@ -1,4 +1,4 @@
-## 4. copilot-commit-message-generation.md
+# copilot-commit-message-generation.md
 
 ```markdown
 # GitHub Copilot Commit Message Instructions

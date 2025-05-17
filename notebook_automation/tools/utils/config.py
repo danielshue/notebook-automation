@@ -62,6 +62,7 @@ except ConnectionError as e:
 """
 
 import os
+import io
 import logging
 import inspect
 import colorlog
@@ -267,6 +268,77 @@ TOKEN_CACHE_FILE: str = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 # OpenAI API integration configuration
 OPENAI_API_KEY: Optional[str] = os.getenv("OPENAI_API_KEY")
 
+def ensure_logger_configured(logger_name=None, debug=False) -> logging.Logger:
+    """Ensures the specified logger (or root logger) is properly configured.
+    
+    This is a 'safe' function that checks if the logger already has handlers
+    configured and only sets up logging if needed. This allows modules to
+    be used both as libraries and directly.
+      Key features:
+    1. Checks if logger already has handlers before configuring
+    2. Uses a simplified configuration for modules used as libraries
+    3. Preserves logger hierarchy and propagation
+    4. Prevents duplicate log messages
+    5. Ensures proper Unicode character support with UTF-8 encoding
+    
+    Args:
+        logger_name (str, optional): Name of logger to configure, or None for root logger
+        debug (bool, optional): Whether to enable debug logging
+    
+    Returns:
+        logging.Logger: The configured logger
+        
+    Example:
+        ```python
+        from notebook_automation.tools.utils.config import ensure_logger_configured
+        
+        # Get or configure a logger for this module
+        logger = ensure_logger_configured(__name__)
+        
+        # Now use logger normally
+        logger.info("Module loaded successfully")
+        ```
+    """
+    logger = logging.getLogger(logger_name)
+    
+    # Skip configuration if the logger or its ancestor already has handlers
+    # This prevents duplicate logging when a module is imported by a script 
+    # that already called setup_logging
+    curr = logger
+    while curr:
+        if curr.handlers:
+            return logger
+        if not curr.propagate:
+            break
+        curr = curr.parent
+      # If we reach here, this logger needs configuration
+    # Configure a basic setup for this specific logger
+    # Use io.TextIOWrapper with UTF-8 encoding to ensure Unicode support
+    stream = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+    handler = logging.StreamHandler(stream)
+      # Try to use colorlog if available
+    try:
+        import colorlog
+        formatter = colorlog.ColoredFormatter(
+            '%(log_color)s%(levelname)s - %(message)s',
+            log_colors={
+                'DEBUG': 'cyan',
+                'INFO': 'green', 
+                'WARNING': 'yellow',
+                'ERROR': 'red',
+                'CRITICAL': 'bold_red',
+            }
+        )
+    except ImportError:
+        # Fall back to standard formatter if colorlog isn't available
+        formatter = logging.Formatter('%(levelname)s - %(message)s')
+    
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
+    
+    return logger
+
 # Setup logging
 def setup_logging(debug: bool = False, log_file: Optional[str] = None, 
                failed_log_file: str = "failed_files.log", console_output: bool = True,
@@ -286,6 +358,7 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
     6. Custom formatters for different output destinations
     7. Rich logging integration for enhanced terminal display
     8. Suppression of noisy third-party loggers (pdfplumber, PyPDF2, OpenAI)
+    9. Safe to call multiple times without duplication
     
     Args:
         debug (bool): Enable debug logging level when True. When False, uses INFO level.
@@ -384,7 +457,9 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
             console_handler.setFormatter(logging.Formatter('%(message)s'))
         else:
             # Traditional colorlog formatting for standard mode
-            console_handler = logging.StreamHandler()
+            # Use stderr with UTF-8 encoding to support Unicode box characters
+            stream = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
+            console_handler = logging.StreamHandler(stream)
             color_formatter = colorlog.ColoredFormatter(
                 '%(log_color)s%(levelname)s: %(message)s',
                 log_colors={
@@ -430,10 +505,9 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
         log_file = os.path.join(logs_dir, f"{base_name}.log")
     elif not os.path.isabs(log_file):
         log_file = os.path.join(logs_dir, log_file)
-    
-    # Create a file handler for persistent logging to file
+      # Create a file handler for persistent logging to file
     # This ensures all log entries are recorded for later analysis
-    file_handler = logging.FileHandler(log_file)
+    file_handler = logging.FileHandler(log_file, encoding='utf-8')
     file_handler.setLevel(log_level)
     # Standard timestamp-prefixed format for log files (keep timestamps in files)
     file_handler.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
@@ -482,11 +556,11 @@ def setup_logging(debug: bool = False, log_file: Optional[str] = None,
     # This ensures clean behavior when setup_logging is called multiple times
     while failed_logger.handlers:
         failed_logger.removeHandler(failed_logger.handlers[0])
-          # Add a dedicated file handler for failed operations
+      # Add a dedicated file handler for failed operations
     # This creates a separate log file specifically for tracking failures
     if not os.path.isabs(failed_log_file):
         failed_log_file = os.path.join(logs_dir, failed_log_file)    
-    failed_file_handler = logging.FileHandler(failed_log_file)
+    failed_file_handler = logging.FileHandler(failed_log_file, encoding='utf-8')
     failed_file_handler.setFormatter(logging.Formatter('%(levelname)s - %(message)s'))
     failed_logger.addHandler(failed_file_handler)# Add a visually distinct handler for failed operations
     if use_rich and console_output:

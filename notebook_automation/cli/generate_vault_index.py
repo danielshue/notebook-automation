@@ -54,6 +54,7 @@ from typing import Dict, List, Optional, Union, Callable
 
 # Import shared utilities
 from notebook_automation.utils.converters import process_file as convert_to_markdown
+from notebook_automation.tools.utils.config import setup_logging
 import urllib.parse
 from typing import Dict, List, Optional, Union, Callable
 
@@ -93,12 +94,12 @@ def setup_logging(debug: bool = False) -> None:
     Args:
         debug (bool): Enable debug level logging if True.
     """
-    log_level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(
-        level=log_level,
-        format='%(asctime)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
-    )
+    # Use the centralized logging setup from config.py
+    global logger, failed_logger
+    logger, failed_logger = setup_logging(debug=debug, log_file="generate_vault_index.log")
+    
+    # Ensure the imported logger is used throughout this module
+    logging.getLogger(__name__).setLevel(logging.DEBUG if debug else logging.INFO)
 
 def load_metadata_templates() -> Dict:
     """Load metadata templates from the metadata.yaml file.

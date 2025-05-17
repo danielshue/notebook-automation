@@ -41,13 +41,15 @@ Integration Points:
 
 import openai
 import logging
-from ..utils.config import OPENAI_API_KEY
-from ..utils.config import logger
+from ..utils.config import OPENAI_API_KEY, ensure_logger_configured
 from ..metadata.yaml_metadata_helper import yaml_to_string
 from ..ai.prompt_utils import CHUNK_PROMPT_TEMPLATE, FINAL_PROMPT_TEMPLATE
 from ..ai.prompt_utils import format_final_user_prompt_for_pdf, format_chuncked_user_prompt_for_pdf  
 from ..metadata.yaml_metadata_helper import replace_template_variables
 from ..metadata.yaml_metadata_helper import replace_template_with_yaml_frontmatter
+
+# Initialize module logger
+logger = ensure_logger_configured(__name__)
 
 # Suppress logger output from OpenAI
 logging.getLogger('openai').setLevel(logging.ERROR)

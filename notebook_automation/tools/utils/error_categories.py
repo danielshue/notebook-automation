@@ -42,11 +42,11 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any
 from dotenv import load_dotenv
 from .paths import normalize_wsl_path
+from notebook_automation.tools.utils.config import setup_logging, ensure_logger_configured
 
 # Get the default logger
-logger = logging.getLogger(__name__)
+logger = ensure_logger_configured(__name__)
 
-# Load environment variables from .env file
 load_dotenv()
 
 # Error categories for standardized error classification across the system

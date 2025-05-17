@@ -16,11 +16,16 @@ import sys
 import re
 import glob
 import argparse
+import logging
 from pathlib import Path
 from typing import List, Set
 from PyPDF2 import PdfReader, PdfWriter
 
 from ..tools.pdf.utils import is_pdf_file
+from notebook_automation.tools.utils.config import setup_logging
+
+# Configure module logger - will be properly setup in main()
+logger = logging.getLogger(__name__)
 
 
 def parse_page_range(page_range_str: str, max_page: int) -> List[int]:
@@ -160,11 +165,11 @@ def extract_pdf_pages(input_pdf: str, output_pdf: str, page_range_str: str) -> b
         True
     """
     try:
-        print(f"Processing: {input_pdf}")
+        logger.info(f"Processing: {input_pdf}")
         
         # Validate input file
         if not is_pdf_file(input_pdf):
-            print(f"Error: {input_pdf} is not a valid PDF file")
+            logger.error(f"{input_pdf} is not a valid PDF file")
             return False
         
         # Open the input PDF
@@ -173,45 +178,45 @@ def extract_pdf_pages(input_pdf: str, output_pdf: str, page_range_str: str) -> b
         
         # Get the total number of pages
         total_pages = len(reader.pages)
-        print(f"PDF has {total_pages} pages")
+        logger.info(f"PDF has {total_pages} pages")
         
         # Parse the page range string
         try:
             pages_to_extract = parse_page_range(page_range_str, total_pages)
         except ValueError as e:
-            print(f"Error parsing page range: {str(e)}")
-            print(f"Valid range would be 1-{total_pages}")
+            logger.error(f"Error parsing page range: {str(e)}")
+            logger.info(f"Valid range would be 1-{total_pages}")
             return False
         
         if not pages_to_extract:
-            print("No valid pages to extract")
+            logger.info("No valid pages to extract")
             return False
             
-        print(f"Extracting {len(pages_to_extract)} pages...")
+        logger.info(f"Extracting {len(pages_to_extract)} pages...")
         
         # Add each specified page to the output PDF
         for i, page_idx in enumerate(pages_to_extract):
             try:
                 writer.add_page(reader.pages[page_idx])
                 if i % 10 == 0 or i == len(pages_to_extract) - 1:
-                    print(f"Added page {page_idx + 1} ({i+1}/{len(pages_to_extract)})")
+                    logger.info(f"Added page {page_idx + 1} ({i+1}/{len(pages_to_extract)})")
             except IndexError:
-                print(f"Warning: Page {page_idx + 1} does not exist, skipping")
+                logger.warning(f"Page {page_idx + 1} does not exist, skipping")
         
         # Check if we actually extracted any pages
         if len(writer.pages) == 0:
-            print("No pages were successfully extracted")
+            logger.info("No pages were successfully extracted")
             return False
         
         # Write the output PDF
         with open(output_pdf, "wb") as output_file:
             writer.write(output_file)
             
-        print(f"Successfully extracted {len(writer.pages)} pages to {output_pdf}")
+        logger.info(f"Successfully extracted {len(writer.pages)} pages to {output_pdf}")
         return True
         
     except Exception as e:
-        print(f"Error extracting PDF pages: {str(e)}")
+        logger.error(f"Error extracting PDF pages: {str(e)}")
         return False
 
 
@@ -247,6 +252,10 @@ def main() -> None:
         Extracting pages: 5, 6, 7, 8, 9, 10
         Successfully created lectures/week1_pages_5-10.pdf with 6 pages
     """
+    global logger
+    # Set up logging using the common logger setup
+    logger, failed_logger = setup_logging(debug=False, log_file="extract_pdf_pages.log", use_rich=True)
+    
     parser = argparse.ArgumentParser(
         description="Extract pages from a PDF file",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -273,16 +282,16 @@ Examples:
     pdf_files = find_pdf_files(args.input_path)
     
     if not pdf_files:
-        print(f"Error: No PDF files found at path '{args.input_path}'")
+        logger.error(f"No PDF files found at path '{args.input_path}'")
         sys.exit(1)
     
     # Handle multiple PDFs if found
     if len(pdf_files) > 1:
-        print(f"Found {len(pdf_files)} PDF files:")
+        logger.info(f"Found {len(pdf_files)} PDF files:")
         for i, pdf in enumerate(pdf_files, 1):
-            print(f"{i}: {pdf}")
+            logger.info(f"{i}: {pdf}")
         input_pdf = pdf_files[0]
-        print(f"\nUsing first PDF: {input_pdf}")
+        logger.info(f"\nUsing first PDF: {input_pdf}")
     else:
         input_pdf = pdf_files[0]
     
@@ -292,11 +301,11 @@ Examples:
     # Ensure output directory exists
     output_dir = os.path.dirname(output_pdf)
     if output_dir and not os.path.exists(output_dir):
-        print(f"Creating output directory: {output_dir}")
+        logger.info(f"Creating output directory: {output_dir}")
         try:
             os.makedirs(output_dir, exist_ok=True)
         except OSError as e:
-            print(f"Error creating output directory: {e}")
+            logger.error(f"Error creating output directory: {e}")
             sys.exit(1)
     
     # Extract the pages

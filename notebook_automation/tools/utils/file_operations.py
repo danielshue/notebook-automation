@@ -71,8 +71,10 @@ from pathlib import Path
 from typing import List, Optional, Tuple, Union, Dict
 
 # Import configuration settings for path constants
-from notebook_automation.tools.utils.config import NOTEBOOK_VAULT_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT
-from ..utils.config import logger
+from notebook_automation.tools.utils.config import NOTEBOOK_VAULT_ROOT, ONEDRIVE_LOCAL_RESOURCES_ROOT, ensure_logger_configured
+
+# Initialize module logger with safe configuration
+logger = ensure_logger_configured(__name__)
 
 def find_all_pdfs(root: Path) -> list[Path]:
     """Recursively discover all PDF documents within a specified directory tree.

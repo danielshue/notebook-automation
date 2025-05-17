@@ -29,6 +29,7 @@ import os
 import sys
 import re
 import argparse
+import logging
 from pathlib import Path
 import urllib.parse
 from colorlog import ColoredFormatter
@@ -38,6 +39,9 @@ from tqdm import tqdm
 from ..utils.converters import process_file as convert_to_markdown
 from ..tools.utils.config import setup_logging, VAULT_LOCAL_ROOT
 from ..tools.utils.paths import normalize_wsl_path
+
+# Configure module logger - will be properly setup in main()
+logger = logging.getLogger(__name__)
 
 
 # Enhanced logging setup with colorlog
@@ -342,10 +346,9 @@ def main() -> int:
     """Main entry point for the script."""
     args = parse_args()
 
-    # Set up color logging with debug if requested
+    # Set up logging using the common logger setup
     global logger, failed_logger
-    if args.debug:
-        logger, failed_logger = setup_colored_logging(debug=True)
+    logger, failed_logger = setup_logging(debug=args.debug, log_file="generate_markdown.log", use_rich=True)
 
     # Determine source directories
     src_dirs = args.src_dirs or ['.']

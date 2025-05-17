@@ -39,14 +39,16 @@ import os
 import json
 import base64
 import msal
-from pathlib import Path
-from ..utils.config import logger
 from ..utils.config import MICROSOFT_GRAPH_API_CLIENT_ID, AUTHORITY, SCOPES, TOKEN_CACHE_FILE
+
+# Configure module logger with safe initialization
+from notebook_automation.tools.utils.config import ensure_logger_configured
+logger = ensure_logger_configured(__name__)
 
 # Constants for user feedback
 QUIET_MODE = os.environ.get('QUIET_MODE', 'False').lower() in ('true', '1', 't', 'yes')
 
-def user_feedback(message, message_type='info', show_even_in_quiet=False):
+def user_feedback(message, message_type='info', show_even_in_quiet=False, log_only=False):
     """
     Display user feedback with consistent styling and optional logging.
     
@@ -55,6 +57,7 @@ def user_feedback(message, message_type='info', show_even_in_quiet=False):
         message_type (str): Type of message ('info', 'success', 'warning', 'error', or 'prompt')
         show_even_in_quiet (bool): If True, show the message even in quiet mode
                                   (useful for critical prompts and errors)
+        log_only (bool): If True, only log the message without printing to console
     """
     # Skip normal feedback messages in quiet mode
     if QUIET_MODE and not show_even_in_quiet:
@@ -72,10 +75,11 @@ def user_feedback(message, message_type='info', show_even_in_quiet=False):
     # Get the appropriate prefix
     prefix = prefixes.get(message_type, '')
     
-    # Print the message with its prefix
-    print(f"{prefix}{message}")
+    # Print the message with its prefix (unless log_only is True)
+    if not log_only:
+        print(f"{prefix}{message}")
     
-    # Also log the message at the appropriate level
+    # Always log the message at the appropriate level
     if message_type == 'error':
         logger.error(message)
     elif message_type == 'warning':
@@ -264,31 +268,29 @@ def authenticate_graph_api(force_refresh=False):
         MICROSOFT_GRAPH_API_CLIENT_ID,
         authority=AUTHORITY,
         token_cache=cache
-    )
-
-    # Try to get a token from the cache first
+    )    # Try to get a token from the cache first
     accounts = app.get_accounts()
     result = None
     if accounts and not force_refresh:
         logger.info("Found account in cache, attempting to use existing token...")
-        user_feedback(f"Account found in cache: {accounts[0]['username']}", 'info')
+        user_feedback(f"Account found in cache: {accounts[0]['username']}", 'info', log_only=True)
         
         # Try silent token acquisition first
         result = app.acquire_token_silent(SCOPES, account=accounts[0])
         
         if result and "access_token" in result:
             logger.info("Successfully acquired token silently")
-            user_feedback("Silent authentication successful", 'success')
+            user_feedback("Silent authentication successful", 'success', log_only=True)
             
             # Save token cache for future use
             with open(TOKEN_CACHE_FILE, "w") as f:
                 f.write(cache.serialize())
             logger.info(f"Token cache refreshed in {TOKEN_CACHE_FILE}")
-            
             return result["access_token"]
+        
         else:
             logger.info("Could not acquire token silently. Falling back to interactive authentication.")
-            user_feedback("Silent authentication failed. Falling back to interactive...", 'warning')
+            user_feedback("Silent authentication failed. Falling back to interactive...", 'warning', log_only=True)
       # METHOD 1: Try interactive browser-based authentication
     # This is the preferred method as it provides the standard Microsoft login experience
     # and supports modern authentication protocols like MFA
@@ -301,7 +303,7 @@ def authenticate_graph_api(force_refresh=False):
           # Check if authentication was successful
         if result and "access_token" in result:
             logger.info("Interactive authentication successful!")
-            user_feedback("Interactive authentication successful!", 'success')
+            user_feedback("Interactive authentication successful!", 'success', log_only=True)
             
             # Persist the token cache to enable silent authentication in future sessions
             # This includes both access tokens and refresh tokens for automatic renewal
@@ -336,8 +338,7 @@ def authenticate_graph_api(force_refresh=False):
             error_details = json.dumps(flow) if flow else "No response details"
             logger.error(f"Failed to create device flow: {error_details}")
             raise Exception("Failed to create device flow for authentication.")
-        
-        # Display clear instructions for the user to complete authentication
+          # Display clear instructions for the user to complete authentication
         # using another device or browser
         user_feedback("\nTo authenticate, use a browser to visit:", 'prompt', True)
         user_feedback(flow["verification_uri"], 'info', True)
@@ -350,7 +351,7 @@ def authenticate_graph_api(force_refresh=False):
         
         if "access_token" in result:
             logger.info("Device flow authentication successful!")
-            user_feedback("Authentication successful!", 'success')
+            user_feedback("Authentication successful!", 'success', log_only=True)
             
             # Save token cache for future use
             with open(TOKEN_CACHE_FILE, "w") as f:

@@ -89,9 +89,10 @@ import logging
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union, Any
-from .config import ErrorCategories
-from ..utils.config import logger
+from .config import ErrorCategories, ensure_logger_configured
 
+# Initialize module loggers with safe configuration
+logger = ensure_logger_configured(__name__)
 failed_logger = logging.getLogger("failed_files")
 
 def categorize_error(error: Union[Exception, str], status_code: Optional[int] = None) -> str:
