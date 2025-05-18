@@ -106,6 +106,7 @@ program: {program}
 type: pdf-notes
 date: {date}
 pdf-link: {pdf_link}
+status: unread
 tags:
   - type/reference
   - course/{course_tag}
@@ -127,6 +128,7 @@ course: {course}
 program: {program}
 type: video-reference
 date: {date}
+status: unwatched
 video-link: {video_link}
 tags:
   - type/video
