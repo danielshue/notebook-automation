@@ -855,16 +855,8 @@ def _batch_generate_notes_for_pdfs(args: Optional[argparse.Namespace] = None,
             all_pdfs_count = len(all_results)
     except Exception:
         all_pdfs_count = len(processed_pdfs)
-        
-    # Display a Rich formatted summary
-    console.rule("[bold blue]📊 SUMMARY: PDF Note Generation")
-    console.print(f"[green]✅ Processed in this run: {len(processed_pdfs)} PDFs")
-    console.print(f"[red]❌ Errors in this run: {len(errors)}")
-    console.print(f"[cyan]📝 Total PDFs with notes: {all_pdfs_count}")
-    console.print(f"[blue]📄 Full results saved to: {RESULTS_FILE}")
-    console.rule()
-    
-    # Also log to file
+            
+    # Logger
     logger.info("\n" + "="*60)
     logger.info(f"📊 SUMMARY: PDF Note Generation")
     logger.info("="*60)
@@ -888,26 +880,6 @@ def main() -> int:
 
     # Check OpenAI requirements before proceeding
     check_openai_requirements(args)
-
-
-# Suppress logger output from external libraries
-#logging.getLogger('pdfplumber').setLevel(logging.ERROR)
-#logging.getLogger('PyPDF2').setLevel(logging.ERROR)
-
-# Setup logging with preference for existing configuration
-# logger is already initialized at module level, but we need setup_logging for failed_logger and enhanced configuration
-#logger, failed_logger = setup_logging(
-#    debug=args.debug,
-#    log_file="generate_pdf_notes.log",
-#    failed_log_file="generate_pdf_notes_failed_files.log",
-#    console_output=True,
-#    use_rich=True
-#)
-
-# Remove timestamps from logger for cleaner CLI output (regardless of debug mode)
-#remove_timestamps_from_logger(logger)
-#remove_timestamps_from_logger(failed_logger)
-
 
     # Also log to file
     logger.info(HEADER)
