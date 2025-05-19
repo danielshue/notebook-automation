@@ -246,8 +246,66 @@ def main() -> None:
             else:
                 logger.warning(f"{WARNING}No failed files found at {FAILED_FILES_JSON}.{ENDC}")
         elif args.single_file:
-            video_files = [resources_root / args.single_file]
+            file_path = Path(args.single_file)
+            # Add detailed path verification logging
+            logger.debug(f"Checking path existence:")
+            logger.debug(f"  Original path: {file_path}")
+            logger.debug(f"  Resources root: {resources_root}")
+            logger.debug(f"  Resources root exists: {resources_root.exists()}")
+            
+            # Check if parent directories exist
+            if file_path.is_absolute():
+                parent_path = file_path.parent
+                logger.debug(f"  Parent path: {parent_path}")
+                logger.debug(f"  Parent exists: {parent_path.exists()}")
+                if not parent_path.exists():
+                    logger.error(f"Parent directory does not exist: {parent_path}")
+                    # List the deepest existing parent
+                    current = parent_path
+                    while not current.exists() and len(current.parts) > 1:
+                        current = current.parent
+                    logger.debug(f"  Deepest existing parent: {current}")
+                    if current.exists():
+                        logger.debug(f"  Contents of {current}:")
+                        try:
+                            for item in current.iterdir():
+                                logger.debug(f"    {item}")
+                        except PermissionError:
+                            logger.debug(f"    Permission denied to list directory contents")
+                
+                video_files = [file_path]
+            else:
+                combined_path = resources_root / args.single_file
+                logger.debug(f"  Combined path: {combined_path}")
+                logger.debug(f"  Combined parent exists: {combined_path.parent.exists()}")
+                video_files = [combined_path]
+
+            if not video_files[0].exists():
+                # Check if the file exists with different casing
+                try:
+                    parent = video_files[0].parent
+                    if parent.exists():
+                        actual_name = next((f.name for f in parent.iterdir() 
+                                         if f.name.lower() == video_files[0].name.lower()), None)
+                        if actual_name:
+                            logger.warning(f"File exists with different casing: {actual_name}")
+                            video_files = [parent / actual_name]
+                        else:
+                            raise FileNotFoundError(f"Video file not found: {video_files[0]}")
+                    else:
+                        raise FileNotFoundError(f"Video file not found: {video_files[0]}")
+                except Exception as e:
+                    logger.debug(f"Error during case-insensitive check: {e}")
+                    raise FileNotFoundError(f"Video file not found: {video_files[0]}")
+
             logger.info(f"{OKGREEN}Processing single file: {video_files[0]}{ENDC}")
+            
+            # Also verify it's within the OneDrive path structure
+            try:
+                if not str(video_files[0]).lower().startswith(str(resources_root).lower()):
+                    logger.warning(f"{WARNING}Warning: File {video_files[0]} is outside of resources root {resources_root}{ENDC}")
+            except Exception as e:
+                logger.debug(f"Path comparison warning: {e}")
         elif args.folder:
             folder_arg = Path(args.folder)
             if folder_arg.is_absolute():
@@ -307,17 +365,90 @@ def main() -> None:
     import re
     def find_transcript(video_path: Path) -> Path | None:
         """
-        Find a transcript file for a video, handling language codes (e.g., foo.txt, foo.en.txt, foo.zh-cn.txt).
-        Matches files with the same base name as the video, optionally with a language code, and ending in .txt.
-        Language code: 2-5 lowercase letters, optionally hyphenated (e.g., en, zh-cn, pt-br).
+        Find a transcript file for a video, handling language codes and various file locations.
+
+        Look for transcript files with the following prioritized patterns:
+        1. Language-specific transcripts in same directory (e.g., foo.en.txt, foo.zh-cn.txt)
+        2. Generic transcript in same directory (foo.txt)
+        3. Language-specific transcripts in Transcripts subdirectory
+        4. Generic transcript in Transcripts subdirectory
+
+        Args:
+            video_path (Path): Path to the video file
+
+        Returns:
+            Path | None: Path to the transcript file if found, None otherwise
+
+        Example:
+            >>> find_transcript(Path("videos/lecture1.mp4"))
+            Path("videos/lecture1.en.txt")  # or lecture1.txt if no language-specific version exists
         """
+        logger.debug(f"Looking for transcript for video: {video_path}")
+        
         parent = video_path.parent
         base = video_path.stem
-        # Regex: foo.txt, foo.en.txt, foo.zh-cn.txt, etc.
-        pattern = re.compile(rf'^{re.escape(base)}(?:\.[a-z]{{2,5}}(?:-[a-z]{{2,5}})?)?\.txt$', re.IGNORECASE)
-        for cand in parent.iterdir():
-            if cand.is_file() and pattern.match(cand.name):
-                return cand
+        transcript_dir = parent / "Transcripts"  # Check for a Transcripts subdirectory
+        
+        # Define search paths in priority order
+        search_paths = [
+            parent,  # Same directory as video
+            transcript_dir  # Transcripts subdirectory
+        ]
+        
+        # Regex patterns for matching transcripts
+        # 1. Language-specific pattern (e.g., base.en.txt, base.zh-cn.txt)
+        lang_pattern = re.compile(rf'^{re.escape(base)}\.([a-z]{{2,5}}(?:-[a-z]{{2,5}})?)\.txt$', re.IGNORECASE)
+        # 2. Generic pattern (base.txt)
+        base_pattern = re.compile(rf'^{re.escape(base)}\.txt$', re.IGNORECASE)
+        
+        # Also try with normalized name (replace hyphens with underscores and vice versa)
+        alt_base = base.replace('-', '_') if '-' in base else base.replace('_', '-')
+        alt_lang_pattern = re.compile(rf'^{re.escape(alt_base)}\.([a-z]{{2,5}}(?:-[a-z]{{2,5}})?)\.txt$', re.IGNORECASE)
+        alt_base_pattern = re.compile(rf'^{re.escape(alt_base)}\.txt$', re.IGNORECASE)
+        
+        def check_directory(path: Path) -> Path | None:
+            """Check a directory for transcript files in priority order."""
+            if not path.exists():
+                logger.debug(f"Directory does not exist: {path}")
+                return None
+                
+            # Get all .txt files in the directory
+            candidates = [f for f in path.iterdir() if f.is_file() and f.suffix.lower() == '.txt']
+            
+            # First priority: language-specific transcript with exact name
+            for cand in candidates:
+                if lang_match := lang_pattern.match(cand.name):
+                    lang_code = lang_match.group(1)
+                    logger.debug(f"Found language-specific transcript ({lang_code}): {cand}")
+                    return cand
+                    
+            # Second priority: language-specific transcript with normalized name
+            for cand in candidates:
+                if alt_lang_match := alt_lang_pattern.match(cand.name):
+                    lang_code = alt_lang_match.group(1)
+                    logger.debug(f"Found language-specific transcript with normalized name ({lang_code}): {cand}")
+                    return cand
+                    
+            # Third priority: generic transcript with exact name
+            for cand in candidates:
+                if base_pattern.match(cand.name):
+                    logger.debug(f"Found generic transcript: {cand}")
+                    return cand
+                    
+            # Fourth priority: generic transcript with normalized name
+            for cand in candidates:
+                if alt_base_pattern.match(cand.name):
+                    logger.debug(f"Found generic transcript with normalized name: {cand}")
+                    return cand
+                    
+            return None
+        
+        # Search through directories in priority order
+        for search_path in search_paths:
+            if transcript := check_directory(search_path):
+                return transcript
+                
+        logger.debug(f"No transcript found for video: {video_path}")
         return None
     
     logger.info(f"{OKCYAN}Total videos to process: {total_videos}{ENDC}")
@@ -378,34 +509,60 @@ def main() -> None:
                 if not args.no_summary:
                     try:
                         if transcript_found:
+                            logger.info(f"Found transcript file: {transcript_file}")
                             transcript_files_found += 1
-                            with open(transcript_file, 'r', encoding='utf-8') as tf:
-                                transcript = tf.read()
-                            # Load prompts from the prompts directory
-                            chunk_prompt_path = Path(__file__).parent.parent.parent / 'prompts' / 'chunk_summary_prompt.md'
-                            final_prompt_path = Path(__file__).parent.parent.parent / 'prompts' / 'final_summary_prompt_video.md'
-                            fallback_prompt_path = Path(__file__).parent.parent.parent / 'prompts' / 'final_summary_prompt.md'
-                            
-                            # Load chunk prompt
-                            if chunk_prompt_path.exists():
-                                with open(chunk_prompt_path, 'r', encoding='utf-8') as pf:
-                                    chunked_system_prompt = pf.read()
-                            else:
-                                chunked_system_prompt = "Summarize the following transcript chunk."
-                                
-                            # Load final prompt - try video-specific first, then generic, then default
-                            if final_prompt_path.exists():
-                                with open(final_prompt_path, 'r', encoding='utf-8') as pf:
-                                    system_prompt = pf.read()
-                                logger.debug(f"Loaded video summary prompt from {final_prompt_path}")
-                            elif fallback_prompt_path.exists():
-                                with open(fallback_prompt_path, 'r', encoding='utf-8') as pf:
-                                    system_prompt = pf.read()
-                                logger.debug(f"Loaded generic summary prompt from {fallback_prompt_path}")
-                            else:
-                                system_prompt = "You are an MBA course summarizer."
-                                logger.warning(f"No summary prompt files found, using default system prompt")
+                            try:
+                                with open(transcript_file, 'r', encoding='utf-8') as tf:
+                                    transcript = tf.read()
+                                logger.debug(f"Successfully read transcript file, content length: {len(transcript)}")
+                            except Exception as read_exc:
+                                logger.error(f"Failed to read transcript file: {read_exc}")
+                                raise
 
+                            # Load prompts from the prompts directory
+                            base_prompts_dir = Path(__file__).parent.parent.parent / 'prompts'
+                            logger.debug(f"Looking for prompts in: {base_prompts_dir}")
+
+                            chunk_prompt_path = base_prompts_dir / 'chunk_summary_prompt.md'
+                            final_prompt_path = base_prompts_dir / 'final_summary_prompt_video.md'
+                            fallback_prompt_path = base_prompts_dir / 'final_summary_prompt.md'
+                            
+                            logger.debug(f"Checking prompt paths:")
+                            logger.debug(f"  Chunk prompt: {chunk_prompt_path} (exists: {chunk_prompt_path.exists()})")
+                            logger.debug(f"  Final prompt: {final_prompt_path} (exists: {final_prompt_path.exists()})")
+                            logger.debug(f"  Fallback prompt: {fallback_prompt_path} (exists: {fallback_prompt_path.exists()})")
+
+                            # Load chunk prompt
+                            try:
+                                if chunk_prompt_path.exists():
+                                    with open(chunk_prompt_path, 'r', encoding='utf-8') as pf:
+                                        chunked_system_prompt = pf.read()
+                                    logger.debug("Successfully loaded chunk prompt")
+                                else:
+                                    chunked_system_prompt = "Summarize the following transcript chunk."
+                                    logger.warning(f"Chunk prompt not found at {chunk_prompt_path}, using default")
+                            except Exception as chunk_exc:
+                                logger.error(f"Error loading chunk prompt: {chunk_exc}")
+                                chunked_system_prompt = "Summarize the following transcript chunk."
+
+                            # Load final prompt - try video-specific first, then generic, then default
+                            try:
+                                if final_prompt_path.exists():
+                                    with open(final_prompt_path, 'r', encoding='utf-8') as pf:
+                                        system_prompt = pf.read()
+                                    logger.debug(f"Loaded video summary prompt from {final_prompt_path}")
+                                elif fallback_prompt_path.exists():
+                                    with open(fallback_prompt_path, 'r', encoding='utf-8') as pf:
+                                        system_prompt = pf.read()
+                                    logger.debug(f"Loaded generic summary prompt from {fallback_prompt_path}")
+                                else:
+                                    system_prompt = "You are an MBA course summarizer."
+                                    logger.warning(f"No summary prompt files found, using default system prompt")
+                            except Exception as prompt_exc:
+                                logger.error(f"Error loading prompts: {prompt_exc}")
+                                system_prompt = "You are an MBA course summarizer."
+
+                            logger.debug("Preparing metadata for summary generation")
                             prompt_metadata = metadata.copy() if metadata else {}
                             # Use share_link only if it has already been created, otherwise use video_path
                             prompt_metadata['onedrive_path'] = str(video_path)
@@ -413,6 +570,10 @@ def main() -> None:
 
                             onedrive_path = prompt_metadata['onedrive_path']
                             course = prompt_metadata['course']
+
+                            logger.debug(f"Summary metadata prepared:")
+                            logger.debug(f"  OneDrive path: {onedrive_path}")
+                            logger.debug(f"  Course: {course}")
 
                             # Use a template with placeholders for course and onedrive path
                             user_prompt_template = (
@@ -422,6 +583,8 @@ def main() -> None:
 
                             # Prepare metadata for prompt formatting
                             user_prompt = user_prompt_template.format(**prompt_metadata)
+                            logger.debug("Calling OpenAI for summary generation...")
+                            
                             summary = generate_summary_with_openai(
                                 transcript,
                                 system_prompt,
@@ -429,16 +592,17 @@ def main() -> None:
                                 user_prompt,
                                 metadata=metadata
                             ) if transcript else None
-                            transcript_files_processed += 1
+
                             if summary:
-                                logger.debug(f"Summary returned from OpenAI (first 300 chars): {summary[:300]}")
+                                logger.info(f"Successfully generated summary ({len(summary)} chars)")
+                                logger.debug(f"Summary preview (first 300 chars): {summary[:300]}")
                                 # Check if summary has proper structure with headers
                                 has_headers = any(line.startswith('#') for line in summary.split('\n') if line.strip())
                                 logger.debug(f"Summary has markdown headers: {has_headers}")
                                 logger.debug(f"Summary length: {len(summary)} chars, lines: {len(summary.split('\n'))}")
                             else:
-                                logger.debug("No summary returned from OpenAI.")
-                            logger.debug("Transcript and summary generated.")
+                                logger.error("No summary returned from OpenAI")
+                            logger.debug("Transcript and summary generation completed")
                         else:
                             logger.info(f"Transcript file not found for {video_path}")
                     except Exception as ts_exc:
