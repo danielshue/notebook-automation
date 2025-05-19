@@ -88,18 +88,11 @@ ICONS = {
 
 ORDER = ["readings", "videos", "transcripts", "notes", "quizzes", "assignments"]
 
-def setup_logging(debug: bool = False) -> None:
-    """Configure logging for the script.
-    
-    Args:
-        debug (bool): Enable debug level logging if True.
-    """
-    # Use the centralized logging setup from config.py
-    global logger, failed_logger
-    logger, failed_logger = setup_logging(debug=debug, log_file="generate_vault_index.log")
-    
-    # Ensure the imported logger is used throughout this module
-    logging.getLogger(__name__).setLevel(logging.DEBUG if debug else logging.INFO)
+# Global variables
+METADATA_TEMPLATES = {}
+_cached_metadata_templates = {}
+
+
 
 def load_metadata_templates() -> Dict:
     """Load metadata templates from the metadata.yaml file.
@@ -111,8 +104,32 @@ def load_metadata_templates() -> Dict:
         FileNotFoundError: If metadata.yaml is not found.
         yaml.YAMLError: If metadata.yaml is invalid.
     """
-    script_dir = Path(os.path.dirname(os.path.abspath(sys.argv[0]))).resolve()
-    yaml_path = script_dir / "metadata.yaml"
+    # First declare the global variable
+    global _cached_metadata_templates
+    
+    # Then use it - check if cached templates are available
+    if _cached_metadata_templates:
+        logging.debug("Using cached metadata templates")
+        return _cached_metadata_templates
+    
+    # First try to get metadata_file path from config.json
+    try:
+        from notebook_automation.tools.utils.config import _get_config_data
+        config_data = _get_config_data()
+        metadata_file_path = Path(config_data.get("paths", {}).get("metadata_file", ""))
+        if metadata_file_path.exists():
+            yaml_path = metadata_file_path
+            logging.debug(f"Using metadata file from config: {yaml_path}")
+        else:
+            # Fallback to script directory
+            script_dir = Path(os.path.dirname(os.path.abspath(sys.argv[0]))).resolve()
+            yaml_path = script_dir / "metadata.yaml"
+            logging.debug(f"Metadata file from config not found, falling back to: {yaml_path}")
+    except Exception as e:
+        # If there's any error getting the config, fallback to script directory
+        script_dir = Path(os.path.dirname(os.path.abspath(sys.argv[0]))).resolve()
+        yaml_path = script_dir / "metadata.yaml"
+        logging.debug(f"Error getting config, falling back to: {yaml_path} - {str(e)}")
     
     if not yaml_path.exists():
         logging.warning(f"metadata.yaml not found at {yaml_path}")
@@ -120,35 +137,50 @@ def load_metadata_templates() -> Dict:
     
     logging.debug(f"Found metadata.yaml at {yaml_path}")
     
+    templates = {}
+    
     try:
+        # Read the entire file
         with open(yaml_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        # Split content into documents
-        yaml_docs = content.split('---\n')
-        templates = {}
+        # Make sure the content starts with ---
+        if not content.startswith('---'):
+            content = '---\n' + content
+            
+        # Split content into YAML documents
+        # Each document should be delimited by --- lines
+        yaml_docs = []
+        documents = content.split('---\n')
         
-        for doc in yaml_docs:
+        # Skip the first empty element if the file started with ---
+        if documents and not documents[0].strip():
+            documents = documents[1:]
+            
+        for doc in documents:
             if not doc.strip():
                 continue
-            
-            metadata = yaml.safe_load(doc)
-            if not isinstance(metadata, dict) or 'template-type' not in metadata:
+                
+            try:
+                # Parse each document individually
+                metadata = yaml.safe_load(doc)
+                if isinstance(metadata, dict) and 'template-type' in metadata:
+                    template_type = metadata['template-type']
+                    templates[template_type] = metadata
+                    logging.debug(f"Loaded template: {template_type}")
+            except yaml.YAMLError as e:
+                logging.warning(f"Skipping invalid YAML document: {e}")
                 continue
-            
-            template_type = metadata['template-type']
-            templates[template_type] = metadata
-            logging.debug(f"Loaded template: {template_type}")
-        
         logging.info(f"Successfully loaded {len(templates)} templates")
+        # Cache the templates globally
+        _cached_metadata_templates = templates
         return templates
-        
     except yaml.YAMLError as e:
         logging.error(f"Error parsing metadata.yaml: {e}")
-        raise
+        return {}  # Return empty dict instead of raising to allow script to continue
     except Exception as e:
         logging.error(f"Unexpected error loading metadata templates: {e}")
-        raise
+        return {}  # Return empty dict instead of raising to allow script to continue
 
 def make_friendly_link_title(name: str) -> str:
     """Make a friendly link title by cleaning up the text.
@@ -230,9 +262,9 @@ def parse_arguments() -> argparse.Namespace:
     
     parser.add_argument(
         '--source',
-        required=True,
+        required=False,
         type=Path,
-        help='Path to the Obsidian vault'
+        help='Path to the Obsidian vault (defaults to VAULT_LOCAL_ROOT if not provided)'
     )
     
     parser.add_argument(
@@ -272,12 +304,42 @@ def parse_arguments() -> argparse.Namespace:
         help='Show what would be done without making changes'
     )
     
+
+    parser.add_argument(
+        '--delete-indexes',
+        action='store_true',
+        help='Recursively delete all index files (directory-named .md files) under the given --source folder.'
+    )
+
     args = parser.parse_args()
-    
+
+    # Always get VAULT_LOCAL_ROOT for path logic
+    try:
+        from notebook_automation.tools.utils.config import VAULT_LOCAL_ROOT
+        vault_root = Path(VAULT_LOCAL_ROOT)
+    except ImportError:
+        vault_root = None
+
+    # If source is not provided, use VAULT_LOCAL_ROOT
+    if args.source is None:
+        if vault_root is not None:
+            args.source = vault_root
+            logging.info(f"No --source provided. Using VAULT_LOCAL_ROOT: {args.source}")
+        else:
+            parser.error("Could not import VAULT_LOCAL_ROOT from config. Please provide --source explicitly.")
+    else:
+        # If source is provided and is not absolute, treat as relative to VAULT_LOCAL_ROOT
+        if not args.source.is_absolute():
+            if vault_root is not None:
+                args.source = vault_root / args.source
+                logging.info(f"--source provided as relative path. Using: {args.source}")
+            else:
+                parser.error("Could not import VAULT_LOCAL_ROOT from config to resolve relative --source path.")
+
     # Validate source path
     if not args.source.exists():
         parser.error(f"Source path does not exist: {args.source}")
-    
+
     return args
 
 def should_generate_index_of_type(index_type: str, filter_type: Optional[str] = None) -> bool:
@@ -607,7 +669,7 @@ def get_tags_for_file(file, file_type, index_type=None):
 def build_backlink(depth, folder):
     """Build combined navigation with back link and general navigation links."""
     # Start with a navigation section header
-    nav = "###### "
+    nav = "## "
     
     # Add the back link based on depth
     if depth > 0:
@@ -663,31 +725,112 @@ def generate_breadcrumbs_yaml(folder, depth):
     return "\n".join(yaml_lines)
 
 def generate_metadata_from_template(index_type, folder, depth):
+    global METADATA_TEMPLATES
     program, course = infer_course_and_program(folder, index_type)
+    # Use course name as title if available, else fallback to folder name
+    if course:
+        title = make_friendly_link_title(course)
+    else:
+        title = make_friendly_link_title(folder.name)
+    now = datetime.now()
+    def _format_with_ordinal(dt: datetime) -> str:
+        day = dt.day
+        if 10 <= day % 100 <= 20:
+            suffix = 'th'
+        else:
+            suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
+        # Use strftime for all but the day, then insert day+suffix manually
+        # Handle Windows: use %#I for hour (no leading zero), else %-I (Linux/Mac)
+        try:
+            hour_fmt = '%#I' if os.name == 'nt' else '%-I'
+        except Exception:
+            hour_fmt = '%I'
+        base = dt.strftime(f'%A, %B {{}}{suffix} %Y, {hour_fmt}:%M:%S %p')
+        base = base.replace('AM', 'am').replace('PM', 'pm')
+        return base.format(day)
+    date_created = _format_with_ordinal(now)
+    date_modified = _format_with_ordinal(now)
+    # Only apply rich template for class-index
+    if index_type == "class-index":
+        # Aliases: use the title as the only alias
+        aliases = [title]
+        # Breadcrumbs YAML
+        breadcrumbs_yaml = generate_breadcrumbs_yaml(folder, depth)
+        # Permalink: build from folder path (lowercase, replace spaces with dashes)
+        permalink = folder.as_posix().replace(" ", "-").lower()
+        # Class: slugified class name
+        class_slug = folder.name.replace(" ", "-").lower()
+        # Tags: program and course tags
+        tags = [f"course/{program.replace(' ', '-')}", f"program/Mba"] if program else []
+        # YAML frontmatter as dict
+        yaml_dict = {
+            "title": title,
+            "aliases": [title],
+            "auto-generated-state": "writable",
+            "banner": "[[gies-banner.png]]",
+            "class": class_slug,
+            "course": course,
+            "date-created": date_created,
+            "date-modified": date_modified,
+            "linter-yaml-title-alias": title,
+            "permalink": permalink,
+            "program": program,
+            "tags": tags,
+            "template-type": "class-index"
+        }
+        # Merge in breadcrumbs YAML as dict
+        # Parse breadcrumbs_yaml to dict
+        import yaml as _yaml
+        breadcrumbs_dict = _yaml.safe_load(breadcrumbs_yaml)
+        if breadcrumbs_dict:
+            yaml_dict["breadcrumbs"] = breadcrumbs_dict.get("breadcrumbs", {})
+        yaml_text = yaml.safe_dump(yaml_dict, sort_keys=False, default_flow_style=False, allow_unicode=True)
+        # Markdown body
+        nav = build_backlink(depth, folder) + "\n\n"
+        title_section = f"# {title}\n\n"
+        modules_section = "# Modules\n\n"
+        # List subfolders as modules
+        subfolders = [item for item in sorted(folder.iterdir()) if item.is_dir() and should_include(item)]
+        for sub in subfolders:
+            display = make_friendly_link_title(sub.name)
+            modules_section += "- 📁 [[{}/{}.md|{}]]\n\n".format(sub.name, sub.name, display)
+        modules_section += "---\n"
+        return f"---\n{yaml_text}---\n\n{nav}{title_section}{modules_section}"
+    # Fallback to previous logic for other index types
     add_program_course = index_type not in ("main-index", "program-index")
     add_completion_fields = index_type == "lesson-index"
     if index_type not in METADATA_TEMPLATES:
-        title = make_friendly_link_title(folder.name)
         breadcrumbs_yaml = generate_breadcrumbs_yaml(folder, depth)
-        extra_fields = (
-            (f"program: {program}\n" if add_program_course else "") +
-            (f"course: {course}\n" if add_program_course else "") +
-            (f"completion-date: \nreview-date: \ncomprehension: \n" if add_completion_fields else "")
-        )
-        # Add banner fields at the end of YAML
-        banner_fields = "banner: \"![[gies-banner.png]]\"\nbanner_x: 0.25\n"
-        return (
-            f"---\n"
-            f"auto-generated-state: writable\n"
-            f"template-type: {index_type}\n"
-            f"title: {title}\n"
-            f"{extra_fields}"
-            f"{breadcrumbs_yaml}\n"
-            f"{banner_fields}---\n\n"
-            f"# {title}\n\n")
+        # Build YAML dict
+        yaml_dict = {
+            "auto-generated-state": "writable",
+            "template-type": index_type,
+            "title": title,
+        }
+        if add_program_course:
+            yaml_dict["program"] = program
+            yaml_dict["course"] = course
+        if add_completion_fields:
+            yaml_dict["completion-date"] = ""
+            yaml_dict["review-date"] = ""
+            yaml_dict["comprehension"] = ""
+        # Add breadcrumbs and banner
+        import yaml as _yaml
+        breadcrumbs_dict = _yaml.safe_load(breadcrumbs_yaml)
+        if breadcrumbs_dict:
+            yaml_dict["breadcrumbs"] = breadcrumbs_dict.get("breadcrumbs", {})
+        yaml_dict["banner"] = "[[gies-banner.png]]"
+        yaml_text = yaml.safe_dump(yaml_dict, sort_keys=False, default_flow_style=False, allow_unicode=True)
+        nav = build_backlink(depth, folder) + "\n\n"
+        title_section = f"# {title}\n\n"
+        return f"---\n{yaml_text}---\n\n{nav}{title_section}"
     template = METADATA_TEMPLATES[index_type].copy()
     template['date-created'] = datetime.now().strftime('%Y-%m-%d')
-    template['title'] = make_friendly_link_title(folder.name)
+    # Use course name as title if available, else fallback to folder name
+    if course:
+        template['title'] = make_friendly_link_title(course)
+    else:
+        template['title'] = make_friendly_link_title(folder.name)
     if add_program_course:
         if 'program' not in template or not template['program']:
             template['program'] = program
@@ -707,15 +850,18 @@ def generate_metadata_from_template(index_type, folder, depth):
         template.pop('completion-date', None)
         template.pop('review-date', None)
         template.pop('comprehension', None)
-    # Add banner fields at the end of YAML
-    yaml_text = yaml.safe_dump(template, sort_keys=False, default_flow_style=False, allow_unicode=True)
+    # Add breadcrumbs and banner
     breadcrumbs_yaml = generate_breadcrumbs_yaml(folder, depth)
-    banner_fields = "banner: \"![[gies-banner.png]]\"\nbanner_x: 0.25\n"
+    import yaml as _yaml
+    breadcrumbs_dict = _yaml.safe_load(breadcrumbs_yaml)
+    if breadcrumbs_dict:
+        template["breadcrumbs"] = breadcrumbs_dict.get("breadcrumbs", {})
+    template["banner"] = "[[gies-banner.png]]"
+    yaml_text = yaml.safe_dump(template, sort_keys=False, default_flow_style=False, allow_unicode=True)
     title = template['title']
-    return (
-        f"---\n"
-        f"{yaml_text}{breadcrumbs_yaml}\n{banner_fields}---\n\n"
-        f"# {title}\n\n")
+    nav = build_backlink(depth, folder) + "\n\n"
+    title_section = f"# {title}\n\n"
+    return f"---\n{yaml_text}---\n\n{nav}{title_section}"
 
 def get_section_heading(index_type):
     """Return the appropriate section heading for the given index type."""
@@ -752,6 +898,7 @@ def get_index_template(index_type: str) -> Dict:
     Returns:
         Dict: Template data for the index type.
     """
+    global METADATA_TEMPLATES
     if index_type not in METADATA_TEMPLATES:
         logging.warning(f"No template found for index type: {index_type}")
         return {}
@@ -769,8 +916,29 @@ def generate_index_content(path: Path, content_type: str, items: List[Dict]) -> 
         str: Generated index content.
     """
     template = get_index_template(content_type)
-    title = make_friendly_link_title(path.name)
-    
+    # Use course name as title if available, else fallback to folder name
+    program, course = infer_course_and_program(path, content_type)
+    if course:
+        title = make_friendly_link_title(course)
+    else:
+        title = make_friendly_link_title(path.name)
+
+    # Compute depth for navigation (relative to vault root)
+    def find_vault_root(p: Path) -> Path:
+        for parent in [p] + list(p.parents):
+            if (parent / '01_Projects').exists() or (parent / 'MBA').exists() or (parent / 'MBA-Classes-Assignments.md').exists():
+                return parent
+        return p
+    vault_root = find_vault_root(path.resolve())
+    try:
+        relative_path = path.resolve().relative_to(vault_root)
+        depth = len(relative_path.parts)
+    except ValueError:
+        depth = 0
+
+    # Navigation section
+    nav = build_backlink(depth, path) + "\n"
+
     lines = [
         "---",
         "auto-generated-state: writable",
@@ -778,14 +946,15 @@ def generate_index_content(path: Path, content_type: str, items: List[Dict]) -> 
         f"title: {title}",
         "---",
         "",
+        nav,
         f"# {title}",
         ""
     ]
-    
+
     # Add template-specific content if available
     if template.get('header'):
         lines.extend([template['header'], ""])
-    
+
     # Group items by type
     grouped_items = {}
     for item in items:
@@ -793,28 +962,28 @@ def generate_index_content(path: Path, content_type: str, items: List[Dict]) -> 
         if item_type not in grouped_items:
             grouped_items[item_type] = []
         grouped_items[item_type].append(item)
-    
+
     # Add items in specified order
     for category in ORDER:
         if category in grouped_items:
             items = grouped_items[category]
             icon = ICONS.get(category, '')
-            
+
             lines.extend([f"## {icon} {category.title()}", ""])
-            
+
             for item in sorted(items, key=lambda x: x.get('title', '')):
                 link = item.get('link', '')
                 title = item.get('title', '')
                 lines.append(f"- [[{link}|{title}]]")
-            
+
             lines.append("")
-    
+
     # Add remaining uncategorized items
     other_items = [
         item for item in items
         if item.get('type', 'other') not in ORDER
     ]
-    
+
     if other_items:
         lines.extend(["## Other", ""])
         for item in sorted(other_items, key=lambda x: x.get('title', '')):
@@ -822,51 +991,91 @@ def generate_index_content(path: Path, content_type: str, items: List[Dict]) -> 
             title = item.get('title', '')
             lines.append(f"- [[{link}|{title}]]")
         lines.append("")
-    
+
     # Add template-specific footer if available
     if template.get('footer'):
         lines.extend(["", template['footer']])
-    
+
     return "\n".join(lines)
 
 def create_index_file(
-    path: Path,
-    index_type: str,
-    items: List[Dict],
+    path: Path, 
+    index_type: str, 
+    items: list[dict], 
     dry_run: bool = False
 ) -> bool:
-    """Create an index file in the specified directory.
+    """Create an index file with the given items.
     
     Args:
-        path (Path): Directory path where to create the index.
+        path (Path): The directory path where the index will be created.
         index_type (str): Type of index to create.
-        items (List[Dict]): Items to include in the index.
-        dry_run (bool): If True, only show what would be done.
+        items (list[dict]): Items to include in the index.
+        dry_run (bool): If True, only show what would be done without creating files.
         
     Returns:
-        bool: True if index was created successfully, False otherwise.
+        bool: True if index was created or would be created (in dry_run mode).
     """
-    index_file = path / "index.md"
-    
-    if dry_run:
-        logging.info(f"Would create index file: {index_file}")
-        logging.debug(f"With {len(items)} items of type {index_type}")
-        return True
-    
+    if not items:
+        return False
+
+    # Use the global METADATA_TEMPLATES
+    global METADATA_TEMPLATES
+    # Compute depth for navigation
+    # Depth is the number of parts in the path relative to the vault root
+    # We'll use the same logic as in generate_indexes
+    def find_vault_root(path: Path) -> Path:
+        for parent in [path] + list(path.parents):
+            if (parent / '01_Projects').exists() or (parent / 'MBA').exists() or (parent / 'MBA-Classes-Assignments.md').exists():
+                return parent
+        return path
+    vault_root = find_vault_root(path.resolve())
     try:
-        if not check_file_writable(index_file):
-            return False
-        
-        content = generate_index_content(path, index_type, items)
-        
-        with open(index_file, 'w', encoding='utf-8') as f:
-            f.write(content)
-            
-        logging.debug(f"Created index file: {index_file}")
+        relative_path = path.resolve().relative_to(vault_root)
+        depth = len(relative_path.parts)
+    except ValueError:
+        depth = 0
+
+    # Use directory name for the index file instead of a fixed "index.md"
+    index_file = path / f"{path.name}.md"
+
+    # Generate the header, navigation, and title section using generate_metadata_from_template
+    header_section = generate_metadata_from_template(index_type, path, depth).rstrip()
+
+    # Handle items
+    files = [item for item in items if item['type'] == 'file']
+    folders = [item for item in items if item['type'] == 'folder']
+
+    # Start with the header (which already includes YAML, navigation, and title)
+    content = [header_section]
+
+    # Add folders section if any folders exist
+    if folders:
+        content.append("## Folders")
+        for folder in sorted(folders, key=lambda x: x.get('title', '').lower()):
+            # Link to the directory-named index file
+            link_path = f"{folder['link']}/{folder['path'].name}"
+            content.append(f"- [[{link_path}|{folder['title']}]]")
+        content.append("")
+
+    # Add files section if any files exist
+    if files:
+        content.append("## Files")
+        for file in sorted(files, key=lambda x: x.get('title', '').lower()):
+            content.append(f"- [[{file['link']}|{file['title']}]]")
+        content.append("")
+
+    # In dry run mode, just log what would happen
+    if dry_run:
+        logging.info(f"Would create index at {index_file}")
         return True
-        
+
+    # Write the content to the file
+    try:
+        with open(index_file, 'w', encoding='utf-8') as file:
+            file.write('\n'.join(content))
+        return True
     except Exception as e:
-        logging.error(f"Error creating index file {index_file}: {e}")
+        logging.error(f"Failed to create index at {index_file}: {e}")
         return False
 
 def get_content_type(path: Path) -> str:
@@ -896,46 +1105,47 @@ def get_content_type(path: Path) -> str:
     else:
         return "other"
 
-def gather_index_items(path: Path) -> List[Dict]:
-    """Gather items to be included in an index.
+def gather_index_items(path: Path) -> list[dict]:
+    """Gather all items to include in an index file.
     
     Args:
-        path (Path): Directory path to scan for items.
+        path (Path): The directory path to gather items from.
         
     Returns:
-        List[Dict]: List of items with their metadata.
+        list[dict]: List of items with their metadata.
     """
     items = []
     
-    try:
-        for child in path.iterdir():
-            if child.name == "index.md" or child.name.startswith('.'):
-                continue
-            
-            if child.is_file() and child.suffix == '.md':
-                content_type = get_content_type(child)
-                title = make_friendly_link_title(child.stem)
-                
+    for child in path.iterdir():
+        if child.name.startswith('.'):
+            continue
+        
+        # Skip automatically generated index files (both old "index.md" and new directory-named indices)
+        if child.name == "index.md" or (child.is_file() and child.stem == path.name and child.suffix.lower() == ".md"):
+            continue
+        
+        # Get relative path for links
+        relative_path = child.relative_to(path).as_posix()
+        
+        # Get title from the filename or directory name
+        title = child.stem if child.is_file() else child.name
+        
+        if child.is_file():
+            if child.suffix.lower() == '.md':
                 items.append({
-                    'type': content_type,
-                    'link': str(child.relative_to(path)).replace('\\', '/')[:-3],  # Remove .md
+                    'type': "file",
+                    'link': relative_path,
                     'title': title,
                     'path': child
                 })
-            elif child.is_dir():
-                # For directories, link to their index
-                title = make_friendly_link_title(child.name)
-                relative_path = str(child.relative_to(path)).replace('\\', '/')
-                
-                items.append({
-                    'type': "folder",
-                    'link': f"{relative_path}/index",
-                    'title': title,
-                    'path': child
-                })
-    
-    except Exception as e:
-        logging.error(f"Error gathering items from {path}: {e}")
+        elif child.is_dir():
+            # For directories, link to their directory-named index
+            items.append({
+                'type': "folder",
+                'link': relative_path,
+                'title': title,
+                'path': child
+            })
     
     return items
 
@@ -1035,15 +1245,52 @@ def generate_indexes(
     """
     generated_count = 0
     generated_types = set()
+    deleted_index_files = 0
     
     try:
+        # Find the true vault root by walking up until we find a folder that matches known vault roots
+        # or just use the parent of the source_path if not specified
+        # For now, assume the vault root is the parent of the folder containing '01_Projects' or 'MBA' or 'MBA-Classes-Assignments.md'
+        def find_vault_root(path: Path) -> Path:
+            for parent in [path] + list(path.parents):
+                if (parent / '01_Projects').exists() or (parent / 'MBA').exists() or (parent / 'MBA-Classes-Assignments.md').exists():
+                    return parent
+            return path
+
+        vault_root = find_vault_root(source_path.resolve())
+        logging.debug(f"Detected vault root: {vault_root}")
+
+        # First, find and delete all "index.md" files
+        if not dry_run:
+            for root, dirs, files in os.walk(source_path):
+                root_path = Path(root)
+                index_md_path = root_path / "index.md"
+                if index_md_path.exists():
+                    try:
+                        index_md_path.unlink()
+                        deleted_index_files += 1
+                        logging.debug(f"Deleted old index file: {index_md_path}")
+                    except Exception as e:
+                        logging.warning(f"Failed to delete index.md at {root_path}: {e}")
+            if deleted_index_files > 0:
+                logging.info(f"Deleted {deleted_index_files} old index.md files")
+
+        # Now generate new directory-named index files
         for root, dirs, files in os.walk(source_path):
             root_path = Path(root)
-            
+            # Calculate depth relative to the vault root, not just the source_path
+            try:
+                relative_path = root_path.relative_to(vault_root)
+                depth = len(relative_path.parts)
+            except ValueError:
+                # If root_path is not under vault_root, fallback to source_path
+                relative_path = root_path.relative_to(source_path)
+                depth = len(relative_path.parts)
+
+            # Debug output for troubleshooting
+            logging.debug(f"Indexing: {root_path} | Relative to vault: {relative_path} | Depth: {depth}")
+
             # Determine index type based on directory structure
-            relative_path = root_path.relative_to(source_path)
-            depth = len(relative_path.parts)
-            
             if depth == 0:
                 index_type = "main-index"
             elif depth == 1:
@@ -1064,23 +1311,25 @@ def generate_indexes(
                     index_type = "lesson-index"
             else:
                 continue  # Skip deeper directories
-            
+
+            logging.debug(f"Assigned index type: {index_type} for {root_path}")
+
             if not index_type_filter(index_type):
                 continue
-            
+
             # Skip hidden directories and special folders
             if any(part.startswith('.') for part in root_path.parts):
                 continue
-            
+
             items = gather_index_items(root_path)
-            
+
             if items and create_index_file(root_path, index_type, items, dry_run):
                 generated_count += 1
                 generated_types.add(index_type)
                 logging.debug(f"Generated {index_type} at {root_path}")
-        
+
         return generated_count, generated_types
-        
+
     except Exception as e:
         logging.error(f"Error during index generation: {e}")
         raise
@@ -1092,30 +1341,60 @@ def main() -> int:
     
     Returns:
         int: Return code (0 for success, 1 for failure)
-    """
+    """    
     try:
         args = parse_arguments()
-        setup_logging(args.debug)
-        
+        setup_logging(args.debug, log_file="generate_vault_index.log")
+
+        # Indicate which config.json is being used
+        config_path = None
+        try:
+            from notebook_automation.tools.utils.config import CONFIG_PATH
+            config_path = CONFIG_PATH if isinstance(CONFIG_PATH, str) else str(CONFIG_PATH)
+        except ImportError:
+            pass
+        if not config_path:
+            # Fallback: look for config.json in script dir or cwd
+            script_dir = os.path.dirname(os.path.abspath(sys.argv[0]))
+            fallback_path = os.path.join(script_dir, "config.json")
+            if os.path.exists(fallback_path):
+                config_path = fallback_path
+            else:
+                config_path = os.path.abspath("config.json")
+        logging.info(f"Using config.json: {config_path}")
+        print(f"Using config.json: {config_path}")
+
         logging.info(f"Starting index generation script v{__version__}")
         logging.debug(f"Arguments: {args}")
-        
+
         # Check dependencies
         if args.convert and not check_dependencies():
-            return 1
-        
-        # Load metadata templates
+            return 1        # Load metadata templates once at the beginning
         global METADATA_TEMPLATES
+        logging.info("Loading metadata templates...")
         METADATA_TEMPLATES = load_metadata_templates()
-        
+        logging.info(f"Successfully loaded {len(METADATA_TEMPLATES)} metadata templates")
+
         if args.all:
             args.convert = True
             args.generate_index = True
-        
+
+
+        # If --delete-indexes is specified, perform deletion and exit
+        if args.delete_indexes:
+            try:
+                deleted_count = delete_all_indexes(args.source, dry_run=args.dry_run)
+                logging.info(f"Deleted {deleted_count} index files under {args.source}")
+                print(f"Deleted {deleted_count} index files under {args.source}")
+                return 0
+            except Exception as e:
+                logging.error(f"Error during index deletion: {e}")
+                return 1
+
         if not (args.convert or args.generate_index):
-            logging.error("No action specified. Use --convert, --generate-index, or --all")
+            logging.error("No action specified. Use --convert, --generate-index, --delete-indexes, or --all")
             return 1
-        
+
         if args.convert:
             try:
                 converted_count = convert_files(args.source, dry_run=args.dry_run)
@@ -1123,7 +1402,7 @@ def main() -> int:
             except Exception as e:
                 logging.error(f"Error during file conversion: {e}")
                 return 1
-        
+
         if args.generate_index:
             try:
                 generated_count, generated_types = generate_indexes(
@@ -1136,17 +1415,46 @@ def main() -> int:
             except Exception as e:
                 logging.error(f"Error during index generation: {e}")
                 return 1
-        
-        logging.info("Script completed successfully")
-        return 0
-        
-    except KeyboardInterrupt:
-        logging.warning("Operation interrupted by user")
-        return 1
     except Exception as e:
-        logging.error(f"Script failed with error: {str(e)}", exc_info=True)
+        logging.error(f"Unhandled exception in main: {e}")
         return 1
+
+def delete_all_indexes(folder_path: Path, dry_run: bool = False) -> int:
+    """Recursively delete all directory-named index files (e.g., FOLDERNAME.md) under the given folder.
+    
+    Args:
+        folder_path (Path): Root folder to search for index files.
+        dry_run (bool): If True, only log what would be deleted.
+    
+    Returns:
+        int: Number of index files deleted (or would be deleted in dry run).
+    
+    Raises:
+        Exception: If an error occurs during deletion.
+    
+    Example:
+        >>> delete_all_indexes(Path('/vault'), dry_run=True)
+        42
+    """
+    from pathlib import Path
+    import logging
+    count = 0
+    folder_path = Path(folder_path)
+    for root, dirs, files in os.walk(folder_path):
+        root_path = Path(root)
+        index_file = root_path / f"{root_path.name}.md"
+        if index_file.exists():
+            if dry_run:
+                logging.info(f"[DRY RUN] Would delete: {index_file}")
+            else:
+                try:
+                    index_file.unlink()
+                    logging.info(f"Deleted: {index_file}")
+                except Exception as e:
+                    logging.error(f"Failed to delete {index_file}: {e}")
+                    continue
+            count += 1
+    return count
 
 if __name__ == "__main__":
     sys.exit(main())
-

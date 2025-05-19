@@ -31,6 +31,17 @@ tags:
   - course
 date-created: 2025-04-19
 ---
+template-type: class-index
+auto-generated-state: writable
+template-description: Top-level folder for a single class.
+title: Class Index
+type: index
+index-type: class
+tags: 
+  - index
+  - class
+date-created: 2025-04-19
+---
 template-type: module-index
 auto-generated-state: writable
 template-description: Groups together lessons or topics within a course.
@@ -111,8 +122,8 @@ class: Class Name
 course: Course Name
 program: Program Name
 ---
-auto-generated-state: writable
 template-type: pdf-reference
+auto-generated-state: writable
 template-description: Reference to a PDF file in OneDrive.
 title: PDF Title
 type: reference
@@ -176,61 +187,51 @@ tags:
   - resources
   - course-materials
 date-created: 2025-04-29
-
---- 
-
-title: Assignment 
+---
 template-type: assignment-individual
 auto-generated-state: writable
 template-description: Individual Assignment for the course or class.
+title: Assignment
 type: assignment/individual
 program: Program Name
 course: Course Name
 date-created: 2025-04-29
 status: in-progress
-
 ---
-
-title: Assignment 
 template-type: assignment-group
 auto-generated-state: writable
 template-description: Group Assignment for the course or class.
-type: group/individual
+title: Assignment
+type: assignment/group
 program: Program Name
 course: Course Name
 date-created: 2025-04-29
 status: in-progress
-
 ---
-
-title: Quiz 1 
-template-type: assignment/quiz
+template-type: assignment-quiz
 auto-generated-state: writable
-template-description: Quiz 1 for the course or class.
+template-description: Quiz for the course or class.
+title: Quiz 1
 type: assignment/quiz
 program: Program Name
 course: Course Name
 date-created: 2025-04-29
 status: in-progress
-
 ---
-
-title: Case Study 1 
-template-type: note/case-study
+template-type: note-case-study
 auto-generated-state: writable
-template-description: Case Study 1 for the course or class.
+template-description: Case Study for the course or class.
+title: Case Study 1
 type: note/case-study
 program: Program Name
 course: Course Name
 date-created: 2025-04-29
 status: not-started
-
 ---
-
-title: Required Reading 1
-template-type: resource/reading
+template-type: resource-reading
 auto-generated-state: writable
-template-description: Required Reading 1 for the course or class.
+template-description: Required Reading for the course or class.
+title: Required Reading 1
 type: resource/reading
 program: Program Name
 course: Course Name
@@ -238,5 +239,3 @@ date-created: 2025-04-29
 status: not-started
 pages: 10-15
 source: RequiredReading.pdf
-
----
