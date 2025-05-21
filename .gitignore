@@ -22,9 +22,6 @@ build/
 *.swp
 *.swo
 .env
-failed_files.log
-video_links_generator.log
-video_links_results.json
 
 # log files
 *.log
@@ -40,7 +37,9 @@ token_cache.bin
 # Reports
 tests/*.txt
 
-
+failed_files.log
+video_links_generator.log
+video_links_results.json
 failed_files.json
 failed_PDF_files.json
 graph_api_auth_troubleshooting.ipynb
@@ -49,3 +48,93 @@ debug_transcript.sh
 pdf_notes_results.json
 tests/test_transcript.sh
 tests/test_tools_modules.ipynb
+
+# Jupyter/IPython
+.ipynb_checkpoints/
+
+# Python coverage and test caches
+.coverage
+.coverage.*
+.tox/
+.pytest_cache/
+.mypy_cache/
+.cache/
+
+# pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# macOS/Linux system files
+.AppleDouble
+.LSOverride
+.DS_Store
+.Trashes
+.Trash-*
+.Spotlight-V100
+.fseventsd
+
+# direnv
+.envrc
+.direnv/
+
+# Editor swap/backup files
+*~
+*.bak
+*.tmp
+*.orig
+*.old
+*.swp
+*.swo
+
+# .NET and Visual Studio
+# Build results
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio user-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# VS for Mac
+.vscode/
+
+# Test results
+TestResults/
+
+# NuGet
+*.nupkg
+.nuget/
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Others
+*.vspscc
+*.vssscc
+*.dbmdl
+*.pdb
+*.cache
+*.log
+*.vs/
+
+# Resharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+# DotCover
+*.dotCover
+
+# Local history for Visual Studio
+.localhistory/
+
+# Windows image file caches
+Thumbs.db
