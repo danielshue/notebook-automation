@@ -53,13 +53,13 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
+
                 // Initialize dependency injection if needed
                 if (config != null)
                 {
                     Program.SetupDependencyInjection(config, debug);
                 }
-                
+
                 // Use DI container to get services
                 var serviceProvider = Program.ServiceProvider;
                 var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
@@ -68,31 +68,31 @@ namespace NotebookAutomation.Cli.Commands
 
                 var appConfig = serviceProvider.GetRequiredService<AppConfig>();
                 var batchProcessor = serviceProvider.GetRequiredService<VideoNoteBatchProcessor>();
-                
+
                 // Get video extensions from config
                 var videoExtensions = appConfig.VideoExtensions ?? new List<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
-                
+
                 // Get OpenAI API key from environment or config
                 string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
                 if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig.OpenAi != null)
                 {
                     openAiApiKey = appConfig.OpenAi.ApiKey;
                 }
-                
+
                 // Process videos
                 if (string.IsNullOrEmpty(input))
                 {
                     logger.LogError("Input path is required");
                     return;
                 }
-                
+
                 var (processed, failed) = await batchProcessor.ProcessVideosAsync(
                     input,
                     output ?? appConfig.Paths?.NotebookVaultRoot ?? "Generated",
                     videoExtensions,
                     openAiApiKey,
                     dryRun);
-                    
+
                 logger.LogInformation("Video processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);
             });
 

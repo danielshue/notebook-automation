@@ -1,4 +1,5 @@
-﻿using System.CommandLine;
+﻿using NotebookAutomation.Cli.Utilities;
+using System.CommandLine;
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -27,9 +28,9 @@ namespace NotebookAutomation.Cli.Commands
             var versionCommand = new Command("version", "Display version information");
             versionCommand.SetHandler(() =>
             {
-                Console.WriteLine($"Notebook Automation v1.0.0");
-                Console.WriteLine($"Running on .NET {Environment.Version}");
-                Console.WriteLine($"(c) 2025 Dan Shue");
+                AnsiConsoleHelper.WriteInfo($"Notebook Automation v1.0.0");
+                AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
+                AnsiConsoleHelper.WriteInfo($"(c) 2025 Dan Shue");
             });
             rootCommand.Add(versionCommand);
         }

@@ -1,3 +1,4 @@
+using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.Extensions.Configuration;
@@ -184,10 +185,10 @@ namespace NotebookAutomation.Cli.Commands
 
                 // Always show the active config file being used
                 string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
-                Console.WriteLine($"Using config file: {activeConfigPath}\n");
+                AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
 
                 logger.LogInformation("Executing OneDrive command: {Command}", command);
-                
+
                 if (dryRun)
                 {
                     logger.LogInformation("[DRY RUN] No changes will be made");
@@ -206,25 +207,25 @@ namespace NotebookAutomation.Cli.Commands
                         // TODO: Implement with oneDriveService.ListFilesAsync(arg1);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
-                        
+
                     case "download":
                         logger.LogInformation("Downloading from {RemotePath} to {LocalPath}", arg1, arg2);
                         // TODO: Implement with oneDriveService.DownloadFileAsync(arg1, arg2);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
-                        
+
                     case "upload":
                         logger.LogInformation("Uploading from {LocalPath} to {RemotePath}", arg1, arg2);
                         // TODO: Implement with oneDriveService.UploadFileAsync(arg1, arg2);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
-                        
+
                     case "search":
                         logger.LogInformation("Searching for: {Query}", arg1);
                         // TODO: Implement with oneDriveService.SearchFilesAsync(arg1);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
-                        
+
                     case "sync":
                         var direction = extraOptions.FirstOrDefault(o => o.Key == "direction").Value ?? "both";
                         logger.LogInformation("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})", 
@@ -232,7 +233,7 @@ namespace NotebookAutomation.Cli.Commands
                         // TODO: Implement with oneDriveService.SyncFilesAsync(arg1, arg2, direction);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
-                        
+
                     default:
                         logger.LogError("Unknown command: {Command}", command);
                         break;
@@ -242,10 +243,10 @@ namespace NotebookAutomation.Cli.Commands
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing OneDrive command: {ex.Message}");
+                AnsiConsoleHelper.WriteError($"Error processing OneDrive command: {ex.Message}");
                 if (debug)
                 {
-                    Console.Error.WriteLine(ex.ToString());
+                    AnsiConsoleHelper.WriteError(ex.ToString());
                 }
             }
         }

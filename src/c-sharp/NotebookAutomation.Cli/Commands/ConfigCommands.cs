@@ -2,6 +2,8 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.Extensions.DependencyInjection;
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Cli.Utilities;
+using NotebookAutomation.Cli.Utilities;
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -13,6 +15,18 @@ namespace NotebookAutomation.Cli.Commands
     /// </summary>
     internal class ConfigCommands
     {
+        /// <summary>
+        /// Prints the usage/help for the 'config show' command.
+        /// </summary>
+        internal void PrintShowUsage()
+        {
+            AnsiConsoleHelper.WriteUsage(
+                "Usage: config show [options]",
+                "Shows the current configuration settings.",
+                $"  {AnsiColors.OKGREEN}--config, -c <config>{AnsiColors.ENDC}    Path to the configuration file\n" +
+                $"  {AnsiColors.OKGREEN}--debug, -d{AnsiColors.ENDC}              Enable debug output"
+            );
+        }
         /// <summary>
         /// Registers the 'config' command and its subcommands with the root command.
         /// </summary>
@@ -30,20 +44,15 @@ namespace NotebookAutomation.Cli.Commands
                 // Check if any arguments were provided
                 if (context.ParseResult.Tokens.Count == 0 && context.ParseResult.UnparsedTokens.Count == 0)
                 {
-                    context.Console.WriteLine("Usage: config show [options]");
-                    context.Console.WriteLine("");
-                    context.Console.WriteLine("Shows the current configuration settings.");
-                    context.Console.WriteLine("");
-                    context.Console.WriteLine("Options:");
-                    context.Console.WriteLine("  --config, -c <config>    Path to the configuration file");
-                    context.Console.WriteLine("  --debug, -d              Enable debug output");
+                    PrintShowUsage();
                     return;
-                }                string? configPath = context.ParseResult.GetValueForOption(configOption);
+                }
+                string? configPath = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
-                
+
                 // Initialize dependency injection
                 Initialize(configPath, debug);
-                
+
                 // Get AppConfig from DI container
                 var appConfig = Program.ServiceProvider.GetRequiredService<AppConfig>();
                 PrintConfigFormatted(appConfig);
@@ -121,30 +130,21 @@ namespace NotebookAutomation.Cli.Commands
             {
                 if (context.ParseResult.Tokens.Count == 0 && context.ParseResult.UnparsedTokens.Count == 0)
                 {
-                    context.Console.WriteLine("");
-                    if(configCommand.Description != null) { 
-                        context.Console.WriteLine(configCommand.Description);
-                    }
-                    context.Console.WriteLine("");
-                    foreach (var sub in configCommand.Children)
-                    {
-                        if (sub is Command cmd)
-                        {
-                            context.Console.WriteLine($"  {cmd.Name}\t{cmd.Description}");
-                        }
-                    }
+                    var options = string.Join("\n", configCommand.Children.OfType<Command>().Select(cmd => $"  {cmd.Name}\t{cmd.Description}"));
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation config [command] [options]",
+                        configCommand.Description ?? "Available config commands:",
+                        options
+                    );
                 }
                 else
                 {
-                    context.Console.WriteLine("Please provide a valid config subcommand. Available options:");
-                    foreach (var sub in configCommand.Children)
-                    {
-                        if (sub is Command cmd)
-                        {
-                            context.Console.WriteLine($"  {cmd.Name,-15} {cmd.Description}");
-                        }
-                    }
-                    context.Console.WriteLine("\nUsage: notebookautomation config [command] [options]");
+                    var options = string.Join("\n", configCommand.Children.OfType<Command>().Select(cmd => $"  {cmd.Name,-15} {cmd.Description}"));
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation config [command] [options]",
+                        "Please provide a valid config subcommand. Available options:",
+                        options
+                    );
                 }
                 return Task.CompletedTask;
             });
@@ -214,38 +214,27 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="appConfig">The AppConfig instance to display.</param>
         private static void PrintConfigFormatted(AppConfig appConfig)
         {
-            // ANSI color codes
-            const string HEADER = "\u001b[95m";
-            const string OKBLUE = "\u001b[94m";
-            const string OKCYAN = "\u001b[96m";
-            const string OKGREEN = "\u001b[92m";
-            //const string WARNING = "\u001b[93m";
-            const string ENDC = "\u001b[0m";
-            const string BOLD = "\u001b[1m";
-            const string GREY = "\u001b[90m";
-            const string BG_BLUE = "\u001b[44m";
+            Console.WriteLine($"\n{AnsiColors.BG_BLUE}{AnsiColors.BOLD}{AnsiColors.HEADER}   Notebook Automation Configuration   {AnsiColors.ENDC}\n");
+            Console.WriteLine($"{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Paths =={AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}resourcesRoot         {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.ResourcesRoot}{AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}notebookVaultRoot     {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.NotebookVaultRoot}{AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}metadataFile          {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.MetadataFile}{AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}obsidianVaultRoot     {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.ObsidianVaultRoot}{AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}onedriveResourcesBasepath {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.OnedriveResourcesBasepath}{AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}loggingDir            {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.LoggingDir}{AnsiColors.ENDC}");
 
-            Console.WriteLine($"\n{BG_BLUE}{BOLD}{HEADER}   Notebook Automation Configuration   {ENDC}\n");
-            Console.WriteLine($"{OKBLUE}{BOLD}== Paths =={ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}resourcesRoot         {ENDC}: {OKGREEN}{appConfig.Paths.ResourcesRoot}{ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}notebookVaultRoot     {ENDC}: {OKGREEN}{appConfig.Paths.NotebookVaultRoot}{ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}metadataFile          {ENDC}: {OKGREEN}{appConfig.Paths.MetadataFile}{ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}obsidianVaultRoot     {ENDC}: {OKGREEN}{appConfig.Paths.ObsidianVaultRoot}{ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}onedriveResourcesBasepath {ENDC}: {OKGREEN}{appConfig.Paths.OnedriveResourcesBasepath}{ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}loggingDir            {ENDC}: {OKGREEN}{appConfig.Paths.LoggingDir}{ENDC}");
+            Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Microsoft Graph API =={AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}clientId      {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.MicrosoftGraph.ClientId}{AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}apiEndpoint   {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.MicrosoftGraph.ApiEndpoint}{AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}authority     {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.MicrosoftGraph.Authority}{AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}scopes        {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{string.Join(", ", appConfig.MicrosoftGraph.Scopes)}{AnsiColors.ENDC}");
 
-            Console.WriteLine($"\n{OKBLUE}{BOLD}== Microsoft Graph API =={ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}clientId      {ENDC}: {OKGREEN}{appConfig.MicrosoftGraph.ClientId}{ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}apiEndpoint   {ENDC}: {OKGREEN}{appConfig.MicrosoftGraph.ApiEndpoint}{ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}authority     {ENDC}: {OKGREEN}{appConfig.MicrosoftGraph.Authority}{ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}scopes        {ENDC}: {OKGREEN}{string.Join(", ", appConfig.MicrosoftGraph.Scopes)}{ENDC}");
+            Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== OpenAI =={AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}apiKey        {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.OpenAi.ApiKey}{AnsiColors.ENDC}");
 
-            Console.WriteLine($"\n{OKBLUE}{BOLD}== OpenAI =={ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}apiKey        {ENDC}: {OKGREEN}{appConfig.OpenAi.ApiKey}{ENDC}");
-
-            Console.WriteLine($"\n{OKBLUE}{BOLD}== Video Extensions =={ENDC}");
-            Console.WriteLine($"  {OKCYAN}{BOLD}Extensions    {ENDC}: {OKGREEN}{string.Join(", ", appConfig.VideoExtensions)}{ENDC}");
-            Console.WriteLine($"\n{GREY}Tip: Use '{BOLD}config update-key <key> <value>{ENDC}{GREY}' to change a setting.{ENDC}\n");
+            Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Video Extensions =={AnsiColors.ENDC}");
+            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}Extensions    {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{string.Join(", ", appConfig.VideoExtensions)}{AnsiColors.ENDC}");
+            Console.WriteLine($"\n{AnsiColors.GREY}Tip: Use '{AnsiColors.BOLD}config update-key <key> <value>{AnsiColors.ENDC}{AnsiColors.GREY}' to change a setting.{AnsiColors.ENDC}\n");
         }
     }
 }
