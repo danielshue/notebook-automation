@@ -1,3 +1,4 @@
+using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.Extensions.Configuration;
@@ -93,19 +94,19 @@ namespace NotebookAutomation.Cli.Commands
                 var appConfig = serviceProvider.GetRequiredService<AppConfig>();
                 var loggingService = serviceProvider.GetRequiredService<LoggingService>();
                 var failedLogger = loggingService?.FailedLogger;
-                
+
                 if (sourceDirs == null || sourceDirs.Length == 0)
                 {
                     logger.LogError("Source directories are required");
                     return;
                 }
-                
+
                 string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
                 if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.OpenAi != null)
                 {
                     openAiApiKey = appConfig.OpenAi.ApiKey;
                 }
-                
+
                 var processor = new MarkdownNoteProcessor(logger);
                 foreach (var sourceDir in sourceDirs)
                 {
@@ -114,19 +115,19 @@ namespace NotebookAutomation.Cli.Commands
                         logger.LogWarning("Source directory not found: {Dir}", sourceDir);
                         continue;
                     }
-                    
+
                     var files = Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories);
                     foreach (var file in files)
                     {
                         var ext = Path.GetExtension(file).ToLowerInvariant();
                         if (ext != ".txt" && ext != ".html" && ext != ".htm" && ext != ".epub")
                             continue;
-                            
+
                         try
                         {
                             logger.LogInformation("Processing file: {File}", file);
                             string markdown = await processor.ConvertToMarkdownAsync(file, openAiApiKey, "chunk_summary_prompt.md");
-                            
+
                             if (!dryRun)
                             {
                                 string outputDir = destDir ?? (appConfig?.Paths?.NotebookVaultRoot ?? "Generated");
@@ -147,12 +148,12 @@ namespace NotebookAutomation.Cli.Commands
                         }
                     }
                 }
-                
+
                 logger.LogInformation("Markdown generation complete");
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error generating markdown: {ex.Message}");
+                AnsiConsoleHelper.WriteError($"Error generating markdown: {ex.Message}");
             }
         }
     }

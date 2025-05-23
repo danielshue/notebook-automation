@@ -1,3 +1,4 @@
+using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.Extensions.Configuration;
@@ -45,28 +46,27 @@ namespace NotebookAutomation.Cli.Commands
                 // If no options or subcommands are provided, show help
                 if (context.ParseResult.Tokens.Count == 0 && context.ParseResult.UnparsedTokens.Count == 0)
                 {
-                    context.Console.WriteLine("No subcommand provided. Showing help:\n");
-                    context.Console.WriteLine(pdfCommand.Description ?? "");
-                    context.Console.WriteLine("");
-                    foreach (var option in pdfCommand.Options)
-                    {
-                        context.Console.WriteLine($"  {string.Join(", ", option.Aliases)}\t{option.Description}");
-                    }
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation pdf-notes [options]",
+                        pdfCommand.Description ?? string.Empty,
+                        string.Join("\n", pdfCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
                     return Task.CompletedTask;
-                }                // If options are provided, run the main handler
+                }
+                // If options are provided, run the main handler
                 string? input = context.ParseResult.GetValueForOption(inputOption);
                 string? output = context.ParseResult.GetValueForOption(outputOption);
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
+
                 // Initialize dependency injection if needed
                 if (config != null)
                 {
                     Program.SetupDependencyInjection(config, debug);
                 }
-                
+
                 return ProcessPdfAsync(input, output, config, debug, verbose, dryRun);
             });
 
@@ -106,14 +106,14 @@ namespace NotebookAutomation.Cli.Commands
                 {
                     Program.SetupDependencyInjection(configPath, debug);
                 }
-                  // Get services from DI container
+                // Get services from DI container
                 var serviceProvider = Program.ServiceProvider;
                 var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
                 var logger = loggerFactory.CreateLogger("PdfCommands");
                 var appConfig = serviceProvider.GetRequiredService<AppConfig>();
                 var loggingService = serviceProvider.GetRequiredService<LoggingService>();
                 var failedLogger = loggingService?.FailedLogger;
-                
+
                 if (string.IsNullOrEmpty(input))
                 {
                     logger.LogError("Input path is required");
@@ -128,7 +128,8 @@ namespace NotebookAutomation.Cli.Commands
 
                 if (Directory.Exists(input))
                 {
-                    pdfFiles.AddRange(Directory.GetFiles(input, "*.pdf", SearchOption.AllDirectories));                    logger?.LogInformation("Found {Count} PDF files in directory: {Dir}", pdfFiles.Count, input);
+                    pdfFiles.AddRange(Directory.GetFiles(input, "*.pdf", SearchOption.AllDirectories));
+                    logger?.LogInformation("Found {Count} PDF files in directory: {Dir}", pdfFiles.Count, input);
                 }
                 else if (File.Exists(input) && input.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
                 {
@@ -139,7 +140,7 @@ namespace NotebookAutomation.Cli.Commands
                     logger?.LogError("Input must be a PDF file or directory containing PDFs: {Input}", input);
                     return;
                 }
-                
+
                 // Get OpenAI API key from config or environment
                 string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
                 if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.OpenAi != null)
@@ -157,7 +158,8 @@ namespace NotebookAutomation.Cli.Commands
                         metadata["summary"] = aiSummary;
                         string markdown = pdfProcessor.GenerateMarkdownNote(pdfText, metadata);
                         if (!dryRun)
-                        {                            string outputDir = output ?? (appConfig?.Paths?.NotebookVaultRoot ?? "Generated");
+                        {
+                            string outputDir = output ?? (appConfig?.Paths?.NotebookVaultRoot ?? "Generated");
                             Directory.CreateDirectory(outputDir);
                             string outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(pdfPath) + ".md");
                             await File.WriteAllTextAsync(outputPath, markdown);
@@ -180,7 +182,7 @@ namespace NotebookAutomation.Cli.Commands
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing PDF(s): {ex.Message}");
+                AnsiConsoleHelper.WriteError($"Error processing PDF(s): {ex.Message}");
             }
         }
     }

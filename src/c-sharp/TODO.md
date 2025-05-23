@@ -1,3 +1,36 @@
+# Video Metadata CLI Parity: Python vs C#
+
+## Outstanding Tasks for Full Parity with generate_video_meta.py
+
+- [ ] Add support for all CLI options present in Python:
+    - [ ] --single-file / -f (process a single video file)
+    - [ ] --folder (process all video files in a directory)
+    - [ ] --resources-root (override resources root directory)
+    - [ ] --no-summary (disable OpenAI summary generation)
+    - [ ] --retry-failed (retry only failed files from previous run)
+    - [ ] --force (overwrite existing notes)
+    - [ ] --timeout (set API request timeout)
+    - [ ] --refresh-auth (force refresh Microsoft Graph API authentication)
+    - [ ] --no-share-links (skip OneDrive share link creation)
+    - [ ] -c / --config (config file path)
+    - [ ] --verbose, --debug, --dry-run (already present)
+- [ ] Implement video file discovery logic (single file, folder, retry failed)
+- [ ] Implement transcript file discovery and language-specific handling
+- [ ] Integrate OpenAI summary generation (with --no-summary option)
+- [ ] Implement OneDrive share link creation (with --no-share-links and --timeout)
+- [ ] Implement markdown note generation with metadata, transcript, summary, and share link
+- [ ] Implement results and failed files JSON output (video_links_results.json, failed_video_files.json)
+- [ ] Add colorized and detailed logging (match Python's rich output)
+- [ ] Add progress reporting for batch operations (progress bar, summary)
+- [ ] Add robust error handling and logging for all steps
+- [ ] Ensure configuration and path handling matches Python logic
+- [ ] Add comprehensive unit tests for all new features and edge cases
+
+## Notes
+
+- The current C# implementation (VideoCommands/VideoNoteProcessingEntrypoint) only supports basic input/output and lacks most advanced CLI options and features from the Python version.
+- Full feature parity will require significant CLI, service, and utility enhancements in the C# codebase.
+
 # Python to C# Migration Plan
 
 ## Overview

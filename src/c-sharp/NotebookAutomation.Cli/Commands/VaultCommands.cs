@@ -1,3 +1,4 @@
+using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.Extensions.DependencyInjection;
@@ -107,7 +108,7 @@ namespace NotebookAutomation.Cli.Commands
 
                 // Always show the active config file being used
                 string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
-                Console.WriteLine($"Using config file: {activeConfigPath}\n");
+                AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
 
                 logger.LogInformation("Executing vault command: {Command} on {Path}", command, path);
 
@@ -128,12 +129,12 @@ namespace NotebookAutomation.Cli.Commands
                         logger.LogInformation("Simulating generation of vault index");
                         await Task.Delay(500); // Simulate work
                         break;
-                        
+
                     case "ensure-metadata":
                         logger.LogInformation("Simulating metadata consistency check");
                         await Task.Delay(500); // Simulate work
                         break;
-                        
+
                     default:
                         logger.LogError("Unknown command: {Command}", command);
                         break;
@@ -143,10 +144,10 @@ namespace NotebookAutomation.Cli.Commands
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing vault command: {ex.Message}");
+                AnsiConsoleHelper.WriteError($"Error processing vault command: {ex.Message}");
                 if (debug)
                 {
-                    Console.Error.WriteLine(ex.ToString());
+                    AnsiConsoleHelper.WriteError(ex.ToString());
                 }
             }
         }

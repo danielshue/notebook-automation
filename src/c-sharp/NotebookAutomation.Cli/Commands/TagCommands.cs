@@ -1,3 +1,4 @@
+using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using Microsoft.Extensions.DependencyInjection;
@@ -125,12 +126,12 @@ namespace NotebookAutomation.Cli.Commands
             tagCommand.TreatUnmatchedTokensAsErrors = true;
             tagCommand.SetHandler((InvocationContext context) =>
             {
-                context.Console.WriteLine("Please specify a tag subcommand to execute. Available tag commands:");
-                foreach (var command in tagCommand.Subcommands)
-                {
-                    context.Console.WriteLine($"  {command.Name,-15} {command.Description}");
-                }
-                context.Console.WriteLine("\nRun 'notebookautomation tag [command] --help' for more information on a specific command.");
+                AnsiConsoleHelper.WriteUsage(
+                    "Usage: notebookautomation tag <subcommand> [options]",
+                    "Please specify a tag subcommand to execute. Available tag commands:",
+                    string.Join("\n", tagCommand.Subcommands.Select(cmd => $"  {cmd.Name,-15} {cmd.Description}")) +
+                    "\n\nRun 'notebookautomation tag [command] --help' for more information on a specific command."
+                );
             });
 
             rootCommand.AddCommand(tagCommand);
@@ -164,9 +165,10 @@ namespace NotebookAutomation.Cli.Commands
 
                 // Always show the active config file being used
                 string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
-                Console.WriteLine($"Using config file: {activeConfigPath}\n");
+                AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
 
-                logger.LogInformation("Executing tag command: {Command} on path: {Path}", command, path);                // Create a new TagProcessor with command-specific options
+                logger.LogInformation("Executing tag command: {Command} on path: {Path}", command, path);
+                // Create a new TagProcessor with command-specific options
                 // For TagProcessor we can't use DI directly since we need to pass dryRun and verbose
                 var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
                 var tagProcessor = new TagProcessor(
@@ -214,10 +216,10 @@ namespace NotebookAutomation.Cli.Commands
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error processing tags: {ex.Message}");
+                AnsiConsoleHelper.WriteError($"Error processing tags: {ex.Message}");
                 if (debug)
                 {
-                    Console.Error.WriteLine(ex.ToString());
+                    AnsiConsoleHelper.WriteError(ex.ToString());
                 }
             }
         }
