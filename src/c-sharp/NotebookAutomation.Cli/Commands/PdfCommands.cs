@@ -1,11 +1,9 @@
 using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.PdfProcessing;
 
 namespace NotebookAutomation.Cli.Commands
@@ -64,6 +62,11 @@ namespace NotebookAutomation.Cli.Commands
                 // Initialize dependency injection if needed
                 if (config != null)
                 {
+                    if (!System.IO.File.Exists(config))
+                    {
+                        AnsiConsoleHelper.WriteError($"Configuration file not found: {config}");
+                        return Task.CompletedTask;
+                    }
                     Program.SetupDependencyInjection(config, debug);
                 }
 
@@ -114,6 +117,12 @@ namespace NotebookAutomation.Cli.Commands
                 var loggingService = serviceProvider.GetRequiredService<LoggingService>();
                 var failedLogger = loggingService?.FailedLogger;
 
+                // Validate OpenAI config before proceeding
+                if (!ConfigValidation.RequireOpenAi(appConfig))
+                {
+                    logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
+                    return;
+                }
                 if (string.IsNullOrEmpty(input))
                 {
                     logger.LogError("Input path is required");
@@ -142,7 +151,7 @@ namespace NotebookAutomation.Cli.Commands
                 }
 
                 // Get OpenAI API key from config or environment
-                string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+                string? openAiApiKey = Environment.GetEnvironmentVariable(NotebookAutomation.Core.Configuration.OpenAiConfig.OpenAiApiKeyEnvVar);
                 if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.OpenAi != null)
                 {
                     openAiApiKey = appConfig.OpenAi.ApiKey;

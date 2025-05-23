@@ -1,10 +1,9 @@
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Cli.Utilities;
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -57,6 +56,11 @@ namespace NotebookAutomation.Cli.Commands
                 // Initialize dependency injection if needed
                 if (config != null)
                 {
+                    if (!File.Exists(config))
+                    {
+                        AnsiConsoleHelper.WriteError($"Configuration file not found: {config}");
+                        return;
+                    }
                     Program.SetupDependencyInjection(config, debug);
                 }
 
@@ -69,11 +73,17 @@ namespace NotebookAutomation.Cli.Commands
                 var appConfig = serviceProvider.GetRequiredService<AppConfig>();
                 var batchProcessor = serviceProvider.GetRequiredService<VideoNoteBatchProcessor>();
 
+                // Validate OpenAI config before proceeding
+                if (!ConfigValidation.RequireOpenAi(appConfig))
+                {
+                    logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
+                    return;
+                }
                 // Get video extensions from config
                 var videoExtensions = appConfig.VideoExtensions ?? new List<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
 
                 // Get OpenAI API key from environment or config
-                string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+                string? openAiApiKey = Environment.GetEnvironmentVariable(NotebookAutomation.Core.Configuration.OpenAiConfig.OpenAiApiKeyEnvVar);
                 if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig.OpenAi != null)
                 {
                     openAiApiKey = appConfig.OpenAi.ApiKey;

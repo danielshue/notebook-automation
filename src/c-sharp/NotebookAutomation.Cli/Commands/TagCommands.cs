@@ -154,6 +154,11 @@ namespace NotebookAutomation.Cli.Commands
                 // Initialize dependency injection if needed
                 if (configPath != null)
                 {
+                    if (!System.IO.File.Exists(configPath))
+                    {
+                        AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
+                        return;
+                    }
                     Program.SetupDependencyInjection(configPath, debug);
                 }
 

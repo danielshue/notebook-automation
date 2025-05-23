@@ -72,7 +72,8 @@
 ## Testing Approach
 - Write unit tests for all non-trivial methods
 - Organize tests to mirror the code structure
-- Use xUnit, NUnit, or MSTest as the testing framework
+- Use MSTest (Microsoft Test suite) as the required testing framework for all C# tests
+- Do not use xUnit or NUnit for new or updated tests
 - Mock external dependencies in tests (consider Moq or NSubstitute)
 - Create proper test fixtures for reuse
 - Aim for high test coverage of critical functionality

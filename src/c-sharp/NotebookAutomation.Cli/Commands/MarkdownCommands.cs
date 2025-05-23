@@ -1,11 +1,9 @@
 using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.MarkdownGeneration;
 
 namespace NotebookAutomation.Cli.Commands
@@ -58,6 +56,11 @@ namespace NotebookAutomation.Cli.Commands
                 // Initialize dependency injection if needed
                 if (Program.ServiceProvider == null && config != null)
                 {
+                    if (!System.IO.File.Exists(config))
+                    {
+                        AnsiConsoleHelper.WriteError($"Configuration file not found: {config}");
+                        return;
+                    }
                     Program.SetupDependencyInjection(config, debug);
                 }
                 
@@ -95,6 +98,12 @@ namespace NotebookAutomation.Cli.Commands
                 var loggingService = serviceProvider.GetRequiredService<LoggingService>();
                 var failedLogger = loggingService?.FailedLogger;
 
+                // Validate OpenAI config before proceeding
+                if (!ConfigValidation.RequireOpenAi(appConfig))
+                {
+                    logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
+                    return;
+                }
                 if (sourceDirs == null || sourceDirs.Length == 0)
                 {
                     logger.LogError("Source directories are required");
