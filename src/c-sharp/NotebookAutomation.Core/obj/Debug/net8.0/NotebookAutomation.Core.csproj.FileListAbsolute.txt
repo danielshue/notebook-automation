@@ -12,3 +12,17 @@
 /workspaces/notebook-automation/src/c-sharp/NotebookAutomation.Core/obj/Debug/net8.0/NotebookAutomation.Core.pdb
 /workspaces/notebook-automation/src/c-sharp/NotebookAutomation.Core/obj/Debug/net8.0/ref/NotebookAutomation.Core.dll
 /workspaces/notebook-automation/src/c-sharp/NotebookAutomation.Core/bin/Debug/net8.0/config.json
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\bin\Debug\net8.0\config.json
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\bin\Debug\net8.0\NotebookAutomation.Core.deps.json
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\bin\Debug\net8.0\NotebookAutomation.Core.dll
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\bin\Debug\net8.0\NotebookAutomation.Core.pdb
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\NotebookAutomation.Core.csproj.AssemblyReference.cache
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\NotebookAutomation.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\NotebookAutomation.Core.AssemblyInfoInputs.cache
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\NotebookAutomation.Core.AssemblyInfo.cs
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\NotebookAutomation.Core.csproj.CoreCompileInputs.cache
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\NotebookAutomation.Core.sourcelink.json
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\NotebookAutomation.Core.dll
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\refint\NotebookAutomation.Core.dll
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\NotebookAutomation.Core.pdb
+D:\source\notebook-automation-csharp-migration\src\c-sharp\NotebookAutomation.Core\obj\Debug\net8.0\ref\NotebookAutomation.Core.dll

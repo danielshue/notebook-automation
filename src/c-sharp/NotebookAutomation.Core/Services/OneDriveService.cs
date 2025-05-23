@@ -1,17 +1,10 @@
 // Module: OneDriveService.cs
 // Provides OneDrive integration for file/folder sync and access using Microsoft Graph API.
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Identity.Client;
-using System.Net.Http.Headers;
 using Azure.Identity;
 using Microsoft.Kiota.Abstractions;
-using System.Threading;
 using System.Text.Json;
 using System.Text;
 
@@ -28,6 +21,11 @@ namespace NotebookAutomation.Core.Services
         private readonly string[] _scopes;
         private GraphServiceClient? _graphClient;
         private string? _accessToken;
+
+        private string? _localVaultRoot;
+        private string? _oneDriveVaultRoot;
+
+        private OneDriveCliOptions _cliOptions = new OneDriveCliOptions();
 
         public OneDriveService(ILogger logger, string clientId, string tenantId, string[] scopes)
         {
@@ -591,12 +589,13 @@ namespace NotebookAutomation.Core.Services
 
         /// <summary>
         /// Attempts to resolve a OneDrive path using alternative formats if the initial request fails.
+        /// If not found, suggests similar files/folders in the parent directory.
         /// </summary>
         /// <param name="oneDrivePath">The original OneDrive path.</param>
-        /// <returns>Resolved path or null if not found.</returns>
+        /// <returns>Resolved path or null if not found. Logs suggestions if not found.</returns>
         public async Task<string?> TryAlternativePathFormatsAsync(string oneDrivePath, CancellationToken cancellationToken = default)
         {
-            // Try with and without leading slash, and with different separators
+            // Try with and without leading slash, different separators, and case-insensitive
             var candidates = new List<string>
             {
                 oneDrivePath,
@@ -604,6 +603,8 @@ namespace NotebookAutomation.Core.Services
                 oneDrivePath.Replace("\\", "/"),
                 oneDrivePath.Replace("/", "\\")
             };
+            var lower = oneDrivePath.ToLowerInvariant();
+            if (!candidates.Contains(lower)) candidates.Add(lower);
             foreach (var candidate in candidates.Distinct())
             {
                 try
@@ -617,8 +618,59 @@ namespace NotebookAutomation.Core.Services
                     _logger.LogDebug(ex, "Path format candidate failed: {Path}", candidate);
                 }
             }
-            _logger.LogWarning("All alternative path format attempts failed for: {Path}", oneDrivePath);
+            // Fuzzy search for similar files/folders in the parent directory
+            var parent = Path.GetDirectoryName(oneDrivePath.Replace("\\", "/")) ?? string.Empty;
+            var baseName = Path.GetFileName(oneDrivePath.Replace("\\", "/"));
+            var siblings = await ListFilesWithMetadataAsync(parent, cancellationToken);
+            var suggestions = FindSimilarNames(baseName, siblings.Select(d => d.ContainsKey("name") ? d["name"]?.ToString() ?? string.Empty : string.Empty).ToList());
+            if (suggestions.Count > 0)
+            {
+                _logger.LogWarning("Path not found: {Path}. Did you mean: {Suggestions}", oneDrivePath, string.Join(", ", suggestions));
+            }
+            else
+            {
+                _logger.LogWarning("All alternative path format attempts failed for: {Path}", oneDrivePath);
+            }
             return null;
+        }
+
+        /// <summary>
+        /// Finds similar names to a target using Levenshtein distance.
+        /// </summary>
+        private List<string> FindSimilarNames(string target, List<string> candidates, int maxSuggestions = 3)
+        {
+            var ranked = candidates
+                .Where(n => !string.IsNullOrEmpty(n))
+                .Select(n => new { Name = n, Distance = LevenshteinDistance(target, n) })
+                .OrderBy(x => x.Distance)
+                .ThenBy(x => x.Name)
+                .Take(maxSuggestions)
+                .Select(x => x.Name)
+                .ToList();
+            return ranked;
+        }
+
+        /// <summary>
+        /// Computes the Levenshtein distance between two strings.
+        /// </summary>
+        private int LevenshteinDistance(string a, string b)
+        {
+            if (string.IsNullOrEmpty(a)) return b?.Length ?? 0;
+            if (string.IsNullOrEmpty(b)) return a.Length;
+            var d = new int[a.Length + 1, b.Length + 1];
+            for (int i = 0; i <= a.Length; i++) d[i, 0] = i;
+            for (int j = 0; j <= b.Length; j++) d[0, j] = j;
+            for (int i = 1; i <= a.Length; i++)
+            {
+                for (int j = 1; j <= b.Length; j++)
+                {
+                    int cost = (a[i - 1] == b[j - 1]) ? 0 : 1;
+                    d[i, j] = Math.Min(
+                        Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
+                        d[i - 1, j - 1] + cost);
+                }
+            }
+            return d[a.Length, b.Length];
         }
 
         /// <summary>
@@ -661,36 +713,60 @@ namespace NotebookAutomation.Core.Services
             }
         }
 
-        // --- Path Mapping and CLI Option Support (Stubs) ---
+        // --- Path Mapping and CLI Option Support (Implemented) ---
 
         /// <summary>
-        /// Maps a local path to a OneDrive path, preserving structure. (Stub for future integration)
+        /// Configures the root directories for local and OneDrive vaults for path mapping.
+        /// </summary>
+        /// <param name="localVaultRoot">The root directory of the local vault.</param>
+        /// <param name="oneDriveVaultRoot">The root directory of the OneDrive vault (relative to OneDrive root).</param>
+        public void ConfigureVaultRoots(string localVaultRoot, string oneDriveVaultRoot)
+        {
+            _localVaultRoot = localVaultRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            _oneDriveVaultRoot = oneDriveVaultRoot.TrimEnd('/', '\\');
+        }
+
+        /// <summary>
+        /// Maps a local path to a OneDrive path, preserving structure.
         /// </summary>
         /// <param name="localPath">The local file or folder path.</param>
         /// <returns>Corresponding OneDrive path.</returns>
         public string MapLocalToOneDrivePath(string localPath)
         {
-            // TODO: Integrate with centralized path mapping logic
-            throw new NotImplementedException("Path mapping not yet implemented.");
+            if (string.IsNullOrEmpty(_localVaultRoot) || string.IsNullOrEmpty(_oneDriveVaultRoot))
+                throw new InvalidOperationException("Vault roots not configured. Call ConfigureVaultRoots first.");
+            var fullLocalPath = Path.GetFullPath(localPath);
+            var fullVaultRoot = Path.GetFullPath(_localVaultRoot);
+            if (!fullLocalPath.StartsWith(fullVaultRoot, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException($"Local path '{localPath}' is not under the configured vault root '{_localVaultRoot}'.");
+            var relative = Path.GetRelativePath(fullVaultRoot, fullLocalPath);
+            var oneDrivePath = _oneDriveVaultRoot + "/" + relative.Replace(Path.DirectorySeparatorChar, '/');
+            return oneDrivePath;
         }
 
         /// <summary>
-        /// Maps a OneDrive path to a local path, preserving structure. (Stub for future integration)
+        /// Maps a OneDrive path to a local path, preserving structure.
         /// </summary>
         /// <param name="oneDrivePath">The OneDrive file or folder path.</param>
         /// <returns>Corresponding local path.</returns>
         public string MapOneDriveToLocalPath(string oneDrivePath)
         {
-            // TODO: Integrate with centralized path mapping logic
-            throw new NotImplementedException("Path mapping not yet implemented.");
+            if (string.IsNullOrEmpty(_localVaultRoot) || string.IsNullOrEmpty(_oneDriveVaultRoot))
+                throw new InvalidOperationException("Vault roots not configured. Call ConfigureVaultRoots first.");
+            var normOneDrivePath = oneDrivePath.Replace("\\", "/");
+            if (!normOneDrivePath.StartsWith(_oneDriveVaultRoot, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException($"OneDrive path '{oneDrivePath}' is not under the configured OneDrive vault root '{_oneDriveVaultRoot}'.");
+            var relative = normOneDrivePath.Substring(_oneDriveVaultRoot.Length).TrimStart('/');
+            var localPath = Path.Combine(_localVaultRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+            return localPath;
         }
 
         /// <summary>
-        /// Sets CLI options for dry-run, retry, force, and verbose/debug output. (Stub for CLI integration)
+        /// Sets CLI options for dry-run, retry, force, and verbose/debug output.
         /// </summary>
-        public void SetCliOptions(bool dryRun = false, bool retry = false, bool force = false, bool verbose = false)
+        public void SetCliOptions(OneDriveCliOptions options)
         {
-            // TODO: Integrate with CLI and propagate options to service methods
+            _cliOptions = options ?? new OneDriveCliOptions();
         }
 
         // --- Test Coverage and Documentation ---

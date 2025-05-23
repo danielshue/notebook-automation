@@ -1,9 +1,5 @@
-using System;
-using System.IO;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Serilog;
 
 namespace NotebookAutomation.Core.Configuration
 {
@@ -12,49 +8,24 @@ namespace NotebookAutomation.Core.Configuration
     /// 
     /// This class helps with initializing configuration and logging services
     /// consistently across all applications in the Notebook Automation suite.
-    /// </summary>
+    /// </summary>    
     public class ConfigProvider
     {
         /// <summary>
-        /// Gets the singleton instance of the ConfigProvider.
+        /// Constructor that accepts a pre-configured LoggingService instance.
         /// </summary>
-        public static ConfigProvider? Instance { get; private set; }
-        
-        /// <summary>
-        /// Initializes the singleton instance of the ConfigProvider.
-        /// </summary>
-        /// <param name="configPath">Optional path to a configuration file.</param>
-        /// <param name="debug">Whether to enable debug-level logging.</param>
-        /// <returns>The initialized ConfigProvider instance.</returns>
-        public static ConfigProvider Initialize(string? configPath = null, bool debug = false)
+        /// <param name="loggingService">The logging service to use.</param>
+        /// <param name="appConfig">The application configuration.</param>
+        public ConfigProvider(LoggingService loggingService, AppConfig appConfig)
         {
-            Instance = Create(configPath, debug);
-            return Instance;
+            LoggingService = loggingService;
+            AppConfig = appConfig;
+
+            // Configure services
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            ServiceProvider = services.BuildServiceProvider();
         }
-        /// <summary>
-        /// The application configuration.
-        /// </summary>
-        public AppConfig AppConfig { get; private set; }
-        
-        /// <summary>
-        /// The logging service.
-        /// </summary>
-        public LoggingService LoggingService { get; private set; }
-        
-        /// <summary>
-        /// The service provider for dependency injection.
-        /// </summary>
-        public IServiceProvider ServiceProvider { get; private set; }
-        
-    /// <summary>
-    /// The configured logger for general logging.
-    /// </summary>
-    public Microsoft.Extensions.Logging.ILogger Logger => LoggingService.Logger;
-    
-    /// <summary>
-    /// The configured logger for failed operations.
-    /// </summary>
-    public Microsoft.Extensions.Logging.ILogger FailedLogger => LoggingService.FailedLogger;
         
         /// <summary>
         /// Initializes configuration with the specified options.
@@ -88,7 +59,32 @@ namespace NotebookAutomation.Core.Configuration
             ConfigureServices(services);
             ServiceProvider = services.BuildServiceProvider();
         }
-        
+
+        /// <summary>
+        /// The application configuration.
+        /// </summary>
+        public AppConfig AppConfig { get; private set; }
+
+        /// <summary>
+        /// The logging service.
+        /// </summary>
+        public LoggingService LoggingService { get; private set; }
+
+        /// <summary>
+        /// The service provider for dependency injection.
+        /// </summary>
+        public IServiceProvider ServiceProvider { get; private set; }
+
+        /// <summary>
+        /// The configured logger for general logging.
+        /// </summary>
+        public Microsoft.Extensions.Logging.ILogger Logger => LoggingService.Logger;
+
+        /// <summary>
+        /// The configured logger for failed operations.
+        /// </summary>
+        public Microsoft.Extensions.Logging.ILogger FailedLogger => LoggingService.FailedLogger;
+
         /// <summary>
         /// Initializes a minimal default configuration.
         /// </summary>
@@ -146,6 +142,11 @@ namespace NotebookAutomation.Core.Configuration
         public T GetService<T>() where T : class
         {
             return ServiceProvider.GetRequiredService<T>();
+        }
+
+        public static object Initialize(string? configPath, bool debug)
+        {
+            throw new NotImplementedException();
         }
     }
 }

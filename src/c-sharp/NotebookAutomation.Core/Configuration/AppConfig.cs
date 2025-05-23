@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Binder;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
 
 namespace NotebookAutomation.Core.Configuration
 {
@@ -169,75 +162,18 @@ namespace NotebookAutomation.Core.Configuration
             
             return string.Empty; // Return empty string instead of null
         }
-    }
 
-    /// <summary>
-    /// Configuration for file paths used in the application.
-    /// </summary>
-    public class PathsConfig
-    {
-        /// <summary>
-        /// Root directory for resources.
-        /// </summary>
-        public string ResourcesRoot { get; set; } = string.Empty;
-        
-        /// <summary>
-        /// Root directory for the notebook vault.
-        /// </summary>
-        public string NotebookVaultRoot { get; set; } = string.Empty;
-        
-        /// <summary>
-        /// Path to the metadata file.
-        /// </summary>
-        public string MetadataFile { get; set; } = string.Empty;
-        
-        /// <summary>
-        /// Root directory for the Obsidian vault.
-        /// </summary>
-        public string ObsidianVaultRoot { get; set; } = string.Empty;
-        
-        /// <summary>
-        /// Base path for OneDrive resources.
-        /// </summary>
-        public string OnedriveResourcesBasepath { get; set; } = string.Empty;
-        
-        /// <summary>
-        /// Directory for log files.
-        /// </summary>
-        public string LoggingDir { get; set; } = string.Empty;
-    }
+        public void SaveToJsonFile(string v)
+        {   // Implement saving logic here if needed
+            // This is a placeholder for the save functionality
+            _logger?.LogInformation($"Saving configuration to {v}");
 
-    /// <summary>
-    /// Configuration for Microsoft Graph API.
-    /// </summary>
-    public class MicrosoftGraphConfig
-    {
-        /// <summary>
-        /// Client ID for authenticating with Microsoft Graph.
-        /// </summary>
-        public string ClientId { get; set; } = string.Empty;
-        
-        /// <summary>
-        /// API endpoint for Microsoft Graph.
-        /// </summary>
-        public string ApiEndpoint { get; set; } = string.Empty;
-        
-        /// <summary>
-        /// Authority URL for Microsoft Graph authentication.
-        /// </summary>
-        public string Authority { get; set; } = string.Empty;
-        
-        /// <summary>
-        /// Scopes required for Microsoft Graph API access.
-        /// </summary>
-        public List<string> Scopes { get; set; } = new List<string>();
-    }
+        }
 
-    /// <summary>
-    /// OpenAI API configuration section.
-    /// </summary>
-    public class OpenAiConfig
-    {
-        public string ApiKey { get; set; } = string.Empty;
+        public void SetVideoExtensions(List<string> list)
+        {
+            _logger?.LogInformation($"Setting video extensions: {string.Join(", ", list)}");
+            VideoExtensions = list ?? new List<string>();
+        }
     }
 }

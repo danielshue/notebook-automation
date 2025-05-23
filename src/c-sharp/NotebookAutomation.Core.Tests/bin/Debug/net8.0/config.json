@@ -1,26 +1,34 @@
 {
   "paths": {
-    "notebookVaultRoot": "",
-    "obsidianVaultRoot": "",
-    "resourcesRoot": "",
-    "loggingDir": "logs"
+    "resourcesRoot": "c:/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources",
+    "notebookVaultRoot": "c:/Users/danshue.REDMOND/MBA/01_Projects/MBA",
+    "metadataFile": "d:/repos/mba-notebook-automation/metadata.yaml",
+    "obsidianVaultRoot": "c:/Users/danshue.REDMOND/MBA/",
+    "onedriveResourcesBasepath": "/Education/MBA-Resources",
+    "loggingDir": "d:/repos/mba-notebook-automation/logs"
   },
   "videoExtensions": [
     ".mp4",
     ".mov",
     ".avi",
     ".mkv",
-    ".webm"
+    ".webm",
+    ".wmv",
+    ".mpg",
+    ".mpeg",
+    ".m4v"
   ],
   "microsoftGraph": {
-    "clientId": "",
-    "tenantId": "",
+    "clientId": "489ad055-e4b0-4898-af27-53506ce83db7",
+    "apiEndpoint": "https://graph.microsoft.com/v1.0",
+    "authority": "https://login.microsoftonline.com/common",
     "scopes": [
-      "Files.ReadWrite",
-      "Sites.ReadWrite.All"
+      "Files.ReadWrite.All",
+      "Sites.Read.All"
     ]
   },
   "openAi": {
-    "apiKey": ""
+    "apiKey": "",
+    "model": "gpt-4.1"
   }
 }

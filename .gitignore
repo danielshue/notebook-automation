@@ -9,6 +9,10 @@ env/
 .env/
 .venv
 ENV/
+bin/
+bin/*
+*.dll
+bin/*.*
 
 # Distribution / packaging
 dist/
@@ -92,49 +96,97 @@ bin/
 obj/
 [Bb]in/
 [Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]uild/
+msbuild.log
+msbuild.err
+msbuild.wrn
 
 # Visual Studio user-specific files
 *.user
 *.suo
 *.userosscache
 *.sln.docstates
+*.userprefs
+*.vs/
+.vs/
+*.vsidx
+*.vsconfig
+
+# Visual Studio auto-generated files
+Generated\ Files/
+[Tt]emp/
+[Ll]og/
+
+# .NET Core
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# .NET Core app settings
+**/Properties/launchSettings.json
 
 # Rider
 .idea/
 *.sln.iml
+.idea/
 
 # VS for Mac
 .vscode/
-
-# Test results
-TestResults/
-
-# NuGet
-*.nupkg
-.nuget/
-packages/
-project.lock.json
-project.fragment.lock.json
-artifacts/
 
 # Others
 *.vspscc
 *.vssscc
 *.dbmdl
 *.pdb
+*.opendb
+*.VC.db
+*.ipch/
+*.aps
+*.ncb
+*.tlb
+*.tlh
+*.bak
 *.cache
+*.ilk
 *.log
-*.vs/
+*.rptproj.rsuser
+*- [Bb]ackup.rdl
+*- [Bb]ackup ([0-9]).rdl
+*- [Bb]ackup ([0-9][0-9]).rdl
 
 # Resharper
 _ReSharper*/
 *.[Rr]e[Ss]harper
-
-# DotCover
-*.dotCover
+*.DotSettings.user
 
 # Local history for Visual Studio
 .localhistory/
 
 # Windows image file caches
 Thumbs.db
+ehthumbs.db
+
+# Config files with secrets
+appsettings.Development.json
+appsettings.*.json
+!appsettings.json
+!appsettings.Example.json

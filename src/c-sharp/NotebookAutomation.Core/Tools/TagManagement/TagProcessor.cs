@@ -19,6 +19,9 @@ namespace NotebookAutomation.Core.Tools.TagManagement
     /// - Consolidating tags across files
     /// - Restructuring tag hierarchies
     /// - Cleaning tags from index files
+    /// - Restructuring tags for consistency
+    /// - Adding example tags for demonstration/testing
+    /// - Checking and enforcing metadata consistency
     /// </summary>
     public class TagProcessor
     {
@@ -510,6 +513,136 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 .Replace("'", "")
                 .Trim()
                 .ToLowerInvariant();
+        }
+
+        /// <summary>
+        /// Restructures tags in all markdown files in a directory for consistency (lowercase, dashes, etc.).
+        /// </summary>
+        public async Task<Dictionary<string, int>> RestructureTagsInDirectoryAsync(string directory)
+        {
+            if (!Directory.Exists(directory))
+            {
+                _logger.LogError("Directory not found: {Directory}", directory);
+                return Stats;
+            }
+            var markdownFiles = Directory.GetFiles(directory, "*.md", SearchOption.AllDirectories);
+            foreach (var file in markdownFiles)
+            {
+                await RestructureTagsInFileAsync(file);
+            }
+            return Stats;
+        }
+
+        /// <summary>
+        /// Normalizes and restructures tags in a single markdown file.
+        /// </summary>
+        public async Task<bool> RestructureTagsInFileAsync(string filePath)
+        {
+            if (!File.Exists(filePath)) return false;
+            string content = await File.ReadAllTextAsync(filePath);
+            string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+            if (string.IsNullOrEmpty(frontmatter)) return false;
+            var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+            if (!frontmatterDict.ContainsKey("tags")) return false;
+            var tags = GetExistingTags(frontmatterDict);
+            var normalizedTags = tags.Select(NormalizeTagValue).Distinct().OrderBy(t => t).ToList();
+            frontmatterDict["tags"] = normalizedTags;
+            if (_dryRun) {
+                _logger.LogInformation("[DRY RUN] Would restructure tags in {FilePath}", filePath);
+                return true;
+            }
+            var updatedFrontmatter = _yamlHelper.SerializeYaml(frontmatterDict);
+            var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
+            await File.WriteAllTextAsync(filePath, updatedContent);
+            _logger.LogInformation("Restructured tags in {FilePath}", filePath);
+            Stats["FilesModified"]++;
+            return true;
+        }
+
+        /// <summary>
+        /// Adds example nested tags to a markdown file for demonstration/testing.
+        /// </summary>
+        public async Task<bool> AddExampleTagsToFileAsync(string filePath)
+        {
+            if (!File.Exists(filePath)) return false;
+            string content = await File.ReadAllTextAsync(filePath);
+            string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+            var frontmatterDict = string.IsNullOrEmpty(frontmatter)
+                ? new Dictionary<string, object>()
+                : _yamlHelper.ParseYamlToDictionary(frontmatter);
+            var exampleTags = new List<string> { "mba/course/finance", "type/note/case-study", "subject/leadership" };
+            if (frontmatterDict.ContainsKey("tags"))
+            {
+                var tags = GetExistingTags(frontmatterDict);
+                exampleTags.AddRange(tags);
+            }
+            frontmatterDict["tags"] = exampleTags.Distinct().OrderBy(t => t).ToList();
+            if (_dryRun) {
+                _logger.LogInformation("[DRY RUN] Would add example tags to {FilePath}", filePath);
+                return true;
+            }
+            var updatedFrontmatter = _yamlHelper.SerializeYaml(frontmatterDict);
+            var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
+            await File.WriteAllTextAsync(filePath, updatedContent);
+            _logger.LogInformation("Added example tags to {FilePath}", filePath);
+            Stats["FilesModified"]++;
+            return true;
+        }
+
+        /// <summary>
+        /// Checks and enforces metadata consistency in all markdown files in a directory.
+        /// </summary>
+        public async Task<Dictionary<string, int>> CheckAndEnforceMetadataConsistencyAsync(string directory)
+        {
+            if (!Directory.Exists(directory))
+            {
+                _logger.LogError("Directory not found: {Directory}", directory);
+                return Stats;
+            }
+            var markdownFiles = Directory.GetFiles(directory, "*.md", SearchOption.AllDirectories);
+            foreach (var file in markdownFiles)
+            {
+                await CheckAndEnforceMetadataConsistencyInFileAsync(file);
+            }
+            return Stats;
+        }
+
+        /// <summary>
+        /// Checks and enforces metadata consistency in a single markdown file.
+        /// </summary>
+        public async Task<bool> CheckAndEnforceMetadataConsistencyInFileAsync(string filePath)
+        {
+            if (!File.Exists(filePath)) return false;
+            string content = await File.ReadAllTextAsync(filePath);
+            string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+            var frontmatterDict = string.IsNullOrEmpty(frontmatter)
+                ? new Dictionary<string, object>()
+                : _yamlHelper.ParseYamlToDictionary(frontmatter);
+            // Example: Ensure required fields exist
+            var requiredFields = new[] { "title", "type", "tags" };
+            bool modified = false;
+            foreach (var field in requiredFields)
+            {
+                if (!frontmatterDict.ContainsKey(field))
+                {
+                    frontmatterDict[field] = "[MISSING]";
+                    modified = true;
+                    _logger.LogWarning("Added missing metadata field '{Field}' to {FilePath}", field, filePath);
+                }
+            }
+            if (_dryRun) {
+                _logger.LogInformation("[DRY RUN] Would enforce metadata consistency in {FilePath}", filePath);
+                return true;
+            }
+            if (modified)
+            {
+                var updatedFrontmatter = _yamlHelper.SerializeYaml(frontmatterDict);
+                var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
+                await File.WriteAllTextAsync(filePath, updatedContent);
+                _logger.LogInformation("Enforced metadata consistency in {FilePath}", filePath);
+                Stats["FilesModified"]++;
+            }
+            return modified;
         }
     }
 }
