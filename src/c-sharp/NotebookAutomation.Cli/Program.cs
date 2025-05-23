@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Cli.Commands;
+using NotebookAutomation.Cli.Utilities;
 
 namespace NotebookAutomation.Cli
 {    /// <summary>
@@ -36,6 +37,7 @@ namespace NotebookAutomation.Cli
             var rootCommand = new RootCommand(
                 description: "notebookautomation.exe - Tools for managing Obsidian notebooks");
 
+
             // Global options
             var configOption = new Option<string>(
                 aliases: ["--config", "-c"],
@@ -49,11 +51,19 @@ namespace NotebookAutomation.Cli
             var dryRunOption = new Option<bool>(
                 aliases: ["--dry-run"],
                 description: "Simulate actions without making changes");
-
             rootCommand.AddGlobalOption(configOption);
             rootCommand.AddGlobalOption(debugOption);
             rootCommand.AddGlobalOption(verboseOption);
-            rootCommand.AddGlobalOption(dryRunOption);            // Modular command registration - passing the service provider
+            rootCommand.AddGlobalOption(dryRunOption);
+
+            // Handle --version manually before building the CLI to avoid conflicts
+            if (args.Contains("--version") || args.Contains("-v"))
+            {
+                AnsiConsoleHelper.WriteInfo($"Notebook Automation v1.0.0");
+                AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
+                AnsiConsoleHelper.WriteInfo("(c) 2025 Dan Shue");
+                return 0;
+            }
 
             var tagCommands = new TagCommands();
             tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
