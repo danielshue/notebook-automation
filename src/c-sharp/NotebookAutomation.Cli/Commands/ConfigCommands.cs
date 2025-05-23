@@ -231,7 +231,17 @@ namespace NotebookAutomation.Cli.Commands
                 Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}{key,-keyWidth}{AnsiColors.ENDC}: {AnsiColors.OKGREEN}{value}{AnsiColors.ENDC}");
             }
 
-            Console.WriteLine($"\n{AnsiColors.BG_BLUE}{AnsiColors.BOLD}{AnsiColors.HEADER}   Notebook Automation Configuration   {AnsiColors.ENDC}\n");
+            // Yellow foreground on blue background, bold, spanning the CLI width
+            int width = 0;
+            try { width = Console.WindowWidth; } catch { width = 80; }
+            string headerText = "   Notebook Automation Configuration   ";
+            int padLeft = (width - headerText.Length) / 2;
+            if (padLeft < 0) padLeft = 0;
+            string paddedHeader = headerText.PadLeft(headerText.Length + padLeft).PadRight(width);
+            Console.WriteLine();
+            Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}");
+            Console.WriteLine($"{AnsiColors.BG_BLUE}{AnsiColors.WARNING}{AnsiColors.BOLD}{paddedHeader}{AnsiColors.ENDC}");
+            Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}");
             Console.WriteLine($"{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Paths =={AnsiColors.ENDC}");
             PrintAligned("resources_root", appConfig.Paths.ResourcesRoot);
             PrintAligned("notebook_vault_root", appConfig.Paths.NotebookVaultRoot);

@@ -2,7 +2,6 @@
 
 ## Test Code Reuse Strategy
 
-
 ### 1. Reuse Test Fixtures and Utilities
 
 - First check for existing test fixtures in `tests/fixtures` or similar directories
@@ -10,9 +9,11 @@
 - Extend existing test base classes rather than creating new ones
 
 #### Python Example
+
 Example: `from tests.fixtures import user_fixture, create_test_data`
 
 #### C# Example
+
 ```csharp
 [TestClass]
 public class MyTestClass : TestBaseFixture

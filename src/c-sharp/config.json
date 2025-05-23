@@ -13,5 +13,8 @@
     "authority": "https://login.microsoftonline.com/common",
     "scopes": ["Files.ReadWrite.All", "Sites.Read.All"]
   },
+  "openai": {
+    "model": "gpt-4.1"
+  },
   "video_extensions": [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv", ".mpg", ".mpeg", ".m4v"]
 }
