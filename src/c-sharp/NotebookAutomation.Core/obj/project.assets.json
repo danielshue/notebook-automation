@@ -973,14 +973,10 @@
       "YamlDotNet/13.7.1": {
         "type": "package",
         "compile": {
-          "lib/net7.0/YamlDotNet.dll": {
-            "related": ".xml"
-          }
+          "lib/net7.0/YamlDotNet.dll": {}
         },
         "runtime": {
-          "lib/net7.0/YamlDotNet.dll": {
-            "related": ".xml"
-          }
+          "lib/net7.0/YamlDotNet.dll": {}
         }
       }
     }
@@ -2575,11 +2571,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj",
+      "projectUniqueName": "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj",
       "projectName": "NotebookAutomation.Core",
-      "projectPath": "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj",
+      "projectPath": "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj",
       "packagesPath": "D:\\packages\\NuGet\\cache",
-      "outputPath": "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\obj\\",
+      "outputPath": "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

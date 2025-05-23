@@ -19,7 +19,7 @@ namespace NotebookAutomation.Core.Tests
             var localPath = Path.Combine(localRoot, "folder", "file.txt");
             var expected = "Vault/folder/file.txt";
             var result = service.MapLocalToOneDrivePath(localPath);
-            Assert.Equals(expected, result);
+            Assert.AreEqual(expected, result);
            
         }
 
@@ -33,7 +33,7 @@ namespace NotebookAutomation.Core.Tests
             var oneDrivePath = "Vault/folder/file.txt";
             var expected = Path.Combine(localRoot, "folder", "file.txt");
             var result = service.MapOneDriveToLocalPath(oneDrivePath);
-            Assert.Equals(expected, result);
+            Assert.AreEqual(expected, result);
         }
 
         [TestMethod]

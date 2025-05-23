@@ -18,7 +18,7 @@ namespace NotebookAutomation.Cli.Commands
     /// which is a collection of markdown files and related assets. These commands help maintain
     /// proper structure and metadata consistency throughout the vault.
     /// </remarks>
-    internal static class VaultCommands
+    internal class VaultCommands
     {
         /// <summary>
         /// Registers all vault-related commands with the root command.
@@ -28,7 +28,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="debugOption">The global debug option.</param>
         /// <param name="verboseOption">The global verbose output option.</param>
         /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-        public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+        public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var pathArg = new Argument<string>("path", "Path to the vault directory");
             var vaultCommand = new Command("vault", "Vault management commands");
@@ -43,7 +43,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 
-                await ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun);
+                await this.ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun);
             });
 
             var ensureMetadataCommand = new Command("ensure-metadata", "Ensure consistent metadata across vault files");
@@ -56,7 +56,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 
-                await ExecuteVaultCommandAsync("ensure-metadata", path, config, debug, verbose, dryRun);
+                await this.ExecuteVaultCommandAsync("ensure-metadata", path, config, debug, verbose, dryRun);
             });
 
             vaultCommand.AddCommand(generateIndexCommand);
@@ -82,7 +82,7 @@ namespace NotebookAutomation.Cli.Commands
         /// </list>
         /// Note: This is currently a placeholder implementation that logs actions but does not perform actual operations.
         /// </remarks>
-        private static async Task ExecuteVaultCommandAsync(
+        private async Task ExecuteVaultCommandAsync(
             string command,
             string path,
             string? configPath,

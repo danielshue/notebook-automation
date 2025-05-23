@@ -94,6 +94,7 @@ pip-delete-this-directory.txt
 # Build results
 bin/
 obj/
+*obj/*
 [Bb]in/
 [Oo]bj/
 [Dd]ebug/

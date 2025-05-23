@@ -21,7 +21,7 @@ namespace NotebookAutomation.Cli.Commands
     /// video formats are defined in the application configuration and typically include
     /// MP4, MOV, AVI, MKV, WEBM, and others.
     /// </remarks>
-    internal static class VideoCommands
+    internal class VideoCommands
     {
         /// <summary>
         /// Registers the 'video-meta' command with the root command.
@@ -31,7 +31,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="debugOption">The global debug option.</param>
         /// <param name="verboseOption">The global verbose output option.</param>
         /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-        public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+        public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var inputOption = new Option<string>(
                 aliases: ["--input", "-i"],

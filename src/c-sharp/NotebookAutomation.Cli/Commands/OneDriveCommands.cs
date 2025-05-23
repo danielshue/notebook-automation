@@ -20,7 +20,7 @@ namespace NotebookAutomation.Cli.Commands
     /// to perform the actual OneDrive operations. These commands require proper authentication
     /// with Microsoft Graph API, which is handled by the OneDriveService.
     /// </remarks>
-    internal static class OneDriveCommands
+    internal class OneDriveCommands
     {
         /// <summary>
         /// Registers all OneDrive-related commands with the root command.
@@ -30,7 +30,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="debugOption">The global debug option.</param>
         /// <param name="verboseOption">The global verbose output option.</param>
         /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-        public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+        public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var oneDriveCommand = new Command("onedrive", "OneDrive file management commands");
 
@@ -46,7 +46,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 
-                await ExecuteOneDriveCommandAsync("list", path, null, config, debug, verbose, dryRun);
+                await this.ExecuteOneDriveCommandAsync("list", path, null, config, debug, verbose, dryRun);
             });
 
             // Download command
@@ -64,7 +64,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 
-                await ExecuteOneDriveCommandAsync("download", remotePath, localPath, config, debug, verbose, dryRun);
+                await this.ExecuteOneDriveCommandAsync("download", remotePath, localPath, config, debug, verbose, dryRun);
             });
 
             // Upload command
@@ -82,7 +82,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 
-                await ExecuteOneDriveCommandAsync("upload", localPath, remotePath, config, debug, verbose, dryRun);
+                await this.ExecuteOneDriveCommandAsync("upload", localPath, remotePath, config, debug, verbose, dryRun);
             });
 
             // Search command
@@ -97,7 +97,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 
-                await ExecuteOneDriveCommandAsync("search", query, null, config, debug, verbose, dryRun);
+                await this.ExecuteOneDriveCommandAsync("search", query, null, config, debug, verbose, dryRun);
             });
 
             // Sync command with options for direction, etc.
@@ -112,16 +112,25 @@ namespace NotebookAutomation.Cli.Commands
             syncCommand.AddArgument(syncRemotePath);
             syncCommand.AddOption(directionOption);
             syncCommand.SetHandler(async (InvocationContext context) =>
-            {                string localPath = context.ParseResult.GetValueForArgument(syncLocalPath);
+            {
+                string localPath = context.ParseResult.GetValueForArgument(syncLocalPath);
                 string? remotePath = context.ParseResult.GetValueForArgument(syncRemotePath);
-                string direction = context.ParseResult.GetValueForOption(directionOption);
+                string? direction = context.ParseResult.GetValueForOption(directionOption);
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
-                await ExecuteOneDriveCommandAsync("sync", localPath, remotePath, config, debug, verbose, dryRun, 
-                    new[] { (Key: "direction", Value: direction ?? "both") });
+
+                await this.ExecuteOneDriveCommandAsync(
+                    "sync",
+                    localPath,
+                    remotePath,
+                    config,
+                    debug,
+                    verbose,
+                    dryRun,
+                    new[] { (Key: "direction", Value: direction ?? "both") }
+                );
             });
 
             // Add commands to onedrive group
@@ -147,7 +156,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
         /// <param name="extraOptions">Additional options as key-value pairs.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private static async Task ExecuteOneDriveCommandAsync(
+        private async Task ExecuteOneDriveCommandAsync(
             string command,
             string? arg1,
             string? arg2,

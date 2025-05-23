@@ -1,4 +1,5 @@
-# GitHub Copilot General Instructions
+
+# GitHub Copilot General Instructions for C# Development
 
 ## Project Philosophy
 - Write maintainable, readable code that prioritizes clarity over cleverness
@@ -8,98 +9,88 @@
 - Create modular, loosely coupled components that can be easily tested and extended
 
 ## Code Documentation
-- Every Python file should begin with a module-level docstring
-- All functions and classes must have descriptive docstrings
-- Use Google-style docstring format:
-  ```python
-  def function_name(param1, param2):
-      """Short description of function.
-      
-      Longer description explaining details.
-      
-      Args:
-          param1 (type): Description of param1.
-          param2 (type): Description of param2.
-          
-      Returns:
-          return_type: Description of return value.
-          
-      Raises:
-          ExceptionType: When and why this exception is raised.
-          
-      Example:
-          >>> function_name('example', 123)
-          'result'
-      """
+- Ensure all C# files have appropriate XML documentation comments
+- All classes, methods, and properties should have descriptive documentation
+- Use standard C# XML documentation format:
+  ```csharp
+  /// <summary>
+  /// Short description of method.
+  /// </summary>
+  /// <param name="param1">Description of param1.</param>
+  /// <param name="param2">Description of param2.</param>
+  /// <returns>Description of return value.</returns>
+  /// <exception cref="ExceptionType">When and why this exception is raised.</exception>
+  /// <example>
+  /// <code>
+  /// var result = MethodName("example", 123);
+  /// </code>
+  /// </example>
   ```
 
-## Python Coding Standards
-- Follow PEP 8 style guide for Python code
-- Use type hints for all function parameters and return values
-- Prefer explicit imports over wildcards (e.g., `from module import specific_thing` over `from module import *`)
-- Use descriptive variable names that indicate purpose and content
+## C# Coding Standards
+- Follow Microsoft's C# Coding Conventions
+- Use proper C# naming conventions (PascalCase for public members, camelCase for parameters/local variables)
+- Use explicit types rather than var when appropriate
+- Use property accessors appropriately (getters/setters)
+- Implement proper exception handling patterns
+- Use async/await for asynchronous operations
+- Use nullable reference types for safer null handling
 - Maximum line length of 100 characters
-- Use 4 spaces for indentation (no tabs)
-- Always include proper error handling
-- Use context managers (`with` statements) for file operations
-- Prefer list/dict comprehensions for simple transformations
+- Apply consistent formatting (use an .editorconfig file)
+- Prefer LINQ for collection transformations where appropriate
+- Use expression-bodied members for simple operations
 
 ## Project-Specific Patterns
-- Use `ruamel.yaml` library for YAML operations to preserve formatting
-- Use pathlib for file path manipulations rather than os.path
-- Implement proper logging using the centralize logging module in the config.py
-- Use argparse for command-line argument parsing
+- Use System.IO.Path or FileSystem abstractions instead of pathlib
+- Implement a centralized logging system (consider NLog, Serilog, or Microsoft.Extensions.Logging)
+- Use built-in configuration systems (Microsoft.Extensions.Configuration)
+- Use CommandLineParser for command-line argument parsing
 - Always use the centralized configuration system for settings
-- Follow the existing directory structure for new code:
-  - `/tags` for tag manipulation scripts
-  - `/obsidian` for Obsidian-specific tools
-  - `/utilities` for general helper functions
-  - `/tools` for core functionality modules
+- Maintain a similar directory structure where appropriate:
+  - `/Models` for data models
+  - `/Services` for business logic
+  - `/Utilities` for helper functions
+  - `/Extensions` for extension methods
 
 ## Error Handling
-- Use explicit exception types rather than catching generic exceptions
-- Include contextual information in error messages
-- Log errors with appropriate severity levels
-- Propagate exceptions appropriately (don't hide errors)
-- Use explicit try/except blocks with specific exception types
-- Use the centralize error handling module for consistent error management
+- Use specific exception types rather than catching Exception
+- Include contextual information in exception messages
+- Implement structured logging with appropriate severity levels
+- Use try/catch blocks with specific exception types
+- Create a centralized error handling system
+- Use proper exception propagation patterns
 
 ## Performance Guidelines
-- Prefer readable code over premature optimization
+- Prioritize readability over premature optimization
 - Cache results of expensive operations when appropriate
-- Use generators for processing large datasets
-- Consider adding progress indicators for long-running operations
+- Use LINQ efficiently but judiciously
+- Consider IEnumerable<T> and yield return for large datasets
+- Implement progress reporting for long-running operations
 - Document performance-critical sections
-- Select appropriate data structures for operations
-
-## Obsidian Integration
-- Use template strings for Obsidian templates
-- Follow proper YAML frontmatter formatting
-- Consider existing tag hierarchies when adding new tag-related functionality
-- Use consistent metadata properties across scripts
+- Choose appropriate data structures for operations
 
 ## Testing Approach
-- Write unit tests for all non-trivial functions
-- Tests should be placed in `/tests` directory with similar structure to the code
-- Use pytest as the testing framework
-- Mock external dependencies in tests
+- Write unit tests for all non-trivial methods
+- Organize tests to mirror the code structure
+- Use xUnit, NUnit, or MSTest as the testing framework
+- Mock external dependencies in tests (consider Moq or NSubstitute)
 - Create proper test fixtures for reuse
 - Aim for high test coverage of critical functionality
 
 ## Security
 - Never hardcode credentials or API keys
-- Use the project's configuration system for storing settings
-- Implement proper input validation to prevent injection or path traversal
-- Handle sensitive data according to best practices
+- Use the configuration system for storing settings
+- Implement proper input validation
+- Follow security best practices for file handling and network calls
 - Sanitize user inputs before processing
-- Use safe APIs for risky operations (file handling, network calls)
+- Use secure APIs for sensitive operations
 
-## MBA Project-Specific Guidelines
-- Course tags should follow the `mba/course/COURSENAME` format
-- Lecture tags should follow the `mba/lecture/COURSENAME/LECTURE_NUMBER` format
-- Classes should include proper metadata with course code and title
-- Video processing scripts should handle multiple video formats
-- Tag hierarchies should be maintained according to the documented structure
+## Notebook Automation Specific Guidelines
+- For course-related data, implement appropriate model classes with proper properties
+- Implement proper serialization/deserialization for data exchange
+- File operations should use async patterns where appropriate
+- Metadata handling should be consistent across the application
+- Tag hierarchies should be properly modeled using object-oriented principles
 
 ## Commit Messages
 - Follow the conventional commits format:

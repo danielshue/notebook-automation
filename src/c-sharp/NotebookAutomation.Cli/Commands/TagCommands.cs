@@ -20,7 +20,7 @@ namespace NotebookAutomation.Cli.Commands
     /// to perform the actual tag operations. This class serves as a bridge between the command-line
     /// interface and the core functionality.
     /// </remarks>
-    internal static class TagCommands
+    internal class TagCommands
     {
         /// <summary>
         /// Registers all tag-related commands with the root command.
@@ -30,7 +30,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="debugOption">The global debug option.</param>
         /// <param name="verboseOption">The global verbose output option.</param>
         /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-        public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+        public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var pathArg = new Argument<string>("path", "Path to the directory or file to process");
 
@@ -44,7 +44,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                await ProcessTagsAsync(path, "add-nested", config, debug, verbose, dryRun);
+                await this.ProcessTagsAsync(path, "add-nested", config, debug, verbose, dryRun);
             });
 
             // clean-index command
@@ -57,7 +57,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                await ProcessTagsAsync(path, "clean-index", config, debug, verbose, dryRun);
+                await this.ProcessTagsAsync(path, "clean-index", config, debug, verbose, dryRun);
             });
 
             // consolidate command
@@ -70,7 +70,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                await ProcessTagsAsync(path, "consolidate", config, debug, verbose, dryRun);
+                await this.ProcessTagsAsync(path, "consolidate", config, debug, verbose, dryRun);
             });
 
             // restructure-tags command
@@ -83,7 +83,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                await ProcessTagsAsync(path, "restructure-tags", config, debug, verbose, dryRun);
+                await this.ProcessTagsAsync(path, "restructure-tags", config, debug, verbose, dryRun);
             });
 
             // add-example-tags command
@@ -96,7 +96,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                await ProcessTagsAsync(path, "add-example-tags", config, debug, verbose, dryRun);
+                await this.ProcessTagsAsync(path, "add-example-tags", config, debug, verbose, dryRun);
             });
 
             // metadata-check command
@@ -109,7 +109,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                await ProcessTagsAsync(path, "metadata-check", config, debug, verbose, dryRun);
+                await this.ProcessTagsAsync(path, "metadata-check", config, debug, verbose, dryRun);
             });
 
             // Create a parent command for all tag-related operations
@@ -146,7 +146,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="verbose">Whether verbose output is enabled.</param>
         /// <param name="dryRun">Whether to simulate without making changes.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private static async Task ProcessTagsAsync(string path, string command, string? configPath, bool debug, bool verbose, bool dryRun)
+        private async Task ProcessTagsAsync(string path, string command, string? configPath, bool debug, bool verbose, bool dryRun)
         {
             try
             {
@@ -243,7 +243,7 @@ namespace NotebookAutomation.Cli.Commands
         ///   </item>
         /// </list>
         /// </remarks>
-        private static void LogStats(ILogger logger, Dictionary<string, int> stats)
+        private void LogStats(ILogger logger, Dictionary<string, int> stats)
         {
             logger.LogInformation("Tag processing completed with the following statistics:");
             logger.LogInformation("- Files processed: {Count}", stats.GetValueOrDefault("FilesProcessed", 0));

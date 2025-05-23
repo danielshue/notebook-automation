@@ -1716,14 +1716,10 @@
       "YamlDotNet/13.7.1": {
         "type": "package",
         "compile": {
-          "lib/net7.0/YamlDotNet.dll": {
-            "related": ".xml"
-          }
+          "lib/net7.0/YamlDotNet.dll": {}
         },
         "runtime": {
-          "lib/net7.0/YamlDotNet.dll": {
-            "related": ".xml"
-          }
+          "lib/net7.0/YamlDotNet.dll": {}
         }
       },
       "NotebookAutomation.Core/1.0.0": {
@@ -4782,11 +4778,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core.Tests\\NotebookAutomation.Core.Tests.csproj",
+      "projectUniqueName": "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core.Tests\\NotebookAutomation.Core.Tests.csproj",
       "projectName": "NotebookAutomation.Core.Tests",
-      "projectPath": "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core.Tests\\NotebookAutomation.Core.Tests.csproj",
+      "projectPath": "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core.Tests\\NotebookAutomation.Core.Tests.csproj",
       "packagesPath": "D:\\packages\\NuGet\\cache",
-      "outputPath": "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core.Tests\\obj\\",
+      "outputPath": "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -4808,8 +4804,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj": {
-              "projectPath": "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj"
+            "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj": {
+              "projectPath": "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj"
             }
           }
         }
