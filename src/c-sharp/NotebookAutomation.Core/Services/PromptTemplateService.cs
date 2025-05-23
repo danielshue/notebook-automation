@@ -1,10 +1,6 @@
 // Module: PromptTemplateService.cs
 // Provides advanced prompt variable substitution for AI summarization.
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 
 namespace NotebookAutomation.Core.Services

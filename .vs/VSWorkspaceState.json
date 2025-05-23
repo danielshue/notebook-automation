@@ -1,7 +1,12 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\src",
+    "\\src\\c-sharp",
+    "\\src\\c-sharp\\NotebookAutomation.Cli",
+    "\\src\\c-sharp\\NotebookAutomation.Cli\\Commands",
+    "\\src\\python"
   ],
-  "SelectedNode": "\\generate-index.py",
+  "SelectedNode": "\\src\\c-sharp\\NotebookAutomation.Cli\\Program.cs",
   "PreviewInSolutionExplorer": true
 }

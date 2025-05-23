@@ -1,13 +1,13 @@
-﻿using System;
-using System.CommandLine;
+﻿using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Cli.Commands;
 
 namespace NotebookAutomation.Cli
-{
-    /// <summary>
+{    /// <summary>
     /// Main entry point for the Notebook Automation CLI.
     /// 
     /// This program provides a unified command-line interface for accessing
@@ -15,6 +15,16 @@ namespace NotebookAutomation.Cli
     /// </summary>
     public class Program
     {
+        private static IServiceProvider? _serviceProvider;
+
+        /// <summary>
+        /// Gets the service provider for dependency injection.
+        /// </summary>
+        public static IServiceProvider ServiceProvider
+        {
+            get => _serviceProvider ?? throw new InvalidOperationException("Service provider not initialized. Call SetupDependencyInjection first.");
+        }
+
         /// <summary>
         /// Entry point for the application.
         /// </summary>
@@ -24,306 +34,123 @@ namespace NotebookAutomation.Cli
         {
             // Create the root command with description
             var rootCommand = new RootCommand(
-                description: "MBA Notebook Automation CLI - Tools for managing Obsidian notebooks");
+                description: "notebookautomation.exe - Tools for managing Obsidian notebooks");
 
             // Global options
             var configOption = new Option<string>(
-                aliases: new[] { "--config", "-c" },
+                aliases: ["--config", "-c"],
                 description: "Path to the configuration file");
             var debugOption = new Option<bool>(
-                aliases: new[] { "--debug", "-d" },
+                aliases: ["--debug", "-d"],
                 description: "Enable debug output");
             var verboseOption = new Option<bool>(
-                aliases: new[] { "--verbose", "-v" },
+                aliases: ["--verbose", "-v"],
                 description: "Enable verbose output");
             var dryRunOption = new Option<bool>(
-                aliases: new[] { "--dry-run" },
+                aliases: ["--dry-run"],
                 description: "Simulate actions without making changes");
 
             rootCommand.AddGlobalOption(configOption);
             rootCommand.AddGlobalOption(debugOption);
             rootCommand.AddGlobalOption(verboseOption);
-            rootCommand.AddGlobalOption(dryRunOption);
+            rootCommand.AddGlobalOption(dryRunOption);            // Modular command registration - passing the service provider
 
-            // Create commands
-            CreateTagCommands(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            CreatePdfCommands(rootCommand);
-            CreateMarkdownCommands(rootCommand);
-            CreateVideoCommands(rootCommand);
-            CreateVaultCommands(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            CreateConfigCommand(rootCommand, configOption, debugOption);
-            CreateVersionCommand(rootCommand);
+            TagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            VaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            MarkdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            ConfigCommands.Register(rootCommand, configOption, debugOption);
+            OneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            VersionCommands.Register(rootCommand);
 
-            // Set a root handler to initialize configuration and logging
+            // Print help if no subcommand or arguments are provided
+            if (args.Length == 0)
+            {
+                await rootCommand.InvokeAsync("--help");
+                return 0;
+            }            // Print available subcommands if no valid subcommand is provided
+            rootCommand.TreatUnmatchedTokensAsErrors = true;
+            rootCommand.SetHandler((InvocationContext context) =>
+            {
+                if (context.ParseResult.Tokens.Count == 0)
+                {
+                    context.Console.WriteLine("Please specify a command to execute. Available commands:");
+                    
+                    // Display all top-level commands with descriptions
+                    foreach (var command in rootCommand.Subcommands)
+                    {
+                        context.Console.WriteLine($"  {command.Name,-15} {command.Description}");
+                    }
+                    
+                    context.Console.WriteLine("\nRun 'notebookautomation [command] --help' for more information on a specific command.");
+                }
+            });            // Set a root handler to initialize configuration and logging
             rootCommand.SetHandler((string configPath, bool debug) =>
             {
-                var config = ConfigProvider.Initialize(configPath, debug);
-                var logger = config.Logger;
-                logger.LogInformation("Notebook Automation CLI initialized");
+                // Setup dependency injection
+                SetupDependencyInjection(configPath, debug);
+                
+                var logger = ServiceProvider.GetRequiredService<ILogger<Program>>();
+                logger.LogInformation("Notebook Automation initialized");
                 if (debug)
                 {
                     logger.LogDebug("Debug logging enabled");
                 }
             }, configOption, debugOption);
 
+            // Make sure DI container is initialized with default config
+            if (_serviceProvider == null)
+            {
+                SetupDependencyInjection(null, false);
+            }
+
             // Execute the command
             return await rootCommand.InvokeAsync(args);
-        }
-        
-        /// <summary>
-        /// Creates commands related to tag management.
+        }        /// <summary>
+        /// Sets up dependency injection container with configuration and services.
         /// </summary>
-        /// <param name="rootCommand">The parent command to add to.</param>
-        private static void CreateTagCommands(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+        /// <param name="configPath">Path to the configuration file.</param>
+        /// <param name="debug">Whether debug mode is enabled.</param>
+        public static void SetupDependencyInjection(string? configPath, bool debug)
         {
-            var tagCommand = new Command("tag", "Tag management commands");
-            var pathArg = new Argument<string>("path", "Path to the directory or file to process");
-
-            // Add-nested-tags command
-            var addNestedCommand = new Command("add-nested", "Add nested tags based on frontmatter fields");
-            addNestedCommand.AddArgument(pathArg);
-            addNestedCommand.SetHandler(async (InvocationContext context) =>
-            {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
-                bool debug = context.ParseResult.GetValueForOption(debugOption);
-                bool verbose = context.ParseResult.GetValueForOption(verboseOption);
-                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                string? config = context.ParseResult.GetValueForOption(configOption);
-                await ExecuteTagCommand("add-nested", path, debug, verbose, dryRun, config);
-            });
-
-            // Clean-index command
-            var cleanIndexCommand = new Command("clean-index", "Clean tags from index files");
-            cleanIndexCommand.AddArgument(pathArg);
-            cleanIndexCommand.SetHandler(async (InvocationContext context) =>
-            {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
-                bool debug = context.ParseResult.GetValueForOption(debugOption);
-                bool verbose = context.ParseResult.GetValueForOption(verboseOption);
-                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                string? config = context.ParseResult.GetValueForOption(configOption);
-                await ExecuteTagCommand("clean-index", path, debug, verbose, dryRun, config);
-            });
-
-            // Consolidate command
-            var consolidateCommand = new Command("consolidate", "Consolidate tags across files");
-            consolidateCommand.AddArgument(pathArg);
-            consolidateCommand.SetHandler(async (InvocationContext context) =>
-            {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
-                bool debug = context.ParseResult.GetValueForOption(debugOption);
-                bool verbose = context.ParseResult.GetValueForOption(verboseOption);
-                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                string? config = context.ParseResult.GetValueForOption(configOption);
-                await ExecuteTagCommand("consolidate", path, debug, verbose, dryRun, config);
-            });
-
-            tagCommand.AddCommand(addNestedCommand);
-            tagCommand.AddCommand(cleanIndexCommand);
-            tagCommand.AddCommand(consolidateCommand);
-            rootCommand.Add(tagCommand);
-        }
-        
-        /// <summary>
-        /// Creates commands related to vault management.
-        /// </summary>
-        /// <param name="rootCommand">The parent command to add to.</param>
-        private static void CreateVaultCommands(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
-        {
-            var vaultCommand = new Command("vault", "Vault management commands");
-            var pathArg = new Argument<string>("path", "Path to the vault directory");
-
-            // Generate index command
-            var generateIndexCommand = new Command("generate-index", "Generate a vault index");
-            generateIndexCommand.AddArgument(pathArg);
-            generateIndexCommand.SetHandler(async (InvocationContext context) =>
-            {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
-                bool debug = context.ParseResult.GetValueForOption(debugOption);
-                bool verbose = context.ParseResult.GetValueForOption(verboseOption);
-                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                string? config = context.ParseResult.GetValueForOption(configOption);
-                await ExecuteVaultCommand("generate-index", path, debug, verbose, dryRun, config);
-            });
-
-            // Ensure metadata command
-            var ensureMetadataCommand = new Command("ensure-metadata", "Ensure consistent metadata across vault files");
-            ensureMetadataCommand.AddArgument(pathArg);
-            ensureMetadataCommand.SetHandler(async (InvocationContext context) =>
-            {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
-                bool debug = context.ParseResult.GetValueForOption(debugOption);
-                bool verbose = context.ParseResult.GetValueForOption(verboseOption);
-                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                string? config = context.ParseResult.GetValueForOption(configOption);
-                await ExecuteVaultCommand("ensure-metadata", path, debug, verbose, dryRun, config);
-            });
-
-            vaultCommand.AddCommand(generateIndexCommand);
-            vaultCommand.AddCommand(ensureMetadataCommand);
-            rootCommand.Add(vaultCommand);
-        }
-        
-        /// <summary>
-        /// Creates the configuration command.
-        /// </summary>
-        /// <param name="rootCommand">The parent command to add to.</param>
-        private static void CreateConfigCommand(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption)
-        {
-            var configCommand = new Command("config", "Display or update configuration");
-            configCommand.SetHandler(async (InvocationContext context) =>
-            {
-                bool debug = context.ParseResult.GetValueForOption(debugOption);
-                string? config = context.ParseResult.GetValueForOption(configOption);
-                var configProvider = ConfigProvider.Create(config, debug);
-                var logger = configProvider.Logger;
-                logger.LogInformation("Current configuration:");
-                logger.LogInformation($"Notebook Vault Root: {configProvider.AppConfig.Paths.NotebookVaultRoot}");
-                logger.LogInformation($"Obsidian Vault Root: {configProvider.AppConfig.Paths.ObsidianVaultRoot}");
-                logger.LogInformation($"Resources Root: {configProvider.AppConfig.Paths.ResourcesRoot}");
-                logger.LogInformation($"Logging Directory: {configProvider.AppConfig.Paths.LoggingDir}");
-                await Task.CompletedTask;
-            });
-            rootCommand.Add(configCommand);
-        }
-        
-        /// <summary>
-        /// Creates the version command.
-        /// </summary>
-        /// <param name="rootCommand">The parent command to add to.</param>
-        private static void CreateVersionCommand(RootCommand rootCommand)
-        {
-            var versionCommand = new Command("version", "Display version information");
+            // Build configuration
+            var configurationBuilder = new ConfigurationBuilder();
             
-            versionCommand.SetHandler(() =>
+            // Add the config file if specified, otherwise use default discovery
+            if (!string.IsNullOrEmpty(configPath))
             {
-                Console.WriteLine($"Notebook Automation CLI v1.0.0");
-                Console.WriteLine($"Running on .NET {Environment.Version}");
-                Console.WriteLine($"(c) 2023 Notebook Automation Team");
-            });
-            
-            rootCommand.Add(versionCommand);
-        }
-        
-        /// <summary>
-        /// Executes a tag-related command.
-        /// </summary>
-        /// <param name="command">The specific tag command to execute.</param>
-        /// <param name="path">The target path.</param>
-        /// <param name="debug">Whether to enable debug output.</param>
-        /// <param name="verbose">Whether to enable verbose output.</param>
-        /// <param name="dryRun">Whether to perform a dry run.</param>
-        /// <param name="configPath">Optional path to the configuration file.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        private static async Task ExecuteTagCommand(
-            string command,
-            string path,
-            bool debug,
-            bool verbose,
-            bool dryRun,
-            string? configPath = null)
-        {
-            var configProvider = ConfigProvider.Create(configPath, debug);
-            var logger = configProvider.Logger;
-            
-            logger.LogInformation("Executing tag command: {Command} on {Path}", command, path);
-            
-            if (dryRun)
+                configurationBuilder.AddJsonFile(configPath, optional: false, reloadOnChange: true);
+            }
+            else
             {
-                logger.LogInformation("[DRY RUN] No changes will be made");
+                // Use AppConfig's discovery logic
+                var defaultConfigPath = AppConfig.FindConfigFile();
+                if (!string.IsNullOrEmpty(defaultConfigPath))
+                {
+                    configurationBuilder.AddJsonFile(defaultConfigPath, optional: false, reloadOnChange: true);
+                }
+                else
+                {
+                    // Fallback to config.json in current directory
+                    configurationBuilder.AddJsonFile("config.json", optional: true, reloadOnChange: true);
+                }
             }
             
-            if (verbose)
-            {
-                logger.LogInformation("Verbose output enabled");
-            }
+            var configuration = configurationBuilder.Build();
             
-            // Execute placeholder - this would actually call the specialized CLI tools
-            logger.LogInformation("Redirecting to specialized CLI tool...");
+            // Setup service collection
+            var services = new ServiceCollection();
             
-            // In a real implementation, we would:
-            // 1. Launch the appropriate specialized CLI tool process
-            // 2. Pass through the arguments
-            // 3. Capture and relay output
+            // Register configuration
+            services.AddSingleton<IConfiguration>(configuration);
             
-            // For now, just simulate the command execution
-            logger.LogInformation("Simulating execution of tag command: {Command}", command);
-            await Task.Delay(500); // Simulate work
+            // Add notebook automation services using ServiceRegistration
+            services.AddNotebookAutomationServices(configuration, debug);
             
-            logger.LogInformation("Command completed successfully");
+            // Build service provider
+            _serviceProvider = services.BuildServiceProvider();
         }
         
-        /// <summary>
-        /// Executes a vault-related command.
-        /// </summary>
-        /// <param name="command">The specific vault command to execute.</param>
-        /// <param name="path">The target path.</param>
-        /// <param name="debug">Whether to enable debug output.</param>
-        /// <param name="verbose">Whether to enable verbose output.</param>
-        /// <param name="dryRun">Whether to perform a dry run.</param>
-        /// <param name="configPath">Optional path to the configuration file.</param>
-        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        private static async Task ExecuteVaultCommand(
-            string command,
-            string path,
-            bool debug,
-            bool verbose,
-            bool dryRun,
-            string? configPath = null)
-        {
-            var configProvider = ConfigProvider.Create(configPath, debug);
-            var logger = configProvider.Logger;
-            
-            logger.LogInformation("Executing vault command: {Command} on {Path}", command, path);
-            
-            if (dryRun)
-            {
-                logger.LogInformation("[DRY RUN] No changes will be made");
-            }
-            
-            if (verbose)
-            {
-                logger.LogInformation("Verbose output enabled");
-            }
-            
-            // Execute placeholder - this would actually call the specialized CLI tools
-            logger.LogInformation("Redirecting to specialized CLI tool...");
-            
-            // For now, just simulate the command execution
-            logger.LogInformation("Simulating execution of vault command: {Command}", command);
-            await Task.Delay(500); // Simulate work
-            
-            logger.LogInformation("Command completed successfully");
-        }
-        
-        /// <summary>
-        /// Creates commands related to PDF notes processing (placeholder).
-        /// </summary>
-        /// <param name="rootCommand">The parent command to add to.</param>
-        private static void CreatePdfCommands(RootCommand rootCommand)
-        {
-            var pdfCommand = new Command("pdf-notes", "PDF notes processing commands (not yet implemented)");
-            rootCommand.Add(pdfCommand);
-        }
-
-        /// <summary>
-        /// Creates commands related to markdown generation (placeholder).
-        /// </summary>
-        /// <param name="rootCommand">The parent command to add to.</param>
-        private static void CreateMarkdownCommands(RootCommand rootCommand)
-        {
-            var mdCommand = new Command("markdown", "Markdown generation commands (not yet implemented)");
-            rootCommand.Add(mdCommand);
-        }
-
-        /// <summary>
-        /// Creates commands related to video metadata handling (placeholder).
-        /// </summary>
-        /// <param name="rootCommand">The parent command to add to.</param>
-        private static void CreateVideoCommands(RootCommand rootCommand)
-        {
-            var videoCommand = new Command("video-meta", "Video metadata commands (not yet implemented)");
-            rootCommand.Add(videoCommand);
-        }
     }
 }

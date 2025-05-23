@@ -1,10 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using YamlDotNet.RepresentationModel;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -17,11 +13,11 @@ namespace NotebookAutomation.Core.Utils
     /// frontmatter found in markdown documents, with special consideration for
     /// preserving formatting and handling Obsidian-specific conventions.
     /// </summary>
-    public class YamlHelper
+    public class YamlHelper : IYamlHelper
     {
         private readonly ILogger? _logger;
         private readonly Regex _frontmatterRegex;
-        
+
         /// <summary>
         /// Initializes a new instance of the YamlHelper class.
         /// </summary>
@@ -294,5 +290,9 @@ namespace NotebookAutomation.Core.Utils
             // Replace the existing frontmatter
             return _frontmatterRegex.Replace(content, $"---\n{newFrontmatter}\n---\n");
         }
+    }
+
+    public interface IYamlHelper
+    {
     }
 }

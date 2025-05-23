@@ -1,11 +1,7 @@
-using System;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using System.IO;
 
 namespace NotebookAutomation.Core.Services
 {
