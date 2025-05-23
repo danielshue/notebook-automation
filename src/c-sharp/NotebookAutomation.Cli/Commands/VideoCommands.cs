@@ -40,9 +40,55 @@ namespace NotebookAutomation.Cli.Commands
                 aliases: ["--output", "-o"],
                 description: "Path to the output markdown file or directory");
 
+            var singleFileOption = new Option<string?>(
+                aliases: ["--single-file", "-f"],
+                description: "Process a single video file (overrides --input)"
+            );
+            var folderOption = new Option<string?>(
+                aliases: ["--folder"],
+                description: "Process all video files in a directory (overrides --input)"
+            );
+            var resourcesRootOption = new Option<string?>(
+                aliases: ["--resources-root"],
+                description: "Override resources root directory"
+            );
+            var noSummaryOption = new Option<bool>(
+                aliases: ["--no-summary"],
+                description: "Disable OpenAI summary generation"
+            );
+            var retryFailedOption = new Option<bool>(
+                aliases: ["--retry-failed"],
+                description: "Retry only failed files from previous run"
+            );
+            var forceOption = new Option<bool>(
+                aliases: ["--force"],
+                description: "Overwrite existing notes"
+            );
+            var timeoutOption = new Option<int?>(
+                aliases: ["--timeout"],
+                description: "Set API request timeout (seconds)"
+            );
+            var refreshAuthOption = new Option<bool>(
+                aliases: ["--refresh-auth"],
+                description: "Force refresh Microsoft Graph API authentication"
+            );
+            var noShareLinksOption = new Option<bool>(
+                aliases: ["--no-share-links"],
+                description: "Skip OneDrive share link creation"
+            );
+
             var videoCommand = new Command("video-meta", "Video metadata commands");
             videoCommand.AddOption(inputOption);
             videoCommand.AddOption(outputOption);
+            videoCommand.AddOption(singleFileOption);
+            videoCommand.AddOption(folderOption);
+            videoCommand.AddOption(resourcesRootOption);
+            videoCommand.AddOption(noSummaryOption);
+            videoCommand.AddOption(retryFailedOption);
+            videoCommand.AddOption(forceOption);
+            videoCommand.AddOption(timeoutOption);
+            videoCommand.AddOption(refreshAuthOption);
+            videoCommand.AddOption(noShareLinksOption);
             
             videoCommand.SetHandler(async context =>
             {
@@ -52,6 +98,17 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+                string? singleFile = context.ParseResult.GetValueForOption(singleFileOption);
+                string? folder = context.ParseResult.GetValueForOption(folderOption);
+                string? resourcesRoot = context.ParseResult.GetValueForOption(resourcesRootOption);
+                bool noSummary = context.ParseResult.GetValueForOption(noSummaryOption);
+                bool retryFailed = context.ParseResult.GetValueForOption(retryFailedOption);
+                bool force = context.ParseResult.GetValueForOption(forceOption);
+                int? timeout = context.ParseResult.GetValueForOption(timeoutOption);
+                bool refreshAuth = context.ParseResult.GetValueForOption(refreshAuthOption);
+                bool noShareLinks = context.ParseResult.GetValueForOption(noShareLinksOption);
+
+                // TODO: Wire these options into the video processing logic as needed
 
                 // Initialize dependency injection if needed
                 if (config != null)
@@ -83,7 +140,7 @@ namespace NotebookAutomation.Cli.Commands
                 var videoExtensions = appConfig.VideoExtensions ?? new List<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
 
                 // Get OpenAI API key from environment or config
-                string? openAiApiKey = Environment.GetEnvironmentVariable(NotebookAutomation.Core.Configuration.OpenAiConfig.OpenAiApiKeyEnvVar);
+                string? openAiApiKey = Environment.GetEnvironmentVariable(OpenAiConfig.OpenAiApiKeyEnvVar);
                 if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig.OpenAi != null)
                 {
                     openAiApiKey = appConfig.OpenAi.ApiKey;
@@ -97,11 +154,19 @@ namespace NotebookAutomation.Cli.Commands
                 }
 
                 var (processed, failed) = await batchProcessor.ProcessVideosAsync(
-                    input,
+                    // Determine input path based on --single-file or --folder
+                    !string.IsNullOrWhiteSpace(singleFile) ? singleFile :
+                    !string.IsNullOrWhiteSpace(folder) ? folder : input,
                     output ?? appConfig.Paths?.NotebookVaultRoot ?? "Generated",
                     videoExtensions,
                     openAiApiKey,
-                    dryRun);
+                    dryRun,
+                    noSummary,
+                    force,
+                    retryFailed,
+                    timeout,
+                    resourcesRoot,
+                    appConfig);
 
                 logger.LogInformation("Video processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);
             });

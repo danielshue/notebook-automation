@@ -75,6 +75,11 @@ namespace NotebookAutomation.Core.Configuration
                 return new VideoNoteBatchProcessor(logger);
             });
             services.AddScoped<PdfNoteProcessor>();
+            services.AddScoped(provider => {
+                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("PdfProcessing");
+                return new PdfNoteBatchProcessor(logger);
+            });
             
             // Register OneDrive service
             services.AddScoped(provider => 
