@@ -16,7 +16,7 @@ namespace NotebookAutomation.Cli.Commands
     /// generates AI-powered summaries using OpenAI (when available), and converts the content
     /// to markdown notes with proper metadata and formatting.
     /// </summary>
-    internal static class PdfCommands
+    internal class PdfCommands
     {
         /// <summary>
         /// Registers the 'pdf-notes' command with the root command.
@@ -26,7 +26,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="debugOption">The global debug option.</param>
         /// <param name="verboseOption">The global verbose option.</param>
         /// <param name="dryRunOption">The global dry-run option.</param>
-        public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+        public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var inputOption = new Option<string>(
                 aliases: new[] { "--input", "-i" },
@@ -91,7 +91,7 @@ namespace NotebookAutomation.Cli.Commands
         /// 4. Creates a markdown note with extracted text, metadata, and summary
         /// 5. Saves the markdown note to the output directory
         /// </remarks>        
-        private static async Task ProcessPdfAsync(
+        private async Task ProcessPdfAsync(
             string? input,
             string? output,
             string? configPath,

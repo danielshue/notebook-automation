@@ -8,7 +8,7 @@ namespace NotebookAutomation.Cli.Commands
     /// This class registers the 'version' command that shows the application version,
     /// the .NET runtime version, and copyright information.
     /// </summary>
-    internal static class VersionCommands
+    internal class VersionCommands
     {
         /// <summary>
         /// Registers the 'version' command with the root command.
@@ -22,7 +22,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <item><description>Copyright information</description></item>
         /// </list>
         /// </remarks>
-        public static void Register(RootCommand rootCommand)
+        public void Register(RootCommand rootCommand)
         {
             var versionCommand = new Command("version", "Display version information");
             versionCommand.SetHandler(() =>

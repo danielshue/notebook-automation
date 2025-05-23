@@ -15,7 +15,7 @@ namespace NotebookAutomation.Cli.Commands
     /// This class registers the 'generate-markdown' command, which converts HTML, TXT, and EPUB files
     /// to markdown format, optionally using OpenAI for summarization.
     /// </summary>
-    internal static class MarkdownCommands
+    internal class MarkdownCommands
     {
         /// <summary>
         /// Registers the 'generate-markdown' command with the root command.
@@ -25,7 +25,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="debugOption">The global debug option.</param>
         /// <param name="verboseOption">The global verbose option.</param>
         /// <param name="dryRunOption">The global dry-run option.</param>
-        public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+        public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var srcDirsOption = new Option<string[]>(
                 aliases: new[] { "--src-dirs", "-s" },
@@ -60,7 +60,7 @@ namespace NotebookAutomation.Cli.Commands
                     Program.SetupDependencyInjection(config, debug);
                 }
                 
-                await ProcessMarkdownAsync(srcDirs, destDir, config, debug, verbose, dryRun);
+                await this.ProcessMarkdownAsync(srcDirs, destDir, config, debug, verbose, dryRun);
             });
             
             rootCommand.AddCommand(markdownCommand);
@@ -76,7 +76,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="verbose">Enable verbose output.</param>
         /// <param name="dryRun">Simulate actions without making changes.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private static async Task ProcessMarkdownAsync(
+        private async Task ProcessMarkdownAsync(
             string[]? sourceDirs,
             string? destDir,
             string? configPath,

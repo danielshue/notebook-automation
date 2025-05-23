@@ -10,10 +10,14 @@
           "System.Memory.Data": "6.0.1"
         },
         "compile": {
-          "lib/net8.0/Azure.Core.dll": {}
+          "lib/net8.0/Azure.Core.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net8.0/Azure.Core.dll": {}
+          "lib/net8.0/Azure.Core.dll": {
+            "related": ".xml"
+          }
         }
       },
       "Azure.Identity/1.14.0": {
@@ -25,22 +29,26 @@
           "System.Memory": "4.5.5"
         },
         "compile": {
-          "lib/net8.0/Azure.Identity.dll": {}
+          "lib/net8.0/Azure.Identity.dll": {
+            "related": ".xml"
+          }
         },
         "runtime": {
-          "lib/net8.0/Azure.Identity.dll": {}
+          "lib/net8.0/Azure.Identity.dll": {
+            "related": ".xml"
+          }
         }
       },
       "HtmlAgilityPack/1.11.61": {
         "type": "package",
         "compile": {
           "lib/netstandard2.0/HtmlAgilityPack.dll": {
-            "related": ".deps.json;.pdb"
+            "related": ".deps.json;.pdb;.xml"
           }
         },
         "runtime": {
           "lib/netstandard2.0/HtmlAgilityPack.dll": {
-            "related": ".deps.json;.pdb"
+            "related": ".deps.json;.pdb;.xml"
           }
         }
       },
@@ -800,14 +808,10 @@
           "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         },
         "compile": {
-          "lib/net6.0/System.Diagnostics.DiagnosticSource.dll": {
-            "related": ".xml"
-          }
+          "lib/net6.0/System.Diagnostics.DiagnosticSource.dll": {}
         },
         "runtime": {
-          "lib/net6.0/System.Diagnostics.DiagnosticSource.dll": {
-            "related": ".xml"
-          }
+          "lib/net6.0/System.Diagnostics.DiagnosticSource.dll": {}
         },
         "build": {
           "buildTransitive/netcoreapp3.1/_._": {}
@@ -866,14 +870,10 @@
       "System.Runtime.CompilerServices.Unsafe/6.0.0": {
         "type": "package",
         "compile": {
-          "lib/net6.0/System.Runtime.CompilerServices.Unsafe.dll": {
-            "related": ".xml"
-          }
+          "lib/net6.0/System.Runtime.CompilerServices.Unsafe.dll": {}
         },
         "runtime": {
-          "lib/net6.0/System.Runtime.CompilerServices.Unsafe.dll": {
-            "related": ".xml"
-          }
+          "lib/net6.0/System.Runtime.CompilerServices.Unsafe.dll": {}
         },
         "build": {
           "buildTransitive/netcoreapp3.1/_._": {}
@@ -2722,8 +2722,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj": {
-              "projectPath": "d:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj"
+            "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj": {
+              "projectPath": "D:\\source\\notebook-automation-csharp-migration\\src\\c-sharp\\NotebookAutomation.Core\\NotebookAutomation.Core.csproj"
             }
           }
         }

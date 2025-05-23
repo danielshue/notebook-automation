@@ -55,14 +55,22 @@ namespace NotebookAutomation.Cli
             rootCommand.AddGlobalOption(verboseOption);
             rootCommand.AddGlobalOption(dryRunOption);            // Modular command registration - passing the service provider
 
-            TagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            VaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            MarkdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            ConfigCommands.Register(rootCommand, configOption, debugOption);
-            OneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            VersionCommands.Register(rootCommand);
+            var tagCommands = new TagCommands();
+            tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            var vaultCommands = new VaultCommands();
+            vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            var videoCommands = new VideoCommands();
+            videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            var pdfCommands = new PdfCommands();
+            pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            var markdownCommands = new MarkdownCommands();
+            markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            var configCommands = new ConfigCommands();
+            configCommands.Register(rootCommand, configOption, debugOption);
+            var oneDriveCommands = new OneDriveCommands();
+            oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            var versionCommands = new VersionCommands();
+            versionCommands.Register(rootCommand);
 
             // Print help if no subcommand or arguments are provided
             if (args.Length == 0)
