@@ -1,8 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using Microsoft.Extensions.DependencyInjection;
 using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Cli.Utilities;
 
 namespace NotebookAutomation.Cli.Commands
@@ -50,16 +48,21 @@ namespace NotebookAutomation.Cli.Commands
                 string? configPath = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
 
-                // Initialize dependency injection
-                Initialize(configPath, debug);
-
-                // Get AppConfig from DI container
-                var appConfig = Program.ServiceProvider.GetRequiredService<AppConfig>();
-                PrintConfigFormatted(appConfig);
+                try
+                {
+                    // Always load config directly from JSON for display
+                    var configFile = configPath ?? AppConfig.FindConfigFile();
+                    var appConfig = AppConfig.LoadFromJsonFile(configFile);
+                    PrintConfigFormatted(appConfig);
+                }
+                catch (System.IO.FileNotFoundException ex)
+                {
+                    AnsiConsoleHelper.WriteError($"Configuration file not found: {ex.FileName ?? ex.Message}");
+                }
             });
 
             // config update-key <key> <value>
-            var keyArg = new Argument<string>("key", "Configuration key to update (e.g. paths.resourcesRoot)");
+            var keyArg = new Argument<string>("key", "Configuration key to update (e.g. paths.resources_root)");
             var valueArg = new Argument<string>("value", "New value for the key");
             var updateKeyCommand = new Command("update-key", "Update a configuration key")
             {
@@ -72,18 +75,16 @@ namespace NotebookAutomation.Cli.Commands
                 {
                     // Try to get values for both required arguments - this will throw if they're not provided
                     string key = context.ParseResult.GetValueForArgument(keyArg);
-                    string value = context.ParseResult.GetValueForArgument(valueArg);                    string? configPath = context.ParseResult.GetValueForOption(configOption);
+                    string value = context.ParseResult.GetValueForArgument(valueArg);
+                    string? configPath = context.ParseResult.GetValueForOption(configOption);
                     bool debug = context.ParseResult.GetValueForOption(debugOption);
                     
-                    // Initialize dependency injection
-                    Initialize(configPath, debug);
-                    
-                    // Get AppConfig from DI container
-                    var appConfig = Program.ServiceProvider.GetRequiredService<AppConfig>();
-
+                    // Always load config directly from JSON for update
+                    var configFile = configPath ?? AppConfig.FindConfigFile();
+                    var appConfig = AppConfig.LoadFromJsonFile(configFile);
                     if (UpdateConfigKey(appConfig, key, value))
                     {
-                        appConfig.SaveToJsonFile(configPath ?? AppConfig.FindConfigFile());
+                        appConfig.SaveToJsonFile(configFile);
                         Console.WriteLine($"Updated '{key}' to '{value}'.");
                     }
                     else
@@ -99,7 +100,7 @@ namespace NotebookAutomation.Cli.Commands
                     context.Console.WriteLine("Updates a configuration key with the specified value.");
                     context.Console.WriteLine("");
                     context.Console.WriteLine("Arguments:");
-                    context.Console.WriteLine("  <key>    Configuration key to update (e.g. paths.resourcesRoot)");
+                    context.Console.WriteLine("  <key>    Configuration key to update (e.g. paths.resources_root)");
                     context.Console.WriteLine("  <value>  New value for the key");
                     context.Console.WriteLine("");
                     context.Console.WriteLine("Options:");
@@ -107,18 +108,18 @@ namespace NotebookAutomation.Cli.Commands
                     context.Console.WriteLine("  --debug, -d              Enable debug output");
                     context.Console.WriteLine("");
                     context.Console.WriteLine("Available configuration keys:");
-                    context.Console.WriteLine("  paths.resourcesRoot            - Root directory for resources");
-                    context.Console.WriteLine("  paths.notebookVaultRoot        - Root directory for the notebook vault");
-                    context.Console.WriteLine("  paths.metadataFile             - Path to the metadata file");
-                    context.Console.WriteLine("  paths.obsidianVaultRoot        - Root directory of the Obsidian vault");
-                    context.Console.WriteLine("  paths.onedriveResourcesBasepath - Base path for OneDrive resources");
-                    context.Console.WriteLine("  paths.loggingDir               - Directory for log files");
-                    context.Console.WriteLine("  microsoftgraph.clientId        - Microsoft Graph API client ID");
-                    context.Console.WriteLine("  microsoftgraph.apiEndpoint     - Microsoft Graph API endpoint");
-                    context.Console.WriteLine("  microsoftgraph.authority       - Microsoft Graph API authority");
-                    context.Console.WriteLine("  microsoftgraph.scopes          - Microsoft Graph API scopes (comma-separated)");
-                    context.Console.WriteLine("  openai.apiKey                  - OpenAI API key");
-                    context.Console.WriteLine("  videoextensions                - Video file extensions (comma-separated)");
+                    context.Console.WriteLine("  paths.resources_root            - Root directory for resources");
+                    context.Console.WriteLine("  paths.notebook_vault_root        - Root directory for the notebook vault");
+                    context.Console.WriteLine("  paths.metadata_file             - Path to the metadata file");
+                    context.Console.WriteLine("  paths.obsidian_vault_root        - Root directory of the Obsidian vault");
+                    context.Console.WriteLine("  paths.onedrive_resources_basepath - Base path for OneDrive resources");
+                    context.Console.WriteLine("  paths.logging_dir               - Directory for log files");
+                    context.Console.WriteLine("  microsoft_graph.client_id        - Microsoft Graph API client ID");
+                    context.Console.WriteLine("  microsoft_graph.api_endpoint     - Microsoft Graph API endpoint");
+                    context.Console.WriteLine("  microsoft_graph.authority       - Microsoft Graph API authority");
+                    context.Console.WriteLine("  microsoft_graph.scopes          - Microsoft Graph API scopes (comma-separated)");
+                    context.Console.WriteLine("  openai.api_key                  - OpenAI API key");
+                    context.Console.WriteLine("  video_extensions                - Video file extensions (comma-separated)");
                 }
             });
 
@@ -155,6 +156,11 @@ namespace NotebookAutomation.Cli.Commands
             // Initialize dependency injection if needed
             if (configPath != null)
             {
+                if (!System.IO.File.Exists(configPath))
+                {
+                    AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
+                    return;
+                }
                 Program.SetupDependencyInjection(configPath, debug);
             }
         }
@@ -179,28 +185,32 @@ namespace NotebookAutomation.Cli.Commands
                         var paths = appConfig.Paths;
                         switch (prop)
                         {
-                            case "resourcesRoot": paths.ResourcesRoot = value; return true;
-                            case "notebookVaultRoot": paths.NotebookVaultRoot = value; return true;
-                            case "metadataFile": paths.MetadataFile = value; return true;
-                            case "obsidianVaultRoot": paths.ObsidianVaultRoot = value; return true;
-                            case "onedriveResourcesBasepath": paths.OnedriveResourcesBasepath = value; return true;
-                            case "loggingDir": paths.LoggingDir = value; return true;
+                            case "resources_root": paths.ResourcesRoot = value; return true;
+                            case "notebook_vault_root": paths.NotebookVaultRoot = value; return true;
+                            case "metadata_file": paths.MetadataFile = value; return true;
+                            case "obsidian_vault_root": paths.ObsidianVaultRoot = value; return true;
+                            case "onedrive_resources_basepath": paths.OnedriveResourcesBasepath = value; return true;
+                            case "logging_dir": paths.LoggingDir = value; return true;
                         }
                         break;
-                    case "microsoftgraph":
+                    case "microsoft_graph":
                         var mg = appConfig.MicrosoftGraph;
                         switch (prop)
                         {
-                            case "clientId": mg.ClientId = value; return true;
-                            case "apiEndpoint": mg.ApiEndpoint = value; return true;
+                            case "client_id": mg.ClientId = value; return true;
+                            case "api_endpoint": mg.ApiEndpoint = value; return true;
                             case "authority": mg.Authority = value; return true;
                             case "scopes": mg.Scopes = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList(); return true;
                         }
                         break;
                     case "openai":
-                        if (prop == "apiKey") { appConfig.OpenAi.ApiKey = value; return true; }
+                        if (prop == "api_key") {
+                            // Do not allow updating/storing the OpenAI API key in config for security
+                            AnsiConsoleHelper.WriteWarning("OpenAI API key must be set via the OPENAI_API_KEY environment variable. It will not be stored in the config file.");
+                            return false;
+                        }
                         break;
-                    case "videoextensions":
+                    case "video_extensions":
                         appConfig.SetVideoExtensions(value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList());
                         return true;
                 }
@@ -212,28 +222,40 @@ namespace NotebookAutomation.Cli.Commands
         /// Prints the current configuration in a formatted, colorized style for the CLI.
         /// </summary>
         /// <param name="appConfig">The AppConfig instance to display.</param>
-        private static void PrintConfigFormatted(AppConfig appConfig)
+        public static void PrintConfigFormatted(AppConfig appConfig)
         {
+            // Helper for aligned output
+            void PrintAligned(string key, string value)
+            {
+                const int keyWidth = 32; // Adjusted for longer keys
+                Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}{key,-keyWidth}{AnsiColors.ENDC}: {AnsiColors.OKGREEN}{value}{AnsiColors.ENDC}");
+            }
+
             Console.WriteLine($"\n{AnsiColors.BG_BLUE}{AnsiColors.BOLD}{AnsiColors.HEADER}   Notebook Automation Configuration   {AnsiColors.ENDC}\n");
             Console.WriteLine($"{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Paths =={AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}resourcesRoot         {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.ResourcesRoot}{AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}notebookVaultRoot     {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.NotebookVaultRoot}{AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}metadataFile          {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.MetadataFile}{AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}obsidianVaultRoot     {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.ObsidianVaultRoot}{AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}onedriveResourcesBasepath {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.OnedriveResourcesBasepath}{AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}loggingDir            {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.Paths.LoggingDir}{AnsiColors.ENDC}");
+            PrintAligned("resources_root", appConfig.Paths.ResourcesRoot);
+            PrintAligned("notebook_vault_root", appConfig.Paths.NotebookVaultRoot);
+            PrintAligned("metadata_file", appConfig.Paths.MetadataFile);
+            PrintAligned("obsidian_vault_root", appConfig.Paths.ObsidianVaultRoot);
+            PrintAligned("onedrive_resources_basepath", appConfig.Paths.OnedriveResourcesBasepath);
+            PrintAligned("logging_dir", appConfig.Paths.LoggingDir);
 
             Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Microsoft Graph API =={AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}clientId      {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.MicrosoftGraph.ClientId}{AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}apiEndpoint   {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.MicrosoftGraph.ApiEndpoint}{AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}authority     {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.MicrosoftGraph.Authority}{AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}scopes        {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{string.Join(", ", appConfig.MicrosoftGraph.Scopes)}{AnsiColors.ENDC}");
+            PrintAligned("client_id", appConfig.MicrosoftGraph.ClientId);
+            PrintAligned("api_endpoint", appConfig.MicrosoftGraph.ApiEndpoint);
+            PrintAligned("authority", appConfig.MicrosoftGraph.Authority);
+            PrintAligned("scopes", string.Join(", ", appConfig.MicrosoftGraph.Scopes));
 
             Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== OpenAI =={AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}apiKey        {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{appConfig.OpenAi.ApiKey}{AnsiColors.ENDC}");
+            // Always show where the OpenAI API key is sourced from
+            string openAiKey = Environment.GetEnvironmentVariable(OpenAiConfig.OpenAiApiKeyEnvVar) != null
+                ? $"[set via ENV:{OpenAiConfig.OpenAiApiKeyEnvVar}]"
+                : $"[not set - must set ENV:{OpenAiConfig.OpenAiApiKeyEnvVar}]";
+            PrintAligned("api_key", openAiKey);
+            PrintAligned("model", appConfig.OpenAi.Model ?? "");
 
             Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Video Extensions =={AnsiColors.ENDC}");
-            Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}Extensions    {AnsiColors.ENDC}: {AnsiColors.OKGREEN}{string.Join(", ", appConfig.VideoExtensions)}{AnsiColors.ENDC}");
+            PrintAligned("video_extensions", string.Join(", ", appConfig.VideoExtensions));
             Console.WriteLine($"\n{AnsiColors.GREY}Tip: Use '{AnsiColors.BOLD}config update-key <key> <value>{AnsiColors.ENDC}{AnsiColors.GREY}' to change a setting.{AnsiColors.ENDC}\n");
         }
     }

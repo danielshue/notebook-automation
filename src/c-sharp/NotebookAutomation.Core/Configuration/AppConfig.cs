@@ -18,22 +18,26 @@ namespace NotebookAutomation.Core.Configuration
         /// <summary>
         /// Paths configuration section.
         /// </summary>
-        public PathsConfig Paths { get; private set; } = new PathsConfig();
+        [System.Text.Json.Serialization.JsonPropertyName("paths")]
+        public PathsConfig Paths { get; set; } = new PathsConfig();
 
         /// <summary>
         /// Microsoft Graph API configuration section.
         /// </summary>
-        public MicrosoftGraphConfig MicrosoftGraph { get; private set; } = new MicrosoftGraphConfig();
+        [System.Text.Json.Serialization.JsonPropertyName("microsoft_graph")]
+        public MicrosoftGraphConfig MicrosoftGraph { get; set; } = new MicrosoftGraphConfig();
 
         /// <summary>
         /// OpenAI API configuration section.
         /// </summary>
-        public OpenAiConfig OpenAi { get; private set; } = new OpenAiConfig();
+        [System.Text.Json.Serialization.JsonPropertyName("openai")]
+        public OpenAiConfig OpenAi { get; set; } = new OpenAiConfig();
 
         /// <summary>
         /// List of video file extensions to process.
         /// </summary>
-        public List<string> VideoExtensions { get; private set; } = new List<string>();
+        [System.Text.Json.Serialization.JsonPropertyName("video_extensions")]
+        public List<string> VideoExtensions { get; set; } = new List<string>();
 
         /// <summary>
         /// Default constructor.
@@ -64,25 +68,28 @@ namespace NotebookAutomation.Core.Configuration
         {
             try
             {
-                if (_configuration == null)
+                // Use System.Text.Json to deserialize the config file for snake_case compatibility
+                var configFilePath = FindConfigFile();
+                if (!string.IsNullOrEmpty(configFilePath) && File.Exists(configFilePath))
                 {
-                    _logger?.LogWarning("Configuration is null, using default values");
-                    return;
+                    var json = File.ReadAllText(configFilePath);
+                    var options = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    };
+                    var loaded = System.Text.Json.JsonSerializer.Deserialize<AppConfig>(json, options);
+                    if (loaded != null)
+                    {
+                        this.Paths = loaded.Paths;
+                        this.MicrosoftGraph = loaded.MicrosoftGraph;
+                        this.OpenAi = loaded.OpenAi;
+                        this.VideoExtensions = loaded.VideoExtensions;
+                    }
                 }
-                
-                // Load paths section
-                _configuration.GetSection("paths").Bind(Paths);
-                
-                // Load Microsoft Graph section
-                _configuration.GetSection("microsoft_graph").Bind(MicrosoftGraph);
-                
-                // Load OpenAI section
-                _configuration.GetSection("openAi").Bind(OpenAi);
-                
-                // Load video extensions
-                VideoExtensions = _configuration.GetSection("video_extensions").Get<List<string>>() ?? 
-                                  new List<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv", ".mpg", ".mpeg", ".m4v" };
-                
+                else
+                {
+                    _logger?.LogWarning($"Config file not found at {configFilePath}");
+                }
                 _logger?.LogDebug("Configuration loaded successfully");
             }
             catch (Exception ex)
@@ -99,22 +106,27 @@ namespace NotebookAutomation.Core.Configuration
         /// <returns>The loaded AppConfig instance.</returns>
         public static AppConfig LoadFromJsonFile(string configPath)
         {
+            // Make configPath absolute if it is not already
+            if (!Path.IsPathRooted(configPath))
+            {
+                var baseDir = Directory.GetCurrentDirectory();
+                configPath = Path.GetFullPath(Path.Combine(baseDir, configPath));
+            }
             if (!File.Exists(configPath))
             {
                 throw new FileNotFoundException($"Configuration file not found: {configPath}");
             }
-            
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile(configPath, optional: false, reloadOnChange: true)
-                .Build();
-                
-            var loggerFactory = LoggerFactory.Create(builder => 
+            var json = File.ReadAllText(configPath);
+            var options = new System.Text.Json.JsonSerializerOptions
             {
-                builder.AddConsole();
-            });
-            var logger = loggerFactory.CreateLogger<AppConfig>();
-            
-            return new AppConfig(configuration, logger);
+                PropertyNameCaseInsensitive = true
+            };
+            var loaded = System.Text.Json.JsonSerializer.Deserialize<AppConfig>(json, options);
+            if (loaded == null)
+            {
+                throw new InvalidOperationException($"Failed to deserialize configuration from: {configPath}");
+            }
+            return loaded;
         }
         
         /// <summary>

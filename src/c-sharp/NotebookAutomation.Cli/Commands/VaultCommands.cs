@@ -4,7 +4,6 @@ using System.CommandLine.Invocation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -96,6 +95,11 @@ namespace NotebookAutomation.Cli.Commands
                 // Initialize dependency injection if needed
                 if (configPath != null)
                 {
+                    if (!System.IO.File.Exists(configPath))
+                    {
+                        AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
+                        return;
+                    }
                     Program.SetupDependencyInjection(configPath, debug);
                 }
 

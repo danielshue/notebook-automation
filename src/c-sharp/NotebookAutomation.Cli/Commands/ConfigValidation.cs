@@ -1,0 +1,72 @@
+using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Cli.Utilities;
+
+namespace NotebookAutomation.Cli.Commands
+{
+    /// <summary>
+    /// Provides static helpers for config validation for feature-specific requirements.
+    /// </summary>
+    public static class ConfigValidation
+    {
+                /// <summary>
+        /// Validates that all required path values are present in the configuration.
+        /// </summary>
+        /// <param name="config">The AppConfig instance to validate.</param>
+        /// <param name="missingKeys">A list of missing required path keys, if any.</param>
+        /// <returns>True if all required paths are present; otherwise, false.</returns>
+        /// <summary>
+        /// Validates that all required path values are present in the configuration.
+        /// </summary>
+        /// <param name="config">The AppConfig instance to validate.</param>
+        /// <param name="missingKeys">A list of missing required path keys, if any.</param>
+        /// <returns>True if all required paths are present; otherwise, false.</returns>
+        public static bool RequireAllPaths(AppConfig config, out List<string> missingKeys)
+        {
+            missingKeys = [];
+            if (string.IsNullOrWhiteSpace(config.Paths.ResourcesRoot))
+                missingKeys.Add("paths.resources_root");
+            if (string.IsNullOrWhiteSpace(config.Paths.NotebookVaultRoot))
+                missingKeys.Add("paths.notebook_vault_root");
+            if (string.IsNullOrWhiteSpace(config.Paths.MetadataFile))
+                missingKeys.Add("paths.metadata_file");
+            if (string.IsNullOrWhiteSpace(config.Paths.ObsidianVaultRoot))
+                missingKeys.Add("paths.obsidian_vault_root");
+            if (string.IsNullOrWhiteSpace(config.Paths.OnedriveResourcesBasepath))
+                missingKeys.Add("paths.onedrive_resources_basepath");
+            if (string.IsNullOrWhiteSpace(config.Paths.LoggingDir))
+                missingKeys.Add("paths.logging_dir");
+            return missingKeys.Count == 0;
+        }
+        /// <summary>
+        /// Validates that Microsoft Graph config values are present. Returns true if valid, else prints error and config.
+        /// </summary>
+        public static bool RequireMicrosoftGraph(AppConfig config)
+        {
+            if (string.IsNullOrWhiteSpace(config.MicrosoftGraph.ClientId) ||
+                string.IsNullOrWhiteSpace(config.MicrosoftGraph.ApiEndpoint) ||
+                string.IsNullOrWhiteSpace(config.MicrosoftGraph.Authority) ||
+                config.MicrosoftGraph.Scopes == null || config.MicrosoftGraph.Scopes.Count == 0)
+            {
+                AnsiConsoleHelper.WriteError("Microsoft Graph configuration is required for this feature but is missing or incomplete.");
+                ConfigCommands.PrintConfigFormatted(config);
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Validates that OpenAI config values are present. Returns true if valid, else prints error and config.
+        /// </summary>
+        public static bool RequireOpenAi(AppConfig config)
+        {
+            var apiKey = Environment.GetEnvironmentVariable(OpenAiConfig.OpenAiApiKeyEnvVar) ?? config.OpenAi.ApiKey;
+            if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(config.OpenAi.Model))
+            {
+                AnsiConsoleHelper.WriteError("OpenAI configuration is required for this feature but is missing or incomplete.");
+                ConfigCommands.PrintConfigFormatted(config);
+                return false;
+            }
+            return true;
+        }
+    }
+}

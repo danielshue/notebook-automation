@@ -102,7 +102,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 return (0, 1);
             }
             var videoExtensions = configProvider.AppConfig?.VideoExtensions ?? new List<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
-            string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            string? openAiApiKey = Environment.GetEnvironmentVariable(Configuration.OpenAiConfig.OpenAiApiKeyEnvVar);
             if (string.IsNullOrWhiteSpace(openAiApiKey) && configProvider.AppConfig?.OpenAi != null)
             {
                 openAiApiKey = configProvider.AppConfig.OpenAi.ApiKey;

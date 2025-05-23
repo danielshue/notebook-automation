@@ -32,6 +32,28 @@ def test_yaml_formatting_preserves_quotes():
     assert "key: 'value: with special characters'" in result
 ```
 
+## Example Test Structure (C# MSTest)
+
+```csharp
+[TestClass]
+public class ExampleTests
+{
+    [TestMethod]
+    public void Function_Should_Behave_When_Condition()
+    {
+        // Arrange
+        var testInput = SetupInput();
+        var expected = DefineExpectedResult();
+
+        // Act
+        var actual = FunctionUnderTest(testInput);
+
+        // Assert
+        Assert.AreEqual(expected, actual);
+    }
+}
+```
+
 ## Test Content Requirements
 
 - Include tests for both valid and invalid inputs

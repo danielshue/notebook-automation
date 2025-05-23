@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Utilities
         /// <param name="usage">The usage string (e.g., command syntax).</param>
         /// <param name="description">A short description of the command or usage.</param>
         /// <param name="options">Optional options/help text.</param>
-        public static void WriteUsage(string usage, string description, string options = null)
+        public static void WriteUsage(string usage, string description, string? options = null)
         {
             Console.WriteLine($"{AnsiColors.OKCYAN}{usage}{AnsiColors.ENDC}");
             Console.WriteLine("");
