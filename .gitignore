@@ -191,3 +191,11 @@ appsettings.Development.json
 appsettings.*.json
 !appsettings.json
 !appsettings.Example.json
+src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
+src/c-sharp/NotebookAutomation.Core.Tests/obj/project.assets.json
+src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
+src/c-sharp/NotebookAutomation.Core.Tests/obj/project.nuget.cache
+src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
+src/c-sharp/NotebookAutomation.Core.Tests/obj/project.nuget.cache
+src/c-sharp/NotebookAutomation.Core.Tests/obj/project.assets.json
+src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json

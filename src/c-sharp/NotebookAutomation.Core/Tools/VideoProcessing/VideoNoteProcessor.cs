@@ -1,6 +1,11 @@
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Utils;
+using NotebookAutomation.Core.Tools.Shared;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace NotebookAutomation.Core.Tools.VideoProcessing
 {
@@ -29,21 +34,13 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
     /// <see cref="VideoNoteProcessingEntrypoint"/>.
     /// </para>
     /// </remarks>
-    public class VideoNoteProcessor
+public class VideoNoteProcessor : DocumentNoteProcessorBase
     {
-        /// <summary>
-        /// Logger instance for recording diagnostic information and errors.
-        /// </summary>
-        private readonly ILogger _logger;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger.
-        /// </summary>
-        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
-        public VideoNoteProcessor(ILogger logger)
-        {
-            _logger = logger;
-        }
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger.
+    /// </summary>
+    /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+    public VideoNoteProcessor(ILogger logger) : base(logger) { }
 
         /// <summary>
         /// Extracts comprehensive metadata from a video file.
@@ -65,6 +62,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// </para>
         /// </remarks>
         public async Task<Dictionary<string, object>> ExtractMetadataAsync(string videoPath)
+        /// <inheritdoc/>
         {
             var metadata = new Dictionary<string, object>
             {
@@ -138,18 +136,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// The AI summarization process is handled by the <see cref="OpenAiSummarizer"/> service.
         /// </para>
         /// </remarks>
-        public async Task<string> GenerateAiSummaryAsync(string text, string? openAiApiKey = null, string? prompt = null, string? promptFileName = null)
-        {
-            if (string.IsNullOrWhiteSpace(openAiApiKey))
-            {
-                _logger.LogWarning("No OpenAI API key provided. Using simulated summary.");
-                return "[Simulated AI summary of video]";
-            }
-            
-            var summarizer = new OpenAiSummarizer(_logger, openAiApiKey);
-            var summary = await summarizer.SummarizeAsync(text, prompt, promptFileName);
-            return summary ?? "[AI summary unavailable]";
-        }
+        // Inherit base implementation
 
         /// <summary>
         /// Generates a markdown note from video metadata and summary.
@@ -175,32 +162,32 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         public string GenerateMarkdownNote(string summary, Dictionary<string, object> metadata)
         {
             metadata["summary"] = summary;
-            var markdownBody = $"# Video Note\n\n{summary}";
-            var builder = new MarkdownNoteBuilder(_logger);
-            return builder.BuildNote(metadata, markdownBody);
+            // Use base implementation for consistent formatting
+            return base.GenerateMarkdownNote(summary, metadata, "Video Note");
         }
 
         /// <summary>
         /// Attempts to load a transcript file for the given video.
         /// </summary>
         /// <param name="videoPath">Path to the video file.</param>
-        /// <returns>The transcript text if found, otherwise null.</returns>
-        /// <remarks>
+        /// <returns>The transcript text if found, otherwise null.</returns>        /// <remarks>
         /// <para>
-        /// This method searches for transcript files that match the video filename but with
-        /// .txt or .md extensions. It follows the same logic as the Python implementation,
-        /// preferring to use an available transcript for summary generation rather than
-        /// relying solely on video metadata.
+        /// This method searches for transcript files that match the video filename using a sophisticated
+        /// prioritized search strategy. It looks for transcript files in multiple locations and formats,
+        /// similar to the Python implementation.
         /// </para>
         /// <para>
-        /// The method looks for:
+        /// The search follows this priority order:
         /// </para>
-        /// <list type="bullet">
-        /// <item><description>A .txt file with the same base name as the video</description></item>
-        /// <item><description>A .md file with the same base name as the video</description></item>
+        /// <list type="number">
+        /// <item><description>Language-specific transcripts in same directory (e.g., video.en.txt, video.zh-cn.txt)</description></item>
+        /// <item><description>Generic transcript in same directory (video.txt, video.md)</description></item>
+        /// <item><description>Language-specific transcripts in Transcripts subdirectory</description></item>
+        /// <item><description>Generic transcript in Transcripts subdirectory</description></item>
         /// </list>
         /// <para>
-        /// If a transcript is found, it's loaded and returned as plain text.
+        /// The method also handles name normalization by checking alternative spellings with hyphens
+        /// replaced by underscores and vice versa.
         /// </para>
         /// </remarks>
         public string? TryLoadTranscript(string videoPath)
@@ -213,22 +200,136 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
 
             string directory = Path.GetDirectoryName(videoPath) ?? string.Empty;
             string fileNameWithoutExt = Path.GetFileNameWithoutExtension(videoPath);
-            string baseName = Path.Combine(directory, fileNameWithoutExt);
             
-            if (File.Exists(baseName + ".txt"))
-            {
-                _logger.LogInformation("Loaded transcript: {Path}", baseName + ".txt");
-                return File.ReadAllText(baseName + ".txt");
-            }
+            _logger.LogDebug("Looking for transcript for video: {VideoPath}", videoPath);
             
-            if (File.Exists(baseName + ".md"))
+            // Define search paths in priority order
+            var searchPaths = new List<string>
             {
-                _logger.LogInformation("Loaded transcript: {Path}", baseName + ".md");
-                return File.ReadAllText(baseName + ".md");
+                directory, // Same directory as video
+                Path.Combine(directory, "Transcripts") // Transcripts subdirectory
+            };
+
+            // Search through directories in priority order
+            foreach (var searchPath in searchPaths)
+            {
+                if (!Directory.Exists(searchPath))
+                {
+                    _logger.LogDebug("Directory does not exist: {Path}", searchPath);
+                    continue;
+                }
+                
+                // Get all .txt and .md files in the directory
+                var candidates = Directory.GetFiles(searchPath, "*.txt")
+                    .Concat(Directory.GetFiles(searchPath, "*.md"))
+                    .Select(path => new FileInfo(path))
+                    .ToList();
+                
+                if (!candidates.Any())
+                {
+                    _logger.LogDebug("No transcript candidates found in: {Path}", searchPath);
+                    continue;
+                }
+                
+                // Generate alternate base name by replacing hyphens with underscores or vice versa
+                string altBaseName = fileNameWithoutExt.Contains('-') 
+                    ? fileNameWithoutExt.Replace('-', '_') 
+                    : fileNameWithoutExt.Replace('_', '-');
+                
+                // First priority: language-specific transcript with exact name (video.en.txt, video.zh-cn.txt)
+                foreach (var candidate in candidates)
+                {
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
+                    if (nameWithoutExt.StartsWith(fileNameWithoutExt + ".") && 
+                        IsLikelyLanguageCode(nameWithoutExt.Substring(fileNameWithoutExt.Length + 1)))
+                    {
+                        string langCode = nameWithoutExt.Substring(fileNameWithoutExt.Length + 1);
+                        _logger.LogInformation("Found language-specific transcript ({LangCode}): {Path}", langCode, candidate.FullName);
+                        return File.ReadAllText(candidate.FullName);
+                    }
+                }
+                
+                // Second priority: language-specific transcript with normalized name
+                foreach (var candidate in candidates)
+                {
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
+                    if (nameWithoutExt.StartsWith(altBaseName + ".") && 
+                        IsLikelyLanguageCode(nameWithoutExt.Substring(altBaseName.Length + 1)))
+                    {
+                        string langCode = nameWithoutExt.Substring(altBaseName.Length + 1);
+                        _logger.LogInformation("Found language-specific transcript with normalized name ({LangCode}): {Path}", 
+                            langCode, candidate.FullName);
+                        return File.ReadAllText(candidate.FullName);
+                    }
+                }
+                
+                // Third priority: generic transcript with exact name (video.txt, video.md)
+                string exactTxtPath = Path.Combine(searchPath, fileNameWithoutExt + ".txt");
+                if (File.Exists(exactTxtPath))
+                {
+                    _logger.LogInformation("Found generic transcript: {Path}", exactTxtPath);
+                    return File.ReadAllText(exactTxtPath);
+                }
+                
+                string exactMdPath = Path.Combine(searchPath, fileNameWithoutExt + ".md");
+                if (File.Exists(exactMdPath))
+                {
+                    _logger.LogInformation("Found generic transcript: {Path}", exactMdPath);
+                    return File.ReadAllText(exactMdPath);
+                }
+                
+                // Fourth priority: generic transcript with normalized name (video_alt.txt, video_alt.md)
+                string altTxtPath = Path.Combine(searchPath, altBaseName + ".txt");
+                if (File.Exists(altTxtPath))
+                {
+                    _logger.LogInformation("Found generic transcript with normalized name: {Path}", altTxtPath);
+                    return File.ReadAllText(altTxtPath);
+                }
+                
+                string altMdPath = Path.Combine(searchPath, altBaseName + ".md");
+                if (File.Exists(altMdPath))
+                {
+                    _logger.LogInformation("Found generic transcript with normalized name: {Path}", altMdPath);
+                    return File.ReadAllText(altMdPath);
+                }
             }
             
             _logger.LogInformation("No transcript found for video: {VideoPath}", videoPath);
             return null;
+        }
+
+        /// <summary>
+        /// Determines whether a string is likely to be a language code.
+        /// </summary>
+        /// <param name="code">The string to check.</param>
+        /// <returns>True if the string matches language code patterns like 'en', 'zh-cn', etc.</returns>
+        /// <remarks>
+        /// Recognizes standard language codes like 'en', 'fr', 'de', as well as regional variants
+        /// with hyphenation like 'en-us', 'zh-cn', etc. This is used to identify language-specific
+        /// transcripts.
+        /// </remarks>
+        private bool IsLikelyLanguageCode(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code))
+                return false;
+                
+            // Match patterns like: en, fr, de (2 chars)
+            if (code.Length == 2 && code.All(char.IsLetter))
+                return true;
+                
+            // Match patterns like: eng, fra, deu (3 chars)
+            if (code.Length == 3 && code.All(char.IsLetter))
+                return true;
+                
+            // Match patterns like: en-us, zh-cn (with hyphen)
+            if (code.Length >= 5 && code.Length <= 7 && code.Contains('-'))
+            {
+                var parts = code.Split('-');
+                return parts.Length == 2 && 
+                       parts.All(p => p.Length >= 2 && p.Length <= 3 && p.All(char.IsLetter));
+            }
+            
+            return false;
         }
 
         /// <summary>
@@ -268,12 +369,32 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// File.WriteAllText("lecture_notes.md", markdownNote);
         /// </code>
         /// </example>
-        public async Task<string> GenerateVideoNoteAsync(string videoPath, string? openAiApiKey, string? promptFileName = null)
+        /// <summary>
+        /// Generates a video note, using transcript if available, otherwise metadata summary, with extended options.
+        /// </summary>
+        /// <param name="videoPath">Path to the video file to process.</param>
+        /// <param name="openAiApiKey">OpenAI API key for generating summaries.</param>
+        /// <param name="promptFileName">Optional prompt file name to use for AI summarization.</param>
+        /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
+        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
+        /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+        /// <returns>A complete markdown note as a string.</returns>
+        public async Task<string> GenerateVideoNoteAsync(
+            string videoPath,
+            string? openAiApiKey,
+            string? promptFileName = null,
+            bool noSummary = false,
+            int? timeoutSeconds = null,
+            string? resourcesRoot = null)
         {
             // Extract metadata and transcript
             var metadata = await ExtractMetadataAsync(videoPath);
+            // If resourcesRoot is provided, add it to metadata for downstream use
+            if (!string.IsNullOrWhiteSpace(resourcesRoot))
+            {
+                metadata["resources_root"] = resourcesRoot;
+            }
             string? transcript = TryLoadTranscript(videoPath);
-            
             // Choose input for summary based on transcript availability
             string summaryInput;
             if (transcript != null && !string.IsNullOrWhiteSpace(transcript))
@@ -286,10 +407,26 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 summaryInput = $"Video file: {Path.GetFileName(videoPath)}\n(No transcript available. Using metadata only.)";
                 _logger.LogInformation("No transcript found. Using metadata for AI summary for video: {VideoPath}", videoPath);
             }
-            
-            // Generate summary and markdown note
-            string aiSummary = await GenerateAiSummaryAsync(summaryInput, openAiApiKey, null, promptFileName);
+            string aiSummary;
+            if (noSummary)
+            {
+                aiSummary = "[Summary generation disabled by --no-summary flag.]";
+            }
+            else
+            {
+                aiSummary = await GenerateAiSummaryAsync(summaryInput, openAiApiKey, null, promptFileName);
+            }
             return GenerateMarkdownNote(aiSummary, metadata);
         }
+
+        /// <inheritdoc/>
+        public override async Task<(string Text, Dictionary<string, object> Metadata)> ExtractTextAndMetadataAsync(string filePath)
+        {
+            var metadata = await ExtractMetadataAsync(filePath);
+            string? transcript = TryLoadTranscript(filePath);
+            string text = transcript ?? "";
+            return (text, metadata);
+        }
+        
     }
 }

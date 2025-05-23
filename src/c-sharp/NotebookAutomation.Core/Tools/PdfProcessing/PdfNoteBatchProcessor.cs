@@ -1,62 +1,62 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Tools.Shared;
 
-namespace NotebookAutomation.Core.Tools.VideoProcessing
+namespace NotebookAutomation.Core.Tools.PdfProcessing
 {
     /// <summary>
-    /// Provides batch processing capabilities for converting multiple video files to markdown notes.
+    /// Provides batch processing capabilities for converting multiple PDF files to markdown notes.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The VideoNoteBatchProcessor class coordinates the processing of multiple video files,
+    /// The PdfNoteBatchProcessor class coordinates the processing of multiple PDF files,
     /// either from a specified directory or a single file path. It leverages the 
-    /// <see cref="VideoNoteProcessor"/> to handle the details of metadata extraction, 
-    /// transcript loading, and note generation for each video.
+    /// <see cref="PdfNoteProcessor"/> to handle the details of text extraction
+    /// and note generation for each PDF.
     /// </para>
     /// <para>
     /// This batch processor is responsible for:
     /// </para>
     /// <list type="bullet">
-    /// <item><description>Identifying video files based on their extensions</description></item>
-    /// <item><description>Coordinating the processing of each video file</description></item>
+    /// <item><description>Identifying PDF files based on their extensions</description></item>
+    /// <item><description>Coordinating the processing of each PDF file</description></item>
     /// <item><description>Managing output directory creation and file writing</description></item>
     /// <item><description>Tracking success and failure counts</description></item>
     /// <item><description>Supporting dry run mode for testing without file writes</description></item>
     /// </list>
     /// <para>
     /// The class is designed to be used by both CLI and API interfaces, providing a central
-    /// point for video batch processing operations with appropriate logging and error handling.
+    /// point for PDF batch processing operations with appropriate logging and error handling.
     /// This implementation delegates all batch processing logic to the generic 
     /// <see cref="DocumentNoteBatchProcessor{TProcessor}"/> for maintainability and code reuse.
     /// </para>
     /// </remarks>
-    public class VideoNoteBatchProcessor
+    public class PdfNoteBatchProcessor
     {
         /// <summary>
         /// The generic batch processor that handles the actual batch processing logic.
         /// </summary>
-        private readonly DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;        /// <summary>
-        /// Initializes a new instance of the <see cref="VideoNoteBatchProcessor"/> class.
+        private readonly DocumentNoteBatchProcessor<PdfNoteProcessor> _batchProcessor;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PdfNoteBatchProcessor"/> class.
         /// </summary>
         /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
         /// <remarks>
-        /// Creates a new <see cref="VideoNoteProcessor"/> instance and wraps it with a 
+        /// Creates a new <see cref="PdfNoteProcessor"/> instance and wraps it with a 
         /// <see cref="DocumentNoteBatchProcessor{TProcessor}"/> for batch processing operations.
         /// </remarks>
-        public VideoNoteBatchProcessor(ILogger logger)
+        public PdfNoteBatchProcessor(ILogger logger)
         {
-            var videoProcessor = new VideoNoteProcessor(logger);
-            _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(logger, videoProcessor);
-        }        /// <summary>
-        /// Processes one or more video files, generating markdown notes for each.
+            var pdfProcessor = new PdfNoteProcessor(logger);
+            _batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(logger, pdfProcessor);
+        }
+
+        /// <summary>
+        /// Processes one or more PDF files, generating markdown notes for each.
         /// </summary>
-        /// <param name="input">Input file path or directory containing video files.</param>
+        /// <param name="input">Input file path or directory containing PDF files.</param>
         /// <param name="output">Output directory where markdown notes will be saved.</param>
-        /// <param name="videoExtensions">List of file extensions to recognize as video files.</param>
+        /// <param name="pdfExtensions">List of file extensions to recognize as PDF files (defaults to [".pdf"]).</param>
         /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
         /// <param name="dryRun">If true, simulates processing without writing output files.</param>
         /// <returns>
@@ -66,28 +66,52 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <para>
         /// This method delegates to the generic <see cref="DocumentNoteBatchProcessor{TProcessor}"/>
         /// for all batch processing operations while maintaining backward compatibility with 
-        /// existing video-specific API.
+        /// existing PDF-specific API.
         /// </para>
         /// </remarks>
         /// <example>
         /// <code>
-        /// // Process all video files in a directory
-        /// var processor = new VideoNoteBatchProcessor(logger);
-        /// var result = await processor.ProcessVideosAsync(
-        ///     "path/to/videos",
+        /// // Process all PDF files in a directory
+        /// var processor = new PdfNoteBatchProcessor(logger);
+        /// var result = await processor.ProcessPdfsAsync(
+        ///     "path/to/pdfs",
         ///     "path/to/notes",
-        ///     new List&lt;string&gt; { ".mp4", ".mov", ".avi" },
+        ///     new List&lt;string&gt; { ".pdf" },
         ///     "sk-yourapikeyhere");
         /// 
         /// Console.WriteLine($"Processed: {result.processed}, Failed: {result.failed}");
         /// </code>
         /// </example>
+        public async Task<(int processed, int failed)> ProcessPdfsAsync(
+            string input,
+            string? output,
+            List<string>? pdfExtensions = null,
+            string? openAiApiKey = null,
+            bool dryRun = false)
+        {
+            var extensions = pdfExtensions ?? new List<string> { ".pdf" };
+            return await _batchProcessor.ProcessDocumentsAsync(
+                input,
+                output,
+                extensions,
+                openAiApiKey,
+                dryRun,
+                noSummary: false,
+                forceOverwrite: false,
+                retryFailed: false,
+                timeoutSeconds: null,
+                resourcesRoot: null,
+                appConfig: null,
+                "PDF Note",
+                "failed_pdfs.txt");
+        }
+
         /// <summary>
-        /// Processes one or more video files, generating markdown notes for each, with extended options.
+        /// Processes one or more PDF files, generating markdown notes for each, with extended options.
         /// </summary>
-        /// <param name="input">Input file path or directory containing video files.</param>
+        /// <param name="input">Input file path or directory containing PDF files.</param>
         /// <param name="output">Output directory where markdown notes will be saved.</param>
-        /// <param name="videoExtensions">List of file extensions to recognize as video files.</param>
+        /// <param name="pdfExtensions">List of file extensions to recognize as PDF files (defaults to [".pdf"]).</param>
         /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
         /// <param name="dryRun">If true, simulates processing without writing output files.</param>
         /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
@@ -97,10 +121,10 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <param name="resourcesRoot">Optional override for resources root directory.</param>
         /// <param name="appConfig">The application configuration object.</param>
         /// <returns>A tuple containing the count of successfully processed files and the count of failures.</returns>
-        public async Task<(int processed, int failed)> ProcessVideosAsync(
+        public async Task<(int processed, int failed)> ProcessPdfsAsync(
             string input,
             string? output,
-            List<string> videoExtensions,
+            List<string>? pdfExtensions,
             string? openAiApiKey,
             bool dryRun = false,
             bool noSummary = false,
@@ -108,11 +132,13 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             bool retryFailed = false,
             int? timeoutSeconds = null,
             string? resourcesRoot = null,
-            Configuration.AppConfig? appConfig = null)        {
+            Configuration.AppConfig? appConfig = null)
+        {
+            var extensions = pdfExtensions ?? new List<string> { ".pdf" };
             return await _batchProcessor.ProcessDocumentsAsync(
                 input,
                 output,
-                videoExtensions,
+                extensions,
                 openAiApiKey,
                 dryRun,
                 noSummary,
@@ -121,8 +147,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 timeoutSeconds,
                 resourcesRoot,
                 appConfig,
-                "Video Note",
-                "failed_videos.txt");
+                "PDF Note",
+                "failed_pdfs.txt");
         }
     }
 }

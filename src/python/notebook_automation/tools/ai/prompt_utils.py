@@ -24,11 +24,15 @@ from ..metadata.yaml_metadata_helper import yaml_to_string
 logger = ensure_logger_configured(__name__)
 
 # Paths for loading external prompt templates
-# The system uses markdown files in the prompts directory to allow customization
-# of the prompts without changing the code. These constants define the paths to those files.
-PROMPT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../prompts'))
+# The system uses markdown files in the shared repository root Prompts directory 
+# to allow customization of the prompts without changing the code.
+# These constants define the paths to those files.
+# Determine the repository root path to locate the shared Prompts directory
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../../..'))
+PROMPT_DIR = os.path.join(REPO_ROOT, 'Prompts')
 CHUNK_PROMPT_PATH = os.path.join(PROMPT_DIR, 'chunk_summary_prompt.md')  # For individual chunk processing
 FINAL_PROMPT_PATH = os.path.join(PROMPT_DIR, 'final_summary_prompt.md')  # For the final combined summary
+VIDEO_FINAL_PROMPT_PATH = os.path.join(PROMPT_DIR, 'final_summary_prompt_video.md')  # For video summarization
 
 # System prompt provides concise instructions about the AI's role and task
 # This is typically used as the "system message" in ChatGPT/OpenAI API calls
@@ -184,24 +188,21 @@ def format_final_user_prompt_for_pdf(metadata):
                          
     Returns:
         str: Formatted final prompt for PDF summarization
-    """
-    # Use DEFAULT_SYSTEM_PROMPT as the base
-    user_prompt = DEFAULT_SYSTEM_PROMPT
+    """    # Load the template from file
+    template = _load_prompt(FINAL_PROMPT_PATH, DEFAULT_FINAL_PROMPT)
     
-    # Use FINAL_PROMPT_TEMPLATE and format with metadata if metadata is provided
+    # If metadata is provided, format the template
     if metadata:
         yaml_frontmatter = yaml_to_string(metadata)
+        template = template.replace("{{yaml-frontmatter}}", yaml_frontmatter)
         
-        # Note: The variable names were swapped in the original code
-        # Fixed to match the actual keys in the metadata dictionary
+        # Replace OneDrive paths and links if they exist
         onedrive_path = str(metadata.get('onedrive-path', ''))
         onedrive_sharing_link = str(metadata.get('onedrive-sharing-link', ''))
-        
-        user_prompt = FINAL_PROMPT_TEMPLATE.replace("{{yaml-frontmatter}}", yaml_frontmatter)
-        user_prompt = user_prompt.replace("{{onedrive-path}}", onedrive_path)
-        user_prompt = user_prompt.replace("{{onedrive-sharing-link}}", onedrive_sharing_link)   
+        template = template.replace("{{onedrive-path}}", onedrive_path)
+        template = template.replace("{{onedrive-sharing-link}}", onedrive_sharing_link)   
     
-    return user_prompt
+    return template
 
 def format_chuncked_user_prompt_for_pdf(metadata):
     """
@@ -221,22 +222,14 @@ def format_chuncked_user_prompt_for_pdf(metadata):
                          
     Returns:
         str: Formatted chunk prompt for PDF summarization
-    """
-    # Ensure all required variables exist with defaults
-    variables = {
-        'file_name': metadata.get('file_name', 'Unknown File'),
-        'course_name': metadata.get('course_name', 'MBA Course'),
-        'program_name': metadata.get('program_name', 'MBA Program'),
-        'chunk_context': '',  # These will be filled in by the summarizer
-        'chunk_context_lower': '',
-        'chunk': ''
-    }
+    """    # Load the template from file
+    template = _load_prompt(CHUNK_PROMPT_PATH, DEFAULT_CHUNK_PROMPT)
     
-    try:
-        return DEFAULT_CHUNK_PROMPT.format(**variables)
-    except KeyError as e:
-        logger.error(f"Missing required metadata key: {e}")
-        return DEFAULT_CHUNK_PROMPT
-    except Exception as e:
-        logger.error(f"Error formatting chunk prompt: {e}")
-        return DEFAULT_CHUNK_PROMPT
+    # Replace the template variables that the C# code expects
+    template = template.replace("{{onedrive-path}}", str(metadata.get('onedrive-path', 'Unknown File')))
+    template = template.replace("{{course}}", str(metadata.get('course_name', 'MBA Course')))
+    
+    # The chunk will be replaced by the summarizer
+    # In Python, we'll adapt to use content variable which is what C# expects
+    
+    return template

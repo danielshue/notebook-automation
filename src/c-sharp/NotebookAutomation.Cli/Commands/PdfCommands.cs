@@ -115,9 +115,7 @@ namespace NotebookAutomation.Cli.Commands
                 var logger = loggerFactory.CreateLogger("PdfCommands");
                 var appConfig = serviceProvider.GetRequiredService<AppConfig>();
                 var loggingService = serviceProvider.GetRequiredService<LoggingService>();
-                var failedLogger = loggingService?.FailedLogger;
-
-                // Validate OpenAI config before proceeding
+                var failedLogger = loggingService?.FailedLogger;                // Validate OpenAI config before proceeding
                 if (!ConfigValidation.RequireOpenAi(appConfig))
                 {
                     logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
@@ -129,26 +127,8 @@ namespace NotebookAutomation.Cli.Commands
                     return;
                 }
 
-                // Get PdfNoteProcessor from DI container
-                var pdfProcessor = serviceProvider.GetRequiredService<PdfNoteProcessor>();
-                var processed = 0;
-                var failed = 0;
-                var pdfFiles = new List<string>();
-
-                if (Directory.Exists(input))
-                {
-                    pdfFiles.AddRange(Directory.GetFiles(input, "*.pdf", SearchOption.AllDirectories));
-                    logger?.LogInformation("Found {Count} PDF files in directory: {Dir}", pdfFiles.Count, input);
-                }
-                else if (File.Exists(input) && input.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
-                {
-                    pdfFiles.Add(input);
-                }
-                else
-                {
-                    logger?.LogError("Input must be a PDF file or directory containing PDFs: {Input}", input);
-                    return;
-                }
+                // Get PdfNoteBatchProcessor from DI container
+                var batchProcessor = serviceProvider.GetRequiredService<PdfNoteBatchProcessor>();
 
                 // Get OpenAI API key from config or environment
                 string? openAiApiKey = Environment.GetEnvironmentVariable(NotebookAutomation.Core.Configuration.OpenAiConfig.OpenAiApiKeyEnvVar);
@@ -157,35 +137,13 @@ namespace NotebookAutomation.Cli.Commands
                     openAiApiKey = appConfig.OpenAi.ApiKey;
                 }
 
-                foreach (var pdfPath in pdfFiles)
-                {
-                    try
-                    {
-                        logger?.LogInformation("Processing PDF: {PdfPath}", pdfPath);
-                        var (pdfText, metadata) = await pdfProcessor.ExtractTextAndMetadataAsync(pdfPath);
-                        string aiSummary = await pdfProcessor.GenerateAiSummaryAsync(pdfText, openAiApiKey, null, "chunk_summary_prompt.md");
-                        metadata["summary"] = aiSummary;
-                        string markdown = pdfProcessor.GenerateMarkdownNote(pdfText, metadata);
-                        if (!dryRun)
-                        {
-                            string outputDir = output ?? (appConfig?.Paths?.NotebookVaultRoot ?? "Generated");
-                            Directory.CreateDirectory(outputDir);
-                            string outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(pdfPath) + ".md");
-                            await File.WriteAllTextAsync(outputPath, markdown);
-                            logger?.LogInformation("Markdown note saved to: {OutputPath}", outputPath);
-                        }
-                        else
-                        {
-                            logger?.LogInformation("[DRY RUN] Markdown note would be generated for: {PdfPath}", pdfPath);
-                        }
-                        processed++;
-                    }
-                    catch (Exception ex)
-                    {
-                        logger?.LogError(ex, "Failed to process PDF: {PdfPath}", pdfPath);
-                        failed++;
-                    }
-                }
+                // Process PDFs using batch processor
+                var (processed, failed) = await batchProcessor.ProcessPdfsAsync(
+                    input,
+                    output,
+                    new List<string> { ".pdf" },
+                    openAiApiKey,
+                    dryRun);
 
                 logger?.LogInformation("PDF processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);
             }

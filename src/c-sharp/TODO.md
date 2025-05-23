@@ -12,8 +12,8 @@
     - [ ] --timeout (set API request timeout)
     - [ ] --refresh-auth (force refresh Microsoft Graph API authentication)
     - [ ] --no-share-links (skip OneDrive share link creation)
-    - [ ] -c / --config (config file path)
-    - [ ] --verbose, --debug, --dry-run (already present)
+    - [X] -c / --config (config file path)
+    - [X] --verbose, --debug, --dry-run (already present)
 - [ ] Implement video file discovery logic (single file, folder, retry failed)
 - [ ] Implement transcript file discovery and language-specific handling
 - [ ] Integrate OpenAI summary generation (with --no-summary option)
