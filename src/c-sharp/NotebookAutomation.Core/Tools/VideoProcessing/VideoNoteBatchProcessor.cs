@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Tools.Shared;
 
@@ -39,7 +35,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <summary>
         /// The generic batch processor that handles the actual batch processing logic.
         /// </summary>
-        private readonly DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;        /// <summary>
+        private readonly DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="VideoNoteBatchProcessor"/> class.
         /// </summary>
         /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
@@ -67,52 +65,67 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             var videoProcessor = new VideoNoteProcessor(logger, aiSummarizer);
             _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(logger, videoProcessor);
         }        /// <summary>
-        /// Processes one or more video files, generating markdown notes for each.
-        /// </summary>
-        /// <param name="input">Input file path or directory containing video files.</param>
-        /// <param name="output">Output directory where markdown notes will be saved.</param>
-        /// <param name="videoExtensions">List of file extensions to recognize as video files.</param>
-        /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
-        /// <param name="dryRun">If true, simulates processing without writing output files.</param>
-        /// <returns>
-        /// A tuple containing the count of successfully processed files and the count of failures.
-        /// </returns>
-        /// <remarks>
-        /// <para>
-        /// This method delegates to the generic <see cref="DocumentNoteBatchProcessor{TProcessor}"/>
-        /// for all batch processing operations while maintaining backward compatibility with 
-        /// existing video-specific API.
-        /// </para>
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// // Process all video files in a directory
-        /// var processor = new VideoNoteBatchProcessor(logger);
-        /// var result = await processor.ProcessVideosAsync(
-        ///     "path/to/videos",
-        ///     "path/to/notes",
-        ///     new List&lt;string&gt; { ".mp4", ".mov", ".avi" },
-        ///     "sk-yourapikeyhere");
-        /// 
-        /// Console.WriteLine($"Processed: {result.processed}, Failed: {result.failed}");
-        /// </code>
-        /// </example>
-        /// <summary>
-        /// Processes one or more video files, generating markdown notes for each, with extended options.
-        /// </summary>
-        /// <param name="input">Input file path or directory containing video files.</param>
-        /// <param name="output">Output directory where markdown notes will be saved.</param>
-        /// <param name="videoExtensions">List of file extensions to recognize as video files.</param>
-        /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
-        /// <param name="dryRun">If true, simulates processing without writing output files.</param>
-        /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
-        /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
-        /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
-        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
-        /// <param name="resourcesRoot">Optional override for resources root directory.</param>
-        /// <param name="appConfig">The application configuration object.</param>
-        /// <returns>A tuple containing the count of successfully processed files and the count of failures.</returns>
-        public async Task<(int processed, int failed)> ProcessVideosAsync(
+                 /// Processes one or more video files, generating markdown notes for each.
+                 /// </summary>
+                 /// <param name="input">Input file path or directory containing video files.</param>
+                 /// <param name="output">Output directory where markdown notes will be saved.</param>
+                 /// <param name="videoExtensions">List of file extensions to recognize as video files.</param>
+                 /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
+                 /// <param name="dryRun">If true, simulates processing without writing output files.</param>
+                 /// <returns>
+                 /// A tuple containing the count of successfully processed files and the count of failures.
+                 /// </returns>
+                 /// <remarks>
+                 /// <para>
+                 /// This method delegates to the generic <see cref="DocumentNoteBatchProcessor{TProcessor}"/>
+                 /// for all batch processing operations while maintaining backward compatibility with 
+                 /// existing video-specific API.
+                 /// </para>
+                 /// </remarks>
+                 /// <example>
+                 /// <code>
+                 /// // Process all video files in a directory
+                 /// var processor = new VideoNoteBatchProcessor(logger);
+                 /// var result = await processor.ProcessVideosAsync(
+                 ///     "path/to/videos",
+                 ///     "path/to/notes",
+                 ///     new List&lt;string&gt; { ".mp4", ".mov", ".avi" },
+                 ///     "sk-yourapikeyhere");
+                 /// 
+                 /// Console.WriteLine($"Processed: {result.processed}, Failed: {result.failed}");
+                 /// </code>
+                 /// </example>
+                 /// <summary>
+                 /// Processes one or more video files, generating markdown notes for each, with extended options.
+                 /// </summary>
+                 /// <param name="input">Input file path or directory containing video files.</param>
+                 /// <param name="output">Output directory where markdown notes will be saved.</param>
+                 /// <param name="videoExtensions">List of file extensions to recognize as video files.</param>
+                 /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
+                 /// <param name="dryRun">If true, simulates processing without writing output files.</param>
+                 /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
+                 /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
+                 /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
+                 /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
+                 /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+                 /// <param name="appConfig">The application configuration object.</param>
+                 /// <returns>A tuple containing the count of successfully processed files and the count of failures.</returns>
+                 /// <summary>
+                 /// Processes one or more video files, generating markdown notes for each, with extended options.
+                 /// </summary>
+                 /// <param name="input">Input file path or directory containing video files.</param>
+                 /// <param name="output">Output directory where markdown notes will be saved.</param>
+                 /// <param name="videoExtensions">List of file extensions to recognize as video files.</param>
+                 /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
+                 /// <param name="dryRun">If true, simulates processing without writing output files.</param>
+                 /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
+                 /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
+                 /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
+                 /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
+                 /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+                 /// <param name="appConfig">The application configuration object.</param>
+                 /// <returns>A <see cref="BatchProcessResult"/> containing processing statistics and summary.</returns>
+        public async Task<BatchProcessResult> ProcessVideosAsync(
             string input,
             string? output,
             List<string> videoExtensions,
@@ -123,7 +136,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             bool retryFailed = false,
             int? timeoutSeconds = null,
             string? resourcesRoot = null,
-            Configuration.AppConfig? appConfig = null)        {
+            Configuration.AppConfig? appConfig = null)
+        {
             return await _batchProcessor.ProcessDocumentsAsync(
                 input,
                 output,

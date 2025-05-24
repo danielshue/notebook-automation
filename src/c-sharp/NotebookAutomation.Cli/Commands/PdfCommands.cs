@@ -131,20 +131,24 @@ namespace NotebookAutomation.Cli.Commands
                 var batchProcessor = serviceProvider.GetRequiredService<PdfNoteBatchProcessor>();
 
                 // Get OpenAI API key from config or environment
-                string? openAiApiKey = Environment.GetEnvironmentVariable(NotebookAutomation.Core.Configuration.AIServiceConfig.AiApiKeyEnvVar);                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
+                string? openAiApiKey = Environment.GetEnvironmentVariable(NotebookAutomation.Core.Configuration.AIServiceConfig.AiApiKeyEnvVar); if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
                 {
                     openAiApiKey = appConfig.AiService.GetApiKey();
                 }
 
                 // Process PDFs using batch processor
-                var (processed, failed) = await batchProcessor.ProcessPdfsAsync(
+                var result = await batchProcessor.ProcessPdfsAsync(
                     input,
                     output,
                     new List<string> { ".pdf" },
                     openAiApiKey,
                     dryRun);
 
-                logger?.LogInformation("PDF processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);
+                logger?.LogInformation("PDF processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
+                if (!string.IsNullOrWhiteSpace(result.Summary))
+                {
+                    AnsiConsoleHelper.WriteInfo(result.Summary);
+                }
             }
             catch (Exception ex)
             {

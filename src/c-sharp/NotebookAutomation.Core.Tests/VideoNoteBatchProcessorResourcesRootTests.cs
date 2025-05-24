@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Tools.Shared;
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -45,7 +46,7 @@ namespace NotebookAutomation.Core.Tests
             string customResourcesRoot = Path.Combine(_testDir, "custom_resources");
 
             // Act
-            var (processed, failed) = await _processor.ProcessVideosAsync(
+            var result = await _processor.ProcessVideosAsync(
                 videoPath,
                 _outputDir,
                 extensions,
@@ -59,12 +60,13 @@ namespace NotebookAutomation.Core.Tests
             );
 
             // Assert
-            Assert.AreEqual(1, processed);
-            Assert.AreEqual(0, failed);
+            Assert.AreEqual(1, result.Processed);
+            Assert.AreEqual(0, result.Failed);
             var notePath = Path.Combine(_outputDir, "test.md");
             Assert.IsTrue(File.Exists(notePath));
             var noteContent = File.ReadAllText(notePath);
             StringAssert.Contains(noteContent, customResourcesRoot);
         }
     }
+
 }
