@@ -110,10 +110,9 @@ namespace NotebookAutomation.Cli.Commands
                     return;
                 }
 
-                string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.OpenAi != null)
+                string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
                 {
-                    openAiApiKey = appConfig.OpenAi.ApiKey;
+                    openAiApiKey = appConfig.AiService.GetApiKey();
                 }
 
                 var processor = new MarkdownNoteProcessor(logger);

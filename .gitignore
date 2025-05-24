@@ -191,6 +191,11 @@ appsettings.Development.json
 appsettings.*.json
 !appsettings.json
 !appsettings.Example.json
+
+# Test outputs and videos
+src/c-sharp/TestOutput/
+src/c-sharp/TestVideos/
+
 src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
 src/c-sharp/NotebookAutomation.Core.Tests/obj/project.assets.json
 src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json

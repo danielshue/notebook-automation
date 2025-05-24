@@ -9,11 +9,11 @@ namespace NotebookAutomation.Core.Services
     /// Loads prompt templates and performs variable substitution.
     /// Handles different template types (chunk summary, final summary) and
     /// supports dynamic prompt file loading from prompts directory.
-    /// </summary>
+    /// </summary>    
     public class PromptTemplateService
     {
         private readonly ILogger _logger;
-        private readonly string _promptsDirectory;
+        private string _promptsDirectory = string.Empty;
 
         // Default templates to use as fallbacks if files are not found
         private const string DefaultChunkPrompt = @"You are an expert academic summarizer. Summarize the following content for a study note, focusing on key concepts, main arguments, and actionable insights. Use clear, concise language suitable for graduate-level students.
@@ -63,36 +63,92 @@ Content:
         public PromptTemplateService(ILogger logger)
         {
             _logger = logger;
+            InitializePromptsDirectory();
+        }
 
-            // Find the path to the prompts directory
-            string baseDirectory = AppContext.BaseDirectory;
-            
-            // Try to find the prompts in the project structure
-            // First look in the Core project
-            string projectPromptsDir = Path.Combine(baseDirectory, "Prompts");
-            if (Directory.Exists(projectPromptsDir))
+        /// <summary>
+        /// Initializes a new instance of the PromptTemplateService class with config.
+        /// </summary>
+        /// <param name="logger">The logger to use for logging.</param>
+        /// <param name="config">The application configuration.</param>
+        public PromptTemplateService(ILogger logger, Core.Configuration.AppConfig config)
+        {
+            _logger = logger;
+            InitializePromptsDirectory(config);
+        }
+
+        /// <summary>
+        /// Initializes the prompts directory using the configured path or searching in common locations.
+        /// </summary>
+        /// <param name="config">Optional application configuration.</param>
+        private void InitializePromptsDirectory(Core.Configuration.AppConfig? config = null)
+        {
+            // First try to get the prompts directory from configuration if provided
+            if (config != null && !string.IsNullOrEmpty(config.Paths.PromptsPath))
             {
-                _promptsDirectory = projectPromptsDir;
-                _logger.LogInformation("Using prompts directory from project: {PromptsDirectory}", _promptsDirectory);
-            }
-            else
-            {
-                // Try to find the repository root (usually 2 levels up from the bin/Debug directory)
-                string repoRoot = Path.GetFullPath(Path.Combine(baseDirectory, "../../../../.."));
-                string rootPromptsDir = Path.Combine(repoRoot, "Prompts");
-                
-                if (Directory.Exists(rootPromptsDir))
+                string configPromptsDir = config.Paths.PromptsPath;
+                if (Directory.Exists(configPromptsDir))
                 {
-                    _promptsDirectory = rootPromptsDir;
-                    _logger.LogInformation("Using prompts directory from repository root: {PromptsDirectory}", _promptsDirectory);
+                    _promptsDirectory = configPromptsDir;
+                    _logger.LogInformation("Using prompts directory from config: {PromptsDirectory}", _promptsDirectory);
+                    return;
                 }
                 else
                 {
-                    // If all else fails, use the current directory
-                    _promptsDirectory = baseDirectory;
-                    _logger.LogWarning("Could not find prompts directory. Using base directory: {BaseDirectory}", baseDirectory);
+                    _logger.LogWarning("Configured prompts directory not found: {PromptsDirectory}", configPromptsDir);
                 }
             }
+
+            // Find the path to the prompts directory
+            string baseDirectory = AppContext.BaseDirectory;
+
+            // Try to find the prompts in the project structure
+            // First look in the output directory
+            string projectPromptsDir = Path.Combine(baseDirectory, "Prompts");
+
+            if (Directory.Exists(projectPromptsDir))
+            {
+                _promptsDirectory = projectPromptsDir;
+                _logger.LogInformation("Using prompts directory from output directory: {PromptsDirectory}", _promptsDirectory);
+                return;
+            }
+
+            // Try in the Core project directory
+            string coreProjectDir = Path.GetFullPath(Path.Combine(baseDirectory, "..\\..\\.."));
+            string corePromptsDir = Path.Combine(coreProjectDir, "Prompts");
+
+            if (Directory.Exists(corePromptsDir))
+            {
+                _promptsDirectory = corePromptsDir;
+                _logger.LogInformation("Using prompts directory from Core project: {PromptsDirectory}", _promptsDirectory);
+                return;
+            }
+
+            // Try to find the repository root 
+            string repoRoot = Path.GetFullPath(Path.Combine(baseDirectory, "../../../../.."));
+            string rootPromptsDir = Path.Combine(repoRoot, "Prompts");
+
+            if (Directory.Exists(rootPromptsDir))
+            {
+                _promptsDirectory = rootPromptsDir;
+                _logger.LogInformation("Using prompts directory from repository root: {PromptsDirectory}", _promptsDirectory);
+                return;
+            }
+
+            // Try one level higher in the repo structure
+            string parentRepoRoot = Path.GetFullPath(Path.Combine(baseDirectory, "../../../../../.."));
+            string parentRootPromptsDir = Path.Combine(parentRepoRoot, "Prompts");
+
+            if (Directory.Exists(parentRootPromptsDir))
+            {
+                _promptsDirectory = parentRootPromptsDir;
+                _logger.LogInformation("Using prompts directory from parent repository root: {PromptsDirectory}", _promptsDirectory);
+                return;
+            }
+
+            // If all else fails, use the current directory
+            _promptsDirectory = baseDirectory;
+            _logger.LogWarning("Could not find prompts directory. Using base directory: {BaseDirectory}", baseDirectory);
         }
 
         /// <summary>
@@ -113,7 +169,7 @@ Content:
                 _logger.LogError("Prompt template not found: {TemplatePath}", templatePath);
                 return string.Empty;
             }
-            
+
             string template = await File.ReadAllTextAsync(templatePath);
             string result = SubstituteVariables(template, variables);
             return result;
@@ -142,7 +198,7 @@ Content:
         public async Task<string> LoadTemplateAsync(string templateName)
         {
             string templatePath = Path.Combine(_promptsDirectory, $"{templateName}.md");
-            
+
             try
             {
                 if (File.Exists(templatePath))
@@ -151,7 +207,7 @@ Content:
                     _logger.LogInformation("Loaded template: {TemplateName}", templateName);
                     return content;
                 }
-                
+
                 // Look in project Prompts directory too
                 string projectPromptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", $"{templateName}.md");
                 if (File.Exists(projectPromptPath))
@@ -160,7 +216,7 @@ Content:
                     _logger.LogInformation("Loaded template from project: {TemplateName}", templateName);
                     return content;
                 }
-                
+
                 return GetDefaultTemplate(templateName);
             }
             catch (Exception ex)
@@ -178,7 +234,7 @@ Content:
         private string GetDefaultTemplate(string templateName)
         {
             _logger.LogWarning("Using default template for: {TemplateName}", templateName);
-            
+
             return templateName switch
             {
                 "chunk_summary_prompt" => DefaultChunkPrompt,

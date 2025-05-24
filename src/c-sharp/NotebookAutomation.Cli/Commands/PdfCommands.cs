@@ -131,10 +131,9 @@ namespace NotebookAutomation.Cli.Commands
                 var batchProcessor = serviceProvider.GetRequiredService<PdfNoteBatchProcessor>();
 
                 // Get OpenAI API key from config or environment
-                string? openAiApiKey = Environment.GetEnvironmentVariable(NotebookAutomation.Core.Configuration.OpenAiConfig.OpenAiApiKeyEnvVar);
-                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.OpenAi != null)
+                string? openAiApiKey = Environment.GetEnvironmentVariable(NotebookAutomation.Core.Configuration.AIServiceConfig.AiApiKeyEnvVar);                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
                 {
-                    openAiApiKey = appConfig.OpenAi.ApiKey;
+                    openAiApiKey = appConfig.AiService.GetApiKey();
                 }
 
                 // Process PDFs using batch processor

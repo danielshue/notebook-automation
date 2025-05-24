@@ -185,30 +185,13 @@ namespace NotebookAutomation.Cli
         /// <param name="debug">Whether debug mode is enabled.</param>
         public static void SetupDependencyInjection(string? configPath, bool debug)
         {
-            // Build configuration
-            var configurationBuilder = new ConfigurationBuilder();
+            // Determine environment
+            string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ??
+                                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
+                                "Development";
             
-            // Add the config file if specified, otherwise use default discovery
-            if (!string.IsNullOrEmpty(configPath))
-            {
-                configurationBuilder.AddJsonFile(configPath, optional: false, reloadOnChange: true);
-            }
-            else
-            {
-                // Use AppConfig's discovery logic
-                var defaultConfigPath = AppConfig.FindConfigFile();
-                if (!string.IsNullOrEmpty(defaultConfigPath))
-                {
-                    configurationBuilder.AddJsonFile(defaultConfigPath, optional: false, reloadOnChange: true);
-                }
-                else
-                {
-                    // Fallback to config.json in current directory
-                    configurationBuilder.AddJsonFile("config.json", optional: true, reloadOnChange: true);
-                }
-            }
-            
-            var configuration = configurationBuilder.Build();
+            // Build configuration using ConfigurationSetup helper
+            var configuration = ConfigurationSetup.BuildConfiguration<Program>(environment, configPath);
             
             // Setup service collection
             var services = new ServiceCollection();

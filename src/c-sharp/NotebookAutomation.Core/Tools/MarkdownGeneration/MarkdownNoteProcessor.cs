@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Utils;
@@ -80,10 +76,9 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
                 _logger.LogError("Unsupported file type: {Ext}", ext);
                 return string.Empty;
             }
-            string aiSummary = rawText;
-            if (!string.IsNullOrWhiteSpace(openAiApiKey))
+            string aiSummary = rawText;            if (!string.IsNullOrWhiteSpace(openAiApiKey))
             {
-                var summarizer = new OpenAiSummarizer(_logger, openAiApiKey);
+                var summarizer = new AISummarizer(_logger);
                 aiSummary = await summarizer.SummarizeAsync(rawText, null, promptFileName) ?? rawText;
             }
             var metadata = new Dictionary<string, object>

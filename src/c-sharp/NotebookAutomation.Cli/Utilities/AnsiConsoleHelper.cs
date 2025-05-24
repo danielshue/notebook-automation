@@ -52,5 +52,15 @@ namespace NotebookAutomation.Cli.Utilities
         {
             Console.WriteLine($"{AnsiColors.FAIL}{message}{AnsiColors.ENDC}");
         }
+
+        internal static void WriteHeading(string v)
+        {
+            throw new NotImplementedException();
+        }
+
+        internal static void WriteKeyValue(string v1, string v2)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

@@ -1,10 +1,7 @@
 // Module: ConfigurationExtensions.cs
 // Extension methods for working with IConfiguration and ConfigurationBuilder.
-using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Memory;
 
 namespace NotebookAutomation.Core.Configuration
 {

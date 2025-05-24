@@ -2,6 +2,10 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Cli.Utilities;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
+using Program = NotebookAutomation.Cli.Program;
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -78,7 +82,7 @@ namespace NotebookAutomation.Cli.Commands
                     string value = context.ParseResult.GetValueForArgument(valueArg);
                     string? configPath = context.ParseResult.GetValueForOption(configOption);
                     bool debug = context.ParseResult.GetValueForOption(debugOption);
-                    
+
                     // Always load config directly from JSON for update
                     var configFile = configPath ?? AppConfig.FindConfigFile();
                     var appConfig = AppConfig.LoadFromJsonFile(configFile);
@@ -111,15 +115,72 @@ namespace NotebookAutomation.Cli.Commands
                     context.Console.WriteLine("  paths.resources_root            - Root directory for resources");
                     context.Console.WriteLine("  paths.notebook_vault_root        - Root directory for the notebook vault");
                     context.Console.WriteLine("  paths.metadata_file             - Path to the metadata file");
-                    context.Console.WriteLine("  paths.obsidian_vault_root        - Root directory of the Obsidian vault");
-                    context.Console.WriteLine("  paths.onedrive_resources_basepath - Base path for OneDrive resources");
-                    context.Console.WriteLine("  paths.logging_dir               - Directory for log files");
+                    context.Console.WriteLine("  paths.obsidian_vault_root        - Root directory of the Obsidian vault"); context.Console.WriteLine("  paths.onedrive_resources_basepath - Base path for OneDrive resources");
+                    context.Console.WriteLine("  paths.logging_dir               - Directory for log files"); context.Console.WriteLine("  paths.prompts_path              - Directory containing prompt template files");
                     context.Console.WriteLine("  microsoft_graph.client_id        - Microsoft Graph API client ID");
+                    context.Console.WriteLine("  aiservice.model                 - AI model to use (e.g., gpt-4)");
                     context.Console.WriteLine("  microsoft_graph.api_endpoint     - Microsoft Graph API endpoint");
                     context.Console.WriteLine("  microsoft_graph.authority       - Microsoft Graph API authority");
                     context.Console.WriteLine("  microsoft_graph.scopes          - Microsoft Graph API scopes (comma-separated)");
                     context.Console.WriteLine("  openai.api_key                  - OpenAI API key");
                     context.Console.WriteLine("  video_extensions                - Video file extensions (comma-separated)");
+                }
+            });
+
+            // Display user secrets status
+            var displaySecretsCommand = new Command("display-secrets", "Display user secrets status (no values shown)");
+            configCommand.AddCommand(displaySecretsCommand);
+            displaySecretsCommand.SetHandler(() =>
+            {
+                try
+                {
+                    var userSecrets = Program.ServiceProvider.GetRequiredService<UserSecretsHelper>();
+                    DisplayUserSecrets(userSecrets);
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsoleHelper.WriteError($"Error displaying user secrets: {ex.Message}");
+                }
+            });
+
+            // config secrets
+            var secretsCommand = new Command("secrets", "Display status of user secrets");
+            configCommand.AddCommand(secretsCommand);
+            secretsCommand.SetHandler((InvocationContext context) =>
+            {
+                try
+                {
+                    var userSecretsHelper = Program.ServiceProvider.GetService(typeof(UserSecretsHelper)) as UserSecretsHelper;
+
+                    if (userSecretsHelper == null)
+                    {
+                        AnsiConsoleHelper.WriteError("User secrets helper is not available.");
+                        return;
+                    }
+
+                    // Check for common secrets (don't show values, just if they exist)
+                    bool hasOpenAIKey = userSecretsHelper.HasSecret("OpenAI:ApiKey");
+                    bool hasMicrosoftClientId = userSecretsHelper.HasSecret("Microsoft:ClientId");
+                    bool hasMicrosoftTenantId = userSecretsHelper.HasSecret("Microsoft:TenantId");
+
+                    // Display status
+                    Console.WriteLine("User Secrets Status:");
+                    Console.WriteLine();
+                    Console.WriteLine($"OpenAI API Key: {(hasOpenAIKey ? "[Set]" : "[Not Set]")}");
+                    Console.WriteLine($"Microsoft Graph Client ID: {(hasMicrosoftClientId ? "[Set]" : "[Not Set]")}");
+                    Console.WriteLine($"Microsoft Graph Tenant ID: {(hasMicrosoftTenantId ? "[Set]" : "[Not Set]")}");
+
+                    // Add information about managing secrets
+                    Console.WriteLine();
+                    AnsiConsoleHelper.WriteInfo("To manage user secrets, use the following commands:");
+                    Console.WriteLine("  dotnet user-secrets set \"UserSecrets:OpenAI:ApiKey\" \"your-api-key\" --project src/c-sharp/NotebookAutomation.Cli");
+                    Console.WriteLine("  dotnet user-secrets list --project src/c-sharp/NotebookAutomation.Cli");
+                    Console.WriteLine();
+                    AnsiConsoleHelper.WriteInfo("For more information, see: src/c-sharp/docs/UserSecrets.md");
+                }
+                catch (Exception ex)
+                {
+                    AnsiConsoleHelper.WriteError($"Error displaying user secrets: {ex.Message}");
                 }
             });
 
@@ -151,7 +212,8 @@ namespace NotebookAutomation.Cli.Commands
             });
 
             rootCommand.AddCommand(configCommand);
-        }        public static void Initialize(string? configPath, bool debug)
+        }
+        public static void Initialize(string? configPath, bool debug)
         {
             // Initialize dependency injection if needed
             if (configPath != null)
@@ -190,6 +252,7 @@ namespace NotebookAutomation.Cli.Commands
                             case "metadata_file": paths.MetadataFile = value; return true;
                             case "obsidian_vault_root": paths.ObsidianVaultRoot = value; return true;
                             case "onedrive_resources_basepath": paths.OnedriveResourcesBasepath = value; return true;
+                            case "prompts_path": paths.PromptsPath = value; return true;
                             case "logging_dir": paths.LoggingDir = value; return true;
                         }
                         break;
@@ -204,10 +267,19 @@ namespace NotebookAutomation.Cli.Commands
                         }
                         break;
                     case "openai":
-                        if (prop == "api_key") {
+                        if (prop == "api_key")
+                        {
                             // Do not allow updating/storing the OpenAI API key in config for security
                             AnsiConsoleHelper.WriteWarning("OpenAI API key must be set via the OPENAI_API_KEY environment variable. It will not be stored in the config file.");
                             return false;
+                        }
+                        break;
+                    case "aiservice":
+                        var aiService = appConfig.AiService;
+                        switch (prop)
+                        {
+                            case "model": aiService.Model = value; return true;
+                            case "endpoint": aiService.Endpoint = value; return true;
                         }
                         break;
                     case "video_extensions":
@@ -249,24 +321,91 @@ namespace NotebookAutomation.Cli.Commands
             PrintAligned("obsidian_vault_root", appConfig.Paths.ObsidianVaultRoot);
             PrintAligned("onedrive_resources_basepath", appConfig.Paths.OnedriveResourcesBasepath);
             PrintAligned("logging_dir", appConfig.Paths.LoggingDir);
+            PrintAligned("prompts_path", appConfig.Paths.PromptsPath);
 
             Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Microsoft Graph API =={AnsiColors.ENDC}");
             PrintAligned("client_id", appConfig.MicrosoftGraph.ClientId);
             PrintAligned("api_endpoint", appConfig.MicrosoftGraph.ApiEndpoint);
             PrintAligned("authority", appConfig.MicrosoftGraph.Authority);
-            PrintAligned("scopes", string.Join(", ", appConfig.MicrosoftGraph.Scopes));
-
-            Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== OpenAI =={AnsiColors.ENDC}");
+            PrintAligned("scopes", string.Join(", ", appConfig.MicrosoftGraph.Scopes)); Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== AI Service =={AnsiColors.ENDC}");
             // Always show where the OpenAI API key is sourced from
-            string openAiKey = Environment.GetEnvironmentVariable(OpenAiConfig.OpenAiApiKeyEnvVar) != null
-                ? $"[set via ENV:{OpenAiConfig.OpenAiApiKeyEnvVar}]"
-                : $"[not set - must set ENV:{OpenAiConfig.OpenAiApiKeyEnvVar}]";
+            string? apiKey = appConfig.AiService.GetApiKey();
+            string openAiKey;
+
+            if (!string.IsNullOrEmpty(apiKey))
+            {
+                openAiKey = "[API key available]";
+
+                // Indicate the source if we can determine it
+                if (Environment.GetEnvironmentVariable(AIServiceConfig.AiApiKeyEnvVar) != null)
+                {
+                    openAiKey += $" [via ENV:{AIServiceConfig.AiApiKeyEnvVar}]";
+                }
+                else
+                {
+                    openAiKey += " [via User Secrets]";
+                }
+            }
+            else
+            {
+                openAiKey = $"[not set - set via User Secrets or ENV:{AIServiceConfig.AiApiKeyEnvVar}]";
+            }
+
             PrintAligned("api_key", openAiKey);
-            PrintAligned("model", appConfig.OpenAi.Model ?? "");
+            PrintAligned("model", appConfig.AiService.Model ?? "");
 
             Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Video Extensions =={AnsiColors.ENDC}");
             PrintAligned("video_extensions", string.Join(", ", appConfig.VideoExtensions));
             Console.WriteLine($"\n{AnsiColors.GREY}Tip: Use '{AnsiColors.BOLD}config update-key <key> <value>{AnsiColors.ENDC}{AnsiColors.GREY}' to change a setting.{AnsiColors.ENDC}\n");
+        }
+
+        /// <summary>
+        /// Displays the status of user secrets in the configuration.
+        /// </summary>
+        /// <param name="userSecrets">The user secrets helper.</param>
+        private void DisplayUserSecrets(UserSecretsHelper userSecrets)
+        {
+            AnsiConsoleHelper.WriteHeading("User Secrets Status");
+
+            // Check for common secrets (don't show values, just if they exist)
+            bool hasOpenAIKey = userSecrets.HasSecret("OpenAI:ApiKey");
+            bool hasMicrosoftClientId = userSecrets.HasSecret("Microsoft:ClientId");
+            bool hasMicrosoftTenantId = userSecrets.HasSecret("Microsoft:TenantId");
+
+            // Display status
+            AnsiConsoleHelper.WriteKeyValue("OpenAI API Key", hasOpenAIKey ? "[Set]" : "[Not Set]");
+            AnsiConsoleHelper.WriteKeyValue("Microsoft Graph Client ID", hasMicrosoftClientId ? "[Set]" : "[Not Set]");
+            AnsiConsoleHelper.WriteKeyValue("Microsoft Graph Tenant ID", hasMicrosoftTenantId ? "[Set]" : "[Not Set]");
+
+            // Add information about managing secrets
+            Console.WriteLine();
+            AnsiConsoleHelper.WriteInfo("To manage user secrets, use the following commands:");
+            Console.WriteLine("  dotnet user-secrets set \"UserSecrets:OpenAI:ApiKey\" \"your-api-key\" --project src/c-sharp/NotebookAutomation.Cli");
+            Console.WriteLine("  dotnet user-secrets list --project src/c-sharp/NotebookAutomation.Cli");
+            Console.WriteLine();
+            AnsiConsoleHelper.WriteInfo("For more information, see: src/c-sharp/docs/UserSecrets.md");
+        }
+
+        /// <summary>
+        /// Masks a secret value for display.
+        /// </summary>
+        /// <param name="secret">The secret to mask.</param>
+        /// <returns>A masked version of the secret, or "[Not Set]" if it's null or empty.</returns>
+        private string MaskSecret(string? secret)
+        {
+            if (string.IsNullOrEmpty(secret))
+            {
+                return "[Not Set]";
+            }
+
+            // Show first 3 and last 3 characters if long enough
+            if (secret.Length > 8)
+            {
+                return $"{secret[..3]}...{secret[^3..]}";
+            }
+
+            // Otherwise just indicate it's set
+            return "[Set]";
         }
     }
 }

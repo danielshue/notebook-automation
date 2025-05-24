@@ -32,22 +32,16 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
         public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
-            var inputOption = new Option<string>(
+            var inputOption = new Option<string?>(
                 aliases: ["--input", "-i"],
-                description: "Path to the input video file or directory");
+                description: "Path to the input video file or directory (will auto-detect if it's a file or folder)")
+            {
+                IsRequired = true
+            };
 
             var outputOption = new Option<string>(
-                aliases: ["--output", "-o"],
-                description: "Path to the output markdown file or directory");
-
-            var singleFileOption = new Option<string?>(
-                aliases: ["--single-file", "-f"],
-                description: "Process a single video file (overrides --input)"
-            );
-            var folderOption = new Option<string?>(
-                aliases: ["--folder"],
-                description: "Process all video files in a directory (overrides --input)"
-            );
+                aliases: ["--overwrite-output-dir", "-o"],
+                description: "Override the default output directory (normally uses obsidian_vault_root from config)");
             var resourcesRootOption = new Option<string?>(
                 aliases: ["--resources-root"],
                 description: "Override resources root directory"
@@ -77,11 +71,8 @@ namespace NotebookAutomation.Cli.Commands
                 description: "Skip OneDrive share link creation"
             );
 
-            var videoCommand = new Command("video-meta", "Video metadata commands");
-            videoCommand.AddOption(inputOption);
+            var videoCommand = new Command("video-meta", "Video metadata commands"); videoCommand.AddOption(inputOption);
             videoCommand.AddOption(outputOption);
-            videoCommand.AddOption(singleFileOption);
-            videoCommand.AddOption(folderOption);
             videoCommand.AddOption(resourcesRootOption);
             videoCommand.AddOption(noSummaryOption);
             videoCommand.AddOption(retryFailedOption);
@@ -89,17 +80,15 @@ namespace NotebookAutomation.Cli.Commands
             videoCommand.AddOption(timeoutOption);
             videoCommand.AddOption(refreshAuthOption);
             videoCommand.AddOption(noShareLinksOption);
-            
+
             videoCommand.SetHandler(async context =>
             {
                 string? input = context.ParseResult.GetValueForOption(inputOption);
-                string? output = context.ParseResult.GetValueForOption(outputOption);
+                string? overrideOutputDir = context.ParseResult.GetValueForOption(outputOption);
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                string? singleFile = context.ParseResult.GetValueForOption(singleFileOption);
-                string? folder = context.ParseResult.GetValueForOption(folderOption);
                 string? resourcesRoot = context.ParseResult.GetValueForOption(resourcesRootOption);
                 bool noSummary = context.ParseResult.GetValueForOption(noSummaryOption);
                 bool retryFailed = context.ParseResult.GetValueForOption(retryFailedOption);
@@ -140,24 +129,38 @@ namespace NotebookAutomation.Cli.Commands
                 var videoExtensions = appConfig.VideoExtensions ?? new List<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
 
                 // Get OpenAI API key from environment or config
-                string? openAiApiKey = Environment.GetEnvironmentVariable(OpenAiConfig.OpenAiApiKeyEnvVar);
-                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig.OpenAi != null)
+                string? openAiApiKey = Environment.GetEnvironmentVariable(AIServiceConfig.AiApiKeyEnvVar); if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig.AiService != null)
                 {
-                    openAiApiKey = appConfig.OpenAi.ApiKey;
-                }
-
-                // Process videos
-                if (string.IsNullOrEmpty(input))
+                    openAiApiKey = appConfig.AiService.GetApiKey();
+                }                // Process videos
+                // Verify that we have an input source
+                if (string.IsNullOrWhiteSpace(input))
                 {
-                    logger.LogError("Input path is required");
+                    logger.LogError("Input source is required. Use --input/-i to specify a video file or folder.");
                     return;
                 }
 
+                // Auto-detect if input is a file or folder
+                bool isFile = File.Exists(input);
+                bool isDirectory = Directory.Exists(input);
+
+                if (!isFile && !isDirectory)
+                {
+                    logger.LogError("Input path does not exist or is not accessible: {Path}", input);
+                    return;
+                }
+
+                logger.LogInformation("Processing {Type}: {Path}",
+                    isFile ? "file" : "directory",
+                    input);
+                // Log where output will be written
+                logger.LogInformation("Output will be written to: {OutputPath}",
+                    overrideOutputDir ?? appConfig.Paths?.ObsidianVaultRoot ?? "Generated");
+
                 var (processed, failed) = await batchProcessor.ProcessVideosAsync(
-                    // Determine input path based on --single-file or --folder
-                    !string.IsNullOrWhiteSpace(singleFile) ? singleFile :
-                    !string.IsNullOrWhiteSpace(folder) ? folder : input,
-                    output ?? appConfig.Paths?.NotebookVaultRoot ?? "Generated",
+                    // Use the input from command line
+                    input,
+                    overrideOutputDir ?? appConfig.Paths?.ObsidianVaultRoot ?? "Generated",
                     videoExtensions,
                     openAiApiKey,
                     dryRun,

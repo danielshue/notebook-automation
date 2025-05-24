@@ -52,6 +52,21 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PdfNoteBatchProcessor"/> class with AISummarizer.
+        /// </summary>
+        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
+        /// <remarks>
+        /// Creates a new <see cref="PdfNoteProcessor"/> instance with the provided AISummarizer and wraps it with a 
+        /// <see cref="DocumentNoteBatchProcessor{TProcessor}"/> for batch processing operations.
+        /// </remarks>
+        public PdfNoteBatchProcessor(ILogger logger, Services.AISummarizer aiSummarizer)
+        {
+            var pdfProcessor = new PdfNoteProcessor(logger, aiSummarizer);
+            _batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(logger, pdfProcessor);
+        }
+
+        /// <summary>
         /// Processes one or more PDF files, generating markdown notes for each.
         /// </summary>
         /// <param name="input">Input file path or directory containing PDF files.</param>

@@ -42,5 +42,11 @@ namespace NotebookAutomation.Core.Configuration
         /// </summary>
         [JsonPropertyName("logging_dir")]
         public string LoggingDir { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Directory containing prompt template files.
+        /// </summary>
+        [JsonPropertyName("prompts_path")]
+        public string PromptsPath { get; set; } = string.Empty;
     }
 }
