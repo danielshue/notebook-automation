@@ -196,11 +196,16 @@ appsettings.*.json
 src/c-sharp/TestOutput/
 src/c-sharp/TestVideos/
 
-src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
-src/c-sharp/NotebookAutomation.Core.Tests/obj/project.assets.json
-src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
-src/c-sharp/NotebookAutomation.Core.Tests/obj/project.nuget.cache
-src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
-src/c-sharp/NotebookAutomation.Core.Tests/obj/project.nuget.cache
-src/c-sharp/NotebookAutomation.Core.Tests/obj/project.assets.json
-src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
+# All bin and obj directories in any subdirectory
+**/bin/
+**/obj/
+**/*.exe
+**/*.dll
+**/*.pdb
+
+# Project-specific build files
+**/*.csproj.nuget.dgspec.json
+**/*.csproj.nuget.g.props
+**/*.csproj.nuget.g.targets
+**/project.assets.json
+**/project.nuget.cache
