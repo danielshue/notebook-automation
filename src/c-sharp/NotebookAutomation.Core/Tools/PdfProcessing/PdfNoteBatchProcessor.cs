@@ -97,7 +97,16 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
         /// Console.WriteLine($"Processed: {result.processed}, Failed: {result.failed}");
         /// </code>
         /// </example>
-        public async Task<(int processed, int failed)> ProcessPdfsAsync(
+        /// <summary>
+        /// Processes one or more PDF files, generating markdown notes for each.
+        /// </summary>
+        /// <param name="input">Input file path or directory containing PDF files.</param>
+        /// <param name="output">Output directory where markdown notes will be saved.</param>
+        /// <param name="pdfExtensions">List of file extensions to recognize as PDF files (defaults to [".pdf"]).</param>
+        /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
+        /// <param name="dryRun">If true, simulates processing without writing output files.</param>
+        /// <returns>A <see cref="BatchProcessResult"/> containing processing statistics and summary.</returns>
+        public async Task<BatchProcessResult> ProcessPdfsAsync(
             string input,
             string? output,
             List<string>? pdfExtensions = null,
@@ -136,7 +145,22 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
         /// <param name="resourcesRoot">Optional override for resources root directory.</param>
         /// <param name="appConfig">The application configuration object.</param>
         /// <returns>A tuple containing the count of successfully processed files and the count of failures.</returns>
-        public async Task<(int processed, int failed)> ProcessPdfsAsync(
+        /// <summary>
+        /// Processes one or more PDF files, generating markdown notes for each, with extended options.
+        /// </summary>
+        /// <param name="input">Input file path or directory containing PDF files.</param>
+        /// <param name="output">Output directory where markdown notes will be saved.</param>
+        /// <param name="pdfExtensions">List of file extensions to recognize as PDF files (defaults to [".pdf"]).</param>
+        /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
+        /// <param name="dryRun">If true, simulates processing without writing output files.</param>
+        /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
+        /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
+        /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
+        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
+        /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+        /// <param name="appConfig">The application configuration object.</param>
+        /// <returns>A <see cref="BatchProcessResult"/> containing processing statistics and summary.</returns>
+        public async Task<BatchProcessResult> ProcessPdfsAsync(
             string input,
             string? output,
             List<string>? pdfExtensions,

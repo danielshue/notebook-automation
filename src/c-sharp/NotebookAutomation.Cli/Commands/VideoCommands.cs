@@ -157,7 +157,7 @@ namespace NotebookAutomation.Cli.Commands
                 logger.LogInformation("Output will be written to: {OutputPath}",
                     overrideOutputDir ?? appConfig.Paths?.ObsidianVaultRoot ?? "Generated");
 
-                var (processed, failed) = await batchProcessor.ProcessVideosAsync(
+                var result = await batchProcessor.ProcessVideosAsync(
                     // Use the input from command line
                     input,
                     overrideOutputDir ?? appConfig.Paths?.ObsidianVaultRoot ?? "Generated",
@@ -171,7 +171,11 @@ namespace NotebookAutomation.Cli.Commands
                     resourcesRoot,
                     appConfig);
 
-                logger.LogInformation("Video processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);
+                logger.LogInformation("Video processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
+                if (!string.IsNullOrWhiteSpace(result.Summary))
+                {
+                    AnsiConsoleHelper.WriteInfo(result.Summary);
+                }
             });
 
             rootCommand.AddCommand(videoCommand);

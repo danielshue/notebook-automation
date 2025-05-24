@@ -50,7 +50,7 @@ namespace NotebookAutomation.Core.Tests
             var extensions = new List<string> { ".pdf" };
 
             // Act
-            var (processed, failed) = await _processor.ProcessPdfsAsync(
+            var result = await _processor.ProcessPdfsAsync(
                 pdfPath,
                 _outputDir,
                 extensions,
@@ -58,8 +58,8 @@ namespace NotebookAutomation.Core.Tests
                 dryRun: true); // Use dry run to avoid actual PDF processing
 
             // Assert
-            Assert.AreEqual(1, processed);
-            Assert.AreEqual(0, failed);
+            Assert.AreEqual(1, result.Processed);
+            Assert.AreEqual(0, result.Failed);
         }
 
         [TestMethod]
@@ -70,7 +70,7 @@ namespace NotebookAutomation.Core.Tests
             var extensions = new List<string> { ".pdf" };
 
             // Act
-            var (processed, failed) = await _processor.ProcessPdfsAsync(
+            var result = await _processor.ProcessPdfsAsync(
                 nonExistentPath,
                 _outputDir,
                 extensions,
@@ -78,8 +78,8 @@ namespace NotebookAutomation.Core.Tests
                 dryRun: false);
 
             // Assert
-            Assert.AreEqual(0, processed);
-            Assert.AreEqual(1, failed);
+            Assert.AreEqual(0, result.Processed);
+            Assert.AreEqual(1, result.Failed);
         }
 
         [TestMethod]
@@ -95,7 +95,7 @@ namespace NotebookAutomation.Core.Tests
             var extensions = new List<string> { ".pdf" };
 
             // Act
-            var (processed, failed) = await _processor.ProcessPdfsAsync(
+            var result = await _processor.ProcessPdfsAsync(
                 _testDir,
                 _outputDir,
                 extensions,
@@ -103,8 +103,8 @@ namespace NotebookAutomation.Core.Tests
                 dryRun: true); // Use dry run to avoid actual PDF processing
 
             // Assert
-            Assert.AreEqual(2, processed); // Should process only the 2 PDF files
-            Assert.AreEqual(0, failed);
+            Assert.AreEqual(2, result.Processed); // Should process only the 2 PDF files
+            Assert.AreEqual(0, result.Failed);
         }
 
         [TestMethod]
@@ -116,7 +116,7 @@ namespace NotebookAutomation.Core.Tests
             var extensions = new List<string> { ".pdf" };
 
             // Act
-            var (processed, failed) = await _processor.ProcessPdfsAsync(
+            var result = await _processor.ProcessPdfsAsync(
                 pdfPath,
                 _outputDir,
                 extensions,
@@ -130,15 +130,15 @@ namespace NotebookAutomation.Core.Tests
                 appConfig: null);
 
             // Assert
-            Assert.AreEqual(1, processed);
-            Assert.AreEqual(0, failed);
+            Assert.AreEqual(1, result.Processed);
+            Assert.AreEqual(0, result.Failed);
         }
 
         [TestMethod]
         public async Task ProcessPdfsAsync_WithEmptyInput_ReturnsFailure()
         {
             // Act
-            var (processed, failed) = await _processor.ProcessPdfsAsync(
+            var result = await _processor.ProcessPdfsAsync(
                 string.Empty,
                 _outputDir,
                 new List<string> { ".pdf" },
@@ -146,8 +146,8 @@ namespace NotebookAutomation.Core.Tests
                 dryRun: false);
 
             // Assert
-            Assert.AreEqual(0, processed);
-            Assert.AreEqual(1, failed);
+            Assert.AreEqual(0, result.Processed);
+            Assert.AreEqual(1, result.Failed);
         }
     }
 }

@@ -47,7 +47,7 @@ namespace NotebookAutomation.Core.Tests
             var extensions = new List<string> { ".mp4" };
 
             // Act
-            var (processed, failed) = await _processor.ProcessVideosAsync(
+            var result = await _processor.ProcessVideosAsync(
                 videoPath,
                 _outputDir,
                 extensions,
@@ -57,8 +57,8 @@ namespace NotebookAutomation.Core.Tests
             );
 
             // Assert
-            Assert.AreEqual(1, processed);
-            Assert.AreEqual(0, failed);
+            Assert.AreEqual(1, result.Processed);
+            Assert.AreEqual(0, result.Failed);
             var notePath = Path.Combine(_outputDir, "test.md");
             Assert.IsTrue(File.Exists(notePath));
             var noteContent = File.ReadAllText(notePath);
@@ -76,7 +76,7 @@ namespace NotebookAutomation.Core.Tests
             File.WriteAllText(notePath, "old content");
 
             // Act
-            var (processed, failed) = await _processor.ProcessVideosAsync(
+            var result = await _processor.ProcessVideosAsync(
                 videoPath,
                 _outputDir,
                 extensions,
@@ -87,8 +87,8 @@ namespace NotebookAutomation.Core.Tests
             );
 
             // Assert
-            Assert.AreEqual(1, processed);
-            Assert.AreEqual(0, failed);
+            Assert.AreEqual(1, result.Processed);
+            Assert.AreEqual(0, result.Failed);
             var noteContent = File.ReadAllText(notePath);
             StringAssert.Contains(noteContent, "Summary generation disabled");
         }
@@ -104,7 +104,7 @@ namespace NotebookAutomation.Core.Tests
             File.WriteAllText(notePath, "old content");
 
             // Act
-            var (processed, failed) = await _processor.ProcessVideosAsync(
+            var result = await _processor.ProcessVideosAsync(
                 videoPath,
                 _outputDir,
                 extensions,
@@ -115,8 +115,8 @@ namespace NotebookAutomation.Core.Tests
             );
 
             // Assert
-            Assert.AreEqual(0, processed);
-            Assert.AreEqual(0, failed);
+            Assert.AreEqual(0, result.Processed);
+            Assert.AreEqual(0, result.Failed);
             var noteContent = File.ReadAllText(notePath);
             Assert.AreEqual("old content", noteContent);
         }
@@ -134,7 +134,7 @@ namespace NotebookAutomation.Core.Tests
             File.WriteAllLines(failedListPath, new[] { videoPath1 });
 
             // Act
-            var (processed, failed) = await _processor.ProcessVideosAsync(
+            var result = await _processor.ProcessVideosAsync(
                 _testDir,
                 _outputDir,
                 extensions,
@@ -146,8 +146,8 @@ namespace NotebookAutomation.Core.Tests
             );
 
             // Assert
-            Assert.AreEqual(1, processed);
-            Assert.AreEqual(0, failed);
+            Assert.AreEqual(1, result.Processed);
+            Assert.AreEqual(0, result.Failed);
             Assert.IsTrue(File.Exists(Path.Combine(_outputDir, "fail1.md")));
             Assert.IsFalse(File.Exists(Path.Combine(_outputDir, "fail2.md")));
         }
