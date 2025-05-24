@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Memory;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Cli.Commands;
@@ -92,30 +94,38 @@ namespace NotebookAutomation.Cli.Tests
 
         [TestMethod]
         public void RequireOpenAi_ReturnsFalse_WhenMissingValues()
-        {
-            var config = new AppConfig
+        {            var config = new AppConfig
             {
-                OpenAi = new OpenAiConfig
+                AiService = new AIServiceConfig
                 {
-                    ApiKey = null,
                     Model = null
                 }
             };
+            
+            // No need to set up API key configuration as we want it to be null
             var result = ConfigValidation.RequireOpenAi(config);
             Assert.IsFalse(result);
         }
 
         [TestMethod]
         public void RequireOpenAi_ReturnsTrue_WhenAllValuesPresent()
-        {
-            var config = new AppConfig
+        {            var config = new AppConfig
             {
-                OpenAi = new OpenAiConfig
+                AiService = new AIServiceConfig
                 {
-                    ApiKey = "key",
                     Model = "gpt-4"
                 }
             };
+            
+            // Set up API key for testing
+            var configDict = new Dictionary<string, string>
+            {
+                {"UserSecrets:OpenAI:ApiKey", "key"}
+            };
+            var configuration = new ConfigurationBuilder()
+                .AddInMemoryCollection(configDict)
+                .Build();
+            config.AiService.SetConfiguration(configuration);
             var result = ConfigValidation.RequireOpenAi(config);
             Assert.IsTrue(result);
         }

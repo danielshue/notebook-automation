@@ -34,13 +34,20 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
     /// <see cref="VideoNoteProcessingEntrypoint"/>.
     /// </para>
     /// </remarks>
-public class VideoNoteProcessor : DocumentNoteProcessorBase
+    public class VideoNoteProcessor : DocumentNoteProcessorBase
     {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger.
-    /// </summary>
-    /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
-    public VideoNoteProcessor(ILogger logger) : base(logger) { }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger.
+        /// </summary>
+        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+        public VideoNoteProcessor(ILogger logger) : base(logger) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger and AI summarizer.
+        /// </summary>
+        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
+        public VideoNoteProcessor(ILogger logger, Services.AISummarizer aiSummarizer) : base(logger, aiSummarizer) { }
 
         /// <summary>
         /// Extracts comprehensive metadata from a video file.

@@ -51,6 +51,21 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         {
             var videoProcessor = new VideoNoteProcessor(logger);
             _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(logger, videoProcessor);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoNoteBatchProcessor"/> class with AISummarizer.
+        /// </summary>
+        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
+        /// <remarks>
+        /// Creates a new <see cref="VideoNoteProcessor"/> instance with the provided AISummarizer and wraps it with a 
+        /// <see cref="DocumentNoteBatchProcessor{TProcessor}"/> for batch processing operations.
+        /// </remarks>
+        public VideoNoteBatchProcessor(ILogger logger, Services.AISummarizer aiSummarizer)
+        {
+            var videoProcessor = new VideoNoteProcessor(logger, aiSummarizer);
+            _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(logger, videoProcessor);
         }        /// <summary>
         /// Processes one or more video files, generating markdown notes for each.
         /// </summary>

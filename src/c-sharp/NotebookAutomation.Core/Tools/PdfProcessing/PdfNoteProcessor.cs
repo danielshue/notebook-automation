@@ -16,6 +16,13 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
         public PdfNoteProcessor(ILogger logger) : base(logger) { }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class with logger and AI summarizer.
+        /// </summary>
+        /// <param name="logger">Logger for diagnostics.</param>
+        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
+        public PdfNoteProcessor(ILogger logger, Services.AISummarizer aiSummarizer) : base(logger, aiSummarizer) { }
+
+        /// <summary>
         /// Extracts text and metadata from a PDF file.
         /// </summary>
         /// <param name="pdfPath">Path to the PDF file.</param>

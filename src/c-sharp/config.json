@@ -1,20 +1,35 @@
 {
   "paths": {
-    "resources_root": "c:/Users/username/OneDrive/Education/MBA-Resources",
-    "notebook_vault_root": "c:/Users/username/MBA/01_Projects/MBA",
-    "metadata_file": "c:/repos/mba-notebook-automation/metadata.yaml",
-    "obsidian_vault_root": "c:/Users/username/MBA/",
-    "onedrive_resources_basepath": "/Education/MBA-Resources",
-    "logging_dir": "c:/repos/mba-notebook-automation/logs"
+    "resources_root": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestVideos",
+    "notebook_vault_root": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestOutput",
+    "metadata_file": "d:/source/notebook-automation-csharp-migration/src/python/metadata.yaml",
+    "obsidian_vault_root": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestOutput",
+    "onedrive_resources_basepath": "/TestVideos",
+    "logging_dir": "d:/source/notebook-automation-csharp-migration/src/c-sharp/logs",
+    "prompts_path": "d:/source/notebook-automation-csharp-migration/Prompts"
   },
   "microsoft_graph": {
     "client_id": "489ad055-e4b0-4898-af27-53506ce83db7",
     "api_endpoint": "https://graph.microsoft.com/v1.0",
     "authority": "https://login.microsoftonline.com/common",
-    "scopes": ["Files.ReadWrite.All", "Sites.Read.All"]
+    "scopes": [
+      "Files.ReadWrite.All",
+      "Sites.Read.All"
+    ]
   },
-  "openai": {
-    "model": "gpt-4.1"
+  "aiservice": {
+    "model": "gpt-4",
+    "endpoint": "https://api.openai.com/v1/chat/completions"
   },
-  "video_extensions": [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv", ".mpg", ".mpeg", ".m4v"]
+  "video_extensions": [
+    ".mp4",
+    ".mov",
+    ".avi",
+    ".mkv",
+    ".webm",
+    ".wmv",
+    ".mpg",
+    ".mpeg",
+    ".m4v"
+  ]
 }

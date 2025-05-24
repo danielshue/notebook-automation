@@ -52,15 +52,13 @@ namespace NotebookAutomation.Cli.Commands
                 return false;
             }
             return true;
-        }
-
-        /// <summary>
-        /// Validates that OpenAI config values are present. Returns true if valid, else prints error and config.
+        }        /// <summary>
+        /// Validates that AI service config values are present. Returns true if valid, else prints error and config.
         /// </summary>
         public static bool RequireOpenAi(AppConfig config)
         {
-            var apiKey = Environment.GetEnvironmentVariable(OpenAiConfig.OpenAiApiKeyEnvVar) ?? config.OpenAi.ApiKey;
-            if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(config.OpenAi.Model))
+            var apiKey = config.AiService.GetApiKey();
+            if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(config.AiService.Model))
             {
                 AnsiConsoleHelper.WriteError("OpenAI configuration is required for this feature but is missing or incomplete.");
                 ConfigCommands.PrintConfigFormatted(config);
