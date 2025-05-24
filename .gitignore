@@ -203,6 +203,12 @@ src/c-sharp/TestVideos/
 **/*.dll
 **/*.pdb
 
+# Python debug scripts
+src/python/debug/
+
+# Project specific test directories
+src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
+
 # Project-specific build files
 **/*.csproj.nuget.dgspec.json
 **/*.csproj.nuget.g.props
