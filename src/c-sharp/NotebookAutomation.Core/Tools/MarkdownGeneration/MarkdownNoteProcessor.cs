@@ -9,13 +9,36 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
     /// </summary>
     public class MarkdownNoteProcessor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<MarkdownNoteProcessor> _logger;
         private readonly MarkdownNoteBuilder _noteBuilder;
+        private readonly AISummarizer _aiSummarizer;
 
-        public MarkdownNoteProcessor(ILogger logger)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MarkdownNoteProcessor"/> class.
+        /// </summary>
+        /// <param name="logger">The logger instance.</param>
+        /// <param name="aiSummarizer">The AI summarizer instance.</param>
+        public MarkdownNoteProcessor(ILogger logger, AISummarizer aiSummarizer)
         {
-            _logger = logger;
+            if (logger is ILogger<MarkdownNoteProcessor> genericLogger)
+            {
+                _logger = genericLogger;
+            }
+            else
+            {
+                // Allow any ILogger for testing/mocking, but warn if not the expected type
+                _logger = logger as ILogger<MarkdownNoteProcessor> ?? throw new ArgumentException("Logger must be ILogger<MarkdownNoteProcessor> or compatible mock");
+                if (logger.GetType().Name.Contains("Mock") || logger.GetType().Name.Contains("Proxy"))
+                {
+                    // Allow for test mocks
+                }
+                else
+                {
+                    throw new ArgumentException("Logger must be ILogger<MarkdownNoteProcessor>");
+                }
+            }
             _noteBuilder = new MarkdownNoteBuilder(logger);
+            _aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
         }
 
         /// <summary>
@@ -76,10 +99,10 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
                 _logger.LogError("Unsupported file type: {Ext}", ext);
                 return string.Empty;
             }
-            string aiSummary = rawText;            if (!string.IsNullOrWhiteSpace(openAiApiKey))
+            string aiSummary = rawText;
+            if (!string.IsNullOrWhiteSpace(openAiApiKey))
             {
-                var summarizer = new AISummarizer(_logger);
-                aiSummary = await summarizer.SummarizeAsync(rawText, null, promptFileName) ?? rawText;
+                aiSummary = await _aiSummarizer.SummarizeAsync(rawText, null, promptFileName) ?? rawText;
             }
             var metadata = new Dictionary<string, object>
             {

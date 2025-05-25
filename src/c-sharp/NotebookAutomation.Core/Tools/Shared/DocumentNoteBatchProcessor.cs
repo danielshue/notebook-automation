@@ -11,13 +11,37 @@ namespace NotebookAutomation.Core.Tools.Shared
     /// </summary>
     public class DocumentNoteBatchProcessor<TProcessor> where TProcessor : DocumentNoteProcessorBase
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<DocumentNoteBatchProcessor<TProcessor>> _logger;
         private readonly TProcessor _processor;
+        private readonly AISummarizer _aiSummarizer;
 
-        public DocumentNoteBatchProcessor(ILogger logger, TProcessor processor)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DocumentNoteBatchProcessor{TProcessor}"/> class.
+        /// </summary>
+        /// <param name="logger">The logger instance.</param>
+        /// <param name="processor">The document note processor instance.</param>
+        /// <param name="aiSummarizer">The AI summarizer instance.</param>
+        public DocumentNoteBatchProcessor(ILogger logger, TProcessor processor, AISummarizer aiSummarizer)
         {
-            _logger = logger;
+            if (logger is ILogger<DocumentNoteBatchProcessor<TProcessor>> genericLogger)
+            {
+                _logger = genericLogger;
+            }
+            else
+            {
+                // Allow any ILogger for testing/mocking, but warn if not the expected type
+                _logger = logger as ILogger<DocumentNoteBatchProcessor<TProcessor>> ?? throw new ArgumentException("Logger must be ILogger<DocumentNoteBatchProcessor<TProcessor>> or compatible mock");
+                if (logger.GetType().Name.Contains("Mock") || logger.GetType().Name.Contains("Proxy"))
+                {
+                    // Allow for test mocks
+                }
+                else
+                {
+                    throw new ArgumentException("Logger must be ILogger<DocumentNoteBatchProcessor<TProcessor>>");
+                }
+            }
             _processor = processor;
+            _aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
         }
 
         /// <summary>
@@ -173,17 +197,11 @@ namespace NotebookAutomation.Core.Tools.Shared
                     }
                     else
                     {
-                        summaryText = await _processor.GenerateAiSummaryAsync(text, openAiApiKey);
-                        // Token counting: use injected or new AISummarizer
-                        var summarizer = _processor.GetType().GetProperty("_aiSummarizer", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(_processor) as AISummarizer;
-                        if (summarizer == null)
-                        {
-                            summarizer = new AISummarizer(_logger);
-                        }
-                        var estimateTokenMethod = summarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        summaryText = await _processor.GenerateAiSummaryAsync(text);
+                        var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                         if (estimateTokenMethod != null)
                         {
-                            var tokenResult = estimateTokenMethod.Invoke(summarizer, new object[] { summaryText });
+                            var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, new object[] { summaryText });
                             if (tokenResult != null)
                             {
                                 summaryTokens = (int)tokenResult;

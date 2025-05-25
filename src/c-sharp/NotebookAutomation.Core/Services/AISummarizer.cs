@@ -1,5 +1,3 @@
-using System.Text;
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -18,23 +16,21 @@ namespace NotebookAutomation.Core.Services
 #pragma warning disable SKEXP0001 // Type is for evaluation purposes only
     public class AISummarizer
     {
-        private readonly ILogger _logger;
-        private readonly PromptTemplateService? _promptService;
-        private readonly Kernel? _semanticKernel;
-        private readonly ITextGenerationService? _textGenService;
-        private readonly int _maxChunkTokens = 3000; // Maximum tokens per chunk
-        private readonly int _overlapTokens = 500; // Tokens to overlap between chunks        /// <summary>
+        protected readonly ILogger<AISummarizer> _logger;
+        protected readonly PromptTemplateService? _promptService;
+        protected readonly Kernel? _semanticKernel;
+        protected readonly ITextGenerationService? _textGenService;
+        protected readonly int _maxChunkTokens = 3000; // Maximum tokens per chunk
+        protected readonly int _overlapTokens = 500; // Tokens to overlap between chunks
+
+        /// <summary>
         /// Initializes a new instance of the AISummarizer class.
         /// </summary>
         /// <param name="logger">The logger instance</param>
         /// <param name="promptService">Optional prompt template service for loading templates</param>
         /// <param name="semanticKernel">Optional Microsoft.SemanticKernel kernel</param>
         /// <param name="textGenerationService">Optional Microsoft.SemanticKernel text generation service</param>
-        public AISummarizer(
-            ILogger logger,
-            PromptTemplateService? promptService = null,
-            Kernel? semanticKernel = null,
-            ITextGenerationService? textGenerationService = null)
+        public AISummarizer(ILogger<AISummarizer> logger, PromptTemplateService promptService, Kernel semanticKernel, ITextGenerationService textGenerationService)
         {
             _logger = logger;
             _promptService = promptService;
@@ -51,26 +47,36 @@ namespace NotebookAutomation.Core.Services
         /// <param name="promptFileName">Optional prompt template name (e.g., "chunk_summary_prompt") without extension.</param>
         /// <param name="cancellationToken">Optional cancellation token.</param>
         /// <returns>The summary text, or null if failed.</returns>
-        public async Task<string?> SummarizeAsync(
-            string inputText,
-            string? prompt = null,
-            string? promptFileName = null,
-            CancellationToken cancellationToken = default)
+        public virtual async Task<string?> SummarizeAsync(string inputText, string? prompt = null, string? promptFileName = null, CancellationToken cancellationToken = default)
         {
             if (_semanticKernel == null && _textGenService == null)
             {
-                _logger.LogError("No AI service is available. Please provide an API key or configure a semantic kernel service.");
+                _logger?.LogError("No AI service is available. Please provide an API key or configure a semantic kernel service.");
+
                 return null;
             }
 
+            // If no prompt and no promptFileName are provided, use final_summary_prompt.md as default
+            string effectivePromptFileName = promptFileName;
+            string effectivePrompt = prompt;
+            if (string.IsNullOrWhiteSpace(prompt) && string.IsNullOrWhiteSpace(promptFileName))
+            {
+                effectivePromptFileName = "final_summary_prompt";
+                _logger?.LogDebug("No prompt or promptFileName provided. Using default: final_summary_prompt.md");
+            }
+
             // Process the prompt template
-            (string? processedPrompt, string processedInputText) =
-                await ProcessPromptTemplateAsync(inputText, prompt, promptFileName);
+            // Use empty string for non-nullable parameters
+            (string? processedPrompt, string processedInputText) = await ProcessPromptTemplateAsync(
+                inputText,
+                effectivePrompt ?? string.Empty,
+                effectivePromptFileName ?? string.Empty);
 
             // Check if input likely exceeds token limits and needs chunking
             if (EstimateTokenCount(processedInputText) > _maxChunkTokens * 1.5)
             {
-                _logger.LogInformation("Input text is large. Using chunking strategy for summarization.");
+                _logger?.LogInformation("Input text is large. Using chunking strategy for summarization.");
+
                 return await SummarizeWithChunkingAsync(processedInputText, processedPrompt, cancellationToken);
             }
 
@@ -81,18 +87,22 @@ namespace NotebookAutomation.Core.Services
                 // First try Semantic Kernel if available
                 if (_textGenService != null || _semanticKernel != null)
                 {
-                    _logger.LogInformation("Using Microsoft.SemanticKernel for summarization");
+                    _logger?.LogInformation("Using Microsoft.SemanticKernel for summarization");
+
                     return await SummarizeWithSemanticKernelAsync(
                         processedInputText,
                         processedPrompt,
                         cancellationToken);
                 }
-                _logger.LogError("No valid AI service configuration available");
+                _logger?.LogError("No valid AI service configuration available");
+
                 return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to generate summary");
+                _logger?.LogError(ex, "Failed to generate summary");
+
+                // If Semantic Kernel fails, fall back to text generation service if available
                 return null;
             }
         }
@@ -113,14 +123,12 @@ namespace NotebookAutomation.Core.Services
         /// The implementation uses Microsoft.SemanticKernel.Text.TextChunker for intelligent
         /// content splitting that respects semantic boundaries when possible.
         /// </remarks>
-        private async Task<string?> SummarizeWithChunkingAsync(
-            string inputText,
-            string? prompt,
-            CancellationToken cancellationToken)
+        private async Task<string?> SummarizeWithChunkingAsync(string inputText, string? prompt, CancellationToken cancellationToken)
         {
             try
             {
                 _logger.LogInformation("Starting chunked summarization process");
+
                 // Split text into chunks using SemanticKernel's TextChunker
                 List<string> chunks;
 
@@ -129,6 +137,7 @@ namespace NotebookAutomation.Core.Services
                 if (ContainsMarkdown(inputText))
                 {
                     var lines = TextChunker.SplitMarkDownLines(inputText, _maxChunkTokens);
+
                     chunks = TextChunker.SplitMarkdownParagraphs(lines, _maxChunkTokens, _overlapTokens);
                 }
                 else
@@ -146,25 +155,30 @@ namespace NotebookAutomation.Core.Services
                     return null;
                 }
 
+                // Load chunk and final summary prompts from PromptTemplateService if available
+                string? chunkPromptTemplate = prompt;
+                string? finalPromptTemplate = null;
+                if (_promptService != null)
+                {
+                    chunkPromptTemplate = await _promptService.LoadTemplateAsync("chunk_summary_prompt");
+                    _logger.LogDebug($"Loaded chunk prompt template from chunk_summary_prompt.md: {{First100=}}{chunkPromptTemplate?.Substring(0, Math.Min(100, chunkPromptTemplate.Length)) ?? "null"}...");
+                    finalPromptTemplate = await _promptService.LoadTemplateAsync("final_summary_prompt");
+                    _logger.LogDebug($"Loaded final prompt template from final_summary_prompt.md: {{First100=}}{finalPromptTemplate?.Substring(0, Math.Min(100, finalPromptTemplate.Length)) ?? "null"}...");
+                }
+
                 // Process each chunk individually with position awareness
                 var chunkSummaries = new List<string>();
                 for (int i = 0; i < chunks.Count; i++)
                 {
                     _logger.LogInformation($"Processing chunk {i + 1}/{chunks.Count}");
 
-                    // Create context-aware prompt for this chunk
-                    string chunkPrompt = prompt ?? "Summarize this content section:";
-
                     // Add positional context to help maintain document flow
+                    string chunkContext = string.Empty;
                     if (chunks.Count > 1)
                     {
-                        // Build context string indicating chunk position (similar to Python implementation)
-                        string chunkContext = $"This is part {i + 1} of {chunks.Count}. ";
-
-                        // Add special handling for first/last chunks to preserve document flow
-                        bool isFirstChunk = (i == 0);
-                        bool isLastChunk = (i == chunks.Count - 1);
-
+                        chunkContext = $"This is part {i + 1} of {chunks.Count}. ";
+                        bool isFirstChunk = i == 0;
+                        bool isLastChunk = i == chunks.Count - 1;
                         if (isFirstChunk)
                         {
                             chunkContext += "This is the beginning of the document. ";
@@ -177,14 +191,29 @@ namespace NotebookAutomation.Core.Services
                         {
                             chunkContext += "This is a middle section of the document. ";
                         }
-
-                        chunkPrompt += $" {chunkContext}";
                     }
 
-                    string? chunkSummary;
-                    chunkSummary = await SummarizeWithSemanticKernelAsync(
+                    // Substitute variables for chunk prompt
+                    string chunkPrompt = chunkPromptTemplate ?? string.Empty;
+                    if (_promptService != null)
+                    {
+                        var variables = new Dictionary<string, string>
+                        {
+                            { "content", chunks[i] },
+                            { "chunk_context", chunkContext },
+                            { "chunk_num", (i + 1).ToString() },
+                            { "total_chunks", chunks.Count.ToString() }
+                        };
+                        if (chunkPromptTemplate != null)
+                        {
+                            chunkPrompt = _promptService.SubstituteVariables(chunkPromptTemplate, variables);
+                        }
+                        _logger.LogDebug($"Using chunk prompt for chunk {i + 1}: {{First100=}}{chunkPrompt?[..Math.Min(100, chunkPrompt.Length)] ?? "null"}...");
+                    }
+
+                    string? chunkSummary = await SummarizeWithSemanticKernelAsync(
                         chunks[i],
-                        chunkPrompt,
+                        chunkPrompt ?? string.Empty,
                         cancellationToken);
 
                     if (!string.IsNullOrWhiteSpace(chunkSummary))
@@ -206,7 +235,6 @@ namespace NotebookAutomation.Core.Services
                 }
 
                 // Format the combined chunk summaries with clear section markers
-                // This helps the LLM understand the document structure during consolidation
                 var formattedChunkSummaries = new List<string>(chunkSummaries.Count);
                 for (int i = 0; i < chunkSummaries.Count; i++)
                 {
@@ -214,19 +242,25 @@ namespace NotebookAutomation.Core.Services
                         $"--- CHUNK {i + 1}/{chunkSummaries.Count} SUMMARY ---\n{chunkSummaries[i]}");
                 }
 
-                // Consolidate all chunk summaries into one final summary
+                // Use final_summary_prompt.md for the final summary
                 string consolidationText = string.Join("\n\n", formattedChunkSummaries);
+                string finalPrompt = finalPromptTemplate ?? "Create a coherent, comprehensive summary from these section summaries. Maintain the logical flow of ideas from the original document. Ensure the final summary is well-structured and reads as a unified piece:";
+                if (_promptService != null)
+                {
+                    var variables = new Dictionary<string, string>
+                    {
+                        { "content", consolidationText }
+                    };
+                    finalPrompt = _promptService.SubstituteVariables(finalPrompt, variables);
+                    _logger.LogDebug($"Using final summary prompt: {{First200=}}{finalPrompt?.Substring(0, Math.Min(200, finalPrompt.Length)) ?? "null"}...");
+                }
 
-                // Create a consolidation prompt that preserves document flow and coherence
-                string consolidationPrompt = "Create a coherent, comprehensive summary from these section summaries. " +
-                    "Maintain the logical flow of ideas from the original document. " +
-                    "Ensure the final summary is well-structured and reads as a unified piece:";                _logger.LogInformation($"Generating final consolidated summary from {chunkSummaries.Count} chunk summaries");
-
+                _logger.LogInformation($"Generating final consolidated summary from {chunkSummaries.Count} chunk summaries");
                 string? finalSummary = await SummarizeWithSemanticKernelAsync(
-                    consolidationText,
-                    consolidationPrompt,
+                    string.Empty, // content is already in the prompt
+                    finalPrompt ?? string.Empty,
                     cancellationToken);
-                
+
                 if (string.IsNullOrWhiteSpace(finalSummary))
                 {
                     _logger.LogWarning("Final consolidation returned empty summary. Falling back to combined chunk summaries.");
@@ -257,7 +291,7 @@ namespace NotebookAutomation.Core.Services
             if (string.IsNullOrEmpty(text)) return 0;
 
             // Split by whitespace to get a rough word count
-            string[] words = text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] words = text.Split([' ', '\n', '\r', '\t'], StringSplitOptions.RemoveEmptyEntries);
 
             // Count punctuation and special characters separately as they often become individual tokens
             int punctuationCount = text.Count(c => !char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c));
@@ -328,13 +362,12 @@ namespace NotebookAutomation.Core.Services
         /// <param name="prompt">Direct prompt text</param>
         /// <param name="promptFileName">Template file name</param>
         /// <returns>A tuple with the processed prompt and input text</returns>
-        private async Task<(string? prompt, string inputText)> ProcessPromptTemplateAsync(
-            string inputText,
-            string? prompt,
-            string? promptFileName)
+        private async Task<(string? prompt, string inputText)> ProcessPromptTemplateAsync(string inputText, string prompt, string promptFileName)
         {
             string? promptText = prompt;
             string processedInputText = inputText;
+
+            _logger.LogDebug("Processing prompt template with file name: {PromptFileName}", promptFileName);
 
             // Try to load the prompt from PromptTemplateService if available
             if (_promptService != null && !string.IsNullOrWhiteSpace(promptFileName))
@@ -360,8 +393,10 @@ namespace NotebookAutomation.Core.Services
                 catch (Exception ex)
                 {
                     _logger.LogWarning(ex, "Error loading prompt template: {PromptFileName}", promptFileName);
+
                     // Fall back to the provided prompt
                     promptText = prompt;
+
                     processedInputText = inputText;
                 }
             }
@@ -376,13 +411,13 @@ namespace NotebookAutomation.Core.Services
         /// <param name="prompt">Optional prompt</param>
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>The summary, or null if failed</returns>
-        private async Task<string?> SummarizeWithSemanticKernelAsync(
-            string inputText,
-            string? prompt,
-            CancellationToken cancellationToken)
+        private async Task<string?> SummarizeWithSemanticKernelAsync(string inputText, string prompt, CancellationToken cancellationToken)
         {
             try
             {
+                _logger.LogInformation("Generating summary with Semantic Kernel");
+                _logger.LogDebug("Input text length: {Length}, Prompt: {Prompt}", inputText.Length, prompt ?? "null");
+
                 // Get text generation service - either from constructor or kernel
                 ITextGenerationService? textGeneration = _textGenService;
 
@@ -440,5 +475,5 @@ namespace NotebookAutomation.Core.Services
                 return null;
             }
         }
-    } 
+    }
 }

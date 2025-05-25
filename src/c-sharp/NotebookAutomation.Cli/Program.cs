@@ -9,11 +9,11 @@ using NotebookAutomation.Cli.Utilities;
 
 namespace NotebookAutomation.Cli
 {    /// <summary>
-    /// Main entry point for the Notebook Automation CLI.
-    /// 
-    /// This program provides a unified command-line interface for accessing
-    /// all the notebook automation tools.
-    /// </summary>
+     /// Main entry point for the Notebook Automation CLI.
+     /// 
+     /// This program provides a unified command-line interface for accessing
+     /// all the notebook automation tools.
+     /// </summary>
     public class Program
     {
         private static IServiceProvider? _serviceProvider;
@@ -37,7 +37,6 @@ namespace NotebookAutomation.Cli
             var rootCommand = new RootCommand(
                 description: "notebookautomation.exe - Tools for managing Obsidian notebooks");
 
-
             // Global options
             var configOption = new Option<string>(
                 aliases: ["--config", "-c"],
@@ -51,10 +50,16 @@ namespace NotebookAutomation.Cli
             var dryRunOption = new Option<bool>(
                 aliases: ["--dry-run"],
                 description: "Simulate actions without making changes");
+
             rootCommand.AddGlobalOption(configOption);
             rootCommand.AddGlobalOption(debugOption);
             rootCommand.AddGlobalOption(verboseOption);
             rootCommand.AddGlobalOption(dryRunOption);
+
+            if (args.Contains("--debug") || args.Contains("-d"))
+            {
+                AnsiConsoleHelper.WriteInfo($"Debug mode enabled");
+            }
 
             // Handle --version manually before building the CLI to avoid conflicts
             if (args.Contains("--version") || args.Contains("-v"))
@@ -94,13 +99,13 @@ namespace NotebookAutomation.Cli
                 if (context.ParseResult.Tokens.Count == 0)
                 {
                     context.Console.WriteLine("Please specify a command to execute. Available commands:");
-                    
+
                     // Display all top-level commands with descriptions
                     foreach (var command in rootCommand.Subcommands)
                     {
                         context.Console.WriteLine($"  {command.Name,-15} {command.Description}");
                     }
-                    
+
                     context.Console.WriteLine("\nRun 'notebookautomation [command] --help' for more information on a specific command.");
                 }
             });            // Set a root handler to initialize configuration and logging
@@ -114,59 +119,72 @@ namespace NotebookAutomation.Cli
                     configFile = configPath;
                     if (!File.Exists(configFile))
                     {
-                        NotebookAutomation.Cli.Utilities.AnsiConsoleHelper.WriteError($"Configuration file not found: {configFile}");
-                        NotebookAutomation.Cli.Utilities.AnsiConsoleHelper.WriteInfo("You can create a new config with: notebookautomation config update-key <key> <value>");
+                        AnsiConsoleHelper.WriteError($"Configuration file not found: {configFile}");
+                        AnsiConsoleHelper.WriteInfo("You can create a new config with: notebookautomation config update-key <key> <value>");
                         Environment.Exit(1);
                     }
                 }
                 else
                 {
-                    configFile = NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile();
+                    configFile = AppConfig.FindConfigFile();
                     if (string.IsNullOrEmpty(configFile) || !File.Exists(configFile))
                     {
-                        NotebookAutomation.Cli.Utilities.AnsiConsoleHelper.WriteWarning("No configuration file found. You can create one using the config commands.");
-                        NotebookAutomation.Cli.Utilities.AnsiConsoleHelper.WriteInfo("Run: notebookautomation config update-key <key> <value> to create a config file.");
+                        AnsiConsoleHelper.WriteWarning("No configuration file found. You can create one using the config commands.");
+                        AnsiConsoleHelper.WriteInfo("Run: notebookautomation config update-key <key> <value> to create a config file.");
                         Environment.Exit(1);
                     }
                 }
 
                 // 2. Config file format/parse check
-                NotebookAutomation.Core.Configuration.AppConfig? appConfig = null;
+                AppConfig? appConfig = null;
                 try
                 {
-                    appConfig = NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile(configFile);
+                    appConfig = AppConfig.LoadFromJsonFile(configFile);
                 }
                 catch (FileNotFoundException)
                 {
-                    NotebookAutomation.Cli.Utilities.AnsiConsoleHelper.WriteError($"Configuration file not found: {configFile}");
+                    AnsiConsoleHelper.WriteError($"Configuration file not found: {configFile}");
                     Environment.Exit(1);
                 }
                 catch (Exception ex)
                 {
-                    NotebookAutomation.Cli.Utilities.AnsiConsoleHelper.WriteError($"Failed to read configuration: {ex.Message}");
-                    NotebookAutomation.Cli.Utilities.AnsiConsoleHelper.WriteInfo("Please check your config file format or recreate it using the config commands.");
+                    AnsiConsoleHelper.WriteError($"Failed to read configuration: {ex.Message}");
+                    AnsiConsoleHelper.WriteInfo("Please check your config file format or recreate it using the config commands.");
                     Environment.Exit(1);
                 }
 
                 // 3. Required values check (paths)
-                if (appConfig != null && !NotebookAutomation.Cli.Commands.ConfigValidation.RequireAllPaths(appConfig, out var missingKeys))
+                if (appConfig != null && !ConfigValidation.RequireAllPaths(appConfig, out var missingKeys))
                 {
-                    NotebookAutomation.Cli.Utilities.AnsiConsoleHelper.WriteError("The following required configuration values are missing:");
+                    AnsiConsoleHelper.WriteError("The following required configuration values are missing:");
                     foreach (var key in missingKeys)
                     {
                         Console.WriteLine($"  - {key}");
                     }
-                    NotebookAutomation.Cli.Utilities.AnsiConsoleHelper.WriteInfo("You can set missing values with: notebookautomation config update-key <key> <value>");
+                    AnsiConsoleHelper.WriteInfo("You can set missing values with: notebookautomation config update-key <key> <value>");
                     Environment.Exit(1);
                 }
 
                 // Setup dependency injection
+                // Set an environment variable so AppConfig can log the config path if needed
+                if (!string.IsNullOrEmpty(configFile))
+                {
+                    Environment.SetEnvironmentVariable("NOTEBOOKAUTOMATION_CONFIG_PATH", configFile);
+                }
                 SetupDependencyInjection(configFile, debug);
+
                 var logger = ServiceProvider.GetRequiredService<ILogger<Program>>();
+
                 logger.LogInformation("Notebook Automation initialized");
-                if (debug)
+
+                if (debug && appConfig != null)
                 {
                     logger.LogDebug("Debug logging enabled");
+                    logger.LogDebug($"Config file: {configFile}");
+                    logger.LogDebug($"Paths: ResourcesRoot={appConfig.Paths.ResourcesRoot}, NotebookVaultRoot={appConfig.Paths.NotebookVaultRoot}, MetadataFile={appConfig.Paths.MetadataFile}, ObsidianVaultRoot={appConfig.Paths.ObsidianVaultRoot}, OneDriveResourcesBasepath={appConfig.Paths.OnedriveResourcesBasepath}, LoggingDir={appConfig.Paths.LoggingDir}");
+                    logger.LogDebug($"AI Model: {appConfig.AiService?.Model}");
+                    logger.LogDebug($"AI Endpoint: {appConfig.AiService?.Endpoint}");
+                    logger.LogDebug($"Video Extensions: {string.Join(", ", appConfig.VideoExtensions ?? new List<string>())}");
                 }
             }, configOption, debugOption);
 
@@ -178,7 +196,9 @@ namespace NotebookAutomation.Cli
 
             // Execute the command
             return await rootCommand.InvokeAsync(args);
-        }        /// <summary>
+        }
+
+        /// <summary>
         /// Sets up dependency injection container with configuration and services.
         /// </summary>
         /// <param name="configPath">Path to the configuration file.</param>
@@ -189,22 +209,22 @@ namespace NotebookAutomation.Cli
             string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ??
                                 Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
                                 "Development";
-            
+
             // Build configuration using ConfigurationSetup helper
             var configuration = ConfigurationSetup.BuildConfiguration<Program>(environment, configPath);
-            
+
             // Setup service collection
             var services = new ServiceCollection();
-            
+
             // Register configuration
             services.AddSingleton<IConfiguration>(configuration);
-            
+
             // Add notebook automation services using ServiceRegistration
-            services.AddNotebookAutomationServices(configuration, debug);
-            
+            services.AddNotebookAutomationServices(configuration, debug, configPath);
+
             // Build service provider
             _serviceProvider = services.BuildServiceProvider();
         }
-        
+
     }
 }
