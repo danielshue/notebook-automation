@@ -15,7 +15,7 @@ namespace NotebookAutomation.Core.Services
     /// </summary>
     public class OneDriveService
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<OneDriveService> _logger;
         private readonly string _clientId;
         private readonly string _tenantId;
         private readonly string[] _scopes;
@@ -27,7 +27,7 @@ namespace NotebookAutomation.Core.Services
 
         private OneDriveCliOptions _cliOptions = new OneDriveCliOptions();
 
-        public OneDriveService(ILogger logger, string clientId, string tenantId, string[] scopes)
+        public OneDriveService(ILogger<OneDriveService> logger, string clientId, string tenantId, string[] scopes)
         {
             _logger = logger;
             _clientId = clientId;

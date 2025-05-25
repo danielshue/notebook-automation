@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Tools.MarkdownGeneration;
+using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -43,7 +44,7 @@ namespace NotebookAutomation.Cli.Commands
             markdownCommand.AddOption(debugOption);
             markdownCommand.AddOption(verboseOption);
             markdownCommand.AddOption(dryRunOption);
-            
+
             markdownCommand.SetHandler(async (InvocationContext context) =>
             {
                 string[] srcDirs = context.ParseResult.GetValueForOption(srcDirsOption) ?? Array.Empty<string>();
@@ -52,7 +53,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
+
                 // Initialize dependency injection if needed
                 if (Program.ServiceProvider == null && config != null)
                 {
@@ -63,10 +64,10 @@ namespace NotebookAutomation.Cli.Commands
                     }
                     Program.SetupDependencyInjection(config, debug);
                 }
-                
+
                 await this.ProcessMarkdownAsync(srcDirs, destDir, config, debug, verbose, dryRun);
             });
-            
+
             rootCommand.AddCommand(markdownCommand);
         }
 
@@ -110,12 +111,14 @@ namespace NotebookAutomation.Cli.Commands
                     return;
                 }
 
-                string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
+                string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY"); if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
                 {
                     openAiApiKey = appConfig.AiService.GetApiKey();
                 }
 
-                var processor = new MarkdownNoteProcessor(logger);
+                // Resolve dependencies for MarkdownNoteProcessor
+                var aiSummarizer = serviceProvider.GetRequiredService<AISummarizer>();
+                var processor = new MarkdownNoteProcessor(logger, aiSummarizer);
                 foreach (var sourceDir in sourceDirs)
                 {
                     if (!Directory.Exists(sourceDir))

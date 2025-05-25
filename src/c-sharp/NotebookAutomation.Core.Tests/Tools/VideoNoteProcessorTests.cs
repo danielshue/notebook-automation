@@ -14,28 +14,28 @@ namespace NotebookAutomation.Core.Tests.Tools
         public async Task GenerateAiSummaryAsync_UsesInjectedAISummarizer()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger>();
-            var aiSummarizerMock = new Mock<AISummarizer>(MockBehavior.Strict, loggerMock.Object);
+            var loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
+            var aiSummarizerMock = new Mock<AISummarizer>(MockBehavior.Strict, Mock.Of<ILogger<AISummarizer>>());
 
             // Setup the mock to return a specific value when SummarizeAsync is called
             aiSummarizerMock
                 .Setup(s => s.SummarizeAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), default))
                 .ReturnsAsync("Test summary from injected AISummarizer");
-            
+
             // Create VideoNoteProcessor with the mock AISummarizer
             var processor = new VideoNoteProcessor(loggerMock.Object, aiSummarizerMock.Object);
-            
+
             // Act
-            var result = await processor.GenerateAiSummaryAsync("Test text", "dummy-api-key");
-              // Assert
+            var result = await processor.GenerateAiSummaryAsync("Test text");
+            // Assert
             Assert.AreEqual("Test summary from injected AISummarizer", result);
-            
+
             // Verify that the mock's SummarizeAsync was called
             aiSummarizerMock.Verify(s => s.SummarizeAsync(
-                "Test text", 
-                It.IsAny<string>(), 
-                It.IsAny<string>(), 
-                default), 
+                "Test text",
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                default),
                 Times.Once);
         }
 
@@ -43,14 +43,20 @@ namespace NotebookAutomation.Core.Tests.Tools
         public async Task GenerateAiSummaryAsync_FallsBackToNewAISummarizer_WhenNotInjected()
         {
             // Arrange
-            var loggerMock = new Mock<ILogger>();
-            
-            // Create processor without injecting AISummarizer
-            var processor = new VideoNoteProcessor(loggerMock.Object);
-            
+            var loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
+            var promptService = new NotebookAutomation.Core.Services.PromptTemplateService(
+                Mock.Of<ILogger<NotebookAutomation.Core.Services.PromptTemplateService>>(),
+                new NotebookAutomation.Core.Configuration.AppConfig());
+            var aiSummarizer = new AISummarizer(
+                Mock.Of<ILogger<AISummarizer>>(),
+                promptService,
+                null!, // Kernel (can be null for tests)
+                null!  // ITextGenerationService (can be null for tests)
+            );
+            var processor = new VideoNoteProcessor(loggerMock.Object, aiSummarizer);
             // Act - using a null OpenAI key should result in simulated summary
-            var result = await processor.GenerateAiSummaryAsync("Test text", null);
-              // Assert - fallback behavior should return simulated summary
+            var result = await processor.GenerateAiSummaryAsync("Test text");
+            // Assert - fallback behavior should return simulated summary
             Assert.AreEqual("[Simulated AI summary]", result);
         }
     }

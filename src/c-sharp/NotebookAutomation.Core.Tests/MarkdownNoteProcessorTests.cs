@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NotebookAutomation.Core.Tools.MarkdownGeneration;
+using NotebookAutomation.Core.Services;
 using System.IO;
 
 namespace NotebookAutomation.Core.Tests
@@ -14,7 +15,8 @@ namespace NotebookAutomation.Core.Tests
         {
             // Arrange
             var logger = NullLogger.Instance;
-            var processor = new MarkdownNoteProcessor(logger);
+            var summarizer = new TestableAISummarizer(Microsoft.Extensions.Logging.Abstractions.NullLogger<AISummarizer>.Instance);
+            var processor = new MarkdownNoteProcessor(logger, summarizer);
             var testFile = "test.txt";
             await File.WriteAllTextAsync(testFile, "Hello world!");
 

@@ -16,7 +16,7 @@ namespace NotebookAutomation.Core.Tests
     [TestClass]
     public class PromptTemplateServiceTests
     {
-        private Mock<ILogger> _loggerMock;
+        private Mock<ILogger<PromptTemplateService>> _loggerMock;
         private string _testFolder;
 
         /// <summary>
@@ -25,8 +25,7 @@ namespace NotebookAutomation.Core.Tests
         [TestInitialize]
         public void TestInitialize()
         {
-            _loggerMock = new Mock<ILogger>();
-            
+            _loggerMock = new Mock<ILogger<PromptTemplateService>>();
             // Create a temporary test folder for prompt templates
             _testFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             Directory.CreateDirectory(_testFolder);
@@ -53,7 +52,8 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_ReplacesTemplateVariables()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{name}}, welcome to {{course}}!";
             var variables = new Dictionary<string, string>
             {
@@ -75,7 +75,8 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesMissingVariables()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{name}}, welcome to {{course}}!";
             var variables = new Dictionary<string, string>
             {
@@ -97,7 +98,8 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_IgnoresExtraVariables()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{name}}!";
             var variables = new Dictionary<string, string>
             {
@@ -119,7 +121,8 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesComplexTemplates()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = @"# 📝 Notes for {{course}}
 
 ## 🧩 Topics Covered in {{module}}
@@ -172,7 +175,8 @@ namespace NotebookAutomation.Core.Tests
         public async Task LoadAndSubstituteAsync_LoadsTemplateAndSubstitutesVariables()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
             var templatePath = Path.Combine(_testFolder, "test_template.md");
             var templateContent = "Hello {{name}}, welcome to {{course}}!";
             await File.WriteAllTextAsync(templatePath, templateContent);
@@ -197,7 +201,8 @@ namespace NotebookAutomation.Core.Tests
         public async Task LoadAndSubstituteAsync_ReturnsEmptyStringWhenFileNotFound()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
             var nonExistentPath = Path.Combine(_testFolder, "non_existent.md");
             var variables = new Dictionary<string, string>
             {
@@ -227,18 +232,19 @@ namespace NotebookAutomation.Core.Tests
         {
             // Since we can't reliably test the repository root discovery in a unit test,
             // we're going to test the fallback to default templates
-            
+
             // Arrange - Create a service with a mocked logger that we can verify
             var mockLogger = new Mock<ILogger>();
-            var service = new PromptTemplateService(mockLogger.Object);
-            
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(Mock.Of<ILogger<PromptTemplateService>>(), config);
+
             // Act
             var result = await service.LoadTemplateAsync("non_existent_template");
-            
+
             // Assert - Should fall back to default template
             Assert.IsNotNull(result);
             Assert.IsFalse(string.IsNullOrEmpty(result));
-            
+
             // Verify that the appropriate log message was written
             mockLogger.Verify(
                 x => x.Log(
@@ -249,7 +255,7 @@ namespace NotebookAutomation.Core.Tests
                     It.Is<Func<It.IsAnyType, Exception, string>>((v, t) => true)),
                 Times.Once);
         }
-        
+
         /// <summary>
         /// Tests that GetDefaultTemplate returns the appropriate default template.
         /// </summary>
@@ -257,30 +263,31 @@ namespace NotebookAutomation.Core.Tests
         public async Task LoadTemplateAsync_GetsCorrectDefaultTemplate()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
-            
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
+
             // Act
             var chunkResult = await service.LoadTemplateAsync("chunk_summary_prompt");
             var finalResult = await service.LoadTemplateAsync("final_summary_prompt");
             var videoResult = await service.LoadTemplateAsync("final_summary_prompt_video");
             var unknownResult = await service.LoadTemplateAsync("unknown_template");
-            
+
             // Assert - All should return non-null templates
             Assert.IsNotNull(chunkResult);
             Assert.IsNotNull(finalResult);
             Assert.IsNotNull(videoResult);
             Assert.IsNotNull(unknownResult);
-            
+
             // The specific contents would vary based on the default templates,
             // but we can at least check that they contain key phrases
             StringAssert.Contains(chunkResult, "summarizer");
             StringAssert.Contains(finalResult, "summarizer");
             StringAssert.Contains(videoResult, "Video Summary");
-            
+
             // Unknown template should fall back to the default final prompt
             Assert.AreEqual(finalResult, unknownResult);
         }
-        
+
         /// <summary>
         /// Creates a test template file with the specified name and content.
         /// </summary>
@@ -291,7 +298,7 @@ namespace NotebookAutomation.Core.Tests
             var templatePath = Path.Combine(promptsDir, $"{templateName}.md");
             await File.WriteAllTextAsync(templatePath, content);
         }
-          /// <summary>
+        /// <summary>
         /// Tests that LoadTemplateAsync correctly loads template from file when available.
         /// </summary>
         [TestMethod]
@@ -301,16 +308,16 @@ namespace NotebookAutomation.Core.Tests
             // Create a directory structure with test templates
             var promptsDir = Path.Combine(_testFolder, "Prompts");
             await File.WriteAllTextAsync(
-                Path.Combine(promptsDir, "test_template.md"), 
+                Path.Combine(promptsDir, "test_template.md"),
                 "Test template content"
             );
-            
+
             // Create service
             var service = new TestablePromptTemplateService(_loggerMock.Object, promptsDir);
-            
+
             // Act
             var result = await service.LoadTemplateAsyncWithPath("test_template");
-            
+
             // Assert
             Assert.AreEqual("Test template content", result);
         }
@@ -323,27 +330,27 @@ namespace NotebookAutomation.Core.Tests
         {
             // This test uses the TestablePromptTemplateService to expose the protected method
             // for testing purposes.
-            
+
             // Arrange
             var service = new TestablePromptTemplateService(_loggerMock.Object, _testFolder);
-            
+
             // Act
             var chunkTemplate = service.GetDefaultTemplateForTest("chunk_summary_prompt");
             var finalTemplate = service.GetDefaultTemplateForTest("final_summary_prompt");
             var videoTemplate = service.GetDefaultTemplateForTest("final_summary_prompt_video");
             var fallbackTemplate = service.GetDefaultTemplateForTest("unknown_template");
-            
+
             // Assert
             Assert.IsNotNull(chunkTemplate);
             Assert.IsNotNull(finalTemplate);
             Assert.IsNotNull(videoTemplate);
             Assert.IsNotNull(fallbackTemplate);
-            
+
             // Check that they are different templates
             Assert.AreNotEqual(chunkTemplate, finalTemplate);
             Assert.AreNotEqual(chunkTemplate, videoTemplate);
             Assert.AreNotEqual(finalTemplate, videoTemplate);
-            
+
             // The fallback should use the final_summary_prompt template
             Assert.AreEqual(finalTemplate, fallbackTemplate);
         }
@@ -358,25 +365,25 @@ namespace NotebookAutomation.Core.Tests
             var templateContent = "Hello {{name}}, welcome to the {{course}} course!";
             var promptsDir = Path.Combine(_testFolder, "Prompts");
             Directory.CreateDirectory(promptsDir);
-            
+
             var templatePath = Path.Combine(promptsDir, "welcome_template.md");
             await File.WriteAllTextAsync(templatePath, templateContent);
-            
+
             var service = new TestablePromptTemplateService(_loggerMock.Object, promptsDir);
             var variables = new Dictionary<string, string>
             {
                 { "name", "John" },
                 { "course", "Advanced Financial Management" }
             };
-            
+
             // Act - First load the template, then substitute variables
             string template = await service.LoadTemplateAsyncWithPath("welcome_template");
             string result = service.SubstituteVariables(template, variables);
-            
+
             // Assert
             Assert.AreEqual("Hello John, welcome to the Advanced Financial Management course!", result);
         }
-        
+
         /// <summary>
         /// Tests handling of nested variables - where one variable contains another variable marker.
         /// </summary>
@@ -384,31 +391,32 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesNestedVariables()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{name}}, your course is {{course}}";
-            
+
             var variables = new Dictionary<string, string>
             {
                 { "name", "John" },
                 { "course", "MBA {{specialization}}" } // This contains another variable marker
             };
-            
+
             // Act
             var result = service.SubstituteVariables(template, variables);
-            
+
             // Assert - The second-level variable should remain as is
             Assert.AreEqual("Hello John, your course is MBA {{specialization}}", result);
-            
+
             // Now if we substitute again with the specialization
             var moreVariables = new Dictionary<string, string>
             {
                 { "specialization", "Finance" }
             };
-            
+
             var finalResult = service.SubstituteVariables(result, moreVariables);
             Assert.AreEqual("Hello John, your course is MBA Finance", finalResult);
         }
-        
+
         /// <summary>
         /// Tests variable substitution with whitespace variations in the variable names.
         /// </summary>
@@ -416,45 +424,47 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesWhitespaceInVariableNames()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{  name  }}, welcome to {{ course}}!";
-            
+
             var variables = new Dictionary<string, string>
             {
                 { "name", "John" },
                 { "course", "MBA Program" }
             };
-            
+
             // Act
             var result = service.SubstituteVariables(template, variables);
-            
+
             // Assert - Whitespace in variable markers should be trimmed
             Assert.AreEqual("Hello John, welcome to MBA Program!", result);
         }        /// <summary>
-        /// Tests error handling when loading a template file throws an exception.
-        /// </summary>
+                 /// Tests error handling when loading a template file throws an exception.
+                 /// </summary>
         [TestMethod]
         public async Task LoadTemplateAsync_HandlesExceptions()
         {
             // Arrange - Create a mock FileSystem that throws an exception
-            var service = new PromptTemplateService(_loggerMock.Object);
-            
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
+
             // We need to use a path that will cause an exception
             // In this case, we'll use a path with invalid characters
             string invalidPath = Path.Combine(_testFolder, "Prompts", "invalid|file?.md");
-            
+
             // Use reflection to set the _promptsDirectory field to our test directory
-            var fieldInfo = typeof(PromptTemplateService).GetField("_promptsDirectory", 
+            var fieldInfo = typeof(PromptTemplateService).GetField("_promptsDirectory",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             fieldInfo.SetValue(service, Path.GetDirectoryName(invalidPath));
-            
+
             // Act
             var result = await service.LoadTemplateAsync(Path.GetFileNameWithoutExtension(invalidPath));
-            
+
             // Assert - Should get default template
             Assert.IsNotNull(result);
             Assert.IsFalse(string.IsNullOrEmpty(result));
-            
+
             // Verify the warning was logged for using default template
             _loggerMock.Verify(
                 x => x.Log(
@@ -473,63 +483,65 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesMultilingualContent()
         {
             // Arrange
-            var service = new PromptTemplateService(_loggerMock.Object);
+            var config = new NotebookAutomation.Core.Configuration.AppConfig();
+            var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "{{greeting}}, {{name}}! {{message}}";
-            
+
             var variables = new Dictionary<string, string>
             {
                 { "greeting", "你好" }, // Chinese
                 { "name", "João" },     // Portuguese name
                 { "message", "Welkom bij onze cursus! Здравствуйте!" } // Dutch and Russian
             };
-            
+
             // Act
             var result = service.SubstituteVariables(template, variables);
-            
+
             // Assert
             Assert.AreEqual("你好, João! Welkom bij onze cursus! Здравствуйте!", result);
         }
     }
-    
+
     /// <summary>
     /// A testable version of PromptTemplateService that allows setting the prompts directory.
     /// </summary>
     public class TestablePromptTemplateService : PromptTemplateService
     {
         private readonly string _testPromptsDirectory;
-        
-        public TestablePromptTemplateService(ILogger logger, string promptsDirectory) 
-            : base(logger)
+
+        public TestablePromptTemplateService(ILogger<PromptTemplateService> logger, string promptsDirectory)
+            : base(logger, new NotebookAutomation.Core.Configuration.AppConfig())
         {
             _testPromptsDirectory = promptsDirectory;
         }
-        
+
         public new string PromptsDirectory => _testPromptsDirectory;
-        
+
         public async Task<string> LoadTemplateAsyncWithPath(string templateName)
         {
             string templatePath = Path.Combine(_testPromptsDirectory, $"{templateName}.md");
-            
+
             try
             {
                 if (File.Exists(templatePath))
                 {
                     return await File.ReadAllTextAsync(templatePath);
                 }
-                
+
                 return string.Empty;
             }
             catch (Exception)
             {
                 return string.Empty;
             }
-        }        public string GetDefaultTemplateForTest(string templateName)
+        }
+        public string GetDefaultTemplateForTest(string templateName)
         {
             // Use reflection to call the private method
             var methodInfo = typeof(PromptTemplateService).GetMethod(
-                "GetDefaultTemplate", 
+                "GetDefaultTemplate",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
+
             return (string)methodInfo.Invoke(this, new object[] { templateName });
         }
     }

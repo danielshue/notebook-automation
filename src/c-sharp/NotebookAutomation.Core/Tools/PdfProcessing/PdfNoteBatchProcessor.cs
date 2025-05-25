@@ -38,32 +38,12 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
         private readonly DocumentNoteBatchProcessor<PdfNoteProcessor> _batchProcessor;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PdfNoteBatchProcessor"/> class.
+        /// Initializes a new instance of the <see cref="PdfNoteBatchProcessor"/> class with a batch processor.
         /// </summary>
-        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
-        /// <remarks>
-        /// Creates a new <see cref="PdfNoteProcessor"/> instance and wraps it with a 
-        /// <see cref="DocumentNoteBatchProcessor{TProcessor}"/> for batch processing operations.
-        /// </remarks>
-        public PdfNoteBatchProcessor(ILogger logger)
+        /// <param name="batchProcessor">The batch processor to use for PDF note processing.</param>
+        public PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor)
         {
-            var pdfProcessor = new PdfNoteProcessor(logger);
-            _batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(logger, pdfProcessor);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PdfNoteBatchProcessor"/> class with AISummarizer.
-        /// </summary>
-        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
-        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
-        /// <remarks>
-        /// Creates a new <see cref="PdfNoteProcessor"/> instance with the provided AISummarizer and wraps it with a 
-        /// <see cref="DocumentNoteBatchProcessor{TProcessor}"/> for batch processing operations.
-        /// </remarks>
-        public PdfNoteBatchProcessor(ILogger logger, Services.AISummarizer aiSummarizer)
-        {
-            var pdfProcessor = new PdfNoteProcessor(logger, aiSummarizer);
-            _batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(logger, pdfProcessor);
+            _batchProcessor = batchProcessor ?? throw new ArgumentNullException(nameof(batchProcessor));
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace NotebookAutomation.Core.Tests
     /// A testable version of AISummarizer that exposes private methods for testing.
     /// </summary>
     public class TestableAISummarizer : AISummarizer
-    {        
+    {
         /// <summary>
         /// Initializes a new instance of the TestableAISummarizer class.
         /// </summary>
@@ -21,11 +21,17 @@ namespace NotebookAutomation.Core.Tests
         /// <param name="semanticKernel">Optional Microsoft.SemanticKernel kernel</param>
         /// <param name="textGenerationService">Optional Microsoft.SemanticKernel text generation service</param>
         public TestableAISummarizer(
-            ILogger logger,
+            ILogger<AISummarizer> logger,
             PromptTemplateService? promptService = null,
             Kernel? semanticKernel = null,
             ITextGenerationService? textGenerationService = null)
-            : base(logger, promptService, semanticKernel, textGenerationService)
+            : base(
+                logger,
+                promptService ?? new PromptTemplateService(
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<PromptTemplateService>.Instance,
+                    new NotebookAutomation.Core.Configuration.AppConfig()),
+                semanticKernel ?? null!,
+                textGenerationService ?? null!)
         {
         }
 
@@ -39,9 +45,9 @@ namespace NotebookAutomation.Core.Tests
         /// <param name="semanticKernel">Optional Microsoft.SemanticKernel kernel</param>
         /// <param name="textGenerationService">Optional Microsoft.SemanticKernel text generation service</param>
         public TestableAISummarizer(
-            ILogger logger, 
-            string apiKey, 
-            string model = "gpt-4.1", 
+            ILogger<AISummarizer> logger,
+            string apiKey,
+            string model = "gpt-4.1",
             PromptTemplateService? promptService = null,
             Kernel? semanticKernel = null,
             ITextGenerationService? textGenerationService = null)
@@ -49,7 +55,7 @@ namespace NotebookAutomation.Core.Tests
         {
             // API Key and model are now configured via DI, so we ignore them here
         }
-        
+
         /// <summary>
         /// Exposes the private EstimateTokenCount method for testing.
         /// </summary>
@@ -58,18 +64,18 @@ namespace NotebookAutomation.Core.Tests
         public int PublicEstimateTokenCount(string text)
         {
             // Use reflection to call the private method
-            var methodInfo = typeof(AISummarizer).GetMethod("EstimateTokenCount", 
+            var methodInfo = typeof(AISummarizer).GetMethod("EstimateTokenCount",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                
+
             if (methodInfo == null)
             {
                 throw new InvalidOperationException("EstimateTokenCount method not found in AISummarizer");
             }
-                
+
             var result = methodInfo.Invoke(this, new object[] { text });
             return result != null ? (int)result : 0;
         }
-        
+
         /// <summary>
         /// Exposes the private ContainsMarkdown method for testing.
         /// </summary>
@@ -78,14 +84,14 @@ namespace NotebookAutomation.Core.Tests
         public bool PublicContainsMarkdown(string text)
         {
             // Use reflection to call the private method
-            var methodInfo = typeof(AISummarizer).GetMethod("ContainsMarkdown", 
+            var methodInfo = typeof(AISummarizer).GetMethod("ContainsMarkdown",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                
+
             if (methodInfo == null)
             {
                 throw new InvalidOperationException("ContainsMarkdown method not found in AISummarizer");
             }
-                
+
             var result = methodInfo.Invoke(this, new object[] { text });
             return result != null && (bool)result;
         }

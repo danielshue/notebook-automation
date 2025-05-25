@@ -17,6 +17,16 @@ namespace NotebookAutomation.Core.Configuration
     /// </summary>
     public class AppConfig : IConfiguration
     {
+        /// <summary>
+        /// The path to the configuration file used to load this AppConfig.
+        /// </summary>
+        public string? ConfigFilePath { get; set; }
+
+        /// <summary>
+        /// Whether debug mode is enabled for this configuration.
+        /// </summary>
+        public bool DebugEnabled { get; set; }
+
         private readonly ILogger<AppConfig>? _logger;
         private readonly IConfiguration? _underlyingConfiguration;
 
@@ -47,34 +57,40 @@ namespace NotebookAutomation.Core.Configuration
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public AppConfig() 
+        public AppConfig()
         {
             // Default constructor for when manual initialization is needed
-        }        /// <summary>
+        }
+
+        /// <summary>
         /// Constructor with dependency injection for configuration and logging.
         /// </summary>
         /// <param name="configuration">The configuration to use.</param>
         /// <param name="logger">The logger to use.</param>
-        public AppConfig(IConfiguration configuration, ILogger<AppConfig> logger)
+        /// <param name="configFilePath">The path to the configuration file.</param>
+        /// <param name="debugEnabled">Whether debug mode is enabled.</param>
+        public AppConfig(IConfiguration configuration, ILogger<AppConfig> logger, string? configFilePath = null, bool debugEnabled = false)
         {
             _underlyingConfiguration = configuration;
             _logger = logger;
-            
+            ConfigFilePath = configFilePath;
+            DebugEnabled = debugEnabled;
             // Load configuration sections
             LoadConfiguration();
         }
-          /// <summary>
+        /// <summary>
         /// Loads configuration from the configuration provider.
         /// </summary>
         private void LoadConfiguration()
         {
+            string? loadedConfigPath = null;
             try
             {
                 // First, try to load from underlying configuration if available
                 if (_underlyingConfiguration != null)
                 {
                     // Load paths configuration
-                    var pathsSection = _underlyingConfiguration.GetSection("paths");                    if (pathsSection.Exists())
+                    var pathsSection = _underlyingConfiguration.GetSection("paths"); if (pathsSection.Exists())
                     {
                         Paths = new PathsConfig
                         {
@@ -86,7 +102,7 @@ namespace NotebookAutomation.Core.Configuration
                             MetadataFile = pathsSection["metadata_file"] ?? string.Empty
                         };
                     }
-                    
+
                     // Load Microsoft Graph configuration
                     var graphSection = _underlyingConfiguration.GetSection("microsoft_graph");
                     if (graphSection.Exists())
@@ -104,7 +120,7 @@ namespace NotebookAutomation.Core.Configuration
                                 .ToList()
                         };
                     }
-                      // Load OpenAI configuration
+                    // Load OpenAI configuration
                     var aiSection = _underlyingConfiguration.GetSection("aiservice");
                     if (aiSection.Exists())
                     {
@@ -114,11 +130,11 @@ namespace NotebookAutomation.Core.Configuration
                             Deployment = aiSection["deployment"] ?? string.Empty,
                             Endpoint = aiSection["endpoint"] ?? string.Empty
                         };
-                        
+
                         // Set the configuration for accessing secrets
                         AiService.SetConfiguration(_underlyingConfiguration);
                     }
-                    
+
                     // Load video extensions
                     var videoExtensionsSection = _underlyingConfiguration.GetSection("video_extensions");
                     if (videoExtensionsSection.Exists())
@@ -135,6 +151,7 @@ namespace NotebookAutomation.Core.Configuration
                 {
                     // Fall back to the original file-based configuration loading
                     var configFilePath = FindConfigFile();
+                    loadedConfigPath = configFilePath;
                     if (!string.IsNullOrEmpty(configFilePath) && File.Exists(configFilePath))
                     {
                         var json = File.ReadAllText(configFilePath);
@@ -156,7 +173,10 @@ namespace NotebookAutomation.Core.Configuration
                         _logger?.LogWarning($"Config file not found at {configFilePath}");
                     }
                 }
-                _logger?.LogDebug("Configuration loaded successfully");
+                // Prefer the explicit ConfigFilePath property, then loadedConfigPath, then environment variable, then unknown
+                string configPathHint = Environment.GetEnvironmentVariable("NOTEBOOKAUTOMATION_CONFIG_PATH") ?? string.Empty;
+                string configPathToLog = ConfigFilePath ?? loadedConfigPath ?? (!string.IsNullOrEmpty(configPathHint) ? configPathHint : "unknown");
+                _logger?.LogInformation($"Configuration loaded successfully - {configPathToLog}, Debug: {DebugEnabled}");
             }
             catch (Exception ex)
             {
@@ -192,9 +212,10 @@ namespace NotebookAutomation.Core.Configuration
             {
                 throw new InvalidOperationException($"Failed to deserialize configuration from: {configPath}");
             }
+            loaded.ConfigFilePath = configPath;
             return loaded;
         }
-        
+
         /// <summary>
         /// Attempts to find the configuration file in standard locations.
         /// </summary>
@@ -207,7 +228,7 @@ namespace NotebookAutomation.Core.Configuration
             {
                 return configFileName;
             }
-            
+
             // Standard locations to check
             var locations = new[]
             {
@@ -229,7 +250,7 @@ namespace NotebookAutomation.Core.Configuration
                 // Source directory for development environment
                 Path.Combine(Directory.GetCurrentDirectory(), "src", "c-sharp", configFileName)
             };
-            
+
             foreach (var path in locations)
             {
                 if (File.Exists(path))
@@ -237,7 +258,7 @@ namespace NotebookAutomation.Core.Configuration
                     return path;
                 }
             }
-            
+
             return string.Empty; // Return empty string instead of null
         }
 
@@ -249,7 +270,7 @@ namespace NotebookAutomation.Core.Configuration
         public void SaveToJsonFile(string configPath)
         {
             _logger?.LogInformation($"Saving configuration to {configPath}");
-            
+
             try
             {
                 // Make configPath absolute if it is not already
@@ -272,10 +293,10 @@ namespace NotebookAutomation.Core.Configuration
                     WriteIndented = true,
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
                 };
-                
+
                 var json = JsonSerializer.Serialize(this, options);
                 File.WriteAllText(configPath, json);
-                
+
                 _logger?.LogInformation($"Configuration successfully saved to {configPath}");
             }
             catch (Exception ex)
@@ -303,42 +324,42 @@ namespace NotebookAutomation.Core.Configuration
             {
                 return true;
             }
-            
+
             // If key contains sections, navigate through them
             if (key.Contains(':'))
             {
                 var parts = key.Split(':');
                 object? currentObj = this;
-                
+
                 for (int i = 0; i < parts.Length; i++)
                 {
                     var part = parts[i];
                     var property = currentObj?.GetType().GetProperties()
                         .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase));
-                        
+
                     if (property == null)
                     {
                         // Try to get by JsonPropertyName attribute
                         property = currentObj?.GetType().GetProperties()
-                            .FirstOrDefault(p => 
+                            .FirstOrDefault(p =>
                             {
                                 var attr = p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
                                     .FirstOrDefault() as JsonPropertyNameAttribute;
                                 return attr != null && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
                             });
                     }
-                    
+
                     if (property == null)
                     {
                         return false;
                     }
-                    
+
                     // Last part of the key - property exists
                     if (i == parts.Length - 1)
                     {
                         return true;
                     }
-                    
+
                     // Navigate to next object
                     currentObj = property.GetValue(currentObj);
                     if (currentObj == null)
@@ -346,28 +367,28 @@ namespace NotebookAutomation.Core.Configuration
                         return false;
                     }
                 }
-                
+
                 return false;
             }
-            
+
             // Check direct property
             var directProperty = GetType().GetProperties()
                 .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase));
-                
+
             if (directProperty != null)
             {
                 return true;
             }
-            
+
             // Check by JsonPropertyName attribute
             directProperty = GetType().GetProperties()
-                .FirstOrDefault(p => 
+                .FirstOrDefault(p =>
                 {
                     var attr = p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
                         .FirstOrDefault() as JsonPropertyNameAttribute;
                     return attr != null && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
                 });
-                
+
             return directProperty != null;
         }
 
@@ -383,11 +404,11 @@ namespace NotebookAutomation.Core.Configuration
             {
                 return _underlyingConfiguration.GetSection(key);
             }
-            
+
             // Create a new ConfigurationSection using reflection based on our properties
             return new ConfigurationSection(this, key);
         }
-        
+
         /// <summary>
         /// Gets the immediate descendant configuration sub-sections.
         /// </summary>
@@ -399,7 +420,7 @@ namespace NotebookAutomation.Core.Configuration
             {
                 return _underlyingConfiguration.GetChildren();
             }
-            
+
             // Create sections from our properties
             var sections = new List<IConfigurationSection>();
             foreach (var property in GetType().GetProperties().Where(p => p.DeclaringType == typeof(AppConfig)))
@@ -407,10 +428,10 @@ namespace NotebookAutomation.Core.Configuration
                 var section = new ConfigurationSection(this, property.Name);
                 sections.Add(section);
             }
-            
+
             return sections;
         }
-        
+
         /// <summary>
         /// Gets a change token that can be used to observe when this configuration is reloaded.
         /// </summary>
@@ -422,13 +443,13 @@ namespace NotebookAutomation.Core.Configuration
             {
                 return _underlyingConfiguration.GetReloadToken();
             }
-            
+
             // Otherwise return a non-reloading token
             return new ConfigurationReloadToken();
         }
 
         #region IConfiguration Implementation
-        
+
         /// <summary>
         /// Gets or sets a configuration value for the specified key.
         /// </summary>
@@ -443,45 +464,45 @@ namespace NotebookAutomation.Core.Configuration
                 {
                     return _underlyingConfiguration[key];
                 }
-                
+
                 // If key contains sections (colon-separated), navigate through them
                 if (key.Contains(':'))
                 {
                     var parts = key.Split(':');
                     object? currentObj = this;
-                    
+
                     for (int i = 0; i < parts.Length; i++)
                     {
                         var part = parts[i];
-                        
+
                         // Try to get property
                         var property = currentObj?.GetType().GetProperties()
                             .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase));
-                            
+
                         if (property == null)
                         {
                             // Try to get JsonPropertyName attribute
                             property = currentObj?.GetType().GetProperties()
-                                .FirstOrDefault(p => 
+                                .FirstOrDefault(p =>
                                 {
                                     var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
                                         .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
                                     return attr != null && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
                                 });
                         }
-                        
+
                         if (property == null)
                         {
                             return null;
                         }
-                        
+
                         // Last part of the key - return value
                         if (i == parts.Length - 1)
                         {
                             var value = property.GetValue(currentObj);
                             return value?.ToString();
                         }
-                        
+
                         // Navigate to next object
                         currentObj = property.GetValue(currentObj);
                         if (currentObj == null)
@@ -489,35 +510,35 @@ namespace NotebookAutomation.Core.Configuration
                             return null;
                         }
                     }
-                    
+
                     return null;
                 }
-                
+
                 // Direct property access
                 var directProperty = GetType().GetProperties()
                     .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase));
-                    
+
                 if (directProperty != null)
                 {
                     var value = directProperty.GetValue(this);
                     return value?.ToString();
                 }
-                
+
                 // Try to get by JsonPropertyName attribute
                 directProperty = GetType().GetProperties()
-                    .FirstOrDefault(p => 
+                    .FirstOrDefault(p =>
                     {
                         var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
                             .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
                         return attr != null && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
                     });
-                    
+
                 if (directProperty != null)
                 {
                     var value = directProperty.GetValue(this);
                     return value?.ToString();
                 }
-                
+
                 return null;
             }
             set
@@ -527,31 +548,31 @@ namespace NotebookAutomation.Core.Configuration
                 {
                     var parts = key.Split(':');
                     object? currentObj = this;
-                    
+
                     for (int i = 0; i < parts.Length - 1; i++)
                     {
                         var part = parts[i];
-                        
+
                         var property = currentObj?.GetType().GetProperties()
                             .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase));
-                            
+
                         if (property == null)
                         {
                             // Try to get by JsonPropertyName attribute
                             property = currentObj?.GetType().GetProperties()
-                                .FirstOrDefault(p => 
+                                .FirstOrDefault(p =>
                                 {
                                     var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
                                         .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
                                     return attr != null && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
                                 });
                         }
-                        
+
                         if (property == null || !property.CanRead)
                         {
                             return;
                         }
-                        
+
                         var nextObj = property.GetValue(currentObj);
                         if (nextObj == null && property.CanWrite)
                         {
@@ -559,61 +580,61 @@ namespace NotebookAutomation.Core.Configuration
                             nextObj = Activator.CreateInstance(property.PropertyType);
                             property.SetValue(currentObj, nextObj);
                         }
-                        
+
                         currentObj = nextObj;
                     }
-                    
+
                     // Set the value on the final object
                     if (currentObj != null)
                     {
                         var finalPart = parts[parts.Length - 1];
                         var finalProperty = currentObj.GetType().GetProperties()
                             .FirstOrDefault(p => string.Equals(p.Name, finalPart, StringComparison.OrdinalIgnoreCase));
-                            
+
                         if (finalProperty == null)
                         {
                             // Try to get by JsonPropertyName attribute
                             finalProperty = currentObj.GetType().GetProperties()
-                                .FirstOrDefault(p => 
+                                .FirstOrDefault(p =>
                                 {
                                     var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
                                         .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
                                     return attr != null && string.Equals(attr.Name, finalPart, StringComparison.OrdinalIgnoreCase);
                                 });
                         }
-                        
+
                         if (finalProperty != null && finalProperty.CanWrite)
                         {
                             SetPropertyValue(finalProperty, currentObj, value);
                         }
                     }
-                    
+
                     return;
                 }
-                
+
                 // Direct property access
                 var directProperty = GetType().GetProperties()
                     .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase));
-                    
+
                 if (directProperty == null)
                 {
                     // Try to get by JsonPropertyName attribute
                     directProperty = GetType().GetProperties()
-                        .FirstOrDefault(p => 
+                        .FirstOrDefault(p =>
                         {
                             var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
                                 .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
                             return attr != null && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
                         });
                 }
-                
+
                 if (directProperty != null && directProperty.CanWrite)
                 {
                     SetPropertyValue(directProperty, this, value);
                 }
             }
         }
-        
+
         /// <summary>
         /// Helper method to set a property value with proper type conversion.
         /// </summary>
@@ -623,17 +644,17 @@ namespace NotebookAutomation.Core.Configuration
             {
                 return;
             }
-            
+
             try
             {
                 var propertyType = property.PropertyType;
-                
+
                 // Handle nullable types
                 var nullableType = Nullable.GetUnderlyingType(propertyType);
                 if (nullableType != null)
                 {
                     propertyType = nullableType;
-                    
+
                     // If value is null or empty and property is nullable, set to null
                     if (string.IsNullOrEmpty(value))
                     {
@@ -641,7 +662,7 @@ namespace NotebookAutomation.Core.Configuration
                         return;
                     }
                 }
-                
+
                 // Handle common types
                 if (propertyType == typeof(string))
                 {
@@ -704,7 +725,7 @@ namespace NotebookAutomation.Core.Configuration
                 // Failed to set value
             }
         }
-        
+
         #endregion
 
         /// <summary>
@@ -715,44 +736,44 @@ namespace NotebookAutomation.Core.Configuration
             private readonly IConfiguration _configuration;
             private readonly string _key;
             private readonly string _path;
-            
+
             public ConfigurationSection(IConfiguration configuration, string key, string? parentPath = null)
             {
                 _configuration = configuration;
                 _key = key;
                 _path = string.IsNullOrEmpty(parentPath) ? key : $"{parentPath}:{key}";
             }
-            
+
             public string Key => _key;
             public string Path => _path;
-            public string? Value 
-            { 
+            public string? Value
+            {
                 get => _configuration[_path];
                 set => _configuration[_path] = value;
             }
-            
+
             public string? this[string key]
             {
                 get => _configuration[$"{_path}:{key}"];
                 set => _configuration[$"{_path}:{key}"] = value;
             }
-            
+
             public IConfigurationSection GetSection(string key) => new ConfigurationSection(_configuration, key, _path);
-            
+
             public IEnumerable<IConfigurationSection> GetChildren()
             {
                 // Get properties of the object this section represents
                 var children = new List<IConfigurationSection>();
-                
+
                 // Check for properties related to this path
                 foreach (var propKey in GetPropertyKeys())
                 {
                     children.Add(new ConfigurationSection(_configuration, propKey, _path));
                 }
-                
+
                 return children;
             }
-            
+
             // Helper method to find potential property keys
             private IEnumerable<string> GetPropertyKeys()
             {
@@ -761,7 +782,7 @@ namespace NotebookAutomation.Core.Configuration
                 // to get the actual child keys
                 return new List<string>();
             }
-            
+
             public IChangeToken GetReloadToken() => _configuration.GetReloadToken();
         }
     }

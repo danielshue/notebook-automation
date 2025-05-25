@@ -119,6 +119,24 @@ namespace NotebookAutomation.Cli.Commands
                 var appConfig = serviceProvider.GetRequiredService<AppConfig>();
                 var batchProcessor = serviceProvider.GetRequiredService<VideoNoteBatchProcessor>();
 
+                // Output the configured settings before processing
+                AnsiConsoleHelper.WriteInfo($"Configured settings:");
+                AnsiConsoleHelper.WriteInfo($"  Debug: {debug}");
+                AnsiConsoleHelper.WriteInfo($"  Config file: {config}");
+                AnsiConsoleHelper.WriteInfo($"  Input: {input}");
+                AnsiConsoleHelper.WriteInfo($"  Output directory: {overrideOutputDir ?? "(default)"}");
+                AnsiConsoleHelper.WriteInfo($"  Dry run: {dryRun}");
+                AnsiConsoleHelper.WriteInfo($"  No summary: {noSummary}");
+                AnsiConsoleHelper.WriteInfo($"  Force overwrite: {force}");
+                AnsiConsoleHelper.WriteInfo($"  Retry failed: {retryFailed}");
+                AnsiConsoleHelper.WriteInfo($"  Timeout: {(timeout.HasValue ? timeout.Value.ToString() : "(default)")}");
+                AnsiConsoleHelper.WriteInfo($"  Resources root: {resourcesRoot ?? "(default)"}");
+                AnsiConsoleHelper.WriteInfo($"  No share links: {noShareLinks}");
+                AnsiConsoleHelper.WriteInfo($"  Video extensions: {string.Join(", ", appConfig.VideoExtensions ?? new List<string>())}");
+                AnsiConsoleHelper.WriteInfo($"  AI Model: {appConfig.AiService?.Model}");
+                AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {appConfig.AiService?.Endpoint}");
+                AnsiConsoleHelper.WriteInfo($"  Logging Dir: {appConfig.Paths?.LoggingDir}");
+
                 // Validate OpenAI config before proceeding
                 if (!ConfigValidation.RequireOpenAi(appConfig))
                 {
@@ -129,10 +147,12 @@ namespace NotebookAutomation.Cli.Commands
                 var videoExtensions = appConfig.VideoExtensions ?? new List<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
 
                 // Get OpenAI API key from environment or config
-                string? openAiApiKey = Environment.GetEnvironmentVariable(AIServiceConfig.AiApiKeyEnvVar); if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig.AiService != null)
+                string? openAiApiKey = Environment.GetEnvironmentVariable(AIServiceConfig.AiApiKeyEnvVar);
+                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig.AiService != null)
                 {
                     openAiApiKey = appConfig.AiService.GetApiKey();
-                }                // Process videos
+                }
+                // Process videos
                 // Verify that we have an input source
                 if (string.IsNullOrWhiteSpace(input))
                 {

@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 
+using NotebookAutomation.Core.Services;
 namespace NotebookAutomation.Core.Tests
 {
     /// <summary>
@@ -17,7 +18,7 @@ namespace NotebookAutomation.Core.Tests
     public class VideoNoteProcessorTranscriptTests
     {
         private string _tempDirectory = string.Empty;
-        private ILogger _logger = NullLogger.Instance;
+        private ILogger<VideoNoteProcessor> _logger = NullLogger<VideoNoteProcessor>.Instance;
         private VideoNoteProcessor _processor = null!;
 
         /// <summary>
@@ -28,8 +29,17 @@ namespace NotebookAutomation.Core.Tests
         {
             _tempDirectory = Path.Combine(Path.GetTempPath(), $"VideoProcessorTests_{Guid.NewGuid()}");
             Directory.CreateDirectory(_tempDirectory);
-            _logger = NullLogger.Instance;
-            _processor = new VideoNoteProcessor(_logger);
+            _logger = NullLogger<VideoNoteProcessor>.Instance;
+            var promptService = new NotebookAutomation.Core.Services.PromptTemplateService(
+                NullLogger<NotebookAutomation.Core.Services.PromptTemplateService>.Instance,
+                new NotebookAutomation.Core.Configuration.AppConfig());
+            var aiSummarizer = new AISummarizer(
+                NullLogger<AISummarizer>.Instance,
+                promptService,
+                null!, // Kernel (can be null for tests)
+                null!  // ITextGenerationService (can be null for tests)
+            );
+            _processor = new VideoNoteProcessor(_logger, aiSummarizer);
         }
 
         /// <summary>
@@ -222,22 +232,22 @@ namespace NotebookAutomation.Core.Tests
             // Assert
             Assert.IsNull(result, "Should return null when no transcript is found");
         }        /// <summary>
-        /// Tests the IsLikelyLanguageCode method through the TryLoadTranscript functionality.
-        /// Note: The order of finding language-specific transcripts depends on file system enumeration,
-        /// which in this case returns the German transcript (.deu.txt) first.
-        /// </summary>
+                 /// Tests the IsLikelyLanguageCode method through the TryLoadTranscript functionality.
+                 /// Note: The order of finding language-specific transcripts depends on file system enumeration,
+                 /// which in this case returns the German transcript (.deu.txt) first.
+                 /// </summary>
         [TestMethod]
         public void TryLoadTranscript_VariousLanguageCodes_ReturnsCorrectTranscript()
         {
             // Arrange
             string videoPath = CreateTestVideoFile(_tempDirectory);
-            
+
             // Create multiple language transcripts
             CreateTestTranscriptFile(_tempDirectory, "test_video.en.txt", "English transcript");
             CreateTestTranscriptFile(_tempDirectory, "test_video.fr.txt", "French transcript");
             CreateTestTranscriptFile(_tempDirectory, "test_video.zh-cn.txt", "Chinese transcript");
             CreateTestTranscriptFile(_tempDirectory, "test_video.deu.txt", "German transcript");
-            
+
             // Create an invalid one that should not be recognized
             CreateTestTranscriptFile(_tempDirectory, "test_video.invalid-language-code.txt", "Invalid transcript");            // Act
             string? result = _processor.TryLoadTranscript(videoPath);
@@ -260,8 +270,8 @@ namespace NotebookAutomation.Core.Tests
             // Assert
             Assert.IsNull(result, "Should return null for empty video path");
         }        /// <summary>
-        /// Tests providing a null video path.
-        /// </summary>
+                 /// Tests providing a null video path.
+                 /// </summary>
         [TestMethod]
         public void TryLoadTranscript_NullVideoPath_ReturnsNull()
         {

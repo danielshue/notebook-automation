@@ -17,6 +17,7 @@ namespace NotebookAutomation.Core.Tests
     public class BatchProcessResultTests
     {
         private Mock<ILogger> _loggerMock;
+        private Mock<DocumentNoteBatchProcessor<PdfNoteProcessor>> _batchProcessorMock;
         private PdfNoteBatchProcessor _processor;
         private string _testDir;
         private string _outputDir;
@@ -25,7 +26,39 @@ namespace NotebookAutomation.Core.Tests
         public void Setup()
         {
             _loggerMock = new Mock<ILogger>();
-            _processor = new PdfNoteBatchProcessor(_loggerMock.Object);
+            _batchProcessorMock = new Mock<DocumentNoteBatchProcessor<PdfNoteProcessor>>(MockBehavior.Strict, null, null, null);
+            _batchProcessorMock
+                .Setup(x => x.ProcessDocumentsAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<List<string>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Configuration.AppConfig>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync((string input, string output, List<string> extensions, string openAiApiKey, bool dryRun, bool noSummary, bool forceOverwrite, bool retryFailed, int? timeoutSeconds, string resourcesRoot, Configuration.AppConfig appConfig, string noteType, string failedFilesListName) =>
+                {
+                    // Simulate a BatchProcessResult with timing/token stats for assertions
+                    return new BatchProcessResult
+                    {
+                        Processed = 1,
+                        Failed = 0,
+                        TotalBatchTime = TimeSpan.FromMilliseconds(100),
+                        TotalSummaryTime = TimeSpan.FromMilliseconds(50),
+                        TotalTokens = 123,
+                        AverageFileTimeMs = 100,
+                        AverageSummaryTimeMs = 50,
+                        AverageTokens = 123,
+                        Summary = "Test summary"
+                    };
+                });
+            _processor = new PdfNoteBatchProcessor(_batchProcessorMock.Object);
             _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             _outputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testDir);

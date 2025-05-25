@@ -1,26 +1,22 @@
 using Microsoft.Extensions.Logging;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
+using NotebookAutomation.Core.Tools.Shared;
+using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tools.PdfProcessing
 {
     /// <summary>
     /// Provides functionality for extracting text from PDF files and generating markdown notes.
     /// </summary>
-    public class PdfNoteProcessor : Shared.DocumentNoteProcessorBase
+    public class PdfNoteProcessor : DocumentNoteProcessorBase
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostics.</param>
-        public PdfNoteProcessor(ILogger logger) : base(logger) { }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class with logger and AI summarizer.
         /// </summary>
         /// <param name="logger">Logger for diagnostics.</param>
         /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
-        public PdfNoteProcessor(ILogger logger, Services.AISummarizer aiSummarizer) : base(logger, aiSummarizer) { }
+        public PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer) : base(logger, aiSummarizer) { }
 
         /// <summary>
         /// Extracts text and metadata from a PDF file.
@@ -32,7 +28,7 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
             var metadata = new Dictionary<string, object>();
             if (!File.Exists(pdfPath))
             {
-                _logger.LogError("PDF file not found: {PdfPath}", pdfPath);
+                Logger.LogError("PDF file not found: {PdfPath}", pdfPath);
                 return (string.Empty, metadata);
             }
             string extractedText = string.Empty;
@@ -65,12 +61,12 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
                     }
                     return sb.ToString();
                 });
-                _logger.LogInformation("Extracted text and metadata from PDF: {PdfPath}", pdfPath);
+                Logger.LogInformation("Extracted text and metadata from PDF: {PdfPath}", pdfPath);
                 return (extractedText, metadata);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to extract text from PDF: {PdfPath}", pdfPath);
+                Logger.LogError(ex, "Failed to extract text from PDF: {PdfPath}", pdfPath);
                 return (string.Empty, metadata);
             }
         }

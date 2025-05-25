@@ -7,8 +7,6 @@
 //     logger.LogInformation("Application started");
 // -----------------------------------------------------------------------------
 
-using System;
-using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -110,17 +108,17 @@ namespace NotebookAutomation.Core.Configuration
             // Determine if we should log to file
             var logToFile = !string.IsNullOrEmpty(appConfig.Paths.LoggingDir);
             string? logFilePath = null;
-            
+
             if (logToFile)
             {
                 var assemblyName = GetAssemblyName();
                 var date = DateTime.Now.ToString("yyyyMMdd");
                 logFilePath = Path.Combine(appConfig.Paths.LoggingDir, $"{assemblyName.ToLower()}_{date}.log");
             }
-            
+
             _logger = CreateLogger(GetAssemblyName(), debug, logToFile, logFilePath);
             _failedLogger = CreateFailedLogger(debug, logToFile, logFilePath);
-            
+
             // Set instance if it hasn't been set yet
             _instance ??= this;
         }
@@ -162,7 +160,7 @@ namespace NotebookAutomation.Core.Configuration
                     options.UseUtcTimestamp = false;
                 })
                 .SetMinimumLevel(GetMinLogLevel(debug));
-                
+
                 // Add file logging if requested
                 if (logToFile && !string.IsNullOrEmpty(logFilePath))
                 {
@@ -172,16 +170,16 @@ namespace NotebookAutomation.Core.Configuration
                     {
                         Directory.CreateDirectory(dirPath);
                     }
-                    
+
                     // Add file logger - would use a proper file logging provider in a real implementation
                     // e.g., builder.AddFile(logFilePath);
                     // Using a commented placeholder as actual implementation depends on external packages
                 }
             });
-            
+
             return loggerFactory;
         }
-        
+
         /// <summary>
         /// Creates an ILogger instance for the specified category name.
         /// </summary>
@@ -198,7 +196,7 @@ namespace NotebookAutomation.Core.Configuration
         {
             return CreateLoggerFactory(debug, logToFile, logFilePath).CreateLogger(categoryName);
         }
-        
+
         /// <summary>
         /// Creates a typed ILogger instance for the specified type T.
         /// </summary>
@@ -213,7 +211,7 @@ namespace NotebookAutomation.Core.Configuration
         {
             return CreateLoggerFactory(debug).CreateLogger<T>();
         }
-        
+
         /// <summary>
         /// Creates a specialized logger for recording failed operations.
         /// </summary>
@@ -235,7 +233,7 @@ namespace NotebookAutomation.Core.Configuration
         {
             return CreateLogger(typeof(FailedOperations).FullName ?? "FailedOperations", debug, logToFile, logFilePath);
         }
-        
+
         /// <summary>
         /// Gets the assembly name for the executing assembly.
         /// </summary>
