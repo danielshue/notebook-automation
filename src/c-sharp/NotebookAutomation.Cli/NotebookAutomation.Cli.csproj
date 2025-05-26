@@ -14,6 +14,9 @@
     <LangVersion>preview</LangVersion>
     <AssemblyName>notebookautomation</AssemblyName>
     <UserSecretsId>30391e52-b669-419b-a859-fbd67b3c090b</UserSecretsId>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+    <PublishAot>True</PublishAot>
+    <Copyright>Copyright 2025</Copyright>
   </PropertyGroup>
 
   <!-- Copy prompts from repository root and Core project if they exist -->
