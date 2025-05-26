@@ -413,7 +413,7 @@ namespace NotebookAutomation.Core.Services
         /// <param name="prompt">Optional prompt</param>
         /// <param name="cancellationToken">Optional cancellation token</param>
         /// <returns>The summary, or null if failed</returns>
-        private async Task<string?> SummarizeWithSemanticKernelAsync(string inputText, string prompt, CancellationToken cancellationToken)
+        private async Task<string?> SummarizeWithSemanticKernelAsync(string inputText, string? prompt, CancellationToken cancellationToken)
         {
             try
             {
