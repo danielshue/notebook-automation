@@ -170,29 +170,36 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                         _logger.LogInformation("Skipping index file: {FilePath}", filePath);
                     }
                     return false;
-                }
-
-                // Read the file content
+                }                // Read the file content
                 string content = await File.ReadAllTextAsync(filePath);
 
-                // Extract frontmatter and parse YAML
+                // Extract frontmatter and parse YAML with better error handling
                 string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
                 if (string.IsNullOrEmpty(frontmatter))
                 {
                     if (_verbose)
                     {
                         _logger.LogInformation("No frontmatter found in file: {FilePath}", filePath);
+
+                        // Additional debug info if the file appears to have frontmatter but extraction failed
+                        if (content.TrimStart().StartsWith("---"))
+                        {
+                            _logger.LogDebug("Content appears to have frontmatter but extraction failed. First 50 chars: {Content}",
+                                content.Length > 50 ? content.Substring(0, 50) + "..." : content);
+                        }
                     }
                     return false;
                 }
 
-                // Parse the frontmatter into a dictionary
+                // Parse the frontmatter into a dictionary with enhanced error handling
                 var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
-                if (frontmatterDict == null || frontmatterDict.Count == 0)
+                if (frontmatterDict.Count == 0)
                 {
                     if (_verbose)
                     {
                         _logger.LogInformation("Empty or invalid frontmatter in file: {FilePath}", filePath);
+                        _logger.LogDebug("Frontmatter content that failed parsing: {Frontmatter}",
+                            frontmatter.Length > 100 ? frontmatter.Substring(0, 100) + "..." : frontmatter);
                     }
                     return false;
                 }
@@ -775,6 +782,60 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 _failedLogger.LogError(ex, "Error processing file: {FilePath}", filePath);
                 Stats["FilesWithErrors"]++;
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Diagnoses YAML frontmatter issues in markdown files.
+        /// </summary>
+        /// <param name="directory">The directory path to process.</param>
+        /// <returns>A list of problematic files with their diagnostic information.</returns>
+        public async Task<List<(string FilePath, string DiagnosticMessage)>> DiagnoseFrontmatterIssuesAsync(string directory)
+        {
+            var results = new List<(string FilePath, string DiagnosticMessage)>();
+
+            if (!Directory.Exists(directory))
+            {
+                _logger.LogError("Directory not found: {Directory}", directory);
+                results.Add((directory, "Directory not found"));
+                return results;
+            }
+
+            try
+            {
+                var markdownFiles = Directory.GetFiles(directory, "*.md", SearchOption.AllDirectories);
+
+                _logger.LogInformation("Analyzing {Count} markdown files for YAML frontmatter issues", markdownFiles.Length);
+
+                int filesWithIssues = 0;
+
+                foreach (var file in markdownFiles)
+                {
+                    string content = await File.ReadAllTextAsync(file);
+                    var diagnosis = _yamlHelper.DiagnoseYamlFrontmatter(content);
+
+                    if (!diagnosis.Success)
+                    {
+                        filesWithIssues++;
+                        results.Add((file, diagnosis.Message));
+
+                        if (_verbose)
+                        {
+                            _logger.LogWarning("YAML issue in {FilePath}: {Message}", file, diagnosis.Message);
+                        }
+                    }
+                }
+
+                _logger.LogInformation("Found {Count} files with YAML frontmatter issues out of {Total} files",
+                    filesWithIssues, markdownFiles.Length);
+
+                return results;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error diagnosing directory: {Directory}", directory);
+                results.Add((directory, $"Error during diagnosis: {ex.Message}"));
+                return results;
             }
         }
     }
