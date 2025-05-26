@@ -1,0 +1,40 @@
+{
+  "paths": {
+    "onedriveFullpathRoot": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestVideos",
+    "notebookVaultFullpathRoot": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestOutput",
+    "metadataFile": "d:/source/notebook-automation-csharp-migration/src/python/metadata.yaml",
+    "onedriveResourcesBasepath": "/TestVideos",
+    "loggingDir": "d:/source/notebook-automation-csharp-migration/src/c-sharp/logs"
+  },
+  "microsoftGraph": {
+    "clientId": "489ad055-e4b0-4898-af27-53506ce83db7",
+    "apiEndpoint": "https://graph.microsoft.com/v1.0",
+    "authority": "https://login.microsoftonline.com/common",
+    "scopes": [
+      "Files.ReadWrite.All",
+      "Sites.Read.All"
+    ]
+  },
+  "aiService": {
+    "service": "OpenAI",
+    "model": "gpt-4",
+    "apiKeySource": "environment",
+    "maxTokensPerRequest": 8000
+  },
+  "userSecrets": {
+    "openAI": {
+      "apiKey": "PLACEHOLDER_API_KEY"
+    }
+  },
+  "videoExtensions": [
+    ".mp4",
+    ".mov",
+    ".avi",
+    ".mkv",
+    ".webm",
+    ".wmv",
+    ".mpg",
+    ".mpeg",
+    ".m4v"
+  ]
+}
