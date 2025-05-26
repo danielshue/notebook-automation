@@ -1,12 +1,13 @@
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 
 using NotebookAutomation.Core.Services;
-
-#nullable enable
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -15,47 +16,47 @@ namespace NotebookAutomation.Core.Tests
     /// </summary>
     public class TestableAISummarizer : AISummarizer
     {
+        private string _summarizeAsyncResult = "[Simulated AI summary]";
+
         /// <summary>
         /// Initializes a new instance of the TestableAISummarizer class.
         /// </summary>
         /// <param name="logger">The logger instance</param>
-        /// <param name="promptService">Optional prompt template service for loading templates</param>
-        /// <param name="semanticKernel">Optional Microsoft.SemanticKernel kernel</param>
-        /// <param name="textGenerationService">Optional Microsoft.SemanticKernel text generation service</param>
-        public TestableAISummarizer(
-            ILogger<AISummarizer> logger,
-            PromptTemplateService? promptService = null,
-            Kernel? semanticKernel = null,
-            ITextGenerationService? textGenerationService = null)
+        public TestableAISummarizer(ILogger<AISummarizer> logger)
             : base(
-                logger,
-                promptService ?? new PromptTemplateService(
-                    Microsoft.Extensions.Logging.Abstractions.NullLogger<PromptTemplateService>.Instance,
-                    new Configuration.AppConfig()),
-                semanticKernel ?? null!,
-                textGenerationService ?? null!)
+                  logger,
+                  new PromptTemplateService(
+                      NullLogger<PromptTemplateService>.Instance,
+                      new Configuration.AppConfig()),
+                  null!,
+                  null!)
         {
         }
 
         /// <summary>
-        /// Backward compatibility constructor for TestableAISummarizer class.
+        /// Sets up a predefined result to be returned by SummarizeAsync method.
         /// </summary>
-        /// <param name="logger">The logger instance</param>
-        /// <param name="apiKey">OpenAI API key (no longer used with DI)</param>
-        /// <param name="model">OpenAI model to use (no longer used with DI)</param>
-        /// <param name="promptService">Optional prompt template service for loading templates</param>
-        /// <param name="semanticKernel">Optional Microsoft.SemanticKernel kernel</param>
-        /// <param name="textGenerationService">Optional Microsoft.SemanticKernel text generation service</param>
-        public TestableAISummarizer(
-            ILogger<AISummarizer> logger,
-            string apiKey,
-            string model = "gpt-4.1",
-            PromptTemplateService? promptService = null,
-            Kernel? semanticKernel = null,
-            ITextGenerationService? textGenerationService = null)
-            : base(logger, promptService, semanticKernel, textGenerationService)
+        /// <param name="result">The result string to return from SummarizeAsync</param>
+        public void SetupSummarizeAsyncResult(string result)
         {
-            // API Key and model are now configured via DI, so we ignore them here
+            _summarizeAsyncResult = result;
+        }
+
+        /// <summary>
+        /// Override the SummarizeAsync method to return the predefined result in tests.
+        /// </summary>
+        /// <param name="content">The content to summarize (ignored in test)</param>
+        /// <param name="templateName">The name of the template to use (ignored in test)</param>
+        /// <param name="promptVariables">Variables to substitute in the template (ignored in test)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>The predefined summary result</returns>
+        public override Task<string?> SummarizeAsync(
+            string content,
+            string? templateName = "chunk_summary_prompt",
+            string? promptVariables = null,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<string?>(_summarizeAsyncResult);
         }
 
         /// <summary>
