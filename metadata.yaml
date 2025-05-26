@@ -1,0 +1,241 @@
+template-type: main-index
+auto-generated-state: writable
+template-description: Top-level folder for the entire MBA program.
+title: MBA Program Index
+type: index
+index-type: main
+tags: 
+  - index
+  - mba
+date-created: 2025-04-19
+---
+template-type: program-index
+auto-generated-state: writable
+template-description: Program area folder within the MBA curriculum.
+title: Program Index
+type: index
+index-type: program
+tags: 
+  - index
+  - program
+date-created: 2025-04-19
+---
+template-type: course-index
+auto-generated-state: writable
+template-description: Top-level folder for a single course.
+title: Course Index
+type: index
+index-type: course
+tags: 
+  - index
+  - course
+date-created: 2025-04-19
+---
+template-type: class-index
+auto-generated-state: writable
+template-description: Top-level folder for a single class.
+title: Class Index
+type: index
+index-type: class
+tags: 
+  - index
+  - class
+date-created: 2025-04-19
+---
+template-type: module-index
+auto-generated-state: writable
+template-description: Groups together lessons or topics within a course.
+title: Module Index
+type: index
+index-type: module
+tags: 
+  - index
+  - module
+date-created: 2025-04-19
+---
+template-type: lesson-index
+auto-generated-state: writable
+template-description: A single lesson's landing page.
+title: Lesson Index
+type: index
+index-type: lesson
+tags: 
+  - lesson
+  - course-materials
+date-created: 2025-04-19
+---
+template-type: live-session-note
+auto-generated-state: writable
+template-description: Notes from a live class session.
+title: Live Session Notes
+type: note
+tags: 
+  - live-session
+  - course-materials
+date-created: 2025-04-19
+vault-path: path/to/file/in/vault
+onedrive-path: path/to/file.pdf
+onedrive-sharing-link: path/to/sharing-link
+---
+template-type: transcript
+auto-generated-state: writable
+template-description: Transcript of a video lecture.
+title: Transcript
+type: transcript
+tags: 
+  - transcript
+  - course-materials
+date-created: 2025-04-19
+class: Class Name
+course: Course Name
+program: Program Name
+---
+template-type: case-study-index
+auto-generated-state: writable
+template-description: Index page for a case study.
+title: Case Study
+type: index
+index-type: case-study
+tags: 
+  - case-study
+  - course-materials
+date-created: 2025-04-19
+---
+template-type: video-reference
+auto-generated-state: writable
+template-description: Links to a video file stored in OneDrive for improved sharing and accessibility.
+type: video-reference
+title: Video Reference
+tags: 
+  - video
+  - onedrive
+  - course-materials
+date-created: 2025-04-19
+status: unwatched
+vault-path: path/to/file/in/vault
+onedrive-path: path/to/file.pdf
+onedrive-sharing-link: path/to/sharing-link
+completion-date: ""
+review-date: ""
+comprehension: ""
+class: Class Name
+course: Course Name
+program: Program Name
+---
+template-type: pdf-reference
+auto-generated-state: writable
+template-description: Reference to a PDF file in OneDrive.
+title: PDF Title
+type: reference
+vault-path: path/to/file/in/vault
+onedrive-path: path/to/file.pdf
+onedrive-sharing-link: path/to/sharing-link
+program: Program Name
+course: Course Name
+class: Class Name
+date-created: YYYY-MM-DD
+tags:
+  - pdf
+  - reading
+  - course-materials
+pdf-uploaded: YYYY-MM-DD
+pdf-size: 1.23 MB
+status: unread
+completion-date: 
+review-date: 
+comprehension:
+---
+template-type: case-studies-index
+auto-generated-state: writable
+template-description: Index page for a collection of case studies within a course or class.
+title: Case Studies Index
+type: index
+program: Program Name
+course: Course Name
+index-type: case-studies
+tags:
+  - index
+  - case-studies
+  - course-materials
+date-created: 2025-04-20
+---
+template-type: readings-index
+auto-generated-state: writable
+template-description: Index page for required readings within a course or class.
+title: Required Readings Index
+type: index
+program: Program Name
+course: Course Name
+index-type: readings
+tags:
+  - index
+  - readings
+  - required-readings
+  - course-materials
+date-created: 2025-04-29
+---
+template-type: resources-index
+auto-generated-state: writable
+template-description: Index page for additional resources within a course or class.
+title: Resources Index
+type: index
+program: Program Name
+course: Course Name
+index-type: resources
+tags:
+  - index
+  - resources
+  - course-materials
+date-created: 2025-04-29
+---
+template-type: assignment-individual
+auto-generated-state: writable
+template-description: Individual Assignment for the course or class.
+title: Assignment
+type: assignment/individual
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: in-progress
+---
+template-type: assignment-group
+auto-generated-state: writable
+template-description: Group Assignment for the course or class.
+title: Assignment
+type: assignment/group
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: in-progress
+---
+template-type: assignment-quiz
+auto-generated-state: writable
+template-description: Quiz for the course or class.
+title: Quiz 1
+type: assignment/quiz
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: in-progress
+---
+template-type: note-case-study
+auto-generated-state: writable
+template-description: Case Study for the course or class.
+title: Case Study 1
+type: note/case-study
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: not-started
+---
+template-type: resource-reading
+auto-generated-state: writable
+template-description: Required Reading for the course or class.
+title: Required Reading 1
+type: resource/reading
+program: Program Name
+course: Course Name
+date-created: 2025-04-29
+status: not-started
+pages: 10-15
+source: RequiredReading.pdf

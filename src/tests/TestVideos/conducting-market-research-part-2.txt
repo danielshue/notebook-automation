@@ -1,0 +1,134 @@
+# Conducting Market Research Part 2 Transcript
+
+So, let's review. You have specified the information
+that you need to collect. You have determined
+the method of administration, you've decided on the content
+of individual questions and the form of response stage question,
+open or closed ended. Next step is to determine the wording
+of each individual question. The key here is to use simple words. Recently [LAUGH] I reviewed a survey
+that used the word gastronomy. Say that fast like four or five times. Gastronomy, yep, this means the practice
+of eating or cooking good food. Unless the survey was
+targeted to executive chefs, there's absolutely no need to use such a
+complex word that people would rarely use. The language you should be driven by the
+context and the ability of the population. Remember simple is best. Write the question so that it is easily understood by
+all of the possible respondents. When determining the content of questions, you should avoid ambiguous words
+which could lead to confusion. Questions that include words regarding
+frequency are generally confusing. If you include words like often or
+regularly in your question, this could be confusing to
+the person taking the survey. When asking about the frequency of
+behaviors, for example shopping or purchasing you should use an appropriate
+time frame that does not force respondents to make estimates. Is always better to provide response
+options with specific range of the number of times or you can allow the respondent
+to write a specific number as a response. Other words that can be ambiguous and lead to confusion include words
+like sometimes, occasionally and always, these mean different types
+of frequency to different people. For professional basketball player. Playing basketball regularly in
+the summer might mean a daily game in the gym maybe skipping just sunday. For me playing basketball regularly
+is that bi weekly pickup game that we might have with
+Professor Eric Ryan flesh on campus? And that's once every two weeks. Two words on this list that might seem
+surprising dinner and government. But these words are ambiguous. Think about it now when
+deciding on question wording, you need to avoid leading questions. What's the leading question? A leading question is a type of
+question which forces the respondent to answer in a particular way based
+on how the question is asked. These questions encourage a certain
+answer by manipulating the respondent they're not desirable as they
+produce inaccurate information. An example of a leading
+question is as follows. Do you feel that limiting taxes
+by law is an effective way to stop the government from
+picking your pocket every day? Yes or no? Of course most people might choose yes, since no one wants someone
+to pick their pocket. Some words that might signal a leading
+question include the following blame, demand, misinformed, error,
+ill-advised and one sided? It is more likely that respondents
+will answer in one specific manner if those words are used. For example, this question, do you think the Illinois Governor's
+ill-advised move to mandate wearing of mask made a difference
+in containing the spread of covid. Simply adding the word ill-advised in
+that question would bias the response. So you need to avoid these
+words if at all possible, you should also avoid using
+double-barreled questions. What's that? A double barreled question is
+a question composed of two or more separate issues or topics but
+which can only have one answer. This is also known as a compound question. An example of a double-barrel question
+would be think of the last meal you purchased at a fast food restaurant. How satisfied were you with the price and
+the quality of service? I mean how would you answer this question? Especially if you're satisfied with
+the price but the service was terrible. Which was my last experience
+at a fast food restaurant. Great price, awful service. So it is difficult to
+respond to this question. If you answer to each
+option were different. The best way to correct this issue
+is ask two separate questions. One, how satisfied were you with the food? Then two, how satisfied were you
+with the quality of service. After determining the specific
+wording of questions. The next step is to determine
+the questions sequence. You should use simple and
+interesting opening questions. The opening questions of two purposes. First, they make
+the respondents feel comfortable about answering questions
+regarding that subject matter. Second, as we discussed earlier
+is important to start with the filter questions since
+this helps you filter out respondents who are not
+part of your target group. Some people start their surveys
+with demographic questions. I really advise against this. You should include demographic
+questions at the end of the survey unless one of these questions
+helps you identify the target respondents whom you want
+to complete the survey. But then the remaining
+demographic questions must be placed at the end of the survey. This helps to reduce any
+possible bias that may develop based on a person's response
+regarding their identity. You don't want them to see the survey's
+questions through a specific lens that might be primed by responding to
+questions by their gender, race or age. When determining your question sequence,
+you should use the funnel approach. This technique involves starting
+with general questions and then drilling down to a more specific
+point in each successive question. Usually this will involve asking for
+more and more detail at each level. So you start with broad questions and
+progressively narrow the scope. This ordering of questions in this manner
+helps to avoid question order bias. What is that? This happens when the responses to
+specific questions which are placed earlier in the survey tend to
+bias the answers to more general questions later on. Using the final approach
+has to avoid that issue. When finalizing question sequence, you must also design branching
+questions with care. Branching questions direct
+respondents to different places in the questionnaire based on their
+responses to the questions at hand. In effect, skipping one or
+more questions based on their response. So if your service designed to
+collect data about car ownership or plans to own a car? You might use the skip logic feature
+in a questionnaire designed software program to direct respondents
+to additional questions based on their response to the initial question. Does your family own a car? The next step in
+the questionnaire design process, you need to determine how your
+questionnaire looks to the respondent. Some pointers one, no clutter,
+avoid clutter make the survey easy to digest number two
+keep it as short as possible. Remember, the longer the survey is,
+the greater the likelihood that respondents will abandon the survey and
+not finish. Three, use graphics is needed to
+improve the appearance of the survey. Graphics really help with
+comprehension especially with non native English speakers. Four, number questions within sections for
+example, question 11,12,13, 21, 22, 23 and so on. I can't tell you how many times
+I've reviewed surveys and the questions are not numbered. Five, include an organization name, it could be fictitious and
+have a project title. Six, go easy on instructions unless
+they're absolutely necessary. Remember the respondent doesn't
+have a great deal of time and you want to respect that. Next, you must develop
+a recruiting message. This must be welcoming and
+must put the respondent at ease about sharing potentially
+confidential information. Good cover letters and
+scripts are not written in a hurry. The usual things to include are who you
+are, why you're contacting the respondent. How long will it take? The promise of anonymity or
+confidentiality. Do you have any incentives? Sometimes some researchers include
+a brief statement about risk. I do this since there's usually no risk
+involved when I've collected data. In addition some researchers tell
+respondents they are allowed to stop at any time during the survey. This way you provide the respondent
+with what's known as agency. You empower them by telling them this. This makes them feel more comfortable
+about starting the survey. The last step in questionnaire design
+is to re-examine all the previous steps [LAUGH] then you pretest a
+questionnaire and revise it if necessary. Developing question is
+a difficult process. I wouldn't lie and it could seem tedious. It normally requires several revisions
+of the data collection form that you're designing. However the effort you put in at the
+beginning would save you a lot of time and as my mom would say
+a lot of grief later on. If the survey is poorly designed, the
+information you collect would be useless. You must pretest your survey
+before you administer it. It's critical that you do ideally
+you should use a survey on a trial basis with a small sample of
+the target group of respondents. This would help you
+determine how well it works. Whether the target respondent
+would understand the questions and if they would have the information
+that you're seeking. You should use the feedback from this
+pretest to improve your survey design and make it more effective. The real test of a questionnaire
+is how it performs under actual conditions of data collection. And again, data collection should
+never begin until you've pretested and probably revised the questioning. Now that we've discussed survey design,
+you're ready to develop a survey and collect data. Why not try one just for fun. Use a survey designed to like
+Surveymonkey or Qualtrics and create a survey about a subject
+in which you're interested. Follow all the steps as I've discussed. Maybe even implement the survey,
+good luck. I'd really love to hear on the discussion
+board how this goes for you. Now on to value propositions and our firms use them to differentiate
+themselves from competitors.

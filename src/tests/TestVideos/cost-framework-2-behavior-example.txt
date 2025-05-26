@@ -1,0 +1,88 @@
+# Cost Framework 2 Behavior Example Transcript
+
+>> So as far as an example
+scenario is concerned, let's keep things simple and assume we have the
+following information. The first is we are producing
+a good and each good costs us in terms of variable
+costs $1 per unit. The second piece of
+information suggests that our fixed costs
+are $100,000 in total. And third we know that
+the production volume in which we're interested
+is 1 to 100,000 units. So to exemplify variable
+versus fixed costs, let's start with variable costs. And let's think of total
+variable costs to begin with. Now this graph on the horizontal
+axis is production volume starting with 0 or
+1 up to 100,000. And on the vertical
+axis we range from low costs to high costs. Now again this is
+total variable costs. So over the range of production
+volume from low levels to high levels, the graph of
+total variable costs would look like an upward sloping line. The reason is that total
+variable costs increase with production volume. The fewer units you produce, the
+less your total variable cost. Each additional unit costs
+us an additional dollar. So as we move from left to right
+on the production volume line, total variable costs increase. Now where this comes
+from is the fact that unit variable costs
+are per unit amount. So again looking at the horizontal axis
+we have production volume from low levels to high levels and on the vertical
+axis we have cost. But in this case it's per unit. With variable costs by
+definition we're told that it's $1 per unit. So the graph of that line
+would be a flat line. In this case unit variable
+costs do not change with production volume. It's always $1 per unit
+no matter where we are on that production volume line. On the flip side we can
+think about fixed costs. And again let's start
+at the total. Same deal. Horizontal axis, low
+levels of production volume to high levels of
+production volume. And the vertical axis
+we're back to total cost. Fixed costs do not change over
+production volume by definition. So this line would be flat. This is because total
+fixed costs do not change over varying levels
+of production volume. Taking this the fixed
+costs and putting them in per unit terms makes
+the graph look different. Again, horizontal axis
+is production volume, low to high levels. And vertical axis we're
+back to a unit cost. When we produce very
+few units, say one, then we have a very significant
+amount of fixed cost just to produce that one unit. In fact, we have $100,000 that
+we spent for one unit and so that would yield a very
+significant per unit fixed cost, $100,000. As we produce more units, the per unit fixed
+costs gets smaller. It's the same dollar amount,
+the same $100,000 spread over larger and larger volume. So unit fixed costs vary
+with production volume. The higher production volume,
+lower unit fixed costs. Now in these graphs
+what's apparent is that all these lines are drawn
+as though they are straight. And in reality is
+everything really that linear? Well, let's think about
+variable cost for a second. Going back to that graph, we said that unit variable
+cost is a flat line. The reason being unit
+variable cost do not change with production volume. But you can think of
+a very common example where a firm is engaged
+in learning curves. So early on in its existence or when it's producing
+very few units, the cost per unit is
+actually quite significant. And then over time or over
+larger volumes the firm engages or enjoys economies of scale. In this case the unit variable
+cost decreases compared to lower production volumes. So this graph drawn linearly
+here would likely have non-linearities as we
+enter into the real world. The same would go for
+total fixed costs. We said that regardless of
+production volume from 1 to 100,000, we spend the same
+amount on fixed costs, $100,000. But imagine if the firm were
+to produce more and more units. If this was the case, then
+it might take a new factory or additional management
+salaries to produce these higher levels. And in this case we might
+see a step-up in the amount of fixed costs from that
+original $100,000 level to something higher. So even fixed costs are
+not necessarily linear over all production volumes. So when we graph the total
+cost, variable and fixed, we can see non-linearities
+in the true relationship between the units produced
+or production volume and the total cost spent. But oftentimes when we're doing
+cost analysis we limit our focus to what we deem to
+be a relevant range. And in that relevant
+range, linear patterns and the assumption
+thereof is good enough. If we're thinking
+about making decisions that bring us really low
+on the level of production or relatively much higher,
+then we're thinking more about strategic decisions
+and cost analysis needs to be supplemented
+with something else. So for a lot of purposes
+we'll just assume linearity for simplicity and also
+because we're focused on a particular relevant range.

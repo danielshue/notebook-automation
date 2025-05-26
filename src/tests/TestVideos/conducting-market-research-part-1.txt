@@ -1,0 +1,149 @@
+# Conducting Market Research Part 1 Transcript
+
+The first step in conducting
+marketing research is to decide what you really need to find out. The kind of information you're seeking
+should determine the type of research you will do. Although major constraint would be
+the funds you have available to conduct this research. In determining the research needs,
+you must identify a research problem. Is your market shrinking? Are you planning to enter
+a new global market? Are your current consumers not buying
+a product line that you recently launched? Once the research problem has been
+determined, the next step is to find out if the information needed to
+solve the problem already exists. Once you do this, you need to decide
+on the method of administration. How will you conduct your research? If the information already exists
+then you could collect the data using secondary research methods. With secondary research,
+someone else has gathered data and compile it into non-customized reports. This could be very helpful if you're
+trying to identify general market trends, but it does not provide you
+with information about how your specific customers might
+view your products. In this case, you would need
+to conduct primary research. This is research involving customized
+data gathering from your current or future customers about things like
+their specific usage patterns, desired product features and so on. This is research done specifically for
+you or done by you. The benefit of primary research over
+secondary is that it is customized to your needs. The downsides. It could take more time and
+be much more expensive. Let's focus on primary research for
+the rest of this lecture. There are different forms
+of primary research. You can do experimental research. This is where the researcher controls and
+manipulates elements of the research environment to measure
+the impact of each variable. For example, Netflix does A/B testing
+on viewers to see which messages on their website are more effective and
+for whom they're effective. A/B testing involves showing your
+customers two different versions of a product,
+a web page on our design and testing, which one is more effective for
+the specific target group. Another primary research method is
+called controlled store testing. Many small businesses cannot afford
+to hire outside consultants and researchers to provide an extensive
+product development program. However, even a one-person firm can
+conduct its own in house control testing, which involves placing its
+product in select stores. Control store test marketing can reliably simulate real market
+conditions with real buyers. The information uncovered can
+reduce risk and save time. Another method of primary
+research is using a focus group. This is a form of qualitative research
+where you derive insights from in depth nuanced discussions with
+just a few target consumers. Focus groups can be thought of as
+group interviews where a manageable number of target buyers
+are brought together, presented with an idea or
+a prototype product and asked to discuss their opinions with
+a moderator and with each other. The problem with qualitative
+research is how much does a sample of consumers you chose
+represent the entire market. Since you're using a small group, it is sometimes difficult to state
+that the results are indicative of something that the majority of
+potential customers would agree to. The form of research that is used
+the most to determine consumer attitudes is survey research. This is known also as quantitative
+research, since you'll be reaching a larger number of customers and would
+be able to conduct statistical analysis. In this case,
+you could be more confident in how representative the sample
+is of your overall market. Given how frequently this
+is used to collect data. Let's really dive in to see the research. So you have decided on
+your research question and your information needs
+the information does not exist, and you plan to use survey
+research to collect the data. What next? You must develop hypotheses. These are, if this happens,
+then that will occur types of statements. Let's assume that you're
+planning to launch a new foldable phone that costs a lot
+of money to design and manufacture. This phone can fold small enough
+to fit in a regular sized wallet. Before launch, you would need
+to collect data to reduce risk. Your hypotheses could be if
+we position based on quality, then consumers would buy the product. Or another hypothesis could be
+if we charge a high price but bundle the product with another item,
+then consumers would buy this bundle. So you need hypotheses in order
+to direct your data collection. Next, you must decide on
+the population to be sampled. Who are the people to whom you
+will direct your questions? They must represent the target
+consumer who will be purchasing and using your product. A sample is just a small section
+of your larger customer base. This sample must be drawn
+from this target market, otherwise the results will be
+useless to you moving forward. Next step is deciding on the data
+collection instrument itself. There are many different types
+of methods of measurement. These are called scales
+that you could use. My preference is to use what is known
+as a likert scale, likert, L I K E R T. This scale provides a great
+method to assess attitudes. In the videos are asked directly
+about their beliefs about or feelings towards a brand or product. For instance, respondents could indicate
+their degree of agreement with or liking for a specific statement. Some factors to consider
+when designing scales. First, your endpoints are very important. Avoid options like extremely likely or
+extremely unlikely. These options could lead to what
+is known as extreme aversion. This is the idea that people will
+avoid choosing an option that reflects the extremes of thinking. In a sense, people would rather
+choose the safe option and take a middle path than pick something
+on the edges of possibility. So use endpoints like very likely. Think about it. How often do you find a situation
+that is extremely unfavorable? That's rare, isn't it? Next, you must consider how
+many questions you plan to ask. This has a great impact on
+the quality of responses. The longer the survey, which is
+dictated by the number of questions, the less time respondents spent
+on each individual response. You should try to keep the number of
+questions between 11 to 15 questions. This would reduce the time spent
+on each question 25 to 30 seconds. This could be appropriate in my view. As we said, the number of questions used
+would certainly impact the length of time it takes to complete the survey. This becomes even more important when we
+examine the abandoned rates for surveys. When surveys take more than
+7 to 8 minutes to complete, the number of people who don't complete
+the survey increases by up to 20%. So that is a good upper limit when
+conducting a survey, 7 to 8 minutes. The next issue to consider is
+a number of scale positions. Should they be odd or even? Should you have four options or five? Six or seven? What do you think? Research has shown that using an odd
+number of scale points would accommodate respondents who have a neutral position. This helps them complete the survey
+without having to pick aside if they are truly neutral
+with regard to an option. One more thing, I believe it is better to
+use seven scale positions instead of five. This helps increase the range of their
+responses and gives you more variability. It's easier to establish differences
+between different groups of consumers with a seven point
+versus a five point scale. Now you're ready to proceed with
+developing your survey instrument. You need to determine
+the content of the questions. Some key points to consider. Is the question really necessary? Are several questions
+needed instead of one? Do respondents have
+the necessary information? And if they do, will these
+respondents give you the information? Next, you must decide on whether
+you should use a filter question. This is a question used to determine
+if a respondent is likely to possess the knowledge being sought. It is also used to determine if
+an individual qualifies as a member of a defined population. An example of filter questions could read, do you do the grocery shopping for
+your family? Or have you eaten at Mickey's
+restaurant located at 6th Street and Manvel Avenue within the past six months? Or did you vote in the last
+presidential election? All these are filter questions. Filter questions are usually
+very important to ensure that you have collected data
+from the correct sample. The next issue is handling
+sensitive questions. Some advice on this issue. Don't ask sensitive questions
+unless absolutely necessary. Remember you're trying to keep
+the service short already. So don't ask unless it's
+absolutely necessary. If you do ask do these things,
+you can guarantee anonymity. You can also play sensitive
+questions near the end, or you can ask about others might feel. You could also include
+a counter biasing statement. These are statements that
+include information about others who might be in the same
+booth as their respondent. Next is the types of questions
+that you should use. There are two types to consider,
+open-ended questions and closed-ended questions. Open-ended questions are where respondent
+could just write their thoughts, and it's not limited to specific choices like
+they would be for closed-ended questions. Closed-ended questions include
+a list of possible responses. Using open-ended questions does
+present several challenges. They are much more
+cognitively taxing to answer. They require more thought, and
+they take longer to complete. Also, it takes you longer when
+the survey is finished, and you've collected data it takes you longer
+to transform the answers into usable data. So my preference is for few or
+no open-ended questions if possible. When you do use closed-ended questions, the response categories
+must be exhaustive. That means all reasonable
+responses must be included. In addition, response categories
+must be mutually exclusive. Except in special cases where more
+than one answer is acceptable where you just check all that apply. Mutually exclusive
+response categories mean you can't have two possible
+responses that intersect. That's like asking someone to stay
+their age, and you include only two categories, 20 to 40 years old and
+40 to 60 years old. If a person is 40 years old,
+which option would they choose?
