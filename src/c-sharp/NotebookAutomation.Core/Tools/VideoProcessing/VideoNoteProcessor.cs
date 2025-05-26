@@ -31,12 +31,22 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
     /// </para>
     /// </remarks>
     public class VideoNoteProcessor : DocumentNoteProcessorBase
-    {        /// <summary>
-             /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger and AI summarizer.
-             /// </summary>
-             /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
-             /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
-        public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer) : base(logger, aiSummarizer) { }
+    {
+        private readonly IOneDriveService? _oneDriveService;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger and AI summarizer.
+        /// </summary>
+        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
+        /// <param name="oneDriveService">Optional OneDriveService for generating share links.</param>
+        public VideoNoteProcessor(
+            ILogger<VideoNoteProcessor> logger,
+            AISummarizer aiSummarizer,
+            IOneDriveService? oneDriveService = null) : base(logger, aiSummarizer)
+        {
+            _oneDriveService = oneDriveService;
+        }
 
         /// <summary>
         /// Extracts comprehensive metadata from a video file.
@@ -198,6 +208,31 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 if (kvp.Key != "tags" && !mergedMetadata.ContainsKey(kvp.Key))
                 {
                     mergedMetadata[kvp.Key] = kvp.Value;
+                }
+            }            // Check if we have a share link in the metadata and add it to the note content
+            if (mergedMetadata.TryGetValue("share_link", out var shareLink) && shareLink != null)
+            {
+                string shareLinkString = shareLink.ToString() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(shareLinkString))
+                {
+                    string videoFileName = string.Empty;
+                    if (mergedMetadata.TryGetValue("file_name", out var fileName))
+                    {
+                        videoFileName = fileName.ToString() ?? "Video";
+                    }
+                    else if (mergedMetadata.TryGetValue("title", out var title))
+                    {
+                        videoFileName = title.ToString() ?? "Video";
+                    }
+
+                    // Add share link section after the summary
+                    cleanSummary = string.Concat(
+                        cleanSummary,
+                        "\n\n## Share Link\n\n",
+                        $"[Watch {videoFileName} on OneDrive]({shareLinkString})\n"
+                    );
+
+                    Logger.LogInformation("Added OneDrive share link to markdown body");
                 }
             }
 
@@ -416,6 +451,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
         /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
         /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+        /// <param name="noShareLinks">If true, skips OneDrive share link creation.</param>
         /// <returns>A complete markdown note as a string.</returns>
         public async Task<string> GenerateVideoNoteAsync(
             string videoPath,
@@ -423,16 +459,43 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             string? promptFileName = null,
             bool noSummary = false,
             int? timeoutSeconds = null,
-            string? resourcesRoot = null)
+            string? resourcesRoot = null,
+            bool noShareLinks = false)
         {
             // Extract metadata and transcript
             var metadata = await ExtractMetadataAsync(videoPath);
+
             // If resourcesRoot is provided, add it to metadata for downstream use
             if (!string.IsNullOrWhiteSpace(resourcesRoot))
             {
                 metadata["resources_root"] = resourcesRoot;
             }
+
+            // Generate share link if requested and OneDriveService is available
+            if (!noShareLinks && _oneDriveService != null)
+            {
+                try
+                {
+                    Logger.LogInformation("Generating OneDrive share link for: {VideoPath}", videoPath);
+                    string? shareLink = await _oneDriveService.CreateShareLinkAsync(videoPath);
+                    if (!string.IsNullOrEmpty(shareLink))
+                    {
+                        metadata["share_link"] = shareLink;
+                        Logger.LogInformation("Added OneDrive share link to metadata");
+                    }
+                    else
+                    {
+                        Logger.LogWarning("Failed to generate OneDrive share link for: {VideoPath}", videoPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError(ex, "Error generating OneDrive share link for: {VideoPath}", videoPath);
+                }
+            }
+
             string? transcript = TryLoadTranscript(videoPath);
+
             // Choose input for summary based on transcript availability
             string summaryInput;
             if (transcript != null && !string.IsNullOrWhiteSpace(transcript))
@@ -445,6 +508,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 summaryInput = $"Video file: {Path.GetFileName(videoPath)}\n(No transcript available. Using metadata only.)";
                 Logger.LogInformation("No transcript found. Using metadata for AI summary for video: {VideoPath}", videoPath);
             }
+
             string aiSummary;
             if (noSummary)
             {
@@ -454,6 +518,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             {
                 aiSummary = await GenerateAiSummaryAsync(summaryInput);
             }
+
             return GenerateMarkdownNote(aiSummary, metadata, "Video Note");
         }
 

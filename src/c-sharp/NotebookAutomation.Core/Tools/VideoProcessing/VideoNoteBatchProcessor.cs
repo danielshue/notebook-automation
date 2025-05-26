@@ -46,6 +46,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             _batchProcessor = batchProcessor;
         }
 
+        /// <summary>
         /// Processes one or more video files, generating markdown notes for each.
         /// </summary>
         /// <param name="input">Input file path or directory containing video files.</param>
@@ -53,6 +54,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <param name="videoExtensions">List of file extensions to recognize as video files.</param>
         /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
         /// <param name="dryRun">If true, simulates processing without writing output files.</param>
+        /// <param name="createShareLinks">If true, creates OneDrive share links for the video files.</param>
         /// <returns>
         /// A tuple containing the count of successfully processed files and the count of failures.
         /// </returns>
@@ -90,21 +92,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
         /// <param name="resourcesRoot">Optional override for resources root directory.</param>
         /// <param name="appConfig">The application configuration object.</param>
-        /// <returns>A tuple containing the count of successfully processed files and the count of failures.</returns>
-        /// <summary>
-        /// Processes one or more video files, generating markdown notes for each, with extended options.
-        /// </summary>
-        /// <param name="input">Input file path or directory containing video files.</param>
-        /// <param name="output">Output directory where markdown notes will be saved.</param>
-        /// <param name="videoExtensions">List of file extensions to recognize as video files.</param>
-        /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
-        /// <param name="dryRun">If true, simulates processing without writing output files.</param>
-        /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
-        /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
-        /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
-        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
-        /// <param name="resourcesRoot">Optional override for resources root directory.</param>
-        /// <param name="appConfig">The application configuration object.</param>
+        /// <param name="noShareLinks">If true, skips OneDrive share link creation.</param>
         /// <returns>A <see cref="BatchProcessResult"/> containing processing statistics and summary.</returns>
         public async Task<BatchProcessResult> ProcessVideosAsync(
             string input,
@@ -117,7 +105,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             bool retryFailed = false,
             int? timeoutSeconds = null,
             string? resourcesRoot = null,
-            AppConfig? appConfig = null)
+            AppConfig? appConfig = null,
+            bool noShareLinks = false)
         {
             return await _batchProcessor.ProcessDocumentsAsync(
                 input,
@@ -132,7 +121,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 resourcesRoot,
                 appConfig,
                 "Video Note",
-                "failed_videos.txt");
+                "failed_videos.txt",
+                noShareLinks);
         }
     }
 }

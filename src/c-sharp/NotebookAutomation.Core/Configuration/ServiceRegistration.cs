@@ -133,15 +133,15 @@ namespace NotebookAutomation.Core.Configuration
                 var appConfig = provider.GetRequiredService<AppConfig>();
                 return new PromptTemplateService(logger, appConfig);
             });
-            services.AddScoped<TagProcessor>();
-
-            // Register processors with AISummarizer dependency
+            services.AddScoped<TagProcessor>();            // Register processors with AISummarizer dependency
             services.AddScoped(provider =>
             {
                 var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
                 var logger = loggerFactory.CreateLogger<VideoNoteProcessor>();
                 var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-                return new VideoNoteProcessor(logger, aiSummarizer);
+                // Use GetService instead of GetRequiredService since OneDriveService is optional
+                var oneDriveService = provider.GetService<IOneDriveService>();
+                return new VideoNoteProcessor(logger, aiSummarizer, oneDriveService);
             });
 
             services.AddScoped(provider =>
@@ -150,7 +150,9 @@ namespace NotebookAutomation.Core.Configuration
                 var batchLogger = loggerFactory.CreateLogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>();
                 var processorLogger = loggerFactory.CreateLogger<VideoNoteProcessor>();
                 var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-                var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer);
+                // Use GetService instead of GetRequiredService since OneDriveService is optional
+                var oneDriveService = provider.GetService<IOneDriveService>();
+                var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, oneDriveService);
                 var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(batchLogger, videoProcessor, aiSummarizer);
                 return new VideoNoteBatchProcessor(batchProcessor);
             });
@@ -174,7 +176,7 @@ namespace NotebookAutomation.Core.Configuration
             });
 
             // Register OneDrive service
-            services.AddScoped(provider =>
+            services.AddScoped<IOneDriveService>(provider =>
             {
                 var logger = provider.GetRequiredService<ILogger<OneDriveService>>();
                 var microsoftGraph = provider.GetRequiredService<AppConfig>().MicrosoftGraph;
@@ -254,8 +256,8 @@ namespace NotebookAutomation.Core.Configuration
                 return new AISummarizer(
                   logger,
                   promptService,
-                  semanticKernel,
-                  textGenService);
+                  semanticKernel!,  // Use null-forgiving operator since we've already checked for null
+                  textGenService!);  // Use null-forgiving operator since we've already checked for null
             });
 
             return services;
