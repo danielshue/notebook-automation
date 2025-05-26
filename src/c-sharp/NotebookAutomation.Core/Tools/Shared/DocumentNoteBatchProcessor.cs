@@ -54,12 +54,12 @@ namespace NotebookAutomation.Core.Tools.Shared
         /// <param name="dryRun">If true, simulates processing without writing output files.</param>
         /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
         /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
-        /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
-        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
+        /// <param name="retryFailed">If true, retries only failed files from previous run.</param>        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
         /// <param name="resourcesRoot">Optional override for resources root directory.</param>
         /// <param name="appConfig">The application configuration object.</param>
         /// <param name="noteType">Type of note (e.g., "PDF Note", "Video Note").</param>
         /// <param name="failedFilesListName">Name of the failed files list file (defaults to "failed_files.txt").</param>
+        /// <param name="noShareLinks">If true, skips OneDrive share link creation.</param>
         /// <returns>A tuple containing the count of successfully processed files and the count of failures.</returns>
         /// <summary>
         /// Processes one or more document files, generating markdown notes for each, with extended options.
@@ -79,7 +79,8 @@ namespace NotebookAutomation.Core.Tools.Shared
             string? resourcesRoot = null,
             AppConfig? appConfig = null,
             string noteType = "Document Note",
-            string failedFilesListName = "failed_files.txt")
+            string failedFilesListName = "failed_files.txt",
+            bool noShareLinks = false)
         {
             var processed = 0;
             var failed = 0;
@@ -186,38 +187,94 @@ namespace NotebookAutomation.Core.Tools.Shared
                     if (!string.IsNullOrWhiteSpace(effectiveResourcesRoot))
                     {
                         metadata["resources_root"] = effectiveResourcesRoot;
-                    }
-
-                    // Summary timing and token counting
-                    string summaryText;
+                    }                    // If this is a VideoNoteProcessor, use the specialized method
+                    string markdown = string.Empty;
+                    string summaryText = string.Empty;
                     int summaryTokens = 0;
                     var summaryStopwatch = Stopwatch.StartNew();
-                    if (noSummary)
+                    bool usedVideoProcessor = false;
+
+                    if (typeof(TProcessor).Name.Contains("Video"))
                     {
-                        summaryText = "[Summary generation disabled by --no-summary flag.]";
-                    }
-                    else
-                    {
-                        summaryText = await _processor.GenerateAiSummaryAsync(text);
-                        var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                        if (estimateTokenMethod != null)
+                        // Use reflection to call the specialized GenerateVideoNoteAsync method
+                        var generateMethod = _processor.GetType().GetMethod("GenerateVideoNoteAsync");
+                        if (generateMethod != null)
                         {
-                            var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, new object[] { summaryText });
-                            if (tokenResult != null)
+                            _logger.LogDebug("Using specialized GenerateVideoNoteAsync method for video processing");
+                            // Pass the noShareLinks parameter to the GenerateVideoNoteAsync method
+                            var task = (Task<string>)generateMethod.Invoke(_processor, new object?[]
                             {
-                                summaryTokens = (int)tokenResult;
-                            }
-                            else
+                                filePath,
+                                openAiApiKey,
+                                null, // promptFileName 
+                                noSummary,
+                                timeoutSeconds,
+                                effectiveResourcesRoot,
+                                noShareLinks
+                            })!;
+
+                            markdown = await task;
+                            usedVideoProcessor = true;
+                            // Estimate tokens
+                            var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            if (estimateTokenMethod != null && !noSummary)
                             {
-                                summaryTokens = 0;
-                                _logger.LogWarning("EstimateTokenCount returned null for summary.");
+                                // Extract summary part from the markdown for token estimation
+                                var testSummary = markdown.Length > 300 ? markdown.Substring(0, 300) : markdown;
+                                var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, new object[] { testSummary });
+                                if (tokenResult != null)
+                                {
+                                    summaryTokens = (int)tokenResult;
+                                }
                             }
                         }
+                        else
+                        {
+                            _logger.LogWarning("VideoNoteProcessor found but GenerateVideoNoteAsync method not available. Using base method.");
+                            usedVideoProcessor = false;
+                        }
                     }
+
+                    // Use the base implementation for non-video processors or if video-specific method wasn't available
+                    if (!usedVideoProcessor)
+                    {
+                        if (noSummary)
+                        {
+                            summaryText = "[Summary generation disabled by --no-summary flag.]";
+                        }
+                        else
+                        {
+                            summaryText = await _processor.GenerateAiSummaryAsync(text);
+                            var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                            if (estimateTokenMethod != null)
+                            {
+                                var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, new object[] { summaryText });
+                                if (tokenResult != null)
+                                {
+                                    summaryTokens = (int)tokenResult;
+                                }
+                                else
+                                {
+                                    summaryTokens = 0;
+                                    _logger.LogWarning("EstimateTokenCount returned null for summary.");
+                                }
+                            }
+                        }
+
+                        markdown = _processor.GenerateMarkdownNote(summaryText, metadata, noteType);
+                    }
+
+                    // Ensure markdown is initialized
+                    if (markdown == null)
+                    {
+                        _logger.LogError("Markdown generation failed for file: {FilePath}", filePath);
+                        markdown = "Error generating markdown content";
+                    }
+
                     summaryStopwatch.Stop();
                     totalSummaryTime += summaryStopwatch.Elapsed;
                     totalTokens += summaryTokens;
-                    _logger.LogInformation("Summary for file: {FilePath} took {ElapsedMs} ms, tokens: {Tokens}", filePath, summaryStopwatch.ElapsedMilliseconds, summaryTokens); string markdown = _processor.GenerateMarkdownNote(summaryText, metadata, noteType);
+                    _logger.LogInformation("Summary for file: {FilePath} took {ElapsedMs} ms, tokens: {Tokens}", filePath, summaryStopwatch.ElapsedMilliseconds, summaryTokens);
 
                     // For video files, handle content preservation after "## Notes"
                     if (typeof(TProcessor).Name.Contains("Video") && File.Exists(outputPath) && !forceOverwrite)

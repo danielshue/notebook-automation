@@ -1,3 +1,5 @@
+#nullable enable
+
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -18,10 +20,11 @@ namespace NotebookAutomation.Core.Tests
     [TestClass]
     public class PdfNoteBatchProcessorTests
     {
-        private Mock<ILogger> _loggerMock;
-        private TestBatchProcessor _batchProcessor;
-        private PdfNoteBatchProcessor _processor;
-        private string _testDir; private string _outputDir;
+        private Mock<ILogger> _loggerMock = null!;
+        private TestBatchProcessor _batchProcessor = null!;
+        private PdfNoteBatchProcessor _processor = null!;
+        private string _testDir = null!;
+        private string _outputDir = null!;
 
         /// <summary>
         /// Test double for DocumentNoteBatchProcessor that overrides ProcessDocumentsAsync.
@@ -36,18 +39,19 @@ namespace NotebookAutomation.Core.Tests
 
             public override Task<Core.Tools.Shared.BatchProcessResult> ProcessDocumentsAsync(
                 string input,
-                string output,
+                string? output,
                 List<string> extensions,
-                string openAiApiKey = null,
+                string? openAiApiKey = null,
                 bool dryRun = false,
                 bool noSummary = false,
                 bool forceOverwrite = false,
                 bool retryFailed = false,
                 int? timeoutSeconds = null,
-                string resourcesRoot = null,
-                Core.Configuration.AppConfig appConfig = null,
-                string noteType = null,
-                string failedFilesListName = null)
+                string? resourcesRoot = null,
+                Core.Configuration.AppConfig? appConfig = null,
+                string noteType = null!,
+                string failedFilesListName = null!,
+                bool noShareLinks = false)
             {
                 int processed = 0, failed = 0;
                 if (string.IsNullOrWhiteSpace(input)) { failed = 1; }

@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Services
     /// <summary>
     /// Provides methods for authenticating and accessing OneDrive files/folders.
     /// </summary>
-    public class OneDriveService
+    public class OneDriveService : IOneDriveService
     {
         private readonly ILogger<OneDriveService> _logger;
         private readonly string _clientId;
@@ -237,6 +237,86 @@ namespace NotebookAutomation.Core.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to create sharing link for OneDrive file: {Path}", oneDrivePath);
+                return null;
+            }
+        }        /// <summary>
+                 /// Creates a shareable link for a file in OneDrive.
+                 /// </summary>
+                 /// <param name="filePath">The OneDrive file path. Should be relative to the OneDrive root.</param>
+                 /// <param name="linkType">The type of sharing link to create. Default is "view".</param>
+                 /// <param name="scope">The scope of the sharing link. Default is "anonymous".</param>
+                 /// <param name="cancellationToken">Cancellation token.</param>
+                 /// <returns>The shareable link URL if successful, null otherwise.</returns>
+        public async Task<string?> CreateShareLinkAsync(string filePath, string linkType = "view", string scope = "anonymous", CancellationToken cancellationToken = default)
+        {
+            if (_graphClient == null)
+                throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
+
+            try
+            {
+                // Normalize the file path
+                filePath = filePath.Replace('\\', '/');
+                if (filePath.StartsWith('/'))
+                    filePath = filePath.Substring(1);
+
+                _logger.LogInformation("Creating sharing link for file: {FilePath}", filePath);
+
+                // Prepare the request
+                var requestInfo = new RequestInformation
+                {
+                    HttpMethod = Method.POST,
+                    UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}:/createLink",
+                    PathParameters = new Dictionary<string, object> { { "itemPath", filePath } }
+                };
+
+                // Set the content type header and body
+                requestInfo.Headers.Add("Content-Type", "application/json");
+
+                // Create the request body
+                var jsonContent = $"{{\"type\":\"{linkType}\",\"scope\":\"{scope}\"}}";
+                requestInfo.Content = new MemoryStream(Encoding.UTF8.GetBytes(jsonContent));
+
+                // Send the request and parse the response
+                var response = await _graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken);
+                if (response == null)
+                {
+                    _logger.LogError("Received null response when creating sharing link for file: {FilePath}", filePath);
+                    return null;
+                }
+
+                // Parse the JSON response
+                using var doc = JsonDocument.Parse(response);
+                var root = doc.RootElement;
+
+                if (root.TryGetProperty("link", out var linkElement) &&
+                    linkElement.TryGetProperty("webUrl", out var webUrlElement))
+                {
+                    string? sharingLink = webUrlElement.GetString();
+                    if (!string.IsNullOrEmpty(sharingLink))
+                    {
+                        _logger.LogInformation("Sharing link created successfully for file: {FilePath}", filePath);
+                        return sharingLink;
+                    }
+                }
+
+                _logger.LogError("Sharing link not found in response for file: {FilePath}", filePath);
+                return null;
+            }
+            catch (ServiceException ex)
+            {
+                _logger.LogError(ex, "Failed to create sharing link for file: {FilePath}", filePath);
+
+                // Check if the exception message contains 404 error code
+                if (ex.Message.Contains("404") || ex.Message.Contains("not found"))
+                {
+                    _logger.LogWarning("The file might not exist. Check the file path and try again.");
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create sharing link for file: {FilePath}", filePath);
                 return null;
             }
         }

@@ -33,11 +33,15 @@ namespace NotebookAutomation.Core.Tests
             // Create a TestableAISummarizer that can be used in tests
             var testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());
 
+            // Create a mock for IOneDriveService
+            var mockOneDriveService = Mock.Of<IOneDriveService>();
+
             // Set up mock with test dependencies
             _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
                 MockBehavior.Loose,
                 Mock.Of<ILogger<VideoNoteProcessor>>(),
-                testAISummarizer);
+                testAISummarizer,
+                mockOneDriveService);
 
             // Create a custom batch processor that will directly create a file with the resourcesRoot
             // so we can test that the parameter is being passed correctly
@@ -60,7 +64,8 @@ namespace NotebookAutomation.Core.Tests
                     It.IsAny<string>(),
                     It.IsAny<Configuration.AppConfig>(),
                     It.IsAny<string>(),
-                    It.IsAny<string>()))
+                    It.IsAny<string>(),
+                    It.IsAny<bool>()))
                 .ReturnsAsync((
                     string input,
                     string output,
@@ -74,7 +79,8 @@ namespace NotebookAutomation.Core.Tests
                     string resourcesRoot,
                     Configuration.AppConfig appConfig,
                     string noteType,
-                    string failedFilesListName) =>
+                    string failedFilesListName,
+                    bool noShareLinks) =>
                 {
                     // Write a file with resourcesRoot in its content for testing
                     var fileName = Path.GetFileNameWithoutExtension(input);

@@ -18,9 +18,8 @@ namespace NotebookAutomation.Cli.Tests.Commands
             // Act & Assert
             Assert.IsNotNull(command);
         }
-
         [TestMethod]
-        public void Register_AddsVideoMetaCommandToRoot()
+        public void Register_AddsVideoNotesCommandToRoot()
         {
             // Arrange
             var rootCommand = new System.CommandLine.RootCommand();
@@ -34,8 +33,8 @@ namespace NotebookAutomation.Cli.Tests.Commands
             videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Assert
-            var videoMetaCommand = rootCommand.Children.FirstOrDefault(c => c.Name == "video-meta");
-            Assert.IsNotNull(videoMetaCommand, "video-meta command should be registered on the root command.");
+            var videoNotesCommand = rootCommand.Children.FirstOrDefault(c => c.Name == "video-notes");
+            Assert.IsNotNull(videoNotesCommand, "video-notes command should be registered on the root command.");
         }
     }
 }
