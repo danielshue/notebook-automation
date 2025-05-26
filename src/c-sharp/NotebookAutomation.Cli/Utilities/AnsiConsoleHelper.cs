@@ -53,14 +53,23 @@ namespace NotebookAutomation.Cli.Utilities
             Console.WriteLine($"{AnsiColors.FAIL}{message}{AnsiColors.ENDC}");
         }
 
+        /// <summary>
+        /// Writes a success message to the console with a consistent color scheme.
+        /// </summary>
+        /// <param name="message">The success message to write.</param>
+        public static void WriteSuccess(string message)
+        {
+            Console.WriteLine($"{AnsiColors.OKGREEN}{message}{AnsiColors.ENDC}");
+        }
+
         internal static void WriteHeading(string v)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"{AnsiColors.HEADER}{v}{AnsiColors.ENDC}");
         }
 
         internal static void WriteKeyValue(string v1, string v2)
         {
-            throw new NotImplementedException();
+            Console.WriteLine($"{AnsiColors.OKCYAN}{v1}:{AnsiColors.ENDC} {v2}");
         }
     }
 }

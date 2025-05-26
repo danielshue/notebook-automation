@@ -113,6 +113,25 @@ namespace NotebookAutomation.Cli.Commands
                 await this.ProcessTagsAsync(path, "metadata-check", config, debug, verbose, dryRun);
             });
 
+            // update-frontmatter command
+            var updateFrontmatterCommand = new Command("update-frontmatter", "Update or add a specific key-value pair in frontmatter");
+            updateFrontmatterCommand.AddArgument(pathArg);
+            var keyArg = new Argument<string>("key", "The frontmatter key to add or update");
+            var valueArg = new Argument<string>("value", "The value to set for the key");
+            updateFrontmatterCommand.AddArgument(keyArg);
+            updateFrontmatterCommand.AddArgument(valueArg);
+            updateFrontmatterCommand.SetHandler(async (InvocationContext context) =>
+            {
+                string path = context.ParseResult.GetValueForArgument(pathArg);
+                string key = context.ParseResult.GetValueForArgument(keyArg);
+                string value = context.ParseResult.GetValueForArgument(valueArg);
+                string? config = context.ParseResult.GetValueForOption(configOption);
+                bool debug = context.ParseResult.GetValueForOption(debugOption);
+                bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+                await this.ProcessUpdateFrontmatterAsync(path, key, value, config, debug, verbose, dryRun);
+            });
+
             // Create a parent command for all tag-related operations
             var tagCommand = new Command("tag", "Tag management commands");
             tagCommand.AddCommand(addNestedCommand);
@@ -121,6 +140,7 @@ namespace NotebookAutomation.Cli.Commands
             tagCommand.AddCommand(restructureCommand);
             tagCommand.AddCommand(addExampleCommand);
             tagCommand.AddCommand(metadataCommand);
+            tagCommand.AddCommand(updateFrontmatterCommand);
 
             // Error handler for invalid tag subcommands
             tagCommand.TreatUnmatchedTokensAsErrors = true;
@@ -188,32 +208,32 @@ namespace NotebookAutomation.Cli.Commands
                         var stats = await tagProcessor.ProcessDirectoryAsync(path);
                         LogStats(logger, stats);
                         break;
-                        
+
                     case "clean-index":
                         logger.LogInformation("Clean index functionality uses the same processor");
                         stats = await tagProcessor.ProcessDirectoryAsync(path);
                         LogStats(logger, stats);
                         break;
-                        
+
                     case "consolidate":
                         logger.LogInformation("Consolidate tags functionality not yet implemented");
                         break;
-                        
+
                     case "restructure-tags":
                         stats = await tagProcessor.RestructureTagsInDirectoryAsync(path);
                         LogStats(logger, stats);
                         break;
-                        
+
                     case "add-example-tags":
                         var success = await tagProcessor.AddExampleTagsToFileAsync(path);
                         logger.LogInformation(success ? "Example tags added." : "Failed to add example tags.");
                         break;
-                        
+
                     case "metadata-check":
                         stats = await tagProcessor.CheckAndEnforceMetadataConsistencyAsync(path);
                         LogStats(logger, stats);
                         break;
-                        
+
                     default:
                         logger.LogError("Unknown command: {Command}", command);
                         break;
@@ -226,6 +246,85 @@ namespace NotebookAutomation.Cli.Commands
                 {
                     AnsiConsoleHelper.WriteError(ex.ToString());
                 }
+            }
+        }
+
+        /// <summary>
+        /// Processes the update-frontmatter command with the specified options.
+        /// </summary>
+        /// <param name="path">The path to the file to process.</param>
+        /// <param name="key">The frontmatter key to add or update.</param>
+        /// <param name="value">The value to set for the key.</param>
+        /// <param name="configPath">The optional path to the configuration file.</param>
+        /// <param name="debug">Whether debug mode is enabled.</param>
+        /// <param name="verbose">Whether verbose output is enabled.</param>
+        /// <param name="dryRun">Whether to simulate without making changes.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task ProcessUpdateFrontmatterAsync(string path, string key, string value, string? configPath, bool debug, bool verbose, bool dryRun)
+        {
+            try
+            {
+                // Initialize dependency injection if needed
+                if (configPath != null)
+                {
+                    if (!System.IO.File.Exists(configPath))
+                    {
+                        AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
+                        return;
+                    }
+                    Program.SetupDependencyInjection(configPath, debug);
+                }
+
+                var serviceProvider = Program.ServiceProvider;
+                var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("TagCommands");
+                var loggingService = serviceProvider.GetRequiredService<LoggingService>();
+                var failedLogger = loggingService.FailedLogger;
+
+                // Always show the active config file being used
+                string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
+                AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
+
+                logger.LogInformation("Executing update-frontmatter command on path: {Path}, key: {Key}, value: {Value}", path, key, value);
+
+                // Create a new TagProcessor with command-specific options
+                var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
+                var tagProcessor = new TagProcessor(
+                    tagProcessorLogger,
+                    failedLogger,
+                    dryRun,
+                    verbose);
+
+                AnsiConsoleHelper.WriteInfo($"Updating frontmatter key '{key}' to value '{value}' in {path}...");
+                if (dryRun)
+                {
+                    AnsiConsoleHelper.WriteInfo("[DRY RUN] No files will be modified");
+                }
+
+                var stats = await tagProcessor.UpdateFrontmatterKeyAsync(path, key, value);
+                LogStats(logger, stats);
+
+                if (stats["FilesModified"] > 0)
+                {
+                    AnsiConsoleHelper.WriteSuccess($"Successfully updated {stats["FilesModified"]} of {stats["FilesProcessed"]} files");
+                }
+                else if (stats["FilesProcessed"] > 0)
+                {
+                    AnsiConsoleHelper.WriteInfo($"No files needed updates out of {stats["FilesProcessed"]} files processed");
+                }
+                else
+                {
+                    AnsiConsoleHelper.WriteWarning($"No markdown files found at {path}");
+                }
+
+                if (stats["FilesWithErrors"] > 0)
+                {
+                    AnsiConsoleHelper.WriteError($"Encountered errors in {stats["FilesWithErrors"]} files. Check the log for details.");
+                }
+            }
+            catch (Exception ex)
+            {
+                AnsiConsoleHelper.WriteError($"Error processing command: {ex.Message}");
             }
         }
 
@@ -247,16 +346,15 @@ namespace NotebookAutomation.Cli.Commands
         ///   </item>
         ///   <item>
         ///     <description>TagsRemoved: Number of tags that were removed.</description>
-        ///   </item>
-        /// </list>
+        ///   </item>        /// </list>
         /// </remarks>
         private void LogStats(ILogger logger, Dictionary<string, int> stats)
         {
             logger.LogInformation("Tag processing completed with the following statistics:");
             logger.LogInformation("- Files processed: {Count}", stats.GetValueOrDefault("FilesProcessed", 0));
-            logger.LogInformation("- Files updated: {Count}", stats.GetValueOrDefault("FilesUpdated", 0));
+            logger.LogInformation("- Files modified: {Count}", stats.GetValueOrDefault("FilesModified", 0));
             logger.LogInformation("- Tags added: {Count}", stats.GetValueOrDefault("TagsAdded", 0));
-            logger.LogInformation("- Tags removed: {Count}", stats.GetValueOrDefault("TagsRemoved", 0));
+            logger.LogInformation("- Files with errors: {Count}", stats.GetValueOrDefault("FilesWithErrors", 0));
         }
     }
 }

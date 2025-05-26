@@ -1,12 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.TagManagement
@@ -62,7 +55,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             _yamlHelper = new YamlHelper(logger);
             _dryRun = dryRun;
             _verbose = verbose;
-            
+
             // Fields to process for tags (generalized)
             _fieldsToProcess = new HashSet<string>
             {
@@ -91,7 +84,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             _yamlHelper = new YamlHelper(logger);
             _dryRun = dryRun;
             _verbose = verbose;
-            
+
             // Use provided fields if any, otherwise use defaults
             _fieldsToProcess = fieldsToProcess ?? new HashSet<string>
             {
@@ -112,29 +105,29 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 _logger.LogError("Directory not found: {Directory}", directory);
                 return Stats;
             }
-            
+
             _logger.LogInformation("Processing directory: {Directory}", directory);
-            
+
             try
             {
                 var markdownFiles = Directory.GetFiles(directory, "*.md", SearchOption.AllDirectories);
-                
+
                 if (_verbose)
                 {
                     _logger.LogInformation("Found {Count} markdown files to process", markdownFiles.Length);
                 }
-                
+
                 foreach (var file in markdownFiles)
                 {
                     await ProcessFileAsync(file);
                 }
-                
+
                 _logger.LogInformation(
                     "Processing complete: {FilesProcessed} files processed, {FilesModified} files modified, " +
                     "{TagsAdded} tags added, {IndexFilesCleared} index files cleared, {FilesWithErrors} files with errors",
                     Stats["FilesProcessed"], Stats["FilesModified"], Stats["TagsAdded"],
                     Stats["IndexFilesCleared"], Stats["FilesWithErrors"]);
-                    
+
                 return Stats;
             }
             catch (Exception ex)
@@ -159,16 +152,16 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 Stats["FilesWithErrors"]++;
                 return false;
             }
-            
+
             try
             {
                 Stats["FilesProcessed"]++;
-                
+
                 if (_verbose)
                 {
                     _logger.LogInformation("Processing file: {FilePath}", filePath);
                 }
-                
+
                 // Skip index files if configured to do so
                 if (Path.GetFileName(filePath).StartsWith("_index") || Path.GetFileName(filePath).Equals("index.md"))
                 {
@@ -178,10 +171,10 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                     }
                     return false;
                 }
-                
+
                 // Read the file content
                 string content = await File.ReadAllTextAsync(filePath);
-                
+
                 // Extract frontmatter and parse YAML
                 string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
                 if (string.IsNullOrEmpty(frontmatter))
@@ -192,7 +185,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                     }
                     return false;
                 }
-                
+
                 // Parse the frontmatter into a dictionary
                 var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
                 if (frontmatterDict == null || frontmatterDict.Count == 0)
@@ -203,22 +196,22 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                     }
                     return false;
                 }
-                
+
                 // Process tags
                 bool modified = false;
                 var existingTags = GetExistingTags(frontmatterDict);
                 var newTags = GenerateNestedTags(frontmatterDict, existingTags);
-                
+
                 if (newTags.Count > 0)
                 {
                     // Update the tags in the frontmatter
                     var updatedTags = existingTags.Concat(newTags).Distinct().OrderBy(t => t).ToList();
                     frontmatterDict["tags"] = updatedTags;
-                    
+
                     // Update the content with the new frontmatter
                     string updatedFrontmatter = _yamlHelper.SerializeYaml(frontmatterDict);
                     string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
-                    
+
                     if (_dryRun)
                     {
                         if (_verbose)
@@ -237,7 +230,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                         Stats["FilesModified"]++;
                         Stats["TagsAdded"] += newTags.Count;
                         modified = true;
-                        
+
                         if (_verbose)
                         {
                             _logger.LogInformation("Added {Count} tags to {FilePath}", newTags.Count, filePath);
@@ -252,7 +245,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 {
                     _logger.LogInformation("No new tags to add for {FilePath}", filePath);
                 }
-                
+
                 return modified;
             }
             catch (Exception ex)
@@ -270,44 +263,44 @@ namespace NotebookAutomation.Core.Tools.TagManagement
         /// <param name="frontmatter">The parsed frontmatter dictionary.</param>
         /// <param name="content">The full content of the file.</param>
         /// <returns>True if the file was modified, false otherwise.</returns>
-        private async Task<bool> ClearTagsFromFileAsync(
-            string filePath, 
-            Dictionary<string, object> frontmatter, 
+        public async Task<bool> ClearTagsFromFileAsync(
+            string filePath,
+            Dictionary<string, object> frontmatter,
             string content)
         {
-            if (!frontmatter.ContainsKey("tags") && 
+            if (!frontmatter.ContainsKey("tags") &&
                 !frontmatter.Any(kv => kv.Key.ToLowerInvariant() == "tags"))
             {
                 // No tags to clear
                 return false;
             }
-            
+
             // Remove tags
             frontmatter.Remove("tags");
-            
+
             // Check for tags with different case
             var tagsKey = frontmatter.Keys
                 .FirstOrDefault(k => k.ToLowerInvariant() == "tags");
-                
+
             if (tagsKey != null)
             {
                 frontmatter.Remove(tagsKey);
             }
-            
+
             if (_dryRun)
             {
                 _logger.LogInformation("[DRY RUN] Would clear tags from index file: {FilePath}", filePath);
                 Stats["IndexFilesCleared"]++;
                 return true;
             }
-            
+
             var updatedContent = _yamlHelper.UpdateFrontmatter(content, frontmatter);
             await File.WriteAllTextAsync(filePath, updatedContent, Encoding.UTF8);
-            
+
             _logger.LogInformation("Cleared tags from index file: {FilePath}", filePath);
             Stats["IndexFilesCleared"]++;
             Stats["FilesModified"]++;
-            
+
             return true;
         }
 
@@ -318,15 +311,15 @@ namespace NotebookAutomation.Core.Tools.TagManagement
         /// <param name="frontmatter">The parsed frontmatter dictionary.</param>
         /// <param name="content">The full content of the file.</param>
         /// <returns>True if the file was modified, false otherwise.</returns>
-        private async Task<bool> AddNestedTagsToFileAsync(
-            string filePath, 
-            Dictionary<string, object> frontmatter, 
+        public async Task<bool> AddNestedTagsToFileAsync(
+            string filePath,
+            Dictionary<string, object> frontmatter,
             string content)
         {
             // Extract existing tags
             var existingTags = _yamlHelper.ExtractTags(frontmatter);
             var initialTagCount = existingTags.Count;
-            
+
             // Add new nested tags based on frontmatter fields
             foreach (var field in _fieldsToProcess)
             {
@@ -348,28 +341,28 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                     }
                 }
             }
-            
+
             // Check if we actually added any new tags
             if (existingTags.Count == initialTagCount)
             {
                 return false;
             }
-            
+
             // Update frontmatter with new tags
             frontmatter = _yamlHelper.UpdateTags(frontmatter, existingTags);
-            
+
             if (_dryRun)
             {
                 _logger.LogInformation("[DRY RUN] Would update tags in file: {FilePath}", filePath);
                 return true;
             }
-            
+
             var updatedContent = _yamlHelper.UpdateFrontmatter(content, frontmatter);
             await File.WriteAllTextAsync(filePath, updatedContent, Encoding.UTF8);
-            
+
             _logger.LogInformation("Updated tags in file: {FilePath}", filePath);
             Stats["FilesModified"]++;
-            
+
             return true;
         }
 
@@ -378,10 +371,10 @@ namespace NotebookAutomation.Core.Tools.TagManagement
         /// </summary>
         /// <param name="frontmatter">The frontmatter dictionary.</param>
         /// <returns>A list of existing tags.</returns>
-        private List<string> GetExistingTags(Dictionary<string, object> frontmatter)
+        public List<string> GetExistingTags(Dictionary<string, object> frontmatter)
         {
             var result = new List<string>();
-            
+
             // Look for tags key
             if (frontmatter.TryGetValue("tags", out var tagsObj))
             {
@@ -407,30 +400,30 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                     }
                 }
             }
-            
+
             return result;
         }
-        
+
         /// <summary>
         /// Generates nested tags based on frontmatter fields.
         /// </summary>
         /// <param name="frontmatter">The frontmatter dictionary.</param>
         /// <param name="existingTags">List of existing tags.</param>
         /// <returns>A list of new tags to add.</returns>
-        private List<string> GenerateNestedTags(Dictionary<string, object> frontmatter, List<string> existingTags)
+        public List<string> GenerateNestedTags(Dictionary<string, object> frontmatter, List<string> existingTags)
         {
             var newTags = new List<string>();
-            
+
             // Create a HashSet of existing tags for quicker lookups
             var existingTagsSet = new HashSet<string>(existingTags);
-            
+
             // Process each field we're interested in
             foreach (var fieldName in _fieldsToProcess)
             {
                 if (frontmatter.TryGetValue(fieldName, out var fieldValue) && fieldValue != null)
                 {
                     string prefix = GetTagPrefixForField(fieldName);
-                    
+
                     if (fieldValue is List<object> valueList)
                     {
                         // Process list-type fields
@@ -440,7 +433,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                             {
                                 string tagValue = NormalizeTagValue(val?.ToString() ?? string.Empty);
                                 string tag = $"{prefix}/{tagValue}";
-                                
+
                                 if (!existingTagsSet.Contains(tag))
                                 {
                                     newTags.Add(tag);
@@ -453,7 +446,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                         // Process single-value fields
                         string tagValue = NormalizeTagValue(fieldValue?.ToString() ?? string.Empty);
                         string tag = $"{prefix}/{tagValue}";
-                        
+
                         if (!existingTagsSet.Contains(tag))
                         {
                             newTags.Add(tag);
@@ -461,16 +454,16 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                     }
                 }
             }
-            
+
             return newTags;
         }
-        
+
         /// <summary>
         /// Gets the appropriate tag prefix for a frontmatter field.
         /// </summary>
         /// <param name="fieldName">The field name.</param>
         /// <returns>The tag prefix.</returns>
-        private string GetTagPrefixForField(string fieldName)
+        public string GetTagPrefixForField(string fieldName)
         {
             // Map field names to tag prefixes
             return fieldName switch
@@ -488,19 +481,19 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 _ => fieldName  // Default to using the field name itself
             };
         }
-        
+
         /// <summary>
         /// Normalizes a tag value for consistent formatting.
         /// </summary>
         /// <param name="value">The raw tag value.</param>
         /// <returns>Normalized tag value.</returns>
-        private string NormalizeTagValue(string value)
+        public string NormalizeTagValue(string value)
         {
             if (string.IsNullOrEmpty(value))
             {
                 return string.Empty;
             }
-            
+
             // Replace spaces with hyphens, trim, and convert to lowercase
             return value
                 .Replace(" ", "-")
@@ -547,7 +540,8 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             var tags = GetExistingTags(frontmatterDict);
             var normalizedTags = tags.Select(NormalizeTagValue).Distinct().OrderBy(t => t).ToList();
             frontmatterDict["tags"] = normalizedTags;
-            if (_dryRun) {
+            if (_dryRun)
+            {
                 _logger.LogInformation("[DRY RUN] Would restructure tags in {FilePath}", filePath);
                 return true;
             }
@@ -577,7 +571,8 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 exampleTags.AddRange(tags);
             }
             frontmatterDict["tags"] = exampleTags.Distinct().OrderBy(t => t).ToList();
-            if (_dryRun) {
+            if (_dryRun)
+            {
                 _logger.LogInformation("[DRY RUN] Would add example tags to {FilePath}", filePath);
                 return true;
             }
@@ -630,7 +625,8 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                     _logger.LogWarning("Added missing metadata field '{Field}' to {FilePath}", field, filePath);
                 }
             }
-            if (_dryRun) {
+            if (_dryRun)
+            {
                 _logger.LogInformation("[DRY RUN] Would enforce metadata consistency in {FilePath}", filePath);
                 return true;
             }
@@ -643,6 +639,143 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 Stats["FilesModified"]++;
             }
             return modified;
+        }
+
+        /// <summary>
+        /// Updates or adds a specific frontmatter key-value pair in all markdown files within a directory.
+        /// </summary>
+        /// <param name="path">Path to a directory or file to process.</param>
+        /// <param name="key">The frontmatter key to add or update.</param>
+        /// <param name="value">The value to set for the key.</param>
+        /// <returns>Dictionary with processing statistics.</returns>
+        public async Task<Dictionary<string, int>> UpdateFrontmatterKeyAsync(string path, string key, object value)
+        {
+            // Reset stats for this operation
+            Stats = new Dictionary<string, int>
+            {
+                { "FilesProcessed", 0 },
+                { "FilesModified", 0 },
+                { "FilesWithErrors", 0 }
+            };
+
+            if (File.Exists(path) && Path.GetExtension(path).ToLowerInvariant() == ".md")
+            {
+                // Process a single file
+                bool success = await UpdateFrontmatterKeyInFileAsync(path, key, value);
+                return Stats;
+            }
+            else if (Directory.Exists(path))
+            {
+                // Process a directory recursively
+                var markdownFiles = Directory.GetFiles(path, "*.md", SearchOption.AllDirectories);
+
+                foreach (var file in markdownFiles)
+                {
+                    await UpdateFrontmatterKeyInFileAsync(file, key, value);
+                }
+
+                return Stats;
+            }
+            else
+            {
+                _failedLogger.LogError("Path not found or not a markdown file: {Path}", path);
+                Stats["FilesWithErrors"]++;
+                return Stats;
+            }
+        }
+
+        /// <summary>
+        /// Updates or adds a specific frontmatter key-value pair in a markdown file.
+        /// </summary>
+        /// <param name="filePath">Path to the markdown file.</param>
+        /// <param name="key">The frontmatter key to add or update.</param>
+        /// <param name="value">The value to set for the key.</param>
+        /// <returns>True if the file was modified, false otherwise.</returns>
+        private async Task<bool> UpdateFrontmatterKeyInFileAsync(string filePath, string key, object value)
+        {
+            if (!File.Exists(filePath))
+            {
+                _failedLogger.LogError("File not found: {FilePath}", filePath);
+                Stats["FilesWithErrors"]++;
+                return false;
+            }
+
+            try
+            {
+                Stats["FilesProcessed"]++;
+
+                if (_verbose)
+                {
+                    _logger.LogInformation("Processing file: {FilePath}", filePath);
+                }
+
+                // Read the file content
+                string content = await File.ReadAllTextAsync(filePath);
+
+                // Extract frontmatter and parse YAML
+                string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+                Dictionary<string, object> frontmatterDict;
+
+                if (string.IsNullOrEmpty(frontmatter))
+                {
+                    if (_verbose)
+                    {
+                        _logger.LogInformation("No frontmatter found in file, creating new frontmatter: {FilePath}", filePath);
+                    }
+                    // Create new frontmatter
+                    frontmatterDict = new Dictionary<string, object>();
+                }
+                else
+                {
+                    // Parse the existing frontmatter into a dictionary
+                    frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+                }
+
+                // Check if the key already exists with the same value
+                bool needsUpdate = !frontmatterDict.ContainsKey(key) || !frontmatterDict[key]?.Equals(value) == true;
+
+                if (needsUpdate)
+                {
+                    // Update or add the key-value pair
+                    frontmatterDict[key] = value;
+
+                    // Update the content with the new frontmatter
+                    var updatedContent = _yamlHelper.UpdateFrontmatter(content, frontmatterDict);
+
+                    if (_dryRun)
+                    {
+                        if (_verbose)
+                        {
+                            _logger.LogInformation("[DRY RUN] Would update '{Key}: {Value}' in {FilePath}", key, value, filePath);
+                        }
+                    }
+                    else
+                    {
+                        // Write the updated content back to the file
+                        await File.WriteAllTextAsync(filePath, updatedContent);
+                        Stats["FilesModified"]++;
+
+                        if (_verbose)
+                        {
+                            _logger.LogInformation("Updated '{Key}: {Value}' in {FilePath}", key, value, filePath);
+                        }
+                    }
+
+                    return true;
+                }
+                else if (_verbose)
+                {
+                    _logger.LogInformation("Key '{Key}' already has value '{Value}' in {FilePath}", key, value, filePath);
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                _failedLogger.LogError(ex, "Error processing file: {FilePath}", filePath);
+                Stats["FilesWithErrors"]++;
+                return false;
+            }
         }
     }
 }
