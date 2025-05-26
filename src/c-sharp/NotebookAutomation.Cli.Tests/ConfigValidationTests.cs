@@ -20,10 +20,9 @@ namespace NotebookAutomation.Cli.Tests
             {
                 Paths = new PathsConfig
                 {
-                    ResourcesRoot = "C:/resources",
-                    NotebookVaultRoot = "C:/vault",
+                    OnedriveFullpathRoot = "C:/resources",
+                    NotebookVaultFullpathRoot = "C:/vault",
                     MetadataFile = "C:/meta/metadata.json",
-                    ObsidianVaultRoot = "C:/obsidian",
                     OnedriveResourcesBasepath = "C:/onedrive",
                     LoggingDir = "C:/logs"
                 }
@@ -40,19 +39,15 @@ namespace NotebookAutomation.Cli.Tests
             {
                 Paths = new PathsConfig
                 {
-                    ResourcesRoot = "",
-                    NotebookVaultRoot = null,
+                    OnedriveFullpathRoot = "",
+                    NotebookVaultFullpathRoot = null,
                     MetadataFile = "meta.json",
-                    ObsidianVaultRoot = "",
                     OnedriveResourcesBasepath = "basepath",
                     LoggingDir = null
                 }
             };
-            var result = ConfigValidation.RequireAllPaths(config, out var missing);
-            Assert.IsFalse(result);
-            CollectionAssert.Contains(missing, "paths.resources_root");
-            CollectionAssert.Contains(missing, "paths.notebook_vault_root");
-            CollectionAssert.Contains(missing, "paths.obsidian_vault_root");
+            var result = ConfigValidation.RequireAllPaths(config, out var missing); Assert.IsFalse(result); CollectionAssert.Contains(missing, "paths.onedrive_fullpath_root");
+            CollectionAssert.Contains(missing, "paths.notebook_vault_fullpath_root");
             CollectionAssert.Contains(missing, "paths.logging_dir");
             CollectionAssert.DoesNotContain(missing, "paths.metadata_file");
             CollectionAssert.DoesNotContain(missing, "paths.onedrive_resources_basepath");
@@ -94,14 +89,15 @@ namespace NotebookAutomation.Cli.Tests
 
         [TestMethod]
         public void RequireOpenAi_ReturnsFalse_WhenMissingValues()
-        {            var config = new AppConfig
+        {
+            var config = new AppConfig
             {
                 AiService = new AIServiceConfig
                 {
                     Model = null
                 }
             };
-            
+
             // No need to set up API key configuration as we want it to be null
             var result = ConfigValidation.RequireOpenAi(config);
             Assert.IsFalse(result);
@@ -109,14 +105,15 @@ namespace NotebookAutomation.Cli.Tests
 
         [TestMethod]
         public void RequireOpenAi_ReturnsTrue_WhenAllValuesPresent()
-        {            var config = new AppConfig
+        {
+            var config = new AppConfig
             {
                 AiService = new AIServiceConfig
                 {
                     Model = "gpt-4"
                 }
             };
-            
+
             // Set up API key for testing
             var configDict = new Dictionary<string, string>
             {

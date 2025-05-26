@@ -55,7 +55,7 @@ namespace NotebookAutomation.Core.Tools.Shared
         /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
         /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
         /// <param name="retryFailed">If true, retries only failed files from previous run.</param>        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
-        /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+        /// <param name="resourcesRoot">Optional override for OneDrive fullpath root directory.</param>
         /// <param name="appConfig">The application configuration object.</param>
         /// <param name="noteType">Type of note (e.g., "PDF Note", "Video Note").</param>
         /// <param name="failedFilesListName">Name of the failed files list file (defaults to "failed_files.txt").</param>
@@ -84,13 +84,12 @@ namespace NotebookAutomation.Core.Tools.Shared
         {
             var processed = 0;
             var failed = 0;
-            var files = new List<string>();
-            string effectiveInput = input;
-            string effectiveOutput = output ?? appConfig?.Paths?.NotebookVaultRoot ?? "Generated";
+            var files = new List<string>(); string effectiveInput = input;
+            string effectiveOutput = output ?? appConfig?.Paths?.NotebookVaultFullpathRoot ?? "Generated";
 
             if (string.IsNullOrWhiteSpace(effectiveInput))
             {
-                _logger.LogError("Input path is required. Config: {Config}", appConfig?.Paths?.NotebookVaultRoot);
+                _logger.LogError("Input path is required. Config: {Config}", appConfig?.Paths?.NotebookVaultFullpathRoot);
                 return new BatchProcessResult
                 {
                     Processed = 0,
@@ -119,7 +118,7 @@ namespace NotebookAutomation.Core.Tools.Shared
             }
             else
             {
-                _logger.LogError("Input must be a file or directory containing valid files: {Input}. Config: {Config}", effectiveInput, appConfig?.Paths?.NotebookVaultRoot);
+                _logger.LogError("Input must be a file or directory containing valid files: {Input}. Config: {Config}", effectiveInput, appConfig?.Paths?.NotebookVaultFullpathRoot);
                 return new BatchProcessResult
                 {
                     Processed = 0,
@@ -169,7 +168,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                     string? effectiveResourcesRoot = resourcesRoot;
                     if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig != null)
                     {
-                        effectiveResourcesRoot = appConfig.Paths?.ResourcesRoot;
+                        effectiveResourcesRoot = appConfig.Paths?.OnedriveFullpathRoot;
                     }
 
                     // Generate output path based on processor type and directory structure

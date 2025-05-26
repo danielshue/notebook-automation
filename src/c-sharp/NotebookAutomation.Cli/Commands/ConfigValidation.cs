@@ -8,7 +8,7 @@ namespace NotebookAutomation.Cli.Commands
     /// </summary>
     public static class ConfigValidation
     {
-                /// <summary>
+        /// <summary>
         /// Validates that all required path values are present in the configuration.
         /// </summary>
         /// <param name="config">The AppConfig instance to validate.</param>
@@ -22,15 +22,12 @@ namespace NotebookAutomation.Cli.Commands
         /// <returns>True if all required paths are present; otherwise, false.</returns>
         public static bool RequireAllPaths(AppConfig config, out List<string> missingKeys)
         {
-            missingKeys = [];
-            if (string.IsNullOrWhiteSpace(config.Paths.ResourcesRoot))
-                missingKeys.Add("paths.resources_root");
-            if (string.IsNullOrWhiteSpace(config.Paths.NotebookVaultRoot))
-                missingKeys.Add("paths.notebook_vault_root");
+            missingKeys = []; if (string.IsNullOrWhiteSpace(config.Paths.OnedriveFullpathRoot))
+                missingKeys.Add("paths.onedrive_fullpath_root");
+            if (string.IsNullOrWhiteSpace(config.Paths.NotebookVaultFullpathRoot))
+                missingKeys.Add("paths.notebook_vault_fullpath_root");
             if (string.IsNullOrWhiteSpace(config.Paths.MetadataFile))
                 missingKeys.Add("paths.metadata_file");
-            if (string.IsNullOrWhiteSpace(config.Paths.ObsidianVaultRoot))
-                missingKeys.Add("paths.obsidian_vault_root");
             if (string.IsNullOrWhiteSpace(config.Paths.OnedriveResourcesBasepath))
                 missingKeys.Add("paths.onedrive_resources_basepath");
             if (string.IsNullOrWhiteSpace(config.Paths.LoggingDir))
@@ -53,8 +50,8 @@ namespace NotebookAutomation.Cli.Commands
             }
             return true;
         }        /// <summary>
-        /// Validates that AI service config values are present. Returns true if valid, else prints error and config.
-        /// </summary>
+                 /// Validates that AI service config values are present. Returns true if valid, else prints error and config.
+                 /// </summary>
         public static bool RequireOpenAi(AppConfig config)
         {
             var apiKey = config.AiService.GetApiKey();

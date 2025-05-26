@@ -106,7 +106,7 @@ namespace NotebookAutomation.Cli
                         context.Console.WriteLine($"  {command.Name,-15} {command.Description}");
                     }
 
-                    context.Console.WriteLine("\nRun 'notebookautomation [command] --help' for more information on a specific command.");
+                    context.Console.WriteLine("\nRun 'notebookautomation.exe [command] --help' for more information on a specific command.");
                 }
             });            // Set a root handler to initialize configuration and logging
 
@@ -120,7 +120,7 @@ namespace NotebookAutomation.Cli
                     if (!File.Exists(configFile))
                     {
                         AnsiConsoleHelper.WriteError($"Configuration file not found: {configFile}");
-                        AnsiConsoleHelper.WriteInfo("You can create a new config with: notebookautomation config update-key <key> <value>");
+                        AnsiConsoleHelper.WriteInfo("You can create a new config with: notebookautomation.exe config update-key <key> <value>");
                         Environment.Exit(1);
                     }
                 }
@@ -130,7 +130,7 @@ namespace NotebookAutomation.Cli
                     if (string.IsNullOrEmpty(configFile) || !File.Exists(configFile))
                     {
                         AnsiConsoleHelper.WriteWarning("No configuration file found. You can create one using the config commands.");
-                        AnsiConsoleHelper.WriteInfo("Run: notebookautomation config update-key <key> <value> to create a config file.");
+                        AnsiConsoleHelper.WriteInfo("Run: notebookautomation.exe config update-key <key> <value> to create a config file.");
                         Environment.Exit(1);
                     }
                 }
@@ -161,7 +161,7 @@ namespace NotebookAutomation.Cli
                     {
                         Console.WriteLine($"  - {key}");
                     }
-                    AnsiConsoleHelper.WriteInfo("You can set missing values with: notebookautomation config update-key <key> <value>");
+                    AnsiConsoleHelper.WriteInfo("You can set missing values with: notebookautomation.exe config update-key <key> <value>");
                     Environment.Exit(1);
                 }
 
@@ -176,12 +176,11 @@ namespace NotebookAutomation.Cli
                 var logger = ServiceProvider.GetRequiredService<ILogger<Program>>();
 
                 logger.LogInformation("Notebook Automation initialized");
-
                 if (debug && appConfig != null)
                 {
                     logger.LogDebug("Debug logging enabled");
                     logger.LogDebug($"Config file: {configFile}");
-                    logger.LogDebug($"Paths: ResourcesRoot={appConfig.Paths.ResourcesRoot}, NotebookVaultRoot={appConfig.Paths.NotebookVaultRoot}, MetadataFile={appConfig.Paths.MetadataFile}, ObsidianVaultRoot={appConfig.Paths.ObsidianVaultRoot}, OneDriveResourcesBasepath={appConfig.Paths.OnedriveResourcesBasepath}, LoggingDir={appConfig.Paths.LoggingDir}");
+                    logger.LogDebug($"Paths: OnedriveFullpathRoot={appConfig.Paths.OnedriveFullpathRoot}, NotebookVaultFullpathRoot={appConfig.Paths.NotebookVaultFullpathRoot}, MetadataFile={appConfig.Paths.MetadataFile}, OneDriveResourcesBasepath={appConfig.Paths.OnedriveResourcesBasepath}, LoggingDir={appConfig.Paths.LoggingDir}");
                     logger.LogDebug($"AI Model: {appConfig.AiService?.Model}");
                     logger.LogDebug($"AI Endpoint: {appConfig.AiService?.Endpoint}");
                     logger.LogDebug($"Video Extensions: {string.Join(", ", appConfig.VideoExtensions ?? new List<string>())}");
@@ -207,8 +206,8 @@ namespace NotebookAutomation.Cli
         {
             // Determine environment
             string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ??
-                                Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
-                                "Development";
+                                 Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
+                                 "Development";
 
             // Build configuration using ConfigurationSetup helper
             var configuration = ConfigurationSetup.BuildConfiguration<Program>(environment, configPath);

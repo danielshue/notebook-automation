@@ -121,8 +121,7 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
         /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
         /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
         /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
-        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
-        /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>        /// <param name="resourcesRoot">Optional override for OneDrive fullpath root directory.</param>
         /// <param name="appConfig">The application configuration object.</param>
         /// <returns>A tuple containing the count of successfully processed files and the count of failures.</returns>
         /// <summary>
@@ -136,8 +135,7 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
         /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
         /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
         /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
-        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
-        /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+        /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>        /// <param name="resourcesRoot">Optional override for OneDrive fullpath root directory.</param>
         /// <param name="appConfig">The application configuration object.</param>
         /// <returns>A <see cref="BatchProcessResult"/> containing processing statistics and summary.</returns>
         public async Task<BatchProcessResult> ProcessPdfsAsync(

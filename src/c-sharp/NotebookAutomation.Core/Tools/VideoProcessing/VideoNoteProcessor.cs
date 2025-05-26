@@ -450,7 +450,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <param name="promptFileName">Optional prompt file name to use for AI summarization.</param>
         /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
         /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
-        /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+        /// <param name="resourcesRoot">Optional override for OneDrive fullpath root directory.</param>
         /// <param name="noShareLinks">If true, skips OneDrive share link creation.</param>
         /// <returns>A complete markdown note as a string.</returns>
         public async Task<string> GenerateVideoNoteAsync(
@@ -468,7 +468,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             // If resourcesRoot is provided, add it to metadata for downstream use
             if (!string.IsNullOrWhiteSpace(resourcesRoot))
             {
-                metadata["resources_root"] = resourcesRoot;
+                metadata["onedrive_fullpath_root"] = resourcesRoot;
             }
 
             // Generate share link if requested and OneDriveService is available

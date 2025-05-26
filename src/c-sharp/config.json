@@ -1,9 +1,8 @@
 {
   "paths": {
-    "resources_root": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestVideos",
-    "notebook_vault_root": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestOutput",
+    "onedrive_fullpath_root": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestVideos",
+    "notebook_vault_fullpath_root": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestOutput",
     "metadata_file": "d:/source/notebook-automation-csharp-migration/src/python/metadata.yaml",
-    "obsidian_vault_root": "d:/source/notebook-automation-csharp-migration/src/c-sharp/TestOutput",
     "onedrive_resources_basepath": "/TestVideos",
     "logging_dir": "d:/source/notebook-automation-csharp-migration/src/c-sharp/logs",
     "prompts_path": "d:/source/notebook-automation-csharp-migration/Prompts"

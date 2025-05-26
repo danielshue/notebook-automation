@@ -7,6 +7,9 @@ using Microsoft.SemanticKernel.TextGeneration;
 // Suppress warning about experimental TextChunker API
 #pragma warning disable SKEXP0001
 
+// Enable nullable reference type annotations
+#nullable enable
+
 namespace NotebookAutomation.Core.Services
 {
     /// <summary>
@@ -57,8 +60,8 @@ namespace NotebookAutomation.Core.Services
             }
 
             // If no prompt and no promptFileName are provided, use final_summary_prompt.md as default
-            string effectivePromptFileName = promptFileName;
-            string effectivePrompt = prompt;
+            string? effectivePromptFileName = promptFileName;
+            string? effectivePrompt = prompt;
             if (string.IsNullOrWhiteSpace(prompt) && string.IsNullOrWhiteSpace(promptFileName))
             {
                 effectivePromptFileName = "final_summary_prompt";
@@ -66,7 +69,6 @@ namespace NotebookAutomation.Core.Services
             }
 
             // Process the prompt template
-            // Use empty string for non-nullable parameters
             (string? processedPrompt, string processedInputText) = await ProcessPromptTemplateAsync(
                 inputText,
                 effectivePrompt ?? string.Empty,
@@ -91,7 +93,7 @@ namespace NotebookAutomation.Core.Services
 
                     return await SummarizeWithSemanticKernelAsync(
                         processedInputText,
-                        processedPrompt,
+                        processedPrompt ?? string.Empty,
                         cancellationToken);
                 }
                 _logger?.LogError("No valid AI service configuration available");

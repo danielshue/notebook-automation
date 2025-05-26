@@ -12,7 +12,7 @@ using NotebookAutomation.Core.Tools.Shared;
 namespace NotebookAutomation.Core.Tests
 {
     [TestClass]
-    public class VideoNoteBatchProcessorResourcesRootTests
+    public class VideoNoteBatchProcessorOnedriveFullpathRootTests
     {        private string _testDir;
         private string _outputDir;
         private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock;
@@ -100,9 +100,8 @@ namespace NotebookAutomation.Core.Tests
             if (Directory.Exists(_testDir))
                 Directory.Delete(_testDir, true);
         }
-
         [TestMethod]
-        public async Task ProcessVideosAsync_ResourcesRoot_OverridesConfigValue()
+        public async Task ProcessVideosAsync_OnedriveFullpathRoot_OverridesConfigValue()
         {
             // Arrange
             var videoPath = Path.Combine(_testDir, "test.mp4");

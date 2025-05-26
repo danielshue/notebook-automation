@@ -16,17 +16,17 @@ namespace NotebookAutomation.Core.Tests
     /// </summary>
     [TestClass]
     public class VideoNoteBatchProcessorTests
-    {
-        // Add TestContext property for diagnostic logging
+    {        // Add TestContext property for diagnostic logging
         public TestContext TestContext { get; set; }
 
         private string _testDir;
         private string _outputDir;
         private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock;
-        private Mock<AISummarizer> _aiSummarizerMock;
-        private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
+        // Removed unused fields:
+        // private Mock<AISummarizer> _aiSummarizerMock;
+        // private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
         private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-        private VideoNoteBatchProcessor _processor; [TestInitialize]
+        private VideoNoteBatchProcessor _processor;[TestInitialize]
         public void Setup()
         {
             _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

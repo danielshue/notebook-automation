@@ -26,7 +26,7 @@ namespace NotebookAutomation.Core.Configuration
             ConfigureServices(services);
             ServiceProvider = services.BuildServiceProvider();
         }
-        
+
         /// <summary>
         /// Initializes configuration with the specified options.
         /// </summary>
@@ -36,7 +36,7 @@ namespace NotebookAutomation.Core.Configuration
         {
             // Find and load configuration
             configPath = configPath ?? AppConfig.FindConfigFile();
-            
+
             if (configPath == null || !File.Exists(configPath))
             {
                 // Create a default configuration if no file is found
@@ -50,10 +50,10 @@ namespace NotebookAutomation.Core.Configuration
                 AppConfig = AppConfig.LoadFromJsonFile(configPath);
                 Console.WriteLine($"Loaded configuration from {configPath}");
             }
-            
+
             // Setup logging
             LoggingService = new LoggingService(AppConfig, debug);
-            
+
             // Configure services
             var services = new ServiceCollection();
             ConfigureServices(services);
@@ -90,11 +90,11 @@ namespace NotebookAutomation.Core.Configuration
         /// </summary>
         private void InitializeDefaultConfiguration()
         {
-            AppConfig.Paths.LoggingDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");
-            AppConfig.Paths.ObsidianVaultRoot = Environment.GetEnvironmentVariable("OBSIDIAN_VAULT_PATH") ?? string.Empty;
-            AppConfig.Paths.NotebookVaultRoot = Environment.GetEnvironmentVariable("NOTEBOOK_VAULT_PATH") ?? string.Empty;
+            AppConfig.Paths.LoggingDir = Path.Combine(Directory.GetCurrentDirectory(), "logs");            // Use the notebook vault path environment variable
+            string notebookPath = Environment.GetEnvironmentVariable("NOTEBOOK_VAULT_PATH") ?? string.Empty;
+            AppConfig.Paths.NotebookVaultFullpathRoot = notebookPath;
         }
-        
+
         /// <summary>
         /// Configures dependency injection services.
         /// </summary>
@@ -103,16 +103,16 @@ namespace NotebookAutomation.Core.Configuration
         {
             // Register configuration
             services.AddSingleton(AppConfig);
-            
+
             // Register logging
             services.AddSingleton(LoggingService);
             services.AddSingleton(Logger);
             services.AddSingleton(FailedLogger);
-            
+
             // Add additional services here as needed
             // services.AddSingleton<IService, ServiceImplementation>();
         }
-        
+
         /// <summary>
         /// Creates a new ConfigProvider instance.
         /// </summary>
@@ -123,7 +123,7 @@ namespace NotebookAutomation.Core.Configuration
         {
             return new ConfigProvider(configPath, debug);
         }
-        
+
         /// <summary>
         /// Gets a logger for the specified type.
         /// </summary>
@@ -133,7 +133,7 @@ namespace NotebookAutomation.Core.Configuration
         {
             return ServiceProvider.GetRequiredService<ILogger<T>>();
         }
-        
+
         /// <summary>
         /// Gets a service from the dependency injection container.
         /// </summary>
