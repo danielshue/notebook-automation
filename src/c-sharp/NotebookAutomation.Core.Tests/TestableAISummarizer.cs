@@ -1,7 +1,9 @@
 using System;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
+
 using NotebookAutomation.Core.Services;
 
 #nullable enable
@@ -29,7 +31,7 @@ namespace NotebookAutomation.Core.Tests
                 logger,
                 promptService ?? new PromptTemplateService(
                     Microsoft.Extensions.Logging.Abstractions.NullLogger<PromptTemplateService>.Instance,
-                    new NotebookAutomation.Core.Configuration.AppConfig()),
+                    new Configuration.AppConfig()),
                 semanticKernel ?? null!,
                 textGenerationService ?? null!)
         {

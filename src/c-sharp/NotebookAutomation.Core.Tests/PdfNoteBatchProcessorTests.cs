@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Moq;
+
 using NotebookAutomation.Core.Tools.PdfProcessing;
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,49 +19,54 @@ namespace NotebookAutomation.Core.Tests
     public class PdfNoteBatchProcessorTests
     {
         private Mock<ILogger> _loggerMock;
-        private Mock<NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor>> _batchProcessorMock;
+        private TestBatchProcessor _batchProcessor;
         private PdfNoteBatchProcessor _processor;
         private string _testDir;
         private string _outputDir;
+
+        /// <summary>
+        /// Test double for DocumentNoteBatchProcessor that overrides ProcessDocumentsAsync.
+        /// </summary>
+        private class TestBatchProcessor : Core.Tools.Shared.DocumentNoteBatchProcessor<PdfNoteProcessor>
+        {
+            public TestBatchProcessor() : base(null, null, null) { }
+
+            public override Task<Core.Tools.Shared.BatchProcessResult> ProcessDocumentsAsync(
+                string input,
+                string output,
+                List<string> extensions,
+                string openAiApiKey = null,
+                bool dryRun = false,
+                bool noSummary = false,
+                bool forceOverwrite = false,
+                bool retryFailed = false,
+                int? timeoutSeconds = null,
+                string resourcesRoot = null,
+                Core.Configuration.AppConfig appConfig = null,
+                string noteType = null,
+                string failedFilesListName = null)
+            {
+                int processed = 0, failed = 0;
+                if (string.IsNullOrWhiteSpace(input)) { failed = 1; }
+                else if (Directory.Exists(input))
+                {
+                    processed = Directory.GetFiles(input, "*.pdf").Length;
+                }
+                else if (File.Exists(input) && extensions.Exists(ext => input.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+                {
+                    processed = 1;
+                }
+                else { failed = 1; }
+                return Task.FromResult(new Core.Tools.Shared.BatchProcessResult { Processed = processed, Failed = failed });
+            }
+        }
 
         [TestInitialize]
         public void Setup()
         {
             _loggerMock = new Mock<ILogger>();
-            _batchProcessorMock = new Mock<NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor>>(MockBehavior.Strict, null, null, null);
-            // Setup the mock to return a default BatchProcessResult for any ProcessDocumentsAsync call
-            _batchProcessorMock
-                .Setup(x => x.ProcessDocumentsAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<List<string>>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<int?>(),
-                    It.IsAny<string>(),
-                    It.IsAny<NotebookAutomation.Core.Configuration.AppConfig>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>()))
-                .ReturnsAsync((string input, string output, List<string> extensions, string openAiApiKey, bool dryRun, bool noSummary, bool forceOverwrite, bool retryFailed, int? timeoutSeconds, string resourcesRoot, NotebookAutomation.Core.Configuration.AppConfig appConfig, string noteType, string failedFilesListName) =>
-                {
-                    // Simulate processing logic for test assertions
-                    int processed = 0, failed = 0;
-                    if (string.IsNullOrWhiteSpace(input)) { failed = 1; }
-                    else if (Directory.Exists(input))
-                    {
-                        processed = Directory.GetFiles(input, "*.pdf").Length;
-                    }
-                    else if (File.Exists(input) && extensions.Exists(ext => input.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        processed = 1;
-                    }
-                    else { failed = 1; }
-                    return new NotebookAutomation.Core.Tools.Shared.BatchProcessResult { Processed = processed, Failed = failed };
-                });
-            _processor = new PdfNoteBatchProcessor(_batchProcessorMock.Object);
+            _batchProcessor = new TestBatchProcessor();
+            _processor = new PdfNoteBatchProcessor(_batchProcessor);
             _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             _outputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testDir);

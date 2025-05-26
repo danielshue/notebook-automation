@@ -14,11 +14,10 @@ namespace NotebookAutomation.Core.Services
         private string _promptsDirectory = string.Empty;
 
         // Default templates to use as fallbacks if files are not found
-        private const string DefaultChunkPrompt = @"You are an expert academic summarizer. Summarize the following content for a study note, focusing on key concepts, main arguments, and actionable insights. Use clear, concise language suitable for graduate-level students.";
+        public static string DefaultChunkPrompt { get; } =
+            "You are an educational content summarizer for MBA course materials. Generate a clear and insightful summary of the following chunk from the content \"{{onedrive-path}}\", part of the course \"{{course}}\"\n\n{{content}}";
 
-        private const string DefaultVideoFinalPrompt = @"You are an expert academic summarizer. Summarize the following video content for a study note, focusing on key concepts, main arguments, and actionable insights. Use clear, concise language suitable for graduate-level students.";
-
-        private const string DefaultFinalPrompt = @"You are an expert academic summarizer. Summarize the following content for a study note, focusing on key concepts, main arguments, and actionable insights. Use clear, concise language suitable for graduate-level students.";
+        public static string DefaultFinalPrompt { get; } = "You are an educational content summarizer for MBA course materials. Your task is to synthesize multiple AI-generated summaries of content into a single, cohesive summary. You will receive YAML frontmatter below as placeholder that contains existing metadata - DO NOT modify this existing frontmatter structure except for tags.";
 
         /// <summary>
         /// Initializes a new instance of the PromptTemplateService class with config.
@@ -119,7 +118,7 @@ namespace NotebookAutomation.Core.Services
         /// <param name="templatePath">Path to the prompt template file.</param>
         /// <param name="variables">Dictionary of variable names and values.</param>
         /// <returns>Prompt string with variables substituted.</returns>
-        public async Task<string> LoadAndSubstituteAsync(string templatePath, Dictionary<string, string> variables)
+        public virtual async Task<string> LoadAndSubstituteAsync(string templatePath, Dictionary<string, string> variables)
         {
             if (!File.Exists(templatePath))
             {
@@ -152,7 +151,7 @@ namespace NotebookAutomation.Core.Services
         /// </summary>
         /// <param name="templateName">Name of the prompt template (e.g., "chunk_summary_prompt").</param>
         /// <returns>The template content, or a default template if not found.</returns>
-        public async Task<string> LoadTemplateAsync(string templateName)
+        public virtual async Task<string> LoadTemplateAsync(string templateName)
         {
             string templatePath = Path.Combine(_promptsDirectory, $"{templateName}.md");
 
@@ -194,12 +193,6 @@ namespace NotebookAutomation.Core.Services
         private string GetDefaultTemplate(string templateName)
         {
             _logger.LogWarning("Using default template for: {TemplateName}", templateName);
-
-            // If the template name contains "video", use the video final prompt
-            if (templateName.Contains("video", StringComparison.OrdinalIgnoreCase))
-            {
-                return DefaultVideoFinalPrompt;
-            }
 
             return templateName switch
             {

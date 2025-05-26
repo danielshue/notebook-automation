@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Tests
     /// <summary>
     /// Tests for the VideoNoteProcessor.TryLoadTranscript method.
     /// These tests validate the transcript finding functionality in various scenarios.
-    /// </summary>    
+    /// </summary>
     [TestClass]
     public class VideoNoteProcessorTranscriptTests
     {
@@ -30,9 +30,9 @@ namespace NotebookAutomation.Core.Tests
             _tempDirectory = Path.Combine(Path.GetTempPath(), $"VideoProcessorTests_{Guid.NewGuid()}");
             Directory.CreateDirectory(_tempDirectory);
             _logger = NullLogger<VideoNoteProcessor>.Instance;
-            var promptService = new NotebookAutomation.Core.Services.PromptTemplateService(
-                NullLogger<NotebookAutomation.Core.Services.PromptTemplateService>.Instance,
-                new NotebookAutomation.Core.Configuration.AppConfig());
+            var promptService = new PromptTemplateService(
+                NullLogger<PromptTemplateService>.Instance,
+                new Configuration.AppConfig());
             var aiSummarizer = new AISummarizer(
                 NullLogger<AISummarizer>.Instance,
                 promptService,
