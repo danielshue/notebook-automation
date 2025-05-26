@@ -73,7 +73,7 @@ tags:
   - live-session
   - course-materials
 date-created: 2025-04-19
-vault-path: path/to/file/in/vault
+
 onedrive-path: path/to/file.pdf
 onedrive-sharing-link: path/to/sharing-link
 ---
@@ -101,35 +101,104 @@ tags:
   - course-materials
 date-created: 2025-04-19
 ---
+# Description: Links to a video file stored in OneDrive for improved sharing and accessibility.
+# template-type: video-reference | pdf-reference | case-studies-index | readings-index | resources-index | assignment-individual | assignment-group | assignment-quiz | note-case-study | resource-reading | pdf-reference
 template-type: video-reference
+
+# auto-generated-state: writable | read-only
 auto-generated-state: writable
-template-description: Links to a video file stored in OneDrive for improved sharing and accessibility.
-type: video-reference
-title: Video Reference
+
+# type: note/video-note | note/case-study | resource/reading | assignment/individual | assignment/group | assignment/quiz | index
+type: note/video-note
+
+# title: Video Title
+title: 
+
+# tags: line separated tags
+#  - "tag1"
+#  - "tag2"
+#  - "tag3"
 tags: 
-  - video
-  - onedrive
-  - course-materials
-date-created: 2025-04-19
-status: unwatched
-vault-path: path/to/file/in/vault
-onedrive-path: path/to/file.pdf
-onedrive-sharing-link: path/to/sharing-link
-completion-date: ""
-review-date: ""
-comprehension: ""
-class: Class Name
-course: Course Name
-program: Program Name
+
+# date-created: YYYY-MM-DD
+date-created: 
+
+# date-modified: YYYY-MM-DD
+date-modified: 
+
+# status: unwatched | watched | read | unread | in-progress
+status: unwatched 
+
+# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4
+onedrive_fullpath_file_reference: 
+
+# onedrive-sharing-link: path/to/sharing-link
+onedrive-sharing-link: 
+
+# completion-date: YYYY-MM-DD
+completion-date:
+
+# review-date: YYYY-MM-DD
+review-date:
+
+# comprehension: 0 | 1 | 2 | 3 | 4 | 5
+comprehension: 0
+
+# program: Program Name
+program:
+
+# course: Course Name
+course:
+
+# class: Class Name
+class:
+
+# module: Module Name
+module:
+
+# lesson: Lesson Name
+lesson:
+
+# video-size: 0 MB
+video-size:
+
+# video-uploaded: YYYY-MM-DD
+video-uploaded:
+
+# video-duration: 00:00:00
+video-duration:
+
+# video-resolution: 1920x1080
+video-resolution:
+
+# video-codec: H.264
+video-codec:
+
+# author: Author Name
+author:
+
+# publication-year: 2023
+publication-year:
+
+# publisher: Publisher Name
+publisher: University of Illinois at Urbana-Champaign
+
+# pages: 1-10, 5-15, 20-25
+pages: 
+
 ---
 template-type: pdf-reference
 auto-generated-state: writable
 template-description: Reference to a PDF file in OneDrive.
 title: PDF Title
 type: reference
-vault-path: path/to/file/in/vault
-onedrive-path: path/to/file.pdf
-onedrive-sharing-link: path/to/sharing-link
+
+# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4
+onedrive_fullpath_file_reference: 
+
+# onedrive-sharing-link: path/to/sharing-link
+onedrive-sharing-link: 
+
 program: Program Name
 course: Course Name
 class: Class Name
