@@ -141,7 +141,7 @@ namespace NotebookAutomation.Cli.Commands
 
                             if (!dryRun)
                             {
-                                string outputDir = destDir ?? (appConfig?.Paths?.NotebookVaultRoot ?? "Generated");
+                                string outputDir = destDir ?? (appConfig?.Paths?.NotebookVaultFullpathRoot ?? "Generated");
                                 Directory.CreateDirectory(outputDir);
                                 string outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(file) + ".md");
                                 await File.WriteAllTextAsync(outputPath, markdown);

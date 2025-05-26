@@ -26,7 +26,7 @@ namespace NotebookAutomation.Core.Tests
             _loggerMock = new Mock<ILogger<AppConfig>>();
             _configurationMock = new Mock<IConfiguration>();
         }
-        
+
         /// <summary>
         /// Helper method to set up API key configuration for testing
         /// </summary>
@@ -41,28 +41,25 @@ namespace NotebookAutomation.Core.Tests
                 .Build();
             config.AiService.SetConfiguration(configuration);
         }/// <summary>
-        /// Tests the basic property indexer access with both direct and nested keys.
-        /// </summary>
+         /// Tests the basic property indexer access with both direct and nested keys.
+         /// </summary>
         [TestMethod]
         public void Indexer_ShouldReturnValueForExistingKeys()
         {
             // Arrange
-            var appConfig = new AppConfig();
-            appConfig.Paths = new PathsConfig
+            var appConfig = new AppConfig(); appConfig.Paths = new PathsConfig
             {
                 LoggingDir = "logs",
-                ResourcesRoot = "/resources"
-            };            appConfig.AiService = new AIServiceConfig
+                OnedriveFullpathRoot = "/resources"
+            }; appConfig.AiService = new AIServiceConfig
             {
                 Model = "gpt-4"
             };
-            SetupApiKeyConfigurationForTesting(appConfig, "test-api-key");
-
-            // Act & Assert
+            SetupApiKeyConfigurationForTesting(appConfig, "test-api-key");            // Act & Assert
             Assert.AreEqual("logs", appConfig["paths:LoggingDir"]);
-            Assert.AreEqual("/resources", appConfig["paths:ResourcesRoot"]);
+            Assert.AreEqual("/resources", appConfig["paths:OnedriveFullpathRoot"]);
             Assert.AreEqual("gpt-4", appConfig["aiservice:Model"]);
-            
+
             // Check using JsonPropertyName value
             Assert.AreEqual("test-api-key", appConfig["aiservice:api_key"]);
             Assert.AreEqual("logs", appConfig["paths:logging_dir"]);
@@ -94,7 +91,7 @@ namespace NotebookAutomation.Core.Tests
 
             // Act
             appConfig["paths:LoggingDir"] = "new-logs";
-            
+
             // Assert
             Assert.AreEqual("new-logs", appConfig.Paths.LoggingDir);
             Assert.AreEqual("new-logs", appConfig["paths:LoggingDir"]);
@@ -107,22 +104,20 @@ namespace NotebookAutomation.Core.Tests
         public void GetSection_ShouldReturnValidSection()
         {
             // Arrange
-            var appConfig = new AppConfig();
-            appConfig.Paths = new PathsConfig
+            var appConfig = new AppConfig(); appConfig.Paths = new PathsConfig
             {
                 LoggingDir = "logs",
-                ResourcesRoot = "/resources"
+                OnedriveFullpathRoot = "/resources"
             };
 
             // Act
             var pathsSection = appConfig.GetSection("paths");
-            
             // Assert
             Assert.IsNotNull(pathsSection);
             Assert.AreEqual("paths", pathsSection.Key);
             Assert.AreEqual("paths", pathsSection.Path);
             Assert.AreEqual("logs", pathsSection["LoggingDir"]);
-            Assert.AreEqual("/resources", pathsSection["ResourcesRoot"]);
+            Assert.AreEqual("/resources", pathsSection["OnedriveFullpathRoot"]);
         }
 
         /// <summary>
@@ -158,7 +153,7 @@ namespace NotebookAutomation.Core.Tests
 
             // Act
             var children = appConfig.GetChildren().ToList();
-            
+
             // Assert
             Assert.IsTrue(children.Count > 0);
             Assert.IsTrue(children.Any(c => c.Key.Equals("Paths", StringComparison.OrdinalIgnoreCase)));
@@ -180,24 +175,23 @@ namespace NotebookAutomation.Core.Tests
                 {
                     resources_root = "/resources",
                     logging_dir = "/logs"
-                },                aiservice = new
+                },
+                aiservice = new
                 {
                     model = "gpt-4"
                 }
             };
-            
+
             File.WriteAllText(tempFile, JsonSerializer.Serialize(config));
 
             try
             {
                 // Act
                 var appConfig = AppConfig.LoadFromJsonFile(tempFile);
-
                 // Assert
                 Assert.IsNotNull(appConfig);
-                Assert.AreEqual("/resources", appConfig.Paths.ResourcesRoot);
+                Assert.AreEqual("/resources", appConfig.Paths.OnedriveFullpathRoot);
                 Assert.AreEqual("/logs", appConfig.Paths.LoggingDir);
-                // API key is now accessed via GetApiKey() method
                 // Set up the configuration for testing                // Create a configuration with the API key
                 var configDict = new Dictionary<string, string>
                 {
@@ -228,12 +222,13 @@ namespace NotebookAutomation.Core.Tests
         {
             // Arrange
             var tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
-            var appConfig = new AppConfig();
-            appConfig.Paths = new PathsConfig
+            var appConfig = new AppConfig(); appConfig.Paths = new PathsConfig
             {
                 LoggingDir = "/logs",
-                ResourcesRoot = "/resources"
-            };            appConfig.AiService = new AIServiceConfig
+                OnedriveFullpathRoot = "/resources"
+            };
+
+            appConfig.AiService = new AIServiceConfig
             {
                 Model = "gpt-4"
             };
@@ -242,14 +237,13 @@ namespace NotebookAutomation.Core.Tests
             {
                 // Act
                 appConfig.SaveToJsonFile(tempFile);
-                
+
                 // Assert - Load it back and verify
                 var loadedConfig = AppConfig.LoadFromJsonFile(tempFile);
-                
                 Assert.IsNotNull(loadedConfig);
-                Assert.AreEqual("/resources", loadedConfig.Paths.ResourcesRoot);
+                Assert.AreEqual("/resources", loadedConfig.Paths.OnedriveFullpathRoot);
                 Assert.AreEqual("/logs", loadedConfig.Paths.LoggingDir);
-                
+
                 // Create a configuration with the API key for testing GetApiKey
                 var configDict = new Dictionary<string, string>
                 {
@@ -271,8 +265,8 @@ namespace NotebookAutomation.Core.Tests
                 }
             }
         }        /// <summary>
-        /// Tests configuration with underlying IConfiguration.
-        /// </summary>
+                 /// Tests configuration with underlying IConfiguration.
+                 /// </summary>
         [TestMethod]
         public void WithUnderlyingConfiguration_ShouldUseUnderlyingValues()
         {
@@ -283,13 +277,14 @@ namespace NotebookAutomation.Core.Tests
                 {"paths:logging_dir", "/config-logs"},                {"aiservice:apiKey", "config-api-key"},
                 {"aiservice:model", "gpt-4-turbo"}
             };
-            
-            _configurationMock.Setup(c => c[It.IsAny<string>()]).Returns<string>(key => 
+
+            _configurationMock.Setup(c => c[It.IsAny<string>()]).Returns<string>(key =>
                 configValues.TryGetValue(key, out var value) ? value : null);
-                
+
             // Mock sections without using Exists extension method
             _configurationMock.Setup(c => c.GetSection(It.IsAny<string>()))
-                .Returns<string>(key => {
+                .Returns<string>(key =>
+                {
                     var mockSection = new Mock<IConfigurationSection>();
                     mockSection.Setup(s => s.Path).Returns(key);
                     mockSection.Setup(s => s.Key).Returns(key);
@@ -298,19 +293,18 @@ namespace NotebookAutomation.Core.Tests
                         configValues.Keys.Any(k => k.StartsWith(key + ":")) ? string.Empty : null);
                     return mockSection.Object;
                 });
-                
+
             // Create test configuration using constructor parameters
-            var appConfig = new AppConfig();
-            // Set the values manually instead of relying on constructor
-            appConfig.Paths = new PathsConfig 
+            var appConfig = new AppConfig();            // Set the values manually instead of relying on constructor
+            appConfig.Paths = new PathsConfig
             {
-                ResourcesRoot = "/config-resources",
+                OnedriveFullpathRoot = "/config-resources",
                 LoggingDir = "/config-logs"
-            };            appConfig.AiService = new AIServiceConfig
+            }; appConfig.AiService = new AIServiceConfig
             {
                 Model = "gpt-4-turbo"
             };
-            
+
             // Set up configuration with API key
             SetupApiKeyConfigurationForTesting(appConfig, "config-api-key");
 

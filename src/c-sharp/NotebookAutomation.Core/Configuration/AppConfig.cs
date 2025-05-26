@@ -94,11 +94,10 @@ namespace NotebookAutomation.Core.Configuration
                     {
                         Paths = new PathsConfig
                         {
-                            ObsidianVaultRoot = pathsSection["obsidian_vault_root"] ?? string.Empty,
-                            NotebookVaultRoot = pathsSection["notebook_vault_root"] ?? string.Empty,
+                            NotebookVaultFullpathRoot = pathsSection["notebook_vault_fullpath_root"] ?? string.Empty,
                             OnedriveResourcesBasepath = pathsSection["onedrive_resources_basepath"] ?? string.Empty,
                             LoggingDir = pathsSection["logging_dir"] ?? string.Empty,
-                            ResourcesRoot = pathsSection["resources_root"] ?? string.Empty,
+                            OnedriveFullpathRoot = pathsSection["onedrive_fullpath_root"] ?? string.Empty,
                             MetadataFile = pathsSection["metadata_file"] ?? string.Empty
                         };
                     }

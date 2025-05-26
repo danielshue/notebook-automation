@@ -90,7 +90,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
         /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
         /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
-        /// <param name="resourcesRoot">Optional override for resources root directory.</param>
+        /// <param name="resourcesRoot">Optional override for OneDrive fullpath root directory.</param>
         /// <param name="appConfig">The application configuration object.</param>
         /// <param name="noShareLinks">If true, skips OneDrive share link creation.</param>
         /// <returns>A <see cref="BatchProcessResult"/> containing processing statistics and summary.</returns>

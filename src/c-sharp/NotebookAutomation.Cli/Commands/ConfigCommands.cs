@@ -111,19 +111,18 @@ namespace NotebookAutomation.Cli.Commands
                     context.Console.WriteLine("  --config, -c <config>    Path to the configuration file");
                     context.Console.WriteLine("  --debug, -d              Enable debug output");
                     context.Console.WriteLine("");
-                    context.Console.WriteLine("Available configuration keys:");
-                    context.Console.WriteLine("  paths.resources_root            - Root directory for resources");
-                    context.Console.WriteLine("  paths.notebook_vault_root        - Root directory for the notebook vault");
-                    context.Console.WriteLine("  paths.metadata_file             - Path to the metadata file");
-                    context.Console.WriteLine("  paths.obsidian_vault_root        - Root directory of the Obsidian vault"); context.Console.WriteLine("  paths.onedrive_resources_basepath - Base path for OneDrive resources");
-                    context.Console.WriteLine("  paths.logging_dir               - Directory for log files"); context.Console.WriteLine("  paths.prompts_path              - Directory containing prompt template files");
-                    context.Console.WriteLine("  microsoft_graph.client_id        - Microsoft Graph API client ID");
-                    context.Console.WriteLine("  aiservice.model                 - AI model to use (e.g., gpt-4)");
-                    context.Console.WriteLine("  microsoft_graph.api_endpoint     - Microsoft Graph API endpoint");
-                    context.Console.WriteLine("  microsoft_graph.authority       - Microsoft Graph API authority");
-                    context.Console.WriteLine("  microsoft_graph.scopes          - Microsoft Graph API scopes (comma-separated)");
-                    context.Console.WriteLine("  openai.api_key                  - OpenAI API key");
-                    context.Console.WriteLine("  video_extensions                - Video file extensions (comma-separated)");
+                    context.Console.WriteLine("Available configuration keys:"); context.Console.WriteLine("  paths.onedrive_fullpath_root      - Full path to OneDrive local resources directory");
+                    context.Console.WriteLine("  paths.notebook_vault_fullpath_root - Full path to the notebook vault root directory");
+                    context.Console.WriteLine("  paths.metadata_file                - Path to the metadata file");
+                    context.Console.WriteLine("  paths.onedrive_resources_basepath  - Base path for OneDrive resources");
+                    context.Console.WriteLine("  paths.logging_dir                  - Directory for log files"); context.Console.WriteLine("  paths.prompts_path              - Directory containing prompt template files");
+                    context.Console.WriteLine("  microsoft_graph.client_id          - Microsoft Graph API client ID");
+                    context.Console.WriteLine("  aiservice.model                    - AI model to use (e.g., gpt-4)");
+                    context.Console.WriteLine("  microsoft_graph.api_endpoint       - Microsoft Graph API endpoint");
+                    context.Console.WriteLine("  microsoft_graph.authority          - Microsoft Graph API authority");
+                    context.Console.WriteLine("  microsoft_graph.scopes             - Microsoft Graph API scopes (comma-separated)");
+                    context.Console.WriteLine("  openai.api_key                     - OpenAI API key");
+                    context.Console.WriteLine("  video_extensions                   - Video file extensions (comma-separated)");
                 }
             });
 
@@ -244,13 +243,11 @@ namespace NotebookAutomation.Cli.Commands
                 switch (section)
                 {
                     case "paths":
-                        var paths = appConfig.Paths;
-                        switch (prop)
+                        var paths = appConfig.Paths; switch (prop)
                         {
-                            case "resources_root": paths.ResourcesRoot = value; return true;
-                            case "notebook_vault_root": paths.NotebookVaultRoot = value; return true;
+                            case "onedrive_fullpath_root": paths.OnedriveFullpathRoot = value; return true;
+                            case "notebook_vault_fullpath_root": paths.NotebookVaultFullpathRoot = value; return true;
                             case "metadata_file": paths.MetadataFile = value; return true;
-                            case "obsidian_vault_root": paths.ObsidianVaultRoot = value; return true;
                             case "onedrive_resources_basepath": paths.OnedriveResourcesBasepath = value; return true;
                             case "prompts_path": paths.PromptsPath = value; return true;
                             case "logging_dir": paths.LoggingDir = value; return true;
@@ -313,12 +310,10 @@ namespace NotebookAutomation.Cli.Commands
             Console.WriteLine();
             Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}");
             Console.WriteLine($"{AnsiColors.BG_BLUE}{AnsiColors.WARNING}{AnsiColors.BOLD}{paddedHeader}{AnsiColors.ENDC}");
-            Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}");
-            Console.WriteLine($"{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Paths =={AnsiColors.ENDC}");
-            PrintAligned("resources_root", appConfig.Paths.ResourcesRoot);
-            PrintAligned("notebook_vault_root", appConfig.Paths.NotebookVaultRoot);
+            Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}"); Console.WriteLine($"{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Paths =={AnsiColors.ENDC}");
+            PrintAligned("onedrive_fullpath_root", appConfig.Paths.OnedriveFullpathRoot);
+            PrintAligned("notebook_vault_fullpath_root", appConfig.Paths.NotebookVaultFullpathRoot);
             PrintAligned("metadata_file", appConfig.Paths.MetadataFile);
-            PrintAligned("obsidian_vault_root", appConfig.Paths.ObsidianVaultRoot);
             PrintAligned("onedrive_resources_basepath", appConfig.Paths.OnedriveResourcesBasepath);
             PrintAligned("logging_dir", appConfig.Paths.LoggingDir);
             PrintAligned("prompts_path", appConfig.Paths.PromptsPath);
