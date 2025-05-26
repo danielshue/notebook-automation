@@ -26,7 +26,7 @@ namespace NotebookAutomation.Core.Tests
         // private Mock<AISummarizer> _aiSummarizerMock;
         // private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
         private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-        private VideoNoteBatchProcessor _processor;[TestInitialize]
+        private VideoNoteBatchProcessor _processor; [TestInitialize]
         public void Setup()
         {
             _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
