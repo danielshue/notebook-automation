@@ -2,11 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+
+using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Tools.Shared;
+using NotebookAutomation.Core.Tools.PdfProcessing;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Moq;
-using NotebookAutomation.Core.Tools.PdfProcessing;
-using NotebookAutomation.Core.Tools.Shared;
+// Duplicate using removed
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -16,49 +21,24 @@ namespace NotebookAutomation.Core.Tests
     [TestClass]
     public class BatchProcessResultTests
     {
-        private Mock<ILogger> _loggerMock;
-        private Mock<DocumentNoteBatchProcessor<PdfNoteProcessor>> _batchProcessorMock;
+        private Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>> _loggerMock;
         private PdfNoteBatchProcessor _processor;
+        private Mock<ILogger<PdfNoteProcessor>> _pdfLoggerMock;
+        private Mock<ILogger<AISummarizer>> _aiLoggerMock;
+        private Mock<AISummarizer> _aiSummarizerMock;
         private string _testDir;
         private string _outputDir;
 
         [TestInitialize]
         public void Setup()
         {
-            _loggerMock = new Mock<ILogger>();
-            _batchProcessorMock = new Mock<DocumentNoteBatchProcessor<PdfNoteProcessor>>(MockBehavior.Strict, null, null, null);
-            _batchProcessorMock
-                .Setup(x => x.ProcessDocumentsAsync(
-                    It.IsAny<string>(),
-                    It.IsAny<string>(),
-                    It.IsAny<List<string>>(),
-                    It.IsAny<string>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<int?>(),
-                    It.IsAny<string>(),
-                    It.IsAny<Configuration.AppConfig>(),
-                    It.IsAny<string>(),
-                    It.IsAny<string>()))
-                .ReturnsAsync((string input, string output, List<string> extensions, string openAiApiKey, bool dryRun, bool noSummary, bool forceOverwrite, bool retryFailed, int? timeoutSeconds, string resourcesRoot, Configuration.AppConfig appConfig, string noteType, string failedFilesListName) =>
-                {
-                    // Simulate a BatchProcessResult with timing/token stats for assertions
-                    return new BatchProcessResult
-                    {
-                        Processed = 1,
-                        Failed = 0,
-                        TotalBatchTime = TimeSpan.FromMilliseconds(100),
-                        TotalSummaryTime = TimeSpan.FromMilliseconds(50),
-                        TotalTokens = 123,
-                        AverageFileTimeMs = 100,
-                        AverageSummaryTimeMs = 50,
-                        AverageTokens = 123,
-                        Summary = "Test summary"
-                    };
-                });
-            _processor = new PdfNoteBatchProcessor(_batchProcessorMock.Object);
+            _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>>();
+            _pdfLoggerMock = new Mock<ILogger<PdfNoteProcessor>>();
+            _aiLoggerMock = new Mock<ILogger<AISummarizer>>();
+            _aiSummarizerMock = new Mock<AISummarizer>(_aiLoggerMock.Object, null, null, null);
+            var pdfNoteProcessor = new PdfNoteProcessor(_pdfLoggerMock.Object, _aiSummarizerMock.Object);
+            var batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(_loggerMock.Object, pdfNoteProcessor, _aiSummarizerMock.Object);
+            _processor = new PdfNoteBatchProcessor(batchProcessor);
             _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             _outputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testDir);
@@ -75,6 +55,7 @@ namespace NotebookAutomation.Core.Tests
         }
 
         [TestMethod]
+        // Duplicate method removed. Only one definition of BatchProcessResult_ReportsTimingAndTokens remains.
         public async Task BatchProcessResult_ReportsTimingAndTokens()
         {
             // Arrange

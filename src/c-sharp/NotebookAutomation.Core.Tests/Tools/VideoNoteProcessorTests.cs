@@ -1,8 +1,11 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Moq;
+
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+
 using System.Threading.Tasks;
 
 namespace NotebookAutomation.Core.Tests.Tools
@@ -44,9 +47,9 @@ namespace NotebookAutomation.Core.Tests.Tools
         {
             // Arrange
             var loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
-            var promptService = new NotebookAutomation.Core.Services.PromptTemplateService(
-                Mock.Of<ILogger<NotebookAutomation.Core.Services.PromptTemplateService>>(),
-                new NotebookAutomation.Core.Configuration.AppConfig());
+            var promptService = new PromptTemplateService(
+                Mock.Of<ILogger<PromptTemplateService>>(),
+                new Configuration.AppConfig());
             var aiSummarizer = new AISummarizer(
                 Mock.Of<ILogger<AISummarizer>>(),
                 promptService,

@@ -66,7 +66,7 @@ namespace NotebookAutomation.Core.Tools.Shared
         /// Returns a BatchProcessResult with summary and statistics for CLI/UI output.
         /// </summary>
         /// <returns>A tuple containing the count of successfully processed files, the count of failures, and a BatchProcessResult with summary/statistics.</returns>
-        public async Task<BatchProcessResult> ProcessDocumentsAsync(
+        public virtual async Task<BatchProcessResult> ProcessDocumentsAsync(
             string input,
             string? output,
             List<string> fileExtensions,

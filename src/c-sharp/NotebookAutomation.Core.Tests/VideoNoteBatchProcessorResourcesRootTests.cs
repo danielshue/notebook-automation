@@ -16,10 +16,10 @@ namespace NotebookAutomation.Core.Tests
     {
         private string _testDir;
         private string _outputDir;
-        private Mock<ILogger<DocumentNoteBatchProcessor<NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor>>> _loggerMock;
+        private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock;
         private Mock<AISummarizer> _aiSummarizerMock;
-        private Mock<NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor> _videoNoteProcessorMock;
-        private DocumentNoteBatchProcessor<NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor> _batchProcessor;
+        private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
+        private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
         private VideoNoteBatchProcessor _processor;
 
         [TestInitialize]
@@ -29,10 +29,10 @@ namespace NotebookAutomation.Core.Tests
             Directory.CreateDirectory(_testDir);
             _outputDir = Path.Combine(_testDir, "output");
             Directory.CreateDirectory(_outputDir);
-            _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor>>>();
+            _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
             _aiSummarizerMock = new Mock<AISummarizer>(MockBehavior.Loose, Mock.Of<ILogger<AISummarizer>>());
-            _videoNoteProcessorMock = new Mock<NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor>(MockBehavior.Loose, Mock.Of<ILogger<NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor>>(), _aiSummarizerMock.Object);
-            _batchProcessor = new DocumentNoteBatchProcessor<NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor>(_loggerMock.Object, _videoNoteProcessorMock.Object, null);
+            _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(MockBehavior.Loose, Mock.Of<ILogger<VideoNoteProcessor>>(), _aiSummarizerMock.Object);
+            _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(_loggerMock.Object, _videoNoteProcessorMock.Object, null);
             _processor = new VideoNoteBatchProcessor(_batchProcessor);
         }
 
