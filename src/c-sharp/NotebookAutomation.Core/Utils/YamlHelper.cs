@@ -220,6 +220,24 @@ namespace NotebookAutomation.Core.Utils
         }
 
         /// <summary>
+        /// Removes YAML frontmatter from markdown content if present.
+        /// </summary>
+        /// <param name="markdown">The markdown content to clean.</param>
+        /// <returns>The content without frontmatter.</returns>
+        public string RemoveFrontmatter(string markdown)
+        {
+            if (string.IsNullOrWhiteSpace(markdown))
+                return markdown ?? string.Empty;
+
+            var match = _frontmatterRegex.Match(markdown);
+            if (!match.Success)
+                return markdown;
+
+            // Return the content after the frontmatter block
+            return markdown.Substring(match.Length).TrimStart();
+        }
+
+        /// <summary>
         /// Parses and extracts tags from frontmatter.
         /// </summary>
         /// <param name="frontmatter">The frontmatter as a dictionary.</param>

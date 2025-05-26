@@ -15,9 +15,13 @@
     <AssemblyName>notebookautomation</AssemblyName>
     <UserSecretsId>30391e52-b669-419b-a859-fbd67b3c090b</UserSecretsId>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
-    <PublishAot>True</PublishAot>
+    <PublishAot>False</PublishAot>
     <Copyright>Copyright 2025</Copyright>
-  </PropertyGroup>
+  </PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+  <IsPublishable>False</IsPublishable>
+</PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+  <IsPublishable>False</IsPublishable>
+</PropertyGroup>
 
   <!-- Copy prompts from repository root and Core project if they exist -->
   <Target Name="CopyPrompts" BeforeTargets="Build">
