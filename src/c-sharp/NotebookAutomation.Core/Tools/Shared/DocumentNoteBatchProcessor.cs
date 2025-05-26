@@ -373,7 +373,6 @@ namespace NotebookAutomation.Core.Tools.Shared
                 AverageTokens = avgTokens
             };
         }
-
         /// <summary>
         /// Generates the output path for a processed file, handling video-specific naming and directory structure.
         /// </summary>
@@ -403,11 +402,24 @@ namespace NotebookAutomation.Core.Tools.Shared
                         // Get the relative path from resources root to the input file's directory
                         string relativePath = Path.GetRelativePath(resourcesRootInfo.FullName, inputFileInfo.DirectoryName ?? "");
 
+                        // Log the original relative path for debugging
+                        _logger.LogDebug("Original relative path from resources root: {RelativePath}", relativePath);
+
+                        // If the relative path starts with "." it means the file is directly in the resources root
+                        // In that case, use empty path to put files directly in output directory
+                        if (relativePath == "." || relativePath == ".\\")
+                        {
+                            relativePath = "";
+                        }
+
                         // Create the output directory structure
-                        string targetDir = Path.Combine(outputDir, relativePath);
+                        string targetDir = string.IsNullOrEmpty(relativePath) ? outputDir : Path.Combine(outputDir, relativePath);
                         Directory.CreateDirectory(targetDir);
 
-                        return Path.Combine(targetDir, fileName);
+                        var outputPath = Path.Combine(targetDir, fileName);
+                        _logger.LogDebug("Generated output path: {OutputPath}", outputPath);
+
+                        return outputPath;
                     }
                     catch (Exception ex)
                     {

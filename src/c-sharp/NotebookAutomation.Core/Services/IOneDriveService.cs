@@ -15,6 +15,18 @@ namespace NotebookAutomation.Core.Services
         Task AuthenticateAsync();
 
         /// <summary>
+        /// Sets the force refresh flag to bypass cached tokens on next authentication.
+        /// </summary>
+        /// <param name="forceRefresh">If true, will force refresh authentication tokens ignoring cache.</param>
+        void SetForceRefresh(bool forceRefresh);
+
+        /// <summary>
+        /// Forces a refresh of the authentication tokens by clearing cache and re-authenticating.
+        /// </summary>
+        /// <returns>Task representing the async refresh operation.</returns>
+        Task RefreshAuthenticationAsync();
+
+        /// <summary>
         /// Downloads a file from OneDrive to a local path.
         /// </summary>
         /// <param name="oneDrivePath">The OneDrive file path.</param>
@@ -39,18 +51,9 @@ namespace NotebookAutomation.Core.Services
         Task UploadFileAsync(string localPath, string oneDrivePath, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Creates a sharing link for a file in OneDrive.
-        /// </summary>
-        /// <param name="oneDrivePath">The OneDrive file path.</param>
-        /// <param name="type">The type of sharing link (e.g., view, edit).</param>
-        /// <param name="cancellationToken">Optional cancellation token.</param>
-        /// <returns>The sharing link URL, or null if failed.</returns>
-        Task<string?> CreateSharingLinkAsync(string oneDrivePath, string type = "view", CancellationToken cancellationToken = default);
-
-        /// <summary>
         /// Creates a shareable link for a file in OneDrive.
         /// </summary>
-        /// <param name="filePath">The OneDrive file path. Should be relative to the OneDrive root.</param>
+        /// <param name="filePath">The local file path or OneDrive file path. If it's a local path, it will be converted to a OneDrive-relative path.</param>
         /// <param name="linkType">The type of sharing link to create. Default is "view".</param>
         /// <param name="scope">The scope of the sharing link. Default is "anonymous".</param>
         /// <param name="cancellationToken">Cancellation token.</param>

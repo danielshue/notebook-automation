@@ -100,23 +100,23 @@ namespace NotebookAutomation.Core.Configuration
                             OnedriveFullpathRoot = pathsSection["onedrive_fullpath_root"] ?? string.Empty,
                             MetadataFile = pathsSection["metadata_file"] ?? string.Empty
                         };
-                    }
-
-                    // Load Microsoft Graph configuration
+                    }                    // Load Microsoft Graph configuration
                     var graphSection = _underlyingConfiguration.GetSection("microsoft_graph");
                     if (graphSection.Exists())
                     {
                         MicrosoftGraph = new MicrosoftGraphConfig
                         {
-                            ClientId = graphSection["clientId"] ?? string.Empty,
-                            TenantId = graphSection["tenantId"] ?? string.Empty,
+                            ClientId = graphSection["client_id"] ?? string.Empty,
+                            ApiEndpoint = graphSection["api_endpoint"] ?? string.Empty,
                             Authority = graphSection["authority"] ?? string.Empty,
                             Scopes = graphSection.GetSection("scopes")
                                 .GetChildren()
                                 .Select(x => x.Value)
                                 .Where(x => !string.IsNullOrEmpty(x))
                                 .Select(x => x!) // Suppress nullability and cast to non-nullable string
-                                .ToList()
+                                .ToList(),
+                            // Extract tenant ID from authority URL if needed
+                            TenantId = ExtractTenantIdFromAuthority(graphSection["authority"] ?? string.Empty)
                         };
                     }
                     // Load OpenAI configuration
@@ -182,6 +182,41 @@ namespace NotebookAutomation.Core.Configuration
                 _logger?.LogError(ex, "Error loading configuration");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Extracts tenant ID from authority URL or returns "common" for multi-tenant scenarios.
+        /// </summary>
+        /// <param name="authority">The authority URL (e.g., "https://login.microsoftonline.com/common")</param>
+        /// <returns>Tenant ID extracted from URL, "common" for multi-tenant, or empty string if not found</returns>
+        private static string ExtractTenantIdFromAuthority(string authority)
+        {
+            if (string.IsNullOrEmpty(authority))
+                return "common"; // Default for multi-tenant scenarios
+
+            try
+            {
+                var uri = new Uri(authority);
+                var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+
+                if (segments.Length > 0)
+                {
+                    var lastSegment = segments[segments.Length - 1];
+
+                    // If it's "common" or a GUID, return it
+                    if (lastSegment.Equals("common", StringComparison.OrdinalIgnoreCase) ||
+                        Guid.TryParse(lastSegment, out _))
+                    {
+                        return lastSegment;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // If URL parsing fails, fall back to common
+            }
+
+            return "common"; // Default fallback for multi-tenant scenarios
         }
 
         /// <summary>
