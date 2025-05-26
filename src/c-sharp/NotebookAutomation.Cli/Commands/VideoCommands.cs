@@ -2,6 +2,7 @@ using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Cli.Utilities;
 
@@ -80,15 +81,12 @@ namespace NotebookAutomation.Cli.Commands
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
-                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                string? resourcesRoot = context.ParseResult.GetValueForOption(resourcesRootOption);
+                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption); string? resourcesRoot = context.ParseResult.GetValueForOption(resourcesRootOption);
                 bool noSummary = context.ParseResult.GetValueForOption(noSummaryOption);
                 bool retryFailed = context.ParseResult.GetValueForOption(retryFailedOption); bool force = context.ParseResult.GetValueForOption(forceOption);
                 int? timeout = context.ParseResult.GetValueForOption(timeoutOption);
                 bool refreshAuth = context.ParseResult.GetValueForOption(refreshAuthOption);
                 bool noShareLinks = context.ParseResult.GetValueForOption(noShareLinksOption);
-
-                // TODO: Wire these options into the video processing logic as needed
 
                 // Initialize dependency injection if needed
                 if (config != null)
@@ -110,6 +108,64 @@ namespace NotebookAutomation.Cli.Commands
                 var appConfig = serviceProvider.GetRequiredService<AppConfig>();
                 var batchProcessor = serviceProvider.GetRequiredService<VideoNoteBatchProcessor>();
 
+                // Handle refresh auth flag - set force refresh on OneDriveService if requested
+                if (refreshAuth)
+                {
+                    try
+                    {
+                        var oneDriveService = serviceProvider.GetService<IOneDriveService>();
+                        if (oneDriveService != null)
+                        {
+                            oneDriveService.SetForceRefresh(true);
+                            AnsiConsoleHelper.WriteInfo("Force refresh authentication enabled for OneDrive");
+                        }
+                        else
+                        {
+                            logger.LogWarning("OneDrive service not available - --refresh-auth flag ignored");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Failed to set force refresh on OneDrive service");
+                    }
+                }                // Determine effective resources root (prioritize command line over config)
+                string? effectiveResourcesRoot = resourcesRoot;
+                if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig?.Paths != null)
+                {
+                    effectiveResourcesRoot = appConfig.Paths.OnedriveFullpathRoot;
+                }
+
+                // Build the full local resources path for path calculations
+                string? localResourcesPathForBatchProcessor = null;
+
+                // Configure OneDriveService with vault roots if available
+                if (!string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig?.Paths != null)
+                {
+                    try
+                    {
+                        var oneDriveService = serviceProvider.GetService<IOneDriveService>();
+                        if (oneDriveService != null && !string.IsNullOrWhiteSpace(appConfig.Paths.OnedriveResourcesBasepath))
+                        {
+                            // Build the local resources path by combining OneDrive sync root with resources subpath
+                            var localResourcesPath = Path.Combine(effectiveResourcesRoot,
+                                appConfig.Paths.OnedriveResourcesBasepath.TrimStart('/', '\\'));
+                            localResourcesPath = Path.GetFullPath(localResourcesPath);
+
+                            // Store this for batch processor to use for path calculations
+                            localResourcesPathForBatchProcessor = localResourcesPath;
+
+                            // Configure vault roots: local resources folder -> OneDrive resources path
+                            oneDriveService.ConfigureVaultRoots(localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
+                            logger.LogInformation("Configured OneDrive vault roots - Local: {LocalRoot}, OneDrive: {OneDriveRoot}",
+                                localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Failed to configure OneDrive vault roots");
+                    }
+                }
+
                 // Output the configured settings before processing
                 AnsiConsoleHelper.WriteInfo($"Configured settings:");
                 AnsiConsoleHelper.WriteInfo($"  Debug: {debug}");
@@ -121,15 +177,14 @@ namespace NotebookAutomation.Cli.Commands
                 AnsiConsoleHelper.WriteInfo($"  Force overwrite: {force}");
                 AnsiConsoleHelper.WriteInfo($"  Retry failed: {retryFailed}");
                 AnsiConsoleHelper.WriteInfo($"  Timeout: {(timeout.HasValue ? timeout.Value.ToString() : "(default)")}");
-                AnsiConsoleHelper.WriteInfo($"  OneDrive fullpath root: {resourcesRoot ?? "(default)"}");
+                AnsiConsoleHelper.WriteInfo($"  OneDrive fullpath root: {effectiveResourcesRoot ?? "(not configured)"}");
+                AnsiConsoleHelper.WriteInfo($"  Config OneDrive root: {appConfig?.Paths?.OnedriveFullpathRoot ?? "(not set)"}");
                 AnsiConsoleHelper.WriteInfo($"  Skip share links: {noShareLinks}");
-                AnsiConsoleHelper.WriteInfo($"  Video extensions: {string.Join(", ", appConfig.VideoExtensions ?? new List<string>())}");
-                AnsiConsoleHelper.WriteInfo($"  AI Model: {appConfig.AiService?.Model}");
-                AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {appConfig.AiService?.Endpoint}");
-                AnsiConsoleHelper.WriteInfo($"  Logging Dir: {appConfig.Paths?.LoggingDir}");
-
-                // Validate OpenAI config before proceeding
-                if (!ConfigValidation.RequireOpenAi(appConfig))
+                AnsiConsoleHelper.WriteInfo($"  Video extensions: {string.Join(", ", appConfig?.VideoExtensions ?? new List<string>())}");
+                AnsiConsoleHelper.WriteInfo($"  AI Model: {appConfig?.AiService?.Model}");
+                AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {appConfig?.AiService?.Endpoint}");
+                AnsiConsoleHelper.WriteInfo($"  Logging Dir: {appConfig?.Paths?.LoggingDir}");                // Validate OpenAI config before proceeding
+                if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
                 {
                     logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
                     return;
@@ -165,9 +220,7 @@ namespace NotebookAutomation.Cli.Commands
                     isFile ? "file" : "directory",
                     input);                // Log where output will be written
                 logger.LogInformation("Output will be written to: {OutputPath}",
-                    overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated");
-
-                var result = await batchProcessor.ProcessVideosAsync(
+                    overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"); var result = await batchProcessor.ProcessVideosAsync(
                     // Use the input from command line
                     input,
                     overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",
@@ -178,7 +231,7 @@ namespace NotebookAutomation.Cli.Commands
                     force,
                     retryFailed,
                     timeout,
-                    resourcesRoot,
+                    localResourcesPathForBatchProcessor, // Use the full resources path for proper path calculations
                     appConfig,
                     noShareLinks);
 

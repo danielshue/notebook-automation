@@ -2,11 +2,19 @@
 // Provides OneDrive integration for file/folder sync and access using Microsoft Graph API.
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
-using Microsoft.Identity.Client;
 using Azure.Identity;
 using Microsoft.Kiota.Abstractions;
 using System.Text.Json;
 using System.Text;
+using Microsoft.Identity.Client;
+using Microsoft.Identity.Client.Extensions.Msal;
+using System.Security.Cryptography;
+using Microsoft.Graph.Authentication;
+using System.IO;
+using Azure.Core;
+using System.Collections.Generic;
+using System.Threading;
+using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace NotebookAutomation.Core.Services
 {
@@ -20,7 +28,9 @@ namespace NotebookAutomation.Core.Services
         private readonly string _tenantId;
         private readonly string[] _scopes;
         private GraphServiceClient? _graphClient;
-        private string? _accessToken;
+        private bool _forceRefresh = false;
+        private IPublicClientApplication? _msalApp;
+        private readonly string _tokenCacheFile;
 
         private string? _localVaultRoot;
         private string? _oneDriveVaultRoot;
@@ -33,40 +43,231 @@ namespace NotebookAutomation.Core.Services
             _clientId = clientId;
             _tenantId = tenantId;
             _scopes = scopes;
-        }
 
+            // Setup token cache file in the user's local application data folder
+            string appDataPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "NotebookAutomation");
+
+            // Create directory if it doesn't exist
+            if (!Directory.Exists(appDataPath))
+            {
+                Directory.CreateDirectory(appDataPath);
+            }
+
+            _tokenCacheFile = Path.Combine(appDataPath, "msal_token_cache.dat");
+            _logger.LogDebug("Token cache file path: {TokenCachePath}", _tokenCacheFile);
+        }
         /// <summary>
-        /// Authenticates with Microsoft Graph using device code flow (cross-platform).
+        /// Authenticates with Microsoft Graph API using token caching for persistent authentication.
+        /// Uses the same approach as the Python implementation for consistent behavior.
         /// </summary>
+        /// <returns>Task representing the authentication process</returns>
         public async Task AuthenticateAsync()
         {
             try
             {
-                var app = PublicClientApplicationBuilder
-                    .Create(_clientId)
-                    .WithTenantId(_tenantId)
-                    .WithRedirectUri("http://localhost")
-                    .Build();
-                var result = await app.AcquireTokenWithDeviceCode(_scopes, callback =>
+                // Create and configure MSAL application with cache
+                if (_msalApp == null || _forceRefresh)
                 {
-                    Console.WriteLine($"To authenticate, visit {callback.VerificationUrl} and enter code: {callback.UserCode}");
-                    return Task.CompletedTask;
-                }).ExecuteAsync();
-                _accessToken = result.AccessToken;
-                // Use TokenCredential for GraphServiceClient v5+
-                var credential = new InteractiveBrowserCredential(new InteractiveBrowserCredentialOptions
+                    _msalApp = PublicClientApplicationBuilder
+                        .Create(_clientId)
+                        .WithTenantId(_tenantId)
+                        .WithRedirectUri("http://localhost")
+                        .Build();
+
+                    // Set up token cache
+                    await ConfigureTokenCacheAsync();
+                }
+
+                AuthenticationResult? authResult;
+                IAccount? account = null;
+
+                // Try to get existing account from cache
+                var accounts = await _msalApp.GetAccountsAsync();
+                if (accounts.Any() && !_forceRefresh)
                 {
-                    ClientId = _clientId,
-                    TenantId = _tenantId,
-                    AuthorityHost = AzureAuthorityHosts.AzurePublicCloud
-                });
-                _graphClient = new GraphServiceClient(credential, _scopes);
-                _logger.LogInformation("Authenticated with Microsoft Graph as {User}", result.Account.Username);
+                    _logger.LogInformation("Account found in token cache, attempting to use existing token");
+                    account = accounts.FirstOrDefault();
+                }
+
+                // Try silent authentication first if account exists
+                if (account != null && !_forceRefresh)
+                {
+                    try
+                    {
+                        _logger.LogDebug("Attempting silent token acquisition");
+                        authResult = await _msalApp.AcquireTokenSilent(_scopes, account)
+                            .ExecuteAsync();
+
+                        _logger.LogInformation("Successfully acquired token silently for account: {Account}",
+                            account.Username);
+                    }
+                    catch (MsalUiRequiredException)
+                    {
+                        _logger.LogInformation("Silent token acquisition failed, falling back to interactive authentication");
+                        authResult = await InteractiveAuthenticationAsync();
+                    }
+                }
+                else
+                {
+                    // No account found or forced refresh - perform interactive authentication
+                    authResult = await InteractiveAuthenticationAsync();
+                }                // Create GraphClient with the token
+                if (authResult != null)
+                {
+                    // Create authentication provider with the MSAL token
+                    var authProvider = new BaseBearerTokenAuthenticationProvider(
+                        new TokenProvider(_msalApp, _scopes, _logger));
+                    _graphClient = new GraphServiceClient(authProvider);
+
+                    // Test the authentication by making a simple call to the Drive
+                    try
+                    {
+                        var drive = await _graphClient.Me.Drive.GetAsync();
+                        _logger.LogInformation("Authenticated with Microsoft Graph successfully - Drive ID: {DriveId}",
+                            drive?.Id ?? "Unknown");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Could not retrieve user drive info, but authentication may still be valid");
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException("Failed to obtain authentication token");
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to authenticate with Microsoft Graph");
                 throw;
+            }
+            finally
+            {
+                // Reset force refresh flag
+                if (_forceRefresh)
+                {
+                    _forceRefresh = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Performs interactive authentication with browser prompt
+        /// </summary>
+        private async Task<AuthenticationResult> InteractiveAuthenticationAsync()
+        {
+            _logger.LogInformation("Initiating interactive browser authentication...");
+            Console.WriteLine("A browser window will open for you to sign in to Microsoft Graph.");
+
+            try
+            {
+                var result = await _msalApp!.AcquireTokenInteractive(_scopes)
+                    .WithPrompt(Prompt.SelectAccount) // Force account selection for better user experience
+                    .ExecuteAsync();
+
+                _logger.LogInformation("Interactive authentication successful for account: {Account}",
+                    result.Account?.Username ?? "Unknown");
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Interactive authentication failed");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Configures the token cache serialization
+        /// </summary>
+        private async Task ConfigureTokenCacheAsync()
+        {
+            try
+            {
+                // Use token cache helpers from MSAL extensions                // Configure storage properties - simplified to work across platforms
+                var storageProperties = new StorageCreationPropertiesBuilder(
+                    "msal.cache",
+                    _tokenCacheFile)
+                    .WithUnprotectedFile()  // For simplicity - uses unprotected storage
+                    .Build();
+
+                // If token cache file exists, create parent directory
+                var cacheParentDir = Path.GetDirectoryName(_tokenCacheFile);
+                if (cacheParentDir != null && !Directory.Exists(cacheParentDir))
+                {
+                    Directory.CreateDirectory(cacheParentDir);
+                }
+
+                // Setup the cache
+                var cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties);
+                cacheHelper.RegisterCache(_msalApp!.UserTokenCache);
+
+                _logger.LogDebug("Token cache configured successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to configure token cache - authentication will not be persisted");
+            }
+        }
+
+        /// <summary>
+        /// Sets whether to force refresh authentication tokens ignoring cache.
+        /// </summary>
+        /// <param name="forceRefresh">If true, will force refresh authentication tokens ignoring cache.</param>
+        public void SetForceRefresh(bool forceRefresh)
+        {
+            _forceRefresh = forceRefresh;
+            _logger.LogInformation("Force refresh set to: {ForceRefresh}", forceRefresh);
+        }        /// <summary>
+                 /// Forces a refresh of the authentication tokens by clearing cache and re-authenticating.
+                 /// </summary>
+                 /// <returns>Task representing the async refresh operation.</returns>
+        public async Task RefreshAuthenticationAsync()
+        {
+            _logger.LogInformation("Refreshing OneDrive authentication tokens");
+
+            try
+            {
+                // Clear existing authentication state
+                _graphClient = null;
+
+                // Force refresh the authentication
+                var originalForceRefresh = _forceRefresh;
+                _forceRefresh = true;
+
+                await AuthenticateAsync();
+
+                // Restore original force refresh setting
+                _forceRefresh = originalForceRefresh;
+
+                _logger.LogInformation("OneDrive authentication refreshed successfully");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to refresh OneDrive authentication");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Ensures the service is authenticated, automatically refreshing if needed.
+        /// </summary>
+        /// <returns>Task representing the async authentication check.</returns>
+        private async Task EnsureAuthenticatedAsync()
+        {
+            if (_graphClient == null || _forceRefresh)
+            {
+                _logger.LogInformation("Authentication required - initializing or refreshing OneDrive authentication");
+                if (_forceRefresh)
+                {
+                    await RefreshAuthenticationAsync();
+                }
+                else
+                {
+                    await AuthenticateAsync();
+                }
             }
         }
 
@@ -192,95 +393,62 @@ namespace NotebookAutomation.Core.Services
         }
 
         /// <summary>
-        /// Creates a sharing link for a file in OneDrive.
+        /// Creates a shareable link for a file in OneDrive.
         /// </summary>
-        /// <param name="oneDrivePath">The OneDrive file path.</param>
-        /// <param name="type">The type of sharing link (e.g., view, edit).</param>
-        /// <returns>The sharing link URL, or null if failed.</returns>
-        public async Task<string?> CreateSharingLinkAsync(string oneDrivePath, string type = "view", CancellationToken cancellationToken = default)
-        {
-            if (_graphClient == null)
-                throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
-            try
-            {
-                var requestInfo = new RequestInformation
-                {
-                    HttpMethod = Method.POST,
-                    UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}:/createLink",
-                    PathParameters = new Dictionary<string, object> { { "itemPath", oneDrivePath } }
-                };
-                var body = JsonSerializer.Serialize(new { type });
-                var ms = new MemoryStream(Encoding.UTF8.GetBytes(body));
-                requestInfo.Content = ms;
-                requestInfo.Headers["Content-Type"] = new[] { "application/json" };
-                var response = await _graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken);
-                if (response == null)
-                    return null;
-                using var doc = JsonDocument.Parse(response);
-                if (doc.RootElement.TryGetProperty("link", out var linkProp) && linkProp.TryGetProperty("webUrl", out var urlProp))
-                {
-                    var link = urlProp.GetString();
-                    if (link != null)
-                        _logger.LogInformation("Created sharing link for OneDrive file: {Path}", oneDrivePath);
-                    else
-                        _logger.LogWarning("No sharing link returned for OneDrive file: {Path}", oneDrivePath);
-                    return link;
-                }
-                _logger.LogWarning("No sharing link returned for OneDrive file: {Path}", oneDrivePath);
-                return null;
-            }
-            catch (ServiceException ex)
-            {
-                _logger.LogError(ex, "Graph API error creating sharing link for OneDrive file: {Path}", oneDrivePath);
-                return null;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to create sharing link for OneDrive file: {Path}", oneDrivePath);
-                return null;
-            }
-        }        /// <summary>
-                 /// Creates a shareable link for a file in OneDrive.
-                 /// </summary>
-                 /// <param name="filePath">The OneDrive file path. Should be relative to the OneDrive root.</param>
-                 /// <param name="linkType">The type of sharing link to create. Default is "view".</param>
-                 /// <param name="scope">The scope of the sharing link. Default is "anonymous".</param>
-                 /// <param name="cancellationToken">Cancellation token.</param>
-                 /// <returns>The shareable link URL if successful, null otherwise.</returns>
+        /// <param name="filePath">The local file path or OneDrive file path. If it's a local path, it will be converted to a OneDrive-relative path.</param>
+        /// <param name="linkType">The type of sharing link to create. Default is "view".</param>
+        /// <param name="scope">The scope of the sharing link. Default is "anonymous".</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>The shareable link URL if successful, null otherwise.</returns>
         public async Task<string?> CreateShareLinkAsync(string filePath, string linkType = "view", string scope = "anonymous", CancellationToken cancellationToken = default)
         {
-            if (_graphClient == null)
-                throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
-
+            // Ensure we're authenticated before proceeding
+            await EnsureAuthenticatedAsync();            // Declare oneDrivePath outside try block so it's accessible in catch blocks
+            string oneDrivePath = filePath;              // Initialize with original path
             try
             {
-                // Normalize the file path
-                filePath = filePath.Replace('\\', '/');
-                if (filePath.StartsWith('/'))
-                    filePath = filePath.Substring(1);
+                // Convert local path to OneDrive path if necessary
+                if (Path.IsPathRooted(filePath))
+                {
+                    // This is a local file path, convert it to OneDrive path
+                    oneDrivePath = MapLocalToOneDrivePath(filePath);
+                    _logger.LogDebug("Converted local path '{LocalPath}' to OneDrive path '{OneDrivePath}'", filePath, oneDrivePath);
+                }
+                else
+                {
+                    // This is already a OneDrive-relative path
+                    oneDrivePath = filePath;
+                }
 
-                _logger.LogInformation("Creating sharing link for file: {FilePath}", filePath);
+                // Normalize the OneDrive file path
+                oneDrivePath = oneDrivePath.Replace('\\', '/');
+                if (oneDrivePath.StartsWith('/'))
+                    oneDrivePath = oneDrivePath.Substring(1); _logger.LogInformation("Creating sharing link for OneDrive file: {OneDrivePath}", oneDrivePath);
 
                 // Prepare the request
                 var requestInfo = new RequestInformation
                 {
                     HttpMethod = Method.POST,
                     UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}:/createLink",
-                    PathParameters = new Dictionary<string, object> { { "itemPath", filePath } }
+                    PathParameters = new Dictionary<string, object> { { "itemPath", oneDrivePath } }
                 };
 
                 // Set the content type header and body
-                requestInfo.Headers.Add("Content-Type", "application/json");
-
-                // Create the request body
+                requestInfo.Headers.Add("Content-Type", "application/json");                // Create the request body
                 var jsonContent = $"{{\"type\":\"{linkType}\",\"scope\":\"{scope}\"}}";
                 requestInfo.Content = new MemoryStream(Encoding.UTF8.GetBytes(jsonContent));
 
                 // Send the request and parse the response
+                if (_graphClient?.RequestAdapter == null)
+                {
+                    _logger.LogError("Graph client or request adapter is null when creating sharing link for OneDrive file: {OneDrivePath}", oneDrivePath);
+                    return null;
+                }
+
                 var response = await _graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken);
                 if (response == null)
                 {
-                    _logger.LogError("Received null response when creating sharing link for file: {FilePath}", filePath);
+                    _logger.LogError("Received null response when creating sharing link for OneDrive file: {OneDrivePath}", oneDrivePath);
                     return null;
                 }
 
@@ -288,23 +456,22 @@ namespace NotebookAutomation.Core.Services
                 using var doc = JsonDocument.Parse(response);
                 var root = doc.RootElement;
 
-                if (root.TryGetProperty("link", out var linkElement) &&
-                    linkElement.TryGetProperty("webUrl", out var webUrlElement))
+                if (root.TryGetProperty("link", out var linkElement) && linkElement.TryGetProperty("webUrl", out var webUrlElement))
                 {
                     string? sharingLink = webUrlElement.GetString();
                     if (!string.IsNullOrEmpty(sharingLink))
                     {
-                        _logger.LogInformation("Sharing link created successfully for file: {FilePath}", filePath);
+                        _logger.LogInformation("Sharing link created successfully for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
                         return sharingLink;
                     }
                 }
 
-                _logger.LogError("Sharing link not found in response for file: {FilePath}", filePath);
+                _logger.LogError("Sharing link not found in response for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
                 return null;
             }
             catch (ServiceException ex)
             {
-                _logger.LogError(ex, "Failed to create sharing link for file: {FilePath}", filePath);
+                _logger.LogError(ex, "Failed to create sharing link for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
 
                 // Check if the exception message contains 404 error code
                 if (ex.Message.Contains("404") || ex.Message.Contains("not found"))
@@ -316,7 +483,7 @@ namespace NotebookAutomation.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create sharing link for file: {FilePath}", filePath);
+                _logger.LogError(ex, "Failed to create sharing link for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
                 return null;
             }
         }
@@ -849,9 +1016,97 @@ namespace NotebookAutomation.Core.Services
             _cliOptions = options ?? new OneDriveCliOptions();
         }
 
-        // --- Test Coverage and Documentation ---
-        // TODO: Add unit and integration tests for all new methods, including error scenarios and edge cases.
+        // --- Test Coverage and Documentation ---        // TODO: Add unit and integration tests for all new methods, including error scenarios and edge cases.
         //       Use dependency injection and mocking for GraphServiceClient and RequestAdapter.
         //       Ensure tests cover search, direct ID access, drive/root listing, recursive traversal, and error handling.
+    }
+
+    /// <summary>
+    /// Token provider for Microsoft Graph authentication using MSAL
+    /// </summary>
+    internal class TokenProvider : IAccessTokenProvider
+    {
+        private readonly IPublicClientApplication _msalApp;
+        private readonly string[] _scopes;
+        private readonly ILogger _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the TokenProvider class
+        /// </summary>
+        /// <param name="msalApp">The MSAL public client application</param>
+        /// <param name="scopes">Authentication scopes</param>
+        /// <param name="logger">Logger instance</param>
+        public TokenProvider(IPublicClientApplication msalApp, string[] scopes, ILogger logger)
+        {
+            _msalApp = msalApp ?? throw new ArgumentNullException(nameof(msalApp));
+            _scopes = scopes ?? throw new ArgumentNullException(nameof(scopes));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
+
+        /// <summary>
+        /// Gets the authentication provider unique ID
+        /// </summary>
+        public string? CachedSerializationId => null;
+
+        /// <summary>
+        /// Obtains a token from the MSAL client
+        /// </summary>
+        /// <param name="uri">The URI for the request (ignored)</param>
+        /// <param name="additionalAuthenticationContext">Additional context (ignored)</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        /// <returns>The access token</returns>
+        public async Task<string> GetAuthorizationTokenAsync(Uri uri, Dictionary<string, object>? additionalAuthenticationContext = null, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                // Get all accounts
+                var accounts = await _msalApp.GetAccountsAsync();
+                AuthenticationResult? result = null;
+
+                // Try silent authentication first with any available account
+                if (accounts.Any())
+                {
+                    try
+                    {
+                        _logger.LogDebug("Attempting silent token acquisition for Graph request");
+                        result = await _msalApp.AcquireTokenSilent(_scopes, accounts.FirstOrDefault())
+                            .ExecuteAsync(cancellationToken);
+                    }
+                    catch (MsalUiRequiredException)
+                    {
+                        // Token expired or requires interaction
+                        _logger.LogInformation("Silent token acquisition failed, falling back to interactive");
+                        result = await _msalApp.AcquireTokenInteractive(_scopes)
+                            .WithPrompt(Prompt.SelectAccount)
+                            .ExecuteAsync(cancellationToken);
+                    }
+                }
+                else
+                {
+                    // No accounts, must do interactive auth
+                    _logger.LogInformation("No accounts found, performing interactive authentication");
+                    result = await _msalApp.AcquireTokenInteractive(_scopes)
+                        .WithPrompt(Prompt.SelectAccount)
+                        .ExecuteAsync(cancellationToken);
+                }
+
+                if (result != null)
+                {
+                    return result.AccessToken;
+                }
+
+                throw new InvalidOperationException("Failed to obtain access token");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error obtaining access token");
+                throw;
+            }
+        }        /// <summary>
+                 /// Determines if this provider can authenticate the request
+                 /// </summary>
+                 /// <param name="uri">The URI being requested</param>
+                 /// <returns>Whether this provider can authenticate</returns>
+        public AllowedHostsValidator AllowedHostsValidator => new AllowedHostsValidator(new[] { "graph.microsoft.com" });
     }
 }
