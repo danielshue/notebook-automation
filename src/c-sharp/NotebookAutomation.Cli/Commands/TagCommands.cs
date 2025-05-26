@@ -132,6 +132,19 @@ namespace NotebookAutomation.Cli.Commands
                 await this.ProcessUpdateFrontmatterAsync(path, key, value, config, debug, verbose, dryRun);
             });
 
+            // diagnose-yaml command
+            var diagnoseYamlCommand = new Command("diagnose-yaml", "Diagnose YAML frontmatter issues in markdown files");
+            diagnoseYamlCommand.AddArgument(pathArg);
+            diagnoseYamlCommand.SetHandler(async (InvocationContext context) =>
+            {
+                string path = context.ParseResult.GetValueForArgument(pathArg);
+                string? config = context.ParseResult.GetValueForOption(configOption);
+                bool debug = context.ParseResult.GetValueForOption(debugOption);
+                bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+                await this.DiagnoseYamlAsync(path, config, debug, verbose);
+            });
+
             // Create a parent command for all tag-related operations
             var tagCommand = new Command("tag", "Tag management commands");
             tagCommand.AddCommand(addNestedCommand);
@@ -141,6 +154,7 @@ namespace NotebookAutomation.Cli.Commands
             tagCommand.AddCommand(addExampleCommand);
             tagCommand.AddCommand(metadataCommand);
             tagCommand.AddCommand(updateFrontmatterCommand);
+            tagCommand.AddCommand(diagnoseYamlCommand);
 
             // Error handler for invalid tag subcommands
             tagCommand.TreatUnmatchedTokensAsErrors = true;
@@ -325,6 +339,81 @@ namespace NotebookAutomation.Cli.Commands
             catch (Exception ex)
             {
                 AnsiConsoleHelper.WriteError($"Error processing command: {ex.Message}");
+            }
+        }        /// <summary>
+                 /// Diagnoses YAML frontmatter issues in markdown files.
+                 /// </summary>
+                 /// <param name="path">Path to the directory to process.</param>
+                 /// <param name="configPath">Optional path to configuration file.</param>
+                 /// <param name="debug">Whether to output debug information.</param>
+                 /// <param name="verbose">Whether to output verbose information.</param>
+                 /// <returns>A task representing the asynchronous operation.</returns>
+        private async Task DiagnoseYamlAsync(string path, string? configPath, bool debug, bool verbose)
+        {
+            try
+            {
+                // Initialize dependency injection if needed
+                if (configPath != null)
+                {
+                    if (!System.IO.File.Exists(configPath))
+                    {
+                        AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
+                        return;
+                    }
+                    Program.SetupDependencyInjection(configPath, debug);
+                }
+
+                var serviceProvider = Program.ServiceProvider;
+                var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+                var logger = loggerFactory.CreateLogger("TagCommands");
+                var loggingService = serviceProvider.GetRequiredService<LoggingService>();
+                var failedLogger = loggingService.FailedLogger;
+
+                // Always show the active config file being used
+                string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
+                AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
+
+                AnsiConsoleHelper.WriteInfo("[bold]Diagnosing YAML frontmatter issues in markdown files...[/]");
+                AnsiConsoleHelper.WriteInfo($"Path: [cyan]{path}[/]");
+
+                // Create processor
+                var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
+                var processor = new TagProcessor(tagProcessorLogger, failedLogger, false, verbose);
+
+                // Run diagnosis
+                var results = await processor.DiagnoseFrontmatterIssuesAsync(path);
+
+                // Display results
+                if (results.Count > 0)
+                {
+                    AnsiConsoleHelper.WriteWarning($"Found {results.Count} files with YAML issues:");
+
+                    foreach (var (filePath, message) in results)
+                    {
+                        AnsiConsoleHelper.WriteWarning($"File: {filePath}");
+                        AnsiConsoleHelper.WriteWarning($"Issue: {message}");
+                        Console.WriteLine();
+                    }
+
+                    AnsiConsoleHelper.WriteInfo("Suggestions to fix YAML issues:");
+                    Console.WriteLine("1. Ensure your frontmatter has proper YAML syntax");
+                    Console.WriteLine("2. Check for missing colons after keys");
+                    Console.WriteLine("3. Verify proper indentation in nested structures");
+                    Console.WriteLine("4. Ensure values with special characters are properly quoted");
+                    Console.WriteLine("5. Confirm frontmatter is enclosed by triple dashes (---) on separate lines");
+                }
+                else
+                {
+                    AnsiConsoleHelper.WriteSuccess("No YAML frontmatter issues found!");
+                }
+            }
+            catch (Exception ex)
+            {
+                AnsiConsoleHelper.WriteError($"Error diagnosing YAML issues: {ex.Message}");
+                if (debug)
+                {
+                    AnsiConsoleHelper.WriteError(ex.ToString());
+                }
             }
         }
 

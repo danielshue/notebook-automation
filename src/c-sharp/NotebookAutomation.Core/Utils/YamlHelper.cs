@@ -25,9 +25,16 @@ namespace NotebookAutomation.Core.Utils
         public YamlHelper(ILogger? logger = null)
         {
             _logger = logger;
-            _frontmatterRegex = new Regex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline);
+            // Updated regex to handle various line ending styles and whitespace patterns
+            // This pattern accounts for:
+            // - Different line endings (CR, LF, CRLF)
+            // - Optional whitespace after the opening and closing delimiters
+            // - Exact three hyphens for the delimiters (---) as per YAML spec
+            _frontmatterRegex = new Regex(
+                @"^\s*---\s*[\r\n]+(.+?)[\r\n]+\s*---\s*[\r\n]+",
+                RegexOptions.Singleline | RegexOptions.Compiled);
         }
-        
+
         /// <summary>
         /// Extracts the YAML frontmatter from markdown content.
         /// </summary>
@@ -37,13 +44,46 @@ namespace NotebookAutomation.Core.Utils
         {
             if (string.IsNullOrEmpty(markdown))
             {
+                _logger?.LogDebug("Empty markdown content provided for frontmatter extraction");
                 return null;
             }
-            
-            var match = _frontmatterRegex.Match(markdown);
-            return match.Success ? match.Groups[1].Value : null;
+
+            // Check if the content seems to have frontmatter (starts with ---)
+            if (!markdown.TrimStart().StartsWith("---"))
+            {
+                if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("Content does not appear to have frontmatter. First 20 chars: {Content}",
+                        markdown.Length > 20 ? markdown.Substring(0, 20) + "..." : markdown);
+                }
+                return null;
+            }
+
+            try
+            {
+                var match = _frontmatterRegex.Match(markdown);
+
+                if (!match.Success)
+                {
+                    // If regex did not match but content starts with ---, we might have a malformed frontmatter
+                    // Log more details for debugging
+                    if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
+                    {
+                        _logger.LogDebug("Content appears to have frontmatter but didn't match regex pattern. First 50 chars: {Content}",
+                            markdown.Length > 50 ? markdown.Substring(0, 50) + "..." : markdown);
+                    }
+                    return null;
+                }
+
+                return match.Groups[1].Value;
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError(ex, "Error extracting frontmatter from markdown");
+                return null;
+            }
         }
-        
+
         /// <summary>
         /// Parses YAML frontmatter to a dynamic object.
         /// </summary>
@@ -55,13 +95,13 @@ namespace NotebookAutomation.Core.Utils
             {
                 return null;
             }
-            
+
             try
             {
                 var deserializer = new DeserializerBuilder()
                     .WithNamingConvention(CamelCaseNamingConvention.Instance)
                     .Build();
-                    
+
                 return deserializer.Deserialize(yaml);
             }
             catch (Exception ex)
@@ -70,7 +110,7 @@ namespace NotebookAutomation.Core.Utils
                 return null;
             }
         }
-        
+
         /// <summary>
         /// Parses YAML frontmatter to a dictionary.
         /// </summary>
@@ -78,26 +118,62 @@ namespace NotebookAutomation.Core.Utils
         /// <returns>The parsed dictionary, or an empty dictionary if parsing failed.</returns>
         public Dictionary<string, object> ParseYamlToDictionary(string yaml)
         {
-            if (string.IsNullOrEmpty(yaml))
+            if (string.IsNullOrWhiteSpace(yaml))
             {
+                _logger?.LogDebug("Empty YAML content provided for parsing");
                 return new Dictionary<string, object>();
             }
-            
+
             try
             {
+                // Trim the input to remove any leading/trailing whitespace that might cause issues
+                yaml = yaml.Trim();
+
+                // Simple validation of YAML structure
+                if (!yaml.Contains(':') && !yaml.Contains('-'))
+                {
+                    _logger?.LogWarning("YAML content does not contain any key-value pairs or lists");
+                    return new Dictionary<string, object>();
+                }
+
                 var deserializer = new DeserializerBuilder()
                     .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .IgnoreUnmatchedProperties()  // More forgiving parsing
                     .Build();
-                    
-                return deserializer.Deserialize<Dictionary<string, object>>(yaml);
+
+                var result = deserializer.Deserialize<Dictionary<string, object>>(yaml);
+                return result ?? new Dictionary<string, object>();
+            }
+            catch (YamlDotNet.Core.YamlException yamlEx)
+            {
+                // More specific logging for YAML syntax errors
+                _logger?.LogError(yamlEx, "YAML syntax error: {ErrorMessage} at Line {Line}, Column {Column}",
+                    yamlEx.Message, yamlEx.Start.Line, yamlEx.Start.Column);
+
+                // Log the problematic content for debugging
+                if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("Problematic YAML content (first 100 chars): {YamlContent}",
+                        yaml.Length > 100 ? yaml.Substring(0, 100) + "..." : yaml);
+                }
+
+                return new Dictionary<string, object>();
             }
             catch (Exception ex)
             {
                 _logger?.LogError(ex, "Failed to parse YAML content to dictionary");
+
+                // Debug log the content for easier troubleshooting
+                if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("Failed YAML content (first 100 chars): {YamlContent}",
+                        yaml.Length > 100 ? yaml.Substring(0, 100) + "..." : yaml);
+                }
+
                 return new Dictionary<string, object>();
             }
         }
-        
+
         /// <summary>
         /// Updates existing markdown content with new frontmatter.
         /// </summary>
@@ -110,14 +186,14 @@ namespace NotebookAutomation.Core.Utils
             {
                 return CreateMarkdownWithFrontmatter(frontmatter);
             }
-            
+
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .Build();
-                
+
             var yamlString = serializer.Serialize(frontmatter);
             var newFrontmatter = $"---\n{yamlString}---\n";
-            
+
             if (_frontmatterRegex.IsMatch(markdown))
             {
                 return _frontmatterRegex.Replace(markdown, newFrontmatter);
@@ -127,7 +203,7 @@ namespace NotebookAutomation.Core.Utils
                 return $"{newFrontmatter}{markdown}";
             }
         }
-        
+
         /// <summary>
         /// Creates new markdown content with the specified frontmatter.
         /// </summary>
@@ -138,11 +214,11 @@ namespace NotebookAutomation.Core.Utils
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .Build();
-                
+
             var yamlString = serializer.Serialize(frontmatter);
             return $"---\n{yamlString}---\n\n";
         }
-        
+
         /// <summary>
         /// Parses and extracts tags from frontmatter.
         /// </summary>
@@ -151,11 +227,11 @@ namespace NotebookAutomation.Core.Utils
         public HashSet<string> ExtractTags(Dictionary<string, object> frontmatter)
         {
             var result = new HashSet<string>();
-            
+
             if (frontmatter.ContainsKey("tags"))
             {
                 var tags = frontmatter["tags"];
-                
+
                 // Handle different formats of tags
                 if (tags is List<object> tagList)
                 {
@@ -173,10 +249,10 @@ namespace NotebookAutomation.Core.Utils
                     }
                 }
             }
-            
+
             return result;
         }
-        
+
         /// <summary>
         /// Updates frontmatter with new tags.
         /// </summary>
@@ -194,10 +270,10 @@ namespace NotebookAutomation.Core.Utils
             {
                 frontmatter.Remove("tags");
             }
-            
+
             return frontmatter;
         }
-        
+
         /// <summary>
         /// Loads frontmatter from a markdown file.
         /// </summary>
@@ -212,15 +288,15 @@ namespace NotebookAutomation.Core.Utils
                     _logger?.LogWarning("File not found: {FilePath}", filePath);
                     return new Dictionary<string, object>();
                 }
-                
+
                 var content = File.ReadAllText(filePath, Encoding.UTF8);
                 var frontmatter = ExtractFrontmatter(content);
-                
+
                 if (frontmatter == null)
                 {
                     return new Dictionary<string, object>();
                 }
-                
+
                 return ParseYamlToDictionary(frontmatter);
             }
             catch (Exception ex)
@@ -229,7 +305,7 @@ namespace NotebookAutomation.Core.Utils
                 return new Dictionary<string, object>();
             }
         }
-        
+
         /// <summary>
         /// Saves markdown with updated frontmatter to a file.
         /// </summary>
@@ -251,7 +327,7 @@ namespace NotebookAutomation.Core.Utils
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Serializes a dictionary to YAML.
         /// </summary>
@@ -263,10 +339,10 @@ namespace NotebookAutomation.Core.Utils
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .DisableAliases()
                 .Build();
-                
+
             return serializer.Serialize(data);
         }
-        
+
         /// <summary>
         /// Replaces the frontmatter in a markdown document.
         /// </summary>
@@ -279,16 +355,85 @@ namespace NotebookAutomation.Core.Utils
             {
                 return content;
             }
-            
+
             var match = _frontmatterRegex.Match(content);
             if (!match.Success)
             {
                 // If no frontmatter, add it to the beginning
                 return $"---\n{newFrontmatter}\n---\n\n{content}";
             }
-            
+
             // Replace the existing frontmatter
             return _frontmatterRegex.Replace(content, $"---\n{newFrontmatter}\n---\n");
+        }
+
+        /// <summary>
+        /// Diagnoses YAML parsing issues and returns detailed information about any problems found.
+        /// </summary>
+        /// <param name="markdown">The markdown content to diagnose.</param>
+        /// <returns>A diagnostic result containing information about YAML parsing issues.</returns>
+        public (bool Success, string Message, Dictionary<string, object>? Data) DiagnoseYamlFrontmatter(string markdown)
+        {
+            try
+            {
+                // Step 1: Check for empty content
+                if (string.IsNullOrWhiteSpace(markdown))
+                {
+                    return (false, "Markdown content is empty or whitespace only", null);
+                }
+
+                // Step 2: Extract frontmatter
+                string? frontmatter = ExtractFrontmatter(markdown);
+                if (frontmatter == null)
+                {
+                    // Check if it might be malformed frontmatter
+                    var firstLines = string.Join("\n", markdown.Split('\n').Take(5));
+                    if (firstLines.Contains("---"))
+                    {
+                        return (false, $"Frontmatter not properly formatted. First few lines: {firstLines}", null);
+                    }
+
+                    return (false, "No frontmatter found in the markdown content", null);
+                }
+
+                // Step 3: Validate frontmatter
+                if (string.IsNullOrWhiteSpace(frontmatter))
+                {
+                    return (false, "Extracted frontmatter is empty", null);
+                }
+
+                // Step 4: Check frontmatter structure
+                if (!frontmatter.Contains(':'))
+                {
+                    return (false, $"Frontmatter lacks key-value pairs: {frontmatter}", null);
+                }
+
+                // Step 5: Try parsing
+                try
+                {
+                    var deserializer = new DeserializerBuilder()
+                        .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                        .IgnoreUnmatchedProperties()
+                        .Build();
+
+                    var result = deserializer.Deserialize<Dictionary<string, object>>(frontmatter);
+
+                    if (result == null || result.Count == 0)
+                    {
+                        return (false, "YAML parsed successfully but resulted in empty dictionary", null);
+                    }
+
+                    return (true, $"Successfully parsed YAML frontmatter with {result.Count} keys", result);
+                }
+                catch (YamlDotNet.Core.YamlException yamlEx)
+                {
+                    return (false, $"YAML syntax error: {yamlEx.Message} at Line {yamlEx.Start.Line}, Column {yamlEx.Start.Column}", null);
+                }
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Unexpected error during YAML diagnosis: {ex.Message}", null);
+            }
         }
     }
 
