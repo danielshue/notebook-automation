@@ -20,19 +20,71 @@ namespace NotebookAutomation.Core.Tests
         private Mock<AISummarizer> _aiSummarizerMock;
         private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
         private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-        private VideoNoteBatchProcessor _processor;
-
-        [TestInitialize]
+        private VideoNoteBatchProcessor _processor; [TestInitialize]
         public void Setup()
         {
             _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testDir);
             _outputDir = Path.Combine(_testDir, "output");
             Directory.CreateDirectory(_outputDir);
+
             _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
-            _aiSummarizerMock = new Mock<AISummarizer>(MockBehavior.Loose, Mock.Of<ILogger<AISummarizer>>());
-            _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(MockBehavior.Loose, Mock.Of<ILogger<VideoNoteProcessor>>(), _aiSummarizerMock.Object);
-            _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(_loggerMock.Object, _videoNoteProcessorMock.Object, null);
+
+            // Create a TestableAISummarizer that can be used in tests
+            var testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());
+
+            // Set up mock with test dependencies
+            _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
+                MockBehavior.Loose,
+                Mock.Of<ILogger<VideoNoteProcessor>>(),
+                testAISummarizer);
+
+            // Create a custom batch processor that will directly create a file with the resourcesRoot
+            // so we can test that the parameter is being passed correctly
+            var mockBatchProcessor = new Mock<DocumentNoteBatchProcessor<VideoNoteProcessor>>(
+                _loggerMock.Object,
+                _videoNoteProcessorMock.Object,
+                testAISummarizer);
+
+            mockBatchProcessor
+                .Setup(b => b.ProcessDocumentsAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<string>(),
+                    It.IsAny<List<string>>(),
+                    It.IsAny<string>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<bool>(),
+                    It.IsAny<int?>(),
+                    It.IsAny<string>(),
+                    It.IsAny<Configuration.AppConfig>(),
+                    It.IsAny<string>(),
+                    It.IsAny<string>()))
+                .ReturnsAsync((
+                    string input,
+                    string output,
+                    List<string> extensions,
+                    string openAiApiKey,
+                    bool dryRun,
+                    bool noSummary,
+                    bool forceOverwrite,
+                    bool retryFailed,
+                    int? timeoutSeconds,
+                    string resourcesRoot,
+                    Configuration.AppConfig appConfig,
+                    string noteType,
+                    string failedFilesListName) =>
+                {
+                    // Write a file with resourcesRoot in its content for testing
+                    var fileName = Path.GetFileNameWithoutExtension(input);
+                    var outputPath = Path.Combine(output, $"{fileName}.md");
+                    File.WriteAllText(outputPath, $"Test note with resourcesRoot: {resourcesRoot ?? "default"}");
+
+                    return new BatchProcessResult { Processed = 1, Failed = 0 };
+                });
+
+            _batchProcessor = mockBatchProcessor.Object;
             _processor = new VideoNoteBatchProcessor(_batchProcessor);
         }
 

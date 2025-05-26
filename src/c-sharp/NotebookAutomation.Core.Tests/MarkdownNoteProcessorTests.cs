@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using NotebookAutomation.Core.Tools.MarkdownGeneration;
 using NotebookAutomation.Core.Services;
 using System.IO;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -14,8 +16,8 @@ namespace NotebookAutomation.Core.Tests
         public async Task ConvertToMarkdownAsync_TxtFile_ReturnsMarkdown()
         {
             // Arrange
-            var logger = NullLogger.Instance;
-            var summarizer = new TestableAISummarizer(Microsoft.Extensions.Logging.Abstractions.NullLogger<AISummarizer>.Instance);
+            var logger = new Mock<ILogger<MarkdownNoteProcessor>>().Object;
+            var summarizer = new TestableAISummarizer(NullLogger<AISummarizer>.Instance);
             var processor = new MarkdownNoteProcessor(logger, summarizer);
             var testFile = "test.txt";
             await File.WriteAllTextAsync(testFile, "Hello world!");

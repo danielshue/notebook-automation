@@ -21,15 +21,18 @@ namespace NotebookAutomation.Core.Tests
         private Mock<ILogger> _loggerMock;
         private TestBatchProcessor _batchProcessor;
         private PdfNoteBatchProcessor _processor;
-        private string _testDir;
-        private string _outputDir;
+        private string _testDir; private string _outputDir;
 
         /// <summary>
         /// Test double for DocumentNoteBatchProcessor that overrides ProcessDocumentsAsync.
         /// </summary>
         private class TestBatchProcessor : Core.Tools.Shared.DocumentNoteBatchProcessor<PdfNoteProcessor>
         {
-            public TestBatchProcessor() : base(null, null, null) { }
+            public TestBatchProcessor() : base(
+                new Mock<ILogger<Core.Tools.Shared.DocumentNoteBatchProcessor<PdfNoteProcessor>>>().Object,
+                new Mock<PdfNoteProcessor>(MockBehavior.Loose, Mock.Of<ILogger<PdfNoteProcessor>>(), new TestableAISummarizer(Mock.Of<ILogger<Services.AISummarizer>>())).Object,
+                new TestableAISummarizer(Mock.Of<ILogger<Services.AISummarizer>>()))
+            { }
 
             public override Task<Core.Tools.Shared.BatchProcessResult> ProcessDocumentsAsync(
                 string input,

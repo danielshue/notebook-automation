@@ -280,18 +280,20 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsNotNull(videoResult);
             Assert.IsNotNull(unknownResult);            // Normalize line endings and trim trailing whitespace for comparison
             string Normalize(string s) => s.Replace("\r\n", "\n").Replace("\r", "\n").TrimEnd();
-            
+
             // Since this is an integration test, check that templates were loaded correctly
             // For chunk_summary_prompt, the file content should be used (which is normalized for comparison)
             Assert.AreEqual(Normalize(PromptTemplateService.DefaultChunkPrompt), Normalize(chunkResult));
-            
+
             // For final_summary_prompt, the content should have been loaded from the file
             // Just verify it contains the expected starting text
             StringAssert.StartsWith(finalResult, "You are an educational content summarizer for MBA course materials.");
-            Assert.IsTrue(finalResult.Length > 100, "Final summary prompt is too short");
-            
-            // For video and unknown templates, we should get fallbacks
-            Assert.AreEqual(videoResult, unknownResult);
+            Assert.IsTrue(finalResult.Length > 100, "Final summary prompt is too short");            // For video prompt template, we should get the video-specific template content
+            StringAssert.StartsWith(videoResult.Trim(), "You are an educational content summarizer for video materials.");
+            Assert.IsTrue(videoResult.Length > 100, "Video summary prompt is too short");
+
+            // For unknown templates, we should get the default final prompt template as fallback
+            Assert.AreEqual(Normalize(PromptTemplateService.DefaultFinalPrompt), Normalize(unknownResult));
         }
 
         /// <summary>

@@ -23,19 +23,23 @@ namespace NotebookAutomation.Core.Tests
         private Mock<AISummarizer> _aiSummarizerMock;
         private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
         private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-        private VideoNoteBatchProcessor _processor;
-
-        [TestInitialize]
+        private VideoNoteBatchProcessor _processor; [TestInitialize]
         public void Setup()
         {
             _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
             Directory.CreateDirectory(_testDir);
             _outputDir = Path.Combine(_testDir, "output");
             Directory.CreateDirectory(_outputDir);
+
             _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
-            _aiSummarizerMock = new Mock<AISummarizer>(MockBehavior.Loose, Mock.Of<ILogger<AISummarizer>>());
-            _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(MockBehavior.Loose, Mock.Of<ILogger<VideoNoteProcessor>>(), _aiSummarizerMock.Object);
-            _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(_loggerMock.Object, _videoNoteProcessorMock.Object, null);
+
+            // Create a proper TestableAISummarizer that can be used for testing
+            var testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());
+
+            // Create mocks with proper logger and test summarizer
+            _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(MockBehavior.Loose, Mock.Of<ILogger<VideoNoteProcessor>>(), testAISummarizer);
+
+            _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(_loggerMock.Object, _videoNoteProcessorMock.Object, testAISummarizer);
             _processor = new VideoNoteBatchProcessor(_batchProcessor);
         }
 
