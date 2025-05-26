@@ -31,17 +31,11 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
     /// </para>
     /// </remarks>
     public class VideoNoteProcessor : DocumentNoteProcessorBase
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger and AI summarizer.
-        /// </summary>
-        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
-        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a typed logger and AI summarizer.
-        /// </summary>
-        /// <param name="logger">The typed logger to use for diagnostic and error reporting.</param>
-        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
+    {        /// <summary>
+             /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger and AI summarizer.
+             /// </summary>
+             /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+             /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
         public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer) : base(logger, aiSummarizer) { }
 
         /// <summary>
@@ -57,14 +51,12 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <item><description>Basic file properties (name, path, size, creation date, modification date)</description></item>
         /// <item><description>Video-specific properties (duration, resolution, codec)</description></item>
         /// <item><description>Content identification (title derived from filename)</description></item>
-        /// </list>
-        /// <para>
+        /// </list>        /// <para>
         /// The metadata extraction leverages Xabe.FFmpeg for detailed video information. If the FFmpeg analysis fails,
         /// the method will still return basic file information and log a warning rather than failing completely.
         /// </para>
         /// </remarks>
         public async Task<Dictionary<string, object>> ExtractMetadataAsync(string videoPath)
-        /// <inheritdoc/>
         {
             var metadata = new Dictionary<string, object>
             {
@@ -154,44 +146,88 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <list type="bullet">
         /// <item><description>YAML frontmatter with all extracted metadata</description></item>
         /// <item><description>The summary as the main content body</description></item>
-        /// <item><description>A consistent structure with appropriate headers</description></item>
-        /// </list>
-        /// <para>
+        /// <item><description>A consistent structure with appropriate headers</description></item>        /// </list>        /// <para>
         /// The note is generated using the <see cref="MarkdownNoteBuilder"/> utility and follows
         /// the structure expected by Obsidian or similar markdown-based knowledge management systems.
         /// </para>
         /// </remarks>
-        public string GenerateMarkdownNote(string summary, Dictionary<string, object> metadata)
+        public override string GenerateMarkdownNote(string bodyText, Dictionary<string, object>? metadata = null, string noteType = "Document Note")
         {
-            metadata["summary"] = summary;
-            // Use base implementation for consistent formatting
-            return base.GenerateMarkdownNote(summary, metadata, "Video Note");
-        }
+            // For video notes, we need special handling to extract and merge frontmatter
+            var yamlHelper = new YamlHelper(Logger);
 
-        /// <summary>
-        /// Attempts to load a transcript file for the given video.
-        /// </summary>
-        /// <param name="videoPath">Path to the video file.</param>
-        /// <returns>The transcript text if found, otherwise null.</returns>        /// <remarks>
-        /// <para>
-        /// This method searches for transcript files that match the video filename using a sophisticated
-        /// prioritized search strategy. It looks for transcript files in multiple locations and formats,
-        /// similar to the Python implementation.
-        /// </para>
-        /// <para>
-        /// The search follows this priority order:
-        /// </para>
-        /// <list type="number">
-        /// <item><description>Language-specific transcripts in same directory (e.g., video.en.txt, video.zh-cn.txt)</description></item>
-        /// <item><description>Generic transcript in same directory (video.txt, video.md)</description></item>
-        /// <item><description>Language-specific transcripts in Transcripts subdirectory</description></item>
-        /// <item><description>Generic transcript in Transcripts subdirectory</description></item>
-        /// </list>
-        /// <para>
-        /// The method also handles name normalization by checking alternative spellings with hyphens
-        /// replaced by underscores and vice versa.
-        /// </para>
-        /// </remarks>
+            // Use default metadata if none provided
+            metadata = metadata ?? new Dictionary<string, object>();
+
+            // Debug: Log the original summary
+            Logger.LogInformation("VideoNoteProcessor.GenerateMarkdownNote called - Original AI summary (first 200 chars): {Summary}",
+                bodyText.Length > 200 ? bodyText.Substring(0, 200) + "..." : bodyText);
+
+            // Extract any existing frontmatter from the AI summary
+            string? summaryFrontmatter = yamlHelper.ExtractFrontmatter(bodyText);
+            Dictionary<string, object> summaryMetadata = new();
+
+            if (!string.IsNullOrWhiteSpace(summaryFrontmatter))
+            {
+                summaryMetadata = yamlHelper.ParseYamlToDictionary(summaryFrontmatter);
+                Logger.LogInformation("Extracted frontmatter from AI summary with {Count} fields", summaryMetadata.Count);
+            }
+            else
+            {
+                Logger.LogInformation("No frontmatter found in AI summary");
+            }
+            // Remove frontmatter from the summary content using YamlHelper
+            string cleanSummary = yamlHelper.RemoveFrontmatter(bodyText);
+
+            // Debug: Log the cleaned summary
+            Logger.LogInformation("Cleaned summary (first 200 chars): {CleanSummary}",
+                cleanSummary.Length > 200 ? cleanSummary.Substring(0, 200) + "..." : cleanSummary);
+
+            // Merge metadata: video metadata takes precedence, but preserve AI tags if they exist
+            var mergedMetadata = new Dictionary<string, object>(metadata);
+
+            // If AI summary has tags and video metadata doesn't, use AI tags
+            if (summaryMetadata.ContainsKey("tags") && !mergedMetadata.ContainsKey("tags"))
+            {
+                mergedMetadata["tags"] = summaryMetadata["tags"];
+            }
+
+            // Merge other non-conflicting AI metadata
+            foreach (var kvp in summaryMetadata)
+            {
+                if (kvp.Key != "tags" && !mergedMetadata.ContainsKey(kvp.Key))
+                {
+                    mergedMetadata[kvp.Key] = kvp.Value;
+                }
+            }
+
+            // Use base implementation with cleaned summary and merged metadata
+            return base.GenerateMarkdownNote(cleanSummary, mergedMetadata, noteType);
+        }/// <summary>
+         /// Attempts to load a transcript file for the given video.
+         /// </summary>
+         /// <param name="videoPath">Path to the video file.</param>
+         /// <returns>The transcript text if found, otherwise null.</returns>
+         /// <remarks>
+         /// <para>
+         /// This method searches for transcript files that match the video filename using a sophisticated
+         /// prioritized search strategy. It looks for transcript files in multiple locations and formats,
+         /// similar to the Python implementation.
+         /// </para>
+         /// <para>
+         /// The search follows this priority order:
+         /// </para>
+         /// <list type="number">
+         /// <item><description>Language-specific transcripts in same directory (e.g., video.en.txt, video.zh-cn.txt)</description></item>
+         /// <item><description>Generic transcript in same directory (video.txt, video.md)</description></item>
+         /// <item><description>Language-specific transcripts in Transcripts subdirectory</description></item>
+         /// <item><description>Generic transcript in Transcripts subdirectory</description></item>
+         /// </list>
+         /// <para>
+         /// The method also handles name normalization by checking alternative spellings with hyphens
+         /// replaced by underscores and vice versa.
+         /// </para>
+         /// </remarks>
         public string? TryLoadTranscript(string videoPath)
         {
             if (string.IsNullOrEmpty(videoPath))
@@ -418,7 +454,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             {
                 aiSummary = await GenerateAiSummaryAsync(summaryInput);
             }
-            return GenerateMarkdownNote(aiSummary, metadata);
+            return GenerateMarkdownNote(aiSummary, metadata, "Video Note");
         }
 
         /// <inheritdoc/>

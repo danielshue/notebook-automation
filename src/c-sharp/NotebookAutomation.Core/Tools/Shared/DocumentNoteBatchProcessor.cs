@@ -158,26 +158,27 @@ namespace NotebookAutomation.Core.Tools.Shared
 
             foreach (var filePath in files)
             {
-                var fileStopwatch = Stopwatch.StartNew();
-                try
+                var fileStopwatch = Stopwatch.StartNew(); try
                 {
                     _logger.LogInformation("Processing file: {FilePath}", filePath);
                     string outputDir = effectiveOutput ?? "Generated";
                     Directory.CreateDirectory(outputDir);
-                    string outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(filePath) + ".md");
+
+                    // Determine effective resources root first
+                    string? effectiveResourcesRoot = resourcesRoot;
+                    if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig != null)
+                    {
+                        effectiveResourcesRoot = appConfig.Paths?.ResourcesRoot;
+                    }
+
+                    // Generate output path based on processor type and directory structure
+                    string outputPath = GenerateOutputPath(filePath, outputDir, effectiveResourcesRoot);
 
                     // If not forceOverwrite and file exists, skip
                     if (!forceOverwrite && File.Exists(outputPath))
                     {
                         _logger.LogWarning("Output file exists and --force not set, skipping: {OutputPath}", outputPath);
                         continue;
-                    }
-
-                    // Determine effective resources root
-                    string? effectiveResourcesRoot = resourcesRoot;
-                    if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig != null)
-                    {
-                        effectiveResourcesRoot = appConfig.Paths?.ResourcesRoot;
                     }
 
                     // Extraction and note generation
@@ -216,9 +217,13 @@ namespace NotebookAutomation.Core.Tools.Shared
                     summaryStopwatch.Stop();
                     totalSummaryTime += summaryStopwatch.Elapsed;
                     totalTokens += summaryTokens;
-                    _logger.LogInformation("Summary for file: {FilePath} took {ElapsedMs} ms, tokens: {Tokens}", filePath, summaryStopwatch.ElapsedMilliseconds, summaryTokens);
+                    _logger.LogInformation("Summary for file: {FilePath} took {ElapsedMs} ms, tokens: {Tokens}", filePath, summaryStopwatch.ElapsedMilliseconds, summaryTokens); string markdown = _processor.GenerateMarkdownNote(summaryText, metadata, noteType);
 
-                    string markdown = _processor.GenerateMarkdownNote(summaryText, metadata, noteType);
+                    // For video files, handle content preservation after "## Notes"
+                    if (typeof(TProcessor).Name.Contains("Video") && File.Exists(outputPath) && !forceOverwrite)
+                    {
+                        markdown = PreserveUserContentAfterNotes(outputPath, markdown);
+                    }
 
                     if (!dryRun)
                     {
@@ -311,6 +316,121 @@ namespace NotebookAutomation.Core.Tools.Shared
                 AverageSummaryTimeMs = avgSummaryTime,
                 AverageTokens = avgTokens
             };
+        }
+
+        /// <summary>
+        /// Generates the output path for a processed file, handling video-specific naming and directory structure.
+        /// </summary>
+        /// <param name="inputFilePath">The input file path.</param>
+        /// <param name="outputDir">The base output directory.</param>
+        /// <param name="resourcesRoot">The resources root directory for calculating relative paths.</param>
+        /// <returns>The output file path.</returns>
+        protected virtual string GenerateOutputPath(string inputFilePath, string outputDir, string? resourcesRoot)
+        {
+            // Check if this is a video processor by checking the processor type
+            bool isVideoProcessor = typeof(TProcessor).Name.Contains("Video");
+
+            if (isVideoProcessor)
+            {
+                // For video files, use -video.md suffix and preserve directory structure
+                string fileName = Path.GetFileNameWithoutExtension(inputFilePath) + "-video.md";
+
+                // If we have a resources root, preserve the directory structure
+                if (!string.IsNullOrWhiteSpace(resourcesRoot) && Path.IsPathRooted(resourcesRoot))
+                {
+                    try
+                    {
+                        // Calculate relative path from resources root
+                        var inputFileInfo = new FileInfo(inputFilePath);
+                        var resourcesRootInfo = new DirectoryInfo(resourcesRoot);
+
+                        // Get the relative path from resources root to the input file's directory
+                        string relativePath = Path.GetRelativePath(resourcesRootInfo.FullName, inputFileInfo.DirectoryName ?? "");
+
+                        // Create the output directory structure
+                        string targetDir = Path.Combine(outputDir, relativePath);
+                        Directory.CreateDirectory(targetDir);
+
+                        return Path.Combine(targetDir, fileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to calculate relative path from resources root {ResourcesRoot} to {InputFile}, using flat structure",
+                            resourcesRoot, inputFilePath);
+                        // Fall back to flat structure
+                        return Path.Combine(outputDir, fileName);
+                    }
+                }
+                else
+                {
+                    // No resources root specified, use flat structure with -video.md suffix
+                    return Path.Combine(outputDir, fileName);
+                }
+            }
+            else
+            {
+                // For non-video files, use standard .md suffix and flat structure
+                string fileName = Path.GetFileNameWithoutExtension(inputFilePath) + ".md";
+                return Path.Combine(outputDir, fileName);
+            }
+        }
+
+        /// <summary>
+        /// Preserves user content that appears after the "## Notes" section in existing video markdown files.
+        /// </summary>
+        /// <param name="existingFilePath">Path to the existing markdown file.</param>
+        /// <param name="newMarkdown">The newly generated markdown content.</param>
+        /// <returns>The new markdown with preserved user content appended.</returns>
+        protected virtual string PreserveUserContentAfterNotes(string existingFilePath, string newMarkdown)
+        {
+            try
+            {
+                if (!File.Exists(existingFilePath))
+                {
+                    return newMarkdown;
+                }
+
+                string existingContent = File.ReadAllText(existingFilePath);
+
+                // Find the "## Notes" section in the existing file
+                var notesRegex = new System.Text.RegularExpressions.Regex(
+                    @"^##\s+Notes\s*$",
+                    System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                var match = notesRegex.Match(existingContent);
+                if (match.Success)
+                {
+                    // Extract everything after the "## Notes" line
+                    int notesIndex = match.Index + match.Length;
+                    string userContent = existingContent.Substring(notesIndex).TrimStart('\r', '\n');
+
+                    if (!string.IsNullOrWhiteSpace(userContent))
+                    {
+                        // Find the "## Notes" section in the new markdown and append the user content
+                        var newNotesMatch = notesRegex.Match(newMarkdown);
+                        if (newNotesMatch.Success)
+                        {
+                            int newNotesIndex = newNotesMatch.Index + newNotesMatch.Length;
+                            string beforeNotes = newMarkdown.Substring(0, newNotesIndex);
+
+                            // Combine the new content up to ## Notes with the preserved user content
+                            return beforeNotes + "\n\n" + userContent;
+                        }
+                        else
+                        {
+                            // If somehow the new markdown doesn't have "## Notes", just append it
+                            return newMarkdown + "\n\n## Notes\n\n" + userContent;
+                        }
+                    }
+                }
+
+                return newMarkdown;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to preserve user content from existing file: {FilePath}", existingFilePath);
+                return newMarkdown;
+            }
         }
     }
 }
