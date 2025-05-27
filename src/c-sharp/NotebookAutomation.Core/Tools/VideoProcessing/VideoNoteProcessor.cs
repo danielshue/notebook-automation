@@ -97,12 +97,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     // Friendly title: remove numbers, underscores, file extension, and trim
                     { "title", FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileNameWithoutExtension(videoPath)) },
-                    { "source_file", videoPath },
                     { "generated", DateTime.UtcNow.ToString("u") },
                     { "file_name", Path.GetFileName(videoPath) },
-                    { "file_extension", Path.GetExtension(videoPath) },
-                    // Set onedrive_fullpath_file_reference to the file being processed
-                    { "onedrive_fullpath_file_reference", videoPath }
+                    { "file_extension", Path.GetExtension(videoPath) }
                 };
 
             // Extract module and lesson from directory structure (align with Python logic)
@@ -156,14 +153,10 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 clean = System.Text.RegularExpressions.Regex.Replace(clean, "\\s+", " ").Trim();
                 return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(clean);
             }
-
             try
             {
                 var fileInfo = new FileInfo(videoPath);
                 metadata["size_bytes"] = fileInfo.Exists ? fileInfo.Length : 0;
-                metadata["last_modified"] = fileInfo.Exists ? fileInfo.LastWriteTimeUtc.ToString("u") : "[Unknown]";
-                metadata["created"] = fileInfo.Exists ? fileInfo.CreationTimeUtc.ToString("u") : "[Unknown]";
-                metadata["directory"] = fileInfo.DirectoryName ?? string.Empty;
                 metadata["type"] = "video";
                 // Set date-created to file creation date if available
                 if (fileInfo.Exists)
@@ -175,28 +168,28 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             {
                 Logger.LogWarning(ex, "Failed to extract file system metadata for video: {Path}", videoPath);
             }
-
             try
             {
                 var mediaInfo = await Xabe.FFmpeg.FFmpeg.GetMediaInfo(videoPath);
                 var videoStream = mediaInfo.VideoStreams?.FirstOrDefault();
                 if (videoStream != null)
                 {
-                    metadata["duration"] = videoStream.Duration.ToString();
-                    metadata["resolution"] = $"{videoStream.Width}x{videoStream.Height}";
-                    metadata["codec"] = videoStream.Codec;
+                    // Map to prefixed field names
+                    metadata["video-duration"] = videoStream.Duration.ToString();
+                    metadata["video-resolution"] = $"{videoStream.Width}x{videoStream.Height}";
+                    metadata["video-codec"] = videoStream.Codec;
                 }
                 else
                 {
-                    metadata["duration"] = mediaInfo.Duration.ToString();
+                    metadata["video-duration"] = mediaInfo.Duration.ToString();
                 }
             }
             catch (Exception ex)
             {
                 Logger.LogWarning(ex, "Failed to extract real video metadata, using simulated values.");
-                metadata["duration"] = "[Simulated duration]";
-                metadata["resolution"] = "[Unknown]";
-                metadata["codec"] = "[Unknown]";
+                metadata["video-duration"] = "[Simulated duration]";
+                metadata["video-resolution"] = "[Unknown]";
+                metadata["video-codec"] = "[Unknown]";
             }
 
             return metadata;
@@ -296,30 +289,29 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     mergedMetadata[kvp.Key] = kvp.Value;
                 }
-            }
-
-            // Apply path-based hierarchy detection if source_file is available
-            if (mergedMetadata.TryGetValue("source_file", out var sourceFile) && _hierarchyDetector != null)
+            }            // Apply path-based hierarchy detection if file path is available
+            // Note: We temporarily add the path to metadata just for hierarchy detection
+            var pathForHierarchy = metadata.ContainsKey("_internal_path") ? metadata["_internal_path"].ToString() : null;
+            if (!string.IsNullOrEmpty(pathForHierarchy) && _hierarchyDetector != null)
             {
                 try
                 {
-                    var filePath = sourceFile.ToString();
-                    if (!string.IsNullOrEmpty(filePath))
-                    {
-                        Logger.LogDebug("Detecting hierarchy information from path: {FilePath}", filePath);
-                        var hierarchyInfo = _hierarchyDetector!.FindHierarchyInfo(filePath);
+                    Logger.LogDebug("Detecting hierarchy information from path: {FilePath}", pathForHierarchy);
+                    var hierarchyInfo = _hierarchyDetector!.FindHierarchyInfo(pathForHierarchy);
 
-                        // Update metadata with detected hierarchy information
-                        mergedMetadata = _hierarchyDetector!.UpdateMetadataWithHierarchy(mergedMetadata, hierarchyInfo);
-                        Logger.LogInformation("Added hierarchy metadata - Program: {Program}, Course: {Course}, Class: {Class}",
-                            hierarchyInfo["program"], hierarchyInfo["course"], hierarchyInfo["class"]);
-                    }
+                    // Update metadata with detected hierarchy information
+                    mergedMetadata = _hierarchyDetector!.UpdateMetadataWithHierarchy(mergedMetadata, hierarchyInfo);
+                    Logger.LogInformation("Added hierarchy metadata - Program: {Program}, Course: {Course}, Class: {Class}",
+                        hierarchyInfo["program"], hierarchyInfo["course"], hierarchyInfo["class"]);
                 }
                 catch (Exception ex)
                 {
                     Logger.LogWarning(ex, "Error detecting hierarchy information from path");
                 }
             }
+
+            // Remove internal path field as it's only used for hierarchy detection
+            mergedMetadata.Remove("_internal_path");
 
             // Apply template enhancements if template manager is available
             if (_templateManager != null)
@@ -333,37 +325,6 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 catch (Exception ex)
                 {
                     Logger.LogWarning(ex, "Error applying template metadata");
-                }
-            }
-
-            // Check if we have a share link in the metadata and add it to the note content
-            if (mergedMetadata.TryGetValue("share_link", out var shareLink) && shareLink != null)
-            {
-                string shareLinkString = shareLink.ToString() ?? string.Empty;
-                if (!string.IsNullOrWhiteSpace(shareLinkString))
-                {
-                    string videoFileName = string.Empty;
-                    if (mergedMetadata.TryGetValue("file_name", out var fileName))
-                    {
-                        videoFileName = fileName.ToString() ?? "Video";
-                    }
-                    else if (mergedMetadata.TryGetValue("title", out var title))
-                    {
-                        videoFileName = title.ToString() ?? "Video";
-                    }
-
-                    // Add share link section after the summary
-                    cleanSummary = string.Concat(
-                        cleanSummary,
-                        "\n\n## Share Link\n\n",
-                        $"[Watch {videoFileName} on OneDrive]({shareLinkString})\n"
-                    );
-
-                    // Add permalink in metadata for easy reference
-                    mergedMetadata["permalink"] = shareLinkString;
-                    mergedMetadata["onedrive-shared-link"] = shareLinkString;
-
-                    Logger.LogInformation("Added OneDrive share link to markdown body and metadata");
                 }
             }
 
@@ -599,27 +560,19 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             int? timeoutSeconds = null,
             string? resourcesRoot = null,
             bool noShareLinks = false)
-        {
-            // Extract metadata and transcript
-            var metadata = await ExtractMetadataAsync(videoPath);
-
-            // If resourcesRoot is provided, add it to metadata for downstream use
-            if (!string.IsNullOrWhiteSpace(resourcesRoot))
-            {
-                metadata["onedrive_fullpath_root"] = resourcesRoot;
-            }
-
-            // Generate share link if requested and OneDriveService is available
+        {            // Extract metadata and transcript
+            var metadata = await ExtractMetadataAsync(videoPath);            // Generate share link if requested and OneDriveService is available
+            // Note: Share link is not stored in metadata, only used for markdown content
+            string? shareLink = null;
             if (!noShareLinks && _oneDriveService != null)
             {
                 try
                 {
                     Logger.LogInformation("Generating OneDrive share link for: {VideoPath}", videoPath);
-                    string? shareLink = await _oneDriveService.CreateShareLinkAsync(videoPath);
+                    shareLink = await _oneDriveService.CreateShareLinkAsync(videoPath);
                     if (!string.IsNullOrEmpty(shareLink))
                     {
-                        metadata["share_link"] = shareLink;
-                        Logger.LogInformation("Added OneDrive share link to metadata");
+                        Logger.LogInformation("OneDrive share link generated successfully");
                     }
                     else
                     {
@@ -649,15 +602,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             string aiSummary = string.Empty;
             if (noSummary)
             {
-                // When no summary is requested, create minimal content with Note section
-                // Skip AI summarizer entirely to avoid API calls
+                // When no summary is requested, create minimal content with Note section                // Skip AI summarizer entirely to avoid API calls
                 aiSummary = "## Note\n\n";
-
-                // Add share link if available in metadata
-                if (metadata.TryGetValue("share_link", out var shareLink) && !string.IsNullOrEmpty(shareLink?.ToString()))
-                {
-                    aiSummary += $"[View Video]({shareLink})\n\n";
-                }
 
                 Logger.LogInformation("Skipping AI summary generation for video (noSummary=true): {VideoPath}", videoPath);
             }
@@ -666,9 +612,34 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 // Only call AI summarizer when summary is actually requested
                 Logger.LogInformation("Generating AI summary for video: {VideoPath}", videoPath);
                 aiSummary = await GenerateAiSummaryAsync(summaryInput);
+            }            // Add internal path for hierarchy detection (will be removed in GenerateMarkdownNote)
+            metadata["_internal_path"] = videoPath;
+
+            // Generate the basic markdown note
+            string markdownNote = GenerateMarkdownNote(aiSummary, metadata, "Video Note");
+
+            // Add OneDrive share link section to markdown content if share link was generated
+            if (!string.IsNullOrEmpty(shareLink))
+            {
+                // Find the position to insert the share link (after the summary but before ## Notes)
+                var notesPattern = "## Notes";
+                int notesIndex = markdownNote.IndexOf(notesPattern);
+
+                if (notesIndex != -1)
+                {
+                    // Insert share link section before ## Notes
+                    string shareSection = $"\n## References\n- [Video Recording]({shareLink})\n\n";
+                    markdownNote = markdownNote.Insert(notesIndex, shareSection);
+                }
+                else
+                {
+                    // If no ## Notes section found, append at the end
+                    string shareSection = $"\n\n## References\n- [Video Recording]({shareLink})\n\n## Notes\n";
+                    markdownNote += shareSection;
+                }
             }
 
-            return GenerateMarkdownNote(aiSummary, metadata, "Video Note");
+            return markdownNote;
         }
 
         /// <inheritdoc/>

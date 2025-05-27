@@ -76,14 +76,12 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
                 noSummary: true,
                 timeoutSeconds: null,
                 resourcesRoot: null,
-                noShareLinks: true);
-
-            // Assert
+                noShareLinks: true);            // Assert
             Assert.IsNotNull(markdown);
             Assert.IsTrue(markdown.Contains("## Note")); // Should contain the minimal Note section
             Assert.IsTrue(markdown.Contains("title: Test Video")); // Should have frontmatter
             Assert.IsTrue(markdown.StartsWith("---")); // Should start with frontmatter
-            Assert.IsTrue(markdown.Contains("source_file:")); // Should have metadata
+            Assert.IsTrue(markdown.Contains("file_name:")); // Should have metadata
         }
 
         /// <summary>
