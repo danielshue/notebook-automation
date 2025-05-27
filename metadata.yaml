@@ -192,6 +192,8 @@ video-uploaded:
 
 ---
 template-type: pdf-reference
+
+# auto-generated-state: writable | read-only
 auto-generated-state: writable
 template-description: Reference to a PDF file in OneDrive.
 title: PDF Title
