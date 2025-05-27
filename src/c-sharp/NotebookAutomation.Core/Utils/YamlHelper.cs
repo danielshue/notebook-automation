@@ -269,20 +269,18 @@ namespace NotebookAutomation.Core.Utils
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Updates frontmatter with new tags.
-        /// </summary>
-        /// <param name="frontmatter">The frontmatter dictionary to update.</param>
-        /// <param name="tags">The set of tags to set.</param>
-        /// <returns>The updated frontmatter.</returns>
+        }        /// <summary>
+                 /// Updates frontmatter with new tags.
+                 /// </summary>
+                 /// <param name="frontmatter">The frontmatter dictionary to update.</param>
+                 /// <param name="tags">The set of tags to set.</param>
+                 /// <returns>The updated frontmatter.</returns>
         public Dictionary<string, object> UpdateTags(Dictionary<string, object> frontmatter, HashSet<string> tags)
         {
             if (tags.Count > 0)
             {
-                var tagList = new List<string>(tags);
-                frontmatter["tags"] = tagList;
+                // Store tags as string array for YAML format consistency
+                frontmatter["tags"] = tags.ToArray();
             }
             else if (frontmatter.ContainsKey("tags"))
             {
