@@ -99,7 +99,7 @@ namespace NotebookAutomation.Core.Utils
             try
             {
                 var deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    // Use the default naming convention to preserve original key names
                     .Build();
 
                 return deserializer.Deserialize(yaml);
@@ -137,7 +137,7 @@ namespace NotebookAutomation.Core.Utils
                 }
 
                 var deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    // Use the default naming convention to preserve original key names
                     .IgnoreUnmatchedProperties()  // More forgiving parsing
                     .Build();
 
@@ -188,7 +188,7 @@ namespace NotebookAutomation.Core.Utils
             }
 
             var serializer = new SerializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                // Use the default naming convention to preserve original key names
                 .Build();
 
             var yamlString = serializer.Serialize(frontmatter);
@@ -212,7 +212,7 @@ namespace NotebookAutomation.Core.Utils
         public string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter)
         {
             var serializer = new SerializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                // Use the default naming convention to preserve original key names
                 .Build();
 
             var yamlString = serializer.Serialize(frontmatter);
@@ -354,7 +354,7 @@ namespace NotebookAutomation.Core.Utils
         public string SerializeYaml(Dictionary<string, object> data)
         {
             var serializer = new SerializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                // Use the default naming convention to preserve original key names
                 .DisableAliases()
                 .Build();
 

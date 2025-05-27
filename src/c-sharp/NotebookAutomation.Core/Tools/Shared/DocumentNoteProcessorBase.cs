@@ -59,11 +59,15 @@ namespace NotebookAutomation.Core.Tools.Shared
         /// <param name="metadata">Optional metadata for the note.</param>
         /// <param name="noteType">Type of note (e.g., "PDF Note", "Video Note").</param>
         /// <returns>The generated markdown content.</returns>
-        public virtual string GenerateMarkdownNote(string bodyText, Dictionary<string, object>? metadata = null, string noteType = "Document Note")
+        public virtual string GenerateMarkdownNote(string bodyText, Dictionary<string, object>? metadata = null, string noteType = "Document Note", bool suppressBody = false)
         {
             var frontmatter = metadata ?? new Dictionary<string, object> { { "title", $"Untitled {noteType}" } };
-            var markdownBody = $"# {noteType}\n\n{bodyText}";
             var builder = new MarkdownNoteBuilder(Logger);
+            if (suppressBody)
+            {
+                return builder.CreateMarkdownWithFrontmatter(frontmatter);
+            }
+            var markdownBody = $"# {noteType}\n\n{bodyText}";
             return builder.BuildNote(frontmatter, markdownBody);
         }
     }
