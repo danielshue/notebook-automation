@@ -15,20 +15,19 @@ namespace NotebookAutomation.Core.Utils
         /// <returns>A cleaned, human-friendly title string.</returns>
         public static string GetFriendlyTitleFromFileName(string fileName)
         {
-            if (string.IsNullOrWhiteSpace(fileName)) return "Video";
-
-            // Remove leading numbers and separators
-            string name = Regex.Replace(fileName, @"^[0-9]+([_\-\s]+)", "", RegexOptions.IgnoreCase);
+            if (string.IsNullOrWhiteSpace(fileName)) return "Title";            // Remove leading numbers and separators (handle multiple consecutive patterns)
+            string name = fileName;
+            while (Regex.IsMatch(name, @"^[0-9]+([_\-\s]+)", RegexOptions.IgnoreCase))
+            {
+                name = Regex.Replace(name, @"^[0-9]+([_\-\s]+)", "", RegexOptions.IgnoreCase);
+            }
 
             // Replace dashes/underscores with spaces
-            name = Regex.Replace(name, "[_\\-]+", " ");
-
-            // Remove common structural words and numbers
+            name = Regex.Replace(name, "[_\\-]+", " ");            // Remove common structural words
             string[] wordsToRemove = {
                 @"\blesson\b", @"\blessons\b", @"\bmodule\b", @"\bmodules\b",
                 @"\bcourse\b", @"\bcourses\b",
-                @"\band\b", @"\bto\b", @"\bof\b",
-                @"\b\d+\s*\d*\b"
+                @"\band\b", @"\bto\b", @"\bof\b"
             };
             string pattern = string.Join("|", wordsToRemove);
             name = Regex.Replace(name, pattern, " ", RegexOptions.IgnoreCase);
