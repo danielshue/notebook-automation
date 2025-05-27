@@ -11,6 +11,7 @@ using NotebookAutomation.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NotebookAutomation.Core.Tests.Tools
@@ -281,9 +282,8 @@ video-uploaded:";
         public async Task GenerateVideoNoteAsync_WithMockedShareLink_AddsReferencesSection()
         {
             // Arrange
-            string testShareLink = "https://onedrive.live.com/view.aspx?test=example";
-            _oneDriveServiceMock
-                .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>()))
+            string testShareLink = "https://onedrive.live.com/view.aspx?test=example";            _oneDriveServiceMock
+                .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testShareLink);
 
             var processor = new VideoNoteProcessor(
@@ -325,18 +325,14 @@ video-uploaded:";
                 Assert.IsFalse(frontmatter.Contains("share_link"), "Should not contain share_link field in metadata");
             }
         }
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Minimal test double for AISummarizer for use in VideoNoteProcessor tests.
     /// </summary>
-    private class TestAISummarizer : AISummarizer
-    {
-        public TestAISummarizer() : base(null, null, null, null) { }
+    internal class TestAISummarizer : AISummarizer
+    {        public TestAISummarizer() : base(null, null, null, null) { }
         public override Task<string> SummarizeAsync(string inputText, string prompt = null, string promptFileName = null, System.Threading.CancellationToken cancellationToken = default)
         {
             return Task.FromResult("This is an AI summary of the video content.");
         }
     }
-}
 }
