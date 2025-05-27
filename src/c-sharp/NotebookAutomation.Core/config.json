@@ -1,11 +1,24 @@
 {
   "paths": {
-    "resources_root": "c:/Users/danshue.REDMOND/OneDrive/Education/MBA-Resources",
-    "notebook_vault_root": "c:/Users/danshue.REDMOND/MBA/01_Projects/MBA",
-    "metadata_file": "d:/repos/mba-notebook-automation/metadata.yaml",
-    "obsidian_vault_root": "c:/Users/danshue.REDMOND/MBA/",
+    "onedrive_fullpath_root": "c:/Users/danshue.REDMOND/OneDrive",
+    "notebook_vault_fullpath_root": "c:/users/danshue.REDMOND/Vault/01_Projects/MBA/",
+    "metadata_file": "d:/source/notebook-automation-csharp-migration/metadata.yaml",
     "onedrive_resources_basepath": "/Education/MBA-Resources",
-    "logging_dir": "d:/repos/mba-notebook-automation/logs"
+    "logging_dir": "d:/source/notebook-automation-csharp-migration/logs",
+    "prompts_path": "d:/source/notebook-automation-csharp-migration/prompts"
+  },
+  "microsoft_graph": {
+    "client_id": "489ad055-e4b0-4898-af27-53506ce83db7",
+    "api_endpoint": "https://graph.microsoft.com/v1.0",
+    "authority": "https://login.microsoftonline.com/common",
+    "scopes": [
+      "Files.ReadWrite.All",
+      "Sites.Read.All"
+    ]
+  },
+  "aiservice": {
+    "model": "gpt-4.1",
+    "endpoint": "https://api.openai.com/v1/chat/completions"
   },
   "video_extensions": [
     ".mp4",
@@ -17,20 +30,5 @@
     ".mpg",
     ".mpeg",
     ".m4v"
-  ],
-  "microsoft_graph": {
-    "client_id": "489ad055-e4b0-4898-af27-53506ce83db7",
-    "api_endpoint": "https://graph.microsoft.com/v1.0",
-    "authority": "https://login.microsoftonline.com/common",
-    "scopes": [
-      "Files.ReadWrite.All",
-      "Sites.Read.All"
-    ]
-  },  "openai": {
-    "model": "gpt-4.1",
-    "endpoint": "https://api.openai.com/v1/chat/completions",
-    "ModelId": "gpt-4.1",
-    "ChatModelId": "gpt-4.1",
-    "EmbeddingModelId": "gpt-4.1"
-  }
+  ]
 }

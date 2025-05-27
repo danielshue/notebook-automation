@@ -31,7 +31,7 @@ Your output structure must exactly follow this format:
 
 ---
 
-# 📝 Notes
+# {{title}}
 
 ## 🧠 Summary
 
