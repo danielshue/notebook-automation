@@ -8,6 +8,7 @@ using NotebookAutomation.Core.Tools.VideoProcessing;
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
@@ -59,10 +60,8 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
         public async Task GenerateVideoNoteAsync_WithShareLink_AddsShareLinkToMarkdownContentNotMetadata()
         {
             // Arrange
-            string shareLink = "https://onedrive.live.com/view.aspx?cid=test123&page=view&resid=test456&parid=test789";
-
-            _oneDriveServiceMock
-                .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>()))
+            string shareLink = "https://onedrive.live.com/view.aspx?cid=test123&page=view&resid=test456&parid=test789";            _oneDriveServiceMock
+                .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(shareLink);
 
             var processor = new VideoNoteProcessor(
@@ -134,18 +133,15 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
 
             // Verify no References section when share links are disabled
             Assert.IsFalse(markdown.Contains("## References"), "Should not contain References section when noShareLinks=true");
-            Assert.IsFalse(markdown.Contains("[Video Recording]"), "Should not contain video recording link when noShareLinks=true");
-
-            // Verify OneDriveService was not called
-            _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>()), Times.Never);
+            Assert.IsFalse(markdown.Contains("[Video Recording]"), "Should not contain video recording link when noShareLinks=true");            // Verify OneDriveService was not called
+            _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [TestMethod]
         public async Task GenerateVideoNoteAsync_WithFailedShareLink_DoesNotContainReferencesSection()
-        {
-            // Arrange
+        {            // Arrange
             _oneDriveServiceMock
-                .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>()))
+                .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((string)null); // Simulate failed share link generation
 
             var processor = new VideoNoteProcessor(
@@ -173,10 +169,8 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
 
             // Verify no References section when share link generation fails
             Assert.IsFalse(markdown.Contains("## References"), "Should not contain References section when share link generation fails");
-            Assert.IsFalse(markdown.Contains("[Video Recording]"), "Should not contain video recording link when share link generation fails");
-
-            // Verify OneDriveService was called but failed
-            _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>()), Times.Once);
+            Assert.IsFalse(markdown.Contains("[Video Recording]"), "Should not contain video recording link when share link generation fails");            // Verify OneDriveService was called but failed
+            _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }
