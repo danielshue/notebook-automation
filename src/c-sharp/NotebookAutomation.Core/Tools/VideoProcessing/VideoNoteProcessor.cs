@@ -650,6 +650,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             if (noSummary)
             {
                 // When no summary is requested, create minimal content with Note section
+                // Skip AI summarizer entirely to avoid API calls
                 aiSummary = "## Note\n\n";
 
                 // Add share link if available in metadata
@@ -657,9 +658,13 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     aiSummary += $"[View Video]({shareLink})\n\n";
                 }
+
+                Logger.LogInformation("Skipping AI summary generation for video (noSummary=true): {VideoPath}", videoPath);
             }
             else
             {
+                // Only call AI summarizer when summary is actually requested
+                Logger.LogInformation("Generating AI summary for video: {VideoPath}", videoPath);
                 aiSummary = await GenerateAiSummaryAsync(summaryInput);
             }
 

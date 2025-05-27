@@ -271,7 +271,18 @@ namespace NotebookAutomation.Core.Tools.Shared
                     summaryStopwatch.Stop();
                     totalSummaryTime += summaryStopwatch.Elapsed;
                     totalTokens += summaryTokens;
-                    _logger.LogInformation("Summary for file: {FilePath} took {ElapsedMs} ms, tokens: {Tokens}", filePath, summaryStopwatch.ElapsedMilliseconds, summaryTokens);
+                    _logger.LogInformation("Summary for file: {FilePath} took {ElapsedMs} ms, tokens: {Tokens}", filePath, summaryStopwatch.ElapsedMilliseconds, summaryTokens);                    // Check if existing file has readonly auto-generated-state
+                    bool isReadOnly = false;
+                    if (File.Exists(outputPath))
+                    {
+                        var yamlHelper = new Utils.YamlHelper(_logger);
+                        isReadOnly = yamlHelper.IsFileReadOnly(outputPath);
+                        if (isReadOnly)
+                        {
+                            _logger.LogInformation("Skipping file modification due to readonly auto-generated-state: {OutputPath}", outputPath);
+                            continue; // Skip to next file
+                        }
+                    }
 
                     // For video files, handle content preservation after "## Notes"
                     if (typeof(TProcessor).Name.Contains("Video") && File.Exists(outputPath) && !forceOverwrite)
