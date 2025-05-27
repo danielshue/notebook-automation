@@ -39,18 +39,17 @@ namespace NotebookAutomation.Core.Services
             _promptService = promptService;
             _semanticKernel = semanticKernel;
             _textGenService = textGenerationService;
-        }
-
-        /// <summary>
-        /// Generates a summary for the given text using the best available AI framework.
-        /// Text will be chunked if it exceeds token limits.
-        /// </summary>
-        /// <param name="inputText">The text to summarize.</param>
-        /// <param name="prompt">Optional prompt to guide the summary.</param>
-        /// <param name="promptFileName">Optional prompt template name (e.g., "chunk_summary_prompt") without extension.</param>
-        /// <param name="cancellationToken">Optional cancellation token.</param>
-        /// <returns>The summary text, or null if failed.</returns>
-        public virtual async Task<string?> SummarizeAsync(string inputText, string? prompt = null, string? promptFileName = null, CancellationToken cancellationToken = default)
+        }        /// <summary>
+                 /// Generates a summary for the given text using the best available AI framework.
+                 /// Text will be chunked if it exceeds token limits.
+                 /// </summary>
+                 /// <param name="inputText">The text to summarize.</param>
+                 /// <param name="prompt">Optional prompt to guide the summary.</param>
+                 /// <param name="promptFileName">Optional prompt template name (e.g., "chunk_summary_prompt") without extension.</param>
+                 /// <param name="cancellationToken">Optional cancellation token.</param>
+                 /// <returns>The summary text, or null if failed.</returns>
+        [Obsolete("Use SummarizeTextAsync or SummarizeWithVariablesAsync instead")]
+        internal virtual async Task<string?> SummarizeAsync(string inputText, string? prompt = null, string? promptFileName = null, CancellationToken cancellationToken = default)
         {
             if (_semanticKernel == null && _textGenService == null)
             {
@@ -107,7 +106,54 @@ namespace NotebookAutomation.Core.Services
                 // If Semantic Kernel fails, fall back to text generation service if available
                 return null;
             }
+        }        /// <summary>
+                 /// Public method for summarizing text without template variables.
+                 /// </summary>
+                 /// <param name="inputText">The text to summarize.</param>
+                 /// <param name="prompt">Optional prompt to guide the summary.</param>
+                 /// <param name="promptFileName">Optional prompt template name.</param>
+                 /// <param name="cancellationToken">Optional cancellation token.</param>
+                 /// <returns>The summary text, or null if failed.</returns>
+        public virtual async Task<string?> SummarizeTextAsync(string inputText, string? prompt = null, string? promptFileName = null, CancellationToken cancellationToken = default)
+        {
+            // Forward to the internal implementation
+#pragma warning disable CS0618 // Suppress obsolete warning since this is our wrapper
+            return await SummarizeAsync(inputText, prompt, promptFileName, cancellationToken);
+#pragma warning restore CS0618
+        }/// <summary>
+         /// Generates a summary for the given text using the best available AI framework, with variable substitution.
+         /// Text will be chunked if it exceeds token limits.
+         /// </summary>
+         /// <param name="inputText">The text to summarize.</param>
+         /// <param name="variables">Dictionary of variables to substitute in the prompt template.</param>
+         /// <param name="promptFileName">Optional prompt template name (e.g., "chunk_summary_prompt") without extension.</param>
+         /// <param name="cancellationToken">Optional cancellation token.</param>
+         /// <returns>The summary text, or null if failed.</returns>
+        public virtual async Task<string?> SummarizeWithVariablesAsync(string inputText, Dictionary<string, string>? variables = null, string? promptFileName = null, CancellationToken cancellationToken = default)
+        {            // If no promptFileName is provided, use final_summary_prompt.md as default
+            string effectivePromptFileName = promptFileName ?? "final_summary_prompt";
+            if (string.IsNullOrEmpty(promptFileName))
+            {
+                _logger?.LogDebug("No promptFileName provided. Using default: final_summary_prompt.md");
+            }
+
+            string? prompt = null;
+            if (_promptService != null)
+            {
+                // Load the prompt template and substitute variables
+                prompt = await _promptService.LoadTemplateAsync(effectivePromptFileName);
+                if (variables != null && variables.Count > 0 && !string.IsNullOrEmpty(prompt))
+                {
+                    prompt = _promptService.SubstituteVariables(prompt, variables);
+                    _logger?.LogDebug("Substituted variables in prompt template");
+                }
+            }
+
+#pragma warning disable CS0618 // Suppress obsolete warning since this is our wrapper
+            return await SummarizeAsync(inputText, prompt, null, cancellationToken);
+#pragma warning restore CS0618
         }
+
         /// <summary>
         /// Summarizes text using chunking to handle large inputs that exceed token limits.
         /// </summary>

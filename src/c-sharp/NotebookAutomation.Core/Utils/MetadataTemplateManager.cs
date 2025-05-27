@@ -1,9 +1,5 @@
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace NotebookAutomation.Core.Utils
@@ -218,10 +214,8 @@ namespace NotebookAutomation.Core.Utils
                     switch (key)
                     {
                         case "video-size":
-                            if (enhancedMetadata.TryGetValue("size_bytes", out var sizeBytesObj) && long.TryParse(sizeBytesObj?.ToString(), out var sizeBytes))
-                                enhancedMetadata["video-size"] = $"{(sizeBytes / (1024.0 * 1024.0)):0.##} MB";
-                            else
-                                enhancedMetadata["video-size"] = template[key]?.ToString() ?? string.Empty;
+                            // Since size_bytes field has been removed, set video-size to empty or template default
+                            enhancedMetadata["video-size"] = template[key]?.ToString() ?? string.Empty;
                             break;
                         case "status":
                             // Use template default, or set based on note type
@@ -271,13 +265,10 @@ namespace NotebookAutomation.Core.Utils
                             break;
                     }
                 }
-            }            // For onedrive-shared-link, set to share_link if not present
-            if ((!enhancedMetadata.TryGetValue("onedrive-shared-link", out var onedriveLink) || string.IsNullOrEmpty(onedriveLink?.ToString())) &&
-                enhancedMetadata.TryGetValue("share_link", out var shareLinkVal) && !string.IsNullOrEmpty(shareLinkVal?.ToString()))
-            {
-                // Ensure no null assignment; always assign a non-null value
-                enhancedMetadata["onedrive-shared-link"] = shareLinkVal?.ToString() ?? string.Empty;
             }
+
+            // Remove share_link from metadata as it's no longer needed
+            enhancedMetadata.Remove("share_link");
 
             // Ensure 'type' field matches templateType if required by tests
             // Only for known reference types (video-reference, pdf-reference, etc.)

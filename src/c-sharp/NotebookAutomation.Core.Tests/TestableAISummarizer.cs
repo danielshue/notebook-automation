@@ -42,20 +42,35 @@ namespace NotebookAutomation.Core.Tests
         public void SetupSummarizeAsyncResult(string result)
         {
             _summarizeAsyncResult = result;
+        }        /// <summary>
+                 /// Override the SummarizeTextAsync method to return the predefined result in tests.
+                 /// </summary>
+                 /// <param name="content">The content to summarize (ignored in test)</param>
+                 /// <param name="prompt">Optional prompt to guide the summary generation</param>
+                 /// <param name="promptFileName">Optional prompt file name</param>
+                 /// <param name="cancellationToken">Cancellation token</param>
+                 /// <returns>The predefined summary result</returns>
+        public override Task<string?> SummarizeTextAsync(
+            string content,
+            string? prompt = null,
+            string? promptFileName = null,
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<string?>(_summarizeAsyncResult);
         }
 
         /// <summary>
-        /// Override the SummarizeAsync method to return the predefined result in tests.
+        /// Override the SummarizeWithVariablesAsync method to return the predefined result in tests.
         /// </summary>
-        /// <param name="content">The content to summarize (ignored in test)</param>
-        /// <param name="templateName">The name of the template to use (ignored in test)</param>
-        /// <param name="promptVariables">Variables to substitute in the template (ignored in test)</param>
+        /// <param name="inputText">The text to summarize (ignored in test)</param>
+        /// <param name="variables">Optional variables to substitute in the prompt template</param>
+        /// <param name="promptFileName">Optional prompt file name</param>
         /// <param name="cancellationToken">Cancellation token</param>
         /// <returns>The predefined summary result</returns>
-        public override Task<string?> SummarizeAsync(
-            string content,
-            string? templateName = "chunk_summary_prompt",
-            string? promptVariables = null,
+        public override Task<string?> SummarizeWithVariablesAsync(
+            string inputText,
+            System.Collections.Generic.Dictionary<string, string>? variables = null,
+            string? promptFileName = null,
             CancellationToken cancellationToken = default)
         {
             return Task.FromResult<string?>(_summarizeAsyncResult);

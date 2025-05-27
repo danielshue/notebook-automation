@@ -3,6 +3,7 @@ using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.PdfProcessing
 {
@@ -43,22 +44,23 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
                         foreach (Page page in document.GetPages())
                         {
                             sb.AppendLine(page.Text);
-                        }
-                        // Collect metadata after reading pages
+                        }                        // Collect metadata after reading pages
                         metadata["page_count"] = document.NumberOfPages;
-                        metadata["file_name"] = Path.GetFileName(pdfPath);
-                        metadata["source_file"] = pdfPath;
-                        metadata["generated"] = DateTime.UtcNow.ToString("u");
+                        // "generated" field removed as requested
                         var info = document.Information;
                         if (!string.IsNullOrWhiteSpace(info?.Title))
                             metadata["title"] = info.Title;
                         if (!string.IsNullOrWhiteSpace(info?.Author))
-                            metadata["author"] = info.Author;
+                            metadata["authors"] = new string[] { info.Author }; // Using authors (string array) as requested
                         if (!string.IsNullOrWhiteSpace(info?.Subject))
-                            metadata["subject"] = info.Subject;
-                        if (!string.IsNullOrWhiteSpace(info?.Keywords))
+                            metadata["subject"] = info.Subject; if (!string.IsNullOrWhiteSpace(info?.Keywords))
                             metadata["keywords"] = info.Keywords;
                     }
+
+                    // Extract module and lesson information
+                    var courseStructureExtractor = new CourseStructureExtractor(Logger);
+                    courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);
+
                     return sb.ToString();
                 });
                 Logger.LogInformation("Extracted text and metadata from PDF: {PdfPath}", pdfPath);

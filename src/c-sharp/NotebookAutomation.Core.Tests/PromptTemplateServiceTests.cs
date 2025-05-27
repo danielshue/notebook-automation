@@ -134,7 +134,7 @@ namespace NotebookAutomation.Core.Tests
 - {{topic2}}
 - {{topic3}}
 
-## 🔑 Key Concepts Explained by {{instructor}}
+## 🔑 Key Concepts Explained by {{authors}}
 
 {{conceptParagraph}}
 
@@ -150,7 +150,7 @@ namespace NotebookAutomation.Core.Tests
                 { "topic1", "Market Risk Analysis" },
                 { "topic2", "Credit Risk Models" },
                 { "topic3", "Operational Risk Management" },
-                { "instructor", "Prof. Smith" },
+                { "authors", "Prof. Smith" },
                 { "conceptParagraph", "Risk assessment is fundamental to financial decision-making." },
                 { "takeaway1", "Always quantify risks where possible" },
                 { "takeaway2", "Risk management should be integrated across the organization" }
