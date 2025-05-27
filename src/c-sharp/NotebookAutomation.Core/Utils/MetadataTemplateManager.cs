@@ -75,6 +75,16 @@ namespace NotebookAutomation.Core.Utils
                     {
                         var template = _yamlHelper.ParseYamlToDictionary(document);
 
+                        // Normalize tags to string arrays if present
+                        if (template.ContainsKey("tags") && template["tags"] is System.Collections.IEnumerable enumerable && !(template["tags"] is string))
+                        {
+                            var tagArray = enumerable.Cast<object>()
+                                .Select(tag => tag?.ToString() ?? string.Empty)
+                                .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                                .ToArray();
+                            template["tags"] = tagArray;
+                        }
+
                         if (template.Count > 0 && template.ContainsKey("template-type"))
                         {
                             string templateType = template["template-type"].ToString() ?? string.Empty;
@@ -239,8 +249,20 @@ namespace NotebookAutomation.Core.Utils
                             }
                             else if (templateValue != null)
                             {
-                                // Preserve complex types (arrays, objects) as-is
-                                enhancedMetadata[key] = templateValue;
+                                // Special handling for tags - convert to string array
+                                if (key == "tags" && templateValue is System.Collections.IEnumerable enumerable && !(templateValue is string))
+                                {
+                                    var tagArray = enumerable.Cast<object>()
+                                        .Select(tag => tag?.ToString() ?? string.Empty)
+                                        .Where(tag => !string.IsNullOrWhiteSpace(tag))
+                                        .ToArray();
+                                    enhancedMetadata[key] = tagArray;
+                                }
+                                else
+                                {
+                                    // Preserve other complex types as-is
+                                    enhancedMetadata[key] = templateValue;
+                                }
                             }
                             else
                             {

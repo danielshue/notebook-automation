@@ -152,25 +152,13 @@ date-created: 2025-04-19";
             var tagsObj = enhanced["tags"];
             Assert.IsNotNull(tagsObj);
 
-            // Convert to array if it's a List
-            object[] tags;
-            if (tagsObj is System.Collections.Generic.List<object> tagsList)
-            {
-                tags = tagsList.ToArray();
-            }
-            else if (tagsObj is object[] tagsArray)
-            {
-                tags = tagsArray;
-            }
-            else
-            {
-                Assert.Fail($"Expected tags to be array or List, but got {tagsObj.GetType()}");
-                return;
-            }
+            // Tags should be a string array
+            Assert.IsInstanceOfType(tagsObj, typeof(string[]), "Tags should be a string array");
+            var tags = (string[])tagsObj;
 
             Assert.AreEqual(2, tags.Length);
-            Assert.IsTrue(tags[0].ToString() == "video");
-            Assert.IsTrue(tags[1].ToString() == "reference");
+            Assert.AreEqual("video", tags[0]);
+            Assert.AreEqual("reference", tags[1]);
         }
         [TestMethod]
         public void EnhanceMetadataWithTemplate_PdfNote_AppliesPdfTemplate()
@@ -184,12 +172,22 @@ date-created: 2025-04-19";
             };
 
             // Act
-            var enhanced = templateManager.EnhanceMetadataWithTemplate(metadata, "PDF Note");
-
-            // Assert
+            var enhanced = templateManager.EnhanceMetadataWithTemplate(metadata, "PDF Note");            // Assert
             Assert.IsNotNull(enhanced);
             Assert.AreEqual("Custom PDF Title", enhanced["title"]);
             Assert.AreEqual("pdf-reference", enhanced["template-type"]);
+
+            // Verify template tags are included
+            var tagsObj = enhanced["tags"];
+            Assert.IsNotNull(tagsObj);
+
+            // Tags should be a string array
+            Assert.IsInstanceOfType(tagsObj, typeof(string[]), "Tags should be a string array");
+            var tags = (string[])tagsObj;
+
+            Assert.AreEqual(2, tags.Length);
+            Assert.AreEqual("pdf", tags[0]);
+            Assert.AreEqual("reference", tags[1]);
         }
     }
 }
