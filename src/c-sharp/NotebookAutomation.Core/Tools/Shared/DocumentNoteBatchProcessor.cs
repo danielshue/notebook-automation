@@ -232,14 +232,12 @@ namespace NotebookAutomation.Core.Tools.Shared
                             _logger.LogWarning("VideoNoteProcessor found but GenerateVideoNoteAsync method not available. Using base method.");
                             usedVideoProcessor = false;
                         }
-                    }
-
-                    // Use the base implementation for non-video processors or if video-specific method wasn't available
+                    }                    // Use the base implementation for non-video processors or if video-specific method wasn't available
                     if (!usedVideoProcessor)
                     {
                         if (noSummary)
                         {
-                            summaryText = "[Summary generation disabled by --no-summary flag.]";
+                            summaryText = string.Empty; // No summary when disabled
                         }
                         else
                         {

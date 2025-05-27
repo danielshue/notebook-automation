@@ -111,71 +111,54 @@ auto-generated-state: writable
 # type: note/video-note | note/case-study | resource/reading | assignment/individual | assignment/group | assignment/quiz | index
 type: note/video-note
 
-# title: Video Title
+# title: Video Title (populated automatically based off a friendly name of the video)
 title: 
 
-# tags: line separated tags
-#  - "tag1"
-#  - "tag2"
-#  - "tag3"
-tags: 
+# The following fields are grouped and sorted as requested (with their comments):
 
-# date-created: YYYY-MM-DD
+# author: Author Name
+author:
+
+# program, course, class, module, lesson (grouped together)
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
+# module: Module Name (populated automatically)
+module:
+
+# lesson: Lesson Name (populated automatically)
+lesson:
+
+# comprehension: 0 | 1 | 2 | 3 | 4 | 5 (populated automatically)
+comprehension: 0
+
+# completion-date: YYYY-MM-DD
+completion-date:
+
+# date-created: YYYY-MM-DD (populated automatically)
 date-created: 
 
 # date-modified: YYYY-MM-DD
 date-modified: 
 
-# status: unwatched | watched | read | unread | in-progress
-status: unwatched 
+# date-review: YYYY-MM-DD
+date-review:
 
-# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4
+# onedrive-shared-link: path/to/shared-link (populated automatically)
+onedrive-shared-link:
+
+# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
 onedrive_fullpath_file_reference: 
 
-# onedrive-sharing-link: path/to/sharing-link
-onedrive-sharing-link: 
-
-# completion-date: YYYY-MM-DD
-completion-date:
-
-# review-date: YYYY-MM-DD
-review-date:
-
-# comprehension: 0 | 1 | 2 | 3 | 4 | 5
-comprehension: 0
-
-# program: Program Name
-program:
-
-# course: Course Name
-course:
-
-# class: Class Name
-class:
-
-# module: Module Name
-module:
-
-# lesson: Lesson Name
-lesson:
-
-# video-size: 0 MB
-video-size:
-
-# video-uploaded: YYYY-MM-DD
-video-uploaded:
-
-# video-duration: 00:00:00
-video-duration:
-
-# video-resolution: 1920x1080
-video-resolution:
-
-# video-codec: H.264
-video-codec:
-
-# author: Author Name
-author:
+# pages: 1-10, 5-15, 20-25
+pages: 
 
 # publication-year: 2023
 publication-year:
@@ -183,8 +166,29 @@ publication-year:
 # publisher: Publisher Name
 publisher: University of Illinois at Urbana-Champaign
 
-# pages: 1-10, 5-15, 20-25
-pages: 
+# status: unwatched | watched | read | unread | in-progress
+status: unwatched 
+
+# tags: line separated tags
+#  - "tag1"
+#  - "tag2"
+#  - "tag3"
+tags: 
+
+# video-codec: H.264
+video-codec:
+
+# video-duration: 00:00:00
+video-duration:
+
+# video-resolution: 1920x1080
+video-resolution:
+
+# video-size: 0 MB
+video-size:
+
+# video-uploaded: YYYY-MM-DD
+video-uploaded:
 
 ---
 template-type: pdf-reference

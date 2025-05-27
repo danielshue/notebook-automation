@@ -17,6 +17,23 @@ namespace NotebookAutomation.Core.Utils
         }
 
         /// <summary>
+        /// Builds a markdown note with only YAML frontmatter (no body).
+        /// </summary>
+        /// <param name="frontmatter">Frontmatter dictionary.</param>
+        /// <returns>Markdown note as a string with only frontmatter.</returns>
+        public string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter)
+        {
+            var yaml = _yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
+            // Remove any trailing newlines or content after frontmatter
+            int end = yaml.IndexOf("---", 3, StringComparison.Ordinal);
+            if (end > 0)
+            {
+                return yaml.Substring(0, end + 3) + "\n\n";
+            }
+            return yaml.TrimEnd() + "\n\n";
+        }
+
+        /// <summary>
         /// Builds a markdown note with YAML frontmatter and content body.
         /// </summary>
         /// <param name="frontmatter">Frontmatter dictionary.</param>

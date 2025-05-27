@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Core.Tools.Shared;
+using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -32,17 +33,14 @@ namespace NotebookAutomation.Core.Tests
             _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
 
             // Create a TestableAISummarizer that can be used in tests
-            var testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());
-
-            // Create a mock for IOneDriveService
-            var mockOneDriveService = Mock.Of<IOneDriveService>();
-
-            // Set up mock with test dependencies
+            var testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());            // Create a mock for IOneDriveService
+            var mockOneDriveService = Mock.Of<IOneDriveService>();            // Set up mock with test dependencies (add the optional AppConfig parameter)
             _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
                 MockBehavior.Loose,
                 Mock.Of<ILogger<VideoNoteProcessor>>(),
                 testAISummarizer,
-                mockOneDriveService);
+                mockOneDriveService,
+                null as AppConfig);
 
             // Create a custom batch processor that will directly create a file with the resourcesRoot
             // so we can test that the parameter is being passed correctly

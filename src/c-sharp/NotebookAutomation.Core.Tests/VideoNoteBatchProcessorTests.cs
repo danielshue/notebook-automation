@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -37,10 +38,8 @@ namespace NotebookAutomation.Core.Tests
             _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
 
             // Create a proper TestableAISummarizer that can be used for testing
-            var testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());
-
-            // Create real VideoNoteProcessor instead of a mock
-            var videoNoteProcessor = new VideoNoteProcessor(Mock.Of<ILogger<VideoNoteProcessor>>(), testAISummarizer);
+            var testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());            // Create real VideoNoteProcessor instead of a mock
+            var videoNoteProcessor = new VideoNoteProcessor(Mock.Of<ILogger<VideoNoteProcessor>>(), testAISummarizer, null, null);
 
             _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(_loggerMock.Object, videoNoteProcessor, testAISummarizer);
             _processor = new VideoNoteBatchProcessor(_batchProcessor);
@@ -84,21 +83,21 @@ namespace NotebookAutomation.Core.Tests
 
             // Check all .md files in the output directory
             var allFiles = Directory.GetFiles(_outputDir, "*.md");
-            Assert.IsTrue(allFiles.Length > 0, $"No .md files found in {_outputDir}");
-
-            bool foundExpectedContent = false;
+            Assert.IsTrue(allFiles.Length > 0, $"No .md files found in {_outputDir}"); bool foundExpectedContent = false;
             foreach (var file in allFiles)
             {
                 var content = File.ReadAllText(file);
                 TestContext.WriteLine($"File: {Path.GetFileName(file)}, Content length: {content.Length}");
-                if (content.Contains("[Summary generation disabled by --no-summary flag.]"))
+                // When no summary is requested, the content should contain ## Note section
+                // but should NOT contain AI summary content
+                if (content.Contains("## Note") && !content.Contains("AI summary"))
                 {
                     foundExpectedContent = true;
                     break;
                 }
             }
 
-            Assert.IsTrue(foundExpectedContent, "No file with expected content was found");
+            Assert.IsTrue(foundExpectedContent, "No file with expected Note section was found");
         }
 
         [TestMethod]
@@ -129,11 +128,13 @@ namespace NotebookAutomation.Core.Tests
 
             // Assert
             Assert.AreEqual(1, result.Processed);
-            Assert.AreEqual(0, result.Failed);
-
-            // Read the content again after processing
+            Assert.AreEqual(0, result.Failed);            // Read the content again after processing
             var noteContent = File.ReadAllText(notePath);
-            StringAssert.Contains(noteContent, "[Summary generation disabled by --no-summary flag.]");
+            // When no summary is requested, should contain ## Note section but no AI summary
+            Assert.IsTrue(noteContent.Contains("---"), "Should contain YAML frontmatter");
+            Assert.IsTrue(noteContent.Contains("# Video Note"), "Should contain main heading");
+            Assert.IsTrue(noteContent.Contains("## Note"), "Should contain Note section");
+            Assert.IsFalse(noteContent.Contains("AI summary"), "Should not contain AI summary text");
         }
 
         [TestMethod]

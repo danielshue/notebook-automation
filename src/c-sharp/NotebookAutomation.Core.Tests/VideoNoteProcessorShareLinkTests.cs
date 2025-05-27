@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -49,10 +50,8 @@ namespace NotebookAutomation.Core.Tests
             );
 
             // Mock IOneDriveService
-            _mockOneDriveService = new Mock<IOneDriveService>();
-
-            // Initialize processor with mocked OneDriveService
-            _processor = new VideoNoteProcessor(_logger, _aiSummarizer, _mockOneDriveService.Object);
+            _mockOneDriveService = new Mock<IOneDriveService>();            // Initialize processor with mocked OneDriveService
+            _processor = new VideoNoteProcessor(_logger, _aiSummarizer, _mockOneDriveService.Object, null);
         }
 
         /// <summary>
@@ -172,10 +171,8 @@ namespace NotebookAutomation.Core.Tests
         public async Task GenerateVideoNoteAsync_WithNullOneDriveService_DoesNotAddLink()
         {
             // Arrange
-            string videoPath = CreateTestVideoFile(_tempDirectory);
-
-            // Create processor with null OneDriveService
-            var processorWithoutOneDrive = new VideoNoteProcessor(_logger, _aiSummarizer, null);
+            string videoPath = CreateTestVideoFile(_tempDirectory);            // Create processor with null OneDriveService
+            var processorWithoutOneDrive = new VideoNoteProcessor(_logger, _aiSummarizer, null, null);
 
             // Act
             string markdown = await processorWithoutOneDrive.GenerateVideoNoteAsync(

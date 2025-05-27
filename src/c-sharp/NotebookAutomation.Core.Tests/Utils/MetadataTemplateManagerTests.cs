@@ -1,0 +1,195 @@
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Moq;
+
+using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Utils;
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace NotebookAutomation.Core.Tests.Utils
+{
+    [TestClass]
+    public class MetadataTemplateManagerTests
+    {
+        private Mock<ILogger> _loggerMock;
+        private Mock<AppConfig> _appConfigMock;
+        private AppConfig _testAppConfig;
+        private string _testMetadataFile;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            _loggerMock = new Mock<ILogger>();
+
+            // Create a temporary metadata.yaml file for testing
+            _testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata.yaml");
+
+            // Create test metadata content
+            string testMetadata = @"---
+template-type: video-reference
+auto-generated-state: writable
+template-description: Template for video reference notes.
+title: Video Note
+type: video-reference
+tags:
+  - video
+  - reference
+date-created: 2025-04-19
+---
+template-type: pdf-reference
+auto-generated-state: writable
+template-description: Template for PDF reference notes.
+title: PDF Note
+type: pdf-reference
+tags:
+  - pdf
+  - reference
+date-created: 2025-04-19";
+            File.WriteAllText(_testMetadataFile, testMetadata);
+
+            // Create a real AppConfig instance instead of mocking it
+            _appConfigMock = new Mock<AppConfig>();
+
+            // Create the real config and set it up
+            var realConfig = new AppConfig();
+            realConfig.Paths = new PathsConfig
+            {
+                MetadataFile = _testMetadataFile
+            };
+
+            // Store the real config in a field for test usage
+            _testAppConfig = realConfig;
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            // Delete temporary test file
+            if (File.Exists(_testMetadataFile))
+                File.Delete(_testMetadataFile);
+        }
+        [TestMethod]
+        public void LoadTemplates_ValidMetadataFile_LoadsAllTemplates()
+        {
+            // Arrange
+            var templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
+
+            // Act
+            var templateTypes = templateManager.GetTemplateTypes();
+
+            // Assert
+            Assert.AreEqual(2, templateTypes.Count);
+            Assert.IsTrue(templateTypes.Contains("video-reference"));
+            Assert.IsTrue(templateTypes.Contains("pdf-reference"));
+        }
+        [TestMethod]
+        public void GetTemplate_ExistingType_ReturnsTemplate()
+        {
+            // Arrange
+            var templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
+
+            // Act
+            var template = templateManager.GetTemplate("video-reference");
+
+            // Assert
+            Assert.IsNotNull(template);
+            Assert.AreEqual("video-reference", template["template-type"]);
+            Assert.AreEqual("Video Note", template["title"]);
+        }
+        [TestMethod]
+        public void GetTemplate_NonExistentType_ReturnsNull()
+        {
+            // Arrange
+            var templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
+
+            // Act
+            var template = templateManager.GetTemplate("non-existent-type");
+
+            // Assert
+            Assert.IsNull(template);
+        }
+        [TestMethod]
+        public void GetFilledTemplate_ProvidesValues_ReplacesPlaceholders()
+        {
+            // Arrange
+            var templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
+            var values = new Dictionary<string, string>
+            {
+                { "title", "Custom Video Title" },
+                { "date-created", "2025-05-25" }
+            };
+
+            // Act
+            var filledTemplate = templateManager.GetFilledTemplate("video-reference", values);
+
+            // Assert
+            Assert.IsNotNull(filledTemplate);
+            Assert.AreEqual("Custom Video Title", filledTemplate["title"]);
+            Assert.AreEqual("2025-05-25", filledTemplate["date-created"]);
+            Assert.AreEqual("video-reference", filledTemplate["template-type"]);
+        }
+        [TestMethod]
+        public void EnhanceMetadataWithTemplate_VideoNote_AppliesVideoTemplate()
+        {
+            // Arrange
+            var templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
+            var metadata = new Dictionary<string, object>
+            {
+                { "title", "Custom Video Title" },
+                { "source_file", "c:/path/to/video.mp4" }
+            };            // Act
+            var enhanced = templateManager.EnhanceMetadataWithTemplate(metadata, "Video Note");
+
+            // Assert
+            Assert.IsNotNull(enhanced);
+            Assert.AreEqual("Custom Video Title", enhanced["title"]);
+            Assert.AreEqual("video-reference", enhanced["template-type"]);            // Verify template tags are included
+            var tagsObj = enhanced["tags"];
+            Assert.IsNotNull(tagsObj);
+
+            // Convert to array if it's a List
+            object[] tags;
+            if (tagsObj is System.Collections.Generic.List<object> tagsList)
+            {
+                tags = tagsList.ToArray();
+            }
+            else if (tagsObj is object[] tagsArray)
+            {
+                tags = tagsArray;
+            }
+            else
+            {
+                Assert.Fail($"Expected tags to be array or List, but got {tagsObj.GetType()}");
+                return;
+            }
+
+            Assert.AreEqual(2, tags.Length);
+            Assert.IsTrue(tags[0].ToString() == "video");
+            Assert.IsTrue(tags[1].ToString() == "reference");
+        }
+        [TestMethod]
+        public void EnhanceMetadataWithTemplate_PdfNote_AppliesPdfTemplate()
+        {
+            // Arrange
+            var templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
+            var metadata = new Dictionary<string, object>
+            {
+                { "title", "Custom PDF Title" },
+                { "source_file", "c:/path/to/document.pdf" }
+            };
+
+            // Act
+            var enhanced = templateManager.EnhanceMetadataWithTemplate(metadata, "PDF Note");
+
+            // Assert
+            Assert.IsNotNull(enhanced);
+            Assert.AreEqual("Custom PDF Title", enhanced["title"]);
+            Assert.AreEqual("pdf-reference", enhanced["template-type"]);
+        }
+    }
+}
