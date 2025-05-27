@@ -47,8 +47,7 @@ namespace NotebookAutomation.Core.Tests.Tools
             // Create program index file
             File.WriteAllText(Path.Combine(programDir, "program-index.md"),
                 "---\ntitle: MBA Program\nindex-type: program-index\n---\nProgram content");            // Create metadata.yaml for testing
-            _testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata.yaml");
-            string testMetadata = @"---
+            _testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata.yaml"); string testMetadata = @"---
 template-type: video-reference
 auto-generated-state: writable
 template-description: Template for video reference notes.
@@ -64,12 +63,11 @@ comprehension: 0
 completion-date:
 date-created:
 date-modified:
-onedrive-shared-link:
-onedrive_fullpath_file_reference:
 status: unwatched
 tags:
   - video
   - reference
+video-codec:
 video-duration:
 video-resolution:
 video-size:
@@ -108,7 +106,6 @@ video-uploaded:";
             if (File.Exists(_testMetadataFile))
                 File.Delete(_testMetadataFile);
         }
-
         [TestMethod]
         public void GenerateMarkdownNote_WithPathBasedMetadata_AppliesHierarchyDetection()
         {
@@ -128,7 +125,7 @@ video-uploaded:";
             var metadata = new Dictionary<string, object>
             {
                 { "title", "Test Video" },
-                { "source_file", videoPath }
+                { "_internal_path", videoPath }
             };
 
             string bodyText = "This is a test summary.";
@@ -151,12 +148,10 @@ video-uploaded:";
                 _aiSummarizer,
                 _oneDriveServiceMock.Object,
                 _appConfig
-            );
-
-            var metadata = new Dictionary<string, object>
+            ); var metadata = new Dictionary<string, object>
             {
                 { "title", "Test Video" },
-                { "source_file", "c:/path/to/video.mp4" }
+                { "_internal_path", "c:/path/to/video.mp4" }
             };
 
             string bodyText = "This is a test summary.";
@@ -185,12 +180,10 @@ video-uploaded:";
             string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
             // Create test video file
             Directory.CreateDirectory(Path.GetDirectoryName(videoPath));
-            File.WriteAllText(videoPath, "fake video content");
-
-            var metadata = new Dictionary<string, object>
+            File.WriteAllText(videoPath, "fake video content"); var metadata = new Dictionary<string, object>
             {
                 { "title", "Test Video" },
-                { "source_file", videoPath }
+                { "_internal_path", videoPath }
             };
 
             string bodyText = "This is a test summary.";
@@ -284,16 +277,66 @@ video-uploaded:";
             Assert.IsFalse(markdown.EndsWith("---\n\n"), "Should have body content after frontmatter");
         }
 
-        /// <summary>
-        /// Minimal test double for AISummarizer for use in VideoNoteProcessor tests.
-        /// </summary>
-        private class TestAISummarizer : AISummarizer
+        [TestMethod]
+        public async Task GenerateVideoNoteAsync_WithMockedShareLink_AddsReferencesSection()
         {
-            public TestAISummarizer() : base(null, null, null, null) { }
-            public override Task<string> SummarizeAsync(string inputText, string prompt = null, string promptFileName = null, System.Threading.CancellationToken cancellationToken = default)
+            // Arrange
+            string testShareLink = "https://onedrive.live.com/view.aspx?test=example";
+            _oneDriveServiceMock
+                .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>()))
+                .ReturnsAsync(testShareLink);
+
+            var processor = new VideoNoteProcessor(
+                _loggerMock.Object,
+                _aiSummarizer,
+                _oneDriveServiceMock.Object,
+                _appConfig
+            );
+
+            string videoPath = Path.Combine(_testVaultRoot, "test-video.mp4");
+            Directory.CreateDirectory(Path.GetDirectoryName(videoPath));
+            File.WriteAllText(videoPath, "fake video content");
+
+            // Act
+            var markdown = await processor.GenerateVideoNoteAsync(
+                videoPath,
+                "test-api-key",
+                null,
+                false,
+                null,
+                null,
+                false
+            );
+
+            // Assert
+            Assert.IsNotNull(markdown);
+
+            // Verify share link appears in markdown content
+            Assert.IsTrue(markdown.Contains("## References"), "Should contain References section");
+            Assert.IsTrue(markdown.Contains($"[Video Recording]({testShareLink})"), "Should contain share link in References section");
+
+            // Verify share link does NOT appear in YAML frontmatter
+            var frontmatterEnd = markdown.IndexOf("---", 4);
+            if (frontmatterEnd > 0)
             {
-                return Task.FromResult("This is an AI summary of the video content.");
+                string frontmatter = markdown.Substring(0, frontmatterEnd);
+                Assert.IsFalse(frontmatter.Contains(testShareLink), "Share link should NOT appear in YAML frontmatter");
+                Assert.IsFalse(frontmatter.Contains("onedrive-sharing-link"), "Should not contain onedrive-sharing-link field in metadata");
+                Assert.IsFalse(frontmatter.Contains("share_link"), "Should not contain share_link field in metadata");
             }
         }
     }
+
+    /// <summary>
+    /// Minimal test double for AISummarizer for use in VideoNoteProcessor tests.
+    /// </summary>
+    private class TestAISummarizer : AISummarizer
+    {
+        public TestAISummarizer() : base(null, null, null, null) { }
+        public override Task<string> SummarizeAsync(string inputText, string prompt = null, string promptFileName = null, System.Threading.CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult("This is an AI summary of the video content.");
+        }
+    }
+}
 }
