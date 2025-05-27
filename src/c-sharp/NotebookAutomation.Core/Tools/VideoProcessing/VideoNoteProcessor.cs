@@ -81,7 +81,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <remarks>
         /// <para>
         /// This method extracts a wide range of metadata from a video file, including:
-        /// </para>        /// <list type="bullet">
+        /// </para>        
+        /// <list type="bullet">
         /// <item><description>Basic file properties (name, path, size, creation date, modification date)</description></item>
         /// <item><description>Video-specific properties (duration, resolution, codec)</description></item>
         /// <item><description>Content identification (title derived from filename)</description></item>
@@ -96,10 +97,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             var metadata = new Dictionary<string, object>                {
                     // Friendly title: remove numbers, underscores, file extension, and trim
                     { "title", FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileNameWithoutExtension(videoPath)) },
-                    { "type", "video" },
-                    { "status", "active" },
-                    { "priority", "medium" },
-                    { "authors", new string[0] }, // Empty string array with correct field name
+                    { "type", "note/video-note" },
+                    { "status", "unwatched" },
+                    { "author", new string[0] }, // Empty string array with correct field name
                     { "onedrive-shared-link", string.Empty }, // Will be populated by OneDrive service if available
                     { "onedrive_fullpath_file_reference", Path.GetFullPath(videoPath) }, // Full path to the video
                     { "transcript", string.Empty } // Will be populated if transcript file is found
@@ -117,6 +117,11 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 if (fileInfo.Exists)
                 {
                     metadata["date-created"] = fileInfo.CreationTime.ToString("yyyy-MM-dd");
+
+                    // Add the file size in a human-readable format
+                    long fileSizeBytes = fileInfo.Length;
+                    metadata["video-size"] = FormatFileSizeToString(fileSizeBytes);
+                    Logger.LogDebug("Added video size to metadata: {VideoSize}", metadata["video-size"]);
                 }
             }
             catch (Exception ex)
@@ -176,6 +181,32 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             }
 
             return metadata;
+        }
+
+        /// <summary>
+        /// Formats a file size in bytes to a human-readable string (KB, MB, GB, etc.)
+        /// </summary>
+        /// <param name="bytes">File size in bytes</param>
+        /// <returns>Human-readable file size string</returns>
+        private string FormatFileSizeToString(long bytes)
+        {
+            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+            int suffixIndex = 0;
+            double size = bytes;
+
+            while (size >= 1024 && suffixIndex < suffixes.Length - 1)
+            {
+                size /= 1024;
+                suffixIndex++;
+            }
+
+            // Format with appropriate precision (2 decimal places for smaller values, 1 for larger)
+            if (size < 10)
+                return $"{size:0.00} {suffixes[suffixIndex]}";
+            else if (size < 100)
+                return $"{size:0.0} {suffixes[suffixIndex]}";
+            else
+                return $"{Math.Round(size)} {suffixes[suffixIndex]}";
         }
 
         /// <summary>
@@ -358,14 +389,6 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     Logger.LogWarning(ex, "Error applying template metadata");
                 }
-            }
-            // By design, OneDrive shared links are not stored in metadata but only in the markdown content
-            // The "onedrive-shared-link" field is kept empty in metadata
-            if (_oneDriveService != null &&
-                (!mergedMetadata.ContainsKey("onedrive-shared-link") || string.IsNullOrEmpty(mergedMetadata["onedrive-shared-link"]?.ToString())))
-            {
-                Logger.LogDebug("OneDrive share link is not stored in metadata by design, field remains empty");
-                // The field remains empty as initialized in ExtractMetadataAsync
             }
 
             // Log mergedMetadata keys and values once before serialization (for debug)
@@ -724,10 +747,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             {
                 metadata["transcript"] = transcriptPath;
                 Logger.LogInformation("Found transcript file and added path to metadata: {TranscriptPath}", transcriptPath);
-            }
-
-            // Generate share link if requested and OneDriveService is available
-            // Note: According to tests, share link should be added to markdown content but not to metadata
+            }            // Generate share link if requested and OneDriveService is available
             string? shareLink = null;
             if (!noShareLinks && _oneDriveService != null)
             {
@@ -738,8 +758,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     if (!string.IsNullOrEmpty(shareLink))
                     {
                         Logger.LogInformation("OneDrive share link generated successfully");
-                        // Don't store in metadata - the field will stay empty as initialized in ExtractMetadataAsync
-                        // The share link will only be added to markdown content below
+                        // Store in metadata in the onedrive-shared-link field
+                        metadata["onedrive-shared-link"] = shareLink;
+                        Logger.LogDebug("Added OneDrive share link to metadata");
                     }
                     else
                     {

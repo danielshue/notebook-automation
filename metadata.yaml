@@ -116,7 +116,7 @@ title:
 
 # The following fields are grouped and sorted as requested (with their comments):
 
-# author: Author Name
+# author: Author Names (array of names)
 author:
 
 # program, course, class, module, lesson (grouped together)

@@ -55,14 +55,14 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
                 // Ignore cleanup errors
             }
         }
-
         [TestMethod]
-        public async Task GenerateVideoNoteAsync_WithShareLink_AddsShareLinkToMarkdownContentNotMetadata()
+        public async Task GenerateVideoNoteAsync_WithShareLink_AddsShareLinkToMarkdownContentAndMetadata()
         {
             // Arrange
-            string shareLink = "https://onedrive.live.com/view.aspx?cid=test123&page=view&resid=test456&parid=test789"; _oneDriveServiceMock
-                .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(shareLink);
+            string shareLink = "https://onedrive.live.com/view.aspx?cid=test123&page=view&resid=test456&parid=test789";
+            _oneDriveServiceMock
+            .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(shareLink);
 
             var processor = new VideoNoteProcessor(
                 _loggerMock.Object,
@@ -97,7 +97,9 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
             if (frontmatterEnd > 0)
             {
                 string frontmatter = markdown.Substring(0, frontmatterEnd);
-                Assert.IsFalse(frontmatter.Contains(shareLink), "Share link should NOT appear in YAML frontmatter");
+                // Assert that share link is now in the frontmatter metadata as onedrive-shared-link
+                Assert.IsTrue(frontmatter.Contains("onedrive-shared-link:"), "Should contain onedrive-shared-link field in metadata");
+                Assert.IsTrue(frontmatter.Contains(shareLink), "Share link should appear in YAML frontmatter");
                 Assert.IsFalse(frontmatter.Contains("onedrive-sharing-link"), "Should not contain onedrive-sharing-link field in metadata");
                 Assert.IsFalse(frontmatter.Contains("share_link"), "Should not contain share_link field in metadata");
             }
