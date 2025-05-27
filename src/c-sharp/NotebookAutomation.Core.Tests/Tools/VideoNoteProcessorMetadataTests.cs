@@ -282,7 +282,7 @@ video-uploaded:";
         public async Task GenerateVideoNoteAsync_WithMockedShareLink_AddsReferencesSection()
         {
             // Arrange
-            string testShareLink = "https://onedrive.live.com/view.aspx?test=example";            _oneDriveServiceMock
+            string testShareLink = "https://onedrive.live.com/view.aspx?test=example"; _oneDriveServiceMock
                 .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(testShareLink);
 
@@ -326,10 +326,11 @@ video-uploaded:";
             }
         }
     }    /// <summary>
-    /// Minimal test double for AISummarizer for use in VideoNoteProcessor tests.
-    /// </summary>
+         /// Minimal test double for AISummarizer for use in VideoNoteProcessor tests.
+         /// </summary>
     internal class TestAISummarizer : AISummarizer
-    {        public TestAISummarizer() : base(null, null, null, null) { }
+    {
+        public TestAISummarizer() : base(null, null, null, null) { }
         public override Task<string> SummarizeAsync(string inputText, string prompt = null, string promptFileName = null, System.Threading.CancellationToken cancellationToken = default)
         {
             return Task.FromResult("This is an AI summary of the video content.");

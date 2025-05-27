@@ -60,7 +60,7 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
         public async Task GenerateVideoNoteAsync_WithShareLink_AddsShareLinkToMarkdownContentNotMetadata()
         {
             // Arrange
-            string shareLink = "https://onedrive.live.com/view.aspx?cid=test123&page=view&resid=test456&parid=test789";            _oneDriveServiceMock
+            string shareLink = "https://onedrive.live.com/view.aspx?cid=test123&page=view&resid=test456&parid=test789"; _oneDriveServiceMock
                 .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(shareLink);
 
