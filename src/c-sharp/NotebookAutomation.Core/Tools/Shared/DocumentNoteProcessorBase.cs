@@ -34,8 +34,10 @@ namespace NotebookAutomation.Core.Tools.Shared
         /// Generates an AI summary for the given text using OpenAI.
         /// </summary>
         /// <param name="text">The extracted text/content.</param>
+        /// <param name="variables">Optional variables to substitute in the prompt template.</param>
+        /// <param name="promptFileName">Optional name of the prompt template file to use.</param>
         /// <returns>The summary text, or a simulated summary if unavailable.</returns>
-        public virtual async Task<string> GenerateAiSummaryAsync(string text)
+        public virtual async Task<string> GenerateAiSummaryAsync(string text, Dictionary<string, string>? variables = null, string? promptFileName = null)
         {
             Logger.LogDebug("Using AISummarizer to generate summary.");
 
@@ -44,7 +46,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                 return "[Simulated AI summary]";
             }
 
-            var summary = await Summarizer.SummarizeAsync(text);
+            var summary = await Summarizer.SummarizeWithVariablesAsync(text, variables, promptFileName);
             if (string.IsNullOrWhiteSpace(summary))
             {
                 Logger.LogWarning("AISummarizer returned an empty summary. Using simulated summary.");

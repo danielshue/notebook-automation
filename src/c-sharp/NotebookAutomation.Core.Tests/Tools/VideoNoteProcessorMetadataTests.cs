@@ -320,20 +320,9 @@ video-uploaded:";
             if (frontmatterEnd > 0)
             {
                 string frontmatter = markdown.Substring(0, frontmatterEnd);
-                Assert.IsFalse(frontmatter.Contains(testShareLink), "Share link should NOT appear in YAML frontmatter");
-                Assert.IsFalse(frontmatter.Contains("onedrive-sharing-link"), "Should not contain onedrive-sharing-link field in metadata");
+                Assert.IsFalse(frontmatter.Contains(testShareLink), "Share link should NOT appear in YAML frontmatter"); Assert.IsFalse(frontmatter.Contains("onedrive-sharing-link"), "Should not contain onedrive-sharing-link field in metadata");
                 Assert.IsFalse(frontmatter.Contains("share_link"), "Should not contain share_link field in metadata");
             }
-        }
-    }    /// <summary>
-         /// Minimal test double for AISummarizer for use in VideoNoteProcessor tests.
-         /// </summary>
-    internal class TestAISummarizer : AISummarizer
-    {
-        public TestAISummarizer() : base(null, null, null, null) { }
-        public override Task<string> SummarizeAsync(string inputText, string prompt = null, string promptFileName = null, System.Threading.CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult("This is an AI summary of the video content.");
         }
     }
 }

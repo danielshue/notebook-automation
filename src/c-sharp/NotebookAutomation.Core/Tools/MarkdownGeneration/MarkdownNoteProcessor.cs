@@ -101,8 +101,9 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
             }
             string aiSummary = rawText;
             if (!string.IsNullOrWhiteSpace(openAiApiKey))
-            {
-                aiSummary = await _aiSummarizer.SummarizeAsync(rawText, null, promptFileName) ?? rawText;
+            {                // Use the new method name to avoid ambiguity
+                Dictionary<string, string>? noVariables = null;
+                aiSummary = await _aiSummarizer.SummarizeWithVariablesAsync(rawText, noVariables, promptFileName) ?? rawText;
             }
             var metadata = new Dictionary<string, object>
             {

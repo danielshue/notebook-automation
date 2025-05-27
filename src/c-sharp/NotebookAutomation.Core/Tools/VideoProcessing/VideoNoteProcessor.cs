@@ -81,83 +81,38 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <remarks>
         /// <para>
         /// This method extracts a wide range of metadata from a video file, including:
-        /// </para>
-        /// <list type="bullet">
+        /// </para>        /// <list type="bullet">
         /// <item><description>Basic file properties (name, path, size, creation date, modification date)</description></item>
         /// <item><description>Video-specific properties (duration, resolution, codec)</description></item>
         /// <item><description>Content identification (title derived from filename)</description></item>
-        /// </list>        /// <para>
+        /// </list>
+        /// <para>
         /// The metadata extraction leverages Xabe.FFmpeg for detailed video information. If the FFmpeg analysis fails,
         /// the method will still return basic file information and log a warning rather than failing completely.
         /// </para>
         /// </remarks>
         public async Task<Dictionary<string, object>> ExtractMetadataAsync(string videoPath)
         {
-            var metadata = new Dictionary<string, object>
-                {
+            var metadata = new Dictionary<string, object>                {
                     // Friendly title: remove numbers, underscores, file extension, and trim
                     { "title", FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileNameWithoutExtension(videoPath)) },
-                    { "generated", DateTime.UtcNow.ToString("u") },
-                    { "file_name", Path.GetFileName(videoPath) },
-                    { "file_extension", Path.GetExtension(videoPath) }
+                    { "type", "video" },
+                    { "status", "active" },
+                    { "priority", "medium" },
+                    { "authors", new string[0] }, // Empty string array with correct field name
+                    { "onedrive-shared-link", string.Empty }, // Will be populated by OneDrive service if available
+                    { "onedrive_fullpath_file_reference", Path.GetFullPath(videoPath) }, // Full path to the video
+                    { "transcript", string.Empty } // Will be populated if transcript file is found
                 };
 
-            // Extract module and lesson from directory structure (align with Python logic)
-            try
-            {
-                var fileInfo = new FileInfo(videoPath);
-                var dir = fileInfo.Directory;
-                string? module = null;
-                string? lesson = null;
-                if (dir != null)
-                {
-                    // Look for lesson folder (e.g., lesson-1-...)
-                    var lessonDir = dir;
-                    if (lessonDir != null && lessonDir.Name.ToLower().Contains("lesson"))
-                    {
-                        lesson = CleanModuleOrLessonName(lessonDir.Name);
-                        // Look for module folder one level up
-                        var moduleDir = lessonDir.Parent;
-                        if (moduleDir != null && moduleDir.Name.ToLower().Contains("module"))
-                        {
-                            module = CleanModuleOrLessonName(moduleDir.Name);
-                        }
-                    }
-                    else if (dir.Name.ToLower().Contains("module"))
-                    {
-                        // If current dir is module, set module only
-                        module = CleanModuleOrLessonName(dir.Name);
-                    }
-                }
-                if (!string.IsNullOrEmpty(module))
-                {
-                    metadata["module"] = module;
-                }
-                if (!string.IsNullOrEmpty(lesson))
-                {
-                    metadata["lesson"] = lesson;
-                }
-            }
-            catch (Exception ex)
-            {
-                // Use the class logger field for warnings
-                Logger.LogWarning(ex, "Failed to extract module/lesson from directory structure for video: {Path}", videoPath);
-            }
+            // Extract module and lesson from directory structure
+            var courseStructureExtractor = new CourseStructureExtractor(Logger);
+            courseStructureExtractor.ExtractModuleAndLesson(videoPath, metadata);
 
-            // Helper for cleaning up module/lesson folder names
-            static string CleanModuleOrLessonName(string folderName)
-            {
-                // Remove numbering prefix (e.g., 01_, 02-, etc.), replace hyphens/underscores, title case
-                string clean = System.Text.RegularExpressions.Regex.Replace(folderName, @"^\d+[_-]?", "");
-                clean = clean.Replace("-", " ").Replace("_", " ");
-                clean = System.Text.RegularExpressions.Regex.Replace(clean, "\\s+", " ").Trim();
-                return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(clean);
-            }
+            // Extract file creation date but exclude unwanted metadata fields
             try
             {
                 var fileInfo = new FileInfo(videoPath);
-                metadata["size_bytes"] = fileInfo.Exists ? fileInfo.Length : 0;
-                metadata["type"] = "video";
                 // Set date-created to file creation date if available
                 if (fileInfo.Exists)
                 {
@@ -168,6 +123,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             {
                 Logger.LogWarning(ex, "Failed to extract file system metadata for video: {Path}", videoPath);
             }
+
             try
             {
                 var mediaInfo = await Xabe.FFmpeg.FFmpeg.GetMediaInfo(videoPath);
@@ -183,6 +139,32 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     metadata["video-duration"] = mediaInfo.Duration.ToString();
                 }
+
+                // Try to extract video upload date from metadata, fallback to current date
+                DateTime videoUploadDate = DateTime.UtcNow;
+                try
+                {
+                    // Try to get creation date from video metadata first
+                    if (mediaInfo.CreationTime.HasValue)
+                    {
+                        videoUploadDate = mediaInfo.CreationTime.Value;
+                    }
+                    else
+                    {
+                        // Fallback to file creation time
+                        var fileInfo = new FileInfo(videoPath);
+                        if (fileInfo.Exists)
+                        {
+                            videoUploadDate = fileInfo.CreationTime;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "Failed to extract video upload date, using current date");
+                }
+
+                metadata["video-uploaded"] = videoUploadDate.ToString("yyyy-MM-dd");
             }
             catch (Exception ex)
             {
@@ -190,6 +172,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 metadata["video-duration"] = "[Simulated duration]";
                 metadata["video-resolution"] = "[Unknown]";
                 metadata["video-codec"] = "[Unknown]";
+                metadata["video-uploaded"] = DateTime.UtcNow.ToString("yyyy-MM-dd");
             }
 
             return metadata;
@@ -219,6 +202,55 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// </para>
         /// </remarks>
         // Inherit base implementation
+
+        /// <summary>
+        /// Overrides the base class implementation to add title variable substitution for prompts.
+        /// </summary>
+        /// <param name="text">The extracted text/content.</param>
+        /// <param name="variables">Optional variables to substitute in the prompt template.</param>
+        /// <param name="promptFileName">Optional name of the prompt template file to use.</param>
+        /// <returns>The summary text, or a simulated summary if unavailable.</returns>
+        public override async Task<string> GenerateAiSummaryAsync(string text, Dictionary<string, string>? variables = null, string? promptFileName = null)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                Logger.LogWarning("Empty text provided for AI summary generation. Returning placeholder.");
+                return "[No content available for summarization]";
+            }
+
+            try
+            {
+                // Set default prompt file name for video notes if not specified
+                promptFileName ??= "final_summary_prompt_video";
+
+                // If variables dictionary wasn't provided, create one
+                variables ??= new Dictionary<string, string>();
+
+                // If title variable wasn't provided, extract it from the file name if possible
+                if (!variables.ContainsKey("title"))
+                {
+                    string title = "Untitled Video";
+
+                    // Try to extract title from the first line if it starts with "Video file: "
+                    if (text.StartsWith("Video file: "))
+                    {
+                        string fileName = text.Split('\n')[0].Substring("Video file: ".Length).Trim();
+                        title = FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileNameWithoutExtension(fileName));
+                    }
+
+                    variables["title"] = title;
+                    Logger.LogDebug("Added title '{Title}' to prompt variables", title);
+                }
+
+                // Call base implementation with our enriched variables
+                return await base.GenerateAiSummaryAsync(text, variables, promptFileName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Error generating AI summary");
+                return "[Error during summarization]";
+            }
+        }
 
         /// <summary>
         /// Generates a markdown note from video metadata and summary.
@@ -326,6 +358,14 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     Logger.LogWarning(ex, "Error applying template metadata");
                 }
+            }
+            // By design, OneDrive shared links are not stored in metadata but only in the markdown content
+            // The "onedrive-shared-link" field is kept empty in metadata
+            if (_oneDriveService != null &&
+                (!mergedMetadata.ContainsKey("onedrive-shared-link") || string.IsNullOrEmpty(mergedMetadata["onedrive-shared-link"]?.ToString())))
+            {
+                Logger.LogDebug("OneDrive share link is not stored in metadata by design, field remains empty");
+                // The field remains empty as initialized in ExtractMetadataAsync
             }
 
             // Log mergedMetadata keys and values once before serialization (for debug)
@@ -471,6 +511,121 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         }
 
         /// <summary>
+        /// Finds the path to the transcript file for a video without loading its content.
+        /// </summary>
+        /// <param name="videoPath">Path to the video file.</param>
+        /// <returns>The path to the transcript file, or null if no transcript is found.</returns>
+        /// <remarks>
+        /// This method uses the same search logic as TryLoadTranscript but only returns the file path
+        /// instead of loading the content. This is useful for storing the path in metadata.
+        /// </remarks>
+        private string? FindTranscriptPath(string videoPath)
+        {
+            if (string.IsNullOrEmpty(videoPath))
+            {
+                Logger.LogWarning("Empty video path provided to FindTranscriptPath");
+                return null;
+            }
+
+            string directory = Path.GetDirectoryName(videoPath) ?? string.Empty;
+            string fileNameWithoutExt = Path.GetFileNameWithoutExtension(videoPath);
+
+            Logger.LogDebug("Looking for transcript file for video: {VideoPath}", videoPath);
+
+            // Define search paths in priority order
+            var searchPaths = new List<string>
+            {
+                directory, // Same directory as video
+                Path.Combine(directory, "Transcripts") // Transcripts subdirectory
+            };
+
+            // Search through directories in priority order
+            foreach (var searchPath in searchPaths)
+            {
+                if (!Directory.Exists(searchPath))
+                {
+                    Logger.LogDebug("Directory does not exist: {Path}", searchPath);
+                    continue;
+                }
+
+                // Get all .txt and .md files in the directory
+                var candidates = Directory.GetFiles(searchPath, "*.txt")
+                    .Concat(Directory.GetFiles(searchPath, "*.md"))
+                    .Select(path => new FileInfo(path))
+                    .ToList();
+
+                if (!candidates.Any())
+                {
+                    Logger.LogDebug("No transcript candidates found in: {Path}", searchPath);
+                    continue;
+                }
+
+                // Generate alternate base name by replacing hyphens with underscores or vice versa
+                string altBaseName = fileNameWithoutExt.Contains('-')
+                    ? fileNameWithoutExt.Replace('-', '_')
+                    : fileNameWithoutExt.Replace('_', '-');
+
+                // First priority: language-specific transcript with exact name (video.en.txt, video.zh-cn.txt)
+                foreach (var candidate in candidates)
+                {
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
+                    if (nameWithoutExt.StartsWith(fileNameWithoutExt + ".") &&
+                        IsLikelyLanguageCode(nameWithoutExt.Substring(fileNameWithoutExt.Length + 1)))
+                    {
+                        string langCode = nameWithoutExt.Substring(fileNameWithoutExt.Length + 1);
+                        Logger.LogInformation("Found language-specific transcript ({LangCode}): {Path}", langCode, candidate.FullName);
+                        return candidate.FullName;
+                    }
+                }
+
+                // Second priority: language-specific transcript with normalized name
+                foreach (var candidate in candidates)
+                {
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
+                    if (nameWithoutExt.StartsWith(altBaseName + ".") && IsLikelyLanguageCode(nameWithoutExt.Substring(altBaseName.Length + 1)))
+                    {
+                        string langCode = nameWithoutExt.Substring(altBaseName.Length + 1);
+                        Logger.LogInformation("Found language-specific transcript with normalized name ({LangCode}): {Path}", langCode, candidate.FullName);
+                        return candidate.FullName;
+                    }
+                }
+
+                // Third priority: generic transcript with exact name (video.txt, video.md)
+                var exactTxtPath = Path.Combine(searchPath, fileNameWithoutExt + ".txt");
+                if (File.Exists(exactTxtPath))
+                {
+                    Logger.LogInformation("Found generic transcript: {Path}", exactTxtPath);
+                    return exactTxtPath;
+                }
+
+                var exactMdPath = Path.Combine(searchPath, fileNameWithoutExt + ".md");
+                if (File.Exists(exactMdPath))
+                {
+                    Logger.LogInformation("Found generic transcript: {Path}", exactMdPath);
+                    return exactMdPath;
+                }
+
+                // Fourth priority: generic transcript with normalized name (video_alt.txt, video_alt.md)
+                var altTxtPath = Path.Combine(searchPath, altBaseName + ".txt");
+                if (File.Exists(altTxtPath))
+                {
+                    Logger.LogInformation("Found generic transcript with normalized name: {Path}", altTxtPath);
+                    return altTxtPath;
+                }
+
+                var altMdPath = Path.Combine(searchPath, altBaseName + ".md");
+                if (File.Exists(altMdPath))
+                {
+                    Logger.LogInformation("Found generic transcript with normalized name: {Path}", altMdPath);
+                    return altMdPath;
+                }
+            }
+
+            Logger.LogInformation("No transcript file found for video: {VideoPath}", videoPath);
+            return null;
+        }
+
+        /// <summary>
         /// Determines whether a string is likely to be a language code.
         /// </summary>
         /// <param name="code">The string to check.</param>
@@ -561,8 +716,18 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             string? resourcesRoot = null,
             bool noShareLinks = false)
         {            // Extract metadata and transcript
-            var metadata = await ExtractMetadataAsync(videoPath);            // Generate share link if requested and OneDriveService is available
-            // Note: Share link is not stored in metadata, only used for markdown content
+            var metadata = await ExtractMetadataAsync(videoPath);
+
+            // Find transcript file and store its path in metadata
+            string? transcriptPath = FindTranscriptPath(videoPath);
+            if (!string.IsNullOrEmpty(transcriptPath))
+            {
+                metadata["transcript"] = transcriptPath;
+                Logger.LogInformation("Found transcript file and added path to metadata: {TranscriptPath}", transcriptPath);
+            }
+
+            // Generate share link if requested and OneDriveService is available
+            // Note: According to tests, share link should be added to markdown content but not to metadata
             string? shareLink = null;
             if (!noShareLinks && _oneDriveService != null)
             {
@@ -573,6 +738,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     if (!string.IsNullOrEmpty(shareLink))
                     {
                         Logger.LogInformation("OneDrive share link generated successfully");
+                        // Don't store in metadata - the field will stay empty as initialized in ExtractMetadataAsync
+                        // The share link will only be added to markdown content below
                     }
                     else
                     {
@@ -584,7 +751,6 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     Logger.LogError(ex, "Error generating OneDrive share link for: {VideoPath}", videoPath);
                 }
             }
-
             string? transcript = TryLoadTranscript(videoPath);
 
             // Choose input for summary based on transcript availability
@@ -611,8 +777,18 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             {
                 // Only call AI summarizer when summary is actually requested
                 Logger.LogInformation("Generating AI summary for video: {VideoPath}", videoPath);
-                aiSummary = await GenerateAiSummaryAsync(summaryInput);
-            }            // Add internal path for hierarchy detection (will be removed in GenerateMarkdownNote)
+
+                // Pass title from metadata for prompt variables
+                var promptVariables = new Dictionary<string, string>();
+                if (metadata.TryGetValue("title", out var titleObj) && titleObj != null)
+                {
+                    promptVariables["title"] = titleObj.ToString() ?? "Untitled Video";
+                }
+
+                aiSummary = await GenerateAiSummaryAsync(summaryInput, promptVariables, "final_summary_prompt_video");
+            }
+
+            // Add internal path for hierarchy detection (will be removed in GenerateMarkdownNote)
             metadata["_internal_path"] = videoPath;
 
             // Generate the basic markdown note

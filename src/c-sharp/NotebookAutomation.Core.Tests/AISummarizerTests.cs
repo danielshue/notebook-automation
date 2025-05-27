@@ -47,9 +47,8 @@ namespace NotebookAutomation.Core.Tests
                 _mockLogger.Object,
                 _testPromptService,
                 null,
-                _fakeTextGenService);
-
-            var result = await summarizer.SummarizeAsync(inputText, null, "test_prompt");
+                _fakeTextGenService);            // Cast to avoid ambiguity between the two overloads
+            var result = await summarizer.SummarizeTextAsync(inputText, null, "test_prompt");
 
             Assert.IsNotNull(result);
             Assert.AreEqual("Summary of the text", result);
@@ -70,10 +69,8 @@ namespace NotebookAutomation.Core.Tests
                 _mockLogger.Object,
                 _testPromptService,
                 null,
-                null);
-
-            // Act
-            var result = await summarizer.SummarizeAsync(inputText);
+                null);            // Act
+            var result = await summarizer.SummarizeTextAsync(inputText);
 
             // Assert
             Assert.IsNull(result); // Expect null since we provided an empty API key
@@ -95,7 +92,7 @@ namespace NotebookAutomation.Core.Tests
                 null,
                 _fakeTextGenService);
 
-            var result = await summarizer.SummarizeAsync(inputText);
+            var result = await summarizer.SummarizeTextAsync(inputText);
 
             Assert.IsNotNull(result);
             Assert.AreEqual("Direct service summary", result);
@@ -116,7 +113,7 @@ namespace NotebookAutomation.Core.Tests
                 null,
                 _fakeTextGenService);
 
-            var result = await summarizer.SummarizeAsync(inputText);
+            var result = await summarizer.SummarizeTextAsync(inputText);
 
             // Changed from IsNull to AreEqual("") because the implementation returns empty string on error
             Assert.AreEqual("", result);
@@ -142,7 +139,7 @@ namespace NotebookAutomation.Core.Tests
                 null,
                 _fakeTextGenService);
 
-            var result = await summarizer.SummarizeAsync(largeText);
+            var result = await summarizer.SummarizeTextAsync(largeText);
 
             Assert.IsNotNull(result);
             Assert.AreEqual("Final consolidated summary", result);
@@ -221,6 +218,88 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsTrue(codeResult, "Code block should be detected as markdown");
             Assert.IsTrue(linkResult, "Link should be detected as markdown");
             Assert.IsTrue(mixedResult, "Mixed markdown should be detected as markdown");
+        }
+
+        /// <summary>
+        /// Tests that summarization with variables correctly substitutes title in the prompt template.
+        /// </summary>
+        [TestMethod]
+        public async Task SummarizeWithVariablesAsync_WithTitleVariable_SubstitutesCorrectly()
+        {
+            // Arrange
+            var promptTemplate = "You are a summarizer. Analyze the video titled '{{title}}'. Summarize this content: {{content}}";
+            var inputText = "This is the video transcript to summarize.";
+            var expectedTitle = "Introduction to C# Programming";
+            var expectedPrompt = $"You are a summarizer. Analyze the video titled '{expectedTitle}'. Summarize this content: {inputText}";
+
+            _testPromptService.Template = promptTemplate;
+            _testPromptService.ExpectedSubstitution = expectedPrompt;
+            _fakeTextGenService.ExpectedPrompt = expectedPrompt;
+            _fakeTextGenService.Response = "Summary of the video about C# programming";
+
+            var variables = new Dictionary<string, string>
+            {
+                { "title", expectedTitle }
+            };
+
+            var summarizer = new AISummarizer(
+                _mockLogger.Object,
+                _testPromptService,
+                null,
+                _fakeTextGenService);
+
+            // Act
+            var result = await summarizer.SummarizeWithVariablesAsync(
+                inputText,
+                variables,
+                "test_prompt");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Summary of the video about C# programming", result);
+
+            // Verify that the template was requested with the correct name
+            Assert.AreEqual("test_prompt", _testPromptService.LastTemplateName);
+        }
+
+        /// <summary>
+        /// Tests that the FriendlyTitleHelper integration works correctly with the summarizer.
+        /// </summary>
+        [TestMethod]
+        public async Task SummarizeWithVariablesAsync_WithFriendlyTitle_WorksCorrectly()
+        {        // Arrange
+            var promptTemplate = "Summarize this video titled '{{title}}': {{content}}";
+            var inputText = "This is a technical video about programming.";
+            // Example of what FriendlyTitleHelper would extract from "01_02_Introduction_to_CSharp_Programming.mp4"
+            var friendlyTitle = "Introduction to CSharp Programming";
+
+            var expectedPrompt = $"Summarize this video titled '{friendlyTitle}': {inputText}";
+
+            _testPromptService.Template = promptTemplate;
+            _testPromptService.ExpectedSubstitution = expectedPrompt;
+            _fakeTextGenService.ExpectedPrompt = expectedPrompt;
+            _fakeTextGenService.Response = "This video introduces C# programming fundamentals.";
+
+            var variables = new Dictionary<string, string>
+            {
+                { "title", friendlyTitle }
+            };
+
+            var summarizer = new AISummarizer(
+                _mockLogger.Object,
+                _testPromptService,
+                null,
+                _fakeTextGenService);
+
+            // Act
+            var result = await summarizer.SummarizeWithVariablesAsync(
+                inputText,
+                variables,
+                "final_summary_prompt_video");
+
+            // Assert
+            Assert.IsNotNull(result);
+            Assert.AreEqual("This video introduces C# programming fundamentals.", result);
         }
     }
 }
