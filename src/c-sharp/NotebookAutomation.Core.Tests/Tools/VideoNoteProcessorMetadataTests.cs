@@ -270,9 +270,8 @@ video-uploaded:";
             Assert.IsTrue(markdown.Contains("type: video-reference"), "Missing type: video-reference");
             Assert.IsTrue(markdown.Contains("template-type: video-reference"), "Missing template-type: video-reference");            // Should NOT contain any AI summary text
             Assert.IsFalse(markdown.Contains("AI summary of the video content"), "Should not contain summary");
-            Assert.IsFalse(markdown.Contains("This is a test summary."), "Should not contain test summary");
-            // Should contain basic structure but no AI summary
-            Assert.IsTrue(markdown.Contains("# Video Note"), "Should contain main heading");
+            Assert.IsFalse(markdown.Contains("This is a test summary."), "Should not contain test summary");            // Should contain basic structure but no AI summary
+            // No need to check for "# Video Note" heading as we've removed it
             Assert.IsTrue(markdown.Contains("## Note"), "Should contain Note section");
             // Should not end with just frontmatter, should have minimal body
             Assert.IsFalse(markdown.EndsWith("---\n\n"), "Should have body content after frontmatter");

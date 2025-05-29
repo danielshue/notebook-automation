@@ -33,16 +33,26 @@ namespace NotebookAutomation.Cli.Commands
             var pathArg = new Argument<string>("path", "Path to the vault directory");
             var vaultCommand = new Command("vault", "Vault management commands");
 
+
             var generateIndexCommand = new Command("generate-index", "Generate a vault index");
             generateIndexCommand.AddArgument(pathArg);
             generateIndexCommand.SetHandler(async (InvocationContext context) =>
             {
+                // If path argument is missing, print usage and return
+                if (string.IsNullOrWhiteSpace(context.ParseResult.GetValueForArgument(pathArg)))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: vault generate-index <path>",
+                        "Generate a vault index for the specified directory.",
+                        "  <path>    Path to the vault directory (required)"
+                    );
+                    return;
+                }
                 string path = context.ParseResult.GetValueForArgument(pathArg);
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
                 await this.ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun);
             });
 
@@ -55,7 +65,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
+
                 await this.ExecuteVaultCommandAsync("ensure-metadata", path, config, debug, verbose, dryRun);
             });
 

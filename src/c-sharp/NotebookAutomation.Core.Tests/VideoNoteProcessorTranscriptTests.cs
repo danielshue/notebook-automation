@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 
 using NotebookAutomation.Core.Services;
+
 namespace NotebookAutomation.Core.Tests
 {
     /// <summary>
@@ -33,13 +34,10 @@ namespace NotebookAutomation.Core.Tests
             _logger = NullLogger<VideoNoteProcessor>.Instance;
             var promptService = new PromptTemplateService(
                 NullLogger<PromptTemplateService>.Instance,
-                new Configuration.AppConfig());
-            var aiSummarizer = new AISummarizer(
+                new Configuration.AppConfig()); var aiSummarizer = new AISummarizer(
                 NullLogger<AISummarizer>.Instance,
                 promptService,
-                null!, // Kernel (can be null for tests)
-                null!  // ITextGenerationService (can be null for tests)
-            );
+                null);
             _processor = new VideoNoteProcessor(_logger, aiSummarizer);
         }
 
@@ -319,7 +317,7 @@ namespace NotebookAutomation.Core.Tests
             string markdownNote = await _processor.GenerateVideoNoteAsync(
                 videoPath,
                 "dummy-api-key",
-                "final_summary_prompt_video",
+                "final_summary_prompt",
                 noSummary: true, // Skip summary generation to simplify the test
                 noShareLinks: true); // Skip share link generation
 
@@ -333,3 +331,4 @@ namespace NotebookAutomation.Core.Tests
         }
     }
 }
+

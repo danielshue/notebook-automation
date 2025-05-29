@@ -136,8 +136,8 @@ namespace NotebookAutomation.Core.Configuration
                 var logger = loggerFactory.CreateLogger<PromptTemplateService>();
                 var appConfig = provider.GetRequiredService<AppConfig>();
                 return new PromptTemplateService(logger, appConfig);
-            });            services.AddScoped<TagProcessor>();
-            
+            }); services.AddScoped<TagProcessor>();
+
             // Register processors with AISummarizer dependency
             services.AddScoped(provider =>
             {
@@ -153,7 +153,7 @@ namespace NotebookAutomation.Core.Configuration
             services.AddScoped(provider =>
             {
                 var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-                var batchLogger = loggerFactory.CreateLogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>();                var processorLogger = loggerFactory.CreateLogger<VideoNoteProcessor>();
+                var batchLogger = loggerFactory.CreateLogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>(); var processorLogger = loggerFactory.CreateLogger<VideoNoteProcessor>();
                 var aiSummarizer = provider.GetRequiredService<AISummarizer>();
                 var appConfig = provider.GetRequiredService<AppConfig>();
                 // Use GetService instead of GetRequiredService since OneDriveService is optional
@@ -195,31 +195,40 @@ namespace NotebookAutomation.Core.Configuration
             });
 
             // Register prompt template service is already done above
-
-            // Add AI services conditionally if OpenAI key is available
-            var openAiKey = configuration["UserSecrets:OpenAI:ApiKey"] ??
-                            Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-
-            if (!string.IsNullOrEmpty(openAiKey))
+            //var openAiKey = configuration["UserSecrets:OpenAI:ApiKey"] ??
+            // Add AI services based on provider
+            services.AddScoped(provider =>
             {
-                // Register Semantic Kernel if API key is available
-                services.AddScoped(provider =>
+                var appConfig = provider.GetRequiredService<AppConfig>();
+                var aiConfig = appConfig.AiService;
+                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+                var builder = Kernel.CreateBuilder();
+                builder.Services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
+
+                var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
+                if (providerType == "openai" && aiConfig.OpenAI != null)
                 {
-                    var appConfig = provider.GetRequiredService<AppConfig>();
-                    var model = appConfig.AiService?.Model ?? "gpt-4.1";
-                    var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-
-                    // Build and configure the Semantic Kernel
-                    var builder = Kernel.CreateBuilder();
-                    builder.Services.AddSingleton(typeof(ILoggerFactory), loggerFactory); // Inject app logger factory
-                    builder.AddOpenAIChatCompletion(model, openAiKey);
-
-                    // Optionally, set the kernel's own logger if supported
-                    // builder.WithLoggerFactory(loggerFactory); // Uncomment if Semantic Kernel supports this method
-
-                    return builder.Build();
-                });
-            }
+                    var openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+                    var endpoint = aiConfig.OpenAI.Endpoint ?? "https://api.openai.com/v1/chat/completions";
+                    var model = aiConfig.OpenAI.Model ?? "gpt-4o";
+                    builder.AddOpenAIChatCompletion(model, openAiKey ?? string.Empty, endpoint);
+                }
+                else if (providerType == "azure" && aiConfig.Azure != null)
+                {
+                    var azureKey = Environment.GetEnvironmentVariable("AZURE_OPEN_AI_API_KEY");
+                    var endpoint = aiConfig.Azure.Endpoint ?? string.Empty;
+                    var deployment = aiConfig.Azure.Deployment ?? string.Empty;
+                    builder.AddAzureOpenAIChatCompletion(deployment, endpoint, azureKey ?? string.Empty);
+                }
+                else if (providerType == "foundry" && aiConfig.Foundry != null)
+                {
+                    var foundryKey = Environment.GetEnvironmentVariable("FOUNDRY_API_KEY") ?? string.Empty;
+                    var endpoint = aiConfig.Foundry.Endpoint ?? string.Empty;
+                    var model = aiConfig.Foundry.Model ?? string.Empty;
+                    builder.AddOpenAIChatCompletion(model, foundryKey, endpoint);
+                }
+                return builder.Build();
+            });
             // Register AISummarizer
             services.AddScoped(provider =>
             {
@@ -227,12 +236,6 @@ namespace NotebookAutomation.Core.Configuration
                 var logger = loggerFactory.CreateLogger<AISummarizer>();
                 var appConfig = provider.GetRequiredService<AppConfig>();
                 var promptService = provider.GetRequiredService<PromptTemplateService>();
-
-                // Add AI services conditionally if OpenAI key is available
-                var openAiKey = configuration["UserSecrets:OpenAI:ApiKey"] ??
-                                Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-
-                var model = appConfig.AiService?.Model ?? "gpt-4.1";
 
                 // Get semantic kernel if registered (may be null)
                 Kernel? semanticKernel = null;
@@ -259,11 +262,28 @@ namespace NotebookAutomation.Core.Configuration
                 {
                     logger.LogWarning(ex, "Semantic Kernel is not available");
                 }
+
+                // Use the correct model and settings for the selected provider
+                var aiConfig = appConfig.AiService;
+                var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
+                string? model = null;
+                if (providerType == "openai" && aiConfig.OpenAI != null)
+                {
+                    model = aiConfig.OpenAI.Model ?? "gpt-4o";
+                }
+                else if (providerType == "azure" && aiConfig.Azure != null)
+                {
+                    model = aiConfig.Azure.Model ?? "gpt-4o";
+                }
+                else if (providerType == "foundry" && aiConfig.Foundry != null)
+                {
+                    model = aiConfig.Foundry.Model ?? "foundry-llm-model-name";
+                }
+
                 return new AISummarizer(
                   logger,
                   promptService,
-                  semanticKernel!,  // Use null-forgiving operator since we've already checked for null
-                  textGenService!);  // Use null-forgiving operator since we've already checked for null
+                  semanticKernel);
             });
 
             return services;

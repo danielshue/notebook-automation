@@ -30,7 +30,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             versionCommands.Register(rootCommand);
 
             // Assert
-            var versionCommand = rootCommand.Children.FirstOrDefault(c => c.Name == "version");
+            var versionCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "version");
             Assert.IsNotNull(versionCommand, "version command should be registered on the root command.");
         }
     }

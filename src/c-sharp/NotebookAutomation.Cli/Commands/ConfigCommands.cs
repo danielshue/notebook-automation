@@ -18,12 +18,12 @@ namespace NotebookAutomation.Cli.Commands
     internal class ConfigCommands
     {
         /// <summary>
-        /// Prints the usage/help for the 'config show' command.
+        /// Prints the usage/help for the 'config view' command.
         /// </summary>
-        internal void PrintShowUsage()
+        internal void PrintViewUsage()
         {
             AnsiConsoleHelper.WriteUsage(
-                "Usage: config show [options]",
+                "Usage: config view [options]",
                 "Shows the current configuration settings.",
                 $"  {AnsiColors.OKGREEN}--config, -c <config>{AnsiColors.ENDC}    Path to the configuration file\n" +
                 $"  {AnsiColors.OKGREEN}--debug, -d{AnsiColors.ENDC}              Enable debug output"
@@ -37,25 +37,29 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="debugOption">The global debug option.</param>
         public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption)
         {
+            // Config command group (no special AI options)
             var configCommand = new Command("config", "Configuration management commands");
 
-            // config show
-            var showCommand = new Command("show", "Show the current configuration");
-            showCommand.SetHandler((InvocationContext context) =>
+            // config view
+            var viewCommand = new Command("view", "Show the current configuration");
+            viewCommand.SetHandler((InvocationContext context) =>
             {
                 // Check if any arguments were provided
                 if (context.ParseResult.Tokens.Count == 0 && context.ParseResult.UnparsedTokens.Count == 0)
                 {
-                    PrintShowUsage();
+                    PrintViewUsage();
                     return;
                 }
                 string? configPath = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
-
                 try
                 {
                     // Always load config directly from JSON for display
                     var configFile = configPath ?? AppConfig.FindConfigFile();
+                    if (!string.IsNullOrEmpty(configFile))
+                    {
+                        Console.WriteLine($"\n{AnsiColors.OKCYAN}Using configuration file: {AnsiColors.BOLD}{configFile}{AnsiColors.ENDC}\n");
+                    }
                     var appConfig = AppConfig.LoadFromJsonFile(configFile);
                     PrintConfigFormatted(appConfig);
                 }
@@ -111,19 +115,36 @@ namespace NotebookAutomation.Cli.Commands
                     context.Console.WriteLine("  --config, -c <config>    Path to the configuration file");
                     context.Console.WriteLine("  --debug, -d              Enable debug output");
                     context.Console.WriteLine("");
-                    context.Console.WriteLine("Available configuration keys:"); context.Console.WriteLine("  paths.onedrive_fullpath_root      - Full path to OneDrive local resources directory");
+                    context.Console.WriteLine("Available configuration keys:");
+                    context.Console.WriteLine("  paths.onedrive_fullpath_root      - Full path to OneDrive local resources directory");
                     context.Console.WriteLine("  paths.notebook_vault_fullpath_root - Full path to the notebook vault root directory");
                     context.Console.WriteLine("  paths.metadata_file                - Path to the metadata file");
+                    context.Console.WriteLine("  paths.logging_dir                  - Directory for log files");
+                    context.Console.WriteLine("  paths.prompts_path                 - Directory containing prompt template files");
                     context.Console.WriteLine("  paths.onedrive_resources_basepath  - Base path for OneDrive resources");
-                    context.Console.WriteLine("  paths.logging_dir                  - Directory for log files"); context.Console.WriteLine("  paths.prompts_path              - Directory containing prompt template files");
+                    context.Console.WriteLine("---");
                     context.Console.WriteLine("  microsoft_graph.client_id          - Microsoft Graph API client ID");
-                    context.Console.WriteLine("  aiservice.model                    - AI model to use (e.g., gpt-4)");
                     context.Console.WriteLine("  microsoft_graph.api_endpoint       - Microsoft Graph API endpoint");
                     context.Console.WriteLine("  microsoft_graph.authority          - Microsoft Graph API authority");
                     context.Console.WriteLine("  microsoft_graph.scopes             - Microsoft Graph API scopes (comma-separated)");
-                    context.Console.WriteLine("  openai.api_key                     - OpenAI API key");
+                    context.Console.WriteLine("---");
                     context.Console.WriteLine("  video_extensions                   - Video file extensions (comma-separated)");
+                    context.Console.WriteLine("---");
+                    context.Console.WriteLine("  aiservice.provider                 - AI provider to use (openai, azure, foundry)");
+                    context.Console.WriteLine("  aiservice.openai.endpoint          - OpenAI API endpoint (if using OpenAI)");
+                    context.Console.WriteLine("  aiservice.openai.model             - OpenAI API model (if using OpenAI)");
+                    context.Console.WriteLine("  aiservice.openai.key               - OpenAI API key (if using OpenAI)");
+                    context.Console.WriteLine("---");
+                    context.Console.WriteLine("  aiservice.azureopenai.endpoint     - Azure OpenAI API endpoint (if using Azure OpenAI)");
+                    context.Console.WriteLine("  aiservice.azureopenai.deployment   - Azure OpenAI API deployment (if using Azure OpenAI)");
+                    context.Console.WriteLine("  aiservice.azureopenai.model        - Azure OpenAI API model (if using Azure OpenAI)");
+                    context.Console.WriteLine("  aiservice.azureopenai.key          - Azure OpenAI API key (if using Azure OpenAI)");
+                    context.Console.WriteLine("---");
+                    context.Console.WriteLine("  aiservice.foundry.endpoint         - Foundry API endpoint (if using Foundry)");
+                    context.Console.WriteLine("  aiservice.foundry.model            - Foundry API model (if using Foundry)");
+                    context.Console.WriteLine("  aiservice.foundry.key              - Foundry API key (if using Foundry)");
                 }
+
             });
 
             // Display user secrets status
@@ -183,7 +204,7 @@ namespace NotebookAutomation.Cli.Commands
                 }
             });
 
-            configCommand.AddCommand(showCommand);
+            configCommand.AddCommand(viewCommand);
             configCommand.AddCommand(updateKeyCommand);
 
             // Show help if no subcommand is provided for the config command
@@ -193,7 +214,7 @@ namespace NotebookAutomation.Cli.Commands
                 {
                     var options = string.Join("\n", configCommand.Children.OfType<Command>().Select(cmd => $"  {cmd.Name}\t{cmd.Description}"));
                     AnsiConsoleHelper.WriteUsage(
-                        "Usage: notebookautomation config [command] [options]",
+                        "Usage: notebookautomation.exe config [command] [options]",
                         configCommand.Description ?? "Available config commands:",
                         options
                     );
@@ -202,7 +223,7 @@ namespace NotebookAutomation.Cli.Commands
                 {
                     var options = string.Join("\n", configCommand.Children.OfType<Command>().Select(cmd => $"  {cmd.Name,-15} {cmd.Description}"));
                     AnsiConsoleHelper.WriteUsage(
-                        "Usage: notebookautomation config [command] [options]",
+                        "Usage: notebookautomation.exe config [command] [options]",
                         "Please provide a valid config subcommand. Available options:",
                         options
                     );
@@ -263,25 +284,50 @@ namespace NotebookAutomation.Cli.Commands
                             case "scopes": mg.Scopes = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList(); return true;
                         }
                         break;
-                    case "openai":
-                        if (prop == "api_key")
-                        {
-                            // Do not allow updating/storing the OpenAI API key in config for security
-                            AnsiConsoleHelper.WriteWarning("OpenAI API key must be set via the OPENAI_API_KEY environment variable. It will not be stored in the config file.");
-                            return false;
-                        }
-                        break;
                     case "aiservice":
                         var aiService = appConfig.AiService;
                         switch (prop)
                         {
-                            case "model": aiService.Model = value; return true;
-                            case "endpoint": aiService.Endpoint = value; return true;
+                            case "provider": aiService.Provider = value; return true;
                         }
                         break;
                     case "video_extensions":
                         appConfig.SetVideoExtensions(value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList());
                         return true;
+                }
+            }
+            else if (parts.Length == 3 && parts[0].ToLowerInvariant() == "aiservice")
+            {
+                var provider = parts[1].ToLowerInvariant();
+                var prop = parts[2];
+                var aiService = appConfig.AiService;
+                switch (provider)
+                {
+                    case "openai":
+                        if (aiService.OpenAI == null) aiService.OpenAI = new NotebookAutomation.Core.Configuration.OpenAiProviderConfig();
+                        switch (prop)
+                        {
+                            case "model": aiService.OpenAI.Model = value; return true;
+                            case "endpoint": aiService.OpenAI.Endpoint = value; return true;
+                        }
+                        break;
+                    case "azure":
+                        if (aiService.Azure == null) aiService.Azure = new NotebookAutomation.Core.Configuration.AzureProviderConfig();
+                        switch (prop)
+                        {
+                            case "model": aiService.Azure.Model = value; return true;
+                            case "endpoint": aiService.Azure.Endpoint = value; return true;
+                            case "deployment": aiService.Azure.Deployment = value; return true;
+                        }
+                        break;
+                    case "foundry":
+                        if (aiService.Foundry == null) aiService.Foundry = new NotebookAutomation.Core.Configuration.FoundryProviderConfig();
+                        switch (prop)
+                        {
+                            case "model": aiService.Foundry.Model = value; return true;
+                            case "endpoint": aiService.Foundry.Endpoint = value; return true;
+                        }
+                        break;
                 }
             }
             return false;
@@ -300,6 +346,12 @@ namespace NotebookAutomation.Cli.Commands
                 Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}{key,-keyWidth}{AnsiColors.ENDC}: {AnsiColors.OKGREEN}{value}{AnsiColors.ENDC}");
             }
 
+            if (appConfig == null)
+            {
+                Console.WriteLine("[Config is null]");
+                return;
+            }
+
             // Yellow foreground on blue background, bold, spanning the CLI width
             int width = 0;
             try { width = Console.WindowWidth; } catch { width = 80; }
@@ -310,47 +362,160 @@ namespace NotebookAutomation.Cli.Commands
             Console.WriteLine();
             Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}");
             Console.WriteLine($"{AnsiColors.BG_BLUE}{AnsiColors.WARNING}{AnsiColors.BOLD}{paddedHeader}{AnsiColors.ENDC}");
-            Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}"); Console.WriteLine($"{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Paths =={AnsiColors.ENDC}");
-            PrintAligned("onedrive_fullpath_root", appConfig.Paths.OnedriveFullpathRoot);
-            PrintAligned("notebook_vault_fullpath_root", appConfig.Paths.NotebookVaultFullpathRoot);
-            PrintAligned("metadata_file", appConfig.Paths.MetadataFile);
-            PrintAligned("onedrive_resources_basepath", appConfig.Paths.OnedriveResourcesBasepath);
-            PrintAligned("logging_dir", appConfig.Paths.LoggingDir);
-            PrintAligned("prompts_path", appConfig.Paths.PromptsPath);
+            Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}");
+            Console.WriteLine($"{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Paths =={AnsiColors.ENDC}");
 
-            Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Microsoft Graph API =={AnsiColors.ENDC}");
-            PrintAligned("client_id", appConfig.MicrosoftGraph.ClientId);
-            PrintAligned("api_endpoint", appConfig.MicrosoftGraph.ApiEndpoint);
-            PrintAligned("authority", appConfig.MicrosoftGraph.Authority);
-            PrintAligned("scopes", string.Join(", ", appConfig.MicrosoftGraph.Scopes)); Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== AI Service =={AnsiColors.ENDC}");
-            // Always show where the OpenAI API key is sourced from
-            string? apiKey = appConfig.AiService.GetApiKey();
-            string openAiKey;
-
-            if (!string.IsNullOrEmpty(apiKey))
+            if (appConfig == null)
             {
-                openAiKey = "[API key available]";
+                Console.WriteLine("[Config is null]");
+                return;
+            }
 
-                // Indicate the source if we can determine it
-                if (Environment.GetEnvironmentVariable(AIServiceConfig.AiApiKeyEnvVar) != null)
-                {
-                    openAiKey += $" [via ENV:{AIServiceConfig.AiApiKeyEnvVar}]";
-                }
-                else
-                {
-                    openAiKey += " [via User Secrets]";
-                }
+            var paths = appConfig?.Paths;
+            if (appConfig == null || paths == null)
+            {
+                PrintAligned("onedrive_fullpath_root", "[not set]");
+                PrintAligned("notebook_vault_fullpath_root", "[not set]");
+                PrintAligned("metadata_file", "[not set]");
+                PrintAligned("onedrive_resources_basepath", "[not set]");
+                PrintAligned("logging_dir", "[not set]");
+                PrintAligned("prompts_path", "[not set]");
             }
             else
             {
-                openAiKey = $"[not set - set via User Secrets or ENV:{AIServiceConfig.AiApiKeyEnvVar}]";
+                PrintAligned("onedrive_fullpath_root", paths.OnedriveFullpathRoot ?? "[not set]");
+                PrintAligned("notebook_vault_fullpath_root", paths.NotebookVaultFullpathRoot ?? "[not set]");
+                PrintAligned("metadata_file", paths.MetadataFile ?? "[not set]");
+                PrintAligned("onedrive_resources_basepath", paths.OnedriveResourcesBasepath ?? "[not set]");
+                PrintAligned("logging_dir", paths.LoggingDir ?? "[not set]");
+                PrintAligned("prompts_path", paths.PromptsPath ?? "[not set]");
             }
 
-            PrintAligned("api_key", openAiKey);
-            PrintAligned("model", appConfig.AiService.Model ?? "");
+            Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Microsoft Graph API =={AnsiColors.ENDC}");
+            var graph = appConfig?.MicrosoftGraph;
+            if (appConfig == null || graph == null)
+            {
+                PrintAligned("client_id", "[not set]");
+                PrintAligned("api_endpoint", "[not set]");
+                PrintAligned("authority", "[not set]");
+                PrintAligned("scopes", "[not set]");
+            }
+            else
+            {
+                PrintAligned("client_id", graph.ClientId ?? "[not set]");
+                PrintAligned("api_endpoint", graph.ApiEndpoint ?? "[not set]");
+                PrintAligned("authority", graph.Authority ?? "[not set]");
+                if (graph.Scopes == null)
+                {
+                    PrintAligned("scopes", "[not set]");
+                }
+                else
+                {
+                    PrintAligned("scopes", string.Join(", ", graph.Scopes));
+                }
+            }
+
+            Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== AI Service =={AnsiColors.ENDC}");
+
+            var ai = appConfig?.AiService;
+            if (appConfig == null || ai == null)
+            {
+                PrintAligned("provider", "[not set]");
+                PrintAligned("selected_model", "[not set]");
+                PrintAligned("selected_endpoint", "[not set]");
+                PrintAligned("openai:model", "[not set]");
+                PrintAligned("openai:endpoint", "[not set]");
+                PrintAligned("azure:model", "[not set]");
+                PrintAligned("azure:endpoint", "[not set]");
+                PrintAligned("azure:deployment", "[not set]");
+                PrintAligned("foundry:model", "[not set]");
+                PrintAligned("foundry:endpoint", "[not set]");
+                PrintAligned("api_key", "[not set - set via User Secrets or ENV]");
+            }
+            else
+            {
+                var provider = ai.Provider ?? "[not set]";
+                PrintAligned("provider", provider);
+
+                // Show selected model and endpoint for the provider
+                string selectedModel = "[not set]";
+                string selectedEndpoint = "[not set]";
+                switch (provider.ToLowerInvariant())
+                {
+                    case "openai":
+                        selectedModel = ai.OpenAI != null ? ai.OpenAI.Model ?? "[not set]" : "[not set]";
+                        selectedEndpoint = ai.OpenAI != null ? ai.OpenAI.Endpoint ?? "[not set]" : "[not set]";
+                        break;
+                    case "azure":
+                        selectedModel = ai.Azure != null ? ai.Azure.Model ?? "[not set]" : "[not set]";
+                        selectedEndpoint = ai.Azure != null ? ai.Azure.Endpoint ?? "[not set]" : "[not set]";
+                        break;
+                    case "foundry":
+                        selectedModel = ai.Foundry != null ? ai.Foundry.Model ?? "[not set]" : "[not set]";
+                        selectedEndpoint = ai.Foundry != null ? ai.Foundry.Endpoint ?? "[not set]" : "[not set]";
+                        break;
+                }
+                PrintAligned("selected_model", selectedModel);
+                PrintAligned("selected_endpoint", selectedEndpoint);
+
+                // Show all provider configs
+                if (ai.OpenAI != null)
+                {
+                    PrintAligned("openai:model", ai.OpenAI.Model ?? "[not set]");
+                    PrintAligned("openai:endpoint", ai.OpenAI.Endpoint ?? "[not set]");
+                }
+                else
+                {
+                    PrintAligned("openai:model", "[not set]");
+                    PrintAligned("openai:endpoint", "[not set]");
+                }
+                if (ai.Azure != null)
+                {
+                    PrintAligned("azure:model", ai.Azure.Model ?? "[not set]");
+                    PrintAligned("azure:endpoint", ai.Azure.Endpoint ?? "[not set]");
+                    PrintAligned("azure:deployment", ai.Azure.Deployment ?? "[not set]");
+                }
+                else
+                {
+                    PrintAligned("azure:model", "[not set]");
+                    PrintAligned("azure:endpoint", "[not set]");
+                    PrintAligned("azure:deployment", "[not set]");
+                }
+                if (ai.Foundry != null)
+                {
+                    PrintAligned("foundry:model", ai.Foundry.Model ?? "[not set]");
+                    PrintAligned("foundry:endpoint", ai.Foundry.Endpoint ?? "[not set]");
+                }
+                else
+                {
+                    PrintAligned("foundry:model", "[not set]");
+                    PrintAligned("foundry:endpoint", "[not set]");
+                }
+
+                // Always show where the API key is sourced from
+                string? apiKey = null;
+                try { apiKey = ai.GetApiKey(); } catch { apiKey = null; }
+                string apiKeyStatus;
+                if (!string.IsNullOrEmpty(apiKey))
+                {
+                    apiKeyStatus = "[API key available] [via ENV or User Secrets]";
+                }
+                else
+                {
+                    apiKeyStatus = "[not set - set via User Secrets or ENV]";
+                }
+                PrintAligned("api_key", apiKeyStatus);
+            }
 
             Console.WriteLine($"\n{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Video Extensions =={AnsiColors.ENDC}");
-            PrintAligned("video_extensions", string.Join(", ", appConfig.VideoExtensions));
+            if (appConfig != null && appConfig.VideoExtensions != null)
+            {
+                PrintAligned("video_extensions", string.Join(", ", appConfig.VideoExtensions));
+            }
+            else
+            {
+                PrintAligned("video_extensions", "[not set]");
+            }
             Console.WriteLine($"\n{AnsiColors.GREY}Tip: Use '{AnsiColors.BOLD}config update-key <key> <value>{AnsiColors.ENDC}{AnsiColors.GREY}' to change a setting.{AnsiColors.ENDC}\n");
         }
 

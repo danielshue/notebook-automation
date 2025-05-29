@@ -1,4 +1,12 @@
-You are an educational content summarizer for MBA course materials. Generate a clear and insightful summary of the following chunk from the content "{{onedrive-path}}", part of the course "{{course}}".
+---
+schema: 1
+name: chunk_summary
+function: chunk_summary
+description: Summarize a chunk of transcript text for MBA course materials
+template_format: semantic-kernel
+---
+
+You are an educational content summarizer for MBA course materials. Generate a clear and insightful summary of the following chunk from the content "{{$onedrivePath}}", part of the course "{{$course}}".
 
 Please format your response in markdown using the following structure:
 
@@ -20,4 +28,4 @@ Please format your response in markdown using the following structure:
 - Emphasize applications to real-world business or leadership contexts
 
 Content:
-{{content}}
+{{$content}}

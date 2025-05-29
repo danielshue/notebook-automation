@@ -132,7 +132,7 @@ namespace NotebookAutomation.Core.Tests
             var noteContent = File.ReadAllText(notePath);
             // When no summary is requested, should contain ## Note section but no AI summary
             Assert.IsTrue(noteContent.Contains("---"), "Should contain YAML frontmatter");
-            Assert.IsTrue(noteContent.Contains("# Video Note"), "Should contain main heading");
+            // No need to check for "# Video Note" heading as we've removed it
             Assert.IsTrue(noteContent.Contains("## Note"), "Should contain Note section");
             Assert.IsFalse(noteContent.Contains("AI summary"), "Should not contain AI summary text");
         }

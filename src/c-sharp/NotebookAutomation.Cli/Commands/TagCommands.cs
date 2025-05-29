@@ -40,7 +40,19 @@ namespace NotebookAutomation.Cli.Commands
             addNestedCommand.AddArgument(pathArg);
             addNestedCommand.SetHandler(async (InvocationContext context) =>
             {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
+                // Print usage/help if required argument is missing
+                var pathValue = context.ParseResult.GetValueForArgument(pathArg);
+                if (string.IsNullOrEmpty(pathValue))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation tag add-nested <path> [options]",
+                        addNestedCommand.Description ?? string.Empty,
+                        string.Join("\n", addNestedCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", addNestedCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
+                string path = pathValue;
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);

@@ -43,9 +43,7 @@ namespace NotebookAutomation.Core.Tests.Tools
             var aiSummarizer = new AISummarizer(
                 NullLogger<AISummarizer>.Instance,
                 promptService,
-                null!, // Kernel (can be null for tests)
-                null!  // ITextGenerationService (can be null for tests)
-            );
+                null);
             var processor = new VideoNoteProcessor(logger, aiSummarizer);
 
             // Act - Using null OpenAI key should return simulated summary
@@ -66,9 +64,7 @@ namespace NotebookAutomation.Core.Tests.Tools
             var aiSummarizer = new AISummarizer(
                 NullLogger<AISummarizer>.Instance,
                 promptService,
-                null!, // Kernel (can be null for tests)
-                null!  // ITextGenerationService (can be null for tests)
-            );
+                null);
             var processor = new VideoNoteProcessor(logger, aiSummarizer);
             // Act - using a null OpenAI key should result in simulated summary
             var result = await processor.GenerateAiSummaryAsync("Test text");
@@ -77,3 +73,4 @@ namespace NotebookAutomation.Core.Tests.Tools
         }
     }
 }
+

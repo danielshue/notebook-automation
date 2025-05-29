@@ -54,6 +54,17 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
+                // Print usage/help if required argument is missing
+                if (srcDirs == null || srcDirs.Length == 0)
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation generate-markdown --src-dirs <dir> [options]",
+                        markdownCommand.Description ?? string.Empty,
+                        string.Join("\n", markdownCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
+
                 // Initialize dependency injection if needed
                 if (Program.ServiceProvider == null && config != null)
                 {

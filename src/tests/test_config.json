@@ -17,9 +17,9 @@
   },
   "aiService": {
     "service": "OpenAI",
-    "model": "gpt-4",
+    "model": "gpt-4o",
     "apiKeySource": "environment",
-    "maxTokensPerRequest": 8000
+    "maxTokensPerRequest": 16000
   },
   "userSecrets": {
     "openAI": {

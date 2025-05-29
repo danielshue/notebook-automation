@@ -32,34 +32,31 @@ namespace NotebookAutomation.Core.Tests
         /// </summary>
         private void SetupApiKeyConfigurationForTesting(AppConfig config, string apiKey)
         {
-            var configDict = new Dictionary<string, string>
-            {
-                {"UserSecrets:OpenAI:ApiKey", apiKey}
-            };
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(configDict)
-                .Build();
-            config.AiService.SetConfiguration(configuration);
-        }/// <summary>
-         /// Tests the basic property indexer access with both direct and nested keys.
-         /// </summary>
+            // Set the environment variable directly for the provider
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", apiKey);
+        }
+        /// Tests the basic property indexer access with both direct and nested keys.
+        /// </summary>
         [TestMethod]
         public void Indexer_ShouldReturnValueForExistingKeys()
         {
             // Arrange
-            var appConfig = new AppConfig(); appConfig.Paths = new PathsConfig
+            var appConfig = new AppConfig();
+            appConfig.Paths = new PathsConfig
             {
                 LoggingDir = "logs",
                 OnedriveFullpathRoot = "/resources"
-            }; appConfig.AiService = new AIServiceConfig
-            {
-                Model = "gpt-4"
             };
-            SetupApiKeyConfigurationForTesting(appConfig, "test-api-key");            // Act & Assert
+            appConfig.AiService = new AIServiceConfig
+            {
+                Provider = "openai",
+                OpenAI = new OpenAiProviderConfig { Model = "gpt-4" }
+            };
+            SetupApiKeyConfigurationForTesting(appConfig, "test-api-key");
+            // Act & Assert
             Assert.AreEqual("logs", appConfig["paths:LoggingDir"]);
             Assert.AreEqual("/resources", appConfig["paths:OnedriveFullpathRoot"]);
             Assert.AreEqual("gpt-4", appConfig["aiservice:Model"]);
-
             // Check using JsonPropertyName value
             Assert.AreEqual("test-api-key", appConfig["aiservice:api_key"]);
             Assert.AreEqual("logs", appConfig["paths:logging_dir"]);
@@ -200,9 +197,13 @@ namespace NotebookAutomation.Core.Tests
                 var configuration = new ConfigurationBuilder()
                     .AddInMemoryCollection(configDict)
                     .Build();
-                appConfig.AiService.SetConfiguration(configuration);
+                // No SetConfiguration; set provider/model directly
+                appConfig.AiService.Provider = "openai";
+                if (appConfig.AiService.OpenAI == null)
+                    appConfig.AiService.OpenAI = new OpenAiProviderConfig();
+                appConfig.AiService.OpenAI.Model = "gpt-4";
                 Assert.AreEqual("test-api-key", appConfig.AiService.GetApiKey());
-                Assert.AreEqual("gpt-4", appConfig.AiService.Model);
+                Assert.AreEqual("gpt-4", appConfig.AiService.OpenAI?.Model);
             }
             finally
             {
@@ -230,7 +231,8 @@ namespace NotebookAutomation.Core.Tests
 
             appConfig.AiService = new AIServiceConfig
             {
-                Model = "gpt-4"
+                Provider = "openai",
+                OpenAI = new OpenAiProviderConfig { Model = "gpt-4" }
             };
 
             try
@@ -252,9 +254,13 @@ namespace NotebookAutomation.Core.Tests
                 var configuration = new ConfigurationBuilder()
                     .AddInMemoryCollection(configDict)
                     .Build();
-                loadedConfig.AiService.SetConfiguration(configuration);
+                // No SetConfiguration; set provider/model directly
+                loadedConfig.AiService.Provider = "openai";
+                if (loadedConfig.AiService.OpenAI == null)
+                    loadedConfig.AiService.OpenAI = new OpenAiProviderConfig();
+                loadedConfig.AiService.OpenAI.Model = "gpt-4";
                 Assert.AreEqual("test-api-key", loadedConfig.AiService.GetApiKey());
-                Assert.AreEqual("gpt-4", loadedConfig.AiService.Model);
+                Assert.AreEqual("gpt-4", loadedConfig.AiService.OpenAI?.Model);
             }
             finally
             {
@@ -300,9 +306,10 @@ namespace NotebookAutomation.Core.Tests
             {
                 OnedriveFullpathRoot = "/config-resources",
                 LoggingDir = "/config-logs"
-            }; appConfig.AiService = new AIServiceConfig
+            };
+            appConfig.AiService = new AIServiceConfig
             {
-                Model = "gpt-4-turbo"
+                OpenAI = new OpenAiProviderConfig { Model = "gpt-4-turbo" }
             };
 
             // Set up configuration with API key
@@ -311,7 +318,7 @@ namespace NotebookAutomation.Core.Tests
             // Act & Assert            Assert.AreEqual("/config-resources", appConfig["paths:resources_root"]);
             Assert.AreEqual("/config-logs", appConfig["paths:logging_dir"]);
             Assert.AreEqual("config-api-key", appConfig.AiService.GetApiKey());
-            Assert.AreEqual("gpt-4-turbo", appConfig["aiservice:model"]);
+            Assert.AreEqual("gpt-4-turbo", appConfig.AiService.OpenAI?.Model);
         }
     }
 }

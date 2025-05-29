@@ -258,7 +258,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                             }
                         }
 
-                        markdown = _processor.GenerateMarkdownNote(summaryText, metadata, noteType);
+                        markdown = _processor.GenerateMarkdownNote(summaryText, metadata, noteType, includeNoteTypeTitle: false);
                     }
 
                     // Ensure markdown is initialized

@@ -37,6 +37,7 @@ namespace NotebookAutomation.Cli
             var rootCommand = new RootCommand(
                 description: "notebookautomation.exe - Tools for managing Obsidian notebooks");
 
+
             // Global options
             var configOption = new Option<string>(
                 aliases: ["--config", "-c"],
@@ -50,7 +51,6 @@ namespace NotebookAutomation.Cli
             var dryRunOption = new Option<bool>(
                 aliases: ["--dry-run"],
                 description: "Simulate actions without making changes");
-
             rootCommand.AddGlobalOption(configOption);
             rootCommand.AddGlobalOption(debugOption);
             rootCommand.AddGlobalOption(verboseOption);
@@ -92,7 +92,9 @@ namespace NotebookAutomation.Cli
             {
                 await rootCommand.InvokeAsync("--help");
                 return 0;
-            }            // Print available subcommands if no valid subcommand is provided
+            }
+
+            // Print available subcommands if no valid subcommand is provided
             rootCommand.TreatUnmatchedTokensAsErrors = true;
             rootCommand.SetHandler((InvocationContext context) =>
             {
@@ -108,84 +110,39 @@ namespace NotebookAutomation.Cli
 
                     context.Console.WriteLine("\nRun 'notebookautomation.exe [command] --help' for more information on a specific command.");
                 }
-            });            // Set a root handler to initialize configuration and logging
+            });
 
-            rootCommand.SetHandler((string configPath, bool debug) =>
+            // The root command no longer handles AI provider/model/endpoint options globally.
+            // These are now handled under the config command group only.
+
+            // Print config file path before any command except help/version
+            var isHelp = args.Any(a => a == "--help" || a == "-h");
+            var isVersion = args.Any(a => a == "--version" || a == "-v");
+            if (!isHelp && !isVersion)
             {
-                // 1. Config file existence check (if provided)
-                string? configFile = null;
+                // Try to get config path from args, else fallback
+                string? configPath = null;
+                for (int i = 0; i < args.Length - 1; i++)
+                {
+                    if (args[i] == "--config" || args[i] == "-c")
+                    {
+                        configPath = args[i + 1];
+                        break;
+                    }
+                }
+                if (string.IsNullOrEmpty(configPath))
+                {
+                    configPath = NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile();
+                }
                 if (!string.IsNullOrEmpty(configPath))
                 {
-                    configFile = configPath;
-                    if (!File.Exists(configFile))
-                    {
-                        AnsiConsoleHelper.WriteError($"Configuration file not found: {configFile}");
-                        AnsiConsoleHelper.WriteInfo("You can create a new config with: notebookautomation.exe config update-key <key> <value>");
-                        Environment.Exit(1);
-                    }
+                    AnsiConsoleHelper.WriteInfo($"Using configuration file: {configPath}");
                 }
                 else
                 {
-                    configFile = AppConfig.FindConfigFile();
-                    if (string.IsNullOrEmpty(configFile) || !File.Exists(configFile))
-                    {
-                        AnsiConsoleHelper.WriteWarning("No configuration file found. You can create one using the config commands.");
-                        AnsiConsoleHelper.WriteInfo("Run: notebookautomation.exe config update-key <key> <value> to create a config file.");
-                        Environment.Exit(1);
-                    }
+                    AnsiConsoleHelper.WriteInfo($"No configuration file found. Using defaults.");
                 }
-
-                // 2. Config file format/parse check
-                AppConfig? appConfig = null;
-                try
-                {
-                    appConfig = AppConfig.LoadFromJsonFile(configFile);
-                }
-                catch (FileNotFoundException)
-                {
-                    AnsiConsoleHelper.WriteError($"Configuration file not found: {configFile}");
-                    Environment.Exit(1);
-                }
-                catch (Exception ex)
-                {
-                    AnsiConsoleHelper.WriteError($"Failed to read configuration: {ex.Message}");
-                    AnsiConsoleHelper.WriteInfo("Please check your config file format or recreate it using the config commands.");
-                    Environment.Exit(1);
-                }
-
-                // 3. Required values check (paths)
-                if (appConfig != null && !ConfigValidation.RequireAllPaths(appConfig, out var missingKeys))
-                {
-                    AnsiConsoleHelper.WriteError("The following required configuration values are missing:");
-                    foreach (var key in missingKeys)
-                    {
-                        Console.WriteLine($"  - {key}");
-                    }
-                    AnsiConsoleHelper.WriteInfo("You can set missing values with: notebookautomation.exe config update-key <key> <value>");
-                    Environment.Exit(1);
-                }
-
-                // Setup dependency injection
-                // Set an environment variable so AppConfig can log the config path if needed
-                if (!string.IsNullOrEmpty(configFile))
-                {
-                    Environment.SetEnvironmentVariable("NOTEBOOKAUTOMATION_CONFIG_PATH", configFile);
-                }
-                SetupDependencyInjection(configFile, debug);
-
-                var logger = ServiceProvider.GetRequiredService<ILogger<Program>>();
-
-                logger.LogInformation("Notebook Automation initialized");
-                if (debug && appConfig != null)
-                {
-                    logger.LogDebug("Debug logging enabled");
-                    logger.LogDebug($"Config file: {configFile}");
-                    logger.LogDebug($"Paths: OnedriveFullpathRoot={appConfig.Paths.OnedriveFullpathRoot}, NotebookVaultFullpathRoot={appConfig.Paths.NotebookVaultFullpathRoot}, MetadataFile={appConfig.Paths.MetadataFile}, OneDriveResourcesBasepath={appConfig.Paths.OnedriveResourcesBasepath}, LoggingDir={appConfig.Paths.LoggingDir}");
-                    logger.LogDebug($"AI Model: {appConfig.AiService?.Model}");
-                    logger.LogDebug($"AI Endpoint: {appConfig.AiService?.Endpoint}");
-                    logger.LogDebug($"Video Extensions: {string.Join(", ", appConfig.VideoExtensions ?? new List<string>())}");
-                }
-            }, configOption, debugOption);
+            }
 
             // Make sure DI container is initialized with default config
             if (_serviceProvider == null)

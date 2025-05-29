@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -12,6 +13,106 @@ namespace NotebookAutomation.Cli.Tests
     [TestClass]
     public class ConfigValidationTests
     {
+        [TestMethod]
+        public void RequireOpenAi_ReturnsFalse_WhenApiKeyMissing()
+        {
+            // Arrange
+            var original = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", null);
+            var config = new AppConfig
+            {
+                AiService = new AIServiceConfig
+                {
+                    Provider = "openai"
+                }
+            };
+
+            // Act
+            var result = ConfigValidation.RequireOpenAi(config);
+
+            // Assert
+            Assert.IsFalse(result);
+
+            // Cleanup
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", original);
+        }
+
+        [TestMethod]
+        public void RequireOpenAi_ReturnsTrue_WhenApiKeyPresent()
+        {
+            // Arrange
+            var original = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", "test-key");
+            var config = new AppConfig
+            {
+                AiService = new AIServiceConfig
+                {
+                    Provider = "openai"
+                }
+            };
+
+            // Act
+            var result = ConfigValidation.RequireOpenAi(config);
+
+            // Assert
+            Assert.IsTrue(result);
+
+            // Cleanup
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", original);
+        }
+        [TestMethod]
+        public void RequireAllPaths_ReturnsFalse_WhenPathsIsNull()
+        {
+            var config = new AppConfig { Paths = null! };
+            var result = ConfigValidation.RequireAllPaths(config, out var missing);
+            Assert.IsFalse(result);
+            Assert.IsTrue(missing.Count > 0);
+        }
+
+        [TestMethod]
+        public void RequireAllPaths_ReturnsFalse_WhenAllFieldsMissingOrWhitespace()
+        {
+            var config = new AppConfig
+            {
+                Paths = new PathsConfig
+                {
+                    OnedriveFullpathRoot = " ",
+                    NotebookVaultFullpathRoot = null,
+                    MetadataFile = "",
+                    OnedriveResourcesBasepath = null,
+                    LoggingDir = ""
+                }
+            };
+            var result = ConfigValidation.RequireAllPaths(config, out var missing);
+            Assert.IsFalse(result);
+            Assert.AreEqual(5, missing.Count);
+        }
+
+        [TestMethod]
+        public void RequireMicrosoftGraph_ReturnsFalse_WhenMicrosoftGraphIsNull()
+        {
+            var config = new AppConfig { MicrosoftGraph = null! };
+            var result = ConfigValidation.RequireMicrosoftGraph(config);
+            Assert.IsFalse(result);
+        }
+
+        [TestMethod]
+        public void RequireMicrosoftGraph_ReturnsFalse_WhenScopesIsNullOrEmpty()
+        {
+            var config1 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = null! } };
+            var config2 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = new List<string>() } };
+            Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config1));
+            Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config2));
+        }
+
+        [TestMethod]
+        public void RequireOpenAi_ReturnsFalse_WhenAiServiceIsNull()
+        {
+            var config = new AppConfig { AiService = null! };
+            var result = ConfigValidation.RequireOpenAi(config);
+            Assert.IsFalse(result);
+        }
+
         [TestMethod]
         public void RequireAllPaths_ReturnsTrue_WhenAllPathsPresent()
         {
@@ -45,7 +146,9 @@ namespace NotebookAutomation.Cli.Tests
                     LoggingDir = null
                 }
             };
-            var result = ConfigValidation.RequireAllPaths(config, out var missing); Assert.IsFalse(result); CollectionAssert.Contains(missing, "paths.onedrive_fullpath_root");
+            var result = ConfigValidation.RequireAllPaths(config, out var missing);
+            Assert.IsFalse(result);
+            CollectionAssert.Contains(missing, "paths.onedrive_fullpath_root");
             CollectionAssert.Contains(missing, "paths.notebook_vault_fullpath_root");
             CollectionAssert.Contains(missing, "paths.logging_dir");
             CollectionAssert.DoesNotContain(missing, "paths.metadata_file");
@@ -83,46 +186,6 @@ namespace NotebookAutomation.Cli.Tests
                 }
             };
             var result = ConfigValidation.RequireMicrosoftGraph(config);
-            Assert.IsTrue(result);
-        }
-
-        [TestMethod]
-        public void RequireOpenAi_ReturnsFalse_WhenMissingValues()
-        {
-            var config = new AppConfig
-            {
-                AiService = new AIServiceConfig
-                {
-                    Model = null
-                }
-            };
-
-            // No need to set up API key configuration as we want it to be null
-            var result = ConfigValidation.RequireOpenAi(config);
-            Assert.IsFalse(result);
-        }
-
-        [TestMethod]
-        public void RequireOpenAi_ReturnsTrue_WhenAllValuesPresent()
-        {
-            var config = new AppConfig
-            {
-                AiService = new AIServiceConfig
-                {
-                    Model = "gpt-4"
-                }
-            };
-
-            // Set up API key for testing
-            var configDict = new Dictionary<string, string>
-            {
-                {"UserSecrets:OpenAI:ApiKey", "key"}
-            };
-            var configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(configDict)
-                .Build();
-            config.AiService.SetConfiguration(configuration);
-            var result = ConfigValidation.RequireOpenAi(config);
             Assert.IsTrue(result);
         }
     }

@@ -125,13 +125,24 @@ namespace NotebookAutomation.Core.Configuration
                     {
                         AiService = new AIServiceConfig
                         {
-                            Model = aiSection["model"] ?? "gpt-4",
-                            Deployment = aiSection["deployment"] ?? string.Empty,
-                            Endpoint = aiSection["endpoint"] ?? string.Empty
+                            Provider = aiSection["provider"] ?? "openai",
+                            OpenAI = new OpenAiProviderConfig
+                            {
+                                Model = aiSection.GetSection("openai")["model"] ?? aiSection["model"] ?? "gpt-4o",
+                                Endpoint = aiSection.GetSection("openai")["endpoint"] ?? aiSection["endpoint"] ?? string.Empty
+                            },
+                            Azure = new AzureProviderConfig
+                            {
+                                Model = aiSection.GetSection("azure")["model"] ?? string.Empty,
+                                Deployment = aiSection.GetSection("azure")["deployment"] ?? string.Empty,
+                                Endpoint = aiSection.GetSection("azure")["endpoint"] ?? string.Empty
+                            },
+                            Foundry = new FoundryProviderConfig
+                            {
+                                Model = aiSection.GetSection("foundry")["model"] ?? string.Empty,
+                                Endpoint = aiSection.GetSection("foundry")["endpoint"] ?? string.Empty
+                            }
                         };
-
-                        // Set the configuration for accessing secrets
-                        AiService.SetConfiguration(_underlyingConfiguration);
                     }
 
                     // Load video extensions

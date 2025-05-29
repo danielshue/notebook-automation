@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using NotebookAutomation.Core.Services;
 
+#nullable enable
+
 namespace NotebookAutomation.Core.Tests
 {
     /// <summary>
@@ -19,19 +21,13 @@ namespace NotebookAutomation.Core.Tests
             : base(
                 NullLogger<AISummarizer>.Instance,
                 null,
-                null,
                 null)
         {
         }
-
-        public override Task<string> SummarizeTextAsync(string inputText, string prompt = null, string promptFileName = null, CancellationToken cancellationToken = default)
+        public override Task<string?> SummarizeWithVariablesAsync(string inputText, Dictionary<string, string>? variables = null, string? promptFileName = null, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult("This is an AI summary of the video content.");
-        }
-
-        public override Task<string> SummarizeWithVariablesAsync(string inputText, Dictionary<string, string> variables = null, string promptFileName = null, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult("This is an AI summary of the video content.");
+            return Task.FromResult<string?>("This is an AI summary of the video content.");
         }
     }
 }
+
