@@ -22,7 +22,19 @@ namespace NotebookAutomation.Cli.Commands
         /// <returns>True if all required paths are present; otherwise, false.</returns>
         public static bool RequireAllPaths(AppConfig config, out List<string> missingKeys)
         {
-            missingKeys = []; if (string.IsNullOrWhiteSpace(config.Paths.OnedriveFullpathRoot))
+            missingKeys = new List<string>();
+            if (config.Paths == null)
+            {
+                missingKeys.AddRange(new[] {
+                    "paths.onedrive_fullpath_root",
+                    "paths.notebook_vault_fullpath_root",
+                    "paths.metadata_file",
+                    "paths.onedrive_resources_basepath",
+                    "paths.logging_dir"
+                });
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(config.Paths.OnedriveFullpathRoot))
                 missingKeys.Add("paths.onedrive_fullpath_root");
             if (string.IsNullOrWhiteSpace(config.Paths.NotebookVaultFullpathRoot))
                 missingKeys.Add("paths.notebook_vault_fullpath_root");
@@ -39,7 +51,8 @@ namespace NotebookAutomation.Cli.Commands
         /// </summary>
         public static bool RequireMicrosoftGraph(AppConfig config)
         {
-            if (string.IsNullOrWhiteSpace(config.MicrosoftGraph.ClientId) ||
+            if (config.MicrosoftGraph == null ||
+                string.IsNullOrWhiteSpace(config.MicrosoftGraph.ClientId) ||
                 string.IsNullOrWhiteSpace(config.MicrosoftGraph.ApiEndpoint) ||
                 string.IsNullOrWhiteSpace(config.MicrosoftGraph.Authority) ||
                 config.MicrosoftGraph.Scopes == null || config.MicrosoftGraph.Scopes.Count == 0)
@@ -54,8 +67,14 @@ namespace NotebookAutomation.Cli.Commands
                  /// </summary>
         public static bool RequireOpenAi(AppConfig config)
         {
+            if (config.AiService == null)
+            {
+                AnsiConsoleHelper.WriteError("OpenAI configuration is required for this feature but is missing or incomplete.");
+                ConfigCommands.PrintConfigFormatted(config);
+                return false;
+            }
             var apiKey = config.AiService.GetApiKey();
-            if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(config.AiService.Model))
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
                 AnsiConsoleHelper.WriteError("OpenAI configuration is required for this feature but is missing or incomplete.");
                 ConfigCommands.PrintConfigFormatted(config);

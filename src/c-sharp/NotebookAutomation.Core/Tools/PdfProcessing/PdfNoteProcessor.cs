@@ -71,18 +71,15 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
                 Logger.LogError(ex, "Failed to extract text from PDF: {PdfPath}", pdfPath);
                 return (string.Empty, metadata);
             }
-        }
-
-        /// <summary>
-        /// Generates a markdown note from extracted PDF text and metadata.
-        /// </summary>
-        /// <param name="pdfText">The extracted PDF text.</param>
-        /// <param name="metadata">Optional metadata for the note.</param>
-        /// <returns>The generated markdown content.</returns>
+        }        /// <summary>
+                 /// Generates a markdown note from extracted PDF text and metadata.
+                 /// </summary>
+                 /// <param name="pdfText">The extracted PDF text.</param>
+                 /// <param name="metadata">Optional metadata for the note.</param>
+                 /// <returns>The generated markdown content.</returns>
         public string GenerateMarkdownNote(string pdfText, Dictionary<string, object>? metadata = null)
-        {
-            // Use base implementation for consistent formatting
-            return base.GenerateMarkdownNote(pdfText, metadata, "PDF Note");
+        {            // Use base implementation for consistent formatting, include the title from metadata
+            return base.GenerateMarkdownNote(pdfText, metadata, "PDF Note", includeNoteTypeTitle: true);
         }
     }
 }

@@ -3,73 +3,69 @@ using System.Text.Json.Serialization;
 
 namespace NotebookAutomation.Core.Configuration
 {    /// <summary>
-    /// OpenAI API configuration section.
-    /// </summary>
+     /// OpenAI API configuration section.
+     /// </summary>
+     /// <summary>
+     /// AIServiceConfig supports multiple providers (OpenAI, Azure, Foundry).
+     /// API keys are NOT stored in config files. Use environment variables or user-secrets:
+     ///   - OpenAI:   OPENAI_API_KEY
+     ///   - Azure:    AZURE_OPEN_AI_API_KEY
+     ///   - Foundry:  FOUNDRY_API_KEY (if required)
+     /// </summary>
     public class AIServiceConfig
     {
-        /// <summary>
-        /// The default OpenAI API endpoint.
-        /// </summary>
-        public const string DefaultApiEndpoint = "https://api.openai.com/v1/";
+        [JsonPropertyName("provider")]
+        public string? Provider { get; set; }
+
+        [JsonPropertyName("openai")]
+        public OpenAiProviderConfig? OpenAI { get; set; }
+
+        [JsonPropertyName("azure")]
+        public AzureProviderConfig? Azure { get; set; }
+
+        [JsonPropertyName("foundry")]
+        public FoundryProviderConfig? Foundry { get; set; }
 
         /// <summary>
-        /// Environment variable name for the OpenAI API key.
+        /// Returns the API key for the configured AI provider.
         /// </summary>
-        public const string AiApiKeyEnvVar = "OPENAI_API_KEY";
-        
-        private IConfiguration? _configuration;
-        
-        /// <summary>
-        /// Sets the configuration for accessing user secrets
-        /// </summary>
-        /// <param name="configuration">The IConfiguration instance</param>
-        public void SetConfiguration(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
-        
-        /// <summary>
-        /// Gets the API key from user secrets, then falls back to environment variables.
-        /// This keeps the API key out of config files for security.
-        /// </summary>
+        /// <returns>The API key string, or null if not set.</returns>
         public string? GetApiKey()
         {
-            // First try user secrets if configuration is available
-            if (_configuration != null)
+            var providerType = Provider?.ToLowerInvariant() ?? "openai";
+            return providerType switch
             {
-                var secretKey = _configuration["UserSecrets:OpenAI:ApiKey"];
-                if (!string.IsNullOrEmpty(secretKey))
-                {
-                    return secretKey;
-                }
-            }
-            
-            // Then try environment variable
-            return Environment.GetEnvironmentVariable(AiApiKeyEnvVar);
+                "openai" => Environment.GetEnvironmentVariable("OPENAI_API_KEY"),
+                "azure" => Environment.GetEnvironmentVariable("AZURE_OPEN_AI_API_KEY"),
+                "foundry" => Environment.GetEnvironmentVariable("FOUNDRY_API_KEY"),
+                _ => null
+            };
         }
+    }
 
-        /// <summary>
-        /// The OpenAI model to use (e.g., gpt-4, gpt-3.5-turbo).
-        /// </summary>
-        [JsonPropertyName("model")]
-        public string? Model { get; set; }
-
-        /// <summary>
-        /// The deployment name for Azure OpenAI. This is used when the OpenAI API is hosted on Azure. 
-        /// </summary>
-        [JsonPropertyName("deployment")]
-        public string? Deployment { get; set; }
-
-        /// <summary>
-        /// The OpenAI API endpoint URL. If not specified, the default OpenAI API endpoint will be used.
-        /// This can be set to use Azure OpenAI or other compatible API endpoints.
-        /// </summary>
+    public class OpenAiProviderConfig
+    {
         [JsonPropertyName("endpoint")]
         public string? Endpoint { get; set; }
-        
-        /// <summary>
-        /// Gets the effective endpoint to use, defaulting to the standard OpenAI API if not specified.
-        /// </summary>
-        public string GetEffectiveEndpoint() => !string.IsNullOrEmpty(Endpoint) ? Endpoint : DefaultApiEndpoint;
+        [JsonPropertyName("model")]
+        public string? Model { get; set; }
+    }
+
+    public class AzureProviderConfig
+    {
+        [JsonPropertyName("endpoint")]
+        public string? Endpoint { get; set; }
+        [JsonPropertyName("deployment")]
+        public string? Deployment { get; set; }
+        [JsonPropertyName("model")]
+        public string? Model { get; set; }
+    }
+
+    public class FoundryProviderConfig
+    {
+        [JsonPropertyName("endpoint")]
+        public string? Endpoint { get; set; }
+        [JsonPropertyName("model")]
+        public string? Model { get; set; }
     }
 }

@@ -40,12 +40,23 @@ namespace NotebookAutomation.Cli.Commands
             listCommand.AddArgument(pathArgument);
             listCommand.SetHandler(async (InvocationContext context) =>
             {
-                string path = context.ParseResult.GetValueForArgument(pathArgument);
+                // Print usage/help if required argument is missing (path is optional, but show help if both path and config are missing)
+                var path = context.ParseResult.GetValueForArgument(pathArgument);
+                if (string.IsNullOrEmpty(path))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation onedrive list [path] [options]",
+                        listCommand.Description ?? string.Empty,
+                        string.Join("\n", listCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", listCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
+
                 await this.ExecuteOneDriveCommandAsync("list", path, null, config, debug, verbose, dryRun);
             });
 
@@ -63,7 +74,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
+
                 await this.ExecuteOneDriveCommandAsync("download", remotePath, localPath, config, debug, verbose, dryRun);
             });
 
@@ -81,7 +92,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
+
                 await this.ExecuteOneDriveCommandAsync("upload", localPath, remotePath, config, debug, verbose, dryRun);
             });
 
@@ -96,7 +107,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                
+
                 await this.ExecuteOneDriveCommandAsync("search", query, null, config, debug, verbose, dryRun);
             });
 
@@ -239,7 +250,7 @@ namespace NotebookAutomation.Cli.Commands
 
                     case "sync":
                         var direction = extraOptions.FirstOrDefault(o => o.Key == "direction").Value ?? "both";
-                        logger.LogInformation("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})", 
+                        logger.LogInformation("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})",
                             arg1, arg2, direction);
                         // TODO: Implement with oneDriveService.SyncFilesAsync(arg1, arg2, direction);
                         await Task.Delay(100); // Placeholder for actual implementation

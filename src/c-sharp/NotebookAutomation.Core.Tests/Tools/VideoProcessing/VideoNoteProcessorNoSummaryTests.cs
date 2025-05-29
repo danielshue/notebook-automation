@@ -34,7 +34,7 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
             var testPromptService = new TestPromptTemplateService();
             var testTextGenService = new FakeTextGenerationService();
 
-            _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, null, testTextGenService);
+            _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, null);
 
             _processor = new VideoNoteProcessor(_logger, _aiSummarizer);
 
@@ -114,3 +114,4 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
         }
     }
 }
+

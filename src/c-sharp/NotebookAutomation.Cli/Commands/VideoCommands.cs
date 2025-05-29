@@ -81,12 +81,25 @@ namespace NotebookAutomation.Cli.Commands
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
-                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption); string? resourcesRoot = context.ParseResult.GetValueForOption(resourcesRootOption);
+                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+                string? resourcesRoot = context.ParseResult.GetValueForOption(resourcesRootOption);
                 bool noSummary = context.ParseResult.GetValueForOption(noSummaryOption);
-                bool retryFailed = context.ParseResult.GetValueForOption(retryFailedOption); bool force = context.ParseResult.GetValueForOption(forceOption);
+                bool retryFailed = context.ParseResult.GetValueForOption(retryFailedOption);
+                bool force = context.ParseResult.GetValueForOption(forceOption);
                 int? timeout = context.ParseResult.GetValueForOption(timeoutOption);
                 bool refreshAuth = context.ParseResult.GetValueForOption(refreshAuthOption);
                 bool noShareLinks = context.ParseResult.GetValueForOption(noShareLinksOption);
+
+                // Print usage/help if required argument is missing
+                if (string.IsNullOrEmpty(input))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation video-notes --input <file|dir> [options]",
+                        videoCommand.Description ?? string.Empty,
+                        string.Join("\n", videoCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
 
                 // Initialize dependency injection if needed
                 if (config != null)
@@ -181,8 +194,8 @@ namespace NotebookAutomation.Cli.Commands
                 AnsiConsoleHelper.WriteInfo($"  Config OneDrive root: {appConfig?.Paths?.OnedriveFullpathRoot ?? "(not set)"}");
                 AnsiConsoleHelper.WriteInfo($"  Skip share links: {noShareLinks}");
                 AnsiConsoleHelper.WriteInfo($"  Video extensions: {string.Join(", ", appConfig?.VideoExtensions ?? new List<string>())}");
-                AnsiConsoleHelper.WriteInfo($"  AI Model: {appConfig?.AiService?.Model}");
-                AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {appConfig?.AiService?.Endpoint}");
+                AnsiConsoleHelper.WriteInfo($"  AI Model: {appConfig?.AiService?.OpenAI?.Model ?? appConfig?.AiService?.Azure?.Model ?? appConfig?.AiService?.Foundry?.Model ?? "(not set)"}");
+                AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {appConfig?.AiService?.OpenAI?.Endpoint ?? appConfig?.AiService?.Azure?.Endpoint ?? appConfig?.AiService?.Foundry?.Endpoint ?? "(not set)"}");
                 AnsiConsoleHelper.WriteInfo($"  Logging Dir: {appConfig?.Paths?.LoggingDir}");                // Validate OpenAI config before proceeding
                 if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
                 {
@@ -193,11 +206,7 @@ namespace NotebookAutomation.Cli.Commands
                 var videoExtensions = appConfig.VideoExtensions ?? new List<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
 
                 // Get OpenAI API key from environment or config
-                string? openAiApiKey = Environment.GetEnvironmentVariable(AIServiceConfig.AiApiKeyEnvVar);
-                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig.AiService != null)
-                {
-                    openAiApiKey = appConfig.AiService.GetApiKey();
-                }
+                string? openAiApiKey = appConfig.AiService?.GetApiKey();
                 // Process videos
                 // Verify that we have an input source
                 if (string.IsNullOrWhiteSpace(input))

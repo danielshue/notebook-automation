@@ -11,7 +11,6 @@ namespace NotebookAutomation.Cli.Tests.Commands
     public class ConfigCommandsTests
     {
 
-
         /// <summary>
         /// Tests that the 'config show' command prints usage/help when no arguments are provided.
         /// </summary>
@@ -26,7 +25,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             try
             {
                 // Act: Directly call the usage method
-                configCommands.PrintShowUsage();
+                configCommands.PrintViewUsage();
             }
             finally
             {
@@ -34,9 +33,8 @@ namespace NotebookAutomation.Cli.Tests.Commands
             }
             // Assert
             string output = stringWriter.ToString();
-            Assert.IsTrue(output.Contains("Usage: config show"), "Should print usage/help when no args provided.");
+            Assert.IsTrue(output.Contains("Usage: config view"), "Should print usage/help when no args provided.");
         }
-
 
         /// <summary>
         /// Tests that the 'config' command group contains the 'show' and 'update-key' subcommands after registration.
@@ -52,12 +50,12 @@ namespace NotebookAutomation.Cli.Tests.Commands
             configCommands.Register(rootCommand, configOption, debugOption);
 
             // Act
-            var configCommand = rootCommand.Children.FirstOrDefault(c => c.Name == "config") as System.CommandLine.Command;
+            var configCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config") as System.CommandLine.Command;
 
             // Assert
             Assert.IsNotNull(configCommand, "config command should be registered on the root command.");
-            Assert.IsTrue(configCommand.Children.Any(c => c.Name == "show"), "config command should have a 'show' subcommand.");
-            Assert.IsTrue(configCommand.Children.Any(c => c.Name == "update-key"), "config command should have an 'update-key' subcommand.");
+            Assert.IsTrue(configCommand.Subcommands.Any(c => c.Name == "view"), "config command should have a 'view' subcommand.");
+            Assert.IsTrue(configCommand.Subcommands.Any(c => c.Name == "update-key"), "config command should have an 'update-key' subcommand.");
         }
 
         [TestMethod]
@@ -82,8 +80,9 @@ namespace NotebookAutomation.Cli.Tests.Commands
             configCommands.Register(rootCommand, configOption, debugOption);
 
             // Assert
-            var configCommand = rootCommand.Children.FirstOrDefault(c => c.Name == "config");
+            var configCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config");
             Assert.IsNotNull(configCommand, "config command should be registered on the root command.");
         }
+
     }
 }

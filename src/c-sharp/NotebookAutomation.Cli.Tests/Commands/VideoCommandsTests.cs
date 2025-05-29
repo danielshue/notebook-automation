@@ -1,6 +1,10 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Cli.Commands;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
+using System.CommandLine.Parsing;
+using System.CommandLine.Invocation;
 
 namespace NotebookAutomation.Cli.Tests.Commands
 {
@@ -10,6 +14,42 @@ namespace NotebookAutomation.Cli.Tests.Commands
     [TestClass]
     public class VideoCommandsTests
     {
+        /// <summary>
+        /// Verifies that the 'video-notes' command prints usage/help when no arguments are provided.
+        /// </summary>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        [TestMethod]
+        public async Task VideoNotesCommand_PrintsUsage_WhenNoArgs()
+        {
+            var rootCommand = new System.CommandLine.RootCommand();
+            var configOption = new System.CommandLine.Option<string>("--config");
+            var debugOption = new System.CommandLine.Option<bool>("--debug");
+            var verboseOption = new System.CommandLine.Option<bool>("--verbose");
+            var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
+            var videoCommands = new VideoCommands();
+            videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+            // Ensure DI is initialized for handler
+            NotebookAutomation.Cli.Program.SetupDependencyInjection(null, false);
+
+            var originalOut = Console.Out;
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            try
+            {
+                var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+                await parser.InvokeAsync("video-notes");
+            }
+            finally
+            {
+                Console.SetOut(originalOut);
+            }
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
+        }
+        /// <summary>
+        /// Tests that the VideoCommands class can be instantiated successfully.
+        /// </summary>
         [TestMethod]
         public void VideoCommand_Initialization_ShouldSucceed()
         {
@@ -18,6 +58,10 @@ namespace NotebookAutomation.Cli.Tests.Commands
             // Act & Assert
             Assert.IsNotNull(command);
         }
+
+        /// <summary>
+        /// Tests that the Register method adds the video-notes command and its options to the root command.
+        /// </summary>
         [TestMethod]
         public void Register_AddsVideoNotesCommandToRoot()
         {
@@ -33,8 +77,13 @@ namespace NotebookAutomation.Cli.Tests.Commands
             videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Assert
-            var videoNotesCommand = rootCommand.Children.FirstOrDefault(c => c.Name == "video-notes");
+            var videoNotesCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "video-notes");
             Assert.IsNotNull(videoNotesCommand, "video-notes command should be registered on the root command.");
+
+            // Check options
+            var optionNames = videoNotesCommand.Options.SelectMany(o => o.Aliases).ToList();
+            CollectionAssert.Contains(optionNames, "--input", "video-notes should have '--input' option");
+            CollectionAssert.Contains(optionNames, "-i", "video-notes should have '-i' option");
         }
     }
 }

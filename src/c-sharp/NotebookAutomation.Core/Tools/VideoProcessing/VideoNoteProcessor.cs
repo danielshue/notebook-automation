@@ -112,12 +112,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             // Extract file creation date but exclude unwanted metadata fields
             try
             {
-                var fileInfo = new FileInfo(videoPath);
-                // Set date-created to file creation date if available
+                var fileInfo = new FileInfo(videoPath);                // Date fields are now excluded per requirements
                 if (fileInfo.Exists)
                 {
-                    metadata["date-created"] = fileInfo.CreationTime.ToString("yyyy-MM-dd");
-
                     // Add the file size in a human-readable format
                     long fileSizeBytes = fileInfo.Length;
                     metadata["video-size"] = FormatFileSizeToString(fileSizeBytes);
@@ -252,7 +249,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             try
             {
                 // Set default prompt file name for video notes if not specified
-                promptFileName ??= "final_summary_prompt_video";
+                promptFileName ??= "final_summary_prompt";
 
                 // If variables dictionary wasn't provided, create one
                 variables ??= new Dictionary<string, string>();
@@ -302,7 +299,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// the structure expected by Obsidian or similar markdown-based knowledge management systems.
         /// </para>
         /// </remarks>        
-        public override string GenerateMarkdownNote(string bodyText, Dictionary<string, object>? metadata = null, string noteType = "Document Note", bool suppressBody = false)
+        public override string GenerateMarkdownNote(string bodyText, Dictionary<string, object>? metadata = null, string noteType = "Document Note", bool suppressBody = false, bool includeNoteTypeTitle = false)
         {
             // For video notes, we need special handling to extract and merge frontmatter
             var yamlHelper = new YamlHelper(Logger);
@@ -389,6 +386,15 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     Logger.LogWarning(ex, "Error applying template metadata");
                 }
+            }            // Remove all date-related fields from metadata
+            var dateFieldsToRemove = mergedMetadata.Keys
+                .Where(k => k.StartsWith("date-") || k.EndsWith("-date"))
+                .ToList();
+
+            foreach (var dateField in dateFieldsToRemove)
+            {
+                mergedMetadata.Remove(dateField);
+                Logger.LogDebug("Removed date field {DateField} from metadata", dateField);
             }
 
             // Log mergedMetadata keys and values once before serialization (for debug)
@@ -396,10 +402,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             foreach (var kvp in mergedMetadata)
             {
                 Logger.LogDebug("{Key}: {Value}", kvp.Key, kvp.Value);
-            }
-
-            // Use base implementation with cleaned summary and merged metadata
-            return base.GenerateMarkdownNote(cleanSummary, mergedMetadata, noteType, suppressBody);
+            }            // Use base implementation with cleaned summary and merged metadata
+            // Include a title but use the friendly title from frontmatter instead of the note type
+            return base.GenerateMarkdownNote(cleanSummary, mergedMetadata, noteType, suppressBody, includeNoteTypeTitle: true);
         }
 
         /// <summary>
@@ -806,14 +811,12 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     promptVariables["title"] = titleObj.ToString() ?? "Untitled Video";
                 }
 
-                aiSummary = await GenerateAiSummaryAsync(summaryInput, promptVariables, "final_summary_prompt_video");
+                aiSummary = await GenerateAiSummaryAsync(summaryInput, promptVariables, "final_summary_prompt");
             }
 
             // Add internal path for hierarchy detection (will be removed in GenerateMarkdownNote)
-            metadata["_internal_path"] = videoPath;
-
-            // Generate the basic markdown note
-            string markdownNote = GenerateMarkdownNote(aiSummary, metadata, "Video Note");
+            metadata["_internal_path"] = videoPath;            // Generate the basic markdown note - include title heading using friendly title from metadata
+            string markdownNote = GenerateMarkdownNote(aiSummary, metadata, "Video Note", includeNoteTypeTitle: true);
 
             // Add OneDrive share link section to markdown content if share link was generated
             if (!string.IsNullOrEmpty(shareLink))

@@ -46,12 +46,27 @@ namespace NotebookAutomation.Core.Tests
         public Queue<string>? Responses { get; set; }
 
         // Fix the nullability issue
-        public IReadOnlyDictionary<string, object?> Attributes => null!;
-
-        // For ITextGenerationService (plural) contract
+        public IReadOnlyDictionary<string, object?> Attributes => null!;        // For ITextGenerationService (plural) contract
         public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(string prompt, PromptExecutionSettings? settings = null, Kernel? kernel = null, CancellationToken cancellationToken = default)
         {
-            return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent> { new TextContent(Response ?? string.Empty) });
+            if (ExceptionToThrow != null) throw ExceptionToThrow;
+
+            string responseText;
+            if (Responses != null && Responses.Count > 0)
+            {
+                responseText = Responses.Dequeue();
+            }
+            else if (ExpectedPrompt != null && prompt == ExpectedPrompt && Response != null)
+            {
+                responseText = Response;
+            }
+            else
+            {
+                responseText = Response ?? string.Empty;
+            }
+
+            var textContent = new TextContent(responseText);
+            return Task.FromResult<IReadOnlyList<TextContent>>(new List<TextContent> { textContent });
         }
 
         // For ITextGenerationService (streaming) contract

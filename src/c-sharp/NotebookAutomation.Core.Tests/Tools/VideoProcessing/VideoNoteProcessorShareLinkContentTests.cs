@@ -32,7 +32,7 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
             var mockAiLogger = new LoggerFactory().CreateLogger<AISummarizer>();
             var testPromptService = new TestPromptTemplateService();
             var testTextGenService = new FakeTextGenerationService();
-            _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, null, testTextGenService);
+            _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, null);
 
             _oneDriveServiceMock = new Mock<IOneDriveService>();
 
@@ -176,3 +176,4 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
         }
     }
 }
+

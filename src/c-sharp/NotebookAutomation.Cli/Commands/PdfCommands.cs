@@ -41,18 +41,17 @@ namespace NotebookAutomation.Cli.Commands
             // Show help if no subcommand or options are provided
             pdfCommand.SetHandler((InvocationContext context) =>
             {
-                // If no options or subcommands are provided, show help
-                if (context.ParseResult.Tokens.Count == 0 && context.ParseResult.UnparsedTokens.Count == 0)
+                // Print usage/help if required argument is missing
+                var input = context.ParseResult.GetValueForOption(inputOption);
+                if (string.IsNullOrEmpty(input))
                 {
                     AnsiConsoleHelper.WriteUsage(
-                        "Usage: notebookautomation pdf-notes [options]",
+                        "Usage: notebookautomation pdf-notes --input <path> [options]",
                         pdfCommand.Description ?? string.Empty,
                         string.Join("\n", pdfCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
                     );
                     return Task.CompletedTask;
                 }
-                // If options are provided, run the main handler
-                string? input = context.ParseResult.GetValueForOption(inputOption);
                 string? output = context.ParseResult.GetValueForOption(outputOption);
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
@@ -131,10 +130,7 @@ namespace NotebookAutomation.Cli.Commands
                 var batchProcessor = serviceProvider.GetRequiredService<PdfNoteBatchProcessor>();
 
                 // Get OpenAI API key from config or environment
-                string? openAiApiKey = Environment.GetEnvironmentVariable(NotebookAutomation.Core.Configuration.AIServiceConfig.AiApiKeyEnvVar); if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
-                {
-                    openAiApiKey = appConfig.AiService.GetApiKey();
-                }
+                string? openAiApiKey = appConfig?.AiService?.GetApiKey();
 
                 // Process PDFs using batch processor
                 var result = await batchProcessor.ProcessPdfsAsync(

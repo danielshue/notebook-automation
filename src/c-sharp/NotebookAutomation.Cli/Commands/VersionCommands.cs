@@ -1,5 +1,7 @@
 ﻿using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -28,9 +30,33 @@ namespace NotebookAutomation.Cli.Commands
             var versionCommand = new Command("version", "Display version information");
             versionCommand.SetHandler(() =>
             {
-                AnsiConsoleHelper.WriteInfo($"Notebook Automation v1.0.0");
-                AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
-                AnsiConsoleHelper.WriteInfo($"(c) 2025 Dan Shue");
+                Assembly? entryAssembly = Assembly.GetEntryAssembly();
+                if (entryAssembly != null)
+                {
+                    var versionInfo = FileVersionInfo.GetVersionInfo(entryAssembly.Location);
+
+                    var companyName = string.Empty;
+                    var copyrightInfo = string.Empty;
+
+                    object[] assemblyCompanyAttributes = entryAssembly.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false);
+                    var companyAttribute = assemblyCompanyAttributes.Length > 0 ? assemblyCompanyAttributes[0] as AssemblyCompanyAttribute : null;
+                    companyName = companyAttribute?.Company ?? "Unknown Company";
+
+                    object[] assemblyCopyrightAttributes = entryAssembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
+                    var copyrightAttribute = assemblyCopyrightAttributes.Length > 0 ? assemblyCopyrightAttributes[0] as AssemblyCopyrightAttribute : null;
+                    copyrightInfo = copyrightAttribute?.Copyright ?? "Unknown Copyright";
+
+
+                    AnsiConsoleHelper.WriteInfo($"Notebook Automation v1.0.0 {Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown"}");
+                    AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
+                    AnsiConsoleHelper.WriteInfo($"{companyName}");
+                    AnsiConsoleHelper.WriteInfo($"Copyright {copyrightInfo}");
+                }
+                else
+                {
+                    AnsiConsoleHelper.WriteError("Unable to retrieve version information. Entry assembly is null.");
+                }
+
             });
             rootCommand.Add(versionCommand);
         }
