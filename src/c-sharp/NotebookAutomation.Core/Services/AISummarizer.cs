@@ -7,16 +7,47 @@ using Microsoft.SemanticKernel.TextGeneration;
 #nullable enable
 
 namespace NotebookAutomation.Core.Services
-{
-    /// <summary>
-    /// Provides AI-powered summarization using Microsoft.SemanticKernel with modern function-based approaches.
-    /// Uses semantic functions for chunk processing and final aggregation, following modern SK patterns.
-    /// Optimized for MBA coursework content including video transcripts and PDF processing.
+{    /// <summary>
+    /// Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.
+    /// Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content
+    /// including video transcripts, PDF documents, and academic materials. Supports variable substitution
+    /// for metadata augmentation and configurable prompt templates.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This class provides two main summarization strategies:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>Direct summarization for smaller texts (under ~12,000 characters)</description></item>
+    /// <item><description>Chunked summarization with aggregation for larger texts</description></item>
+    /// </list>
+    /// <para>
+    /// The chunking strategy splits large texts into overlapping segments, processes each chunk independently,
+    /// then aggregates the results into a cohesive final summary. This approach ensures comprehensive coverage
+    /// while respecting token limits of the underlying AI models.
+    /// </para>
+    /// <para>
+    /// Supports fallback to ITextGenerationService for testing scenarios when SemanticKernel is unavailable.
+    /// </para>
+    /// </remarks>
     /// <example>
     /// <code>
+    /// // Basic usage
     /// var summarizer = new AISummarizer(logger, promptService, kernel);
-    /// var summary = await summarizer.SummarizeTextAsync(longText, null, "chunk_summary_prompt");
+    /// var summary = await summarizer.SummarizeWithVariablesAsync(longText);
+    /// 
+    /// // With metadata variables and custom prompt
+    /// var variables = new Dictionary&lt;string, string&gt;
+    /// {
+    ///     ["course"] = "MBA Strategy",
+    ///     ["type"] = "video_transcript",
+    ///     ["onedrivePath"] = "/courses/strategy/week1"
+    /// };
+    /// var summary = await summarizer.SummarizeWithVariablesAsync(
+    ///     inputText, 
+    ///     variables, 
+    ///     "chunk_summary_prompt"
+    /// );
     /// </code>
     /// </example>
     public class AISummarizer
@@ -24,56 +55,119 @@ namespace NotebookAutomation.Core.Services
         private readonly ILogger<AISummarizer> _logger;
         private readonly PromptTemplateService? _promptService;
         private readonly Kernel? _semanticKernel;
-        private readonly ITextGenerationService? _textGenerationService;
-        private readonly int _maxChunkTokens = 8000; // Character-based chunks
-        private readonly int _overlapTokens = 500; // Characters to overlap between chunks        /// <summary>
-        /// Initializes a new instance of the AISummarizer class.
+        private readonly ITextGenerationService? _textGenerationService;        
+        
+        /// <summary>
+        /// The maximum size for individual text chunks in characters before triggering chunked processing.
+        /// Set to 8000 characters which approximates 2000 tokens using the 4:1 character-to-token ratio.
         /// </summary>
-        /// <param name="logger">The logger instance for tracking operations</param>
-        /// <param name="promptService">Prompt template service for loading templates</param>
-        /// <param name="semanticKernel">Microsoft.SemanticKernel kernel instance</param>
+        private readonly int _maxChunkTokens = 8000; // Character-based chunks
+        
+        /// <summary>
+        /// The number of characters to overlap between adjacent chunks to maintain context continuity.
+        /// Set to 500 characters to ensure important context isn't lost at chunk boundaries.
+        /// </summary>
+        private readonly int _overlapTokens = 500; // Characters to overlap between chunks        
+
+        /// <summary>
+        /// Initializes a new instance of the AISummarizer class with SemanticKernel support.
+        /// </summary>
+        /// <param name="logger">The logger instance for tracking operations and debugging</param>
+        /// <param name="promptService">Service for loading and processing prompt templates from the file system</param>
+        /// <param name="semanticKernel">Microsoft.SemanticKernel instance configured with Azure OpenAI</param>
         /// <exception cref="ArgumentNullException">Thrown when logger is null</exception>
+        /// <remarks>
+        /// This constructor is the primary initialization path for production usage with Azure OpenAI.
+        /// The promptService and semanticKernel can be null for testing scenarios, but functionality will be limited.
+        /// </remarks>
         public AISummarizer(ILogger<AISummarizer> logger, PromptTemplateService? promptService, Kernel? semanticKernel)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _promptService = promptService;
             _semanticKernel = semanticKernel;
             _textGenerationService = null;
-        }
-
+        }        
+        
         /// <summary>
-        /// Initializes a new instance of the AISummarizer class.
+        /// Initializes a new instance of the AISummarizer class with additional test compatibility support.
         /// </summary>
-        /// <param name="logger">The logger instance for tracking operations</param>
-        /// <param name="promptService">Prompt template service for loading templates</param>
-        /// <param name="semanticKernel">Microsoft.SemanticKernel kernel instance</param>
-        /// <param name="textGenerationService">Text generation service for test compatibility</param>
+        /// <param name="logger">The logger instance for tracking operations and debugging</param>
+        /// <param name="promptService">Service for loading and processing prompt templates from the file system</param>
+        /// <param name="semanticKernel">Microsoft.SemanticKernel instance configured with Azure OpenAI</param>
+        /// <param name="textGenerationService">Fallback text generation service for unit testing scenarios</param>
         /// <exception cref="ArgumentNullException">Thrown when logger is null</exception>
+        /// <remarks>
+        /// This constructor supports testing scenarios where SemanticKernel might not be available.
+        /// When semanticKernel is null, the service will attempt to use textGenerationService as a fallback.
+        /// </remarks>
         public AISummarizer(ILogger<AISummarizer> logger, PromptTemplateService? promptService, Kernel? semanticKernel, ITextGenerationService? textGenerationService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _promptService = promptService;
             _semanticKernel = semanticKernel;
             _textGenerationService = textGenerationService;
-        }
-
-        /// <summary>
-        /// Generates a summary for the given text using the best available AI framework.
-        /// Text will be chunked if it exceeds token limits. Supports variable substitution for metadata augmentation.
+        }        /// <summary>
+        /// Generates an AI-powered summary for the given text using the best available AI framework.
+        /// Automatically selects between direct summarization and chunked processing based on text length.
+        /// Supports variable substitution for metadata augmentation and custom prompt templates.
         /// </summary>
-        /// <param name="inputText">The text to summarize.</param>
-        /// <param name="variables">Optional dictionary of variables to substitute in the prompt template for metadata augmentation.</param>
-        /// <param name="promptFileName">Optional prompt template name (e.g., "chunk_summary_prompt") without extension.</param>
-        /// <param name="cancellationToken">Optional cancellation token.</param>
-        /// <returns>The summary text, or null if failed.</returns>
+        /// <param name="inputText">The text content to summarize. Cannot be null or empty.</param>
+        /// <param name="variables">Optional dictionary of variables for prompt template substitution and metadata enhancement.
+        /// Common variables include: course, type, onedrivePath, yamlfrontmatter.</param>
+        /// <param name="promptFileName">Optional prompt template filename (without .md extension) to customize summarization behavior.
+        /// Defaults to "final_summary_prompt" if not provided.</param>
+        /// <param name="cancellationToken">Optional cancellation token to cancel the asynchronous operation.</param>
+        /// <returns>
+        /// A task that represents the asynchronous summarization operation. The task result contains:
+        /// - The generated summary text for successful operations
+        /// - An empty string if the operation fails but the service is available
+        /// - null if no AI service is available
+        /// </returns>
         /// <exception cref="ArgumentException">Thrown when inputText is null or empty</exception>
+        /// <remarks>
+        /// <para>
+        /// The method automatically determines the optimal summarization strategy:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description>For texts under ~12,000 characters: Direct summarization using a single AI call</description></item>
+        /// <item><description>For larger texts: Chunked summarization with intelligent aggregation</description></item>
+        /// </list>
+        /// <para>
+        /// Variable substitution occurs when both variables and promptService are available.
+        /// The prompt template is loaded from the prompts directory and variables are replaced using
+        /// the format {{variableName}}.
+        /// </para>
+        /// <para>
+        /// Fallback behavior when SemanticKernel is unavailable:
+        /// 1. Attempts to use ITextGenerationService if available
+        /// 2. Returns null if no AI services are configured
+        /// </para>
+        /// </remarks>
         /// <example>
         /// <code>
-        /// var variables = new Dictionary&lt;string, string&gt; { ["course"] = "MBA Strategy", ["type"] = "video_transcript" };
+        /// // Basic summarization
+        /// var summary = await summarizer.SummarizeWithVariablesAsync("Long text content...");
+        /// 
+        /// // With metadata variables for MBA coursework
+        /// var variables = new Dictionary&lt;string, string&gt;
+        /// {
+        ///     ["course"] = "MBA Strategy",
+        ///     ["type"] = "video_transcript",
+        ///     ["onedrivePath"] = "/courses/strategy/week1"
+        /// };
         /// var summary = await summarizer.SummarizeWithVariablesAsync(
-        ///     "Long text content...", 
+        ///     inputText, 
         ///     variables, 
         ///     "chunk_summary_prompt"
+        /// );
+        /// 
+        /// // With cancellation support
+        /// using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+        /// var summary = await summarizer.SummarizeWithVariablesAsync(
+        ///     inputText, 
+        ///     variables, 
+        ///     "chunk_summary_prompt", 
+        ///     cts.Token
         /// );
         /// </code>
         /// </example>
@@ -149,12 +243,10 @@ namespace NotebookAutomation.Core.Services
             {
                 _logger.LogInformation("Input text is large ({Length} characters). Using chunking strategy for summarization.", processedInputText.Length);
                 return await SummarizeWithChunkingAsync(processedInputText, processedPrompt, variables, cancellationToken);
-            }
-
-            // For smaller texts, use the direct approach
+            }            // For smaller texts, use the direct approach
             try
             {
-                _logger.LogInformation("Using Microsoft.SemanticKernel for summarization");
+                _logger.LogDebug("Using Microsoft.SemanticKernel for direct summarization");
                 return await SummarizeWithSemanticKernelAsync(
                     processedInputText,
                     processedPrompt ?? string.Empty,
@@ -177,15 +269,37 @@ namespace NotebookAutomation.Core.Services
         /// <param name="cancellationToken">Optional cancellation token.</param>
         /// <returns>The summary text, or null if failed.</returns>
         /// <example>
-        /// <code>
-        /// var variables = new Dictionary&lt;string, string&gt; { ["course"] = "MBA Strategy" };        /// <summary>
+        /// <code>        /// <summary>
         /// Summarizes text using chunking to handle large inputs that exceed character limits.
         /// Uses modern Semantic Kernel approach with intelligent chunking optimized for MBA coursework.
+        /// Implements a two-stage process: individual chunk summarization followed by aggregation.
         /// </summary>
-        /// <param name="inputText">Text to summarize</param>
-        /// <param name="prompt">Optional prompt to guide the summary generation</param>
+        /// <param name="inputText">The text content to summarize using chunked processing</param>
+        /// <param name="prompt">Optional base prompt to guide the summary generation for chunks</param>
+        /// <param name="variables">Optional dictionary of variables for prompt template substitution</param>
         /// <param name="cancellationToken">Optional cancellation token for async operations</param>
-        /// <returns>The consolidated summary, or null if failed</returns>
+        /// <returns>
+        /// A task that represents the asynchronous chunked summarization operation. The task result contains:
+        /// - The consolidated summary combining all chunk summaries
+        /// - An empty string if the operation fails
+        /// - A simulated summary if SemanticKernel is unavailable
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// The chunking process follows these steps:
+        /// </para>
+        /// <list type="number">
+        /// <item><description>Split the input text into overlapping chunks based on character limits</description></item>
+        /// <item><description>Load chunk and final summary prompt templates from the prompt service</description></item>
+        /// <item><description>Process each chunk individually with the chunk summarization prompt</description></item>
+        /// <item><description>Aggregate all chunk summaries using the final summary prompt</description></item>
+        /// <item><description>Return the consolidated result or fall back to combined chunks if aggregation fails</description></item>
+        /// </list>
+        /// <para>
+        /// Chunk processing includes extensive debug logging to track the summarization pipeline.
+        /// Each chunk is logged with its prompt, content, and resulting summary for troubleshooting.
+        /// </para>
+        /// </remarks>
         private async Task<string?> SummarizeWithChunkingAsync(string inputText, string? prompt, Dictionary<string, string>? variables, CancellationToken cancellationToken)
         {
             if (_semanticKernel == null)
@@ -196,12 +310,10 @@ namespace NotebookAutomation.Core.Services
 
             try
             {
-                _logger.LogInformation("Starting chunked summarization process");
-
-                // Split text into character-based chunks
+                _logger.LogInformation("Starting chunked summarization process");                // Split text into character-based chunks
                 List<string> chunks = SplitTextIntoChunks(inputText, _maxChunkTokens, _overlapTokens);
 
-                _logger.LogInformation("Split into {ChunkCount} chunks", chunks.Count);
+                _logger.LogDebug("Split into {ChunkCount} chunks", chunks.Count);
 
                 if (chunks.Count == 0)
                 {
@@ -220,16 +332,17 @@ namespace NotebookAutomation.Core.Services
 
                 var summarizeChunkFunction = _semanticKernel.CreateFunctionFromPrompt(
                     chunkSystemPrompt + "\n{{$input}}",
-                    new OpenAIPromptExecutionSettings()
-                );
-
-                // Process each chunk individually
+                    new OpenAIPromptExecutionSettings
+                    {
+                        MaxTokens = 2048
+                    }
+                );                // Process each chunk individually
                 var chunkSummaries = new List<string>();
                 for (int i = 0; i < chunks.Count; i++)
                 {
-                    _logger.LogInformation("Processing chunk {ChunkIndex}/{TotalChunks}", i + 1, chunks.Count);
-                    _logger.LogInformation("Chunk prompt being sent:\n{Prompt}", chunkSystemPrompt);
-                    _logger.LogInformation("Chunk content being sent:\n{Chunk}", chunks[i]);
+                    _logger.LogDebug("Processing chunk {ChunkIndex}/{TotalChunks}", i + 1, chunks.Count);
+                    _logger.LogDebug("Chunk prompt being sent:\n{Prompt}", chunkSystemPrompt);
+                    _logger.LogDebug("Chunk content being sent:\n{Chunk}", chunks[i]);
 
                     // Prepare KernelArguments with all required variables for the prompt
                     var kernelArgs = new KernelArguments
@@ -243,7 +356,7 @@ namespace NotebookAutomation.Core.Services
                     var result = await _semanticKernel.InvokeAsync(summarizeChunkFunction, kernelArgs);
 
                     // Log the raw result object for debugging
-                    _logger.LogInformation("Raw model response for chunk {Index}: {Result}", i, result);
+                    _logger.LogDebug("Raw model response for chunk {Index}: {Result}", i, result);
 
                     string? chunkSummary = result.GetValue<string>()?.Trim();
 
@@ -262,12 +375,10 @@ namespace NotebookAutomation.Core.Services
                 {
                     _logger.LogWarning("No chunk summaries were generated");
                     return string.Empty;
-                }
-
-                // If we only have one chunk summary, return it directly
+                }                // If we only have one chunk summary, return it directly
                 if (chunkSummaries.Count == 1)
                 {
-                    _logger.LogInformation("Only one chunk was processed, returning its summary directly");
+                    _logger.LogDebug("Only one chunk was processed, returning its summary directly");
                     return chunkSummaries[0];
                 }
 
@@ -279,12 +390,13 @@ namespace NotebookAutomation.Core.Services
                 // this is the final prompt that will be used to aggregate the summaries
                 var aggregateSummariesFunction = _semanticKernel.CreateFunctionFromPrompt(
                     finalSystemPrompt + "\n{{$input}}",
-                    new OpenAIPromptExecutionSettings()
-                );
-
-                // Combine and finalize
+                    new OpenAIPromptExecutionSettings
+                    {
+                        MaxTokens = 2048
+                    }
+                );                // Combine and finalize
                 string allSummaries = string.Join("\n\n", chunkSummaries);
-                _logger.LogInformation("Aggregating {SummaryCount} summaries", chunkSummaries.Count);
+                _logger.LogDebug("Aggregating {SummaryCount} summaries", chunkSummaries.Count);
 
                 // Ensure yamlfrontmatter is present in variables
                 var finalVariables = variables != null ? new Dictionary<string, string>(variables) : new Dictionary<string, string>();
@@ -298,17 +410,16 @@ namespace NotebookAutomation.Core.Services
                 {
                     if (!finalKernelArgs.ContainsKey(kvp.Key))
                     {
-                        finalKernelArgs[kvp.Key] = kvp.Value;
-                    }
+                        finalKernelArgs[kvp.Key] = kvp.Value;                    }
                 }
 
-                _logger.LogInformation("Final aggregateSummariesFunction: {aggregateSummariesFunction}", aggregateSummariesFunction);
-                _logger.LogInformation("Final kernel arguments: {finalKernelArgs}", finalKernelArgs);
+                _logger.LogDebug("Final aggregateSummariesFunction: {aggregateSummariesFunction}", aggregateSummariesFunction);
+                _logger.LogDebug("Final kernel arguments: {finalKernelArgs}", finalKernelArgs);
 
                 var finalResult = await _semanticKernel.InvokeAsync(
                     aggregateSummariesFunction, finalKernelArgs);
 
-                _logger.LogInformation("finalResult: {finalResult}", finalResult);
+                _logger.LogDebug("finalResult: {finalResult}", finalResult);
 
                 string? finalSummary = finalResult.GetValue<string>()?.Trim();
 
@@ -352,12 +463,21 @@ namespace NotebookAutomation.Core.Services
             }
 
             return chunks;
-        }
-
+        }        
+        
         /// <summary>
-        /// Loads the chunk prompt template from the prompt service.
+        /// Loads the chunk prompt template from the prompt service for individual chunk processing.
         /// </summary>
-        /// <returns>The chunk prompt template or null if not available</returns>
+        /// <returns>
+        /// A task that represents the asynchronous load operation. The task result contains:
+        /// - The chunk prompt template content if successfully loaded
+        /// - null if the prompt service is unavailable or loading fails
+        /// </returns>
+        /// <remarks>
+        /// This method attempts to load the "chunk_summary_prompt.md" template file from the prompts directory.
+        /// The chunk prompt is specifically designed for processing individual text segments before aggregation.
+        /// Failures are logged as warnings but do not throw exceptions, allowing the system to fall back to default prompts.
+        /// </remarks>
         private async Task<string?> LoadChunkPromptAsync()
         {
             if (_promptService == null) return null;
@@ -374,10 +494,21 @@ namespace NotebookAutomation.Core.Services
                 _logger.LogWarning(ex, "Failed to load chunk prompt template");
                 return null;
             }
-        }        /// <summary>
-                 /// Loads the final prompt template from the prompt service.
-                 /// </summary>
-                 /// <returns>The final prompt template or null if not available</returns>
+        }        
+        
+        /// <summary>
+        /// Loads the final prompt template from the prompt service for summary aggregation.
+        /// </summary>
+        /// <returns>
+        /// A task that represents the asynchronous load operation. The task result contains:
+        /// - The final summary prompt template content if successfully loaded  
+        /// - null if the prompt service is unavailable or loading fails
+        /// </returns>
+        /// <remarks>
+        /// This method attempts to load the "final_summary_prompt.md" template file from the prompts directory.
+        /// The final prompt is specifically designed for aggregating multiple chunk summaries into a cohesive result.
+        /// Failures are logged as warnings but do not throw exceptions, allowing the system to fall back to default prompts.
+        /// </remarks>
         private async Task<string?> LoadFinalPromptAsync()
         {
             if (_promptService == null) return null;
@@ -394,15 +525,25 @@ namespace NotebookAutomation.Core.Services
                 _logger.LogWarning(ex, "Failed to load final prompt template");
                 return null;
             }
-        }
-
+        }        
+        
         /// <summary>
-        /// Processes and prepares the prompt template for use.
+        /// Processes and prepares the prompt template for use in summarization operations.
+        /// Handles loading of prompt templates when not already provided and validates input text.
         /// </summary>
         /// <param name="inputText">The input text to be summarized</param>
-        /// <param name="prompt">The prompt string</param>
-        /// <param name="promptFileName">The prompt template filename</param>
-        /// <returns>A tuple containing the processed prompt and input text</returns>
+        /// <param name="prompt">The prompt string that may need processing or loading</param>
+        /// <param name="promptFileName">The prompt template filename to load if prompt is empty</param>
+        /// <returns>
+        /// A task that represents the asynchronous processing operation. The task result contains:
+        /// - A tuple with the processed prompt (or null if loading failed) and the input text
+        /// - The processed prompt will be loaded from promptFileName if the prompt parameter is empty
+        /// </returns>
+        /// <remarks>
+        /// This method serves as a preparation step for both direct and chunked summarization.
+        /// It attempts to load the specified prompt template file when no prompt is provided directly.
+        /// Loading failures are logged as warnings but do not prevent the operation from continuing.
+        /// </remarks>
         private async Task<(string? processedPrompt, string processedInputText)> ProcessPromptTemplateAsync(
             string inputText, string prompt, string promptFileName)
         {
@@ -424,14 +565,30 @@ namespace NotebookAutomation.Core.Services
             }
 
             return (processedPrompt, processedInputText);
-        }
-
+        }        
+        
         /// <summary>
         /// Estimates the token count for the given text using a character-based heuristic.
-        /// Uses approximately 4 characters per token as a rough estimate.
+        /// Uses approximately 4 characters per token as a rough estimate for English text.
         /// </summary>
         /// <param name="text">The text to estimate tokens for</param>
-        /// <returns>Estimated token count</returns>
+        /// <returns>
+        /// The estimated token count based on character length, or 0 if the text is null or whitespace.
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// This is a simplified estimation method that provides reasonable approximations for:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description>English academic text (typical in MBA coursework)</description></item>
+        /// <item><description>Mixed alphanumeric content</description></item>
+        /// <item><description>Standard punctuation and formatting</description></item>
+        /// </list>
+        /// <para>
+        /// The 4:1 character-to-token ratio is a conservative estimate that works well for OpenAI models.
+        /// Actual token counts may vary based on text complexity, language, and specific tokenizer implementation.
+        /// </para>
+        /// </remarks>
         private int EstimateTokenCount(string text)
         {
             if (string.IsNullOrWhiteSpace(text))
@@ -441,15 +598,42 @@ namespace NotebookAutomation.Core.Services
 
             // Rough heuristic: ~4 characters per token for English text
             return (int)Math.Ceiling(text.Length / 4.0);
-        }
-
+        }        
+        
         /// <summary>
-        /// Summarizes text using Microsoft SemanticKernel with the specified prompt.
+        /// Summarizes text using Microsoft SemanticKernel with the specified prompt for smaller texts that don't require chunking.
         /// </summary>
-        /// <param name="inputText">Text to summarize</param>
-        /// <param name="prompt">Prompt to guide the summarization</param>
+        /// <param name="inputText">The text content to summarize</param>
+        /// <param name="prompt">The prompt to guide the summarization process</param>
         /// <param name="cancellationToken">Cancellation token for async operations</param>
-        /// <returns>Summary text or null if failed</returns>
+        /// <returns>
+        /// A task that represents the asynchronous summarization operation. The task result contains:
+        /// - The generated summary text if successful
+        /// - null if the operation fails or SemanticKernel is unavailable
+        /// - A simulated summary string for testing scenarios
+        /// </returns>
+        /// <remarks>
+        /// <para>
+        /// This method is used for direct summarization of smaller texts (typically under 12,000 characters).
+        /// It creates a semantic function from the provided prompt and processes the entire text in a single operation.
+        /// </para>
+        /// <para>
+        /// The method uses OpenAI prompt execution settings configured for balanced performance:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description>MaxTokens: 4000 (allowing comprehensive summaries)</description></item>
+        /// <item><description>Temperature: 1.0 (balanced creativity and consistency)</description></item>
+        /// <item><description>TopP: 1.0 (full vocabulary consideration)</description></item>
+        /// </list>
+        /// <para>
+        /// Falls back to a default summarization prompt if none is provided.
+        /// All errors are logged and handled gracefully by returning null.
+        /// </para>
+        /// </remarks>
+        /// <exception cref="Exception">
+        /// Various exceptions may be thrown by the underlying SemanticKernel operations, 
+        /// all of which are caught, logged, and result in a null return value.
+        /// </exception>
         private async Task<string?> SummarizeWithSemanticKernelAsync(string inputText, string prompt, CancellationToken cancellationToken)
         {
             if (_semanticKernel == null)
