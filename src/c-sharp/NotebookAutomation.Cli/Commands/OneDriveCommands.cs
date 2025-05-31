@@ -70,6 +70,16 @@ namespace NotebookAutomation.Cli.Commands
             {
                 string remotePath = context.ParseResult.GetValueForArgument(remotePathArgument);
                 string localPath = context.ParseResult.GetValueForArgument(localPathArgument);
+                if (string.IsNullOrEmpty(remotePath) || string.IsNullOrEmpty(localPath))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation onedrive download <remote-path> <local-path> [options]",
+                        downloadCommand.Description ?? string.Empty,
+                        string.Join("\n", downloadCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", downloadCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -88,6 +98,16 @@ namespace NotebookAutomation.Cli.Commands
             {
                 string localPath = context.ParseResult.GetValueForArgument(uploadLocalPath);
                 string remotePath = context.ParseResult.GetValueForArgument(uploadRemotePath);
+                if (string.IsNullOrEmpty(localPath) || string.IsNullOrEmpty(remotePath))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation onedrive upload <local-path> <remote-path> [options]",
+                        uploadCommand.Description ?? string.Empty,
+                        string.Join("\n", uploadCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", uploadCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -103,6 +123,16 @@ namespace NotebookAutomation.Cli.Commands
             searchCommand.SetHandler(async (InvocationContext context) =>
             {
                 string query = context.ParseResult.GetValueForArgument(queryArgument);
+                if (string.IsNullOrEmpty(query))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation onedrive search <query> [options]",
+                        searchCommand.Description ?? string.Empty,
+                        string.Join("\n", searchCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", searchCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -127,6 +157,16 @@ namespace NotebookAutomation.Cli.Commands
                 string localPath = context.ParseResult.GetValueForArgument(syncLocalPath);
                 string? remotePath = context.ParseResult.GetValueForArgument(syncRemotePath);
                 string? direction = context.ParseResult.GetValueForOption(directionOption);
+                if (string.IsNullOrEmpty(localPath))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation onedrive sync <local-path> [remote-path] [options]",
+                        syncCommand.Description ?? string.Empty,
+                        string.Join("\n", syncCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", syncCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);

@@ -18,6 +18,41 @@ namespace NotebookAutomation.Cli.Commands
     internal class ConfigCommands
     {
         /// <summary>
+        /// Prints the available configuration keys that can be updated.
+        /// </summary>
+        /// <param name="context">The invocation context for output.</param>
+        public static void PrintAvailableConfigKeys(InvocationContext context)
+        {
+            context.Console.WriteLine("Available configuration keys:");
+            context.Console.WriteLine("  paths.onedrive_fullpath_root      - Full path to OneDrive local resources directory");
+            context.Console.WriteLine("  paths.notebook_vault_fullpath_root - Full path to the notebook vault root directory");
+            context.Console.WriteLine("  paths.metadata_file                - Path to the metadata file");
+            context.Console.WriteLine("  paths.logging_dir                  - Directory for log files");
+            context.Console.WriteLine("  paths.prompts_path                 - Directory containing prompt template files");
+            context.Console.WriteLine("  paths.onedrive_resources_basepath  - Base path for OneDrive resources");
+            context.Console.WriteLine("---");
+            context.Console.WriteLine("  microsoft_graph.client_id          - Microsoft Graph API client ID");
+            context.Console.WriteLine("  microsoft_graph.api_endpoint       - Microsoft Graph API endpoint");
+            context.Console.WriteLine("  microsoft_graph.authority          - Microsoft Graph API authority");
+            context.Console.WriteLine("  microsoft_graph.scopes             - Microsoft Graph API scopes (comma-separated)");
+            context.Console.WriteLine("---");
+            context.Console.WriteLine("  video_extensions                   - Video file extensions (comma-separated)");
+            context.Console.WriteLine("---");
+            context.Console.WriteLine("  aiservice.provider                 - AI provider to use (openai, azure, foundry)");
+            context.Console.WriteLine("  aiservice.openai.endpoint          - OpenAI API endpoint (if using OpenAI)");
+            context.Console.WriteLine("  aiservice.openai.model             - OpenAI API model (if using OpenAI)");
+            context.Console.WriteLine("  aiservice.openai.key               - OpenAI API key (if using OpenAI)");
+            context.Console.WriteLine("---");
+            context.Console.WriteLine("  aiservice.azureopenai.endpoint     - Azure OpenAI API endpoint (if using Azure OpenAI)");
+            context.Console.WriteLine("  aiservice.azureopenai.deployment   - Azure OpenAI API deployment (if using Azure OpenAI)");
+            context.Console.WriteLine("  aiservice.azureopenai.model        - Azure OpenAI API model (if using Azure OpenAI)");
+            context.Console.WriteLine("  aiservice.azureopenai.key          - Azure OpenAI API key (if using Azure OpenAI)");
+            context.Console.WriteLine("---");
+            context.Console.WriteLine("  aiservice.foundry.endpoint         - Foundry API endpoint (if using Foundry)");
+            context.Console.WriteLine("  aiservice.foundry.model            - Foundry API model (if using Foundry)");
+            context.Console.WriteLine("  aiservice.foundry.key              - Foundry API key (if using Foundry)");
+        }
+        /// <summary>
         /// Prints the usage/help for the 'config view' command.
         /// </summary>
         internal void PrintViewUsage()
@@ -39,6 +74,14 @@ namespace NotebookAutomation.Cli.Commands
         {
             // Config command group (no special AI options)
             var configCommand = new Command("config", "Configuration management commands");
+
+            // config list-keys
+            var listKeysCommand = new Command("list-keys", "List all available configuration keys that can be updated");
+            listKeysCommand.SetHandler((InvocationContext context) =>
+            {
+                PrintAvailableConfigKeys(context);
+            });
+            configCommand.AddCommand(listKeysCommand);
 
             // config view
             var viewCommand = new Command("view", "Show the current configuration");
@@ -69,15 +112,15 @@ namespace NotebookAutomation.Cli.Commands
                 }
             });
 
-            // config update-key <key> <value>
+            // config update <key> <value>
             var keyArg = new Argument<string>("key", "Configuration key to update (e.g. paths.resources_root)");
             var valueArg = new Argument<string>("value", "New value for the key");
-            var updateKeyCommand = new Command("update-key", "Update a configuration key")
+            var updateCommand = new Command("update", "Update a configuration key")
             {
                 keyArg,
                 valueArg
             };
-            updateKeyCommand.SetHandler((InvocationContext context) =>
+            updateCommand.SetHandler((InvocationContext context) =>
             {
                 try
                 {
@@ -98,12 +141,14 @@ namespace NotebookAutomation.Cli.Commands
                     else
                     {
                         Console.WriteLine($"Failed to update key '{key}'. Key not found or invalid.");
+                        // Print available keys if update failed
+                        ConfigCommands.PrintAvailableConfigKeys(context);
                     }
                 }
                 catch (ArgumentException)
                 {
                     // This exception is thrown when arguments are missing
-                    context.Console.WriteLine("Usage: config update-key <key> <value> [options]");
+                    context.Console.WriteLine("Usage: config update <key> <value> [options]");
                     context.Console.WriteLine("");
                     context.Console.WriteLine("Updates a configuration key with the specified value.");
                     context.Console.WriteLine("");
@@ -115,38 +160,9 @@ namespace NotebookAutomation.Cli.Commands
                     context.Console.WriteLine("  --config, -c <config>    Path to the configuration file");
                     context.Console.WriteLine("  --debug, -d              Enable debug output");
                     context.Console.WriteLine("");
-                    context.Console.WriteLine("Available configuration keys:");
-                    context.Console.WriteLine("  paths.onedrive_fullpath_root      - Full path to OneDrive local resources directory");
-                    context.Console.WriteLine("  paths.notebook_vault_fullpath_root - Full path to the notebook vault root directory");
-                    context.Console.WriteLine("  paths.metadata_file                - Path to the metadata file");
-                    context.Console.WriteLine("  paths.logging_dir                  - Directory for log files");
-                    context.Console.WriteLine("  paths.prompts_path                 - Directory containing prompt template files");
-                    context.Console.WriteLine("  paths.onedrive_resources_basepath  - Base path for OneDrive resources");
-                    context.Console.WriteLine("---");
-                    context.Console.WriteLine("  microsoft_graph.client_id          - Microsoft Graph API client ID");
-                    context.Console.WriteLine("  microsoft_graph.api_endpoint       - Microsoft Graph API endpoint");
-                    context.Console.WriteLine("  microsoft_graph.authority          - Microsoft Graph API authority");
-                    context.Console.WriteLine("  microsoft_graph.scopes             - Microsoft Graph API scopes (comma-separated)");
-                    context.Console.WriteLine("---");
-                    context.Console.WriteLine("  video_extensions                   - Video file extensions (comma-separated)");
-                    context.Console.WriteLine("---");
-                    context.Console.WriteLine("  aiservice.provider                 - AI provider to use (openai, azure, foundry)");
-                    context.Console.WriteLine("  aiservice.openai.endpoint          - OpenAI API endpoint (if using OpenAI)");
-                    context.Console.WriteLine("  aiservice.openai.model             - OpenAI API model (if using OpenAI)");
-                    context.Console.WriteLine("  aiservice.openai.key               - OpenAI API key (if using OpenAI)");
-                    context.Console.WriteLine("---");
-                    context.Console.WriteLine("  aiservice.azureopenai.endpoint     - Azure OpenAI API endpoint (if using Azure OpenAI)");
-                    context.Console.WriteLine("  aiservice.azureopenai.deployment   - Azure OpenAI API deployment (if using Azure OpenAI)");
-                    context.Console.WriteLine("  aiservice.azureopenai.model        - Azure OpenAI API model (if using Azure OpenAI)");
-                    context.Console.WriteLine("  aiservice.azureopenai.key          - Azure OpenAI API key (if using Azure OpenAI)");
-                    context.Console.WriteLine("---");
-                    context.Console.WriteLine("  aiservice.foundry.endpoint         - Foundry API endpoint (if using Foundry)");
-                    context.Console.WriteLine("  aiservice.foundry.model            - Foundry API model (if using Foundry)");
-                    context.Console.WriteLine("  aiservice.foundry.key              - Foundry API key (if using Foundry)");
+                    ConfigCommands.PrintAvailableConfigKeys(context);
                 }
-
             });
-
             // Display user secrets status
             var displaySecretsCommand = new Command("display-secrets", "Display user secrets status (no values shown)");
             configCommand.AddCommand(displaySecretsCommand);
@@ -205,7 +221,7 @@ namespace NotebookAutomation.Cli.Commands
             });
 
             configCommand.AddCommand(viewCommand);
-            configCommand.AddCommand(updateKeyCommand);
+            configCommand.AddCommand(updateCommand);
 
             // Show help if no subcommand is provided for the config command
             configCommand.SetHandler((InvocationContext context) =>
@@ -257,6 +273,12 @@ namespace NotebookAutomation.Cli.Commands
         private static bool UpdateConfigKey(AppConfig appConfig, string key, string value)
         {
             var parts = key.Split('.');
+            // Special case: top-level key for video_extensions
+            if (key.Equals("video_extensions", StringComparison.OrdinalIgnoreCase))
+            {
+                appConfig.SetVideoExtensions(value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList());
+                return true;
+            }
             if (parts.Length == 2)
             {
                 var section = parts[0].ToLowerInvariant();
@@ -516,7 +538,7 @@ namespace NotebookAutomation.Cli.Commands
             {
                 PrintAligned("video_extensions", "[not set]");
             }
-            Console.WriteLine($"\n{AnsiColors.GREY}Tip: Use '{AnsiColors.BOLD}config update-key <key> <value>{AnsiColors.ENDC}{AnsiColors.GREY}' to change a setting.{AnsiColors.ENDC}\n");
+            Console.WriteLine($"\n{AnsiColors.GREY}Tip: Use '{AnsiColors.BOLD}config update <key> <value>{AnsiColors.ENDC}{AnsiColors.GREY}' to change a setting.{AnsiColors.ENDC}\n");
         }
 
         /// <summary>

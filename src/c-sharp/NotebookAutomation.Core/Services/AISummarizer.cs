@@ -220,20 +220,16 @@ namespace NotebookAutomation.Core.Services
 
                 var summarizeChunkFunction = _semanticKernel.CreateFunctionFromPrompt(
                     chunkSystemPrompt + "\n{{$input}}",
-                    new OpenAIPromptExecutionSettings
-                    {
-                        MaxTokens = 2000,
-                        Temperature = 0.2f,
-                        TopP = 0.95f,
-                        StopSequences = ["\n\n"]
-                    });
+                    new OpenAIPromptExecutionSettings()
+                );
 
                 // Process each chunk individually
                 var chunkSummaries = new List<string>();
                 for (int i = 0; i < chunks.Count; i++)
                 {
-
                     _logger.LogInformation("Processing chunk {ChunkIndex}/{TotalChunks}", i + 1, chunks.Count);
+                    _logger.LogInformation("Chunk prompt being sent:\n{Prompt}", chunkSystemPrompt);
+                    _logger.LogInformation("Chunk content being sent:\n{Chunk}", chunks[i]);
 
                     // Prepare KernelArguments with all required variables for the prompt
                     var kernelArgs = new KernelArguments
@@ -246,12 +242,19 @@ namespace NotebookAutomation.Core.Services
 
                     var result = await _semanticKernel.InvokeAsync(summarizeChunkFunction, kernelArgs);
 
+                    // Log the raw result object for debugging
+                    _logger.LogInformation("Raw model response for chunk {Index}: {Result}", i, result);
+
                     string? chunkSummary = result.GetValue<string>()?.Trim();
 
                     if (!string.IsNullOrWhiteSpace(chunkSummary))
                     {
                         chunkSummaries.Add(chunkSummary);
                         _logger.LogDebug("Chunk {Index} summary: {Summary}", i, chunkSummary);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Chunk {Index} returned empty or whitespace summary.", i);
                     }
                 }
 
@@ -273,14 +276,11 @@ namespace NotebookAutomation.Core.Services
                     ? finalPromptTemplate
                     : "You are an academic editor specializing in MBA coursework. Combine multiple partial summaries into one cohesive summary that emphasizes overarching themes, strategic frameworks, and actionable insights for students.";
 
+                // this is the final prompt that will be used to aggregate the summaries
                 var aggregateSummariesFunction = _semanticKernel.CreateFunctionFromPrompt(
                     finalSystemPrompt + "\n{{$input}}",
-                    new OpenAIPromptExecutionSettings
-                    {
-                        MaxTokens = 4000,
-                        Temperature = 1.0f,
-                        TopP = 1.0f
-                    });
+                    new OpenAIPromptExecutionSettings()
+                );
 
                 // Combine and finalize
                 string allSummaries = string.Join("\n\n", chunkSummaries);

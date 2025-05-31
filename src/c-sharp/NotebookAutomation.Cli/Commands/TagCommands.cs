@@ -60,12 +60,24 @@ namespace NotebookAutomation.Cli.Commands
                 await this.ProcessTagsAsync(path, "add-nested", config, debug, verbose, dryRun);
             });
 
+
             // clean-index command
             var cleanIndexCommand = new Command("clean-index", "Clean tags from index files");
             cleanIndexCommand.AddArgument(pathArg);
             cleanIndexCommand.SetHandler(async (InvocationContext context) =>
             {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
+                var pathValue = context.ParseResult.GetValueForArgument(pathArg);
+                if (string.IsNullOrEmpty(pathValue))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation tag clean-index <path> [options]",
+                        cleanIndexCommand.Description ?? string.Empty,
+                        string.Join("\n", cleanIndexCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", cleanIndexCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
+                string path = pathValue;
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -73,12 +85,24 @@ namespace NotebookAutomation.Cli.Commands
                 await this.ProcessTagsAsync(path, "clean-index", config, debug, verbose, dryRun);
             });
 
+
             // consolidate command
             var consolidateCommand = new Command("consolidate", "Consolidate tags in markdown files");
             consolidateCommand.AddArgument(pathArg);
             consolidateCommand.SetHandler(async (InvocationContext context) =>
             {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
+                var pathValue = context.ParseResult.GetValueForArgument(pathArg);
+                if (string.IsNullOrEmpty(pathValue))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation tag consolidate <path> [options]",
+                        consolidateCommand.Description ?? string.Empty,
+                        string.Join("\n", consolidateCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", consolidateCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
+                string path = pathValue;
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -86,12 +110,24 @@ namespace NotebookAutomation.Cli.Commands
                 await this.ProcessTagsAsync(path, "consolidate", config, debug, verbose, dryRun);
             });
 
+
             // restructure-tags command
             var restructureCommand = new Command("restructure", "Restructure tags for consistency");
             restructureCommand.AddArgument(pathArg);
             restructureCommand.SetHandler(async (InvocationContext context) =>
             {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
+                var pathValue = context.ParseResult.GetValueForArgument(pathArg);
+                if (string.IsNullOrEmpty(pathValue))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation tag restructure <path> [options]",
+                        restructureCommand.Description ?? string.Empty,
+                        string.Join("\n", restructureCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", restructureCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
+                string path = pathValue;
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -99,12 +135,24 @@ namespace NotebookAutomation.Cli.Commands
                 await this.ProcessTagsAsync(path, "restructure-tags", config, debug, verbose, dryRun);
             });
 
+
             // add-example-tags command
             var addExampleCommand = new Command("add-example", "Add example tags to a file");
             addExampleCommand.AddArgument(pathArg);
             addExampleCommand.SetHandler(async (InvocationContext context) =>
             {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
+                var pathValue = context.ParseResult.GetValueForArgument(pathArg);
+                if (string.IsNullOrEmpty(pathValue))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation tag add-example <path> [options]",
+                        addExampleCommand.Description ?? string.Empty,
+                        string.Join("\n", addExampleCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", addExampleCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
+                string path = pathValue;
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -112,18 +160,31 @@ namespace NotebookAutomation.Cli.Commands
                 await this.ProcessTagsAsync(path, "add-example-tags", config, debug, verbose, dryRun);
             });
 
+
             // metadata-check command
             var metadataCommand = new Command("metadata-check", "Check and enforce metadata consistency");
             metadataCommand.AddArgument(pathArg);
             metadataCommand.SetHandler(async (InvocationContext context) =>
             {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
+                var pathValue = context.ParseResult.GetValueForArgument(pathArg);
+                if (string.IsNullOrEmpty(pathValue))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation tag metadata-check <path> [options]",
+                        metadataCommand.Description ?? string.Empty,
+                        string.Join("\n", metadataCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", metadataCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
+                string path = pathValue;
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 await this.ProcessTagsAsync(path, "metadata-check", config, debug, verbose, dryRun);
             });
+
 
             // update-frontmatter command
             var updateFrontmatterCommand = new Command("update-frontmatter", "Update or add a specific key-value pair in frontmatter");
@@ -134,9 +195,22 @@ namespace NotebookAutomation.Cli.Commands
             updateFrontmatterCommand.AddArgument(valueArg);
             updateFrontmatterCommand.SetHandler(async (InvocationContext context) =>
             {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
-                string key = context.ParseResult.GetValueForArgument(keyArg);
-                string value = context.ParseResult.GetValueForArgument(valueArg);
+                var pathValue = context.ParseResult.GetValueForArgument(pathArg);
+                var keyValue = context.ParseResult.GetValueForArgument(keyArg);
+                var valueValue = context.ParseResult.GetValueForArgument(valueArg);
+                if (string.IsNullOrEmpty(pathValue) || string.IsNullOrEmpty(keyValue) || string.IsNullOrEmpty(valueValue))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation tag update-frontmatter <path> <key> <value> [options]",
+                        updateFrontmatterCommand.Description ?? string.Empty,
+                        string.Join("\n", updateFrontmatterCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", updateFrontmatterCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
+                string path = pathValue;
+                string key = keyValue;
+                string value = valueValue;
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -144,12 +218,24 @@ namespace NotebookAutomation.Cli.Commands
                 await this.ProcessUpdateFrontmatterAsync(path, key, value, config, debug, verbose, dryRun);
             });
 
+
             // diagnose-yaml command
             var diagnoseYamlCommand = new Command("diagnose-yaml", "Diagnose YAML frontmatter issues in markdown files");
             diagnoseYamlCommand.AddArgument(pathArg);
             diagnoseYamlCommand.SetHandler(async (InvocationContext context) =>
             {
-                string path = context.ParseResult.GetValueForArgument(pathArg);
+                var pathValue = context.ParseResult.GetValueForArgument(pathArg);
+                if (string.IsNullOrEmpty(pathValue))
+                {
+                    AnsiConsoleHelper.WriteUsage(
+                        "Usage: notebookautomation tag diagnose-yaml <path> [options]",
+                        diagnoseYamlCommand.Description ?? string.Empty,
+                        string.Join("\n", diagnoseYamlCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
+                        "\n" + string.Join("\n", diagnoseYamlCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                    );
+                    return;
+                }
+                string path = pathValue;
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);

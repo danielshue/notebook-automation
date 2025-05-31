@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -102,8 +102,10 @@ namespace NotebookAutomation.Core.Tests
         /// </summary>
         [TestMethod]
         public async Task SummarizeAsync_HandlesErrors_ReturnsNull()
-        {            // Arrange
-            var inputText = "This is the text to summarize."; _fakeTextGenService.ExceptionToThrow = new Exception("Test exception");
+        {
+            // Arrange
+            var inputText = "This is the text to summarize.";
+            _fakeTextGenService.ExceptionToThrow = new Exception("Test exception");
             // Set response to empty string to simulate error handling that returns empty instead of null
             _fakeTextGenService.Response = "";
             var summarizer = new AISummarizer(

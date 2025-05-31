@@ -132,7 +132,7 @@ namespace NotebookAutomation.Cli
                 }
                 if (string.IsNullOrEmpty(configPath))
                 {
-                    configPath = NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile();
+                    configPath = AppConfig.FindConfigFile();
                 }
                 if (!string.IsNullOrEmpty(configPath))
                 {

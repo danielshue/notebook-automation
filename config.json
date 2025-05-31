@@ -1,4 +1,6 @@
 {
+  "ConfigFilePath": "D:\\source\\notebook-automation-csharp-migration\\config.json",
+  "DebugEnabled": false,
   "paths": {
     "onedrive_fullpath_root": "c:/Users/danshue.REDMOND/OneDrive",
     "notebook_vault_fullpath_root": "c:/users/danshue.REDMOND/Vault/01_Projects/MBA/",
@@ -17,14 +19,14 @@
     ]
   },
   "aiservice": {
-    "provider": "openai",
+    "provider": "azure",
     "openai": {
       "endpoint": "https://api.openai.com/v1/chat/completions",
       "model": "gpt-4o"
     },
     "azure": {
-      "endpoint": "https://notebookautomation-resource.cognitiveservices.azure.com/openai/deployments/model-router/chat/completions?api-version=2025-01-01-preview",
-      "deployment": "model-router",
+      "endpoint": "https://notebookautomation-resource.cognitiveservices.azure.com/",
+      "deployment": "gpt-4o",
       "model": "gpt-4o"
     },
     "foundry": {

@@ -215,7 +215,7 @@ namespace NotebookAutomation.Core.Configuration
                 }
                 else if (providerType == "azure" && aiConfig.Azure != null)
                 {
-                    var azureKey = Environment.GetEnvironmentVariable("AZURE_OPEN_AI_API_KEY");
+                    var azureKey = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
                     var endpoint = aiConfig.Azure.Endpoint ?? string.Empty;
                     var deployment = aiConfig.Azure.Deployment ?? string.Empty;
                     builder.AddAzureOpenAIChatCompletion(deployment, endpoint, azureKey ?? string.Empty);

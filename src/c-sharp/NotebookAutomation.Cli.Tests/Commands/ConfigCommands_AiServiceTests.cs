@@ -5,7 +5,7 @@ using NotebookAutomation.Core.Configuration;
 namespace NotebookAutomation.Cli.Tests.Commands
 {
     /// <summary>
-    /// Unit tests for config update-key with aiservice.* keys.
+    /// Unit tests for config update with aiservice.* keys.
     /// </summary>
     [TestClass]
     public class ConfigCommands_AiServiceTests

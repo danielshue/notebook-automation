@@ -14,6 +14,130 @@ namespace NotebookAutomation.Cli.Tests.Commands
     [TestClass]
     public class OneDriveCommandsTests
     {
+
+        /// <summary>
+        /// Verifies that the 'onedrive download' command prints usage/help when required arguments are missing.
+        /// </summary>
+        [TestMethod]
+        public async Task OneDriveDownloadCommand_PrintsUsage_WhenArgsMissing()
+        {
+            var rootCommand = new System.CommandLine.RootCommand();
+            var configOption = new System.CommandLine.Option<string>("--config");
+            var debugOption = new System.CommandLine.Option<bool>("--debug");
+            var verboseOption = new System.CommandLine.Option<bool>("--verbose");
+            var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
+            var oneDriveCommands = new OneDriveCommands();
+            oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+            var originalOut = Console.Out;
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            try
+            {
+                var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+                // Missing both required args
+                await parser.InvokeAsync("onedrive download");
+            }
+            finally
+            {
+                Console.SetOut(originalOut);
+            }
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("remote-path") || output.Contains("Usage"), "Should print usage/help when required args are missing.");
+        }
+
+        /// <summary>
+        /// Verifies that the 'onedrive upload' command prints usage/help when required arguments are missing.
+        /// </summary>
+        [TestMethod]
+        public async Task OneDriveUploadCommand_PrintsUsage_WhenArgsMissing()
+        {
+            var rootCommand = new System.CommandLine.RootCommand();
+            var configOption = new System.CommandLine.Option<string>("--config");
+            var debugOption = new System.CommandLine.Option<bool>("--debug");
+            var verboseOption = new System.CommandLine.Option<bool>("--verbose");
+            var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
+            var oneDriveCommands = new OneDriveCommands();
+            oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+            var originalOut = Console.Out;
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            try
+            {
+                var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+                // Missing both required args
+                await parser.InvokeAsync("onedrive upload");
+            }
+            finally
+            {
+                Console.SetOut(originalOut);
+            }
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("local-path") || output.Contains("Usage"), "Should print usage/help when required args are missing.");
+        }
+
+        /// <summary>
+        /// Verifies that the 'onedrive search' command prints usage/help when required arguments are missing.
+        /// </summary>
+        [TestMethod]
+        public async Task OneDriveSearchCommand_PrintsUsage_WhenArgsMissing()
+        {
+            var rootCommand = new System.CommandLine.RootCommand();
+            var configOption = new System.CommandLine.Option<string>("--config");
+            var debugOption = new System.CommandLine.Option<bool>("--debug");
+            var verboseOption = new System.CommandLine.Option<bool>("--verbose");
+            var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
+            var oneDriveCommands = new OneDriveCommands();
+            oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+            var originalOut = Console.Out;
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            try
+            {
+                var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+                // Missing required arg
+                await parser.InvokeAsync("onedrive search");
+            }
+            finally
+            {
+                Console.SetOut(originalOut);
+            }
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("query") || output.Contains("Usage"), "Should print usage/help when required args are missing.");
+        }
+
+        /// <summary>
+        /// Verifies that the 'onedrive sync' command prints usage/help when required arguments are missing.
+        /// </summary>
+        [TestMethod]
+        public async Task OneDriveSyncCommand_PrintsUsage_WhenArgsMissing()
+        {
+            var rootCommand = new System.CommandLine.RootCommand();
+            var configOption = new System.CommandLine.Option<string>("--config");
+            var debugOption = new System.CommandLine.Option<bool>("--debug");
+            var verboseOption = new System.CommandLine.Option<bool>("--verbose");
+            var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
+            var oneDriveCommands = new OneDriveCommands();
+            oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+            var originalOut = Console.Out;
+            var stringWriter = new System.IO.StringWriter();
+            Console.SetOut(stringWriter);
+            try
+            {
+                var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+                // Missing required arg
+                await parser.InvokeAsync("onedrive sync");
+            }
+            finally
+            {
+                Console.SetOut(originalOut);
+            }
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("local-path") || output.Contains("Usage"), "Should print usage/help when required args are missing.");
+        }
         /// <summary>
         /// Verifies that the 'onedrive list' command prints usage/help when no arguments are provided.
         /// </summary>
