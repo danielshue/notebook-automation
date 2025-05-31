@@ -229,7 +229,8 @@ namespace NotebookAutomation.Cli.Commands
                     isFile ? "file" : "directory",
                     input);                // Log where output will be written
                 logger.LogInformation("Output will be written to: {OutputPath}",
-                    overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"); var result = await batchProcessor.ProcessVideosAsync(
+                    overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"); 
+                var result = await batchProcessor.ProcessVideosAsync(
                     // Use the input from command line
                     input,
                     overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",

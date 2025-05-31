@@ -40,9 +40,9 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var configOption = new Option<string>("--config");
             var debugOption = new Option<bool>("--debug");
             configCommands.Register(rootCommand, configOption, debugOption);
-            var updateKey = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config")
-                ?.Subcommands.FirstOrDefault(c => c.Name == "update-key") as Command;
-            Assert.IsNotNull(updateKey, "update-key command should be registered");
+            var update = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config")
+                ?.Subcommands.FirstOrDefault(c => c.Name == "update") as Command;
+            Assert.IsNotNull(update, "update command should be registered");
             // We cannot fully test the output without a real config file, but registration is covered.
         }
     }
