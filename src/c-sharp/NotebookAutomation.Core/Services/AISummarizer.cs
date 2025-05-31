@@ -106,7 +106,9 @@ namespace NotebookAutomation.Core.Services
             _promptService = promptService;
             _semanticKernel = semanticKernel;
             _textGenerationService = textGenerationService;
-        }        /// <summary>
+        }        
+        
+        /// <summary>
         /// Generates an AI-powered summary for the given text using the best available AI framework.
         /// Automatically selects between direct summarization and chunked processing based on text length.
         /// Supports variable substitution for metadata augmentation and custom prompt templates.
@@ -336,7 +338,9 @@ namespace NotebookAutomation.Core.Services
                     {
                         MaxTokens = 2048
                     }
-                );                // Process each chunk individually
+                );                
+                
+                // Process each chunk individually
                 var chunkSummaries = new List<string>();
                 for (int i = 0; i < chunks.Count; i++)
                 {
