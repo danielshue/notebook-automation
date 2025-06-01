@@ -17,11 +17,16 @@
     <GenerateDocumentationFile>False</GenerateDocumentationFile>
     <PublishAot>False</PublishAot>
     <Copyright>Copyright 2025</Copyright>
-  </PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-  <IsPublishable>False</IsPublishable>
-</PropertyGroup>  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-  <IsPublishable>False</IsPublishable>
-</PropertyGroup>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <IsPublishable>True</IsPublishable>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <IsPublishable>True</IsPublishable>
+  </PropertyGroup>
 
   <!-- Copy prompts from repository root and Core project if they exist -->
   <Target Name="CopyPrompts" BeforeTargets="Build">
