@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Configuration;
 using System.Text.Json.Serialization;
 
 namespace NotebookAutomation.Core.Configuration

@@ -1,5 +1,3 @@
-using System;
-
 namespace NotebookAutomation.Core.Tools.Shared
 {
     /// <summary>

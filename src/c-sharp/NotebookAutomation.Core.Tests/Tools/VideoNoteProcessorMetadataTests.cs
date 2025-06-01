@@ -6,9 +6,7 @@ using Moq;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
-using NotebookAutomation.Core.Utils;
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;

@@ -1,6 +1,4 @@
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.UserSecrets;
-using Microsoft.Extensions.Configuration.EnvironmentVariables;
 
 namespace NotebookAutomation.Core.Configuration
 {

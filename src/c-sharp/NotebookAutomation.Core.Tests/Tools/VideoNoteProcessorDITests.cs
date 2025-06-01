@@ -5,7 +5,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 
-using System;
 using System.Threading.Tasks;
 
 namespace NotebookAutomation.Core.Tests.Tools

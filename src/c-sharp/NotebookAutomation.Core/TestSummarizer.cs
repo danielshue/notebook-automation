@@ -1,13 +1,8 @@
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Configuration;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 using System.Text;
 

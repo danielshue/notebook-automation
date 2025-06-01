@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Tools.Shared;
 
 namespace NotebookAutomation.Core.Tools.PdfProcessing

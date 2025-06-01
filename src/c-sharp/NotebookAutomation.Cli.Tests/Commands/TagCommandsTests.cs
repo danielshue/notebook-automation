@@ -1,11 +1,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Cli.Commands;
-using NotebookAutomation.Core.Utils;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using System.CommandLine.Parsing;
-using System.CommandLine.Invocation;
 using Moq;
 using Microsoft.Extensions.Logging;
 

@@ -2,10 +2,7 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Cli.Utilities;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text.Json;
-using Program = NotebookAutomation.Cli.Program;
 
 namespace NotebookAutomation.Cli.Commands
 {

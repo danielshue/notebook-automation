@@ -1,10 +1,5 @@
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace NotebookAutomation.Core.Utils
 {
@@ -75,7 +70,7 @@ namespace NotebookAutomation.Core.Utils
 
             if (!File.Exists(filePath))
             {
-                _logger.LogWarning("File does not exist: {FilePath}", filePath);
+                _logger.LogWarningWithPath("File does not exist: {FilePath}", nameof(MetadataHierarchyDetector), filePath);
                 return info;
             }
 
@@ -84,7 +79,7 @@ namespace NotebookAutomation.Core.Utils
             {
                 if (_verbose)
                 {
-                    _logger.LogInformation("Using explicit program override: {Program}", _programOverride);
+                    _logger.LogInformationWithPath("Using explicit program override: {Program}", nameof(MetadataHierarchyDetector), _programOverride);
                 }
             }
 
@@ -98,7 +93,7 @@ namespace NotebookAutomation.Core.Utils
                 info["program"] = "Value Chain Management";
                 if (_verbose)
                 {
-                    _logger.LogInformation("Found 'Value Chain Management' in path, using it as program name");
+                    _logger.LogInformationWithPath("Found 'Value Chain Management' in path, using it as program name", nameof(MetadataHierarchyDetector));
                 }
 
                 // Extract course and class info from the path structure
@@ -116,7 +111,7 @@ namespace NotebookAutomation.Core.Utils
                             info["course"] = parts[vcmIdx + 2];
                             if (_verbose)
                             {
-                                _logger.LogInformation("Found course in Value Chain Management path: {Course}", info["course"]);
+                                _logger.LogInformationWithPath("Found course in Value Chain Management path: {Course}", nameof(MetadataHierarchyDetector), info["course"]);
                             }
 
                             // Class would be the next level
@@ -125,7 +120,7 @@ namespace NotebookAutomation.Core.Utils
                                 info["class"] = parts[vcmIdx + 3];
                                 if (_verbose)
                                 {
-                                    _logger.LogInformation("Found class in Value Chain Management path: {Class}", info["class"]);
+                                    _logger.LogInformationWithPath("Found class in Value Chain Management path: {Class}", nameof(MetadataHierarchyDetector), info["class"]);
                                 }
                             }
                         }
@@ -138,7 +133,7 @@ namespace NotebookAutomation.Core.Utils
                             info["course"] = parts[vcmIdx + 1];
                             if (_verbose)
                             {
-                                _logger.LogInformation("Found course in Value Chain Management path: {Course}", info["course"]);
+                                _logger.LogInformationWithPath("Found course in Value Chain Management path: {Course}", nameof(MetadataHierarchyDetector), info["course"]);
                             }
 
                             // Class would be the next level
@@ -147,7 +142,7 @@ namespace NotebookAutomation.Core.Utils
                                 info["class"] = parts[vcmIdx + 2];
                                 if (_verbose)
                                 {
-                                    _logger.LogInformation("Found class in Value Chain Management path: {Class}", info["class"]);
+                                    _logger.LogInformationWithPath("Found class in Value Chain Management path: {Class}", nameof(MetadataHierarchyDetector), info["class"]);
                                 }
                             }
                         }
@@ -156,8 +151,7 @@ namespace NotebookAutomation.Core.Utils
 
                 if (_verbose)
                 {
-                    _logger.LogInformation("Value Chain Management path analysis: program='{Program}', course='{Course}', class='{Class}'",
-                        info["program"], info["course"], info["class"]);
+                    _logger.LogInformationWithPath("Value Chain Management path analysis: program='{Program}', course='{Course}', class='{Class}'", nameof(MetadataHierarchyDetector), info["program"], info["course"], info["class"]);
                 }
 
                 // Return early since we've determined the hierarchy for VCM
@@ -206,7 +200,7 @@ namespace NotebookAutomation.Core.Utils
                                         info["program"] = GetValueOrDefault(frontmatterDict, "title", dirName);
                                         if (_verbose)
                                         {
-                                            _logger.LogInformation("Found program: {Program} at {Dir}", info["program"], currentDir.FullName);
+                                            _logger.LogInformationWithPath("Found program: {Program} at {Dir}", nameof(MetadataHierarchyDetector), info["program"], currentDir.FullName);
                                         }
                                     }
                                 }
@@ -218,7 +212,7 @@ namespace NotebookAutomation.Core.Utils
                                     info["course"] = GetValueOrDefault(frontmatterDict, "title", dirName);
                                     if (_verbose)
                                     {
-                                        _logger.LogInformation("Found course: {Course} at {Dir}", info["course"], currentDir.FullName);
+                                        _logger.LogInformationWithPath("Found course: {Course} at {Dir}", nameof(MetadataHierarchyDetector), info["course"], currentDir.FullName);
                                     }
                                 }
 
@@ -228,7 +222,7 @@ namespace NotebookAutomation.Core.Utils
                                     info["class"] = GetValueOrDefault(frontmatterDict, "title", dirName);
                                     if (_verbose)
                                     {
-                                        _logger.LogInformation("Found class: {Class} at {Dir}", info["class"], currentDir.FullName);
+                                        _logger.LogInformationWithPath("Found class: {Class} at {Dir}", nameof(MetadataHierarchyDetector), info["class"], currentDir.FullName);
                                     }
                                 }
                             }
@@ -236,7 +230,7 @@ namespace NotebookAutomation.Core.Utils
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogWarning("Error processing index file {File}: {Error}", indexFile.FullName, ex.Message);
+                        _logger.LogWarningWithPath(ex, "Error processing index file {File}: {Error}", nameof(MetadataHierarchyDetector), indexFile.FullName, ex.Message);
                     }
                 }
 
@@ -310,13 +304,12 @@ namespace NotebookAutomation.Core.Utils
 
                     if (_verbose)
                     {
-                        _logger.LogInformation("Path fallback: program='{Program}', course='{Course}', class='{Class}'",
-                            info["program"], info["course"], info["class"]);
+                        _logger.LogInformationWithPath("Path fallback: program='{Program}', course='{Course}', class='{Class}'", nameof(MetadataHierarchyDetector), info["program"], info["course"], info["class"]);
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning("Error during path-based fallback: {Error}", ex.Message);
+                    _logger.LogWarningWithPath(ex, "Error during path-based fallback: {Error}", nameof(MetadataHierarchyDetector), ex.Message);
                 }
 
                 // If we still don't have a program, use a default
@@ -325,7 +318,7 @@ namespace NotebookAutomation.Core.Utils
                     info["program"] = "MBA Program";
                     if (_verbose)
                     {
-                        _logger.LogInformation("No program identifier found, using default: {Program}", info["program"]);
+                    _logger.LogInformationWithPath("No program identifier found, using default: {Program}", nameof(MetadataHierarchyDetector), info["program"]);
                     }
                 }
             }
@@ -333,8 +326,7 @@ namespace NotebookAutomation.Core.Utils
             // Debug logging to help understand the final hierarchy
             if (_verbose)
             {
-                _logger.LogInformation("Final metadata info: Program='{Program}', Course='{Course}', Class='{Class}'",
-                    info["program"], info["course"], info["class"]);
+                _logger.LogInformationWithPath("Final metadata info: Program='{Program}', Course='{Course}', Class='{Class}'", nameof(MetadataHierarchyDetector), info["program"], info["course"], info["class"]);
             }
 
             return info;

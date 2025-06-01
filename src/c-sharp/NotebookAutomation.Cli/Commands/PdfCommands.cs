@@ -1,10 +1,7 @@
 using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Tools.PdfProcessing;
 using NotebookAutomation.Core.Utils;
 using System.Runtime.CompilerServices;
 
@@ -115,7 +112,7 @@ namespace NotebookAutomation.Cli.Commands
         {
             if (string.IsNullOrEmpty(configPath))
             {
-                _logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
+                _logger.LogErrorWithPath("OpenAI configuration is missing or incomplete. Exiting.", "PdfCommands.cs");
                 return;
             }
 
@@ -131,11 +128,11 @@ namespace NotebookAutomation.Cli.Commands
                 _logger.LogInformationWithPath("Processing PDF file: {FilePath}", input);
                 // Example processing logic
                 await Task.CompletedTask;
-                _logger.LogInformation("PDF processing completed successfully.");
+                _logger.LogInformationWithPath("PDF processing completed successfully.", "PdfCommands.cs");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred during PDF processing.");
+                _logger.LogErrorWithPath(ex, "An error occurred during PDF processing.", "PdfCommands.cs");
                 _logger.LogErrorWithPath("Error in PDF command", "PdfCommands.cs", ex);
             }
             finally

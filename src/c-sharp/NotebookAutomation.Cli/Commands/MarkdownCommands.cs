@@ -129,16 +129,17 @@ namespace NotebookAutomation.Cli.Commands
                 // Validate OpenAI config before proceeding
                 if (!ConfigValidation.RequireOpenAi(appConfig))
                 {
-                    logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
+                    logger.LogErrorWithPath("OpenAI configuration is missing or incomplete. Exiting.", "MarkdownCommands.cs");
                     return;
                 }
                 if (sourceDirs == null || sourceDirs.Length == 0)
                 {
-                    logger.LogError("Source directories are required");
+                    logger.LogErrorWithPath("Source directories are required", "MarkdownCommands.cs");
                     return;
                 }
 
-                string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY"); if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
+                string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+                if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
                 {
                     openAiApiKey = appConfig.AiService.GetApiKey();
                 }
@@ -150,7 +151,7 @@ namespace NotebookAutomation.Cli.Commands
                 {
                     if (!Directory.Exists(sourceDir))
                     {
-                        logger.LogWarning("Source directory not found: {Dir}", sourceDir);
+                        logger.LogWarningWithPath("Source directory not found: {Dir}", "MarkdownCommands.cs", sourceDir);
                         continue;
                     }
 
@@ -163,7 +164,7 @@ namespace NotebookAutomation.Cli.Commands
 
                         try
                         {
-                            logger.LogInformation("Processing file: {File}", file);
+                            logger.LogInformationWithPath("Processing file: {File}", file);
                             string markdown = await processor.ConvertToMarkdownAsync(file, openAiApiKey, "chunk_summary_prompt.md");
 
                             if (!dryRun)
@@ -172,22 +173,22 @@ namespace NotebookAutomation.Cli.Commands
                                 Directory.CreateDirectory(outputDir);
                                 string outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(file) + ".md");
                                 await File.WriteAllTextAsync(outputPath, markdown);
-                                logger.LogInformation("Markdown note saved to: {OutputPath}", outputPath);
+                                logger.LogInformationWithPath("Markdown note saved to: {OutputPath}", outputPath);
                             }
                             else
                             {
-                                logger.LogInformation("[DRY RUN] Markdown note would be generated for: {File}", file);
+                                logger.LogInformationWithPath("[DRY RUN] Markdown note would be generated for: {File}", file);
                             }
                         }
                         catch (Exception ex)
                         {
-                            logger.LogError(ex, "Failed to process file: {File}", file);
+                            logger.LogErrorWithPath(ex, "Failed to process file: {File}", file);
                             failedLogger?.LogError(ex, "Failed to process file: {File}", file);
                         }
                     }
                 }
 
-                logger.LogInformation("Markdown generation complete");
+                logger.LogInformationWithPath("Markdown generation complete", "MarkdownCommands.cs");
             }
             catch (Exception ex)
             {

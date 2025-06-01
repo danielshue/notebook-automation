@@ -112,13 +112,13 @@ namespace NotebookAutomation.Cli.Commands
         {
             if (string.IsNullOrEmpty(configPath))
             {
-                _logger.LogError("Configuration is missing or incomplete. Exiting.");
+                _logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "VaultCommands.cs");
                 return;
             }
 
             if (string.IsNullOrEmpty(path))
             {
-                _logger.LogErrorWithPath("Path is required: {FilePath}", path ?? "unknown");
+                _logger.LogErrorWithPath("Path is required: {FilePath}", "VaultCommands.cs", path ?? "unknown");
                 return;
             }
 
@@ -129,11 +129,11 @@ namespace NotebookAutomation.Cli.Commands
             {
                 // Simulate vault command logic
                 await Task.CompletedTask;
-                _logger.LogInformation("Vault command completed successfully.");
+                _logger.LogInformationWithPath("Vault command completed successfully.", "VaultCommands.cs");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred during vault command execution.");
+                _logger.LogErrorWithPath(ex, "An error occurred during vault command execution.", "VaultCommands.cs");
                 _logger.LogErrorWithPath("Error in vault command", "VaultCommands.cs", ex);
             }
         }
