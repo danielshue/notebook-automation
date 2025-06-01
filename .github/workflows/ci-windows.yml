@@ -6,11 +6,13 @@ on:
       - csharp-migration
     paths:
       - 'src/c-sharp/**'
+      - '.github/workflows/**'
   pull_request:
     branches:
       - csharp-migration
     paths:
       - 'src/c-sharp/**'
+      - '.github/workflows/**'
 
 jobs:
   build-and-test:
