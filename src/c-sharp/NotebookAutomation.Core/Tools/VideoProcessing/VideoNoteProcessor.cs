@@ -532,7 +532,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     Logger.LogInformationWithPath("Found generic transcript: {FilePath}", exactTxtPath);
                     return File.ReadAllText(exactTxtPath);
-                }                var exactMdPath = Path.Combine(searchPath, fileNameWithoutExt + ".md");
+                }
+                var exactMdPath = Path.Combine(searchPath, fileNameWithoutExt + ".md");
                 if (File.Exists(exactMdPath))
                 {
                     Logger.LogInformationWithPath("Found generic transcript: {FilePath}", exactMdPath);
@@ -545,7 +546,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     Logger.LogInformationWithPath("Found generic transcript with normalized name: {FilePath}", altTxtPath);
                     return File.ReadAllText(altTxtPath);
-                }                var altMdPath = Path.Combine(searchPath, altBaseName + ".md");
+                }
+                var altMdPath = Path.Combine(searchPath, altBaseName + ".md");
                 if (File.Exists(altMdPath))
                 {
                     Logger.LogInformationWithPath("Found generic transcript with normalized name: {FilePath}", altMdPath);

@@ -1,12 +1,14 @@
-#nullable enable
+﻿#nullable enable
 
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
+
 using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests
@@ -92,20 +94,20 @@ namespace NotebookAutomation.Core.Tests
             return await SummarizeWithSemanticKernelAsync(inputText, prompt, cancellationToken);
         }        // Override to always return [Simulated AI summary] for tests
         protected override async Task<string?> SummarizeWithChunkingAsync(
-            string inputText, 
-            string? prompt, 
-            Dictionary<string, string>? variables, 
+            string inputText,
+            string? prompt,
+            Dictionary<string, string>? variables,
             CancellationToken cancellationToken)
         {
             // Check for cancellation first to ensure cancellation tests work correctly
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             // Always call the chunking service for test verification
             var chunkingService = GetTextChunkingService();
-            
+
             // Add an await to make it properly async
             await Task.Delay(1, cancellationToken);
-            
+
             List<string> chunks = chunkingService.SplitTextIntoChunks(inputText, 8000, 500);
             return "[Simulated AI summary]";
         }
@@ -114,20 +116,20 @@ namespace NotebookAutomation.Core.Tests
         private ITextChunkingService GetTextChunkingService()
         {
             // Using reflection to get the _chunkingService field from the base class
-            var field = typeof(AISummarizer).GetField("_chunkingService", 
+            var field = typeof(AISummarizer).GetField("_chunkingService",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
+
             if (field == null)
             {
                 throw new InvalidOperationException("Could not find _chunkingService field in AISummarizer");
             }
-            
+
             var value = field.GetValue(this);
             if (value == null)
             {
                 throw new InvalidOperationException("_chunkingService is null in AISummarizer");
             }
-            
+
             return (ITextChunkingService)value;
         }
     }

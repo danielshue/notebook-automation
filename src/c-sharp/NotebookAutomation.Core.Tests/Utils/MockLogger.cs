@@ -1,5 +1,6 @@
+﻿using System;
+
 using Microsoft.Extensions.Logging;
-using System;
 
 namespace NotebookAutomation.Core.Tests.Utils
 {

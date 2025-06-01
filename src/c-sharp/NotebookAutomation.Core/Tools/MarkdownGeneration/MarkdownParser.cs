@@ -15,12 +15,12 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
     {
         private readonly ILogger _logger;
         private readonly YamlHelper _yamlHelper;
-        
+
         /// <summary>
         /// Regular expression for detecting YAML frontmatter.
         /// </summary>
         public static readonly Regex FrontmatterRegex = new Regex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline);
-        
+
         /// <summary>
         /// Initializes a new instance of the MarkdownParser.
         /// </summary>
@@ -30,7 +30,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
             _logger = logger;
             _yamlHelper = new YamlHelper(logger);
         }
-        
+
         /// <summary>
         /// Extracts the frontmatter and content from a markdown file.
         /// </summary>
@@ -43,7 +43,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
                 _logger.LogError("File not found: {FilePath}", filePath);
                 return (new Dictionary<string, object>(), string.Empty);
             }
-            
+
             try
             {
                 string text = await File.ReadAllTextAsync(filePath);
@@ -55,7 +55,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
                 return (new Dictionary<string, object>(), string.Empty);
             }
         }
-        
+
         /// <summary>
         /// Parses markdown text into frontmatter and content.
         /// </summary>
@@ -67,20 +67,20 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
             {
                 return (new Dictionary<string, object>(), string.Empty);
             }
-            
+
             var match = FrontmatterRegex.Match(markdownText);
             if (!match.Success)
             {
                 return (new Dictionary<string, object>(), markdownText);
             }
-            
+
             var frontmatterYaml = match.Groups[1].Value;
             var content = markdownText.Substring(match.Length);
             var frontmatter = _yamlHelper.ParseYamlToDictionary(frontmatterYaml);
-            
+
             return (frontmatter, content);
         }
-        
+
         /// <summary>
         /// Combines frontmatter and content into a complete markdown document.
         /// </summary>
@@ -91,7 +91,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
         {
             return _yamlHelper.UpdateFrontmatter(content, frontmatter);
         }
-        
+
         /// <summary>
         /// Writes a markdown document to a file.
         /// </summary>
@@ -104,10 +104,10 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath) ?? string.Empty);
-                
+
                 var fullContent = CombineMarkdown(frontmatter, content);
                 await File.WriteAllTextAsync(filePath, fullContent, Encoding.UTF8);
-                
+
                 return true;
             }
             catch (Exception ex)
@@ -116,7 +116,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Extracts the header level and title from a markdown header line.
         /// </summary>
@@ -128,19 +128,19 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
             {
                 return (0, string.Empty);
             }
-            
+
             var match = Regex.Match(headerLine, @"^(#+)\s+(.+)$");
             if (!match.Success)
             {
                 return (0, headerLine.Trim());
             }
-            
+
             var level = match.Groups[1].Value.Length;
             var title = match.Groups[2].Value.Trim();
-            
+
             return (level, title);
         }
-        
+
         /// <summary>
         /// Extracts all headers from markdown content.
         /// </summary>
@@ -150,7 +150,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
         {
             var result = new List<(int Level, string Title, int LineNumber)>();
             var lines = content.Split('\n');
-            
+
             for (int i = 0; i < lines.Length; i++)
             {
                 var line = lines[i].TrimStart();
@@ -163,10 +163,10 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
                     }
                 }
             }
-            
+
             return result;
         }
-        
+
         /// <summary>
         /// Sanitizes a string for use in a filename.
         /// </summary>
@@ -178,15 +178,15 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
             {
                 return "unnamed";
             }
-            
+
             var invalidChars = Path.GetInvalidFileNameChars();
             var sb = new StringBuilder(input);
-            
+
             foreach (var c in invalidChars)
             {
                 sb.Replace(c, '-');
             }
-            
+
             return sb.ToString()
                 .Replace(' ', '-')
                 .Replace('.', '-')

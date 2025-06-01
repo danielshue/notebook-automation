@@ -1,4 +1,4 @@
-using NotebookAutomation.Core.Configuration;
+﻿using NotebookAutomation.Core.Configuration;
 #nullable enable
 
 using System;

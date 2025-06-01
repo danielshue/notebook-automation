@@ -29,7 +29,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         /// <returns>A task representing the asynchronous operation.</returns>
         [TestMethod]
         public async Task PdfNotesCommand_PrintsUsage_WhenNoArgs()
-        
+
         {
             var rootCommand = new System.CommandLine.RootCommand();
             var configOption = new System.CommandLine.Option<string>("--config");
@@ -60,7 +60,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         /// </summary>
         [TestMethod]
         public void PdfCommand_Initialization_ShouldSucceed()
-        
+
         {
             // Arrange
             var command = new PdfCommands(_mockLogger.Object);
@@ -74,7 +74,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         /// </summary>
         [TestMethod]
         public void Register_AddsPdfNotesCommandToRoot()
-        
+
         {
             // Arrange
             var rootCommand = new System.CommandLine.RootCommand();

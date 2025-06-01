@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using NotebookAutomation.Core.Utils;
@@ -48,7 +48,8 @@ namespace NotebookAutomation.Core.Tests.Utils
             Assert.IsTrue(formatted.Length <= 80); // Should not exceed max length
             StringAssert.Contains(formatted, "filename.txt"); // Should still contain the filename
             Assert.IsTrue(formatted.StartsWith("...")); // Should start with ellipsis
-        }        [TestMethod]
+        }
+        [TestMethod]
         public void Format_WithShortPath_ReturnsOriginalPath()
         {
             // Arrange
@@ -116,7 +117,8 @@ namespace NotebookAutomation.Core.Tests.Utils
             // Assert
             Assert.IsTrue(shortened.Length <= maxLength);
             Assert.IsTrue(shortened.StartsWith("...")); // Should start with ellipsis
-        }        [TestMethod]
+        }
+        [TestMethod]
         public void LoggerExtensions_LogWithFormattedPath_AppliesCorrectFormatting()
         {
             // Arrange
@@ -134,7 +136,8 @@ namespace NotebookAutomation.Core.Tests.Utils
             // Assert
             Assert.IsNotNull(logMessage);
             Assert.IsTrue(logMessage.Contains("..."));
-            Assert.IsTrue(logMessage.Contains("filename.txt"));}
+            Assert.IsTrue(logMessage.Contains("filename.txt"));
+        }
 
         [TestMethod]
         public void LoggerExtensions_LogWithFormattedPath_WithDebugLevel_ShowsFullPath()

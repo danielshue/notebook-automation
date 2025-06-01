@@ -1,4 +1,9 @@
-#nullable enable
+﻿#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -6,11 +11,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 using NotebookAutomation.Core.Tools.PdfProcessing;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 
 namespace NotebookAutomation.Core.Tests
 {

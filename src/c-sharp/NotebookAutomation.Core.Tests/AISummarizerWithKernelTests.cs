@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,9 +65,9 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResponse, result);
         }        /// <summary>
-        /// Tests the direct text generation approach without a kernel.
-        /// This is easier to test since we don't need to mock the complex kernel interactions.
-        /// </summary>
+                 /// Tests the direct text generation approach without a kernel.
+                 /// This is easier to test since we don't need to mock the complex kernel interactions.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_WithDirectTextGeneration_ReturnsSummary()
         {
@@ -92,10 +92,10 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResponse, result);
         }        /// <summary>
-        /// Tests that the large input detection triggers properly.
-        /// We can't easily test the complete chunking logic without a real kernel,
-        /// but we can verify that the chunking path is attempted.
-        /// </summary>
+                 /// Tests that the large input detection triggers properly.
+                 /// We can't easily test the complete chunking logic without a real kernel,
+                 /// but we can verify that the chunking path is attempted.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_CharacterLengthCheck_DetectsLargeInput()
         {
@@ -226,7 +226,7 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual(string.Empty, result);
         }
-          /// <summary>
+        /// <summary>
         /// Tests processing null variables in SummarizeWithVariablesAsync.
         /// </summary>
         [TestMethod]
@@ -256,8 +256,8 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResponse, result);
         }/// <summary>
-        /// Tests that service gracefully handles exceptions from the text generation service.
-        /// </summary>
+         /// Tests that service gracefully handles exceptions from the text generation service.
+         /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_ServiceThrowsException_HandlesGracefully()
         {
@@ -451,7 +451,7 @@ date: 2025-05-30
 
             // Assert
             Assert.IsNotNull(kernel);
-              // Verify we can retrieve the text generation service
+            // Verify we can retrieve the text generation service
             var textGenServices = kernel.GetAllServices<ITextGenerationService>();
             Assert.IsNotNull(textGenServices);
             Assert.IsTrue(textGenServices.Any());

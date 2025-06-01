@@ -24,7 +24,7 @@ namespace NotebookAutomation.Core.Configuration
             {
                 configPath = AppConfig.FindConfigFile();
             }
-            
+
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory());
 
@@ -33,10 +33,10 @@ namespace NotebookAutomation.Core.Configuration
             {
                 configurationBuilder.AddJsonFile(configPath, optional: false, reloadOnChange: true);
             }
-            
+
             // Add environment variables
             configurationBuilder.AddEnvironmentVariables();
-            
+
             // Add user secrets in development environment
             if (environment.Equals("Development", StringComparison.OrdinalIgnoreCase))
             {
@@ -50,10 +50,10 @@ namespace NotebookAutomation.Core.Configuration
                     configurationBuilder.AddUserSecrets<AppConfig>();
                 }
             }
-            
+
             return configurationBuilder.Build();
         }
-        
+
         /// <summary>
         /// Creates a configuration with user secrets support for the given assembly type.
         /// </summary>
@@ -71,7 +71,7 @@ namespace NotebookAutomation.Core.Configuration
             {
                 configPath = AppConfig.FindConfigFile();
             }
-            
+
             var configurationBuilder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory());
 
@@ -80,16 +80,16 @@ namespace NotebookAutomation.Core.Configuration
             {
                 configurationBuilder.AddJsonFile(configPath, optional: false, reloadOnChange: true);
             }
-            
+
             // Add environment variables
             configurationBuilder.AddEnvironmentVariables();
-            
+
             // Add user secrets in development environment
             if (environment.Equals("Development", StringComparison.OrdinalIgnoreCase))
             {
                 configurationBuilder.AddUserSecrets<T>();
             }
-            
+
             return configurationBuilder.Build();
         }
     }

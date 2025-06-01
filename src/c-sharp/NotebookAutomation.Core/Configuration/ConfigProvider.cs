@@ -64,7 +64,7 @@ namespace NotebookAutomation.Core.Configuration
             var services = new ServiceCollection();
             ConfigureServices(services);
             ServiceProvider = services.BuildServiceProvider();
-        
+
         }
 
         /// <summary>

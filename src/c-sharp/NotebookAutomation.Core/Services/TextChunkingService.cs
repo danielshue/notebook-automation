@@ -33,30 +33,30 @@ namespace NotebookAutomation.Core.Services
     /// </summary>
     public class TextChunkingService : ITextChunkingService
     {        /// <summary>
-        /// Splits text into chunks with overlap for optimal processing.
-        /// Uses character-based chunking with intelligent boundary detection.
-        /// </summary>
-        /// <param name="text">The text to split</param>
-        /// <param name="chunkSize">Maximum size of each chunk in characters</param>
-        /// <param name="overlap">Number of characters to overlap between chunks</param>
-        /// <returns>List of text chunks</returns>
-        /// <exception cref="ArgumentNullException">Thrown when text is null</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when chunkSize or overlap are invalid</exception>
-        /// <exception cref="ArgumentException">Thrown when overlap is greater than or equal to chunkSize</exception>
+             /// Splits text into chunks with overlap for optimal processing.
+             /// Uses character-based chunking with intelligent boundary detection.
+             /// </summary>
+             /// <param name="text">The text to split</param>
+             /// <param name="chunkSize">Maximum size of each chunk in characters</param>
+             /// <param name="overlap">Number of characters to overlap between chunks</param>
+             /// <returns>List of text chunks</returns>
+             /// <exception cref="ArgumentNullException">Thrown when text is null</exception>
+             /// <exception cref="ArgumentOutOfRangeException">Thrown when chunkSize or overlap are invalid</exception>
+             /// <exception cref="ArgumentException">Thrown when overlap is greater than or equal to chunkSize</exception>
         public List<string> SplitTextIntoChunks(string text, int chunkSize, int overlap)
         {
             if (text == null)
                 throw new ArgumentNullException(nameof(text));
-            
+
             if (string.IsNullOrEmpty(text))
                 return new List<string>();
-            
+
             if (chunkSize <= 0)
                 throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be positive");
-                
+
             if (overlap < 0)
                 throw new ArgumentOutOfRangeException(nameof(overlap), "Overlap cannot be negative");
-                
+
             if (overlap >= chunkSize)
                 throw new ArgumentException("Overlap must be less than chunk size", nameof(overlap));
 

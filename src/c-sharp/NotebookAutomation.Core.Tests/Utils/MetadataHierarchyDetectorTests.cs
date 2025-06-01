@@ -1,3 +1,6 @@
+﻿using System.Collections.Generic;
+using System.IO;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -5,9 +8,6 @@ using Moq;
 
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Utils;
-
-using System.Collections.Generic;
-using System.IO;
 
 namespace NotebookAutomation.Core.Tests.Utils
 {

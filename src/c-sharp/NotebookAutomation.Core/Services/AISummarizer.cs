@@ -8,48 +8,48 @@ using Microsoft.SemanticKernel.TextGeneration;
 
 namespace NotebookAutomation.Core.Services
 {    /// <summary>
-    /// Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.
-    /// Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content
-    /// including video transcripts, PDF documents, and academic materials. Supports variable substitution
-    /// for metadata augmentation and configurable prompt templates.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This class provides two main summarization strategies:
-    /// </para>
-    /// <list type="bullet">
-    /// <item><description>Direct summarization for smaller texts (under ~12,000 characters)</description></item>
-    /// <item><description>Chunked summarization with aggregation for larger texts</description></item>
-    /// </list>
-    /// <para>
-    /// The chunking strategy splits large texts into overlapping segments, processes each chunk independently,
-    /// then aggregates the results into a cohesive final summary. This approach ensures comprehensive coverage
-    /// while respecting token limits of the underlying AI models.
-    /// </para>
-    /// <para>
-    /// Supports fallback to ITextGenerationService for testing scenarios when SemanticKernel is unavailable.
-    /// </para>
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// // Basic usage
-    /// var summarizer = new AISummarizer(logger, promptService, kernel);
-    /// var summary = await summarizer.SummarizeWithVariablesAsync(longText);
-    /// 
-    /// // With metadata variables and custom prompt
-    /// var variables = new Dictionary&lt;string, string&gt;
-    /// {
-    ///     ["course"] = "MBA Strategy",
-    ///     ["type"] = "video_transcript",
-    ///     ["onedrivePath"] = "/courses/strategy/week1"
-    /// };
-    /// var summary = await summarizer.SummarizeWithVariablesAsync(
-    ///     inputText, 
-    ///     variables, 
-    ///     "chunk_summary_prompt"
-    /// );
-    /// </code>
-    /// </example>
+     /// Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.
+     /// Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content
+     /// including video transcripts, PDF documents, and academic materials. Supports variable substitution
+     /// for metadata augmentation and configurable prompt templates.
+     /// </summary>
+     /// <remarks>
+     /// <para>
+     /// This class provides two main summarization strategies:
+     /// </para>
+     /// <list type="bullet">
+     /// <item><description>Direct summarization for smaller texts (under ~12,000 characters)</description></item>
+     /// <item><description>Chunked summarization with aggregation for larger texts</description></item>
+     /// </list>
+     /// <para>
+     /// The chunking strategy splits large texts into overlapping segments, processes each chunk independently,
+     /// then aggregates the results into a cohesive final summary. This approach ensures comprehensive coverage
+     /// while respecting token limits of the underlying AI models.
+     /// </para>
+     /// <para>
+     /// Supports fallback to ITextGenerationService for testing scenarios when SemanticKernel is unavailable.
+     /// </para>
+     /// </remarks>
+     /// <example>
+     /// <code>
+     /// // Basic usage
+     /// var summarizer = new AISummarizer(logger, promptService, kernel);
+     /// var summary = await summarizer.SummarizeWithVariablesAsync(longText);
+     /// 
+     /// // With metadata variables and custom prompt
+     /// var variables = new Dictionary&lt;string, string&gt;
+     /// {
+     ///     ["course"] = "MBA Strategy",
+     ///     ["type"] = "video_transcript",
+     ///     ["onedrivePath"] = "/courses/strategy/week1"
+     /// };
+     /// var summary = await summarizer.SummarizeWithVariablesAsync(
+     ///     inputText, 
+     ///     variables, 
+     ///     "chunk_summary_prompt"
+     /// );
+     /// </code>
+     /// </example>
     public class AISummarizer : IAISummarizer
     {
         private readonly ILogger<AISummarizer> _logger;
@@ -57,19 +57,19 @@ namespace NotebookAutomation.Core.Services
         private readonly Kernel? _semanticKernel;
         private readonly ITextGenerationService? _textGenerationService;
         private readonly ITextChunkingService _chunkingService;
-        
+
         /// <summary>
         /// The maximum size for individual text chunks in characters before triggering chunked processing.
         /// Set to 8000 characters which approximates 2000 tokens using the 4:1 character-to-token ratio.
         /// </summary>
         private readonly int _maxChunkTokens = 8000; // Character-based chunks
-        
+
         /// <summary>
         /// The number of characters to overlap between adjacent chunks to maintain context continuity.
         /// Set to 500 characters to ensure important context isn't lost at chunk boundaries.
         /// </summary>
         private readonly int _overlapTokens = 500; // Characters to overlap between chunks            
-        
+
         /// <summary>
         /// Initializes a new instance of the AISummarizer class with SemanticKernel support.
         /// </summary>
@@ -90,7 +90,7 @@ namespace NotebookAutomation.Core.Services
             _textGenerationService = null;
             _chunkingService = chunkingService ?? new TextChunkingService();
         }
-        
+
         /// <summary>
         /// Initializes a new instance of the AISummarizer class with additional test compatibility support.
         /// </summary>
@@ -112,7 +112,7 @@ namespace NotebookAutomation.Core.Services
             _textGenerationService = textGenerationService;
             _chunkingService = chunkingService ?? new TextChunkingService();
         }
-        
+
         /// <summary>
         /// Generates an AI-powered summary for the given text using the best available AI framework.
         /// Automatically selects between direct summarization and chunked processing based on text length.
@@ -182,7 +182,7 @@ namespace NotebookAutomation.Core.Services
         {
             // Check for cancellation early
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             if (string.IsNullOrWhiteSpace(inputText))
             {
                 _logger.LogWarning("Input text is null or empty");
@@ -311,7 +311,7 @@ namespace NotebookAutomation.Core.Services
         {
             // Check for cancellation early
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             // For tests without semantic kernel but with text generation service
             if (_semanticKernel == null && _textGenerationService != null)
             {
@@ -321,7 +321,7 @@ namespace NotebookAutomation.Core.Services
                     // Make sure we call the chunking service for tests to verify
                     List<string> chunks = _chunkingService.SplitTextIntoChunks(inputText, _maxChunkTokens, _overlapTokens);
                     _logger.LogDebug("Split into {ChunkCount} chunks", chunks.Count);
-                    
+
                     // Use the text generation service to get the response in test scenarios
                     var textContents = await _textGenerationService.GetTextContentsAsync(
                         "Chunked content", null, null, cancellationToken);
@@ -334,7 +334,7 @@ namespace NotebookAutomation.Core.Services
                     return "[Simulated AI summary]";
                 }
             }
-            
+
             // If no semantic kernel and no text generation service
             if (_semanticKernel == null)
             {
@@ -346,7 +346,7 @@ namespace NotebookAutomation.Core.Services
 
             try
             {
-                _logger.LogInformation("Starting chunked summarization process");                
+                _logger.LogInformation("Starting chunked summarization process");
                 // Split text into character-based chunks
                 List<string> chunks = _chunkingService.SplitTextIntoChunks(inputText, _maxChunkTokens, _overlapTokens);
 
@@ -376,22 +376,22 @@ namespace NotebookAutomation.Core.Services
                     {
                         MaxTokens = 2048
                     }
-                );                
-                
+                );
+
                 // Process each chunk individually
                 var chunkSummaries = new List<string>();
                 for (int i = 0; i < chunks.Count; i++)
                 {
                     // Check for cancellation before each chunk
                     cancellationToken.ThrowIfCancellationRequested();
-                    
+
                     // Skip processing if chunk is only whitespace
                     if (string.IsNullOrWhiteSpace(chunks[i]))
                     {
                         _logger.LogWarning("Skipping chunk {ChunkIndex} as it contains only whitespace", i + 1);
                         continue;
                     }
-                    
+
                     _logger.LogDebug("Processing chunk {ChunkIndex}/{TotalChunks}", i + 1, chunks.Count);
                     _logger.LogDebug("Chunk prompt being sent:\n{Prompt}", chunkSystemPrompt);
                     _logger.LogDebug("Chunk content being sent:\n{Chunk}", chunks[i]);
@@ -427,8 +427,8 @@ namespace NotebookAutomation.Core.Services
                 {
                     _logger.LogWarning("No chunk summaries were generated");
                     return string.Empty;
-                }                
-                
+                }
+
                 // If we only have one chunk summary, return it directly
                 if (chunkSummaries.Count == 1)
                 {
@@ -448,8 +448,8 @@ namespace NotebookAutomation.Core.Services
                     {
                         MaxTokens = 2048
                     }
-                );                
-                
+                );
+
                 // Combine and finalize
                 string allSummaries = string.Join("\n\n", chunkSummaries);
                 _logger.LogDebug("Aggregating {SummaryCount} summaries", chunkSummaries.Count);
@@ -466,7 +466,7 @@ namespace NotebookAutomation.Core.Services
                 {
                     if (!finalKernelArgs.ContainsKey(kvp.Key))
                     {
-                        finalKernelArgs[kvp.Key] = kvp.Value;                    
+                        finalKernelArgs[kvp.Key] = kvp.Value;
                     }
                 }
 
@@ -487,35 +487,38 @@ namespace NotebookAutomation.Core.Services
                 }
 
                 return finalSummary;
-            }            catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 _logger.LogError(ex, "Error in chunked summarization process");
-                
+
                 // Special case for the test that expects empty string
-                if (ex.Message.Contains("Chunking failed") || 
+                if (ex.Message.Contains("Chunking failed") ||
                     (ex.InnerException != null && ex.InnerException.Message.Contains("Chunking failed")))
                 {
                     return string.Empty;
                 }
-                
+
                 // If text generation service is available, try to use it as fallback
                 if (_textGenerationService != null)
                 {
-                    try {
+                    try
+                    {
                         var textContents = await _textGenerationService.GetTextContentsAsync(
                             "Error fallback", null, null, cancellationToken);
                         var firstContent = textContents?.FirstOrDefault();
                         return firstContent?.Text;
                     }
-                    catch {
+                    catch
+                    {
                         return "[Simulated AI summary]";
                     }
                 }
-                
+
                 return "[Simulated AI summary]";
             }
         }
-        
+
         /// <summary>
         /// Loads the chunk prompt template from the prompt service for individual chunk processing.
         /// </summary>
@@ -545,8 +548,8 @@ namespace NotebookAutomation.Core.Services
                 _logger.LogWarning(ex, "Failed to load chunk prompt template");
                 return null;
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Loads the final prompt template from the prompt service for summary aggregation.
         /// </summary>
@@ -576,8 +579,8 @@ namespace NotebookAutomation.Core.Services
                 _logger.LogWarning(ex, "Failed to load final prompt template");
                 return null;
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Processes and prepares the prompt template for use in summarization operations.
         /// Handles loading of prompt templates when not already provided and validates input text.
@@ -618,7 +621,7 @@ namespace NotebookAutomation.Core.Services
 
             return (processedPrompt, processedInputText);
         }
-          
+
         /// <summary>
         /// Summarizes text using Microsoft SemanticKernel with the specified prompt for smaller texts that don't require chunking.
         /// </summary>
@@ -657,7 +660,7 @@ namespace NotebookAutomation.Core.Services
         {
             // Check for cancellation early
             cancellationToken.ThrowIfCancellationRequested();
-            
+
             if (_semanticKernel == null)
             {
                 _logger.LogWarning("Semantic kernel is not available. Returning simulated summary.");

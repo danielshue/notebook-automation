@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -98,8 +98,8 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual("[Simulated AI summary]", result);
         }        /// <summary>
-        /// Tests the SummarizeWithChunkingAsync method with multiple predefined chunks.
-        /// </summary>
+                 /// Tests the SummarizeWithChunkingAsync method with multiple predefined chunks.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithChunkingAsync_WithMultipleChunks_ProcessesAllChunks()
         {
@@ -132,8 +132,8 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual("[Simulated AI summary]", result);
         }        /// <summary>
-        /// Tests the SummarizeWithChunkingAsync method with a chunk that has whitespace.
-        /// </summary>
+                 /// Tests the SummarizeWithChunkingAsync method with a chunk that has whitespace.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithChunkingAsync_WithWhitespaceChunk_HandlesGracefully()
         {
@@ -317,8 +317,8 @@ namespace NotebookAutomation.Core.Tests
             Assert.AreEqual("Loaded template from file", processedPrompt);
             Assert.AreEqual(inputText, processedInputText);
         }        /// <summary>
-        /// Tests ProcessPromptTemplateAsync with exceptions in prompt loading.
-        /// </summary>
+                 /// Tests ProcessPromptTemplateAsync with exceptions in prompt loading.
+                 /// </summary>
         [TestMethod]
         public async Task ProcessPromptTemplateAsync_WithPromptLoadException_HandlesGracefully()
         {
@@ -452,8 +452,8 @@ namespace NotebookAutomation.Core.Tests
             Assert.AreEqual("[Simulated AI summary]", chunkResult);
             Assert.AreEqual("[Simulated AI summary]", semanticResult);
         }        /// <summary>
-        /// Tests that LoadChunkPromptAsync and LoadFinalPromptAsync correctly handle exceptions.
-        /// </summary>
+                 /// Tests that LoadChunkPromptAsync and LoadFinalPromptAsync correctly handle exceptions.
+                 /// </summary>
         [TestMethod]
         public async Task PromptLoading_WithExceptions_ReturnsNullGracefully()
         {

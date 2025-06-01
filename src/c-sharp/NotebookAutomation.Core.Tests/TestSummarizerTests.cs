@@ -1,3 +1,9 @@
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
@@ -8,12 +14,6 @@ using Moq;
 
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
-
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace NotebookAutomation.Core.Tests
 {

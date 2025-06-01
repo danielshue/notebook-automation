@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -138,8 +138,8 @@ namespace NotebookAutomation.Core.Tests
             // Act
             _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
         }        /// <summary>
-        /// Tests that overlap larger than chunk size throws ArgumentException.
-        /// </summary>
+                 /// Tests that overlap larger than chunk size throws ArgumentException.
+                 /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void SplitTextIntoChunks_OverlapLargerThanChunkSize_ThrowsArgumentException()
@@ -152,8 +152,8 @@ namespace NotebookAutomation.Core.Tests
             // Act
             _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
         }        /// <summary>
-        /// Tests chunking with zero overlap works correctly.
-        /// </summary>
+                 /// Tests chunking with zero overlap works correctly.
+                 /// </summary>
         [TestMethod]
         public void SplitTextIntoChunks_ZeroOverlap_WorksCorrectly()
         {

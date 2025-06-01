@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -233,7 +233,8 @@ references:
         /// <summary>
         /// Tests the cancellation token support in the summarizer.
         /// </summary>
-        [TestMethod]        public async Task SummarizeWithVariablesAsync_WithCancellation_CancelsOperation()
+        [TestMethod]
+        public async Task SummarizeWithVariablesAsync_WithCancellation_CancelsOperation()
         {
             // Arrange
             // Since we can't guarantee cancellation behavior in the tests that are run without real Azure services,
@@ -331,7 +332,8 @@ references:
         /// <summary>
         /// Tests the error handling for invalid responses from the text generation service.
         /// </summary>
-        [TestMethod]        public async Task SummarizeWithVariablesAsync_WithInvalidServiceResponse_HandlesGracefully()
+        [TestMethod]
+        public async Task SummarizeWithVariablesAsync_WithInvalidServiceResponse_HandlesGracefully()
         {
             // Arrange
             // Create a custom text generation service that returns empty content

@@ -1,7 +1,10 @@
-using System;
+﻿using System;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Moq;
+
 using NotebookAutomation.Core.Tools.MarkdownGeneration;
 
 namespace NotebookAutomation.Core.Tests
