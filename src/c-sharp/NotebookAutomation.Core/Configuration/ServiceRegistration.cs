@@ -83,6 +83,10 @@ namespace NotebookAutomation.Core.Configuration
             bool debug = false,
             string? configFilePath = null)
         {
+            if (services == null)
+                throw new ArgumentNullException(nameof(services));
+            if (configuration == null)
+                throw new ArgumentNullException(nameof(configuration));
             // Register configuration
             services.AddSingleton(provider =>
             {

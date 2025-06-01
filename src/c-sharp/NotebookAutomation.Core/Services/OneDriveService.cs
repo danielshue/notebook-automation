@@ -31,12 +31,18 @@ namespace NotebookAutomation.Core.Services
 
         private OneDriveCliOptions _cliOptions = new OneDriveCliOptions();
 
-        public OneDriveService(ILogger<OneDriveService> logger, string clientId, string tenantId, string[] scopes)
+        public OneDriveService(
+            ILogger<OneDriveService> logger,
+            string clientId,
+            string tenantId,
+            string[] scopes,
+            IPublicClientApplication? msalApp = null)
         {
-            _logger = logger;
-            _clientId = clientId;
-            _tenantId = tenantId;
-            _scopes = scopes;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _clientId = clientId ?? throw new ArgumentNullException(nameof(clientId));
+            _tenantId = tenantId ?? throw new ArgumentNullException(nameof(tenantId));
+            _scopes = scopes ?? throw new ArgumentNullException(nameof(scopes));
+            _msalApp = msalApp;
 
             // Setup token cache file in the user's local application data folder
             string appDataPath = Path.Combine(
@@ -59,9 +65,11 @@ namespace NotebookAutomation.Core.Services
         /// <returns>Task representing the authentication process</returns>
         public async Task AuthenticateAsync()
         {
+
+
             try
             {
-                // Create and configure MSAL application with cache
+                // Use injected MSAL app if provided, otherwise create
                 if (_msalApp == null || _forceRefresh)
                 {
                     _msalApp = PublicClientApplicationBuilder
@@ -417,7 +425,8 @@ namespace NotebookAutomation.Core.Services
                 // Normalize the OneDrive file path
                 oneDrivePath = oneDrivePath.Replace('\\', '/');
                 if (oneDrivePath.StartsWith('/'))
-                    oneDrivePath = oneDrivePath.Substring(1); _logger.LogInformation("Creating sharing link for OneDrive file: {OneDrivePath}", oneDrivePath);
+                    oneDrivePath = oneDrivePath.Substring(1);
+                _logger.LogInformationWithPath(oneDrivePath, "Creating sharing link for OneDrive file");
 
                 // Prepare the request
                 var requestInfo = new RequestInformation
@@ -435,14 +444,14 @@ namespace NotebookAutomation.Core.Services
                 // Send the request and parse the response
                 if (_graphClient?.RequestAdapter == null)
                 {
-                    _logger.LogError("Graph client or request adapter is null when creating sharing link for OneDrive file: {OneDrivePath}", oneDrivePath);
+                    _logger.LogErrorWithPath(oneDrivePath, "Graph client or request adapter is null when creating sharing link for OneDrive file");
                     return null;
                 }
 
                 var response = await _graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken);
                 if (response == null)
                 {
-                    _logger.LogError("Received null response when creating sharing link for OneDrive file: {OneDrivePath}", oneDrivePath);
+                    _logger.LogErrorWithPath(oneDrivePath, "Received null response when creating sharing link for OneDrive file");
                     return null;
                 }
 
@@ -455,29 +464,30 @@ namespace NotebookAutomation.Core.Services
                     string? sharingLink = webUrlElement.GetString();
                     if (!string.IsNullOrEmpty(sharingLink))
                     {
-                        _logger.LogInformation("Sharing link created successfully for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
+                        _logger.LogInformationWithPath(oneDrivePath, $"Sharing link created successfully for OneDrive file (original: {filePath})");
                         return sharingLink;
                     }
                 }
 
                 _logger.LogError("Sharing link not found in response for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
+                _logger.LogErrorWithPath(oneDrivePath, $"Sharing link not found in response for OneDrive file (original: {filePath})");
                 return null;
             }
             catch (ServiceException ex)
             {
-                _logger.LogError(ex, "Failed to create sharing link for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
+                _logger.LogErrorWithPath(oneDrivePath, $"Failed to create sharing link for OneDrive file (original: {filePath}). Exception: {ex.Message}");
 
                 // Check if the exception message contains 404 error code
                 if (ex.Message.Contains("404") || ex.Message.Contains("not found"))
                 {
-                    _logger.LogWarning("The file might not exist. Check the file path and try again.");
+                    _logger.LogWarningWithPath(oneDrivePath, "The file might not exist. Check the file path and try again.");
                 }
 
                 return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to create sharing link for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
+                _logger.LogErrorWithPath(oneDrivePath, $"Failed to create sharing link for OneDrive file (original: {filePath}). Exception: {ex.Message}");
                 return null;
             }
         }

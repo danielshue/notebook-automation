@@ -11,6 +11,108 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace NotebookAutomation.Core.Tests
 {
+    [TestClass]
+    public class AppConfigCoverageBoostTests
+    {
+        [TestMethod]
+        public void Constructor_WithUnderlyingConfiguration_LoadsSections()
+        {
+            var configDict = new Dictionary<string, string>
+            {
+                {"paths:notebook_vault_fullpath_root", "/vault"},
+                {"paths:onedrive_resources_basepath", "/base"},
+                {"paths:logging_dir", "/logs"},
+                {"paths:onedrive_fullpath_root", "/od"},
+                {"paths:metadata_file", "/meta.yaml"},
+                {"microsoft_graph:client_id", "cid"},
+                {"microsoft_graph:api_endpoint", "ep"},
+                {"microsoft_graph:authority", "https://login.microsoftonline.com/common"},
+                {"aiservice:provider", "openai"},
+                {"aiservice:openai:model", "gpt-4"},
+                {"aiservice:openai:endpoint", "https://api.openai.com"},
+                {"aiservice:azure:model", "az-gpt"},
+                {"aiservice:azure:deployment", "az-deploy"},
+                {"aiservice:azure:endpoint", "https://az.com"},
+                {"aiservice:foundry:model", "foundry-llm"},
+                {"aiservice:foundry:endpoint", "http://localhost:8000"},
+                {"video_extensions:0", ".mp4"},
+                {"video_extensions:1", ".avi"}
+            };
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(configDict).Build();
+            var logger = new Mock<ILogger<AppConfig>>();
+            var appConfig = new AppConfig(configuration, logger.Object);
+            Assert.AreEqual("/vault", appConfig.Paths.NotebookVaultFullpathRoot);
+            Assert.AreEqual("cid", appConfig.MicrosoftGraph.ClientId);
+            Assert.AreEqual("gpt-4", appConfig.AiService.OpenAI?.Model);
+            Assert.AreEqual("az-gpt", appConfig.AiService.Azure?.Model);
+            Assert.AreEqual("foundry-llm", appConfig.AiService.Foundry?.Model);
+            CollectionAssert.Contains(appConfig.VideoExtensions, ".mp4");
+        }
+
+        [TestMethod]
+        public void LoadConfiguration_FileBased_LoadsAndLogs()
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
+            var config = new AppConfig
+            {
+                Paths = new PathsConfig { LoggingDir = "/logs" },
+                MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "cid" },
+                AiService = new AIServiceConfig { Provider = "openai", OpenAI = new OpenAiProviderConfig { Model = "gpt-4" } },
+                VideoExtensions = new List<string> { ".mp4" }
+            };
+            File.WriteAllText(tempFile, JsonSerializer.Serialize(config));
+            var appConfig = AppConfig.LoadFromJsonFile(tempFile);
+            StringAssert.EndsWith(appConfig.Paths.LoggingDir.Replace("\\", "/"), "/logs");
+            Assert.AreEqual("cid", appConfig.MicrosoftGraph.ClientId);
+            Assert.AreEqual("gpt-4", appConfig.AiService.OpenAI?.Model);
+            CollectionAssert.Contains(appConfig.VideoExtensions, ".mp4");
+            File.Delete(tempFile);
+        }
+
+        [TestMethod]
+        public void SaveToJsonFile_And_ErrorHandling()
+        {
+            var tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
+            var logger = new Mock<ILogger<AppConfig>>();
+            var appConfig = new AppConfig { Paths = new PathsConfig { LoggingDir = "/logs" } };
+            appConfig.SaveToJsonFile(tempFile);
+            Assert.IsTrue(File.Exists(tempFile));
+            File.Delete(tempFile);
+            // Error: directory does not exist and cannot be created
+            Assert.ThrowsException<IOException>(() => appConfig.SaveToJsonFile(Path.Combine("?invalidpath", "bad.json")));
+        }
+
+        [TestMethod]
+        public void GetSection_And_GetChildren_WithAndWithoutUnderlyingConfig()
+        {
+            var appConfig = new AppConfig();
+            var section = appConfig.GetSection("paths");
+            Assert.AreEqual("paths", section.Key);
+            var children = appConfig.GetChildren().ToList();
+            Assert.IsTrue(children.Any(c => c.Key.Equals("Paths", StringComparison.OrdinalIgnoreCase)));
+            // With underlying config
+            var configDict = new Dictionary<string, string> { { "paths:logging_dir", "/logs" } };
+            var configuration = new ConfigurationBuilder().AddInMemoryCollection(configDict).Build();
+            var logger = new Mock<ILogger<AppConfig>>();
+            var appConfig2 = new AppConfig(configuration, logger.Object);
+            var section2 = appConfig2.GetSection("paths");
+            Assert.IsNotNull(section2);
+            var children2 = appConfig2.GetChildren().ToList();
+            Assert.IsTrue(children2.Any());
+        }
+
+        [TestMethod]
+        public void Exists_And_Indexer_ComplexCases()
+        {
+            var appConfig = new AppConfig();
+            appConfig.Paths = new PathsConfig { LoggingDir = "logs" };
+            Assert.IsTrue(appConfig.Exists("paths:logging_dir"));
+            Assert.IsNull(appConfig["paths:nonexistent"]);
+            appConfig["paths:logging_dir"] = "newlogs";
+            Assert.AreEqual("newlogs", appConfig.Paths.LoggingDir);
+        }
+    }
+
     /// <summary>
     /// Tests for the AppConfig class, especially focusing on its implementation of IConfiguration.
     /// </summary>    [TestClass]
@@ -318,6 +420,75 @@ namespace NotebookAutomation.Core.Tests
             Assert.AreEqual("/config-logs", appConfig["paths:logging_dir"]);
             Assert.AreEqual("config-api-key", appConfig.AiService.GetApiKey());
             Assert.AreEqual("gpt-4-turbo", appConfig.AiService.OpenAI?.Model);
+        }
+    }
+
+    [TestClass]
+    public class AppConfigAdditionalTests
+    {
+        [TestMethod]
+        public void SetVideoExtensions_ShouldUpdateList()
+        {
+            var appConfig = new AppConfig();
+            var list = new List<string> { ".mp4", ".avi" };
+            appConfig.SetVideoExtensions(list);
+            CollectionAssert.AreEqual(list, appConfig.VideoExtensions);
+        }
+
+        [TestMethod]
+        public void FindConfigFile_ShouldReturnEmptyIfNotFound()
+        {
+            var result = AppConfig.FindConfigFile("nonexistent_config_file.json");
+            Assert.AreEqual(string.Empty, result);
+        }
+
+        [TestMethod]
+        public void Exists_ShouldHandleJsonPropertyNameAndDirectProperty()
+        {
+            var appConfig = new AppConfig();
+            appConfig.Paths = new PathsConfig { LoggingDir = "logs" };
+            Assert.IsTrue(appConfig.Exists("paths:logging_dir")); // JsonPropertyName in nested config
+            Assert.IsTrue(appConfig.Exists("Paths")); // Direct property
+        }
+
+        [TestMethod]
+        public void GetReloadToken_ShouldReturnToken()
+        {
+            var appConfig = new AppConfig();
+            var token = appConfig.GetReloadToken();
+            Assert.IsNotNull(token);
+        }
+
+        [TestMethod]
+        public void Indexer_SetNestedAndDirectProperties_ShouldUpdateValues()
+        {
+            var appConfig = new AppConfig();
+            appConfig["Paths:LoggingDir"] = "logs";
+            appConfig["DebugEnabled"] = "true";
+            Assert.AreEqual("logs", appConfig.Paths.LoggingDir);
+            Assert.AreEqual("True", appConfig["DebugEnabled"], ignoreCase: true);
+        }
+
+        [TestMethod]
+        public void SetPropertyValue_ShouldHandleVariousTypes()
+        {
+            var appConfig = new AppConfig();
+            appConfig["DebugEnabled"] = "true";
+            appConfig["Paths:LoggingDir"] = "logs";
+            appConfig["Paths:NotebookVaultFullpathRoot"] = "vault";
+            Assert.AreEqual(true, appConfig.DebugEnabled);
+            Assert.AreEqual("logs", appConfig.Paths.LoggingDir);
+            Assert.AreEqual("vault", appConfig.Paths.NotebookVaultFullpathRoot);
+        }
+
+        [TestMethod]
+        public void ExtractTenantIdFromAuthority_ShouldReturnExpectedResults()
+        {
+            var method = typeof(AppConfig).GetMethod("ExtractTenantIdFromAuthority", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            Assert.IsNotNull(method);
+            Assert.AreEqual("common", method.Invoke(null, new object[] { "https://login.microsoftonline.com/common" }));
+            Assert.AreEqual("12345678-1234-1234-1234-123456789abc", method.Invoke(null, new object[] { "https://login.microsoftonline.com/12345678-1234-1234-1234-123456789abc" }));
+            Assert.AreEqual("common", method.Invoke(null, new object[] { "" }));
         }
     }
 }

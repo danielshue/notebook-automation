@@ -358,11 +358,14 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     Logger.LogDebugWithPath("Detecting hierarchy information from path: {FilePath}", pathForHierarchy);
                     var hierarchyInfo = _hierarchyDetector!.FindHierarchyInfo(pathForHierarchy);
-
                     // Update metadata with detected hierarchy information
                     mergedMetadata = _hierarchyDetector!.UpdateMetadataWithHierarchy(mergedMetadata, hierarchyInfo);
-                    Logger.LogInformation("Added hierarchy metadata - Program: {Program}, Course: {Course}, Class: {Class}",
-                        hierarchyInfo["program"], hierarchyInfo["course"], hierarchyInfo["class"]);
+                    Logger.LogInformationWithPath(
+                        "Added hierarchy metadata - Program: {Program}, Course: {Course}, Class: {Class}",
+                        pathForHierarchy!,
+                        hierarchyInfo["program"],
+                        hierarchyInfo["course"],
+                        hierarchyInfo["class"]);
                 }
                 catch (Exception ex)
                 {
@@ -749,14 +752,14 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             if (!string.IsNullOrEmpty(transcriptPath))
             {
                 metadata["transcript"] = transcriptPath;
-                Logger.LogInformation("Found transcript file and added path to metadata: {TranscriptPath}", transcriptPath);
-            }            // Generate share link if requested and OneDriveService is available
+                Logger.LogInformationWithPath("Found transcript file and added path to metadata: {FilePath}", transcriptPath);
+            }
             string? shareLink = null;
             if (!noShareLinks && _oneDriveService != null)
             {
                 try
                 {
-                    Logger.LogInformation("Generating OneDrive share link for: {VideoPath}", videoPath);
+                    Logger.LogInformationWithPath("Generating OneDrive share link for: {FilePath}", videoPath);
                     shareLink = await _oneDriveService.CreateShareLinkAsync(videoPath);
                     if (!string.IsNullOrEmpty(shareLink))
                     {

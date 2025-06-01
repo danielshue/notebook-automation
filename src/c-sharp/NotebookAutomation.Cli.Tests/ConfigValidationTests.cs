@@ -59,10 +59,11 @@ namespace NotebookAutomation.Cli.Tests
             // Cleanup
             Environment.SetEnvironmentVariable("OPENAI_API_KEY", original);
         }
+
         [TestMethod]
         public void RequireAllPaths_ReturnsFalse_WhenPathsIsNull()
         {
-            var config = new AppConfig { Paths = null! };
+            var config = new AppConfig { Paths = null };
             var result = ConfigValidation.RequireAllPaths(config, out var missing);
             Assert.IsFalse(result);
             Assert.IsTrue(missing.Count > 0);
@@ -90,7 +91,7 @@ namespace NotebookAutomation.Cli.Tests
         [TestMethod]
         public void RequireMicrosoftGraph_ReturnsFalse_WhenMicrosoftGraphIsNull()
         {
-            var config = new AppConfig { MicrosoftGraph = null! };
+            var config = new AppConfig { MicrosoftGraph = null };
             var result = ConfigValidation.RequireMicrosoftGraph(config);
             Assert.IsFalse(result);
         }
@@ -98,7 +99,7 @@ namespace NotebookAutomation.Cli.Tests
         [TestMethod]
         public void RequireMicrosoftGraph_ReturnsFalse_WhenScopesIsNullOrEmpty()
         {
-            var config1 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = null! } };
+            var config1 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = null } };
             var config2 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = new List<string>() } };
             Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config1));
             Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config2));
@@ -107,7 +108,7 @@ namespace NotebookAutomation.Cli.Tests
         [TestMethod]
         public void RequireOpenAi_ReturnsFalse_WhenAiServiceIsNull()
         {
-            var config = new AppConfig { AiService = null! };
+            var config = new AppConfig { AiService = null };
             var result = ConfigValidation.RequireOpenAi(config);
             Assert.IsFalse(result);
         }

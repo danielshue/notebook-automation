@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -15,7 +15,7 @@ namespace NotebookAutomation.Core.Tests
     [TestClass]
     public class RecursiveCharacterTextSplitterTests
     {
-        private Mock<ILogger> _mockLogger;
+        private Mock<ILogger> _mockLogger = null!;
 
         [TestInitialize]
         public void SetUp()
@@ -56,9 +56,11 @@ namespace NotebookAutomation.Core.Tests
             // Assert
             Assert.AreEqual(1, result.Count);
             Assert.AreEqual(smallText, result[0]);
-        }        /// <summary>
-                 /// Tests that the splitter correctly handles code blocks in markdown.
-                 /// </summary>
+        }
+
+        /// <summary>
+        /// Tests that the splitter correctly handles code blocks in markdown.
+        /// </summary>
         [TestMethod]
         public void SplitText_WithCodeBlocks_KeepsCodeBlocksTogether()
         {
@@ -126,6 +128,7 @@ namespace NotebookAutomation.Core.Tests
 
                 // Allow some tolerance above maxTokens due to overlap and chunk boundaries
                 Assert.IsTrue(approxTokens <= maxTokens * 2, $"Chunk size {approxTokens} exceeds twice the max token limit {maxTokens}");
-            }        }
+            }
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿// Enable nullable reference types for this file
+﻿using NotebookAutomation.Core.Configuration;
+// Enable nullable reference types for this file
 #nullable enable
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -31,7 +32,7 @@ namespace NotebookAutomation.Core.Tests
         /// Initializes a new instance of the TestPromptTemplateService class.
         /// </summary>
         public TestPromptTemplateService()
-            : base(Microsoft.Extensions.Logging.Abstractions.NullLogger<PromptTemplateService>.Instance, new Configuration.AppConfig())
+            : base(Microsoft.Extensions.Logging.Abstractions.NullLogger<PromptTemplateService>.Instance, new AppConfig())
         {
         }
 

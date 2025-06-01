@@ -33,8 +33,8 @@ namespace NotebookAutomation.Core.Tests
         {
             public TestBatchProcessor() : base(
                 new Mock<ILogger<Core.Tools.Shared.DocumentNoteBatchProcessor<PdfNoteProcessor>>>().Object,
-                new Mock<PdfNoteProcessor>(MockBehavior.Loose, Mock.Of<ILogger<PdfNoteProcessor>>(), new TestableAISummarizer(Mock.Of<ILogger<Services.AISummarizer>>())).Object,
-                new TestableAISummarizer(Mock.Of<ILogger<Services.AISummarizer>>()))
+                new Mock<PdfNoteProcessor>(MockBehavior.Loose, Mock.Of<ILogger<PdfNoteProcessor>>(), new TestableAISummarizer(Mock.Of<ILogger<NotebookAutomation.Core.Services.AISummarizer>>())).Object,
+                new TestableAISummarizer(Mock.Of<ILogger<NotebookAutomation.Core.Services.AISummarizer>>()))
             { }
 
             public override Task<Core.Tools.Shared.BatchProcessResult> ProcessDocumentsAsync(

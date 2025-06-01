@@ -20,10 +20,10 @@ namespace NotebookAutomation.Core.Tests
     [TestClass]
     public class AISummarizerAdditionalTests
     {
-        private Mock<ILogger<AISummarizer>> _mockLogger;
-        private MockPromptTemplateService _mockPromptService;
-        private SimpleTextGenerationService _fakeTextGenService;
-        private MockTextChunkingService _mockChunkingService;
+        private Mock<ILogger<AISummarizer>> _mockLogger = null!;
+        private MockPromptTemplateService _mockPromptService = null!;
+        private SimpleTextGenerationService _fakeTextGenService = null!;
+        private MockTextChunkingService _mockChunkingService = null!;
 
         [TestInitialize]
         public void SetUp()

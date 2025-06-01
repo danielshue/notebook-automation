@@ -12,12 +12,17 @@ namespace NotebookAutomation.Core.Configuration
     public class ConfigProvider
     {
         /// <summary>
+        /// Indicates whether debug-level logging is enabled.
+        /// </summary>
+        private readonly bool _debug;
+        /// <summary>
         /// Constructor that accepts a pre-configured LoggingService instance.
         /// </summary>
         /// <param name="loggingService">The logging service to use.</param>
         /// <param name="appConfig">The application configuration.</param>
         public ConfigProvider(LoggingService loggingService, AppConfig appConfig)
         {
+            _debug = false;
             LoggingService = loggingService;
             AppConfig = appConfig;
 
@@ -34,6 +39,7 @@ namespace NotebookAutomation.Core.Configuration
         /// <param name="debug">Whether to enable debug-level logging.</param>
         private ConfigProvider(string? configPath = null, bool debug = false)
         {
+            _debug = debug;
             // Find and load configuration
             configPath = configPath ?? AppConfig.FindConfigFile();
 
@@ -58,6 +64,7 @@ namespace NotebookAutomation.Core.Configuration
             var services = new ServiceCollection();
             ConfigureServices(services);
             ServiceProvider = services.BuildServiceProvider();
+        
         }
 
         /// <summary>
@@ -108,6 +115,13 @@ namespace NotebookAutomation.Core.Configuration
             services.AddSingleton(LoggingService);
             services.AddSingleton(Logger);
             services.AddSingleton(FailedLogger);
+
+            // Register Microsoft.Extensions.Logging infrastructure for generic ILogger<T>
+            services.AddLogging(builder =>
+            {
+                // Optionally configure logging providers here
+                builder.SetMinimumLevel(_debug ? LogLevel.Debug : LogLevel.Information);
+            });
 
             // Add additional services here as needed
             // services.AddSingleton<IService, ServiceImplementation>();

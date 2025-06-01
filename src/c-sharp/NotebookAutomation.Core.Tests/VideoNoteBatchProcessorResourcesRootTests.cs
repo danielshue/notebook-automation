@@ -61,7 +61,7 @@ namespace NotebookAutomation.Core.Tests
                     It.IsAny<bool>(),
                     It.IsAny<int?>(),
                     It.IsAny<string>(),
-                    It.IsAny<Configuration.AppConfig>(),
+                    It.IsAny<AppConfig>(),
                     It.IsAny<string>(),
                     It.IsAny<string>(),
                     It.IsAny<bool>()))
@@ -76,7 +76,7 @@ namespace NotebookAutomation.Core.Tests
                     bool retryFailed,
                     int? timeoutSeconds,
                     string resourcesRoot,
-                    Configuration.AppConfig appConfig,
+                    AppConfig appConfig,
                     string noteType,
                     string failedFilesListName,
                     bool noShareLinks) =>

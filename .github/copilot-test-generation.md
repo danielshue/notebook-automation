@@ -6,6 +6,7 @@
 - Each test should verify a single behavior or edge case
 - Test name should clearly describe what is being tested
 - Include setup and teardown as needed
+- Use MSFT Test and Moq for testing frameworks
 
 ## Test Coverage
 
