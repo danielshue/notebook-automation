@@ -6,10 +6,8 @@ using Moq;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Utils;
 
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace NotebookAutomation.Core.Tests.Utils
 {

@@ -1,6 +1,5 @@
 // Module: HtmlToMarkdownConverter.cs
 // Provides real HTML-to-Markdown conversion using ReverseMarkdown.NET.
-using System;
 using Microsoft.Extensions.Logging;
 
 namespace NotebookAutomation.Core.Tools.MarkdownGeneration

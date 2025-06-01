@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Cli.Commands;

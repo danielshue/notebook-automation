@@ -147,12 +147,12 @@ namespace NotebookAutomation.Cli.Commands
                         }
                         else
                         {
-                            logger.LogWarning("OneDrive service not available - --refresh-auth flag ignored");
+                            logger.LogWarningWithPath("OneDrive service not available - --refresh-auth flag ignored", "VideoCommands.cs");
                         }
                     }
                     catch (Exception ex)
                     {
-                        logger.LogWarning(ex, "Failed to set force refresh on OneDrive service");
+                        logger.LogWarningWithPath(ex, "Failed to set force refresh on OneDrive service", "VideoCommands.cs");
                     }
                 }                // Determine effective resources root (prioritize command line over config)
                 string? effectiveResourcesRoot = resourcesRoot;
@@ -182,13 +182,12 @@ namespace NotebookAutomation.Cli.Commands
 
                             // Configure vault roots: local resources folder -> OneDrive resources path
                             oneDriveService.ConfigureVaultRoots(localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
-                            logger.LogInformation("Configured OneDrive vault roots - Local: {LocalRoot}, OneDrive: {OneDriveRoot}",
-                                localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
+                            logger.LogInformationWithPath("Configured OneDrive vault roots - Local: {LocalRoot}, OneDrive: {OneDriveRoot}", "VideoCommands.cs", localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
                         }
                     }
                     catch (Exception ex)
                     {
-                        logger.LogWarning(ex, "Failed to configure OneDrive vault roots");
+                        logger.LogWarningWithPath(ex, "Failed to configure OneDrive vault roots", "VideoCommands.cs");
                     }
                 }
 
@@ -247,7 +246,7 @@ namespace NotebookAutomation.Cli.Commands
                 AnsiConsoleHelper.WriteInfo($"  Logging Dir: {appConfig?.Paths?.LoggingDir}");                // Validate OpenAI config before proceeding
                 if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
                 {
-                    logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
+                    logger.LogErrorWithPath("OpenAI configuration is missing or incomplete. Exiting.", "VideoCommands.cs");
                     return;
                 }
                 // Get video extensions from config
@@ -259,7 +258,7 @@ namespace NotebookAutomation.Cli.Commands
                 // Verify that we have an input source
                 if (string.IsNullOrWhiteSpace(input))
                 {
-                    logger.LogError("Input source is required. Use --input/-i to specify a video file or folder.");
+                    logger.LogErrorWithPath("Input source is required. Use --input/-i to specify a video file or folder.", "VideoCommands.cs");
                     return;
                 }
 
@@ -269,15 +268,14 @@ namespace NotebookAutomation.Cli.Commands
 
                 if (!isFile && !isDirectory)
                 {
-                    logger.LogError("Input path does not exist or is not accessible: {Path}", input);
+                    logger.LogErrorWithPath("Input path does not exist or is not accessible: {Path}", "VideoCommands.cs", input);
                     return;
                 }
 
                 logger.LogInformation("Processing {Type}: {Path}",
                     isFile ? "file" : "directory",
-                    input);                // Log where output will be written
-                logger.LogInformation("Output will be written to: {OutputPath}",
-                    overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"); 
+                    input);
+                logger.LogInformationWithPath("Output will be written to: {OutputPath}", "VideoCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated");
                 var result = await batchProcessor.ProcessVideosAsync(
                     // Use the input from command line
                     input,
@@ -294,6 +292,7 @@ namespace NotebookAutomation.Cli.Commands
                     noShareLinks);
 
                 logger.LogInformation("Video processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
+                logger.LogInformationWithPath("Video processing completed. Success: {Processed}, Failed: {Failed}", "VideoCommands.cs", result.Processed, result.Failed);
                 if (!string.IsNullOrWhiteSpace(result.Summary))
                 {
                     AnsiConsoleHelper.WriteInfo(result.Summary);

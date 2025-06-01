@@ -1,6 +1,7 @@
 using System;
-using System.Collections.Generic;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests
@@ -58,13 +59,13 @@ namespace NotebookAutomation.Core.Tests
             // Assert
             Assert.IsNotNull(result);
             Assert.IsTrue(result.Count > 1);
-            
+
             // First chunk should be 100 characters
             Assert.AreEqual(100, result[0].Length);
-            
+
             // Second chunk should start at position 80 (100 - 20 overlap)
             Assert.AreEqual(100, result[1].Length);
-            
+
             // Verify overlap exists between chunks
             var firstChunkEnd = result[0].Substring(80);
             var secondChunkStart = result[1].Substring(0, 20);
@@ -169,7 +170,7 @@ namespace NotebookAutomation.Core.Tests
             Assert.AreEqual(2, result.Count);
             Assert.AreEqual(100, result[0].Length);
             Assert.AreEqual(100, result[1].Length);
-            
+
             // With zero overlap, chunks should be completely different
             Assert.AreEqual(new string('A', 100), result[0]);
             Assert.AreEqual(new string('A', 100), result[1]);
@@ -317,7 +318,7 @@ namespace NotebookAutomation.Core.Tests
             // Assert
             Assert.IsTrue(chunks.Count > 1);
             Assert.IsTrue(totalEstimatedTokens > 0);
-            
+
             // Due to overlap, total estimated tokens should be more than original text tokens
             var originalTokens = _chunkingService.EstimateTokenCount(text);
             Assert.IsTrue(totalEstimatedTokens >= originalTokens);

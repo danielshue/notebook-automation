@@ -6,7 +6,6 @@ using Moq;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Utils;
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 

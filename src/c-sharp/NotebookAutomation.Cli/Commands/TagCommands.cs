@@ -295,13 +295,13 @@ namespace NotebookAutomation.Cli.Commands
         {
             if (string.IsNullOrEmpty(configPath))
             {
-                _logger.LogError("Configuration is missing or incomplete. Exiting.");
+                _logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "TagCommands.cs");
                 return;
             }
 
             if (string.IsNullOrEmpty(path))
             {
-                _logger.LogErrorWithPath("Path is required: {FilePath}", path ?? "unknown", new Exception("Sample exception"));
+                _logger.LogErrorWithPath("Path is required: {FilePath}", "TagCommands.cs", path ?? "unknown");
                 return;
             }
 
@@ -347,13 +347,13 @@ namespace NotebookAutomation.Cli.Commands
                         break;
 
                     case "clean-index":
-                        logger.LogInformation("Clean index functionality uses the same processor");
+                        logger.LogInformationWithPath("Clean index functionality uses the same processor", "TagCommands.cs");
                         stats = await tagProcessor.ProcessDirectoryAsync(path);
                         LogStats(logger, stats);
                         break;
 
                     case "consolidate":
-                        logger.LogInformation("Consolidate tags functionality not yet implemented");
+                        logger.LogInformationWithPath("Consolidate tags functionality not yet implemented", "TagCommands.cs");
                         break;
 
                     case "restructure-tags":
@@ -363,7 +363,7 @@ namespace NotebookAutomation.Cli.Commands
 
                     case "add-example-tags":
                         var success = await tagProcessor.AddExampleTagsToFileAsync(path);
-                        logger.LogInformation(success ? "Example tags added." : "Failed to add example tags.");
+                        logger.LogInformationWithPath(success ? "Example tags added." : "Failed to add example tags.", "TagCommands.cs");
                         break;
 
                     case "metadata-check":
@@ -372,7 +372,7 @@ namespace NotebookAutomation.Cli.Commands
                         break;
 
                     default:
-                        logger.LogError("Unknown command: {Command}", command);
+                        logger.LogErrorWithPath("Unknown command: {Command}", "TagCommands.cs", command);
                         break;
                 }
             }

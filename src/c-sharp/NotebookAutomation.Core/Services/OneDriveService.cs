@@ -2,18 +2,12 @@
 // Provides OneDrive integration for file/folder sync and access using Microsoft Graph API.
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
-using Azure.Identity;
 using Microsoft.Kiota.Abstractions;
 using System.Text.Json;
 using System.Text;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
-using System.Security.Cryptography;
-using Microsoft.Graph.Authentication;
-using System.IO;
-using Azure.Core;
-using System.Collections.Generic;
-using System.Threading;
+using NotebookAutomation.Core.Utils;
 using Microsoft.Kiota.Abstractions.Authentication;
 
 namespace NotebookAutomation.Core.Services
@@ -291,23 +285,23 @@ namespace NotebookAutomation.Core.Services
                 var stream = await _graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken);
                 if (stream == null)
                 {
-                    _logger.LogError("File not found in OneDrive: {Path}", oneDrivePath);
+                    _logger.LogErrorWithPath("File not found in OneDrive: {FilePath}", oneDrivePath);
                     return;
                 }
                 using (var fileStream = File.Create(localPath))
                 {
                     await stream.CopyToAsync(fileStream, cancellationToken);
                 }
-                _logger.LogInformation("Downloaded OneDrive file: {Path}", oneDrivePath);
+                _logger.LogInformationWithPath("Downloaded OneDrive file: {FilePath}", oneDrivePath);
             }
             catch (ServiceException ex)
             {
-                _logger.LogError(ex, "Graph API error downloading file: {Path}", oneDrivePath);
+                _logger.LogErrorWithPath(ex, "Graph API error downloading file: {FilePath}", oneDrivePath);
                 throw;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to download file from OneDrive: {Path}", oneDrivePath);
+                _logger.LogErrorWithPath(ex, "Failed to download file from OneDrive: {FilePath}", oneDrivePath);
                 throw;
             }
         }

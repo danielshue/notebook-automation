@@ -1,5 +1,23 @@
 {
-  "projects": [],
-  "tasks": [],
+  "projects": [
+    {
+      "id": "f8da0f77-dee4-4436-bede-ef64ed67713d",
+      "name": "Notebook",
+      "description": "",
+      "createdAt": "2025-06-01T04:53:59.309Z",
+      "updatedAt": "2025-06-01T04:53:59.309Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "9fe7b98b-14e2-4aa6-a0bc-3a547c27d51f",
+      "name": "Tasks 1",
+      "details": "",
+      "projectId": "f8da0f77-dee4-4436-bede-ef64ed67713d",
+      "completed": false,
+      "createdAt": "2025-06-01T04:54:33.777Z",
+      "updatedAt": "2025-06-01T04:54:33.777Z"
+    }
+  ],
   "subtasks": []
 }

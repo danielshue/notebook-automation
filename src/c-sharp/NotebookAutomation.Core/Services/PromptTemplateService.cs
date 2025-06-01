@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Services
 {
@@ -46,12 +45,12 @@ namespace NotebookAutomation.Core.Services
                 if (Directory.Exists(configPromptsDir))
                 {
                     _promptsDirectory = configPromptsDir;
-                    _logger.LogInformation("Using prompts directory from config: {PromptsDirectory}", _promptsDirectory);
+                    _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from config");
                     return;
                 }
                 else
                 {
-                    _logger.LogWarning("Configured prompts directory not found: {PromptsDirectory}", configPromptsDir);
+                    _logger.LogWarningWithPath(configPromptsDir, "Configured prompts directory not found");
                 }
             }
 
@@ -66,7 +65,7 @@ namespace NotebookAutomation.Core.Services
             {
                 _promptsDirectory = projectPromptsDir;
 
-                _logger.LogInformation("Using prompts directory from output directory: {PromptsDirectory}", _promptsDirectory);
+                _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from output directory");
 
                 return;
             }
@@ -78,7 +77,7 @@ namespace NotebookAutomation.Core.Services
             if (Directory.Exists(corePromptsDir))
             {
                 _promptsDirectory = corePromptsDir;
-                _logger.LogInformation("Using prompts directory from Core project: {PromptsDirectory}", _promptsDirectory);
+                _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from Core project");
                 return;
             }
 
@@ -89,7 +88,7 @@ namespace NotebookAutomation.Core.Services
             if (Directory.Exists(rootPromptsDir))
             {
                 _promptsDirectory = rootPromptsDir;
-                _logger.LogInformation("Using prompts directory from repository root: {PromptsDirectory}", _promptsDirectory);
+                _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from repository root");
                 return;
             }
 
@@ -100,13 +99,13 @@ namespace NotebookAutomation.Core.Services
             if (Directory.Exists(parentRootPromptsDir))
             {
                 _promptsDirectory = parentRootPromptsDir;
-                _logger.LogInformation("Using prompts directory from parent repository root: {PromptsDirectory}", _promptsDirectory);
+                _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from parent repository root");
                 return;
             }
 
             // If all else fails, use the current directory
             _promptsDirectory = baseDirectory;
-            _logger.LogWarning("Could not find prompts directory. Using base directory: {BaseDirectory}", baseDirectory);
+            _logger.LogWarningWithPath(baseDirectory, "Could not find prompts directory. Using base directory");
         }
 
         /// <summary>
@@ -122,9 +121,10 @@ namespace NotebookAutomation.Core.Services
         /// <returns>Prompt string with variables substituted.</returns>
         public virtual async Task<string> LoadAndSubstituteAsync(string templatePath, Dictionary<string, string> variables)
         {
+
             if (!File.Exists(templatePath))
             {
-                _logger.LogError("Prompt template not found: {TemplatePath}", templatePath);
+                _logger.LogErrorWithPath(templatePath, "Prompt template not found");
                 return string.Empty;
             }
 
@@ -179,7 +179,7 @@ namespace NotebookAutomation.Core.Services
                 if (File.Exists(templatePath))
                 {
                     string content = await File.ReadAllTextAsync(templatePath);
-                    _logger.LogInformation("Loaded template: {TemplateName}", templateName);
+                    _logger.LogInformationWithPath(templatePath, $"Loaded template: {templateName}");
                     return content;
                 }
 
@@ -188,9 +188,7 @@ namespace NotebookAutomation.Core.Services
                 if (File.Exists(projectPromptPath))
                 {
                     string content = await File.ReadAllTextAsync(projectPromptPath);
-
-                    _logger.LogInformation("Loaded template from project: {TemplateName}", templateName);
-
+                    _logger.LogInformationWithPath(projectPromptPath, $"Loaded template from project: {templateName}");
                     return content;
                 }
 
@@ -198,8 +196,7 @@ namespace NotebookAutomation.Core.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error loading template: {TemplateName}", templateName);
-
+                _logger.LogErrorWithPath(templateName, $"Error loading template: {templateName}. Exception: {ex.Message}");
                 return GetDefaultTemplate(templateName);
             }
         }
@@ -211,7 +208,7 @@ namespace NotebookAutomation.Core.Services
         /// <returns>The default template content.</returns>
         private string GetDefaultTemplate(string templateName)
         {
-            _logger.LogWarning("Using default template for: {TemplateName}", templateName);
+            _logger.LogWarningWithPath(templateName, "Using default template for");
 
             return templateName switch
             {

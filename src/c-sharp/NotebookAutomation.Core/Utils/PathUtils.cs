@@ -6,12 +6,8 @@
 //     string normalized = PathUtils.NormalizePath("C:/Users/Example/file.md");
 // -----------------------------------------------------------------------------
 
-using System;
-using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace NotebookAutomation.Core.Utils
 {

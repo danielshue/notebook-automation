@@ -1,5 +1,3 @@
-using System;
-
 namespace NotebookAutomation.Cli.Utilities
 {
     /// <summary>

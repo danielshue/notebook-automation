@@ -257,20 +257,20 @@ namespace NotebookAutomation.Cli.Commands
                 // Validate Microsoft Graph config before proceeding
                 if (!ConfigValidation.RequireMicrosoftGraph(appConfig))
                 {
-                    logger.LogError("Microsoft Graph configuration is missing or incomplete. Exiting.");
+                    logger.LogErrorWithPath("Microsoft Graph configuration is missing or incomplete. Exiting.", "OneDriveCommands.cs");
                     return;
                 }
 
-                logger.LogInformation("Executing OneDrive command: {Command}", command);
+                logger.LogInformationWithPath("Executing OneDrive command: {Command}", "OneDriveCommands.cs", command);
 
                 if (dryRun)
                 {
-                    logger.LogInformation("[DRY RUN] No changes will be made");
+                    logger.LogInformationWithPath("[DRY RUN] No changes will be made", "OneDriveCommands.cs");
                 }
 
                 if (verbose)
                 {
-                    logger.LogInformation("Verbose output enabled");
+                    logger.LogInformationWithPath("Verbose output enabled", "OneDriveCommands.cs");
                 }
 
                 // Execute the command with the relevant arguments
@@ -285,7 +285,7 @@ namespace NotebookAutomation.Cli.Commands
                     case "download":
                         if (arg1 == null || arg2 == null)
                         {
-                            logger.LogWarning("One or more arguments are null. Skipping logging.");
+                            logger.LogWarningWithPath("One or more arguments are null. Skipping logging.", "OneDriveCommands.cs");
                         }
                         else
                         {
@@ -298,7 +298,7 @@ namespace NotebookAutomation.Cli.Commands
                     case "upload":
                         if (arg1 == null || arg2 == null)
                         {
-                            logger.LogWarning("One or more arguments are null. Skipping logging.");
+                            logger.LogWarningWithPath("One or more arguments are null. Skipping logging.", "OneDriveCommands.cs");
                         }
                         else
                         {
@@ -309,25 +309,24 @@ namespace NotebookAutomation.Cli.Commands
                         break;
 
                     case "search":
-                        logger.LogInformation("Searching for: {Query}", arg1);
+                        logger.LogInformationWithPath("Searching for: {Query}", arg1 ?? "", "OneDriveCommands.cs");
                         // TODO: Implement with oneDriveService.SearchFilesAsync(arg1);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
 
                     case "sync":
                         var direction = extraOptions.FirstOrDefault(o => o.Key == "direction").Value ?? "both";
-                        logger.LogInformation("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})",
-                            arg1, arg2, direction);
+                        logger.LogInformationWithPath("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})", arg1 ?? "", arg2 ?? "", direction);
                         // TODO: Implement with oneDriveService.SyncFilesAsync(arg1, arg2, direction);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
 
                     default:
-                        logger.LogError("Unknown command: {Command}", command);
+                        logger.LogErrorWithPath("Unknown command: {Command}", "OneDriveCommands.cs", command);
                         break;
                 }
 
-                logger.LogInformation("Command completed successfully");
+                logger.LogInformationWithPath("Command completed successfully", "OneDriveCommands.cs");
             }
             catch (Exception ex)
             {
@@ -344,20 +343,20 @@ namespace NotebookAutomation.Cli.Commands
         {
             if (string.IsNullOrEmpty(config))
             {
-                _logger.LogError("Microsoft Graph configuration is missing or incomplete. Exiting.");
+                _logger.LogErrorWithPath("Microsoft Graph configuration is missing or incomplete. Exiting.", "OneDriveCommands.cs");
                 return;
             }
 
-            _logger.LogInformation("Executing OneDrive command: {Command}", command);
+            _logger.LogInformationWithPath("Executing OneDrive command: {Command}", "OneDriveCommands.cs", command);
 
             if (dryRun)
             {
-                _logger.LogInformation("[DRY RUN] No changes will be made");
+                _logger.LogInformationWithPath("[DRY RUN] No changes will be made", "OneDriveCommands.cs");
             }
 
             if (verbose)
             {
-                _logger.LogInformation("Verbose output enabled");
+                _logger.LogInformationWithPath("Verbose output enabled", "OneDriveCommands.cs");
             }
 
             _logger.LogDebugWithPath("Debugging OneDrive command", "OneDriveCommands.cs");
@@ -374,7 +373,7 @@ namespace NotebookAutomation.Cli.Commands
                 case "download":
                     if (arg1 == null || arg2 == null)
                     {
-                        _logger.LogWarning("One or more arguments are null. Skipping logging.");
+                        _logger.LogWarningWithPath("One or more arguments are null. Skipping logging.", "OneDriveCommands.cs");
                     }
                     else
                     {

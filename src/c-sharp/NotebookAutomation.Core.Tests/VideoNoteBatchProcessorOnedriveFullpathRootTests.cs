@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Core.Tools.Shared;
-using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Tests
 {

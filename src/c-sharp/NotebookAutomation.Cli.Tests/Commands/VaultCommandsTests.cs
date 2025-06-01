@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using System.CommandLine.Parsing;
 using Microsoft.Extensions.Logging;
 using Moq;
-using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Cli.Tests.Commands
 {

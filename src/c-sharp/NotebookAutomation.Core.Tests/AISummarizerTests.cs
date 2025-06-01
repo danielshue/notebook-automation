@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,8 +12,8 @@ using Moq;
 using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests
-{    
-    
+{
+
     /// <summary>
      /// Test suite for the AISummarizer class, verifying its functionality with different AI framework integrations.
      /// </summary>
@@ -68,7 +67,7 @@ namespace NotebookAutomation.Core.Tests
         {
             // This test would require mocking the HttpClient, which is challenging
             // For a real test, we would use a HttpMessageHandler mock
-            // For simplicity, this test just verifies the flow doesn't throw an exception            
+            // For simplicity, this test just verifies the flow doesn't throw an exception
             // Arrange
             var inputText = "This is the text to summarize.";
 
@@ -148,8 +147,8 @@ namespace NotebookAutomation.Core.Tests
 
             Assert.IsNotNull(result);
             Assert.AreEqual("Final consolidated summary", result);
-        }        
-        
+        }
+
         /// <summary>
         /// Tests that summarization with variables correctly substitutes title in the prompt template.
         /// </summary>
@@ -175,8 +174,8 @@ namespace NotebookAutomation.Core.Tests
                 _mockLogger.Object,
                 _testPromptService,
                 null,
-                _fakeTextGenService);            
-                
+                _fakeTextGenService);
+
                 // Act
             var result = await summarizer.SummarizeWithVariablesAsync(
                 inputText,
@@ -508,14 +507,14 @@ namespace NotebookAutomation.Core.Tests
 
         /// <summary>
         /// Tests chunking behavior with text exactly at the chunk boundary.
-        /// </summary>        
+        /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_WithBoundaryTextSize_HandlesCorrectly()
         {
             // Arrange
             // Create text that's exactly at the chunking threshold (8000 * 1.5 = 12000 characters)
             var boundaryText = new string('A', 12000);
-            
+
             // Setup single response since fallback service processes directly
             _fakeTextGenService.Response = "Chunk 1 summary";
 
@@ -594,7 +593,7 @@ namespace NotebookAutomation.Core.Tests
         {
             // Arrange
             var largeText = new string('A', 50000);
-            
+
             // For fallback service (no SemanticKernel), large text gets processed directly
             _fakeTextGenService.Response = "Direct fallback summary for large text";
 
@@ -664,7 +663,7 @@ namespace NotebookAutomation.Core.Tests
         {
             // Arrange
             var veryLargeText = new string('A', 100000); // 100k characters, will be processed directly by fallback
-            
+
             _fakeTextGenService.Response = "Chunk 1 summary"; // Fallback service processes directly
 
             var summarizer = new AISummarizer(
@@ -712,7 +711,7 @@ namespace NotebookAutomation.Core.Tests
         {
             // Arrange - Create text with very long "words" (like URLs)
             var longWordText = string.Join(" ", Enumerable.Repeat("https://very-long-url-that-exceeds-normal-word-boundaries-and-might-cause-chunking-issues.com/path/to/resource", 500));
-            
+
             _fakeTextGenService.Response = "URL chunk 1 summary"; // Fallback service processes directly
 
             var summarizer = new AISummarizer(
@@ -780,7 +779,7 @@ namespace NotebookAutomation.Core.Tests
             // Arrange
             var promptTemplate = "Course: {{course}}, Missing: {{missing_var}}, Content: {{content}}";
             var inputText = "Test content with missing variable.";
-            
+
             // Only provide some variables, not all placeholders
             var variables = new Dictionary<string, string>
             {

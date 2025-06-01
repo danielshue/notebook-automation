@@ -4,11 +4,9 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.CommandLine.Parsing;
-using System.CommandLine.Invocation;
 using Microsoft.Extensions.Logging;
 using Moq;
 using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Cli.Tests.Commands
 {

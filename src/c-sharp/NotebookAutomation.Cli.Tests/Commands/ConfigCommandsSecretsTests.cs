@@ -1,11 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Cli.Commands;
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using System;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace NotebookAutomation.Cli.Tests.Commands
 {
