@@ -1,0 +1,100 @@
+name: CI - Windows
+
+on:
+  push:
+    paths:
+      - 'src/c-sharp/**'
+  pull_request:
+    paths:
+      - 'src/c-sharp/**'
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        dotnet-version: ['9.0.x']
+    steps:
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Restore dependencies
+        run: dotnet restore src/c-sharp/NotebookAutomation.sln
+
+      - name: Build solution
+        run: dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
+
+      - name: Run tests with coverage
+        run: |
+          dotnet test src/c-sharp/NotebookAutomation.Core.Tests/ --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-windows
+          path: src/c-sharp/NotebookAutomation.Core.Tests/TestResults/*.trx
+
+      - name: Upload coverage results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-windows
+          path: src/c-sharp/NotebookAutomation.Core.Tests/TestResults/**/*.xml
+
+      - name: Publish single-file EXE (win-x64)
+        run: |
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true --output publish/win-x64
+
+      - name: Publish single-file EXE (win-arm64)
+        run: |
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true --output publish/win-arm64
+
+      - name: Upload published single-file executables
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-executables
+          path: |
+            publish/win-x64/
+            publish/win-arm64/
+
+      - name: Run static code analysis
+        run: dotnet format --verify-no-changes --severity error
+
+      - name: Notify on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            if (context.payload.pull_request) {
+              github.rest.issues.createComment({
+                issue_number: context.payload.pull_request.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: `:x: CI failed for commit ${{ github.sha }} on ${{ github.ref }}.\nPlease check the Actions tab for details.`
+              });
+            } else {
+              github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `CI failed for commit ${{ github.sha }}`,
+                body: `CI failed for commit ${{ github.sha }} on ${{ github.ref }}.\nPlease check the Actions tab for details.`
+              });
+            }
