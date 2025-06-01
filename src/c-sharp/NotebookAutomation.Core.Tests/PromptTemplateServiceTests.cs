@@ -1,3 +1,4 @@
+using NotebookAutomation.Core.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -55,7 +56,7 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_ReplacesTemplateVariables()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{name}}, welcome to {{course}}!";
             var variables = new Dictionary<string, string>
@@ -78,7 +79,7 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesMissingVariables()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{name}}, welcome to {{course}}!";
             var variables = new Dictionary<string, string>
@@ -101,7 +102,7 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_IgnoresExtraVariables()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{name}}!";
             var variables = new Dictionary<string, string>
@@ -124,7 +125,7 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesComplexTemplates()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = @"# 📝 Notes for {{course}}
 
@@ -178,7 +179,7 @@ namespace NotebookAutomation.Core.Tests
         public async Task LoadAndSubstituteAsync_LoadsTemplateAndSubstitutesVariables()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
             var templatePath = Path.Combine(_testFolder, "test_template.md");
             var templateContent = "Hello {{name}}, welcome to {{course}}!";
@@ -204,7 +205,7 @@ namespace NotebookAutomation.Core.Tests
         public async Task LoadAndSubstituteAsync_ReturnsEmptyStringWhenFileNotFound()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
             var nonExistentPath = Path.Combine(_testFolder, "non_existent.md");
             var variables = new Dictionary<string, string>
@@ -217,7 +218,6 @@ namespace NotebookAutomation.Core.Tests
 
             // Assert
             Assert.AreEqual(string.Empty, result);
-            bool logCalled = false;
             _loggerMock.Verify(x => x.Log(
                 It.Is<LogLevel>(l => l == LogLevel.Error),
                 It.IsAny<EventId>(),
@@ -225,19 +225,6 @@ namespace NotebookAutomation.Core.Tests
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
                 Times.Once);
-            _loggerMock.Setup(x => x.Log(
-                It.Is<LogLevel>(l => l == LogLevel.Error),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()))
-                .Callback((LogLevel level, EventId eventId, object state, Exception ex, Delegate formatter) =>
-                {
-                    var stateStr = state.ToString();
-                    Assert.IsTrue(stateStr.Contains("non_existent.md"));
-                    logCalled = true;
-                });
-            Assert.IsTrue(true); // Ensures test does not fail if callback is not hit
         }
 
         /// <summary>
@@ -250,7 +237,7 @@ namespace NotebookAutomation.Core.Tests
             // we're going to test the fallback to default templates
 
             // Arrange - Create a service with a mocked logger that we can verify
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
 
             // Act
@@ -277,7 +264,7 @@ namespace NotebookAutomation.Core.Tests
         public async Task LoadTemplateAsync_GetsCorrectDefaultTemplate()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
 
             // Act
@@ -413,7 +400,7 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesNestedVariables()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{name}}, your course is {{course}}";
 
@@ -446,7 +433,7 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesWhitespaceInVariableNames()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "Hello {{  name  }}, welcome to {{ course}}!";
 
@@ -468,7 +455,7 @@ namespace NotebookAutomation.Core.Tests
         public async Task LoadTemplateAsync_HandlesExceptions()
         {
             // Arrange - Create a mock FileSystem that throws an exception
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
 
             // We need to use a path that will cause an exception
@@ -504,7 +491,7 @@ namespace NotebookAutomation.Core.Tests
         public void SubstituteVariables_HandlesMultilingualContent()
         {
             // Arrange
-            var config = new Configuration.AppConfig();
+            var config = new AppConfig();
             var service = new PromptTemplateService(_loggerMock.Object, config);
             var template = "{{greeting}}, {{name}}! {{message}}";
 
@@ -531,7 +518,7 @@ namespace NotebookAutomation.Core.Tests
         private readonly string _testPromptsDirectory;
 
         public TestablePromptTemplateService(ILogger<PromptTemplateService> logger, string promptsDirectory)
-            : base(logger, new Configuration.AppConfig())
+            : base(logger, new AppConfig())
         {
             _testPromptsDirectory = promptsDirectory;
         }

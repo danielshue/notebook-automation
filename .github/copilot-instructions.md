@@ -1,6 +1,17 @@
 
 # GitHub Copilot General Instructions for C# Development
 
+# Instructions
+- Use the "Notebook Automation" Project guidelines to ensure consistency and quality in the codebase.
+- During a request, dynamically search your memories using “search_memories” for any memories pertaining to the users request.
+- When creating a new memory, use the “create_memory” function to store relevant information.
+- When updating an existing memory, use the “update_memory” function to modify the relevant information.
+- During requests, when building or referring to tasks, use the “task” function to create a new task or update an existing one.
+- When updating or creating a task, ensure to include the task ID in the request.
+- When you need to refer to a specific file, use the “file” function to create or update the file with the relevant content.
+- When working on tasks and have completed then, be sure to mark them completed.
+- When making changes, always create or update the existing unit tests.
+
 ## Project Philosophy
 - Write maintainable, readable code that prioritizes clarity over cleverness
 - Follow SOLID principles in object-oriented design
@@ -39,6 +50,8 @@
 - Apply consistent formatting (use an .editorconfig file)
 - Prefer LINQ for collection transformations where appropriate
 - Use expression-bodied members for simple operations
+- Make sure the using statements are cleaned up and organized
+- Shorten the fully qualified names where appropriate and use `using` directives for namespaces
 
 ## Project-Specific Patterns
 - Use System.IO.Path or FileSystem abstractions instead of pathlib

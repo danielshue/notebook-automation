@@ -1,3 +1,4 @@
+using NotebookAutomation.Core.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -20,7 +21,8 @@ namespace NotebookAutomation.Core.Tests.Tools
             var loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
             var promptService = new PromptTemplateService(
                 Mock.Of<ILogger<PromptTemplateService>>(),
-                new Configuration.AppConfig()); var aiSummarizer = new AISummarizer(
+                new AppConfig());
+            var aiSummarizer = new AISummarizer(
                 Mock.Of<ILogger<AISummarizer>>(),
                 promptService,
                 null);

@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Cli.Utilities;
@@ -11,8 +12,8 @@ namespace NotebookAutomation.Cli.Tests.Utilities
     [TestClass]
     public class AnsiConsoleHelperTests
     {
-        private StringWriter _stringWriter = null!;
-        private TextWriter _originalOut = null!;
+        private StringWriter? _stringWriter;
+        private TextWriter? _originalOut;
 
         [TestInitialize]
         public void Setup()
@@ -25,15 +26,15 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         [TestCleanup]
         public void Cleanup()
         {
-            Console.SetOut(_originalOut);
-            _stringWriter.Dispose();
+            Console.SetOut(_originalOut!);
+            _stringWriter?.Dispose();
         }
 
         [TestMethod]
         public void WriteUsage_PrintsUsageWithColors()
         {
             AnsiConsoleHelper.WriteUsage("usage", "desc", "opts");
-            var output = _stringWriter.ToString();
+            var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("usage"));
             Assert.IsTrue(output.Contains("desc"));
             Assert.IsTrue(output.Contains("opts"));
@@ -43,7 +44,7 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteInfo_PrintsInfoWithColors()
         {
             AnsiConsoleHelper.WriteInfo("info message");
-            var output = _stringWriter.ToString();
+            var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("info message"));
         }
 
@@ -51,7 +52,7 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteWarning_PrintsWarningWithColors()
         {
             AnsiConsoleHelper.WriteWarning("warn message");
-            var output = _stringWriter.ToString();
+            var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("warn message"));
         }
 
@@ -59,7 +60,7 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteError_PrintsErrorWithColors()
         {
             AnsiConsoleHelper.WriteError("error message");
-            var output = _stringWriter.ToString();
+            var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("error message"));
         }
 
@@ -67,7 +68,7 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteSuccess_PrintsSuccessWithColors()
         {
             AnsiConsoleHelper.WriteSuccess("success message");
-            var output = _stringWriter.ToString();
+            var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("success message"));
         }
 
@@ -75,7 +76,7 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteHeading_PrintsHeadingWithColors()
         {
             AnsiConsoleHelper.WriteHeading("heading");
-            var output = _stringWriter.ToString();
+            var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("heading"));
         }
 
@@ -83,7 +84,7 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteKeyValue_PrintsKeyValueWithColors()
         {
             AnsiConsoleHelper.WriteKeyValue("key", "value");
-            var output = _stringWriter.ToString();
+            var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("key:"));
             Assert.IsTrue(output.Contains("value"));
         }

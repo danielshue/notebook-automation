@@ -8,7 +8,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 
+
 using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -34,7 +36,8 @@ namespace NotebookAutomation.Core.Tests
             _logger = NullLogger<VideoNoteProcessor>.Instance;
             var promptService = new PromptTemplateService(
                 NullLogger<PromptTemplateService>.Instance,
-                new Configuration.AppConfig()); var aiSummarizer = new AISummarizer(
+                new AppConfig());
+            var aiSummarizer = new AISummarizer(
                 NullLogger<AISummarizer>.Instance,
                 promptService,
                 null);

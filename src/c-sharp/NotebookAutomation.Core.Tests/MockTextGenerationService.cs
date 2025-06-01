@@ -84,6 +84,7 @@ namespace NotebookAutomation.Core.Tests
 
         private async IAsyncEnumerable<StreamingTextContent> GetEmptyAsyncEnumerable()
         {
+            await Task.Yield();
             yield break;
         }
 

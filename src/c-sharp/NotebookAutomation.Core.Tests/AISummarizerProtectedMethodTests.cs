@@ -16,11 +16,11 @@ namespace NotebookAutomation.Core.Tests
     [TestClass]
     public class AISummarizerProtectedMethodTests
     {
-        private Mock<ILogger<AISummarizer>> _mockLogger;
-        private MockTextChunkingService _mockChunkingService;
-        private MockPromptTemplateService _mockPromptService;
-        private SimpleTextGenerationService _simpleTextGenService;
-        private TestableAISummarizerForProtected _testSummarizer;
+        private Mock<ILogger<AISummarizer>> _mockLogger = null!;
+        private MockTextChunkingService _mockChunkingService = null!;
+        private MockPromptTemplateService _mockPromptService = null!;
+        private SimpleTextGenerationService _simpleTextGenService = null!;
+        private TestableAISummarizerForProtected _testSummarizer = null!;
 
         [TestInitialize]
         public void SetUp()

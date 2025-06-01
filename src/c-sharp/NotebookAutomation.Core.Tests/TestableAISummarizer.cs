@@ -1,3 +1,4 @@
+using NotebookAutomation.Core.Configuration;
 #nullable enable
 
 using System;
@@ -25,7 +26,7 @@ namespace NotebookAutomation.Core.Tests
         public TestableAISummarizer(ILogger<AISummarizer> logger) : base(logger,
                   new PromptTemplateService(
                       NullLogger<PromptTemplateService>.Instance,
-                      new Configuration.AppConfig()),
+                      new AppConfig()),
                   null!)
         {
         }

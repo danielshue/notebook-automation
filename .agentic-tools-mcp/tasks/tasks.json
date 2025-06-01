@@ -8,6 +8,107 @@
       "updatedAt": "2025-06-01T04:51:13.793Z"
     }
   ],
-  "tasks": [],
-  "subtasks": []
+  "tasks": [
+    {
+      "id": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "name": "Increase code coverage for low-coverage classes",
+      "details": "Systematically add or improve unit tests for all classes in NotebookAutomation.Core with 0% or very low coverage. ServiceRegistration is now complete and all tests pass. Continue with the next low-coverage class: CustomLogger, MarkdownParser, MetadataHierarchyDetector, MetadataTemplateManager, or MarkdownNoteProcessor. For each: write tests for all public methods, including normal, edge, and error cases; mock dependencies as needed; run tests and verify increased coverage. Repeat until all major classes have high or complete coverage.",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:14.946Z",
+      "updatedAt": "2025-06-01T15:37:23.035Z"
+    }
+  ],
+  "subtasks": [
+    {
+      "id": "07e1fdc4-e59a-444c-845b-5c8eba334f2e",
+      "name": "Increase coverage for OneDriveCliOptions (0%)",
+      "details": "Comprehensive MSTest unit tests for OneDriveCliOptions were created and executed successfully. All tests passed, and coverage for this class is now complete. Proceeding to the next subtask.",
+      "taskId": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:19.696Z",
+      "updatedAt": "2025-06-01T13:38:31.500Z"
+    },
+    {
+      "id": "4aaedd1c-1b58-47b2-8baa-e35058a9e675",
+      "name": "Increase coverage for TokenProvider (0%)",
+      "details": "Comprehensive MSTest unit tests for TokenProvider were created and executed successfully. All tests passed, and coverage for this class is now complete. Proceeding to the next subtask.",
+      "taskId": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:19.773Z",
+      "updatedAt": "2025-06-01T13:53:25.229Z"
+    },
+    {
+      "id": "de3f31da-abf9-4789-b35a-78d651a4bc1e",
+      "name": "Increase coverage for OneDriveService (5.5%)",
+      "details": "Write and run comprehensive MSTest unit tests for NotebookAutomation.Core.Services.OneDriveService. Cover all public methods, including edge and error cases. Mock dependencies as needed. Verify coverage increase.",
+      "taskId": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:19.851Z",
+      "updatedAt": "2025-06-01T15:01:35.125Z"
+    },
+    {
+      "id": "6f66ec47-18a1-425d-94c5-7e0b91ec0cb9",
+      "name": "Increase coverage for ServiceRegistration (32.6%)",
+      "details": "Write and run comprehensive MSTest unit tests for NotebookAutomation.Core.Configuration.ServiceRegistration. Cover all public methods, including edge and error cases. Mock dependencies as needed. Verify coverage increase.",
+      "taskId": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:19.930Z",
+      "updatedAt": "2025-06-01T15:21:01.737Z"
+    },
+    {
+      "id": "a21a6fb1-e15f-40c0-8a7c-132631fe3c89",
+      "name": "Increase coverage for CustomLogger (low coverage)",
+      "details": "Comprehensive MSTest unit tests for CustomLogger have been created, refactored, and executed. All public methods and error cases are now covered. All tests pass and coverage is complete for this class.",
+      "taskId": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:25.382Z",
+      "updatedAt": "2025-06-01T15:32:38.922Z"
+    },
+    {
+      "id": "69ecdb11-a5d7-4dd1-90e2-4c3d83cdafb1",
+      "name": "Increase coverage for MarkdownParser (low coverage)",
+      "details": "All public methods and scenarios for MarkdownParser are already covered by comprehensive MSTest unit tests. No further tests are needed. Marking this subtask complete.",
+      "taskId": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:25.467Z",
+      "updatedAt": "2025-06-01T15:33:53.863Z"
+    },
+    {
+      "id": "b977b419-5585-40b9-9c55-586526bdd908",
+      "name": "Increase coverage for MetadataHierarchyDetector (low coverage)",
+      "details": "Write and run comprehensive MSTest unit tests for NotebookAutomation.Core.Utils.MetadataHierarchyDetector. Cover all public methods, including edge and error cases. Mock dependencies as needed. Verify coverage increase.",
+      "taskId": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:25.565Z",
+      "updatedAt": "2025-06-01T15:23:12.000Z"
+    },
+    {
+      "id": "c14be9e3-2fb6-4596-97e8-7f35539530d6",
+      "name": "Increase coverage for MetadataTemplateManager (low coverage)",
+      "details": "Write and run comprehensive MSTest unit tests for NotebookAutomation.Core.Utils.MetadataTemplateManager. Cover all public methods, including edge and error cases. Mock dependencies as needed. Verify coverage increase.",
+      "taskId": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:25.656Z",
+      "updatedAt": "2025-06-01T15:25:32.846Z"
+    },
+    {
+      "id": "6e40ea70-8101-421e-afef-ef953fe98886",
+      "name": "Increase coverage for MarkdownNoteProcessor (low coverage)",
+      "details": "Comprehensive MSTest unit tests for MarkdownNoteProcessor have been created and executed. All scenarios (TXT, HTML/HTM, EPUB, unsupported/missing files, AI summary, edge cases) are now covered. All tests pass and coverage is complete for this class.",
+      "taskId": "3ba806dc-f880-4413-8b8e-8c571d180659",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-01T13:30:25.738Z",
+      "updatedAt": "2025-06-01T15:30:36.757Z"
+    }
+  ]
 }

@@ -15,22 +15,22 @@ namespace NotebookAutomation.Core.Utils
 
         public CustomLogger(ILogger logger)
         {
-            _logger = logger;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public void LogInformation(string message, params object[] args)
         {
-            _logger.LogInformation(message, args);
+            _logger.Log<string>(LogLevel.Information, new EventId(), message, null, (s, e) => string.Format(s, args));
         }
 
         public void LogError(string message, params object[] args)
         {
-            _logger.LogError(message, args);
+            _logger.Log<string>(LogLevel.Error, new EventId(), message, null, (s, e) => string.Format(s, args));
         }
 
         public void LogDebug(string message, params object[] args)
         {
-            _logger.LogDebug(message, args);
+            _logger.Log<string>(LogLevel.Debug, new EventId(), message, null, (s, e) => string.Format(s, args));
         }
     }
 }
