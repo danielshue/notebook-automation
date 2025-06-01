@@ -66,10 +66,12 @@ jobs:
 
       - name: Publish single-file EXE (win-x64)
         run: |
+          cd "${{ github.workspace }}"
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true --output publish/win-x64
 
       - name: Publish single-file EXE (win-arm64)
         run: |
+          cd "${{ github.workspace }}"
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true --output publish/win-arm64
 
       - name: List published files
