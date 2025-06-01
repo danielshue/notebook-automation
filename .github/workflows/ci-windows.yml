@@ -2,9 +2,13 @@ name: CI - Windows
 
 on:
   push:
+    branches:
+      - csharp-migration
     paths:
       - 'src/c-sharp/**'
   pull_request:
+    branches:
+      - csharp-migration
     paths:
       - 'src/c-sharp/**'
 
