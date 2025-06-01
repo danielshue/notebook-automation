@@ -33,19 +33,15 @@ namespace NotebookAutomation.Cli.Commands
                 Assembly? entryAssembly = Assembly.GetEntryAssembly();
                 if (entryAssembly != null)
                 {
-                    var versionInfo = FileVersionInfo.GetVersionInfo(entryAssembly.Location);
 
-                    var companyName = string.Empty;
-                    var copyrightInfo = string.Empty;
+                    // In single-file publish, entryAssembly.Location is empty. Use MainModule.FileName.
+                    string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
+                    var versionInfo = !string.IsNullOrEmpty(exePath)
+                        ? FileVersionInfo.GetVersionInfo(exePath)
+                        : null;
 
-                    object[] assemblyCompanyAttributes = entryAssembly.GetCustomAttributes(typeof(AssemblyCompanyAttribute), false);
-                    var companyAttribute = assemblyCompanyAttributes.Length > 0 ? assemblyCompanyAttributes[0] as AssemblyCompanyAttribute : null;
-                    companyName = companyAttribute?.Company ?? "Unknown Company";
-
-                    object[] assemblyCopyrightAttributes = entryAssembly.GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
-                    var copyrightAttribute = assemblyCopyrightAttributes.Length > 0 ? assemblyCopyrightAttributes[0] as AssemblyCopyrightAttribute : null;
-                    copyrightInfo = copyrightAttribute?.Copyright ?? "Unknown Copyright";
-
+                    var companyName = versionInfo?.CompanyName ?? "Unknown Company";
+                    var copyrightInfo = versionInfo?.LegalCopyright ?? "Unknown Copyright";
 
                     AnsiConsoleHelper.WriteInfo($"Notebook Automation v1.0.0 {Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown"}");
                     AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");

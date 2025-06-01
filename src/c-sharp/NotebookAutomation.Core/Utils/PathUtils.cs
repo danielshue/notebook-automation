@@ -55,7 +55,8 @@ namespace NotebookAutomation.Core.Utils
         /// </example>
         public static string GetPathRelativeToApp(string relativePath)
         {
-            string baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? AppContext.BaseDirectory;
+            // In single-file publish, Assembly.Location returns an empty string. Use AppContext.BaseDirectory.
+            string baseDir = AppContext.BaseDirectory;
             return Path.Combine(baseDir, NormalizePath(relativePath));
         }
 
