@@ -13,8 +13,8 @@ $branch = git rev-parse --abbrev-ref HEAD
 $run = gh run list --workflow $Workflow --branch $branch --limit 1 --json databaseId | ConvertFrom-Json
 
 if ($run -and $run[0].databaseId) {
-    Write-Host "Downloading artifact '$ArtifactName' from run $($run[0].databaseId)..."
-    gh run download $run[0].databaseId --name $ArtifactName
+    Write-Host "Downloading artifact '$ArtifactName' from run $($run[0].databaseId) to dist/..."
+    gh run download $run[0].databaseId --name $ArtifactName --dir dist
 } else {
     Write-Host "No workflow run found for $Workflow on branch $branch."
 }
