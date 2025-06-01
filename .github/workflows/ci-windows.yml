@@ -74,13 +74,6 @@ jobs:
           cd "${{ github.workspace }}"
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true --output publish/win-arm64
 
-      - name: List published files
-        run: |
-          echo "Listing win-x64 directory:"
-          dir publish/win-x64
-          echo "Listing win-arm64 directory:"
-          dir publish/win-arm64
-
       - name: Upload published single-file executables
         if: always()
         uses: actions/upload-artifact@v4
