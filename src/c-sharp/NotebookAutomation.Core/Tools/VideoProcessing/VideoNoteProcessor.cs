@@ -7,28 +7,21 @@ using NotebookAutomation.Core.Configuration;
 namespace NotebookAutomation.Core.Tools.VideoProcessing
 {
     /// <summary>
-    /// Provides functionality for extracting metadata and generating markdown notes from video files.
+    /// Represents a processor for handling video files to extract metadata, generate AI-powered summaries, 
+    /// and create markdown notes for knowledge management systems.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The VideoNoteProcessor class is responsible for processing video files to extract metadata,
-    /// load associated transcripts when available, generate AI-powered summaries of content,
-    /// and produce rich markdown notes for use in an Obsidian vault or similar knowledge base.
+    /// The <see cref="VideoNoteProcessor"/> class provides functionality for processing video files, 
+    /// including extracting metadata, loading transcripts, generating summaries, and producing markdown notes.
     /// </para>
     /// <para>
-    /// This processor handles various video formats (MP4, MOV, AVI, MKV, WEBM, etc.) and can extract
-    /// comprehensive technical metadata such as duration, resolution, codec information, and file properties.
-    /// It works in conjunction with the OpenAiSummarizer to create intelligent summaries of video content
-    /// when transcripts are available, or based on metadata when they are not.
+    /// It integrates with external services like OneDrive for share link generation and uses AI summarization 
+    /// for creating intelligent summaries of video content.
     /// </para>
     /// <para>
-    /// The class integrates with Xabe.FFmpeg for video metadata extraction and supports finding
-    /// and loading associated transcript files (with .txt or .md extensions) that may exist alongside videos.
-    /// </para>
-    /// <para>
-    /// This processor is primarily used by the <see cref="VideoNoteBatchProcessor"/> for handling
-    /// multiple video files and is exposed to command-line interfaces through the 
-    /// <see cref="VideoNoteProcessingEntrypoint"/>.
+    /// This class is designed to work with various video formats and supports hierarchical metadata detection 
+    /// based on file paths.
     /// </para>
     /// </remarks>
     public class VideoNoteProcessor : DocumentNoteProcessorBase
@@ -39,12 +32,17 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         private readonly MetadataHierarchyDetector? _hierarchyDetector;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class with a logger and AI summarizer.
+        /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class.
         /// </summary>
-        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
-        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
-        /// <param name="oneDriveService">Optional OneDriveService for generating share links.</param>
-        /// <param name="appConfig">Optional AppConfig for accessing application configuration.</param>
+        /// <param name="logger">The logger instance for logging diagnostic and error information.</param>
+        /// <param name="aiSummarizer">The AI summarizer service for generating summaries.</param>
+        /// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>
+        /// <param name="appConfig">Optional application configuration for metadata management.</param>
+        /// <remarks>
+        /// This constructor initializes the video note processor with optional services for metadata management
+        /// and hierarchical detection. If <paramref name="appConfig"/> is provided, it attempts to initialize
+        /// the metadata template manager and hierarchy detector.
+        /// </remarks>
         public VideoNoteProcessor(
             ILogger<VideoNoteProcessor> logger,
             AISummarizer aiSummarizer,
@@ -76,22 +74,29 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <summary>
         /// Extracts comprehensive metadata from a video file.
         /// </summary>
-        /// <param name="videoPath">Path to the video file.</param>
-        /// <returns>A dictionary containing extracted video metadata.</returns>
+        /// <param name="videoPath">The path to the video file.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains a dictionary
+        /// with extracted video metadata, including properties such as title, type, status, author,
+        /// file size, resolution, codec, duration, and upload date.
+        /// </returns>
         /// <remarks>
         /// <para>
-        /// This method extracts a wide range of metadata from a video file, including:
-        /// </para>        
-        /// <list type="bullet">
-        /// <item><description>Basic file properties (name, path, size, creation date, modification date)</description></item>
-        /// <item><description>Video-specific properties (duration, resolution, codec)</description></item>
-        /// <item><description>Content identification (title derived from filename)</description></item>
-        /// </list>
+        /// This method uses Xabe.FFmpeg to extract detailed video metadata, such as resolution,
+        /// codec, and duration. It also retrieves basic file properties like size and creation date.
+        /// </para>
         /// <para>
-        /// The metadata extraction leverages Xabe.FFmpeg for detailed video information. If the FFmpeg analysis fails,
-        /// the method will still return basic file information and log a warning rather than failing completely.
+        /// If metadata extraction fails, the method logs warnings and provides simulated values
+        /// for certain fields to ensure the operation does not fail completely.
         /// </para>
         /// </remarks>
+        /// <example>
+        /// <code>
+        /// var processor = new VideoNoteProcessor(logger, aiSummarizer);
+        /// var metadata = await processor.ExtractMetadataAsync("path/to/video.mp4");
+        /// Console.WriteLine($"Video title: {metadata["title"]}");
+        /// </code>
+        /// </example>
         public async Task<Dictionary<string, object>> ExtractMetadataAsync(string videoPath)
         {
             var metadata = new Dictionary<string, object>                {
@@ -181,10 +186,25 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         }
 
         /// <summary>
-        /// Formats a file size in bytes to a human-readable string (KB, MB, GB, etc.)
+        /// Converts a file size in bytes to a human-readable string format.
         /// </summary>
-        /// <param name="bytes">File size in bytes</param>
-        /// <returns>Human-readable file size string</returns>
+        /// <param name="bytes">The file size in bytes.</param>
+        /// <returns>
+        /// A string representing the file size in a human-readable format, such as KB, MB, GB, etc.
+        /// </returns>
+        /// <remarks>
+        /// The method uses appropriate precision based on the size of the file:
+        /// <list type="bullet">
+        /// <item><description>Two decimal places for sizes less than 10.</description></item>
+        /// <item><description>One decimal place for sizes less than 100.</description></item>
+        /// <item><description>Rounded values for sizes greater than or equal to 100.</description></item>
+        /// </list>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var readableSize = FormatFileSizeToString(1048576); // Returns "1 MB"
+        /// </code>
+        /// </example>
         private string FormatFileSizeToString(long bytes)
         {
             string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
@@ -207,37 +227,35 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         }
 
         /// <summary>
-        /// Generates an AI summary for the video transcript or metadata.
+        /// Generates an AI-powered summary for the provided text using OpenAI.
         /// </summary>
-        /// <param name="text">Transcript or extracted text to summarize.</param>
-        /// <param name="openAiApiKey">OpenAI API key for accessing the summarization service.</param>
-        /// <param name="prompt">Optional custom prompt to guide the summary generation.</param>
-        /// <param name="promptFileName">Optional filename of a prompt template to use.</param>
-        /// <returns>The AI-generated summary text, or a placeholder if summarization fails.</returns>
+        /// <param name="text">The text content to summarize, typically extracted from a transcript or metadata.</param>
+        /// <param name="variables">Optional dictionary of variables for prompt substitution, such as title.</param>
+        /// <param name="promptFileName">Optional name of the prompt template file to use for AI summarization.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation. The task result contains the AI-generated summary text.
+        /// If summarization fails, a placeholder text is returned.
+        /// </returns>
         /// <remarks>
         /// <para>
-        /// This method uses the OpenAI API to generate a contextual summary of the provided text,
-        /// which is typically either a video transcript or metadata information. The summary helps
-        /// users quickly understand the content of a video without watching it in full.
+        /// This method uses the OpenAI API to generate a contextual summary of the provided text. It supports
+        /// variable substitution in the prompt template, allowing dynamic customization based on metadata or other inputs.
         /// </para>
         /// <para>
-        /// If no OpenAI API key is provided, a simulated summary placeholder is returned.
-        /// The method supports custom prompts either provided directly as a string or loaded
-        /// from a template file.
+        /// If no text is provided, the method logs a warning and returns a placeholder indicating that no content
+        /// is available for summarization.
         /// </para>
         /// <para>
-        /// The AI summarization process is handled by the <see cref="OpenAiSummarizer"/> service.
+        /// The method overrides the base implementation to add title variable substitution for prompts.
         /// </para>
         /// </remarks>
-        // Inherit base implementation
-
-        /// <summary>
-        /// Overrides the base class implementation to add title variable substitution for prompts.
-        /// </summary>
-        /// <param name="text">The extracted text/content.</param>
-        /// <param name="variables">Optional variables to substitute in the prompt template.</param>
-        /// <param name="promptFileName">Optional name of the prompt template file to use.</param>
-        /// <returns>The summary text, or a simulated summary if unavailable.</returns>
+        /// <example>
+        /// <code>
+        /// var processor = new VideoNoteProcessor(logger, aiSummarizer);
+        /// var summary = await processor.GenerateAiSummaryAsync("Transcript content", new Dictionary<string, string> { { "title", "Sample Video" } });
+        /// Console.WriteLine(summary);
+        /// </code>
+        /// </example>
         public override async Task<string> GenerateAiSummaryAsync(string text, Dictionary<string, string>? variables = null, string? promptFileName = null)
         {
             if (string.IsNullOrEmpty(text))
@@ -299,6 +317,33 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// the structure expected by Obsidian or similar markdown-based knowledge management systems.
         /// </para>
         /// </remarks>        
+        /// <summary>
+        /// Generates a markdown note from the provided text and metadata.
+        /// </summary>
+        /// <param name="bodyText">The main content of the note, typically an AI-generated summary.</param>
+        /// <param name="metadata">Optional dictionary containing metadata to include in the note's frontmatter.</param>
+        /// <param name="noteType">The type of note being generated, such as "Document Note" or "Video Note".</param>
+        /// <param name="suppressBody">If true, suppresses the body content of the note.</param>
+        /// <param name="includeNoteTypeTitle">If true, includes the note type as the title in the markdown note.</param>
+        /// <returns>A string representing the complete markdown note, including YAML frontmatter and content.</returns>
+        /// <remarks>
+        /// <para>
+        /// This method combines metadata and content to produce a structured markdown note suitable for
+        /// knowledge management systems like Obsidian. It supports customization of the note type and
+        /// allows suppression of the body content if required.
+        /// </para>
+        /// <para>
+        /// Metadata is merged with any existing frontmatter extracted from the body text, with precedence
+        /// given to the provided metadata. Hierarchical metadata is detected and added based on the file path.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var processor = new VideoNoteProcessor(logger, aiSummarizer);
+        /// var markdownNote = processor.GenerateMarkdownNote("Summary text", metadata, "Video Note");
+        /// Console.WriteLine(markdownNote);
+        /// </code>
+        /// </example>
         public override string GenerateMarkdownNote(string bodyText, Dictionary<string, object>? metadata = null, string noteType = "Document Note", bool suppressBody = false, bool includeNoteTypeTitle = false)
         {
             // For video notes, we need special handling to extract and merge frontmatter
@@ -415,28 +460,42 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <summary>
         /// Attempts to load a transcript file for the given video.
         /// </summary>
-        /// <param name="videoPath">Path to the video file.</param>
-        /// <returns>The transcript text if found, otherwise null.</returns>
+        /// <param name="videoPath">The path to the video file.</param>
+        /// <returns>
+        /// The transcript text if found; otherwise, null.
+        /// </returns>
         /// <remarks>
         /// <para>
-        /// This method searches for transcript files that match the video filename using a sophisticated
-        /// prioritized search strategy. It looks for transcript files in multiple locations and formats,
-        /// similar to the Python implementation.
+        /// This method searches for transcript files that match the video filename using a prioritized search strategy.
+        /// It looks for transcript files in multiple locations and formats, including language-specific and generic transcripts.
         /// </para>
         /// <para>
         /// The search follows this priority order:
         /// </para>
         /// <list type="number">
-        /// <item><description>Language-specific transcripts in same directory (e.g., video.en.txt, video.zh-cn.txt)</description></item>
-        /// <item><description>Generic transcript in same directory (video.txt, video.md)</description></item>
-        /// <item><description>Language-specific transcripts in Transcripts subdirectory</description></item>
-        /// <item><description>Generic transcript in Transcripts subdirectory</description></item>
+        /// <item><description>Language-specific transcripts in the same directory (e.g., video.en.txt, video.zh-cn.txt).</description></item>
+        /// <item><description>Generic transcript in the same directory (video.txt, video.md).</description></item>
+        /// <item><description>Language-specific transcripts in the "Transcripts" subdirectory.</description></item>
+        /// <item><description>Generic transcript in the "Transcripts" subdirectory.</description></item>
         /// </list>
         /// <para>
-        /// The method also handles name normalization by checking alternative spellings with hyphens
-        /// replaced by underscores and vice versa.
+        /// The method also handles name normalization by checking alternative spellings with hyphens replaced by underscores and vice versa.
         /// </para>
         /// </remarks>
+        /// <example>
+        /// <code>
+        /// var processor = new VideoNoteProcessor(logger, aiSummarizer);
+        /// string? transcript = processor.TryLoadTranscript("path/to/video.mp4");
+        /// if (transcript != null)
+        /// {
+        ///     Console.WriteLine("Transcript loaded successfully.");
+        /// }
+        /// else
+        /// {
+        ///     Console.WriteLine("No transcript found.");
+        /// }
+        /// </code>
+        /// </example>
         public string? TryLoadTranscript(string videoPath)
         {
             if (string.IsNullOrEmpty(videoPath))
@@ -542,12 +601,42 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <summary>
         /// Finds the path to the transcript file for a video without loading its content.
         /// </summary>
-        /// <param name="videoPath">Path to the video file.</param>
-        /// <returns>The path to the transcript file, or null if no transcript is found.</returns>
+        /// <param name="videoPath">The path to the video file.</param>
+        /// <returns>
+        /// The path to the transcript file if found; otherwise, null.
+        /// </returns>
         /// <remarks>
-        /// This method uses the same search logic as TryLoadTranscript but only returns the file path
-        /// instead of loading the content. This is useful for storing the path in metadata.
+        /// <para>
+        /// This method searches for transcript files that match the video filename using a prioritized search strategy.
+        /// It looks for transcript files in multiple locations and formats, including language-specific and generic transcripts.
+        /// </para>
+        /// <para>
+        /// The search follows this priority order:
+        /// </para>
+        /// <list type="number">
+        /// <item><description>Language-specific transcripts in the same directory (e.g., video.en.txt, video.zh-cn.txt).</description></item>
+        /// <item><description>Generic transcript in the same directory (video.txt, video.md).</description></item>
+        /// <item><description>Language-specific transcripts in the "Transcripts" subdirectory.</description></item>
+        /// <item><description>Generic transcript in the "Transcripts" subdirectory.</description></item>
+        /// </list>
+        /// <para>
+        /// The method also handles name normalization by checking alternative spellings with hyphens replaced by underscores and vice versa.
+        /// </para>
         /// </remarks>
+        /// <example>
+        /// <code>
+        /// var processor = new VideoNoteProcessor(logger, aiSummarizer);
+        /// string? transcriptPath = processor.FindTranscriptPath("path/to/video.mp4");
+        /// if (transcriptPath != null)
+        /// {
+        ///     Console.WriteLine($"Transcript file found at: {transcriptPath}");
+        /// }
+        /// else
+        /// {
+        ///     Console.WriteLine("No transcript file found.");
+        /// }
+        /// </code>
+        /// </example>
         private string? FindTranscriptPath(string videoPath)
         {
             if (string.IsNullOrEmpty(videoPath))
@@ -655,15 +744,31 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         }
 
         /// <summary>
-        /// Determines whether a string is likely to be a language code.
+        /// Determines whether a given string is likely to represent a language code.
         /// </summary>
-        /// <param name="code">The string to check.</param>
-        /// <returns>True if the string matches language code patterns like 'en', 'zh-cn', etc.</returns>
+        /// <param name="code">The string to evaluate as a potential language code.</param>
+        /// <returns>
+        /// True if the string matches common language code patterns, such as 'en', 'fr', 'de', or regional variants like 'en-us' or 'zh-cn'; otherwise, false.
+        /// </returns>
         /// <remarks>
-        /// Recognizes standard language codes like 'en', 'fr', 'de', as well as regional variants
-        /// with hyphenation like 'en-us', 'zh-cn', etc. This is used to identify language-specific
-        /// transcripts.
+        /// <para>
+        /// This method checks for standard language codes, including:
+        /// </para>
+        /// <list type="bullet">
+        /// <item><description>Two-letter codes (e.g., 'en', 'fr', 'de').</description></item>
+        /// <item><description>Three-letter codes (e.g., 'eng', 'fra', 'deu').</description></item>
+        /// <item><description>Hyphenated regional codes (e.g., 'en-us', 'zh-cn').</description></item>
+        /// </list>
+        /// <para>
+        /// It is used primarily to identify language-specific transcript files.
+        /// </para>
         /// </remarks>
+        /// <example>
+        /// <code>
+        /// var isLanguageCode = IsLikelyLanguageCode("en-us"); // Returns true
+        /// var isNotLanguageCode = IsLikelyLanguageCode("123"); // Returns false
+        /// </code>
+        /// </example>
         private bool IsLikelyLanguageCode(string code)
         {
             if (string.IsNullOrWhiteSpace(code))
@@ -736,6 +841,36 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <param name="resourcesRoot">Optional override for OneDrive fullpath root directory.</param>
         /// <param name="noShareLinks">If true, skips OneDrive share link creation.</param>
         /// <returns>A complete markdown note as a string.</returns>
+        /// <remarks>
+        /// <para>
+        /// This method coordinates the entire video note generation process by:
+        /// </para>
+        /// <list type="number">
+        /// <item><description>Extracting comprehensive metadata from the video file</description></item>
+        /// <item><description>Attempting to load an associated transcript file</description></item>
+        /// <item><description>Generating an AI summary from either the transcript or metadata</description></item>
+        /// <item><description>Combining everything into a well-formatted markdown note</description></item>
+        /// </list>
+        /// <para>
+        /// The method prefers using a transcript when available for more accurate summaries,
+        /// but will fall back to using just the metadata information when no transcript exists.
+        /// </para>
+        /// <para>
+        /// This is the primary entry point for generating a complete video note from a single video file.
+        /// </para>
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var processor = new VideoNoteProcessor(logger, aiSummarizer);
+        /// string markdownNote = await processor.GenerateVideoNoteAsync(
+        ///     "path/to/lecture.mp4",
+        ///     "sk-yourapikeyhere",
+        ///     "video_summary_prompt.md");
+        /// 
+        /// // Save the generated note
+        /// File.WriteAllText("lecture_notes.md", markdownNote);
+        /// </code>
+        /// </example>
         public async Task<string> GenerateVideoNoteAsync(
             string videoPath,
             string? openAiApiKey,
