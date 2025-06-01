@@ -122,7 +122,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     // Add the file size in a human-readable format
                     long fileSizeBytes = fileInfo.Length;
-                    metadata["video-size"] = FormatFileSizeToString(fileSizeBytes);
+                    metadata["video-size"] = FileSizeFormatter.FormatFileSizeToString(fileSizeBytes);
                     Logger.LogDebug("Added video size to metadata: {VideoSize}", metadata["video-size"]);
                 }
             }
@@ -183,47 +183,6 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             }
 
             return metadata;
-        }
-
-        /// <summary>
-        /// Converts a file size in bytes to a human-readable string format.
-        /// </summary>
-        /// <param name="bytes">The file size in bytes.</param>
-        /// <returns>
-        /// A string representing the file size in a human-readable format, such as KB, MB, GB, etc.
-        /// </returns>
-        /// <remarks>
-        /// The method uses appropriate precision based on the size of the file:
-        /// <list type="bullet">
-        /// <item><description>Two decimal places for sizes less than 10.</description></item>
-        /// <item><description>One decimal place for sizes less than 100.</description></item>
-        /// <item><description>Rounded values for sizes greater than or equal to 100.</description></item>
-        /// </list>
-        /// </remarks>
-        /// <example>
-        /// <code>
-        /// var readableSize = FormatFileSizeToString(1048576); // Returns "1 MB"
-        /// </code>
-        /// </example>
-        private string FormatFileSizeToString(long bytes)
-        {
-            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
-            int suffixIndex = 0;
-            double size = bytes;
-
-            while (size >= 1024 && suffixIndex < suffixes.Length - 1)
-            {
-                size /= 1024;
-                suffixIndex++;
-            }
-
-            // Format with appropriate precision (2 decimal places for smaller values, 1 for larger)
-            if (size < 10)
-                return $"{size:0.00} {suffixes[suffixIndex]}";
-            else if (size < 100)
-                return $"{size:0.0} {suffixes[suffixIndex]}";
-            else
-                return $"{Math.Round(size)} {suffixes[suffixIndex]}";
         }
 
         /// <summary>
