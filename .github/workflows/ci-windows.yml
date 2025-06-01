@@ -30,6 +30,7 @@ jobs:
           sparse-checkout: true
           sparse-checkout-config: |
             src/c-sharp/
+            src/c-sharp/NotebookAutomation.sln
             .github/
             config.json
             metadata.yaml
