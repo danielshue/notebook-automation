@@ -15,8 +15,8 @@ namespace NotebookAutomation.Core.Tests
 {
 
     /// <summary>
-     /// Test suite for the AISummarizer class, verifying its functionality with different AI framework integrations.
-     /// </summary>
+    /// Test suite for the AISummarizer class, verifying its functionality with different AI framework integrations.
+    /// </summary>
     [TestClass]
     public class AISummarizerTests
     {
@@ -176,7 +176,7 @@ namespace NotebookAutomation.Core.Tests
                 null,
                 _fakeTextGenService);
 
-                // Act
+            // Act
             var result = await summarizer.SummarizeWithVariablesAsync(
                 inputText,
                 variables,

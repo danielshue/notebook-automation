@@ -35,23 +35,23 @@ namespace NotebookAutomation.Core.Configuration
         private static IDictionary<string, string?> ConvertToDictionary(object obj)
         {
             var dictionary = new Dictionary<string, string?>();
-            
+
             if (obj == null)
             {
                 return dictionary;
             }
 
             var properties = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            
+
             foreach (var property in properties)
             {
                 var value = property.GetValue(obj);
-                
+
                 if (value != null)
                 {
                     // Handle complex objects by recursively converting them
-                    if (!property.PropertyType.IsPrimitive && 
-                        property.PropertyType != typeof(string) && 
+                    if (!property.PropertyType.IsPrimitive &&
+                        property.PropertyType != typeof(string) &&
                         property.PropertyType != typeof(DateTime) &&
                         !property.PropertyType.IsEnum)
                     {
@@ -68,7 +68,7 @@ namespace NotebookAutomation.Core.Configuration
                     }
                 }
             }
-            
+
             return dictionary;
         }
     }

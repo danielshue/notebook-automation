@@ -33,6 +33,6 @@ namespace NotebookAutomation.Core.Configuration
 
 
         public string? TenantId { get; set; }
-        
+
     }
 }

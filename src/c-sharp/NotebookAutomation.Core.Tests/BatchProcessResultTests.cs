@@ -1,16 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tools.Shared;
-using NotebookAutomation.Core.Tools.PdfProcessing;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
+
+using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Tools.PdfProcessing;
+using NotebookAutomation.Core.Tools.Shared;
 // Duplicate using removed
 
 namespace NotebookAutomation.Core.Tests

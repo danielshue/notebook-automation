@@ -1,9 +1,12 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NotebookAutomation.Core.Services;
-using System;
+﻿using System;
 using System.IO;
+
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Moq;
+
+using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests
 {

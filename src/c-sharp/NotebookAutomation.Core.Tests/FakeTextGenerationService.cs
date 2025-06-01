@@ -1,12 +1,12 @@
 ﻿// Enable nullable reference types for this file
 #nullable enable
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TextGeneration;
-
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.TextGeneration;
 
 namespace NotebookAutomation.Core.Tests
 {

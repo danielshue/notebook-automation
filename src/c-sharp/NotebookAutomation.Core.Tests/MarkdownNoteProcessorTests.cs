@@ -1,11 +1,14 @@
+﻿using System.IO;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.Extensions.Logging.Abstractions;
-using NotebookAutomation.Core.Tools.MarkdownGeneration;
-using NotebookAutomation.Core.Services;
-using System.IO;
-using Moq;
+
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Moq;
+
+using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Tools.MarkdownGeneration;
 
 namespace NotebookAutomation.Core.Tests
 {

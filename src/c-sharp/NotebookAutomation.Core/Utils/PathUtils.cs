@@ -143,14 +143,14 @@ namespace NotebookAutomation.Core.Utils
 
             // Replace both slash types with the OS-specific separator
             path = path.Trim().Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
-            
+
             // If on Windows, make sure drive letters are correctly formatted
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && path.Length > 1 && path[1] == ':')
             {
                 // Make sure the drive letter is uppercase
                 path = char.ToUpper(path[0]) + path.Substring(1);
             }
-            
+
             return path;
         }
 
@@ -181,21 +181,21 @@ namespace NotebookAutomation.Core.Utils
             {
                 return baseFilePath;
             }
-            
+
             string directory = Path.GetDirectoryName(baseFilePath) ?? string.Empty;
             string fileNameWithoutExt = Path.GetFileNameWithoutExtension(baseFilePath);
             string extension = Path.GetExtension(baseFilePath);
-            
+
             int counter = 1;
             string newPath;
-            
+
             do
             {
                 newPath = Path.Combine(directory, $"{fileNameWithoutExt} ({counter}){extension}");
                 counter++;
             }
             while (File.Exists(newPath));
-            
+
             return newPath;
         }
 
@@ -228,7 +228,7 @@ namespace NotebookAutomation.Core.Utils
         {
             var normalizedBase = NormalizePath(basePath);
             var normalizedFull = NormalizePath(fullPath);
-            
+
             if (normalizedFull.StartsWith(normalizedBase))
             {
                 var relativePath = normalizedFull.Substring(normalizedBase.Length);
@@ -239,7 +239,7 @@ namespace NotebookAutomation.Core.Utils
                 }
                 return relativePath;
             }
-            
+
             return fullPath; // Can't make it relative
         }
 
@@ -277,43 +277,43 @@ namespace NotebookAutomation.Core.Utils
             {
                 return string.Empty;
             }
-            
+
             if (pathsList.Count == 1)
             {
                 var dir = Path.GetDirectoryName(pathsList[0]);
                 return dir == null ? string.Empty : dir + Path.DirectorySeparatorChar;
             }
-            
+
             // Find the common prefix of all paths
             var firstPath = pathsList[0];
             var commonPrefix = firstPath;
-            
+
             foreach (var path in pathsList.Skip(1))
             {
                 int prefixLength = 0;
                 int maxLength = Math.Min(commonPrefix.Length, path.Length);
-                
-                while (prefixLength < maxLength && 
-                       char.ToLowerInvariant(commonPrefix[prefixLength]) == 
+
+                while (prefixLength < maxLength &&
+                       char.ToLowerInvariant(commonPrefix[prefixLength]) ==
                        char.ToLowerInvariant(path[prefixLength]))
                 {
                     prefixLength++;
                 }
-                
+
                 commonPrefix = commonPrefix.Substring(0, prefixLength);
                 if (string.IsNullOrEmpty(commonPrefix))
                 {
                     return string.Empty;
                 }
             }
-            
+
             // Make sure the common prefix ends at a directory separator
             var lastSeparatorIndex = commonPrefix.LastIndexOf(Path.DirectorySeparatorChar);
             if (lastSeparatorIndex >= 0)
             {
                 return commonPrefix.Substring(0, lastSeparatorIndex + 1);
             }
-            
+
             return string.Empty;
         }
     }

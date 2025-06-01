@@ -31,9 +31,9 @@ namespace NotebookAutomation.Core.Services
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when inputText is null or empty</exception>
         Task<string?> SummarizeWithVariablesAsync(
-            string inputText, 
-            Dictionary<string, string>? variables = null, 
-            string? promptFileName = null, 
+            string inputText,
+            Dictionary<string, string>? variables = null,
+            string? promptFileName = null,
             CancellationToken cancellationToken = default);
     }
 }

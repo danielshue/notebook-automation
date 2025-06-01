@@ -145,7 +145,7 @@ namespace NotebookAutomation.Core.Services
             {
                 return template;
             }
-            
+
             return Regex.Replace(template, "{{(.*?)}}", match =>
             {
                 var key = match.Groups[1].Value.Trim();

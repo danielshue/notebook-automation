@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -10,10 +10,10 @@ namespace NotebookAutomation.Core.Tests
     /// </summary>
     public static class MockKernelFactory
     {        /// <summary>
-        /// Creates a minimal kernel with a mock text generation service that returns a predefined response.
-        /// </summary>
-        /// <param name="response">The response text that the mock should return.</param>
-        /// <returns>A kernel instance with the mock service.</returns>
+             /// Creates a minimal kernel with a mock text generation service that returns a predefined response.
+             /// </summary>
+             /// <param name="response">The response text that the mock should return.</param>
+             /// <returns>A kernel instance with the mock service.</returns>
         public static Kernel CreateKernelWithMockService(string response = "Mock AI response")
         {
             // Create our mock text generation service

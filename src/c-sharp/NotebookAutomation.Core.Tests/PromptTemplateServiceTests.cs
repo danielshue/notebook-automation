@@ -1,5 +1,4 @@
-using NotebookAutomation.Core.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -9,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests

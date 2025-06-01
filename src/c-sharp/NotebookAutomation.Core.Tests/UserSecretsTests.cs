@@ -1,8 +1,10 @@
+﻿using System.IO;
+using System.Text.Json;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using NotebookAutomation.Core.Configuration;
-using System.IO;
-using System.Text.Json;
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -37,7 +39,7 @@ namespace NotebookAutomation.Core.Tests
                 // Create test configuration with custom secret file
                 var configBuilder = new ConfigurationBuilder()
                     .AddJsonFile(tempSecretFile); // Simulate user secrets
-                
+
                 var config = configBuilder.Build();
 
                 // Act
@@ -65,10 +67,10 @@ namespace NotebookAutomation.Core.Tests
         {
             // Create an empty configuration
             var config = new ConfigurationBuilder().Build();
-            
+
             // Act
             var helper = new UserSecretsHelper(config);
-            
+
             // Assert - should not throw exceptions
             Assert.IsNull(helper.GetOpenAIApiKey());
             Assert.IsNull(helper.GetMicrosoftGraphClientId());

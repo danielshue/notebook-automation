@@ -1,4 +1,4 @@
-// Enable nullable reference types for this file
+﻿// Enable nullable reference types for this file
 #nullable enable
 using System;
 using System.Collections.Generic;

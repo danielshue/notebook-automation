@@ -1,5 +1,7 @@
-using System;
+﻿using System;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests.Utils

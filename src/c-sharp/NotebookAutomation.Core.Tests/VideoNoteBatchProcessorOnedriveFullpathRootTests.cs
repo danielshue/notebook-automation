@@ -1,14 +1,17 @@
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Moq;
-using NotebookAutomation.Core.Tools.VideoProcessing;
+
+using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.Shared;
+using NotebookAutomation.Core.Tools.VideoProcessing;
 
 namespace NotebookAutomation.Core.Tests
 {

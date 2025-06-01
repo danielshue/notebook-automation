@@ -1,9 +1,11 @@
+﻿using System.IO;
+using System.Threading.Tasks;
+
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NotebookAutomation.Core.Tools.VideoProcessing;
+
 using NotebookAutomation.Core.Services;
-using System.IO;
-using System.Threading.Tasks;
+using NotebookAutomation.Core.Tools.VideoProcessing;
 
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
 {

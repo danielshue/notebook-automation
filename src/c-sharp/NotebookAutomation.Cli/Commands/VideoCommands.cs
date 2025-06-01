@@ -35,13 +35,13 @@ namespace NotebookAutomation.Cli.Commands
         }
 
         /// <summary>
-             /// Registers the 'video-notes' command with the root command.
-             /// </summary>
-             /// <param name="rootCommand">The root command to add video processing commands to.</param>
-             /// <param name="configOption">The global config file option.</param>
-             /// <param name="debugOption">The global debug option.</param>
-             /// <param name="verboseOption">The global verbose output option.</param>
-             /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
+        /// Registers the 'video-notes' command with the root command.
+        /// </summary>
+        /// <param name="rootCommand">The root command to add video processing commands to.</param>
+        /// <param name="configOption">The global config file option.</param>
+        /// <param name="debugOption">The global debug option.</param>
+        /// <param name="verboseOption">The global verbose output option.</param>
+        /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
         public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var inputOption = new Option<string?>(
@@ -206,13 +206,13 @@ namespace NotebookAutomation.Cli.Commands
                 AnsiConsoleHelper.WriteInfo($"  Config OneDrive root: {appConfig?.Paths?.OnedriveFullpathRoot ?? "(not set)"}");
                 AnsiConsoleHelper.WriteInfo($"  Skip share links: {noShareLinks}");
                 AnsiConsoleHelper.WriteInfo($"  Video extensions: {string.Join(", ", appConfig?.VideoExtensions ?? new List<string>())}");
-                
+
                 // Display more detailed AI service configuration
                 AnsiConsoleHelper.WriteInfo($"  AI Provider: {appConfig?.AiService?.Provider ?? "openai"}");
-                
+
                 string selectedModel = "(not set)";
                 string selectedEndpoint = "(not set)";
-                
+
                 switch (appConfig?.AiService?.Provider?.ToLowerInvariant())
                 {
                     case "azure":
@@ -222,14 +222,14 @@ namespace NotebookAutomation.Cli.Commands
                         AnsiConsoleHelper.WriteInfo($"  AI Deployment: {appConfig?.AiService?.Azure?.Deployment ?? "(not set)"}");
                         AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {selectedEndpoint}");
                         break;
-                    
+
                     case "foundry":
                         selectedModel = appConfig?.AiService?.Foundry?.Model ?? "(not set)";
                         selectedEndpoint = appConfig?.AiService?.Foundry?.Endpoint ?? "(not set)";
                         AnsiConsoleHelper.WriteInfo($"  AI Model: {selectedModel}");
                         AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {selectedEndpoint}");
                         break;
-                        
+
                     case "openai":
                     default:
                         selectedModel = appConfig?.AiService?.OpenAI?.Model ?? "(not set)";
@@ -238,11 +238,11 @@ namespace NotebookAutomation.Cli.Commands
                         AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {selectedEndpoint}");
                         break;
                 }
-                
+
                 // Display API key status (without revealing the key)
                 string? apiKey = appConfig?.AiService?.GetApiKey();
                 AnsiConsoleHelper.WriteInfo($"  API Key: {(string.IsNullOrEmpty(apiKey) ? "Not configured" : "Configured")}");
-                
+
                 AnsiConsoleHelper.WriteInfo($"  Logging Dir: {appConfig?.Paths?.LoggingDir}");                // Validate OpenAI config before proceeding
                 if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
                 {

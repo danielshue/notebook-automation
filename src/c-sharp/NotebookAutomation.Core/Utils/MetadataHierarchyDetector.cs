@@ -318,7 +318,7 @@ namespace NotebookAutomation.Core.Utils
                     info["program"] = "MBA Program";
                     if (_verbose)
                     {
-                    _logger.LogInformationWithPath("No program identifier found, using default: {Program}", nameof(MetadataHierarchyDetector), info["program"]);
+                        _logger.LogInformationWithPath("No program identifier found, using default: {Program}", nameof(MetadataHierarchyDetector), info["program"]);
                     }
                 }
             }
