@@ -1,10 +1,14 @@
 using System.CommandLine;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Utils;
 using NotebookAutomation.Cli.Utilities;
+
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands
 {    /// <summary>
@@ -20,8 +24,17 @@ namespace NotebookAutomation.Cli.Commands
      /// video formats are defined in the application configuration and typically include
      /// MP4, MOV, AVI, MKV, WEBM, and others.
      /// </remarks>
-    internal class VideoCommands
-    {        /// <summary>
+    public class VideoCommands
+    {
+        private readonly ILogger<VideoCommands> _logger;
+
+        public VideoCommands(ILogger<VideoCommands> logger)
+        {
+            _logger = logger;
+            _logger.LogInformationWithPath("Video command initialized", "VideoCommands.cs");
+        }
+
+        /// <summary>
              /// Registers the 'video-notes' command with the root command.
              /// </summary>
              /// <param name="rootCommand">The root command to add video processing commands to.</param>

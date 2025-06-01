@@ -53,11 +53,11 @@ namespace NotebookAutomation.Core.Utils
             {
                 if (!File.Exists(_metadataFilePath))
                 {
-                    _logger.LogError("Metadata file does not exist at path: {Path}", _metadataFilePath);
+                    _logger.LogErrorWithPath("Metadata file does not exist at path: {filePath}", _metadataFilePath);
                     return;
                 }
 
-                _logger.LogInformation("Loading templates from metadata file: {Path}", _metadataFilePath);
+                _logger.LogInformationWithPath("Loading templates from metadata file: {filePath}", _metadataFilePath);
                 string content = File.ReadAllText(_metadataFilePath);
 
                 // The metadata.yaml file has multiple YAML documents separated by ---
@@ -101,7 +101,7 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to load templates from metadata file: {Path}", _metadataFilePath);
+                _logger.LogErrorWithPath(ex, "Failed to load templates from metadata file: {filePath}", _metadataFilePath);
                 throw;
             }
         }

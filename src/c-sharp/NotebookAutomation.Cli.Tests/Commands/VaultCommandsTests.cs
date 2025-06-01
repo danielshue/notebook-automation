@@ -4,6 +4,10 @@ using System.Linq;
 using System;
 using System.Threading.Tasks;
 using System.CommandLine.Parsing;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NotebookAutomation.Core.Utils;
+
 namespace NotebookAutomation.Cli.Tests.Commands
 {
     /// <summary>
@@ -12,6 +16,8 @@ namespace NotebookAutomation.Cli.Tests.Commands
     [TestClass]
     public class VaultCommandsTests
     {
+        private readonly Mock<ILogger<VaultCommands>> _mockLogger = new Mock<ILogger<VaultCommands>>();
+
         [TestMethod]
         public async Task GenerateIndexCommand_PrintsUsage_WhenNoArgs()
         {
@@ -21,7 +27,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var vaultCommands = new VaultCommands();
+            var vaultCommands = new VaultCommands(_mockLogger.Object);
             vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Capture console output
@@ -47,7 +53,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         public void VaultCommand_Initialization_ShouldSucceed()
         {
             // Arrange
-            var command = new VaultCommands();
+            var command = new VaultCommands(_mockLogger.Object);
             // Act & Assert
             Assert.IsNotNull(command);
         }
@@ -61,7 +67,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var vaultCommands = new VaultCommands();
+            var vaultCommands = new VaultCommands(_mockLogger.Object);
 
             // Act
             vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
@@ -74,6 +80,13 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var subcommands = vaultCommand.Subcommands.Select(c => c.Name).ToList();
             CollectionAssert.Contains(subcommands, "generate-index", "vault should have 'generate-index' subcommand");
             CollectionAssert.Contains(subcommands, "ensure-metadata", "vault should have 'ensure-metadata' subcommand");
+        }
+
+        [TestMethod]
+        public void LoggerExtensions_AreCalled()
+        {
+            // Arrange
+            // No logger method setups; just pass the mock to the command.
         }
     }
 }

@@ -1,10 +1,13 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Cli.Commands;
+using NotebookAutomation.Core.Utils;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.CommandLine.Parsing;
 using System.CommandLine.Invocation;
+using Moq;
+using Microsoft.Extensions.Logging;
 
 namespace NotebookAutomation.Cli.Tests.Commands
 {
@@ -14,19 +17,28 @@ namespace NotebookAutomation.Cli.Tests.Commands
     [TestClass]
     public class PdfCommandsTests
     {
+        private Mock<ILogger<PdfCommands>> _mockLogger;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            _mockLogger = new Mock<ILogger<PdfCommands>>();
+        }
+
         /// <summary>
         /// Verifies that the 'pdf-notes' command prints usage/help when no arguments are provided.
         /// </summary>
         /// <returns>A task representing the asynchronous operation.</returns>
         [TestMethod]
         public async Task PdfNotesCommand_PrintsUsage_WhenNoArgs()
+        
         {
             var rootCommand = new System.CommandLine.RootCommand();
             var configOption = new System.CommandLine.Option<string>("--config");
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var pdfCommands = new PdfCommands();
+            var pdfCommands = new PdfCommands(_mockLogger.Object);
             pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var originalOut = Console.Out;
@@ -44,14 +56,17 @@ namespace NotebookAutomation.Cli.Tests.Commands
             string output = stringWriter.ToString();
             Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
         }
+
         /// <summary>
         /// Tests that the PdfCommands class can be instantiated successfully.
         /// </summary>
         [TestMethod]
         public void PdfCommand_Initialization_ShouldSucceed()
+        
         {
             // Arrange
-            var command = new PdfCommands();
+            var command = new PdfCommands(_mockLogger.Object);
+
             // Act & Assert
             Assert.IsNotNull(command);
         }
@@ -61,6 +76,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         /// </summary>
         [TestMethod]
         public void Register_AddsPdfNotesCommandToRoot()
+        
         {
             // Arrange
             var rootCommand = new System.CommandLine.RootCommand();
@@ -68,7 +84,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var pdfCommands = new PdfCommands();
+            var pdfCommands = new PdfCommands(_mockLogger.Object);
 
             // Act
             pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

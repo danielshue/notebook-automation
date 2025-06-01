@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Utils;
 using NotebookAutomation.Cli.Commands;
 using NotebookAutomation.Cli.Utilities;
 
@@ -70,20 +71,35 @@ namespace NotebookAutomation.Cli
                 return 0;
             }
 
-            var tagCommands = new TagCommands();
+            var serviceProvider = SetupDependencyInjection("config.json", args.Contains("--debug"));
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger<Program>();
+            logger.LogInformationWithPath("Application started", "Program.cs");
+
+            var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>());
             tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            var vaultCommands = new VaultCommands();
+
+            var vaultCommands = new VaultCommands(loggerFactory.CreateLogger<VaultCommands>());
             vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            var videoCommands = new VideoCommands();
+
+            var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());
             videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            var pdfCommands = new PdfCommands();
+
+            var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
             pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-            var markdownCommands = new MarkdownCommands();
+
+            var markdownCommands = new MarkdownCommands(
+                loggerFactory.CreateLogger<MarkdownCommands>(),
+                serviceProvider.GetRequiredService<AppConfig>(),
+                serviceProvider);
             markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
             var configCommands = new ConfigCommands();
             configCommands.Register(rootCommand, configOption, debugOption);
-            var oneDriveCommands = new OneDriveCommands();
+
+            var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>());
             oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
             var versionCommands = new VersionCommands();
             versionCommands.Register(rootCommand);
 
@@ -159,7 +175,7 @@ namespace NotebookAutomation.Cli
         /// </summary>
         /// <param name="configPath">Path to the configuration file.</param>
         /// <param name="debug">Whether debug mode is enabled.</param>
-        public static void SetupDependencyInjection(string? configPath, bool debug)
+        public static IServiceProvider SetupDependencyInjection(string? configPath, bool debug)
         {
             // Determine environment
             string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ??
@@ -180,7 +196,7 @@ namespace NotebookAutomation.Cli
 
             // Build service provider
             _serviceProvider = services.BuildServiceProvider();
+            return _serviceProvider;
         }
-
     }
 }

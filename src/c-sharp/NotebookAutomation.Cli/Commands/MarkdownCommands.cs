@@ -5,7 +5,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Tools.MarkdownGeneration;
+using NotebookAutomation.Core.Utils;
 using NotebookAutomation.Core.Services;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -15,8 +19,20 @@ namespace NotebookAutomation.Cli.Commands
     /// This class registers the 'generate-markdown' command, which converts HTML, TXT, and EPUB files
     /// to markdown format, optionally using OpenAI for summarization.
     /// </summary>
-    internal class MarkdownCommands
+    public class MarkdownCommands
     {
+        private readonly ILogger<MarkdownCommands> _logger;
+        private readonly AppConfig _appConfig;
+        private readonly IServiceProvider _serviceProvider;
+
+        public MarkdownCommands(ILogger<MarkdownCommands> logger, AppConfig appConfig, IServiceProvider serviceProvider)
+        {
+            _logger = logger;
+            _appConfig = appConfig;
+            _serviceProvider = serviceProvider;
+            _logger.LogInformationWithPath("Markdown command initialized", "MarkdownCommands.cs");
+        }
+
         /// <summary>
         /// Registers the 'generate-markdown' command with the root command.
         /// </summary>
@@ -175,6 +191,7 @@ namespace NotebookAutomation.Cli.Commands
             }
             catch (Exception ex)
             {
+                _logger.LogErrorWithPath("Error in markdown command", "MarkdownCommands.cs", ex);
                 AnsiConsoleHelper.WriteError($"Error generating markdown: {ex.Message}");
             }
         }
