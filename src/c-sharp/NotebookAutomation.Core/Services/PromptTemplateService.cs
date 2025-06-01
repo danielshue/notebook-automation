@@ -1,5 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace NotebookAutomation.Core.Services
 {
@@ -8,7 +10,7 @@ namespace NotebookAutomation.Core.Services
     /// Handles different template types (chunk summary, final summary) and
     /// supports dynamic prompt file loading from prompts directory.
     /// </summary>    
-    public class PromptTemplateService
+    public class PromptTemplateService : IPromptService
     {
         private readonly ILogger<PromptTemplateService> _logger;
         private string _promptsDirectory = string.Empty;
@@ -137,13 +139,30 @@ namespace NotebookAutomation.Core.Services
         /// <param name="template">The template string with placeholders.</param>
         /// <param name="variables">Dictionary of variable names and values.</param>
         /// <returns>The template with variables substituted.</returns>
-        public string SubstituteVariables(string template, Dictionary<string, string> variables)
+        public string SubstituteVariables(string template, Dictionary<string, string>? variables)
         {
+            if (variables == null || string.IsNullOrEmpty(template))
+            {
+                return template;
+            }
+            
             return Regex.Replace(template, "{{(.*?)}}", match =>
             {
                 var key = match.Groups[1].Value.Trim();
                 return variables.TryGetValue(key, out var value) ? value : match.Value;
             });
+        }
+
+        /// <summary>
+        /// Gets a prompt with variables substituted.
+        /// </summary>
+        /// <param name="templateName">Name of the template to load, without file extension.</param>
+        /// <param name="variables">Dictionary of variables to substitute.</param>
+        /// <returns>The prompt with variables substituted.</returns>
+        public async Task<string> GetPromptAsync(string templateName, Dictionary<string, string>? variables)
+        {
+            string template = await LoadTemplateAsync(templateName);
+            return SubstituteVariables(template, variables);
         }
 
         /// <summary>

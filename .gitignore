@@ -215,3 +215,6 @@ src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.cspr
 **/*.csproj.nuget.g.targets
 **/project.assets.json
 **/project.nuget.cache
+src/c-sharp/coverage.cobertura.xml
+src/c-sharp/coverage.xml
+src/c-sharp/NotebookAutomation.Cli/coverage.cobertura.xml
