@@ -30,13 +30,6 @@ jobs:
 
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          sparse-checkout: true
-          sparse-checkout-config: |
-            src/c-sharp/
-            .github/
-            config.json
-            metadata.yaml
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
