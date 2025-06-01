@@ -1,4 +1,4 @@
-name: CI - Windows
+name: Build and Package C# Version of the Notebook Automation Tool
 
 on:
   push:
