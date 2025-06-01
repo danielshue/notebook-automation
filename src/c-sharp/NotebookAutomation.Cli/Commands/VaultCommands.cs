@@ -1,9 +1,11 @@
 using NotebookAutomation.Cli.Utilities;
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Utils;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -18,8 +20,16 @@ namespace NotebookAutomation.Cli.Commands
     /// which is a collection of markdown files and related assets. These commands help maintain
     /// proper structure and metadata consistency throughout the vault.
     /// </remarks>
-    internal class VaultCommands
+    public class VaultCommands
     {
+        private readonly ILogger<VaultCommands> _logger;
+
+        public VaultCommands(ILogger<VaultCommands> logger)
+        {
+            _logger = logger;
+            _logger.LogInformationWithPath("Vault command initialized", "VaultCommands.cs");
+        }
+
         /// <summary>
         /// Registers all vault-related commands with the root command.
         /// </summary>
@@ -100,69 +110,31 @@ namespace NotebookAutomation.Cli.Commands
             bool verbose,
             bool dryRun)
         {
+            if (string.IsNullOrEmpty(configPath))
+            {
+                _logger.LogError("Configuration is missing or incomplete. Exiting.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                _logger.LogErrorWithPath("Path is required: {FilePath}", path ?? "unknown");
+                return;
+            }
+
+            _logger.LogInformationWithPath("Executing vault command: {Command} on path: {FilePath}", command, path);
+            _logger.LogDebugWithPath("Debugging vault command", "VaultCommands.cs");
+
             try
             {
-                // Initialize dependency injection if needed
-                if (configPath != null)
-                {
-                    if (!System.IO.File.Exists(configPath))
-                    {
-                        AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
-                        return;
-                    }
-                    Program.SetupDependencyInjection(configPath, debug);
-                }
-
-                var serviceProvider = Program.ServiceProvider;
-                var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger("VaultCommands");
-                var loggingService = serviceProvider.GetRequiredService<LoggingService>();
-                var failedLogger = loggingService.FailedLogger;
-                var appConfig = serviceProvider.GetRequiredService<AppConfig>();
-
-                // Always show the active config file being used
-                string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
-                AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
-
-                logger.LogInformation("Executing vault command: {Command} on {Path}", command, path);
-
-                if (dryRun)
-                {
-                    logger.LogInformation("[DRY RUN] No changes will be made");
-                }
-
-                if (verbose)
-                {
-                    logger.LogInformation("Verbose output enabled");
-                }
-
-                // Placeholder for actual vault command logic
-                switch (command.ToLowerInvariant())
-                {
-                    case "generate-index":
-                        logger.LogInformation("Simulating generation of vault index");
-                        await Task.Delay(500); // Simulate work
-                        break;
-
-                    case "ensure-metadata":
-                        logger.LogInformation("Simulating metadata consistency check");
-                        await Task.Delay(500); // Simulate work
-                        break;
-
-                    default:
-                        logger.LogError("Unknown command: {Command}", command);
-                        break;
-                }
-
-                logger.LogInformation("Command completed successfully");
+                // Simulate vault command logic
+                await Task.CompletedTask;
+                _logger.LogInformation("Vault command completed successfully.");
             }
             catch (Exception ex)
             {
-                AnsiConsoleHelper.WriteError($"Error processing vault command: {ex.Message}");
-                if (debug)
-                {
-                    AnsiConsoleHelper.WriteError(ex.ToString());
-                }
+                _logger.LogError(ex, "An error occurred during vault command execution.");
+                _logger.LogErrorWithPath("Error in vault command", "VaultCommands.cs", ex);
             }
         }
     }

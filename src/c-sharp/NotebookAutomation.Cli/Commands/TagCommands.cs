@@ -5,6 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Tools.TagManagement;
+using NotebookAutomation.Core.Utils;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -21,8 +25,16 @@ namespace NotebookAutomation.Cli.Commands
     /// to perform the actual tag operations. This class serves as a bridge between the command-line
     /// interface and the core functionality.
     /// </remarks>
-    internal class TagCommands
+    public class TagCommands
     {
+        private readonly ILogger<TagCommands> _logger;
+
+        public TagCommands(ILogger<TagCommands> logger)
+        {
+            _logger = logger;
+            _logger.LogInformationWithPath("Tag command initialized", "TagCommands.cs");
+        }
+
         /// <summary>
         /// Registers all tag-related commands with the root command.
         /// </summary>
@@ -281,6 +293,20 @@ namespace NotebookAutomation.Cli.Commands
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task ProcessTagsAsync(string path, string command, string? configPath, bool debug, bool verbose, bool dryRun)
         {
+            if (string.IsNullOrEmpty(configPath))
+            {
+                _logger.LogError("Configuration is missing or incomplete. Exiting.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(path))
+            {
+                _logger.LogErrorWithPath("Path is required: {FilePath}", path ?? "unknown", new Exception("Sample exception"));
+                return;
+            }
+
+            _logger.LogInformationWithPath("Executing tag command: {Command} on path: {FilePath}", command, path, "TagCommands.cs");
+
             try
             {
                 // Initialize dependency injection if needed
@@ -304,7 +330,6 @@ namespace NotebookAutomation.Cli.Commands
                 string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
                 AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
 
-                logger.LogInformation("Executing tag command: {Command} on path: {Path}", command, path);
                 // Create a new TagProcessor with command-specific options
                 // For TagProcessor we can't use DI directly since we need to pass dryRun and verbose
                 var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();

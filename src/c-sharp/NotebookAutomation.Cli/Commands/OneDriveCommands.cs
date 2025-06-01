@@ -5,6 +5,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Utils;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands
 {
@@ -20,8 +24,16 @@ namespace NotebookAutomation.Cli.Commands
     /// to perform the actual OneDrive operations. These commands require proper authentication
     /// with Microsoft Graph API, which is handled by the OneDriveService.
     /// </remarks>
-    internal class OneDriveCommands
+    public class OneDriveCommands
     {
+        private readonly ILogger<OneDriveCommands> _logger;
+
+        public OneDriveCommands(ILogger<OneDriveCommands> logger)
+        {
+            _logger = logger;
+            _logger.LogInformationWithPath("OneDrive command initialized", "OneDriveCommands.cs");
+        }
+
         /// <summary>
         /// Registers all OneDrive-related commands with the root command.
         /// </summary>
@@ -265,19 +277,33 @@ namespace NotebookAutomation.Cli.Commands
                 switch (command.ToLowerInvariant())
                 {
                     case "list":
-                        logger.LogInformation("Listing files at path: {Path}", arg1);
+                        logger.LogInformationWithPath("Listing files at path: {FilePath}", arg1 ?? "root");
                         // TODO: Implement with oneDriveService.ListFilesAsync(arg1);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
 
                     case "download":
-                        logger.LogInformation("Downloading from {RemotePath} to {LocalPath}", arg1, arg2);
+                        if (arg1 == null || arg2 == null)
+                        {
+                            logger.LogWarning("One or more arguments are null. Skipping logging.");
+                        }
+                        else
+                        {
+                            logger.LogInformationWithPath("Downloading from {FilePath} to {FilePath}", arg1, arg2);
+                        }
                         // TODO: Implement with oneDriveService.DownloadFileAsync(arg1, arg2);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
 
                     case "upload":
-                        logger.LogInformation("Uploading from {LocalPath} to {RemotePath}", arg1, arg2);
+                        if (arg1 == null || arg2 == null)
+                        {
+                            logger.LogWarning("One or more arguments are null. Skipping logging.");
+                        }
+                        else
+                        {
+                            logger.LogInformationWithPath("Uploading from {FilePath} to {FilePath}", arg1, arg2);
+                        }
                         // TODO: Implement with oneDriveService.UploadFileAsync(arg1, arg2);
                         await Task.Delay(100); // Placeholder for actual implementation
                         break;
@@ -310,7 +336,86 @@ namespace NotebookAutomation.Cli.Commands
                 {
                     AnsiConsoleHelper.WriteError(ex.ToString());
                 }
+                _logger.LogErrorWithPath("Error in OneDrive command", "OneDriveCommands.cs", ex);
             }
+        }
+
+        public async Task ExecuteOneDriveCommandAsync(string command, string? arg1, string? arg2, string? config, bool debug, bool verbose, bool dryRun)
+        {
+            if (string.IsNullOrEmpty(config))
+            {
+                _logger.LogError("Microsoft Graph configuration is missing or incomplete. Exiting.");
+                return;
+            }
+
+            _logger.LogInformation("Executing OneDrive command: {Command}", command);
+
+            if (dryRun)
+            {
+                _logger.LogInformation("[DRY RUN] No changes will be made");
+            }
+
+            if (verbose)
+            {
+                _logger.LogInformation("Verbose output enabled");
+            }
+
+            _logger.LogDebugWithPath("Debugging OneDrive command", "OneDriveCommands.cs");
+
+            switch (command.ToLower())
+            {
+                case "list":
+                    if (!string.IsNullOrEmpty(arg1))
+                    {
+                        _logger.LogInformationWithPath("Listing files at path: {FilePath}", arg1);
+                    }
+                    break;
+
+                case "download":
+                    if (arg1 == null || arg2 == null)
+                    {
+                        _logger.LogWarning("One or more arguments are null. Skipping logging.");
+                    }
+                    else
+                    {
+                        _logger.LogInformationWithPath("Downloading from {FilePath} to {FilePath}", arg1, arg2);
+                    }
+                    break;
+
+                case "upload":
+                    if (arg1 == null || arg2 == null)
+                    {
+                        _logger.LogWarning("One or more arguments are null. Skipping logging.");
+                    }
+                    else
+                    {
+                        _logger.LogInformationWithPath("Uploading from {FilePath} to {FilePath}", arg1, arg2);
+                    }
+                    break;
+
+                case "search":
+                    if (!string.IsNullOrEmpty(arg1))
+                    {
+                        _logger.LogInformation("Searching for: {Query}", arg1);
+                    }
+                    break;
+
+                case "sync":
+                    if (!string.IsNullOrEmpty(arg1) && !string.IsNullOrEmpty(arg2))
+                    {
+                        _logger.LogInformation("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})",
+                            arg1 ?? "unknown", arg2 ?? "unknown", "bidirectional");
+                    }
+                    break;
+
+                default:
+                    _logger.LogError("Unknown command: {Command}", command);
+                    break;
+            }
+
+            await Task.CompletedTask;
+
+            _logger.LogInformation("Command completed successfully");
         }
     }
 }

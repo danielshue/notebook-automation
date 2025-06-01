@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.CommandLine.Parsing;
 using System.CommandLine.Invocation;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace NotebookAutomation.Cli.Tests.Commands
 {
@@ -14,6 +16,8 @@ namespace NotebookAutomation.Cli.Tests.Commands
     [TestClass]
     public class VideoCommandsTests
     {
+        private readonly Mock<ILogger<VideoCommands>> _mockLogger = new Mock<ILogger<VideoCommands>>();
+
         /// <summary>
         /// Verifies that the 'video-notes' command prints usage/help when no arguments are provided.
         /// </summary>
@@ -26,7 +30,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var videoCommands = new VideoCommands();
+            var videoCommands = new VideoCommands(_mockLogger.Object);
             videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Ensure DI is initialized for handler
@@ -54,7 +58,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         public void VideoCommand_Initialization_ShouldSucceed()
         {
             // Arrange
-            var command = new VideoCommands();
+            var command = new VideoCommands(_mockLogger.Object);
             // Act & Assert
             Assert.IsNotNull(command);
         }
@@ -71,7 +75,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var videoCommands = new VideoCommands();
+            var videoCommands = new VideoCommands(_mockLogger.Object);
 
             // Act
             videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

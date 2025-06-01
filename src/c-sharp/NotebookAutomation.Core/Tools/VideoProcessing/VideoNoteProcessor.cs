@@ -123,7 +123,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex, "Failed to extract file system metadata for video: {Path}", videoPath);
+                Logger.LogWarningWithPath(ex, "Failed to extract file system metadata for video: {filePath}", videoPath);
             }
 
             try
@@ -356,7 +356,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             {
                 try
                 {
-                    Logger.LogDebug("Detecting hierarchy information from path: {FilePath}", pathForHierarchy);
+                    Logger.LogDebugWithPath("Detecting hierarchy information from path: {FilePath}", pathForHierarchy);
                     var hierarchyInfo = _hierarchyDetector!.FindHierarchyInfo(pathForHierarchy);
 
                     // Update metadata with detected hierarchy information
@@ -366,7 +366,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogWarning(ex, "Error detecting hierarchy information from path");
+                    Logger.LogWarningWithPath(ex, "Error detecting hierarchy information from path: {FilePath}", pathForHierarchy);
                 }
             }
 
@@ -386,7 +386,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     Logger.LogWarning(ex, "Error applying template metadata");
                 }
-            }            // Remove all date-related fields from metadata
+            }
+
+            // Remove all date-related fields from metadata
             var dateFieldsToRemove = mergedMetadata.Keys
                 .Where(k => k.StartsWith("date-") || k.EndsWith("-date"))
                 .ToList();
@@ -443,7 +445,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             string directory = Path.GetDirectoryName(videoPath) ?? string.Empty;
             string fileNameWithoutExt = Path.GetFileNameWithoutExtension(videoPath);
 
-            Logger.LogDebug("Looking for transcript for video: {VideoPath}", videoPath);
+            Logger.LogDebugWithPath("Looking for transcript for video: {FilePath}", videoPath);
 
             // Define search paths in priority order
             var searchPaths = new List<string>
@@ -507,14 +509,12 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 var exactTxtPath = Path.Combine(searchPath, fileNameWithoutExt + ".txt");
                 if (File.Exists(exactTxtPath))
                 {
-                    Logger.LogInformation("Found generic transcript: {Path}", exactTxtPath);
+                    Logger.LogInformationWithPath("Found generic transcript: {FilePath}", exactTxtPath);
                     return File.ReadAllText(exactTxtPath);
-                }
-
-                var exactMdPath = Path.Combine(searchPath, fileNameWithoutExt + ".md");
+                }                var exactMdPath = Path.Combine(searchPath, fileNameWithoutExt + ".md");
                 if (File.Exists(exactMdPath))
                 {
-                    Logger.LogInformation("Found generic transcript: {Path}", exactMdPath);
+                    Logger.LogInformationWithPath("Found generic transcript: {FilePath}", exactMdPath);
                     return File.ReadAllText(exactMdPath);
                 }
 
@@ -522,19 +522,17 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 var altTxtPath = Path.Combine(searchPath, altBaseName + ".txt");
                 if (File.Exists(altTxtPath))
                 {
-                    Logger.LogInformation("Found generic transcript with normalized name: {Path}", altTxtPath);
+                    Logger.LogInformationWithPath("Found generic transcript with normalized name: {FilePath}", altTxtPath);
                     return File.ReadAllText(altTxtPath);
-                }
-
-                var altMdPath = Path.Combine(searchPath, altBaseName + ".md");
+                }                var altMdPath = Path.Combine(searchPath, altBaseName + ".md");
                 if (File.Exists(altMdPath))
                 {
-                    Logger.LogInformation("Found generic transcript with normalized name: {Path}", altMdPath);
+                    Logger.LogInformationWithPath("Found generic transcript with normalized name: {FilePath}", altMdPath);
                     return File.ReadAllText(altMdPath);
                 }
             }
 
-            Logger.LogInformation("No transcript found for video: {VideoPath}", videoPath);
+            Logger.LogInformationWithPath("No transcript found for video: {FilePath}", videoPath);
             return null;
         }
 
@@ -572,7 +570,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             {
                 if (!Directory.Exists(searchPath))
                 {
-                    Logger.LogDebug("Directory does not exist: {Path}", searchPath);
+                    Logger.LogDebugWithPath("Directory does not exist: {FilePath}", searchPath);
                     continue;
                 }
 
@@ -584,7 +582,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
 
                 if (!candidates.Any())
                 {
-                    Logger.LogDebug("No transcript candidates found in: {Path}", searchPath);
+                    Logger.LogDebugWithPath("No transcript candidates found in: {FilePath}", searchPath);
                     continue;
                 }
 
@@ -601,7 +599,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                         IsLikelyLanguageCode(nameWithoutExt.Substring(fileNameWithoutExt.Length + 1)))
                     {
                         string langCode = nameWithoutExt.Substring(fileNameWithoutExt.Length + 1);
-                        Logger.LogInformation("Found language-specific transcript ({LangCode}): {Path}", langCode, candidate.FullName);
+                        Logger.LogDebugWithPath($"Found language-specific transcript ({langCode}): {{FilePath}}", candidate.FullName);
                         return candidate.FullName;
                     }
                 }

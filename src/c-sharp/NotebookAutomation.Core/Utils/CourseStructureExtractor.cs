@@ -80,7 +80,7 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to extract module/lesson from directory structure for file: {Path}", filePath);
+                _logger.LogWarningWithPath(ex, "Failed to extract module/lesson from directory structure for file: {filePath}", filePath);
             }
         }
 

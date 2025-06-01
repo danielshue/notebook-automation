@@ -5,6 +5,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.CommandLine.Parsing;
 using System.CommandLine.Invocation;
+using Microsoft.Extensions.Logging;
+using Moq;
+using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Cli.Tests.Commands
 {
@@ -14,6 +18,10 @@ namespace NotebookAutomation.Cli.Tests.Commands
     [TestClass]
     public class MarkdownCommandsTests
     {
+        private readonly Mock<ILogger<MarkdownCommands>> _mockLogger = new Mock<ILogger<MarkdownCommands>>();
+        private readonly Mock<AppConfig> _mockAppConfig = new Mock<AppConfig>();
+        private readonly Mock<IServiceProvider> _mockServiceProvider = new Mock<IServiceProvider>();
+
         /// <summary>
         /// Verifies that the 'generate-markdown' command prints usage/help when no arguments are provided.
         /// </summary>
@@ -26,7 +34,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var markdownCommands = new MarkdownCommands();
+            var markdownCommands = new MarkdownCommands(_mockLogger.Object, _mockAppConfig.Object, _mockServiceProvider.Object);
             markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Ensure DI is initialized for handler
@@ -55,7 +63,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         public void MarkdownCommand_Initialization_ShouldSucceed()
         {
             // Arrange
-            var command = new MarkdownCommands();
+            var command = new MarkdownCommands(_mockLogger.Object, _mockAppConfig.Object, _mockServiceProvider.Object);
             // Act & Assert
             Assert.IsNotNull(command);
         }
@@ -72,7 +80,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var markdownCommands = new MarkdownCommands();
+            var markdownCommands = new MarkdownCommands(_mockLogger.Object, _mockAppConfig.Object, _mockServiceProvider.Object);
 
             // Act
             markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
@@ -87,6 +95,13 @@ namespace NotebookAutomation.Cli.Tests.Commands
             CollectionAssert.Contains(optionNames, "-s", "generate-markdown should have '-s' option");
             CollectionAssert.Contains(optionNames, "--dest-dir", "generate-markdown should have '--dest-dir' option");
             CollectionAssert.Contains(optionNames, "-d", "generate-markdown should have '-d' option");
+        }
+
+        [TestInitialize]
+        public void Setup()
+        {
+            // Mock the logger extensions for information, error, and debug logging
+            // No logger method setups; just pass the mock to the command.
         }
     }
 }

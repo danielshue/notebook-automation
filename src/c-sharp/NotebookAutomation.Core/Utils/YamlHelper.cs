@@ -324,7 +324,7 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Failed to check if file is read-only: {FilePath}", filePath);
+                _logger?.LogErrorWithPath(ex, "Failed to check if file is read-only: {filePath}", filePath);
                 return false;
             }
         }
@@ -340,7 +340,7 @@ namespace NotebookAutomation.Core.Utils
             {
                 if (!File.Exists(filePath))
                 {
-                    _logger?.LogWarning("File not found: {FilePath}", filePath);
+                    _logger?.LogWarningWithPath("File not found: {filePath}", filePath);
                     return new Dictionary<string, object>();
                 }
 
@@ -356,7 +356,7 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Failed to load frontmatter from file: {FilePath}", filePath);
+                _logger?.LogErrorWithPath(ex, "Failed to load frontmatter from file: {filePath}", filePath);
                 return new Dictionary<string, object>();
             }
         }
@@ -378,7 +378,7 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Failed to save markdown with updated frontmatter: {FilePath}", filePath);
+                _logger?.LogErrorWithPath(ex, "Failed to save markdown with updated frontmatter: {filePath}", filePath);
                 return false;
             }
         }
