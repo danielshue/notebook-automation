@@ -44,10 +44,8 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
         public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
-            var oneDriveCommand = new Command("onedrive", "OneDrive file management commands");
-
-            // List files command
-            var listCommand = new Command("list", "List files and folders in OneDrive");
+            var oneDriveCommand = new Command("onedrive", "OneDrive file management commands");            // List files command
+            var listCommand = new Command("list", "TODO: List files and folders in OneDrive");
             var pathArgument = new Argument<string>("path", "Path to list (default: root)") { Arity = ArgumentArity.ZeroOrOne };
             listCommand.AddArgument(pathArgument);
             listCommand.SetHandler(async context =>
@@ -69,11 +67,10 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
-                await this.ExecuteOneDriveCommandAsync("list", path, null, config, debug, verbose, dryRun);
-            });
+                await this.ExecuteOneDriveCommandAsync("list", path, null, config, debug, verbose, dryRun);            });
 
             // Download command
-            var downloadCommand = new Command("download", "Download a file from OneDrive");
+            var downloadCommand = new Command("download", "TODO: Download a file from OneDrive");
             var remotePathArgument = new Argument<string>("remote-path", "Path in OneDrive to download from");
             var localPathArgument = new Argument<string>("local-path", "Local path to save to");
             downloadCommand.AddArgument(remotePathArgument);
@@ -98,10 +95,8 @@ namespace NotebookAutomation.Cli.Commands
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
                 await this.ExecuteOneDriveCommandAsync("download", remotePath, localPath, config, debug, verbose, dryRun);
-            });
-
-            // Upload command
-            var uploadCommand = new Command("upload", "Upload a file to OneDrive");
+            });            // Upload command
+            var uploadCommand = new Command("upload", "TODO: Upload a file to OneDrive");
             var uploadLocalPath = new Argument<string>("local-path", "Local file to upload");
             var uploadRemotePath = new Argument<string>("remote-path", "Destination path in OneDrive");
             uploadCommand.AddArgument(uploadLocalPath);
@@ -126,10 +121,8 @@ namespace NotebookAutomation.Cli.Commands
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
                 await this.ExecuteOneDriveCommandAsync("upload", localPath, remotePath, config, debug, verbose, dryRun);
-            });
-
-            // Search command
-            var searchCommand = new Command("search", "Search for files in OneDrive");
+            });            // Search command
+            var searchCommand = new Command("search", "TODO: Search for files in OneDrive");
             var queryArgument = new Argument<string>("query", "Search query");
             searchCommand.AddArgument(queryArgument);
             searchCommand.SetHandler(async context =>
@@ -151,10 +144,8 @@ namespace NotebookAutomation.Cli.Commands
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
                 await this.ExecuteOneDriveCommandAsync("search", query, null, config, debug, verbose, dryRun);
-            });
-
-            // Sync command with options for direction, etc.
-            var syncCommand = new Command("sync", "Sync files between local and OneDrive");
+            });            // Sync command with options for direction, etc.
+            var syncCommand = new Command("sync", "TODO: Sync files between local and OneDrive");
             var syncLocalPath = new Argument<string>("local-path", "Local folder to sync");
             var syncRemotePath = new Argument<string>("remote-path", "OneDrive folder to sync") { Arity = ArgumentArity.ZeroOrOne };
             var directionOption = new Option<string>(

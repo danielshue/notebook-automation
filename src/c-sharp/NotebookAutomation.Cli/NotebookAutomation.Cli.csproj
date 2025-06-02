@@ -11,7 +11,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>preview</LangVersion>
-    <AssemblyName>NotebookAutomation.Cli</AssemblyName>
+    <AssemblyName>NotebookAutomation</AssemblyName>
     <UserSecretsId>30391e52-b669-419b-a859-fbd67b3c090b</UserSecretsId>
     <GenerateDocumentationFile>False</GenerateDocumentationFile>    <PublishAot>False</PublishAot>
     <Copyright>Copyright 2025</Copyright>

@@ -41,10 +41,7 @@ namespace NotebookAutomation.Cli.Commands
         public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var pathArg = new Argument<string>("path", "Path to the vault directory");
-            var vaultCommand = new Command("vault", "Vault management commands");
-
-
-            var generateIndexCommand = new Command("generate-index", "Generate a vault index");
+            var vaultCommand = new Command("vault", "Vault management commands");            var generateIndexCommand = new Command("generate-index", "TODO: Generate a vault index");
             generateIndexCommand.AddArgument(pathArg);
             generateIndexCommand.SetHandler(async context =>
             {
@@ -64,9 +61,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 await this.ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun);
-            });
-
-            var ensureMetadataCommand = new Command("ensure-metadata", "Ensure consistent metadata across vault files");
+            });            var ensureMetadataCommand = new Command("ensure-metadata", "TODO: Update YAML frontmatter with program/course/class metadata based on directory structure");
             ensureMetadataCommand.AddArgument(pathArg);
             ensureMetadataCommand.SetHandler(async context =>
             {
@@ -93,12 +88,11 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="debug">Whether to enable debug logging.</param>
         /// <param name="verbose">Whether to enable verbose output.</param>
         /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        /// <remarks>
+        /// <returns>A task representing the asynchronous operation.</returns>        /// <remarks>
         /// This method handles the following commands:
         /// <list type="bullet">
         /// <item><description>generate-index: Creates index files for each directory in the vault</description></item>
-        /// <item><description>ensure-metadata: Ensures consistent metadata across markdown files in the vault</description></item>
+        /// <item><description>ensure-metadata: Updates YAML frontmatter with program/course/class metadata based on directory hierarchy (Program/Course/Class structure)</description></item>
         /// </list>
         /// Note: This is currently a placeholder implementation that logs actions but does not perform actual operations.
         /// </remarks>
