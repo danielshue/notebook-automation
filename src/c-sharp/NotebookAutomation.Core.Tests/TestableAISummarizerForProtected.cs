@@ -29,8 +29,8 @@ namespace NotebookAutomation.Core.Tests
             : base(logger, promptService, semanticKernel)
         {
         }        /// <summary>
-        /// Initializes a new instance for testing protected methods with a custom ITextChunkingService.
-        /// </summary>
+                 /// Initializes a new instance for testing protected methods with a custom ITextChunkingService.
+                 /// </summary>
         public TestableAISummarizerForProtected(
             ILogger<AISummarizer> logger,
             IPromptService? promptService,

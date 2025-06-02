@@ -42,7 +42,8 @@ namespace NotebookAutomation.Core.Tests
         public override Task<string> LoadTemplateAsync(string templateName)
         {
             LastTemplateName = templateName;
-            return Task.FromResult(Template ?? $"Default test template for {templateName}");        }
+            return Task.FromResult(Template ?? $"Default test template for {templateName}");
+        }
 
         /// <summary>
         /// Returns the configured substitution result or applies the default substitution.
@@ -62,7 +63,8 @@ namespace NotebookAutomation.Core.Tests
                 {
                     result = result.Replace("{{" + kvp.Key + "}}", kvp.Value);
                 }
-            }            return result;
+            }
+            return result;
         }
 
         /// <summary>

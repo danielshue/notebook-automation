@@ -103,11 +103,11 @@ namespace NotebookAutomation.Core.Tests
 
             return result;
         }        /// <summary>
-        /// Gets a prompt with variables substituted.
-        /// </summary>
-        /// <param name="templateName">Name of the template to load.</param>
-        /// <param name="variables">Dictionary of variables to substitute.</param>
-        /// <returns>The processed template with variables substituted.</returns>
+                 /// Gets a prompt with variables substituted.
+                 /// </summary>
+                 /// <param name="templateName">Name of the template to load.</param>
+                 /// <param name="variables">Dictionary of variables to substitute.</param>
+                 /// <returns>The processed template with variables substituted.</returns>
         public async Task<string> GetPromptAsync(string templateName, Dictionary<string, string>? variables)
         {
             string template = await LoadTemplateAsync(templateName);

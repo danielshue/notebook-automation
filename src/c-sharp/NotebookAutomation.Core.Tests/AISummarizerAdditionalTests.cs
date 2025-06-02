@@ -1,9 +1,10 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,7 +14,6 @@ using Moq;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tests;
 using NotebookAutomation.Core.Tests.Helpers;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace NotebookAutomation.Core.Tests
 {
@@ -38,7 +38,8 @@ namespace NotebookAutomation.Core.Tests
         /// <summary>
         /// Tests the full overloaded method signature with all parameters supplied.
         /// </summary>
-        [TestMethod]        public async Task SummarizeWithVariablesAsync_WithAllParameters_ProcessesCorrectly()
+        [TestMethod]
+        public async Task SummarizeWithVariablesAsync_WithAllParameters_ProcessesCorrectly()
         {
             // Arrange
             string expectedResponse = "Summary with all parameters";
@@ -79,7 +80,8 @@ namespace NotebookAutomation.Core.Tests
         /// <summary>
         /// Tests handling of YAML frontmatter in the input text when no variables dictionary is provided.
         /// </summary>
-        [TestMethod]        public async Task SummarizeWithVariablesAsync_WithYAMLInInputText_ProcessesCorrectly()
+        [TestMethod]
+        public async Task SummarizeWithVariablesAsync_WithYAMLInInputText_ProcessesCorrectly()
         {
             // Arrange
             string expectedResponse = "Summary with YAML in input text";
@@ -110,7 +112,8 @@ This is the actual content that follows YAML frontmatter.";
         /// <summary>
         /// Tests handling of whitespace in the content value when variables are provided.
         /// </summary>
-        [TestMethod]        public async Task SummarizeWithVariablesAsync_WithWhitespaceInContentVariable_ReturnsEmptyString()
+        [TestMethod]
+        public async Task SummarizeWithVariablesAsync_WithWhitespaceInContentVariable_ReturnsEmptyString()
         {
             // Arrange
             // Create a kernel but it shouldn't be used since we have whitespace input
@@ -134,9 +137,9 @@ This is the actual content that follows YAML frontmatter.";
             Assert.IsNotNull(result);
             Assert.AreEqual(string.Empty, result);
         }        /// <summary>
-        /// Tests handling of large inputs that would previously require chunking.
-        /// Now SK handles chunking internally.
-        /// </summary>
+                 /// Tests handling of large inputs that would previously require chunking.
+                 /// Now SK handles chunking internally.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_WithLargeInput_ProcessesSuccessfully()
         {
@@ -144,7 +147,7 @@ This is the actual content that follows YAML frontmatter.";
             string expectedResponse = "Summary of large content";
 
             // Create a kernel with mock service
-            var kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);            var summarizer = new AISummarizer(
+            var kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse); var summarizer = new AISummarizer(
                 _mockLogger.Object,
                 _mockPromptService,
                 kernel);
@@ -155,15 +158,15 @@ This is the actual content that follows YAML frontmatter.";
             Assert.IsNotNull(result);
             Assert.AreEqual("[Simulated AI summary]", result);
         }        /// <summary>
-        /// Tests that the service handles specific exception types from the kernel.
-        /// </summary>
+                 /// Tests that the service handles specific exception types from the kernel.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_WithSpecificException_HandlesGracefully()
         {
             // Arrange            // Create a test kernel
             var kernel = TestKernelHelper.CreateTestKernel();
 
-            var summarizer = new AISummarizer(                _mockLogger.Object,
+            var summarizer = new AISummarizer(_mockLogger.Object,
                 _mockPromptService,
                 kernel);
 
@@ -176,8 +179,8 @@ This is the actual content that follows YAML frontmatter.";
             Assert.IsNotNull(result);
             Assert.AreEqual("[Simulated AI summary]", result);
         }        /// <summary>
-        /// Tests handling of extremely large text (SK handles chunking internally now).
-        /// </summary>
+                 /// Tests handling of extremely large text (SK handles chunking internally now).
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_WithExtremelyLargeText_HandlesSuccessfully()
         {
@@ -200,8 +203,8 @@ This is the actual content that follows YAML frontmatter.";
             Assert.IsNotNull(result);
             Assert.AreEqual("[Simulated AI summary]", result);
         }        /// <summary>
-        /// Tests scenario where no prompt service is available.
-        /// </summary>
+                 /// Tests scenario where no prompt service is available.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_NoPromptService_ReturnsEmptyString()
         {

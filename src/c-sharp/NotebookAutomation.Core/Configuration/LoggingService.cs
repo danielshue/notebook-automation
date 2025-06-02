@@ -49,14 +49,14 @@ namespace NotebookAutomation.Core.Configuration
         // Core properties for logging configuration
         private readonly string _loggingDir;
         private readonly bool _debug;
-        
+
         // The initialized loggers and factory (null until ConfigureLogging is called)
         private SerilogILogger? _serilogLogger;
-        private SerilogILogger? _serilogFailedLogger; 
+        private SerilogILogger? _serilogFailedLogger;
         private ILoggerFactory? _loggerFactory;
         private ILogger? _logger;
         private ILogger? _failedLogger;
-        
+
         // Synchronization object for thread safety
         private readonly object _initLock = new object();
         private volatile bool _isInitialized;
@@ -85,7 +85,7 @@ namespace NotebookAutomation.Core.Configuration
         /// Gets the specialized logger instance used for recording failed operations.
         /// </summary>
         public ILogger FailedLogger => EnsureInitialized()._failedLogger!;
-        
+
         /// <summary>
         /// Initializes a new instance of the LoggingService class with a logging directory.
         /// This constructor is used for early initialization before AppConfig is available.
@@ -98,7 +98,7 @@ namespace NotebookAutomation.Core.Configuration
             _debug = debug;
             _isInitialized = false;
         }
-          
+
         /// <summary>
         /// Ensures that the loggers are initialized and returns the current instance.
         /// </summary>
@@ -109,7 +109,7 @@ namespace NotebookAutomation.Core.Configuration
             {
                 return this;
             }
-            
+
             lock (_initLock)
             {
                 if (!_isInitialized)
@@ -118,10 +118,10 @@ namespace NotebookAutomation.Core.Configuration
                     _isInitialized = true;
                 }
             }
-            
+
             return this;
         }
-        
+
         /// <summary>
         /// Initializes the logging infrastructure.
         /// </summary>
@@ -131,7 +131,7 @@ namespace NotebookAutomation.Core.Configuration
             {
                 // Create Serilog loggers
                 _serilogLogger = CreateSerilogLogger(_loggingDir, _debug);
-                
+
                 // Create the failed logger with the same configuration but a different source context
                 var failedLoggerName = typeof(FailedOperations).FullName ?? "FailedOperations";
                 _serilogFailedLogger = _serilogLogger.ForContext("SourceContext", failedLoggerName);
@@ -145,29 +145,29 @@ namespace NotebookAutomation.Core.Configuration
             catch (Exception ex)
             {
                 // Create a fallback console logger in case initialization fails
-                var fallbackFactory = LoggerFactory.Create(builder => 
-                    builder.AddSimpleConsole(options => 
-                    { 
+                var fallbackFactory = LoggerFactory.Create(builder =>
+                    builder.AddSimpleConsole(options =>
+                    {
                         options.SingleLine = false;
                         options.ColorBehavior = LoggerColorBehavior.Enabled;
                     }));
-                
+
                 var fallbackLogger = fallbackFactory.CreateLogger("LoggingService.Fallback");
                 fallbackLogger.LogError(ex, "Failed to initialize logging. Using fallback console logger.");
-                
+
                 // Create minimal working loggers
                 _serilogLogger = new LoggerConfiguration()
                     .MinimumLevel.Debug()
                     .WriteTo.Console()
                     .CreateLogger();
-                
+
                 _serilogFailedLogger = _serilogLogger;
                 _loggerFactory = fallbackFactory;
                 _logger = fallbackLogger;
                 _failedLogger = fallbackLogger;
             }
-        }        
-                        
+        }
+
         /// <summary>
         /// Configures the logging builder with the appropriate providers asynchronously.
         /// </summary>
@@ -178,14 +178,14 @@ namespace NotebookAutomation.Core.Configuration
             {
                 Directory.CreateDirectory(_loggingDir);
             }
-            
+
             // Ensure loggers are initialized
             EnsureInitialized();
-            
+
             // Configure the builder with our Serilog logger
             builder.AddSerilog(SerilogLogger, dispose: true);
         }
-        
+
         /// <summary>
         /// Creates a configured Serilog logger for the application.
         /// </summary>
@@ -201,12 +201,12 @@ namespace NotebookAutomation.Core.Configuration
                 {
                     Directory.CreateDirectory(loggingDir);
                 }
-                
+
                 var appAssemblyName = GetAssemblyName();
                 var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;
                 var date = DateTime.Now.ToString("yyyyMMdd");
                 var logFilePath = Path.Combine(loggingDir, $"{appAssemblyName.ToLower()}_{date}.log");
-                
+
                 // Configure and create Serilog logger
                 var loggerConfig = new LoggerConfiguration()
                     .MinimumLevel.Is(minLevel)
@@ -216,7 +216,7 @@ namespace NotebookAutomation.Core.Configuration
                         rollingInterval: RollingInterval.Day,
                         retainedFileCountLimit: 7,
                         restrictedToMinimumLevel: minLevel);
-                
+
                 return loggerConfig.CreateLogger().ForContext("SourceContext", appAssemblyName);
             }
             catch (Exception ex)
@@ -228,9 +228,9 @@ namespace NotebookAutomation.Core.Configuration
                 fallbackLogger.Error(ex, "Failed to initialize Serilog logger. Using fallback console logger.");
                 return fallbackLogger;
             }
-        }       
-        
-         /// <summary>
+        }
+
+        /// <summary>
         /// Gets a typed ILogger instance for the specified type T from this LoggingService instance.
         /// </summary>
         /// <typeparam name="T">The type to create the logger for.</typeparam>
@@ -244,7 +244,7 @@ namespace NotebookAutomation.Core.Configuration
         {
             return LoggerFactoryInternal.CreateLogger<T>();
         }
-        
+
         /// <summary>
         /// Gets the assembly name for the executing assembly.
         /// </summary>
