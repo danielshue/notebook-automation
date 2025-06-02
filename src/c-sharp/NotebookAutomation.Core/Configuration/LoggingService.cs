@@ -193,17 +193,18 @@ namespace NotebookAutomation.Core.Configuration
                 if (!Directory.Exists(loggingDir))
                 {
                     Directory.CreateDirectory(loggingDir);
-                }
-
-                var appAssemblyName = GetAssemblyName();
+                }                var appAssemblyName = GetAssemblyName();
                 var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;
+                var consoleMinLevel = debug ? LogEventLevel.Debug : LogEventLevel.Warning;
                 var date = DateTime.Now.ToString("yyyyMMdd");
                 var logFilePath = Path.Combine(loggingDir, $"{appAssemblyName.ToLower()}_{date}.log");
 
                 // Configure and create Serilog logger
                 var loggerConfig = new LoggerConfiguration()
                     .MinimumLevel.Is(minLevel)
-                    .WriteTo.Console(restrictedToMinimumLevel: minLevel)
+                    .WriteTo.Console(
+                        restrictedToMinimumLevel: consoleMinLevel,
+                        outputTemplate: "{Message:lj}{NewLine}{Exception}")
                     .WriteTo.File(
                         logFilePath,
                         rollingInterval: RollingInterval.Day,

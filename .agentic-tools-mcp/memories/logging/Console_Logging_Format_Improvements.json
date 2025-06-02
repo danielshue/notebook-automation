@@ -1,0 +1,8 @@
+{
+  "id": "aea17512-0e33-4594-bcaa-67b0ffe38f75",
+  "title": "Clean Console Logging Format",
+  "details": "Fixed console output issues in the notebook automation project with progressive enhancements:\n\n1. **Removed timestamps from console logging**: Modified LoggingService.cs to use a custom output template for console that excludes timestamps while keeping them for file logs.\n\n2. **Removed log level indicators from console**: Further simplified console output by removing [INF], [ERR], etc. indicators for a completely clean user experience.\n\n3. **Made initialization messages debug-only**: Updated console logging to only show initialization messages (Application started, Tag command initialized, etc.) when debug mode is enabled. Normal mode now shows a completely clean interface with only essential user-facing information.\n\n4. **Eliminated duplicate config file printing**: The configuration file path was being printed twice - once in Program.cs for all commands and again in ConfigCommands.cs for the \"config view\" command. Removed the duplicate from Program.cs since it was redundant.\n\n**Technical Implementation:**\n- Console output template: `\"{Message:lj}{NewLine}{Exception}\"`\n- Console minimum level: `debug ? LogEventLevel.Debug : LogEventLevel.Warning`\n- File logs still retain full timestamps and log levels for debugging\n- Program.js logic updated to avoid duplicate config printing\n\n**Result:** \n- Normal mode: Completely silent console with only essential output\n- Debug mode: Shows all initialization messages for troubleshooting\n- File logs preserve all details regardless of console mode",
+  "category": "logging",
+  "dateCreated": "2025-06-02T18:10:54.778Z",
+  "dateUpdated": "2025-06-02T18:15:35.330Z"
+}
