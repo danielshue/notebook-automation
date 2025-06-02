@@ -200,10 +200,10 @@ namespace NotebookAutomation.Core.Services
                 return GetDefaultTemplate(templateName);
             }
         }        /// <summary>
-        /// Gets a default template based on the template name.
-        /// </summary>
-        /// <param name="templateName">Name of the template.</param>
-        /// <returns>The default template content.</returns>
+                 /// Gets a default template based on the template name.
+                 /// </summary>
+                 /// <param name="templateName">Name of the template.</param>
+                 /// <returns>The default template content.</returns>
         private string GetDefaultTemplate(string templateName)
         {
             _logger.LogWarningWithPath(templateName, "Using default template for");
@@ -215,7 +215,7 @@ namespace NotebookAutomation.Core.Services
                 _ => DefaultFinalPrompt
             };
         }
-        
+
         /// <summary>
         /// Processes template with variables asynchronously.
         /// </summary>

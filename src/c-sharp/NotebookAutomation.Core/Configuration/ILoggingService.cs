@@ -26,20 +26,20 @@ namespace NotebookAutomation.Core.Configuration
         /// <summary>
         /// Gets the specialized logger instance used for recording failed operations (Microsoft.Extensions.Logging).
         /// </summary>
-        ILogger FailedLogger { get; }        
-        
+        ILogger FailedLogger { get; }
+
         /// <summary>
         /// Gets a typed ILogger instance for the specified type T from this LoggingService instance.
         /// </summary>
         /// <typeparam name="T">The type to create the logger for.</typeparam>
         /// <returns>An ILogger{T} configured for the specified type.</returns>
         ILogger<T> GetLogger<T>();
-        
+
         /// <summary>
         /// Configures the logging builder with the appropriate providers.
         /// </summary>
         /// <param name="builder">The logging builder to configure.</param>
         void ConfigureLogging(ILoggingBuilder builder);
-        
+
     }
 }

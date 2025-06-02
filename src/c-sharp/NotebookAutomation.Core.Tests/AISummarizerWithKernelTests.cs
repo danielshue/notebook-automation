@@ -1,9 +1,10 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -11,7 +12,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 using NotebookAutomation.Core.Services;
-using Microsoft.Extensions.DependencyInjection;
 using NotebookAutomation.Core.Tests;
 using NotebookAutomation.Core.Tests.Helpers;
 
@@ -45,8 +45,8 @@ namespace NotebookAutomation.Core.Tests
                     return Task.FromResult(result);
                 });
         }        /// <summary>
-        /// Tests that the summarizer works correctly with a real Kernel instance.
-        /// </summary>
+                 /// Tests that the summarizer works correctly with a real Kernel instance.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_WithRealKernel_ProcessesCorrectly()
         {
@@ -89,8 +89,8 @@ namespace NotebookAutomation.Core.Tests
             // Assert
             Assert.IsNull(result);
         }        /// <summary>
-        /// Tests that the summarizer correctly utilizes the Kernel for function calls.
-        /// </summary>        [TestMethod]
+                 /// Tests that the summarizer correctly utilizes the Kernel for function calls.
+                 /// </summary>        [TestMethod]
         public async Task SummarizeWithVariablesAsync_KernelFunctionCalls_ProcessedCorrectly()
         {
             // Arrange
@@ -111,8 +111,8 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual("[Simulated AI summary]", result);
         }        /// <summary>
-        /// Tests summarization with large texts using Semantic Kernel chunking capabilities.
-        /// </summary>
+                 /// Tests summarization with large texts using Semantic Kernel chunking capabilities.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_LargeText_UsesSemanticKernel()
         {

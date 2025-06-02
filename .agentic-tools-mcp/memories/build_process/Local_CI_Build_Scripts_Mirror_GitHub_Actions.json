@@ -1,0 +1,8 @@
+{
+  "id": "67fed908-bc46-4d4b-9a9d-795da75297ab",
+  "title": "Local CI Build Scripts Mirror GitHub Actions",
+  "details": "Created comprehensive local CI build scripts that exactly mirror the GitHub Actions CI pipeline:\n\n**PowerShell Script (build-ci-local.ps1):**\n- Includes all CI steps: clean, restore, build, test with coverage, publish verification, static code analysis\n- Runs static code analysis last (matching CI order)\n- Supports parameters: -SkipTests, -Configuration, -SkipClean, -VerboseOutput\n- Provides detailed success/failure feedback\n- Temporary publish directory cleanup\n\n**Bash Script (build-ci-local.sh):**\n- Cross-platform equivalent with same functionality\n- Same step order as PowerShell version\n- Proper error handling and colored output\n\n**Key Benefits:**\n1. Developers can validate CI compatibility locally before pushing\n2. Catches formatting issues, build failures, test failures early\n3. Verifies publish operations work correctly\n4. Exactly matches CI pipeline steps and order\n5. Saves CI runner time and prevents failed builds\n\n**Usage Examples:**\n- `.\\build-ci-local.ps1` - Full CI build pipeline\n- `.\\build-ci-local.ps1 -SkipTests` - Quick build verification\n- `.\\build-ci-local.ps1 -Configuration Debug` - Debug builds\n\nBoth scripts successfully tested and working correctly with the project.",
+  "category": "build_process",
+  "dateCreated": "2025-06-02T16:21:29.718Z",
+  "dateUpdated": "2025-06-02T16:21:29.718Z"
+}

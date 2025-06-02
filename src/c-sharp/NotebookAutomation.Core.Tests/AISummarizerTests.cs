@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -130,8 +130,8 @@ namespace NotebookAutomation.Core.Tests
             Assert.IsNotNull(result);
             Assert.AreEqual(expectedResponse, result);
         }        /// <summary>
-        /// Tests that exceptions are handled gracefully during summarization.
-        /// </summary>
+                 /// Tests that exceptions are handled gracefully during summarization.
+                 /// </summary>
         [TestMethod]
         public async Task SummarizeWithVariablesAsync_WithException_ReturnsEmptyString()
         {
