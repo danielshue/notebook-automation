@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using System.CommandLine.Invocation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -126,15 +125,14 @@ namespace NotebookAutomation.Cli
 
                     context.Console.WriteLine("\nRun 'notebookautomation.exe [command] --help' for more information on a specific command.");
                 }
-            });
-
-            // The root command no longer handles AI provider/model/endpoint options globally.
+            });            // The root command no longer handles AI provider/model/endpoint options globally.
             // These are now handled under the config command group only.
 
             // Print config file path before any command except help/version
             var isHelp = args.Any(a => a == "--help" || a == "-h");
             var isVersion = args.Any(a => a == "--version" || a == "-v");
-            if (!isHelp && !isVersion)
+            var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";
+            if (!isHelp && !isVersion && !isConfigView)
             {
                 // Try to get config path from args, else fallback
                 string? configPath = null;

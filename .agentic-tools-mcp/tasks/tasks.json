@@ -17,6 +17,15 @@
       "completed": true,
       "createdAt": "2025-06-01T13:30:14.946Z",
       "updatedAt": "2025-06-01T15:37:23.035Z"
+    },
+    {
+      "id": "2d1ad777-77ab-47a8-a79a-4b8e0be443ec",
+      "name": "Clean Console Logging Format",
+      "details": "Enhanced console output readability by implementing four key improvements:\n\n1. **Removed timestamps from console logging**: Modified LoggingService.js to use a custom Serilog output template for console that excludes timestamps while preserving them for file logs.\n\n2. **Removed log level indicators from console**: Further simplified console output by removing [INF], [ERR], etc. indicators for a completely clean user experience.\n\n3. **Made initialization messages debug-only**: Updated console logging levels so initialization messages (Application started, Tag command initialized, etc.) only appear when `--debug` flag is used. Normal mode shows completely clean output.\n\n4. **Eliminated duplicate configuration file printing**: Removed redundant config file path display from Program.cs since ConfigCommands.cs already provides a better formatted version for the config view command.\n\n**Technical Details:**\n- Console output template: `\"{Message:lj}{NewLine}{Exception}\"`\n- Console minimum level: `debug ? LogEventLevel.Debug : LogEventLevel.Warning`\n- File minimum level: `debug ? LogEventLevel.Debug : LogEventLevel.Information`\n- File logs retain full timestamps and log levels for debugging\n- All tests pass with the new logging configuration\n\n**Before:** \n```\n[11:08:47 INF] Application started\n[11:08:47 INF] Tag command initialized\nUsing configuration file: /path/to/config.json\n```\n\n**After (Normal mode):**\n```\nUsing configuration file: /path/to/config.json\n```\n\n**After (Debug mode):**\n```\nDebug mode enabled\nApplication started\nTag command initialized\nUsing configuration file: /path/to/config.json\n```\n\n**Files Modified:**\n- src/c-sharp/NotebookAutomation.Core/Configuration/LoggingService.cs\n- src/c-sharp/NotebookAutomation.Cli/Program.cs",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-02T18:12:15.851Z",
+      "updatedAt": "2025-06-02T18:15:50.210Z"
     }
   ],
   "subtasks": [
