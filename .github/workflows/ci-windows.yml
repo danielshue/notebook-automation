@@ -7,12 +7,16 @@ on:
     paths:
       - 'src/c-sharp/**'
       - '.github/workflows/**'
+    paths-ignore:
+      - '.agentic-tools-mcp/**'
   pull_request:
     branches:
       - csharp-migration
     paths:
       - 'src/c-sharp/**'
       - '.github/workflows/**'
+    paths-ignore:
+      - '.agentic-tools-mcp/**'
 
 jobs:
   build-and-test:

@@ -1,0 +1,8 @@
+{
+  "id": "9f18ceec-fcbc-4d53-9169-4a438e2125d3",
+  "title": "GitHub Actions - Ignore .agentic-tools-mcp Changes",
+  "details": "Configured GitHub Actions workflows to ignore changes in .agentic-tools-mcp folder to prevent unnecessary CI/CD runs.\n\nCHANGES MADE:\n1. ci-windows.yml:\n   - Added 'paths-ignore: - .agentic-tools-mcp/**' to both push and pull_request triggers\n   - This prevents the C# build workflow from running when only .agentic-tools-mcp files change\n\n2. build-exe.yml:\n   - Added 'paths-ignore: - .agentic-tools-mcp/**' to both push and pull_request triggers\n   - This prevents the Python EXE build workflow from running when only .agentic-tools-mcp files change\n\nRATIONALE:\nThe .agentic-tools-mcp folder contains project management data (tasks, memories) that doesn't affect the actual source code or build process. Changes to this folder should not trigger expensive CI/CD pipelines.\n\nBEHAVIOR:\n- CI will still run for actual source code changes\n- CI will still run for workflow file changes\n- CI will NOT run for changes only in .agentic-tools-mcp/**\n- Manual workflow_dispatch still works regardless\n\nThis improves CI efficiency and reduces unnecessary build costs.",
+  "category": "cicd",
+  "dateCreated": "2025-06-02T19:06:53.087Z",
+  "dateUpdated": "2025-06-02T19:06:53.087Z"
+}
