@@ -55,7 +55,6 @@ namespace NotebookAutomation.Core.Services
         private readonly ILogger<AISummarizer> _logger;
         private readonly IPromptService? _promptService;
         private readonly Kernel? _semanticKernel;
-        private readonly ITextGenerationService? _textGenerationService;
         private readonly ITextChunkingService _chunkingService;
 
         /// <summary>
@@ -87,31 +86,10 @@ namespace NotebookAutomation.Core.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _promptService = promptService;
             _semanticKernel = semanticKernel;
-            _textGenerationService = null;
             _chunkingService = chunkingService ?? new TextChunkingService();
         }
 
-        /// <summary>
-        /// Initializes a new instance of the AISummarizer class with additional test compatibility support.
-        /// </summary>
-        /// <param name="logger">The logger instance for tracking operations and debugging</param>
-        /// <param name="promptService">Service for loading and processing prompt templates from the file system</param>
-        /// <param name="semanticKernel">Microsoft.SemanticKernel instance configured with Azure OpenAI</param>
-        /// <param name="textGenerationService">Fallback text generation service for unit testing scenarios</param>
-        /// <param name="chunkingService">Optional text chunking service for splitting large texts. If null, creates a default instance.</param>
-        /// <exception cref="ArgumentNullException">Thrown when logger is null</exception>
-        /// <remarks>
-        /// This constructor supports testing scenarios where SemanticKernel might not be available.
-        /// When semanticKernel is null, the service will attempt to use textGenerationService as a fallback.
-        /// </remarks>
-        public AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptService, Kernel? semanticKernel, ITextGenerationService? textGenerationService, ITextChunkingService? chunkingService = null)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _promptService = promptService;
-            _semanticKernel = semanticKernel;
-            _textGenerationService = textGenerationService;
-            _chunkingService = chunkingService ?? new TextChunkingService();
-        }
+
 
         /// <summary>
         /// Generates an AI-powered summary for the given text using the best available AI framework.
@@ -145,9 +123,7 @@ namespace NotebookAutomation.Core.Services
         /// the format {{variableName}}.
         /// </para>
         /// <para>
-        /// Fallback behavior when SemanticKernel is unavailable:
-        /// 1. Attempts to use ITextGenerationService if available
-        /// 2. Returns null if no AI services are configured
+
         /// </para>
         /// </remarks>
         /// <example>
@@ -225,25 +201,7 @@ namespace NotebookAutomation.Core.Services
             if (_semanticKernel == null)
             {
                 // Fall back to direct ITextGenerationService if available
-                if (_textGenerationService != null)
-                {
-                    _logger.LogDebug("Using ITextGenerationService fallback for summarization");
 
-                    // Use the processed prompt or fall back to a default
-                    string finalPrompt = processedPrompt ?? $"Please summarize the following text:\n\n{processedInputText}";
-
-                    try
-                    {
-                        var textContents = await _textGenerationService.GetTextContentsAsync(finalPrompt, null, null, cancellationToken);
-                        var firstContent = textContents?.FirstOrDefault();
-                        return firstContent?.Text;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Failed to generate summary using ITextGenerationService");
-                        return string.Empty;
-                    }
-                }
 
                 _logger.LogWarning("No AI service is available. Returning null.");
                 return null;
@@ -312,30 +270,7 @@ namespace NotebookAutomation.Core.Services
             // Check for cancellation early
             cancellationToken.ThrowIfCancellationRequested();
 
-            // For tests without semantic kernel but with text generation service
-            if (_semanticKernel == null && _textGenerationService != null)
-            {
-                try
-                {
-                    _logger.LogDebug("Using text generation service for chunking");
-                    // Make sure we call the chunking service for tests to verify
-                    List<string> chunks = _chunkingService.SplitTextIntoChunks(inputText, _maxChunkTokens, _overlapTokens);
-                    _logger.LogDebug("Split into {ChunkCount} chunks", chunks.Count);
-
-                    // Use the text generation service to get the response in test scenarios
-                    var textContents = await _textGenerationService.GetTextContentsAsync(
-                        "Chunked content", null, null, cancellationToken);
-                    var firstContent = textContents?.FirstOrDefault();
-                    return firstContent?.Text;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error in chunked summarization using text generation service");
-                    return "[Simulated AI summary]";
-                }
-            }
-
-            // If no semantic kernel and no text generation service
+            // For tests without semantic kernel but with text generation service            // If no semantic kernel and no text generation service
             if (_semanticKernel == null)
             {
                 _logger.LogWarning("Semantic kernel is not available for chunked summarization. Returning simulated summary.");
@@ -499,21 +434,7 @@ namespace NotebookAutomation.Core.Services
                     return string.Empty;
                 }
 
-                // If text generation service is available, try to use it as fallback
-                if (_textGenerationService != null)
-                {
-                    try
-                    {
-                        var textContents = await _textGenerationService.GetTextContentsAsync(
-                            "Error fallback", null, null, cancellationToken);
-                        var firstContent = textContents?.FirstOrDefault();
-                        return firstContent?.Text;
-                    }
-                    catch
-                    {
-                        return "[Simulated AI summary]";
-                    }
-                }
+
 
                 return "[Simulated AI summary]";
             }
@@ -592,8 +513,7 @@ namespace NotebookAutomation.Core.Services
         /// A task that represents the asynchronous processing operation. The task result contains:
         /// - A tuple with the processed prompt (or null if loading failed) and the input text
         /// - The processed prompt will be loaded from promptFileName if the prompt parameter is empty
-        /// </returns>
-        /// <remarks>
+        /// </returns>        /// <remarks>
         /// This method serves as a preparation step for both direct and chunked summarization.
         /// It attempts to load the specified prompt template file when no prompt is provided directly.
         /// Loading failures are logged as warnings but do not prevent the operation from continuing.
@@ -616,6 +536,24 @@ namespace NotebookAutomation.Core.Services
                 {
                     _logger.LogWarning(ex, "Failed to load prompt template from file: {FileName}", promptFileName);
                     processedPrompt = null; // Set to null when exception occurs
+                }
+            }
+
+            // Process the template with content if we have a prompt service
+            if (!string.IsNullOrEmpty(processedPrompt) && _promptService != null)
+            {
+                try
+                {
+                    var variables = new Dictionary<string, string>
+                    {
+                        ["content"] = inputText
+                    };
+                    processedPrompt = await _promptService.ProcessTemplateAsync(processedPrompt, variables);
+                    _logger.LogDebug("Processed prompt template with variables");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to process prompt template with variables");
                 }
             }
 

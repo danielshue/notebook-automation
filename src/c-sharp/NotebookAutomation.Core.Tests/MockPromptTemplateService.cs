@@ -102,9 +102,7 @@ namespace NotebookAutomation.Core.Tests
             }
 
             return result;
-        }
-
-        /// <summary>
+        }        /// <summary>
         /// Gets a prompt with variables substituted.
         /// </summary>
         /// <param name="templateName">Name of the template to load.</param>
@@ -114,6 +112,17 @@ namespace NotebookAutomation.Core.Tests
         {
             string template = await LoadTemplateAsync(templateName);
             return SubstituteVariables(template, variables);
+        }
+
+        /// <summary>
+        /// Processes template with variables for compatibility with AISummarizer tests.
+        /// </summary>
+        /// <param name="template">The template string with placeholders.</param>
+        /// <param name="variables">Dictionary of variable names and values.</param>
+        /// <returns>The template with variables substituted.</returns>
+        public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables)
+        {
+            return Task.FromResult(SubstituteVariables(template, variables));
         }
     }
 }

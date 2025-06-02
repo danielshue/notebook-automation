@@ -14,7 +14,7 @@ namespace NotebookAutomation.Core.Tests
     /// A mock implementation of ITextGenerationService for testing AISummarizer.
     /// </summary>
     /// <remarks>
-    /// This class provides more extensive configuration options than FakeTextGenerationService
+    /// This class provides more extensive configuration options than previous test doubles
     /// and specifically tracks the calls made to the service.
     /// </remarks>
     public class MockTextGenerationService : ITextGenerationService

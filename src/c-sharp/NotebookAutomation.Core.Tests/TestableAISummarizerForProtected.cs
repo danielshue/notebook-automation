@@ -25,22 +25,18 @@ namespace NotebookAutomation.Core.Tests
         public TestableAISummarizerForProtected(
             ILogger<AISummarizer> logger,
             IPromptService? promptService,
-            Kernel? semanticKernel,
-            ITextGenerationService? textGenerationService)
-            : base(logger, promptService, semanticKernel, textGenerationService)
+            Kernel? semanticKernel)
+            : base(logger, promptService, semanticKernel)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance for testing protected methods with a text chunking service.
+        }        /// <summary>
+        /// Initializes a new instance for testing protected methods with a custom ITextChunkingService.
         /// </summary>
         public TestableAISummarizerForProtected(
             ILogger<AISummarizer> logger,
             IPromptService? promptService,
             Kernel? semanticKernel,
-            ITextGenerationService? textGenerationService,
-            ITextChunkingService chunkingService)
-            : base(logger, promptService, semanticKernel, textGenerationService, chunkingService)
+            ITextChunkingService textChunkingService)
+            : base(logger, promptService, semanticKernel, textChunkingService)
         {
         }
 

@@ -3,13 +3,19 @@
 // Centralized logging service for the Notebook Automation system.
 //
 // Example usage:
-//     var logger = LoggingService.CreateLogger<SomeClass>(debug: true);
+//     var loggingService = provider.GetRequiredService<ILoggingService>();
+//     var logger = loggingService.GetLogger<SomeClass>();
 //     logger.LogInformation("Application started");
 // -----------------------------------------------------------------------------
 
 using System.Reflection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+using SerilogILogger = Serilog.ILogger;
 
 namespace NotebookAutomation.Core.Configuration
 {
@@ -35,214 +41,215 @@ namespace NotebookAutomation.Core.Configuration
     ///   <item><description>Warning: Non-critical issues that might need attention</description></item>
     ///   <item><description>Error: Errors that don't stop the application but impair functionality</description></item>
     ///   <item><description>Critical: Critical errors that might lead to application failure</description></item>
-    /// </list>
+    /// </list>    
     /// </para>
-    /// </remarks>
-    public class LoggingService
+    /// </remarks>    
+    public class LoggingService : ILoggingService
     {
-        /// <summary>
-        /// The singleton instance of LoggingService.
-        /// </summary>
-        private static LoggingService? _instance;
+        // Core properties for logging configuration
+        private readonly string _loggingDir;
+        private readonly bool _debug;
+        
+        // The initialized loggers and factory (null until ConfigureLogging is called)
+        private SerilogILogger? _serilogLogger;
+        private SerilogILogger? _serilogFailedLogger; 
+        private ILoggerFactory? _loggerFactory;
+        private ILogger? _logger;
+        private ILogger? _failedLogger;
+        
+        // Synchronization object for thread safety
+        private readonly object _initLock = new object();
+        private volatile bool _isInitialized;
 
         /// <summary>
-        /// Lock object for thread-safe singleton initialization.
+        /// Gets the main Serilog logger instance used for general logging.
         /// </summary>
-        private static readonly object _lock = new object();
+        private SerilogILogger SerilogLogger => EnsureInitialized()._serilogLogger!;
 
         /// <summary>
-        /// The main logger instance used for general logging.
+        /// Gets the specialized Serilog logger instance used for recording failed operations.
         /// </summary>
-        private readonly ILogger _logger;
+        private SerilogILogger SerilogFailedLogger => EnsureInitialized()._serilogFailedLogger!;
 
         /// <summary>
-        /// The specialized logger instance used for recording failed operations.
+        /// Gets the logger factory used to create typed loggers.
         /// </summary>
-        private readonly ILogger _failedLogger;
-
-        /// <summary>
-        /// Gets the singleton instance of the LoggingService.
-        /// </summary>
-        public static LoggingService Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    lock (_lock)
-                    {
-                        _instance ??= new LoggingService();
-                    }
-                }
-                return _instance;
-            }
-        }
+        private ILoggerFactory LoggerFactoryInternal => EnsureInitialized()._loggerFactory!;
 
         /// <summary>
         /// Gets the main logger instance used for general application logging.
         /// </summary>
-        public ILogger Logger => _logger;
+        public ILogger Logger => EnsureInitialized()._logger!;
 
         /// <summary>
         /// Gets the specialized logger instance used for recording failed operations.
         /// </summary>
-        public ILogger FailedLogger => _failedLogger;
-
+        public ILogger FailedLogger => EnsureInitialized()._failedLogger!;
+        
         /// <summary>
-        /// Private constructor to enforce singleton pattern.
+        /// Initializes a new instance of the LoggingService class with a logging directory.
+        /// This constructor is used for early initialization before AppConfig is available.
         /// </summary>
-        private LoggingService()
-        {
-            // Initialize with default loggers
-            _logger = CreateLogger(GetAssemblyName());
-            _failedLogger = CreateFailedLogger();
-        }
-
-        /// <summary>
-        /// Initialize the LoggingService with custom configuration.
-        /// </summary>
-        /// <param name="appConfig">The application configuration.</param>
-        /// <param name="debug">Whether debug logging is enabled.</param>
-        public LoggingService(AppConfig appConfig, bool debug = false)
-        {
-            // Determine if we should log to file
-            var logToFile = !string.IsNullOrEmpty(appConfig.Paths.LoggingDir);
-            string? logFilePath = null;
-
-            if (logToFile)
-            {
-                var assemblyName = GetAssemblyName();
-                var date = DateTime.Now.ToString("yyyyMMdd");
-                logFilePath = Path.Combine(appConfig.Paths.LoggingDir, $"{assemblyName.ToLower()}_{date}.log");
-            }
-
-            _logger = CreateLogger(GetAssemblyName(), debug, logToFile, logFilePath);
-            _failedLogger = CreateFailedLogger(debug, logToFile, logFilePath);
-
-            // Set instance if it hasn't been set yet
-            _instance ??= this;
-        }
-
-        /// <summary>
-        /// Gets the minimum log level for standard logging based on debug mode.
-        /// </summary>
+        /// <param name="loggingDir">The directory where log files should be stored.</param>       
         /// <param name="debug">Whether debug mode is enabled.</param>
-        /// <returns>LogLevel.Debug if debug is true; otherwise, LogLevel.Information.</returns>
-        public static LogLevel GetMinLogLevel(bool debug) => debug ? LogLevel.Debug : LogLevel.Information;
-
-        /// <summary>
-        /// Creates a logger factory with console logging configured.
-        /// </summary>
-        /// <param name="debug">Whether to enable debug logging.</param>
-        /// <param name="logToFile">Whether to enable file logging.</param>
-        /// <param name="logFilePath">Path to the log file (used only if logToFile is true).</param>
-        /// <returns>A configured ILoggerFactory instance.</returns>
-        /// <remarks>
-        /// <para>
-        /// This method creates a logger factory that logs to the console with colorized output
-        /// for better readability. If logToFile is true, it also configures file logging to the
-        /// specified log file path.
-        /// </para>
-        /// <para>
-        /// The minimum log level is determined by the debug parameter - when debug is true,
-        /// Debug level and above are logged, otherwise only Information and above are logged.
-        /// </para>
-        /// </remarks>
-        public static ILoggerFactory CreateLoggerFactory(bool debug = false, bool logToFile = false, string? logFilePath = null)
+        public LoggingService(string loggingDir, bool debug = false)
         {
-            var loggerFactory = LoggerFactory.Create(builder =>
+            _loggingDir = loggingDir ?? Path.Combine(AppContext.BaseDirectory, "logs");
+            _debug = debug;
+            _isInitialized = false;
+        }
+          
+        /// <summary>
+        /// Ensures that the loggers are initialized and returns the current instance.
+        /// </summary>
+        /// <returns>The current LoggingService instance with initialized loggers.</returns>
+        private LoggingService EnsureInitialized()
+        {
+            if (_isInitialized)
             {
-                builder.AddSimpleConsole(options =>
+                return this;
+            }
+            
+            lock (_initLock)
+            {
+                if (!_isInitialized)
                 {
-                    options.ColorBehavior = LoggerColorBehavior.Enabled;
-                    options.SingleLine = false;
-                    options.TimestampFormat = "yyyy-MM-dd HH:mm:ss ";
-                    options.UseUtcTimestamp = false;
-                })
-                .SetMinimumLevel(GetMinLogLevel(debug));
-
-                // Add file logging if requested
-                if (logToFile && !string.IsNullOrEmpty(logFilePath))
-                {
-                    // Ensure directory exists
-                    var dirPath = Path.GetDirectoryName(logFilePath);
-                    if (!string.IsNullOrEmpty(dirPath) && !Directory.Exists(dirPath))
-                    {
-                        Directory.CreateDirectory(dirPath);
-                    }
-
-                    // Add file logger - would use a proper file logging provider in a real implementation
-                    // e.g., builder.AddFile(logFilePath);
-                    // Using a commented placeholder as actual implementation depends on external packages
+                    InitializeLogging();
+                    _isInitialized = true;
                 }
-            });
-
-            return loggerFactory;
+            }
+            
+            return this;
         }
-
+        
         /// <summary>
-        /// Creates an ILogger instance for the specified category name.
+        /// Initializes the logging infrastructure.
         /// </summary>
-        /// <param name="categoryName">The category name for the logger.</param>
-        /// <param name="debug">Whether to enable debug logging.</param>
-        /// <param name="logToFile">Whether to enable file logging.</param>
-        /// <param name="logFilePath">Path to the log file (used only if logToFile is true).</param>
-        /// <returns>An ILogger configured for the specified category.</returns>
-        /// <remarks>
-        /// This is a convenience method for creating a logger with an explicit category name.
-        /// The logger outputs to the console with colorized output.
-        /// </remarks>
-        public static ILogger CreateLogger(string categoryName, bool debug = false, bool logToFile = false, string? logFilePath = null)
+        protected virtual void InitializeLogging()
         {
-            return CreateLoggerFactory(debug, logToFile, logFilePath).CreateLogger(categoryName);
-        }
+            try
+            {
+                // Create Serilog loggers
+                _serilogLogger = CreateSerilogLogger(_loggingDir, _debug);
+                
+                // Create the failed logger with the same configuration but a different source context
+                var failedLoggerName = typeof(FailedOperations).FullName ?? "FailedOperations";
+                _serilogFailedLogger = _serilogLogger.ForContext("SourceContext", failedLoggerName);
 
+                // Create Microsoft.Extensions.Logging factory and loggers
+                var appAssemblyName = GetAssemblyName();
+                _loggerFactory = new LoggerFactory().AddSerilog(_serilogLogger, dispose: false);
+                _logger = _loggerFactory.CreateLogger(appAssemblyName);
+                _failedLogger = _loggerFactory.CreateLogger(failedLoggerName);
+            }
+            catch (Exception ex)
+            {
+                // Create a fallback console logger in case initialization fails
+                var fallbackFactory = LoggerFactory.Create(builder => 
+                    builder.AddSimpleConsole(options => 
+                    { 
+                        options.SingleLine = false;
+                        options.ColorBehavior = LoggerColorBehavior.Enabled;
+                    }));
+                
+                var fallbackLogger = fallbackFactory.CreateLogger("LoggingService.Fallback");
+                fallbackLogger.LogError(ex, "Failed to initialize logging. Using fallback console logger.");
+                
+                // Create minimal working loggers
+                _serilogLogger = new LoggerConfiguration()
+                    .MinimumLevel.Debug()
+                    .WriteTo.Console()
+                    .CreateLogger();
+                
+                _serilogFailedLogger = _serilogLogger;
+                _loggerFactory = fallbackFactory;
+                _logger = fallbackLogger;
+                _failedLogger = fallbackLogger;
+            }
+        }        
+                        
         /// <summary>
-        /// Creates a typed ILogger instance for the specified type T.
+        /// Configures the logging builder with the appropriate providers asynchronously.
+        /// </summary>
+        /// <param name="builder">The logging builder to configure.</param>
+        public void ConfigureLogging(ILoggingBuilder builder)
+        {
+            if (!Directory.Exists(_loggingDir))
+            {
+                Directory.CreateDirectory(_loggingDir);
+            }
+            
+            // Ensure loggers are initialized
+            EnsureInitialized();
+            
+            // Configure the builder with our Serilog logger
+            builder.AddSerilog(SerilogLogger, dispose: true);
+        }
+        
+        /// <summary>
+        /// Creates a configured Serilog logger for the application.
+        /// </summary>
+        /// <param name="loggingDir">Directory for log files.</param>
+        /// <param name="debug">Whether debug logging is enabled.</param>
+        /// <returns>A configured Serilog logger instance.</returns>
+        private SerilogILogger CreateSerilogLogger(string loggingDir, bool debug)
+        {
+            try
+            {
+                // Ensure directory exists
+                if (!Directory.Exists(loggingDir))
+                {
+                    Directory.CreateDirectory(loggingDir);
+                }
+                
+                var appAssemblyName = GetAssemblyName();
+                var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;
+                var date = DateTime.Now.ToString("yyyyMMdd");
+                var logFilePath = Path.Combine(loggingDir, $"{appAssemblyName.ToLower()}_{date}.log");
+                
+                // Configure and create Serilog logger
+                var loggerConfig = new LoggerConfiguration()
+                    .MinimumLevel.Is(minLevel)
+                    .WriteTo.Console(restrictedToMinimumLevel: minLevel)
+                    .WriteTo.File(
+                        logFilePath,
+                        rollingInterval: RollingInterval.Day,
+                        retainedFileCountLimit: 7,
+                        restrictedToMinimumLevel: minLevel);
+                
+                return loggerConfig.CreateLogger().ForContext("SourceContext", appAssemblyName);
+            }
+            catch (Exception ex)
+            {
+                // If we can't create the logger, use a default Serilog console logger
+                var fallbackConfig = new LoggerConfiguration()
+                    .WriteTo.Console();
+                var fallbackLogger = fallbackConfig.CreateLogger();
+                fallbackLogger.Error(ex, "Failed to initialize Serilog logger. Using fallback console logger.");
+                return fallbackLogger;
+            }
+        }       
+        
+         /// <summary>
+        /// Gets a typed ILogger instance for the specified type T from this LoggingService instance.
         /// </summary>
         /// <typeparam name="T">The type to create the logger for.</typeparam>
-        /// <param name="debug">Whether to enable debug logging.</param>
         /// <returns>An ILogger{T} configured for the specified type.</returns>
         /// <remarks>
-        /// This is a convenience method for creating a typed logger, which uses the type name
-        /// as the category name. This is the preferred way to create loggers for classes.
+        /// This is an instance method for creating a typed logger, which uses the type name
+        /// as the category name. This is the preferred way to create loggers for classes
+        /// when you have a LoggingService instance.
         /// </remarks>
-        public static ILogger<T> CreateLogger<T>(bool debug = false)
+        public virtual ILogger<T> GetLogger<T>()
         {
-            return CreateLoggerFactory(debug).CreateLogger<T>();
+            return LoggerFactoryInternal.CreateLogger<T>();
         }
-
-        /// <summary>
-        /// Creates a specialized logger for recording failed operations.
-        /// </summary>
-        /// <param name="debug">Whether to enable debug logging.</param>
-        /// <param name="logToFile">Whether to enable file logging.</param>
-        /// <param name="logFilePath">Path to the log file (used only if logToFile is true).</param>
-        /// <returns>An ILogger configured specifically for logging failures.</returns>
-        /// <remarks>
-        /// <para>
-        /// This method creates a specialized logger for recording failed operations, with a category
-        /// name that clearly identifies it as a "failed operations" logger.
-        /// </para>
-        /// <para>
-        /// Failed operations loggers are used throughout the application to record operations that
-        /// failed in a consistent way, making it easier to track and diagnose issues.
-        /// </para>
-        /// </remarks>
-        public static ILogger CreateFailedLogger(bool debug = false, bool logToFile = false, string? logFilePath = null)
-        {
-            return CreateLogger(typeof(FailedOperations).FullName ?? "FailedOperations", debug, logToFile, logFilePath);
-        }
-
+        
         /// <summary>
         /// Gets the assembly name for the executing assembly.
         /// </summary>
         /// <returns>The name of the executing assembly, or "Unknown" if it cannot be determined.</returns>
-        /// <remarks>
-        /// This is a utility method used internally to get a meaningful category name when
-        /// more specific information is not available.
-        /// </remarks>
-        public static string GetAssemblyName()
+        private static string GetAssemblyName()
         {
             try
             {

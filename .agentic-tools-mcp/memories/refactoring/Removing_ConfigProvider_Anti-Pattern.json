@@ -1,0 +1,8 @@
+{
+  "id": "5f3aa417-3648-488f-a105-a984fd88801d",
+  "title": "Removing ConfigProvider Anti-Pattern",
+  "details": "Successfully removed ConfigProvider class and associated tests as it implemented the Service Locator anti-pattern and was redundant with the modern DI approach already implemented via ServiceRegistration and ConfigurationSetup.\n\n## Files Successfully Removed:\n- ✅ ConfigProvider.cs (Core project) - DELETED\n- ✅ LoggingServiceAndConfigProviderTests.cs (Core.Tests project) - DELETED\n\n## Results After Removal:\n- ✅ Build: Successful compilation with no errors\n- ✅ Tests: All tests pass (338 total: 336 passed, 2 skipped, 0 failed)\n- ✅ No breaking changes to production code\n- ✅ Reduced technical debt by removing anti-pattern\n\n## Impact:\n- Removed 8 ConfigProvider-related tests (no functional loss)\n- Total test count reduced from 346 to 338 tests\n- Modern DI pattern via ServiceRegistration remains fully functional\n- CLI application continues to work correctly with proper dependency injection\n\n## Reasoning:\n- ConfigProvider only used in tests, not production code\n- Implements Service Locator anti-pattern\n- Redundant with existing ServiceRegistration + ConfigurationSetup approach\n- Modern DI pattern already working correctly in CLI application",
+  "category": "refactoring",
+  "dateCreated": "2025-06-02T13:57:31.450Z",
+  "dateUpdated": "2025-06-02T13:58:51.796Z"
+}
