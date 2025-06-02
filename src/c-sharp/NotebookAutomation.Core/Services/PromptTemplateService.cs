@@ -199,9 +199,7 @@ namespace NotebookAutomation.Core.Services
                 _logger.LogErrorWithPath(templateName, $"Error loading template: {templateName}. Exception: {ex.Message}");
                 return GetDefaultTemplate(templateName);
             }
-        }
-
-        /// <summary>
+        }        /// <summary>
         /// Gets a default template based on the template name.
         /// </summary>
         /// <param name="templateName">Name of the template.</param>
@@ -216,6 +214,17 @@ namespace NotebookAutomation.Core.Services
                 "final_summary_prompt" => DefaultFinalPrompt,
                 _ => DefaultFinalPrompt
             };
+        }
+        
+        /// <summary>
+        /// Processes template with variables asynchronously.
+        /// </summary>
+        /// <param name="template">The template string with placeholders.</param>
+        /// <param name="variables">Dictionary of variable names and values.</param>
+        /// <returns>The template with variables substituted.</returns>
+        public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables)
+        {
+            return Task.FromResult(SubstituteVariables(template, variables));
         }
     }
 }

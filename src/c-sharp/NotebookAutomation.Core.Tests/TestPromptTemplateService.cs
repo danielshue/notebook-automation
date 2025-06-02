@@ -42,25 +42,38 @@ namespace NotebookAutomation.Core.Tests
         public override Task<string> LoadTemplateAsync(string templateName)
         {
             LastTemplateName = templateName;
-            return Task.FromResult(Template ?? $"Default test template for {templateName}");
-        }
+            return Task.FromResult(Template ?? $"Default test template for {templateName}");        }
 
         /// <summary>
         /// Returns the configured substitution result or applies the default substitution.
         /// </summary>
-        public new string SubstituteVariables(string template, Dictionary<string, string> variables)
+        public new string SubstituteVariables(string template, Dictionary<string, string>? variables)
         {
             if (ExpectedSubstitution != null)
             {
                 return ExpectedSubstitution;
             }
+
             // Simple implementation for tests
             string result = template;
-            foreach (var kvp in variables)
+            if (variables != null)
             {
-                result = result.Replace("{{" + kvp.Key + "}}", kvp.Value);
-            }
-            return result;
+                foreach (var kvp in variables)
+                {
+                    result = result.Replace("{{" + kvp.Key + "}}", kvp.Value);
+                }
+            }            return result;
+        }
+
+        /// <summary>
+        /// Processes template with variables for tests.
+        /// </summary>
+        /// <param name="template">The template string with placeholders.</param>
+        /// <param name="variables">Dictionary of variable names and values.</param>
+        /// <returns>The template with variables substituted.</returns>
+        public new Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables)
+        {
+            return Task.FromResult(SubstituteVariables(template, variables ?? new Dictionary<string, string>()));
         }
     }
 }

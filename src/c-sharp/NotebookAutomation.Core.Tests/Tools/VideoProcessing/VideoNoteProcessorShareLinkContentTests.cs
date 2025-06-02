@@ -31,8 +31,8 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing
             // Create a real AISummarizer with test dependencies
             var mockAiLogger = new LoggerFactory().CreateLogger<AISummarizer>();
             var testPromptService = new TestPromptTemplateService();
-            var testTextGenService = new FakeTextGenerationService();
-            _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, null);
+            var kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
+            _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
 
             _oneDriveServiceMock = new Mock<IOneDriveService>();
 

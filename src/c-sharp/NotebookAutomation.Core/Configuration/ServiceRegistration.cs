@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TextGeneration;
+
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.TagManagement;
 using NotebookAutomation.Core.Tools.VideoProcessing;
@@ -11,6 +11,7 @@ using NotebookAutomation.Core.Tools.PdfProcessing;
 
 using NotebookAutomation.Core.Utils;
 using Serilog;
+using System.Threading.Tasks;
 
 namespace NotebookAutomation.Core.Configuration
 {
@@ -76,9 +77,8 @@ namespace NotebookAutomation.Core.Configuration
         /// <param name="services">The service collection to configure.</param>
         /// <param name="configuration">The application configuration.</param>
         /// <param name="debug">Whether debug mode is enabled.</param>
-        /// <returns>The configured service collection.</returns>
-        public static IServiceCollection AddNotebookAutomationServices(
-            this IServiceCollection services,
+        /// <returns>The configured service collection.</returns>        
+        public static IServiceCollection AddNotebookAutomationServices(this IServiceCollection services,
             IConfiguration configuration,
             bool debug = false,
             string? configFilePath = null)
@@ -87,126 +87,43 @@ namespace NotebookAutomation.Core.Configuration
                 throw new ArgumentNullException(nameof(services));
             if (configuration == null)
                 throw new ArgumentNullException(nameof(configuration));
-            // Register configuration
-            services.AddSingleton(provider =>
-            {
-                var appConfig = new AppConfig(
-                    configuration,
-                    provider.GetRequiredService<ILogger<AppConfig>>(),
-                    configFilePath,
-                    debug);
-                return appConfig;
-            });
 
-            // Register UserSecretsHelper
-            services.AddSingleton<UserSecretsHelper>();
+            // Register and configure services by category
+            RegisterLoggingServices(services, configuration, debug);
+            RegisterConfigurationServices(services, configuration, configFilePath, debug);
+            RegisterMetadataServices(services);
+            RegisterCloudServices(services);
+            RegisterAIServices(services);
+            RegisterDocumentProcessors(services);
 
-            // Register logging services
-            services.AddLogging(builder =>
-            {
-                // Support both snake_case and camelCase for logging_dir
-                var loggingDir = configuration.GetSection("paths:logging_dir")?.Value
-                    ?? configuration.GetSection("paths:loggingDir")?.Value;
-                if (string.IsNullOrWhiteSpace(loggingDir))
-                {
-                    loggingDir = Path.Combine(AppContext.BaseDirectory, "logs");
-                }
-                Directory.CreateDirectory(loggingDir);
+            return services;
+        }
 
-                // Configure Serilog for both console and file
-                var loggerConfig = new LoggerConfiguration()
-                    .MinimumLevel.Is(debug ? Serilog.Events.LogEventLevel.Debug : Serilog.Events.LogEventLevel.Information)
-                    .WriteTo.Console(restrictedToMinimumLevel: debug ? Serilog.Events.LogEventLevel.Debug : Serilog.Events.LogEventLevel.Information)
-                    .WriteTo.File(
-                        Path.Combine(loggingDir, $"notebookautomation_cli_{DateTime.Now:yyyyMMdd}.log"),
-                        rollingInterval: RollingInterval.Day,
-                        retainedFileCountLimit: 7,
-                        restrictedToMinimumLevel: debug ? Serilog.Events.LogEventLevel.Debug : Serilog.Events.LogEventLevel.Information);
-
-                // Add Serilog to the logging pipeline (do not add Microsoft console logger)
-                builder.AddSerilog(loggerConfig.CreateLogger(), dispose: true);
-            });
-            services.AddSingleton<LoggingService>();
-            services.AddSingleton<IYamlHelper, YamlHelper>();
-
-            // Register new metadata-related services
-            services.AddScoped<MetadataTemplateManager>();
-            services.AddScoped<MetadataHierarchyDetector>();
-
-            // Register core services
+        /// <summary>
+        /// Registers AI-related services including Semantic Kernel and AISummarizer.
+        /// </summary>
+        /// <param name="services">The service collection to configure.</param>
+        /// <returns>The configured service collection.</returns>
+        private static IServiceCollection RegisterAIServices(IServiceCollection services)
+        {
+            // Register prompt template service
             services.AddScoped(provider =>
             {
-                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger<PromptTemplateService>();
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<PromptTemplateService>();
                 var appConfig = provider.GetRequiredService<AppConfig>();
                 return new PromptTemplateService(logger, appConfig);
-            }); services.AddScoped<TagProcessor>();
-
-            // Register processors with AISummarizer dependency
-            services.AddScoped(provider =>
-            {
-                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger<VideoNoteProcessor>();
-                var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-                var appConfig = provider.GetRequiredService<AppConfig>();
-                // Use GetService instead of GetRequiredService since OneDriveService is optional
-                var oneDriveService = provider.GetService<IOneDriveService>();
-                return new VideoNoteProcessor(logger, aiSummarizer, oneDriveService, appConfig);
             });
 
-            services.AddScoped(provider =>
-            {
-                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-                var batchLogger = loggerFactory.CreateLogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>(); var processorLogger = loggerFactory.CreateLogger<VideoNoteProcessor>();
-                var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-                var appConfig = provider.GetRequiredService<AppConfig>();
-                // Use GetService instead of GetRequiredService since OneDriveService is optional
-                var oneDriveService = provider.GetService<IOneDriveService>();
-                var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, oneDriveService, appConfig);
-                var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(batchLogger, videoProcessor, aiSummarizer);
-                return new VideoNoteBatchProcessor(batchProcessor);
-            });
-
-            services.AddScoped(provider =>
-            {
-                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger<PdfNoteProcessor>();
-                var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-                return new PdfNoteProcessor(logger, aiSummarizer);
-            });
-
-            services.AddScoped(provider =>
-            {
-                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>();
-                var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-                var pdfProcessor = new PdfNoteProcessor(loggerFactory.CreateLogger<PdfNoteProcessor>(), aiSummarizer);
-                var batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(logger, pdfProcessor, aiSummarizer);
-                return new PdfNoteBatchProcessor(batchProcessor);
-            });
-
-            // Register OneDrive service
-            services.AddScoped<IOneDriveService>(provider =>
-            {
-                var logger = provider.GetRequiredService<ILogger<OneDriveService>>();
-                var microsoftGraph = provider.GetRequiredService<AppConfig>().MicrosoftGraph;
-                return new OneDriveService(
-                    logger,
-                    microsoftGraph?.ClientId ?? string.Empty,
-                    microsoftGraph?.TenantId ?? string.Empty,
-                    microsoftGraph?.Scopes?.ToArray() ?? Array.Empty<string>()
-                );
-            });
-
-            // Register prompt template service is already done above
-            //var openAiKey = configuration["UserSecrets:OpenAI:ApiKey"] ??
-            // Add AI services based on provider
+            // Register Semantic Kernel
             services.AddScoped(provider =>
             {
                 var appConfig = provider.GetRequiredService<AppConfig>();
                 var aiConfig = appConfig.AiService;
+                var loggingService = provider.GetRequiredService<LoggingService>();
                 var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
                 var builder = Kernel.CreateBuilder();
+
                 builder.Services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
 
                 var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
@@ -219,10 +136,11 @@ namespace NotebookAutomation.Core.Configuration
                 }
                 else if (providerType == "azure" && aiConfig.Azure != null)
                 {
-                    var azureKey = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
+                    var azureKey = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY") ?? string.Empty;
                     var endpoint = aiConfig.Azure.Endpoint ?? string.Empty;
                     var deployment = aiConfig.Azure.Deployment ?? string.Empty;
-                    builder.AddAzureOpenAIChatCompletion(deployment, endpoint, azureKey ?? string.Empty);
+                    var model = aiConfig.Azure.Model ?? string.Empty;
+                    builder.AddAzureOpenAIChatCompletion(deployment, endpoint, apiKey: azureKey, null, modelId: model ?? string.Empty);
                 }
                 else if (providerType == "foundry" && aiConfig.Foundry != null)
                 {
@@ -231,64 +149,184 @@ namespace NotebookAutomation.Core.Configuration
                     var model = aiConfig.Foundry.Model ?? string.Empty;
                     builder.AddOpenAIChatCompletion(model, foundryKey, endpoint);
                 }
-                return builder.Build();
+                var kernel = builder.Build();
+                return kernel;
             });
+
             // Register AISummarizer
             services.AddScoped(provider =>
             {
-                var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger<AISummarizer>();
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<AISummarizer>();
                 var appConfig = provider.GetRequiredService<AppConfig>();
                 var promptService = provider.GetRequiredService<PromptTemplateService>();
-
-                // Get semantic kernel if registered (may be null)
-                Kernel? semanticKernel = null;
-                ITextGenerationService? textGenService = null;
-
-                try
-                {
-                    semanticKernel = provider.GetService<Kernel>();
-
-                    // Try to get text generation service from kernel
-                    if (semanticKernel != null)
-                    {
-                        try
-                        {
-                            textGenService = semanticKernel.GetRequiredService<ITextGenerationService>();
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.LogWarning(ex, "Failed to get text generation service from kernel");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Semantic Kernel is not available");
-                }
-
-                // Use the correct model and settings for the selected provider
-                var aiConfig = appConfig.AiService;
-                var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
-                string? model = null;
-                if (providerType == "openai" && aiConfig.OpenAI != null)
-                {
-                    model = aiConfig.OpenAI.Model ?? "gpt-4o";
-                }
-                else if (providerType == "azure" && aiConfig.Azure != null)
-                {
-                    model = aiConfig.Azure.Model ?? "gpt-4o";
-                }
-                else if (providerType == "foundry" && aiConfig.Foundry != null)
-                {
-                    model = aiConfig.Foundry.Model ?? "foundry-llm-model-name";
-                }
+                var semanticKernel = provider.GetRequiredService<Kernel>();
 
                 return new AISummarizer(
                   logger,
                   promptService,
                   semanticKernel);
             });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers document processing services such as PDF and Video processors.
+        /// </summary>
+        /// <param name="services">The service collection to configure.</param>
+        /// <returns>The configured service collection.</returns>
+        private static IServiceCollection RegisterDocumentProcessors(IServiceCollection services)
+        {
+            // Register Video processor
+            services.AddScoped(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<VideoNoteProcessor>();
+                var aiSummarizer = provider.GetRequiredService<AISummarizer>();
+                var appConfig = provider.GetRequiredService<AppConfig>();
+                // Use GetService instead of GetRequiredService since OneDriveService is optional
+                var oneDriveService = provider.GetService<IOneDriveService>();
+                return new VideoNoteProcessor(logger, aiSummarizer, oneDriveService, appConfig);
+            });
+
+            // Register VideoNoteBatchProcessor
+            services.AddScoped(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var batchLogger = loggingService.GetLogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>();
+                var processorLogger = loggingService.GetLogger<VideoNoteProcessor>();
+                var aiSummarizer = provider.GetRequiredService<AISummarizer>();
+                var appConfig = provider.GetRequiredService<AppConfig>();
+                var oneDriveService = provider.GetService<IOneDriveService>();
+                var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, oneDriveService, appConfig);
+                var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(batchLogger, videoProcessor, aiSummarizer);
+                return new VideoNoteBatchProcessor(batchProcessor);
+            });
+
+            // Register PDF processor
+            services.AddScoped(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<PdfNoteProcessor>();
+                var aiSummarizer = provider.GetRequiredService<AISummarizer>();
+                return new PdfNoteProcessor(logger, aiSummarizer);
+            });
+
+            // Register PDF Batch Processor
+            services.AddScoped(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var batchLogger = loggingService.GetLogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>();
+                var processorLogger = loggingService.GetLogger<PdfNoteProcessor>();
+                var aiSummarizer = provider.GetRequiredService<AISummarizer>();
+                var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer);
+                var batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(batchLogger, pdfProcessor, aiSummarizer);
+                return new PdfNoteBatchProcessor(batchProcessor);
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers cloud-related services like OneDriveService.
+        /// </summary>
+        /// <param name="services">The service collection to configure.</param>
+        /// <returns>The configured service collection.</returns>
+        private static IServiceCollection RegisterCloudServices(IServiceCollection services)
+        {
+            // Register OneDrive service
+            services.AddScoped<IOneDriveService>(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<OneDriveService>();
+                var microsoftGraph = provider.GetRequiredService<AppConfig>().MicrosoftGraph;
+                return new OneDriveService(
+                    logger,
+                    microsoftGraph?.ClientId ?? string.Empty,
+                    microsoftGraph?.TenantId ?? string.Empty,
+                    microsoftGraph?.Scopes?.ToArray() ?? Array.Empty<string>()
+                );
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers and configures logging services for the application.
+        /// </summary>
+        /// <param name="services">The service collection to configure.</param>
+        /// <param name="debug">Whether debug mode is enabled.</param>
+        /// <returns>The configured service collection.</returns>        
+        private static IServiceCollection RegisterLoggingServices(IServiceCollection services, IConfiguration configuration, bool debug)
+        {
+            // Determine logging directory from configuration
+            var loggingDir = configuration.GetSection("paths:logging_dir")?.Value ?? configuration.GetSection("paths:loggingDir")?.Value;
+            if (string.IsNullOrWhiteSpace(loggingDir))
+            {
+                loggingDir = Path.Combine(AppContext.BaseDirectory, "logs");
+            }
+
+            // Register the LoggingService as a singleton early, before any other components
+            services.AddSingleton<ILoggingService>(_ => new LoggingService(loggingDir, debug));
+            services.AddSingleton<LoggingService>(provider => (LoggingService)provider.GetRequiredService<ILoggingService>());
+
+            // Now configure Microsoft.Extensions.Logging to use our LoggingService
+            services.AddLogging(builder =>
+            {
+                var provider = services.BuildServiceProvider();
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                loggingService.ConfigureLogging(builder);
+
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers configuration services for the application.
+        /// </summary>
+        /// <param name="services">The service collection to configure.</param>
+        /// <param name="configuration">The application configuration.</param>
+        /// <param name="configFilePath">Optional path to the configuration file.</param>
+        /// <param name="debug">Whether debug mode is enabled.</param>
+        /// <returns>The configured service collection.</returns>
+        private static IServiceCollection RegisterConfigurationServices(
+            IServiceCollection services,
+            IConfiguration configuration,
+            string? configFilePath,
+            bool debug)
+        {
+            // Register the configuration as a singleton
+            services.AddSingleton(provider =>
+            {
+                var appConfig = new AppConfig(
+                    configuration,
+                    provider.GetRequiredService<ILogger<AppConfig>>(),
+                    configFilePath,
+                    debug);
+
+                return appConfig;
+            });
+
+            // Register UserSecretsHelper
+            services.AddSingleton<UserSecretsHelper>();
+            services.AddSingleton<IYamlHelper, YamlHelper>();
+
+            return services;
+        }
+
+        /// <summary>
+        /// Registers metadata-related services for the application.
+        /// </summary>
+        /// <param name="services">The service collection to configure.</param>
+        /// <returns>The configured service collection.</returns>
+        private static IServiceCollection RegisterMetadataServices(IServiceCollection services)
+        {
+            // Register metadata-related services
+            services.AddScoped<MetadataTemplateManager>();
+            services.AddScoped<MetadataHierarchyDetector>();
+            services.AddScoped<TagProcessor>();
 
             return services;
         }

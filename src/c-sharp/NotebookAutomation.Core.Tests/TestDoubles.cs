@@ -2,5 +2,5 @@
 #nullable enable
 namespace NotebookAutomation.Core.Tests
 {
-    // Duplicate test doubles removed. Use the implementations in TestPromptTemplateService.cs and FakeTextGenerationService.cs.
+    // Duplicate test doubles removed. Use the implementation in TestPromptTemplateService.cs.
 }

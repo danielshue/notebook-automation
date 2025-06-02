@@ -28,5 +28,13 @@ namespace NotebookAutomation.Core.Services
         /// <param name="variables">Dictionary of variables to substitute.</param>
         /// <returns>The prompt with variables substituted.</returns>
         Task<string> GetPromptAsync(string templateName, Dictionary<string, string>? variables);
+        
+        /// <summary>
+        /// Processes template with variables asynchronously.
+        /// </summary>
+        /// <param name="template">The template string with placeholders.</param>
+        /// <param name="variables">Dictionary of variable names and values.</param>
+        /// <returns>The template with variables substituted.</returns>
+        Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables);
     }
 }
