@@ -31,11 +31,10 @@ namespace NotebookAutomation.Cli
         /// </summary>
         /// <param name="args">Command-line arguments.</param>
         /// <returns>Exit code (0 for success, non-zero for error).</returns>
-        public static async Task<int> Main(string[] args)
-        {
+        public static async Task<int> Main(string[] args)        {
             // Create the root command with description
             var rootCommand = new RootCommand(
-                description: "notebookautomation.exe - Tools for managing Obsidian notebooks");
+                description: "Comprehensive toolkit for managing course-related content between OneDrive and Obsidian notebooks.");
 
 
             // Global options

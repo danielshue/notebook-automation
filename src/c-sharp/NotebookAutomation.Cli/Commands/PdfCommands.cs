@@ -43,7 +43,7 @@ namespace NotebookAutomation.Cli.Commands
                 aliases: ["--output", "-o"],
                 description: "Path to the output markdown file or directory");
 
-            var pdfCommand = new Command("pdf-notes", "PDF notes processing commands");
+            var pdfCommand = new Command("pdf-notes", "TODO: PDF notes processing commands");
             pdfCommand.AddOption(inputOption);
             pdfCommand.AddOption(outputOption);
 
