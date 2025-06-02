@@ -158,7 +158,8 @@ namespace NotebookAutomation.Cli.Tests.Commands
             Assert.IsTrue((bool)result!);
             Assert.IsNotNull(config.AiService.Foundry);
             Assert.AreEqual("https://foundry.ai", config.AiService.Foundry.Endpoint);
-        }        [TestMethod]
+        }
+        [TestMethod]
         public void MaskSecret_ReturnsMaskedOrNotSet()
         {
             var configCommands = new ConfigCommands();

@@ -279,7 +279,7 @@ public class AppConfigTests
     public void LoadFromJsonFile_ShouldLoadConfigurationCorrectly()
     {
         // Arrange - Create a temporary config file
-        string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");        var config = new
+        string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json"); var config = new
         {
             paths = new
             {
@@ -306,7 +306,7 @@ public class AppConfigTests
             Assert.AreEqual("/resources", appConfig.Paths.OnedriveFullpathRoot);
             Assert.AreEqual("/logs", appConfig.Paths.LoggingDir);
             Assert.AreEqual("gpt-4", appConfig.AiService.Model);
-            
+
             // Note: GetApiKey() reads from environment variables, not configuration,
             // so we don't test it here since this test focuses on JSON file loading
         }
