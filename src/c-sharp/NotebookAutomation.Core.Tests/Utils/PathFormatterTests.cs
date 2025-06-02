@@ -3,162 +3,161 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using NotebookAutomation.Core.Utils;
 
-namespace NotebookAutomation.Core.Tests.Utils
+namespace NotebookAutomation.Core.Tests.Utils;
+
+[TestClass]
+public class PathFormatterTests
 {
-    [TestClass]
-    public class PathFormatterTests
+    [TestMethod]
+    public void Format_WithDebugLogLevel_ReturnsFullPath()
     {
-        [TestMethod]
-        public void Format_WithDebugLogLevel_ReturnsFullPath()
-        {
-            // Arrange
-            string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
+        // Arrange
+        string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
 
-            // Act
-            string formatted = PathFormatter.Format(path, LogLevel.Debug);
+        // Act
+        string formatted = PathFormatter.Format(path, LogLevel.Debug);
 
-            // Assert
-            Assert.AreEqual(path, formatted); // For Debug level, we expect the full path
-        }
+        // Assert
+        Assert.AreEqual(path, formatted); // For Debug level, we expect the full path
+    }
 
-        [TestMethod]
-        public void Format_WithTraceLogLevel_ReturnsFullPath()
-        {
-            // Arrange
-            string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
+    [TestMethod]
+    public void Format_WithTraceLogLevel_ReturnsFullPath()
+    {
+        // Arrange
+        string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
 
-            // Act
-            string formatted = PathFormatter.Format(path, LogLevel.Trace);
+        // Act
+        string formatted = PathFormatter.Format(path, LogLevel.Trace);
 
-            // Assert
-            Assert.AreEqual(path, formatted); // For Trace level, we expect the full path
-        }
+        // Assert
+        Assert.AreEqual(path, formatted); // For Trace level, we expect the full path
+    }
 
-        [TestMethod]
-        public void Format_WithInfoLogLevel_ReturnsShortenedPath()
-        {
-            // Arrange
-            string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
+    [TestMethod]
+    public void Format_WithInfoLogLevel_ReturnsShortenedPath()
+    {
+        // Arrange
+        string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
 
-            // Act
-            string formatted = PathFormatter.Format(path, LogLevel.Information);
+        // Act
+        string formatted = PathFormatter.Format(path, LogLevel.Information);
 
-            // Assert
-            Assert.AreNotEqual(path, formatted); // For Info level, we expect a shortened path
-            Assert.IsTrue(formatted.Length <= 80); // Should not exceed max length
-            StringAssert.Contains(formatted, "filename.txt"); // Should still contain the filename
-            Assert.IsTrue(formatted.StartsWith("...")); // Should start with ellipsis
-        }
-        [TestMethod]
-        public void Format_WithShortPath_ReturnsOriginalPath()
-        {
-            // Arrange
-            string path = @"C:\short\path\file.txt";
+        // Assert
+        Assert.AreNotEqual(path, formatted); // For Info level, we expect a shortened path
+        Assert.IsTrue(formatted.Length <= 80); // Should not exceed max length
+        StringAssert.Contains(formatted, "filename.txt"); // Should still contain the filename
+        Assert.IsTrue(formatted.StartsWith("...")); // Should start with ellipsis
+    }
+    [TestMethod]
+    public void Format_WithShortPath_ReturnsOriginalPath()
+    {
+        // Arrange
+        string path = @"C:\short\path\file.txt";
 
-            // Act
-            string formatted = PathFormatter.Format(path, LogLevel.Information);
+        // Act
+        string formatted = PathFormatter.Format(path, LogLevel.Information);
 
-            // Assert
-            Assert.AreEqual(path, formatted); // Path is already short, shouldn't be changed
-        }
+        // Assert
+        Assert.AreEqual(path, formatted); // Path is already short, shouldn't be changed
+    }
 
-        [TestMethod]
-        public void Format_WithNullPath_ReturnsEmptyString()
-        {
-            // Arrange
-            string path = null;
+    [TestMethod]
+    public void Format_WithNullPath_ReturnsEmptyString()
+    {
+        // Arrange
+        string path = null;
 
-            // Act
-            string formatted = PathFormatter.Format(path, LogLevel.Information);
+        // Act
+        string formatted = PathFormatter.Format(path, LogLevel.Information);
 
-            // Assert
-            Assert.AreEqual(string.Empty, formatted);
-        }
+        // Assert
+        Assert.AreEqual(string.Empty, formatted);
+    }
 
-        [TestMethod]
-        public void Format_WithEmptyPath_ReturnsEmptyString()
-        {
-            // Arrange
-            string path = string.Empty;
+    [TestMethod]
+    public void Format_WithEmptyPath_ReturnsEmptyString()
+    {
+        // Arrange
+        string path = string.Empty;
 
-            // Act
-            string formatted = PathFormatter.Format(path, LogLevel.Information);
+        // Act
+        string formatted = PathFormatter.Format(path, LogLevel.Information);
 
-            // Assert
-            Assert.AreEqual(string.Empty, formatted);
-        }
+        // Assert
+        Assert.AreEqual(string.Empty, formatted);
+    }
 
-        [TestMethod]
-        public void ShortenPath_WithLongPath_KeepsFileNameAndShortenedPath()
-        {
-            // Arrange
-            string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
-            int maxLength = 40;
+    [TestMethod]
+    public void ShortenPath_WithLongPath_KeepsFileNameAndShortenedPath()
+    {
+        // Arrange
+        string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
+        int maxLength = 40;
 
-            // Act
-            string shortened = PathFormatter.ShortenPath(path, maxLength);
+        // Act
+        string shortened = PathFormatter.ShortenPath(path, maxLength);
 
-            // Assert
-            Assert.IsTrue(shortened.Length <= maxLength);
-            StringAssert.Contains(shortened, "filename.txt"); // Filename should be preserved
-            Assert.IsTrue(shortened.StartsWith("...")); // Should start with ellipsis
-        }
+        // Assert
+        Assert.IsTrue(shortened.Length <= maxLength);
+        StringAssert.Contains(shortened, "filename.txt"); // Filename should be preserved
+        Assert.IsTrue(shortened.StartsWith("...")); // Should start with ellipsis
+    }
 
-        [TestMethod]
-        public void ShortenPath_WithVeryLongFilename_TruncatesFilename()
-        {
-            // Arrange
-            string path = @"D:\path\to\extremelylongfilenamethatexceedsthemaximumlengthallowedfortheoutput.txt";
-            int maxLength = 30;
+    [TestMethod]
+    public void ShortenPath_WithVeryLongFilename_TruncatesFilename()
+    {
+        // Arrange
+        string path = @"D:\path\to\extremelylongfilenamethatexceedsthemaximumlengthallowedfortheoutput.txt";
+        int maxLength = 30;
 
-            // Act
-            string shortened = PathFormatter.ShortenPath(path, maxLength);
+        // Act
+        string shortened = PathFormatter.ShortenPath(path, maxLength);
 
-            // Assert
-            Assert.IsTrue(shortened.Length <= maxLength);
-            Assert.IsTrue(shortened.StartsWith("...")); // Should start with ellipsis
-        }
-        [TestMethod]
-        public void LoggerExtensions_LogWithFormattedPath_AppliesCorrectFormatting()
-        {
-            // Arrange
-            string logMessage = null;
-            var logger = new MockLogger<PathFormatterTests>((level, msg) => logMessage = msg);
-            string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";            // Act
-            NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(
-                logger,
-                LogLevel.Information,
-                0,
-                null,
-                "Processing file: {FilePath}",
-                path);
+        // Assert
+        Assert.IsTrue(shortened.Length <= maxLength);
+        Assert.IsTrue(shortened.StartsWith("...")); // Should start with ellipsis
+    }
+    [TestMethod]
+    public void LoggerExtensions_LogWithFormattedPath_AppliesCorrectFormatting()
+    {
+        // Arrange
+        string logMessage = null;
+        MockLogger<PathFormatterTests> logger = new MockLogger<PathFormatterTests>((level, msg) => logMessage = msg);
+        string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";            // Act
+        NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(
+            logger,
+            LogLevel.Information,
+            0,
+            null,
+            "Processing file: {FilePath}",
+            path);
 
-            // Assert
-            Assert.IsNotNull(logMessage);
-            Assert.IsTrue(logMessage.Contains("..."));
-            Assert.IsTrue(logMessage.Contains("filename.txt"));
-        }
+        // Assert
+        Assert.IsNotNull(logMessage);
+        Assert.IsTrue(logMessage.Contains("..."));
+        Assert.IsTrue(logMessage.Contains("filename.txt"));
+    }
 
-        [TestMethod]
-        public void LoggerExtensions_LogWithFormattedPath_WithDebugLevel_ShowsFullPath()
-        {
-            // Arrange
-            string logMessage = null;
-            var logger = new MockLogger<PathFormatterTests>((level, msg) => logMessage = msg);
-            string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
+    [TestMethod]
+    public void LoggerExtensions_LogWithFormattedPath_WithDebugLevel_ShowsFullPath()
+    {
+        // Arrange
+        string logMessage = null;
+        MockLogger<PathFormatterTests> logger = new MockLogger<PathFormatterTests>((level, msg) => logMessage = msg);
+        string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
 
-            // Act
-            NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(
-                logger,
-                LogLevel.Debug,
-                0,
-                null,
-                "Processing file: {FilePath}",
-                path);
+        // Act
+        NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(
+            logger,
+            LogLevel.Debug,
+            0,
+            null,
+            "Processing file: {FilePath}",
+            path);
 
-            // Assert
-            Assert.IsNotNull(logMessage);
-            Assert.IsTrue(logMessage.Contains(path)); // Should contain the full path
-        }
+        // Assert
+        Assert.IsNotNull(logMessage);
+        Assert.IsTrue(logMessage.Contains(path)); // Should contain the full path
     }
 }

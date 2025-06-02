@@ -30,21 +30,16 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
     /// <see cref="DocumentNoteBatchProcessor{TProcessor}"/> for maintainability and code reuse.
     /// </para>
     /// </remarks>
-    public class VideoNoteBatchProcessor
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="VideoNoteBatchProcessor"/> class with a batch processor.
+    /// </remarks>
+    /// <param name="batchProcessor">The batch processor to use for processing video notes.</param>
+    public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcessor> batchProcessor)
     {
         /// <summary>
         /// The generic batch processor that handles the actual batch processing logic.
         /// </summary>
-        private readonly DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="VideoNoteBatchProcessor"/> class with a batch processor.
-        /// </summary>
-        /// <param name="batchProcessor">The batch processor to use for processing video notes.</param>
-        public VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcessor> batchProcessor)
-        {
-            _batchProcessor = batchProcessor;
-        }
+        private readonly DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor = batchProcessor;
 
         /// <summary>
         /// Processes one or more video files, generating markdown notes for each.

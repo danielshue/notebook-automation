@@ -9,7 +9,7 @@ namespace NotebookAutomation.Core.Services
     /// Handles different template types (chunk summary, final summary) and
     /// supports dynamic prompt file loading from prompts directory.
     /// </summary>    
-    public class PromptTemplateService : IPromptService
+    public partial class PromptTemplateService : IPromptService
     {
         private readonly ILogger<PromptTemplateService> _logger;
         private string _promptsDirectory = string.Empty;
@@ -146,7 +146,7 @@ namespace NotebookAutomation.Core.Services
                 return template;
             }
 
-            return Regex.Replace(template, "{{(.*?)}}", match =>
+            return MyRegex().Replace(template, match =>
             {
                 var key = match.Groups[1].Value.Trim();
                 return variables.TryGetValue(key, out var value) ? value : match.Value;
@@ -226,5 +226,8 @@ namespace NotebookAutomation.Core.Services
         {
             return Task.FromResult(SubstituteVariables(template, variables));
         }
+
+        [GeneratedRegex("{{(.*?)}}")]
+        private static partial Regex MyRegex();
     }
 }

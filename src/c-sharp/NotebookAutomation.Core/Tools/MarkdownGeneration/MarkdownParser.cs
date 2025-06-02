@@ -11,25 +11,19 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
     /// This class provides functionality for parsing and manipulating markdown content,
     /// including frontmatter extraction, content formatting, and structure analysis.
     /// </summary>
-    public class MarkdownParser
+    /// <remarks>
+    /// Initializes a new instance of the MarkdownParser.
+    /// </remarks>
+    /// <param name="logger">Logger for diagnostics.</param>
+    public partial class MarkdownParser(ILogger logger)
     {
-        private readonly ILogger _logger;
-        private readonly YamlHelper _yamlHelper;
+        private readonly ILogger _logger = logger;
+        private readonly YamlHelper _yamlHelper = new YamlHelper(logger);
 
         /// <summary>
         /// Regular expression for detecting YAML frontmatter.
         /// </summary>
-        public static readonly Regex FrontmatterRegex = new Regex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline);
-
-        /// <summary>
-        /// Initializes a new instance of the MarkdownParser.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostics.</param>
-        public MarkdownParser(ILogger logger)
-        {
-            _logger = logger;
-            _yamlHelper = new YamlHelper(logger);
-        }
+        public static readonly Regex FrontmatterRegex = MyRegex();
 
         /// <summary>
         /// Extracts the frontmatter and content from a markdown file.
@@ -75,7 +69,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
             }
 
             var frontmatterYaml = match.Groups[1].Value;
-            var content = markdownText.Substring(match.Length);
+            var content = markdownText[match.Length..];
             var frontmatter = _yamlHelper.ParseYamlToDictionary(frontmatterYaml);
 
             return (frontmatter, content);
@@ -192,5 +186,8 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
                 .Replace('.', '-')
                 .ToLowerInvariant();
         }
+
+        [GeneratedRegex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline)]
+        private static partial Regex MyRegex();
     }
 }

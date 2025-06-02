@@ -10,14 +10,13 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
     /// <summary>
     /// Provides functionality for extracting text from PDF files and generating markdown notes.
     /// </summary>
-    public class PdfNoteProcessor : DocumentNoteProcessorBase
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class with logger and AI summarizer.
+    /// </remarks>
+    /// <param name="logger">Logger for diagnostics.</param>
+    /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
+    public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer) : DocumentNoteProcessorBase(logger, aiSummarizer)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class with logger and AI summarizer.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostics.</param>
-        /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
-        public PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer) : base(logger, aiSummarizer) { }
 
         /// <summary>
         /// Extracts text and metadata from a PDF file.

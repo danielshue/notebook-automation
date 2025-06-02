@@ -15,7 +15,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
     [TestClass]
     public class VideoCommandsTests
     {
-        private readonly Mock<ILogger<VideoCommands>> _mockLogger = new Mock<ILogger<VideoCommands>>();
+        private readonly Mock<ILogger<VideoCommands>> _mockLogger = new();
 
         /// <summary>
         /// Verifies that the 'video-notes' command prints usage/help when no arguments are provided.
@@ -30,7 +30,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
             var videoCommands = new VideoCommands(_mockLogger.Object);
-            videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Ensure DI is initialized for handler
             NotebookAutomation.Cli.Program.SetupDependencyInjection(null, false);
@@ -77,7 +77,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var videoCommands = new VideoCommands(_mockLogger.Object);
 
             // Act
-            videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Assert
             var videoNotesCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "video-notes");

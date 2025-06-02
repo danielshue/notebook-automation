@@ -52,7 +52,7 @@ namespace NotebookAutomation.Core.Configuration
         /// List of video file extensions to process.
         /// </summary>
         [JsonPropertyName("video_extensions")]
-        public List<string> VideoExtensions { get; set; } = new List<string>();
+        public List<string> VideoExtensions { get; set; } = [];
 
         /// <summary>
         /// Default constructor.
@@ -109,12 +109,11 @@ namespace NotebookAutomation.Core.Configuration
                             ClientId = graphSection["client_id"] ?? string.Empty,
                             ApiEndpoint = graphSection["api_endpoint"] ?? string.Empty,
                             Authority = graphSection["authority"] ?? string.Empty,
-                            Scopes = graphSection.GetSection("scopes")
+                            Scopes = [.. graphSection.GetSection("scopes")
                                 .GetChildren()
                                 .Select(x => x.Value)
                                 .Where(x => !string.IsNullOrEmpty(x))
-                                .Select(x => x!) // Suppress nullability and cast to non-nullable string
-                                .ToList(),
+                                .Select(x => x!)],
                             // Extract tenant ID from authority URL if needed
                             TenantId = ExtractTenantIdFromAuthority(graphSection["authority"] ?? string.Empty)
                         };
@@ -149,12 +148,11 @@ namespace NotebookAutomation.Core.Configuration
                     var videoExtensionsSection = _underlyingConfiguration.GetSection("video_extensions");
                     if (videoExtensionsSection.Exists())
                     {
-                        VideoExtensions = videoExtensionsSection
+                        VideoExtensions = [.. videoExtensionsSection
                             .GetChildren()
                             .Select(x => x.Value)
                             .Where(x => !string.IsNullOrEmpty(x))
-                            .Select(x => x!) // Suppress nullability and cast to non-nullable string
-                            .ToList();
+                            .Select(x => x!)];
                     }
                 }
                 else
@@ -212,7 +210,7 @@ namespace NotebookAutomation.Core.Configuration
 
                 if (segments.Length > 0)
                 {
-                    var lastSegment = segments[segments.Length - 1];
+                    var lastSegment = segments[^1];
 
                     // If it's "common" or a GUID, return it
                     if (lastSegment.Equals("common", StringComparison.OrdinalIgnoreCase) ||
@@ -252,11 +250,7 @@ namespace NotebookAutomation.Core.Configuration
             {
                 PropertyNameCaseInsensitive = true
             };
-            var loaded = JsonSerializer.Deserialize<AppConfig>(json, options);
-            if (loaded == null)
-            {
-                throw new InvalidOperationException($"Failed to deserialize configuration from: {configPath}");
-            }
+            var loaded = JsonSerializer.Deserialize<AppConfig>(json, options) ?? throw new InvalidOperationException($"Failed to deserialize configuration from: {configPath}");
             loaded.ConfigFilePath = configPath;
             return loaded;
         }
@@ -354,7 +348,7 @@ namespace NotebookAutomation.Core.Configuration
         public void SetVideoExtensions(List<string> list)
         {
             _logger?.LogInformation($"Setting video extensions: {string.Join(", ", list)}");
-            VideoExtensions = list ?? new List<string>();
+            VideoExtensions = list ?? [];
         }
 
         /// <summary>
@@ -379,21 +373,13 @@ namespace NotebookAutomation.Core.Configuration
                 for (int i = 0; i < parts.Length; i++)
                 {
                     var part = parts[i];
-                    var property = currentObj?.GetType().GetProperties()
-                        .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase));
-
-                    if (property == null)
-                    {
-                        // Try to get by JsonPropertyName attribute
-                        property = currentObj?.GetType().GetProperties()
+                    var property = (currentObj?.GetType().GetProperties()
+                        .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase))) ?? (currentObj?.GetType().GetProperties()
                             .FirstOrDefault(p =>
                             {
-                                var attr = p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
-                                    .FirstOrDefault() as JsonPropertyNameAttribute;
-                                return attr != null && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
-                            });
-                    }
-
+                                return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
+                                    .FirstOrDefault() is JsonPropertyNameAttribute attr && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
+                            }));
                     if (property == null)
                     {
                         return false;
@@ -429,9 +415,8 @@ namespace NotebookAutomation.Core.Configuration
             directProperty = GetType().GetProperties()
                 .FirstOrDefault(p =>
                 {
-                    var attr = p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
-                        .FirstOrDefault() as JsonPropertyNameAttribute;
-                    return attr != null && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
+                    return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
+                        .FirstOrDefault() is JsonPropertyNameAttribute attr && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
                 });
 
             return directProperty != null;
@@ -521,21 +506,13 @@ namespace NotebookAutomation.Core.Configuration
                         var part = parts[i];
 
                         // Try to get property
-                        var property = currentObj?.GetType().GetProperties()
-                            .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase));
-
-                        if (property == null)
-                        {
-                            // Try to get JsonPropertyName attribute
-                            property = currentObj?.GetType().GetProperties()
+                        var property = (currentObj?.GetType().GetProperties()
+                            .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase))) ?? (currentObj?.GetType().GetProperties()
                                 .FirstOrDefault(p =>
                                 {
-                                    var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                                        .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
-                                    return attr != null && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
-                                });
-                        }
-
+                                    return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
+                                        .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
+                                }));
                         if (property == null)
                         {
                             return null;
@@ -573,9 +550,8 @@ namespace NotebookAutomation.Core.Configuration
                 directProperty = GetType().GetProperties()
                     .FirstOrDefault(p =>
                     {
-                        var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                            .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
-                        return attr != null && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
+                        return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
+                            .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
                     });
 
                 if (directProperty != null)
@@ -598,21 +574,13 @@ namespace NotebookAutomation.Core.Configuration
                     {
                         var part = parts[i];
 
-                        var property = currentObj?.GetType().GetProperties()
-                            .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase));
-
-                        if (property == null)
-                        {
-                            // Try to get by JsonPropertyName attribute
-                            property = currentObj?.GetType().GetProperties()
+                        var property = (currentObj?.GetType().GetProperties()
+                            .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase))) ?? (currentObj?.GetType().GetProperties()
                                 .FirstOrDefault(p =>
                                 {
-                                    var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                                        .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
-                                    return attr != null && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
-                                });
-                        }
-
+                                    return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
+                                        .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
+                                }));
                         if (property == null || !property.CanRead)
                         {
                             return;
@@ -632,22 +600,14 @@ namespace NotebookAutomation.Core.Configuration
                     // Set the value on the final object
                     if (currentObj != null)
                     {
-                        var finalPart = parts[parts.Length - 1];
+                        var finalPart = parts[^1];
                         var finalProperty = currentObj.GetType().GetProperties()
-                            .FirstOrDefault(p => string.Equals(p.Name, finalPart, StringComparison.OrdinalIgnoreCase));
-
-                        if (finalProperty == null)
-                        {
-                            // Try to get by JsonPropertyName attribute
-                            finalProperty = currentObj.GetType().GetProperties()
+                            .FirstOrDefault(p => string.Equals(p.Name, finalPart, StringComparison.OrdinalIgnoreCase)) ?? currentObj.GetType().GetProperties()
                                 .FirstOrDefault(p =>
                                 {
-                                    var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                                        .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
-                                    return attr != null && string.Equals(attr.Name, finalPart, StringComparison.OrdinalIgnoreCase);
+                                    return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
+                                        .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, finalPart, StringComparison.OrdinalIgnoreCase);
                                 });
-                        }
-
                         if (finalProperty != null && finalProperty.CanWrite)
                         {
                             SetPropertyValue(finalProperty, currentObj, value);
@@ -659,20 +619,12 @@ namespace NotebookAutomation.Core.Configuration
 
                 // Direct property access
                 var directProperty = GetType().GetProperties()
-                    .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase));
-
-                if (directProperty == null)
-                {
-                    // Try to get by JsonPropertyName attribute
-                    directProperty = GetType().GetProperties()
+                    .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase)) ?? GetType().GetProperties()
                         .FirstOrDefault(p =>
                         {
-                            var attr = p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                                .FirstOrDefault() as System.Text.Json.Serialization.JsonPropertyNameAttribute;
-                            return attr != null && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
+                            return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
+                                .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
                         });
-                }
-
                 if (directProperty != null && directProperty.CanWrite)
                 {
                     SetPropertyValue(directProperty, this, value);
@@ -776,18 +728,11 @@ namespace NotebookAutomation.Core.Configuration
         /// <summary>
         /// Helper class to implement ConfigurationSection
         /// </summary>
-        private class ConfigurationSection : IConfigurationSection
+        private class ConfigurationSection(IConfiguration configuration, string key, string? parentPath = null) : IConfigurationSection
         {
-            private readonly IConfiguration _configuration;
-            private readonly string _key;
-            private readonly string _path;
-
-            public ConfigurationSection(IConfiguration configuration, string key, string? parentPath = null)
-            {
-                _configuration = configuration;
-                _key = key;
-                _path = string.IsNullOrEmpty(parentPath) ? key : $"{parentPath}:{key}";
-            }
+            private readonly IConfiguration _configuration = configuration;
+            private readonly string _key = key;
+            private readonly string _path = string.IsNullOrEmpty(parentPath) ? key : $"{parentPath}:{key}";
 
             public string Key => _key;
             public string Path => _path;
@@ -820,7 +765,7 @@ namespace NotebookAutomation.Core.Configuration
             }
 
             // Helper method to find potential property keys
-            private IEnumerable<string> GetPropertyKeys()
+            private static IEnumerable<string> GetPropertyKeys()
             {
                 // This is a simplified implementation
                 // In a real scenario, you would query the underlying configuration 

@@ -50,12 +50,24 @@ namespace NotebookAutomation.Core.Services
      /// );
      /// </code>
      /// </example>
-    public class AISummarizer : IAISummarizer
+     /// <remarks>
+     /// Initializes a new instance of the AISummarizer class with SemanticKernel support.
+     /// </remarks>
+     /// <param name="logger">The logger instance for tracking operations and debugging</param>
+     /// <param name="promptService">Service for loading and processing prompt templates from the file system</param>
+     /// <param name="semanticKernel">Microsoft.SemanticKernel instance configured with Azure OpenAI</param>
+     /// <param name="chunkingService">Optional text chunking service for splitting large texts. If null, creates a default instance.</param>
+     /// <exception cref="ArgumentNullException">Thrown when logger is null</exception>
+     /// <remarks>
+     /// This constructor is the primary initialization path for production usage with Azure OpenAI.
+     /// The promptService and semanticKernel can be null for testing scenarios, but functionality will be limited.
+     /// </remarks>
+    public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptService, Kernel? semanticKernel, ITextChunkingService? chunkingService = null) : IAISummarizer
     {
-        private readonly ILogger<AISummarizer> _logger;
-        private readonly IPromptService? _promptService;
-        private readonly Kernel? _semanticKernel;
-        private readonly ITextChunkingService _chunkingService;
+        private readonly ILogger<AISummarizer> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly IPromptService? _promptService = promptService;
+        private readonly Kernel? _semanticKernel = semanticKernel;
+        private readonly ITextChunkingService _chunkingService = chunkingService ?? new TextChunkingService();
 
         /// <summary>
         /// The maximum size for individual text chunks in characters before triggering chunked processing.
@@ -68,26 +80,6 @@ namespace NotebookAutomation.Core.Services
         /// Set to 500 characters to ensure important context isn't lost at chunk boundaries.
         /// </summary>
         private readonly int _overlapTokens = 500; // Characters to overlap between chunks            
-
-        /// <summary>
-        /// Initializes a new instance of the AISummarizer class with SemanticKernel support.
-        /// </summary>
-        /// <param name="logger">The logger instance for tracking operations and debugging</param>
-        /// <param name="promptService">Service for loading and processing prompt templates from the file system</param>
-        /// <param name="semanticKernel">Microsoft.SemanticKernel instance configured with Azure OpenAI</param>
-        /// <param name="chunkingService">Optional text chunking service for splitting large texts. If null, creates a default instance.</param>
-        /// <exception cref="ArgumentNullException">Thrown when logger is null</exception>
-        /// <remarks>
-        /// This constructor is the primary initialization path for production usage with Azure OpenAI.
-        /// The promptService and semanticKernel can be null for testing scenarios, but functionality will be limited.
-        /// </remarks>
-        public AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptService, Kernel? semanticKernel, ITextChunkingService? chunkingService = null)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _promptService = promptService;
-            _semanticKernel = semanticKernel;
-            _chunkingService = chunkingService ?? new TextChunkingService();
-        }
 
 
 
@@ -336,11 +328,11 @@ namespace NotebookAutomation.Core.Services
                     {
                         ["input"] = chunks[i],
                         ["content"] = chunks[i],
-                        ["onedrivePath"] = variables != null && variables.ContainsKey("onedrivePath") ? variables["onedrivePath"] : string.Empty,
-                        ["course"] = variables != null && variables.ContainsKey("course") ? variables["course"] : string.Empty
+                        ["onedrivePath"] = variables != null && variables.TryGetValue("onedrivePath", out string? onedriveValue) ? onedriveValue : string.Empty,
+                        ["course"] = variables != null && variables.TryGetValue("course", out string? courseValue) ? courseValue : string.Empty
                     };
 
-                    var result = await _semanticKernel.InvokeAsync(summarizeChunkFunction, kernelArgs);
+                    var result = await _semanticKernel.InvokeAsync(summarizeChunkFunction, kernelArgs, cancellationToken);
 
                     // Log the raw result object for debugging
                     _logger.LogDebug("Raw model response for chunk {Index}: {Result}", i, result);
@@ -390,7 +382,7 @@ namespace NotebookAutomation.Core.Services
                 _logger.LogDebug("Aggregating {SummaryCount} summaries", chunkSummaries.Count);
 
                 // Ensure yamlfrontmatter is present in variables
-                var finalVariables = variables != null ? new Dictionary<string, string>(variables) : new Dictionary<string, string>();
+                var finalVariables = variables != null ? new Dictionary<string, string>(variables) : [];
                 if (!finalVariables.ContainsKey("yamlfrontmatter"))
                 {
                     finalVariables["yamlfrontmatter"] = string.Empty; // Or provide actual YAML frontmatter if available
@@ -408,8 +400,7 @@ namespace NotebookAutomation.Core.Services
                 _logger.LogDebug("Final aggregateSummariesFunction: {aggregateSummariesFunction}", aggregateSummariesFunction);
                 _logger.LogDebug("Final kernel arguments: {finalKernelArgs}", finalKernelArgs);
 
-                var finalResult = await _semanticKernel.InvokeAsync(
-                    aggregateSummariesFunction, finalKernelArgs);
+                var finalResult = await _semanticKernel.InvokeAsync(aggregateSummariesFunction, finalKernelArgs, cancellationToken);
 
                 _logger.LogDebug("finalResult: {finalResult}", finalResult);
 
@@ -461,7 +452,7 @@ namespace NotebookAutomation.Core.Services
             {
                 string? chunkPrompt = await _promptService.LoadTemplateAsync("chunk_summary_prompt");
                 _logger.LogDebug("Loaded chunk prompt template: {PromptPreview}...",
-                    chunkPrompt?.Substring(0, Math.Min(100, chunkPrompt.Length)) ?? "null");
+                    chunkPrompt?[..Math.Min(100, chunkPrompt.Length)] ?? "null");
                 return chunkPrompt;
             }
             catch (Exception ex)
@@ -492,7 +483,7 @@ namespace NotebookAutomation.Core.Services
             {
                 string? finalPrompt = await _promptService.LoadTemplateAsync("final_summary_prompt");
                 _logger.LogDebug("Loaded final prompt template: {PromptPreview}...",
-                    finalPrompt?.Substring(0, Math.Min(100, finalPrompt.Length)) ?? "null");
+                    finalPrompt?[..Math.Min(100, finalPrompt.Length)] ?? "null");
                 return finalPrompt;
             }
             catch (Exception ex)

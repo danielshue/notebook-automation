@@ -31,7 +31,7 @@ namespace NotebookAutomation.Core.Utils
         /// </example>
         public static string FormatFileSizeToString(long bytes)
         {
-            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+            string[] suffixes = ["B", "KB", "MB", "GB", "TB"];
             int suffixIndex = 0;
             double size = bytes;
 

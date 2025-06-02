@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tools.Shared
@@ -9,7 +10,7 @@ namespace NotebookAutomation.Core.Tools.Shared
     /// Generic batch processor for document note processors (PDF, video, etc.).
     /// Handles file discovery, error handling, and output for any DocumentNoteProcessorBase subclass.
     /// </summary>
-    public class DocumentNoteBatchProcessor<TProcessor> where TProcessor : DocumentNoteProcessorBase
+    public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : DocumentNoteProcessorBase
     {
         private readonly ILogger<DocumentNoteBatchProcessor<TProcessor>> _logger;
         private readonly TProcessor _processor;
@@ -201,8 +202,8 @@ namespace NotebookAutomation.Core.Tools.Shared
                         {
                             _logger.LogDebug("Using specialized GenerateVideoNoteAsync method for video processing");
                             // Pass the noShareLinks parameter to the GenerateVideoNoteAsync method
-                            var task = (Task<string>)generateMethod.Invoke(_processor, new object?[]
-                            {
+                            var task = (Task<string>)generateMethod.Invoke(_processor,
+                            [
                                 filePath,
                                 openAiApiKey,
                                 null, // promptFileName 
@@ -210,7 +211,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                                 timeoutSeconds,
                                 effectiveResourcesRoot,
                                 noShareLinks
-                            })!;
+                            ])!;
 
                             markdown = await task;
                             usedVideoProcessor = true;
@@ -219,8 +220,8 @@ namespace NotebookAutomation.Core.Tools.Shared
                             if (estimateTokenMethod != null && !noSummary)
                             {
                                 // Extract summary part from the markdown for token estimation
-                                var testSummary = markdown.Length > 300 ? markdown.Substring(0, 300) : markdown;
-                                var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, new object[] { testSummary });
+                                var testSummary = markdown.Length > 300 ? markdown[..300] : markdown;
+                                var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, [testSummary]);
                                 if (tokenResult != null)
                                 {
                                     summaryTokens = (int)tokenResult;
@@ -245,7 +246,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                             var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                             if (estimateTokenMethod != null)
                             {
-                                var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, new object[] { summaryText });
+                                var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, [summaryText]);
                                 if (tokenResult != null)
                                 {
                                     summaryTokens = (int)tokenResult;
@@ -470,16 +471,14 @@ namespace NotebookAutomation.Core.Tools.Shared
                 string existingContent = File.ReadAllText(existingFilePath);
 
                 // Find the "## Notes" section in the existing file
-                var notesRegex = new System.Text.RegularExpressions.Regex(
-                    @"^##\s+Notes\s*$",
-                    System.Text.RegularExpressions.RegexOptions.Multiline | System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                var notesRegex = MyRegex();
 
                 var match = notesRegex.Match(existingContent);
                 if (match.Success)
                 {
                     // Extract everything after the "## Notes" line
                     int notesIndex = match.Index + match.Length;
-                    string userContent = existingContent.Substring(notesIndex).TrimStart('\r', '\n');
+                    string userContent = existingContent[notesIndex..].TrimStart('\r', '\n');
 
                     if (!string.IsNullOrWhiteSpace(userContent))
                     {
@@ -488,7 +487,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                         if (newNotesMatch.Success)
                         {
                             int newNotesIndex = newNotesMatch.Index + newNotesMatch.Length;
-                            string beforeNotes = newMarkdown.Substring(0, newNotesIndex);
+                            string beforeNotes = newMarkdown[..newNotesIndex];
 
                             // Combine the new content up to ## Notes with the preserved user content
                             return beforeNotes + "\n\n" + userContent;
@@ -509,5 +508,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                 return newMarkdown;
             }
         }
+        [GeneratedRegex(@"^##\s+Notes\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
+        private static partial System.Text.RegularExpressions.Regex MyRegex();
     }
 }

@@ -41,6 +41,11 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore src/c-sharp/NotebookAutomation.sln
 
+      - name: Format code (optional)
+        if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'auto-format')
+        run: dotnet format src/c-sharp/NotebookAutomation.sln --include src/c-sharp/ --severity info
+        continue-on-error: true
+
       - name: Build solution
         run: dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
 

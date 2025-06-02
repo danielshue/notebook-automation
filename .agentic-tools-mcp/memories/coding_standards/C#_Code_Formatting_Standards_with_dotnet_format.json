@@ -1,0 +1,8 @@
+{
+  "id": "afa016a7-e5cd-4611-944a-8ba997c12d78",
+  "title": "C# Code Formatting Standards with dotnet format",
+  "details": "**C# Code Formatting with dotnet format:**\n\n**Key Commands:**\n- `dotnet format` - Fixes everything (whitespace, style, using statements)\n- `dotnet format whitespace` - Fixes indentation, spacing, line endings\n- `dotnet format style` - Fixes code style and organizes using statements\n- `dotnet format --verify-no-changes --severity error` - CI verification mode\n\n**Project Formatting Standards (.editorconfig):**\n1. **Indentation:** 4 spaces, no tabs\n2. **Line Length:** Max 100 characters\n3. **Using Statements:**\n   - `dotnet_sort_system_directives_first = true` - System usings first\n   - `dotnet_separate_import_directive_groups = true` - Separate groups with blank lines\n4. **Encoding:** UTF-8 with BOM\n5. **Line Endings:** CRLF (Windows style)\n6. **Braces:** New line before open brace (`csharp_new_line_before_open_brace = all`)\n7. **Variable Declarations:** Explicit types preferred over `var`\n8. **Namespaces:** File-scoped preferred (`csharp_style_namespace_declarations = file_scoped`)\n9. **Documentation:** XML documentation required\n10. **Expression Bodies:** When on single line only\n\n**Usage in CI Build:**\n- Local CI script runs `dotnet format --verify-no-changes --severity error`\n- Automatically catches formatting violations before GitHub CI\n- Ensures consistent code style across the entire solution\n\n**Best Practice:** Run `dotnet format` before committing to fix all formatting issues automatically.",
+  "category": "coding_standards",
+  "dateCreated": "2025-06-02T16:27:11.729Z",
+  "dateUpdated": "2025-06-02T16:27:11.729Z"
+}

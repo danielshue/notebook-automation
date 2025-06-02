@@ -21,19 +21,14 @@ namespace NotebookAutomation.Core.Utils
     /// hierarchy, even when the directory names don't explicitly contain "module" or "lesson" keywords.
     /// </para>
     /// </remarks>
-    public class CourseStructureExtractor
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="CourseStructureExtractor"/> class.
+    /// </remarks>
+    /// <param name="logger">Logger for diagnostic and warning messages.</param>
+    public partial class CourseStructureExtractor(ILogger logger)
     {
-        private readonly ILogger _logger;
-        private static readonly Regex NumberPrefixRegex = new Regex(@"^(\d+)[_-]", RegexOptions.Compiled);
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CourseStructureExtractor"/> class.
-        /// </summary>
-        /// <param name="logger">Logger for diagnostic and warning messages.</param>
-        public CourseStructureExtractor(ILogger logger)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private static readonly Regex NumberPrefixRegex = MyRegex();
 
         /// <summary>
         /// Extracts module and lesson information from a file path and adds it to the provided metadata dictionary.
@@ -89,25 +84,25 @@ namespace NotebookAutomation.Core.Utils
         /// </summary>
         /// <param name="dir">The directory to analyze.</param>
         /// <returns>A tuple with (module, lesson) information, where either may be null.</returns>
-        private (string? module, string? lesson) ExtractByKeywords(DirectoryInfo dir)
+        private static (string? module, string? lesson) ExtractByKeywords(DirectoryInfo dir)
         {
             string? module = null;
             string? lesson = null;
 
             // Look for lesson folder (e.g., lesson-1-...)
             var lessonDir = dir;
-            if (lessonDir != null && lessonDir.Name.ToLower().Contains("lesson"))
+            if (lessonDir != null && lessonDir.Name.Contains("lesson", StringComparison.CurrentCultureIgnoreCase))
             {
                 lesson = CleanModuleOrLessonName(lessonDir.Name);
 
                 // Look for module folder one level up
                 var moduleDir = lessonDir.Parent;
-                if (moduleDir != null && moduleDir.Name.ToLower().Contains("module"))
+                if (moduleDir != null && moduleDir.Name.Contains("module", StringComparison.CurrentCultureIgnoreCase))
                 {
                     module = CleanModuleOrLessonName(moduleDir.Name);
                 }
             }
-            else if (dir.Name.ToLower().Contains("module"))
+            else if (dir.Name.Contains("module", StringComparison.CurrentCultureIgnoreCase))
             {
                 // If current dir is module, set module only
                 module = CleanModuleOrLessonName(dir.Name);
@@ -133,7 +128,7 @@ namespace NotebookAutomation.Core.Utils
             if (currentDir != null && HasNumberPrefix(currentDir.Name))
             {
                 // Check if it contains "course" in the name - if so, treat as a module
-                if (currentDir.Name.ToLower().Contains("course"))
+                if (currentDir.Name.Contains("course", StringComparison.CurrentCultureIgnoreCase))
                 {
                     module = CleanModuleOrLessonName(currentDir.Name);
                 }
@@ -152,7 +147,7 @@ namespace NotebookAutomation.Core.Utils
             else if (parentDir != null && HasNumberPrefix(parentDir.Name))
             {
                 // Check if parent dir contains "course" - if so, treat as a module
-                if (parentDir.Name.ToLower().Contains("course"))
+                if (parentDir.Name.Contains("course", StringComparison.CurrentCultureIgnoreCase))
                 {
                     module = CleanModuleOrLessonName(parentDir.Name);
                 }
@@ -184,7 +179,7 @@ namespace NotebookAutomation.Core.Utils
         /// </summary>
         /// <param name="dirName">Name of the directory to check.</param>
         /// <returns>True if the directory name starts with a numeric prefix.</returns>
-        private bool HasNumberPrefix(string dirName)
+        private static bool HasNumberPrefix(string dirName)
         {
             return NumberPrefixRegex.IsMatch(dirName);
         }
@@ -202,5 +197,8 @@ namespace NotebookAutomation.Core.Utils
             clean = Regex.Replace(clean, @"\s+", " ").Trim();
             return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(clean);
         }
+
+        [GeneratedRegex(@"^(\d+)[_-]", RegexOptions.Compiled)]
+        private static partial Regex MyRegex();
     }
 }

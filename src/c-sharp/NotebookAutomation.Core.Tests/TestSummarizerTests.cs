@@ -15,98 +15,88 @@ using Moq;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 
-namespace NotebookAutomation.Core.Tests
+namespace NotebookAutomation.Core.Tests;
+
+/// <summary>
+/// A simple implementation of ITextGenerationService for testing
+/// </summary>
+public class TestTextGenerationService : ITextGenerationService
 {
-    /// <summary>
-    /// A simple implementation of ITextGenerationService for testing
-    /// </summary>
-    public class TestTextGenerationService : ITextGenerationService
+    public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
+
+    public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings executionSettings = null,
+
+        Kernel kernel = null,
+        CancellationToken cancellationToken = default)
     {
-        public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
-
-        public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
-            string prompt,
-            PromptExecutionSettings executionSettings = null,
-
-            Kernel kernel = null,
-            CancellationToken cancellationToken = default)
-        {
-            var result = new List<TextContent> { new TextContent("Mock summary") };
-            return Task.FromResult<IReadOnlyList<TextContent>>(result);
-        }
-
-        public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
-            string prompt,
-            PromptExecutionSettings executionSettings = null,
-            Kernel kernel = null,
-            CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException("Streaming is not used in this test");
-        }
-
-        // This is the method that AISummarizer actually uses
-        public Task<TextContent> GetTextContentAsync(
-            string prompt,
-            OpenAIPromptExecutionSettings settings,
-            Kernel kernel = null,
-            CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(new TextContent("Mock summary"));
-        }
-
-        public Task<TextContent> GetTextContentAsync(
-            string prompt,
-            PromptExecutionSettings settings = null,
-            Kernel kernel = null,
-            CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(new TextContent("Mock summary"));
-        }
+        List<TextContent> result = [new("Mock summary")];
+        return Task.FromResult<IReadOnlyList<TextContent>>(result);
     }
 
-    /// <summary>
-    /// Tests for verifying that prompt logging works correctly in AISummarizer.
-    /// </summary>
-    [TestClass]
-    public class TestSummarizerTests
+    public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
+        string prompt,
+        PromptExecutionSettings executionSettings = null,
+        Kernel kernel = null,
+        CancellationToken cancellationToken = default) => throw new NotImplementedException("Streaming is not used in this test");
+
+    // This is the method that AISummarizer actually uses
+    public static Task<TextContent> GetTextContentAsync(
+        string prompt,
+        OpenAIPromptExecutionSettings settings,
+        Kernel kernel = null,
+        CancellationToken cancellationToken = default) => Task.FromResult(new TextContent("Mock summary"));
+
+    public static Task<TextContent> GetTextContentAsync(
+        string prompt,
+        PromptExecutionSettings settings = null,
+        Kernel kernel = null,
+        CancellationToken cancellationToken = default) => Task.FromResult(new TextContent("Mock summary"));
+}
+
+/// <summary>
+/// Tests for verifying that prompt logging works correctly in AISummarizer.
+/// </summary>
+[TestClass]
+public class TestSummarizerTests
+{
+    private readonly Mock<ILogger<AISummarizer>> _loggerMock;
+    private readonly PromptTemplateService _promptTemplateService;
+    private readonly AISummarizer _summarizer;
+
+    public TestSummarizerTests()
     {
-        private readonly Mock<ILogger<AISummarizer>> _loggerMock;
-        private readonly PromptTemplateService _promptTemplateService;
-        private readonly AISummarizer _summarizer;
+        _loggerMock = new Mock<ILogger<AISummarizer>>();
 
-        public TestSummarizerTests()
+        // Set up paths for prompt templates
+        string projectDir = Directory.GetCurrentDirectory();
+        string promptsPath = Path.GetFullPath(Path.Combine(projectDir, "..", "..", "..", "..", "..", "prompts"));
+
+        // Create AppConfig with paths
+        PathsConfig pathsConfig = new PathsConfig
         {
-            _loggerMock = new Mock<ILogger<AISummarizer>>();
+            PromptsPath = promptsPath
+        };
 
-            // Set up paths for prompt templates
-            string projectDir = Directory.GetCurrentDirectory();
-            string promptsPath = Path.GetFullPath(Path.Combine(projectDir, "..", "..", "..", "..", "..", "prompts"));
+        AppConfig appConfig = new AppConfig()
+        {
+            Paths = pathsConfig
+        };
 
-            // Create AppConfig with paths
-            var pathsConfig = new PathsConfig
-            {
-                PromptsPath = promptsPath
-            };
+        // Create a real PromptTemplateService with the actual prompts directory
+        _promptTemplateService = new PromptTemplateService(
+            Mock.Of<ILogger<PromptTemplateService>>(),
+            appConfig);
 
-            var appConfig = new AppConfig()
-            {
-                Paths = pathsConfig
-            };
+        // Create a test implementation of ITextGenerationService
+        TestTextGenerationService textGenerationService = new TestTextGenerationService();
 
-            // Create a real PromptTemplateService with the actual prompts directory
-            _promptTemplateService = new PromptTemplateService(
-                Mock.Of<ILogger<PromptTemplateService>>(),
-                appConfig);
-
-            // Create a test implementation of ITextGenerationService
-            var textGenerationService = new TestTextGenerationService();
-
-            // Create AISummarizer with dependencies
-            _summarizer = new AISummarizer(
-                _loggerMock.Object,
-                _promptTemplateService,
-                null);
-        }
+        // Create AISummarizer with dependencies
+        _summarizer = new AISummarizer(
+            _loggerMock.Object,
+            _promptTemplateService,
+            null);
     }
 }
 

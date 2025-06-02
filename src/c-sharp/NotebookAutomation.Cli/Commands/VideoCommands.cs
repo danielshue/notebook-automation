@@ -42,7 +42,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="debugOption">The global debug option.</param>
         /// <param name="verboseOption">The global verbose output option.</param>
         /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-        public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+        public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var inputOption = new Option<string?>(
                 aliases: ["--input", "-i"],
@@ -205,7 +205,7 @@ namespace NotebookAutomation.Cli.Commands
                 AnsiConsoleHelper.WriteInfo($"  OneDrive fullpath root: {effectiveResourcesRoot ?? "(not configured)"}");
                 AnsiConsoleHelper.WriteInfo($"  Config OneDrive root: {appConfig?.Paths?.OnedriveFullpathRoot ?? "(not set)"}");
                 AnsiConsoleHelper.WriteInfo($"  Skip share links: {noShareLinks}");
-                AnsiConsoleHelper.WriteInfo($"  Video extensions: {string.Join(", ", appConfig?.VideoExtensions ?? new List<string>())}");
+                AnsiConsoleHelper.WriteInfo($"  Video extensions: {string.Join(", ", appConfig?.VideoExtensions ?? [])}");
 
                 // Display more detailed AI service configuration
                 AnsiConsoleHelper.WriteInfo($"  AI Provider: {appConfig?.AiService?.Provider ?? "openai"}");
@@ -250,7 +250,7 @@ namespace NotebookAutomation.Cli.Commands
                     return;
                 }
                 // Get video extensions from config
-                var videoExtensions = appConfig.VideoExtensions ?? new List<string> { ".mp4", ".mov", ".avi", ".mkv", ".webm" };
+                var videoExtensions = appConfig.VideoExtensions ?? [".mp4", ".mov", ".avi", ".mkv", ".webm"];
 
                 // Get OpenAI API key from environment or config
                 string? openAiApiKey = appConfig.AiService?.GetApiKey();

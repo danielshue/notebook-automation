@@ -25,34 +25,25 @@ namespace NotebookAutomation.Core.Utils
     ///             - Content Files (readings, videos, transcripts, etc.)
     /// </para>
     /// </remarks>
-    public class MetadataHierarchyDetector
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="MetadataHierarchyDetector"/> class.
+    /// </remarks>
+    /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+    /// <param name="appConfig">The application configuration.</param>
+    /// <param name="programOverride">Optional explicit program name override.</param>
+    /// <param name="verbose">Whether to output verbose logging information.</param>
+    public class MetadataHierarchyDetector(
+        ILogger logger,
+        AppConfig appConfig,
+        string? programOverride = null,
+        bool verbose = false)
     {
-        private readonly ILogger _logger;
-        private readonly string _notebookVaultRoot;
-        private readonly string? _programOverride;
-        private readonly YamlHelper _yamlHelper;
-        private readonly bool _verbose;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MetadataHierarchyDetector"/> class.
-        /// </summary>
-        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
-        /// <param name="appConfig">The application configuration.</param>
-        /// <param name="programOverride">Optional explicit program name override.</param>
-        /// <param name="verbose">Whether to output verbose logging information.</param>
-        public MetadataHierarchyDetector(
-            ILogger logger,
-            AppConfig appConfig,
-            string? programOverride = null,
-            bool verbose = false)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _notebookVaultRoot = appConfig?.Paths?.NotebookVaultFullpathRoot
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly string _notebookVaultRoot = appConfig?.Paths?.NotebookVaultFullpathRoot
                 ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
-            _programOverride = programOverride;
-            _yamlHelper = new YamlHelper(logger);
-            _verbose = verbose;
-        }
+        private readonly string? _programOverride = programOverride;
+        private readonly YamlHelper _yamlHelper = new YamlHelper(logger);
+        private readonly bool _verbose = verbose;
 
         /// <summary>
         /// Finds program, course, and class information by analyzing the file path and scanning parent directories.
@@ -184,9 +175,9 @@ namespace NotebookAutomation.Core.Utils
                         {
                             var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
 
-                            if (frontmatterDict.ContainsKey("index-type"))
+                            if (frontmatterDict.TryGetValue("index-type", out object? value))
                             {
-                                string indexType = frontmatterDict["index-type"].ToString() ?? string.Empty;
+                                string indexType = value.ToString() ?? string.Empty;
                                 string dirName = currentDir.Name;
 
                                 // For program, we want the highest level (closest to root)
@@ -246,9 +237,7 @@ namespace NotebookAutomation.Core.Utils
                 {
                     // Get the relevant parts of the path between vault root and file
                     string relativePath = GetRelativePath(_notebookVaultRoot, filePath);
-                    string[] relevant = relativePath.Split(Path.DirectorySeparatorChar)
-                        .Where(p => !string.IsNullOrEmpty(p) && p != "01_Projects")
-                        .ToArray();
+                    string[] relevant = [.. relativePath.Split(Path.DirectorySeparatorChar).Where(p => !string.IsNullOrEmpty(p) && p != "01_Projects")];
 
                     // Walk up the directory tree from the file's parent, looking for program-index.md
                     string? programTitle = null;
@@ -267,9 +256,9 @@ namespace NotebookAutomation.Core.Utils
                                 if (!string.IsNullOrEmpty(frontmatter))
                                 {
                                     var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
-                                    if (frontmatterDict.ContainsKey("title"))
+                                    if (frontmatterDict.TryGetValue("title", out object? value))
                                     {
-                                        programTitle = frontmatterDict["title"].ToString();
+                                        programTitle = value.ToString();
                                         break;
                                     }
                                 }
@@ -338,7 +327,7 @@ namespace NotebookAutomation.Core.Utils
         /// <param name="metadata">The existing metadata dictionary to update.</param>
         /// <param name="hierarchyInfo">The hierarchy information to apply.</param>
         /// <returns>Updated metadata dictionary.</returns>
-        public Dictionary<string, object> UpdateMetadataWithHierarchy(
+        public static Dictionary<string, object> UpdateMetadataWithHierarchy(
             Dictionary<string, object> metadata,
             Dictionary<string, string> hierarchyInfo)
         {
@@ -370,7 +359,7 @@ namespace NotebookAutomation.Core.Utils
         }
 
         // Helper methods
-        private string GetValueOrDefault(Dictionary<string, object> dict, string key, string defaultValue)
+        private static string GetValueOrDefault(Dictionary<string, object> dict, string key, string defaultValue)
         {
             if (dict.TryGetValue(key, out var value) && value != null)
             {
@@ -379,7 +368,7 @@ namespace NotebookAutomation.Core.Utils
             return defaultValue;
         }
 
-        private bool IsSubdirectoryOf(DirectoryInfo child, DirectoryInfo parent)
+        private static bool IsSubdirectoryOf(DirectoryInfo child, DirectoryInfo parent)
         {
             if (child == null || parent == null)
                 return false;
@@ -390,12 +379,12 @@ namespace NotebookAutomation.Core.Utils
             return childPath.StartsWith(parentPath, StringComparison.OrdinalIgnoreCase);
         }
 
-        private int GetPathDepth(DirectoryInfo dir)
+        private static int GetPathDepth(DirectoryInfo dir)
         {
             return dir.FullName.Split(Path.DirectorySeparatorChar).Length;
         }
 
-        private string GetRelativePath(string basePath, string fullPath)
+        private static string GetRelativePath(string basePath, string fullPath)
         {
             // Ensure trailing directory separator for proper relative path calculation
             if (!basePath.EndsWith(Path.DirectorySeparatorChar))
@@ -403,7 +392,7 @@ namespace NotebookAutomation.Core.Utils
 
             if (fullPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
             {
-                return fullPath.Substring(basePath.Length);
+                return fullPath[basePath.Length..];
             }
 
             // If not a subdirectory, return the full path (though this shouldn't happen)

@@ -29,7 +29,7 @@ namespace NotebookAutomation.Core.Services
         private string? _localVaultRoot;
         private string? _oneDriveVaultRoot;
 
-        private OneDriveCliOptions _cliOptions = new OneDriveCliOptions();
+        private OneDriveCliOptions _cliOptions = new();
 
         public OneDriveService(
             ILogger<OneDriveService> logger,
@@ -333,7 +333,7 @@ namespace NotebookAutomation.Core.Services
                 };
                 var response = await _graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken);
                 if (response == null)
-                    return new List<string>();
+                    return [];
                 using var doc = JsonDocument.Parse(response);
                 var items = doc.RootElement.GetProperty("value");
                 var result = new List<string>();
@@ -347,12 +347,12 @@ namespace NotebookAutomation.Core.Services
             catch (ServiceException ex)
             {
                 _logger.LogError(ex, "Graph API error listing files in OneDrive folder: {Folder}", oneDriveFolder);
-                return new List<string>();
+                return [];
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to list files in OneDrive folder: {Folder}", oneDriveFolder);
-                return new List<string>();
+                return [];
             }
         }
 
@@ -367,20 +367,16 @@ namespace NotebookAutomation.Core.Services
                 throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
             try
             {
-                using (var stream = File.OpenRead(localPath))
+                using var stream = File.OpenRead(localPath);
+                var requestInfo = new RequestInformation
                 {
-                    var requestInfo = new RequestInformation
-                    {
-                        HttpMethod = Method.PUT,
-                        UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}:/content",
-                        PathParameters = new Dictionary<string, object> { { "itemPath", oneDrivePath } }
-                    };
-                    requestInfo.SetStreamContent(stream, "application/octet-stream");
-                    var response = await _graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken);
-                    if (response == null)
-                        throw new Exception($"Upload failed for {oneDrivePath}");
-                    _logger.LogInformation("Uploaded file to OneDrive: {Path}", oneDrivePath);
-                }
+                    HttpMethod = Method.PUT,
+                    UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}:/content",
+                    PathParameters = new Dictionary<string, object> { { "itemPath", oneDrivePath } }
+                };
+                requestInfo.SetStreamContent(stream, "application/octet-stream");
+                var response = await _graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken) ?? throw new Exception($"Upload failed for {oneDrivePath}");
+                _logger.LogInformation("Uploaded file to OneDrive: {Path}", oneDrivePath);
             }
             catch (ServiceException ex)
             {
@@ -425,7 +421,7 @@ namespace NotebookAutomation.Core.Services
                 // Normalize the OneDrive file path
                 oneDrivePath = oneDrivePath.Replace('\\', '/');
                 if (oneDrivePath.StartsWith('/'))
-                    oneDrivePath = oneDrivePath.Substring(1);
+                    oneDrivePath = oneDrivePath[1..];
                 _logger.LogInformationWithPath(oneDrivePath, "Creating sharing link for OneDrive file");
 
                 // Prepare the request
@@ -531,12 +527,12 @@ namespace NotebookAutomation.Core.Services
             catch (ServiceException ex)
             {
                 _logger.LogError(ex, "Graph API error searching OneDrive for query: {Query}", query);
-                return new List<Dictionary<string, object>>();
+                return [];
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to search OneDrive for query: {Query}", query);
-                return new List<Dictionary<string, object>>();
+                return [];
             }
         }
 
@@ -599,7 +595,7 @@ namespace NotebookAutomation.Core.Services
                 };
                 var response = await _graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken);
                 if (response == null)
-                    return new List<string>();
+                    return [];
                 using var doc = JsonDocument.Parse(response);
                 var items = doc.RootElement.GetProperty("value");
                 var result = new List<string>();
@@ -614,12 +610,12 @@ namespace NotebookAutomation.Core.Services
             catch (ServiceException ex)
             {
                 _logger.LogError(ex, "Graph API error searching files/folders in OneDrive: {Pattern}", searchPattern);
-                return new List<string>();
+                return [];
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to search files/folders in OneDrive: {Pattern}", searchPattern);
-                return new List<string>();
+                return [];
             }
         }
 
@@ -702,12 +698,12 @@ namespace NotebookAutomation.Core.Services
             catch (ServiceException ex)
             {
                 _logger.LogError(ex, "Graph API error listing drives");
-                return new List<Dictionary<string, object>>();
+                return [];
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to list drives");
-                return new List<Dictionary<string, object>>();
+                return [];
             }
         }
 
@@ -748,12 +744,12 @@ namespace NotebookAutomation.Core.Services
             catch (ServiceException ex)
             {
                 _logger.LogError(ex, "Graph API error listing root folder items");
-                return new List<Dictionary<string, object>>();
+                return [];
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to list root folder items");
-                return new List<Dictionary<string, object>>();
+                return [];
             }
         }
 
@@ -829,12 +825,12 @@ namespace NotebookAutomation.Core.Services
             catch (ServiceException ex)
             {
                 _logger.LogError(ex, "Graph API error listing files with metadata in OneDrive folder: {Folder}", oneDriveFolder);
-                return new List<Dictionary<string, object>>();
+                return [];
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to list files with metadata in OneDrive folder: {Folder}", oneDriveFolder);
-                return new List<Dictionary<string, object>>();
+                return [];
             }
         }
 
@@ -873,7 +869,7 @@ namespace NotebookAutomation.Core.Services
             var parent = Path.GetDirectoryName(oneDrivePath.Replace("\\", "/")) ?? string.Empty;
             var baseName = Path.GetFileName(oneDrivePath.Replace("\\", "/"));
             var siblings = await ListFilesWithMetadataAsync(parent, cancellationToken);
-            var suggestions = FindSimilarNames(baseName, siblings.Select(d => d.ContainsKey("name") ? d["name"]?.ToString() ?? string.Empty : string.Empty).ToList());
+            var suggestions = FindSimilarNames(baseName, [.. siblings.Select(d => d.TryGetValue("name", out object? value) ? value?.ToString() ?? string.Empty : string.Empty)]);
             if (suggestions.Count > 0)
             {
                 _logger.LogWarning("Path not found: {Path}. Did you mean: {Suggestions}", oneDrivePath, string.Join(", ", suggestions));
@@ -904,7 +900,7 @@ namespace NotebookAutomation.Core.Services
         /// <summary>
         /// Computes the Levenshtein distance between two strings.
         /// </summary>
-        private int LevenshteinDistance(string a, string b)
+        private static int LevenshteinDistance(string a, string b)
         {
             if (string.IsNullOrEmpty(a)) return b?.Length ?? 0;
             if (string.IsNullOrEmpty(b)) return a.Length;
@@ -1007,7 +1003,7 @@ namespace NotebookAutomation.Core.Services
             var normOneDrivePath = oneDrivePath.Replace("\\", "/");
             if (!normOneDrivePath.StartsWith(_oneDriveVaultRoot, StringComparison.OrdinalIgnoreCase))
                 throw new ArgumentException($"OneDrive path '{oneDrivePath}' is not under the configured OneDrive vault root '{_oneDriveVaultRoot}'.");
-            var relative = normOneDrivePath.Substring(_oneDriveVaultRoot.Length).TrimStart('/');
+            var relative = normOneDrivePath[_oneDriveVaultRoot.Length..].TrimStart('/');
             var localPath = Path.Combine(_localVaultRoot, relative.Replace('/', Path.DirectorySeparatorChar));
             return localPath;
         }
@@ -1028,29 +1024,22 @@ namespace NotebookAutomation.Core.Services
     /// <summary>
     /// Token provider for Microsoft Graph authentication using MSAL
     /// </summary>
-    internal class TokenProvider : IAccessTokenProvider
+    /// <remarks>
+    /// Initializes a new instance of the TokenProvider class
+    /// </remarks>
+    /// <param name="msalApp">The MSAL public client application</param>
+    /// <param name="scopes">Authentication scopes</param>
+    /// <param name="logger">Logger instance</param>
+    internal class TokenProvider(IPublicClientApplication msalApp, string[] scopes, ILogger logger) : IAccessTokenProvider
     {
-        private readonly IPublicClientApplication _msalApp;
-        private readonly string[] _scopes;
-        private readonly ILogger _logger;
-
-        /// <summary>
-        /// Initializes a new instance of the TokenProvider class
-        /// </summary>
-        /// <param name="msalApp">The MSAL public client application</param>
-        /// <param name="scopes">Authentication scopes</param>
-        /// <param name="logger">Logger instance</param>
-        public TokenProvider(IPublicClientApplication msalApp, string[] scopes, ILogger logger)
-        {
-            _msalApp = msalApp ?? throw new ArgumentNullException(nameof(msalApp));
-            _scopes = scopes ?? throw new ArgumentNullException(nameof(scopes));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly IPublicClientApplication _msalApp = msalApp ?? throw new ArgumentNullException(nameof(msalApp));
+        private readonly string[] _scopes = scopes ?? throw new ArgumentNullException(nameof(scopes));
+        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         /// <summary>
         /// Gets the authentication provider unique ID
         /// </summary>
-        public string? CachedSerializationId => null;
+        public static string? CachedSerializationId => null;
 
         /// <summary>
         /// Obtains a token from the MSAL client
@@ -1111,6 +1100,7 @@ namespace NotebookAutomation.Core.Services
                  /// </summary>
                  /// <param name="uri">The URI being requested</param>
                  /// <returns>Whether this provider can authenticate</returns>
-        public AllowedHostsValidator AllowedHostsValidator => new AllowedHostsValidator(new[] { "graph.microsoft.com" });
+        public AllowedHostsValidator AllowedHostsValidator => new(validHosts);
+        internal static readonly string[] validHosts = new[] { "graph.microsoft.com" };
     }
 }

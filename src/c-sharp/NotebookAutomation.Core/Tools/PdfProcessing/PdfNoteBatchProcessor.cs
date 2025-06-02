@@ -29,21 +29,16 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
     /// <see cref="DocumentNoteBatchProcessor{TProcessor}"/> for maintainability and code reuse.
     /// </para>
     /// </remarks>
-    public class PdfNoteBatchProcessor
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="PdfNoteBatchProcessor"/> class with a batch processor.
+    /// </remarks>
+    /// <param name="batchProcessor">The batch processor to use for PDF note processing.</param>
+    public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor)
     {
         /// <summary>
         /// The generic batch processor that handles the actual batch processing logic.
         /// </summary>
-        private readonly DocumentNoteBatchProcessor<PdfNoteProcessor> _batchProcessor;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PdfNoteBatchProcessor"/> class with a batch processor.
-        /// </summary>
-        /// <param name="batchProcessor">The batch processor to use for PDF note processing.</param>
-        public PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor)
-        {
-            _batchProcessor = batchProcessor ?? throw new ArgumentNullException(nameof(batchProcessor));
-        }
+        private readonly DocumentNoteBatchProcessor<PdfNoteProcessor> _batchProcessor = batchProcessor ?? throw new ArgumentNullException(nameof(batchProcessor));
 
         /// <summary>
         /// Processes one or more PDF files, generating markdown notes for each.
@@ -92,7 +87,7 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
             string? openAiApiKey = null,
             bool dryRun = false)
         {
-            var extensions = pdfExtensions ?? new List<string> { ".pdf" };
+            var extensions = pdfExtensions ?? [".pdf"];
             return await _batchProcessor.ProcessDocumentsAsync(
                 input,
                 output,
@@ -150,7 +145,7 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
             string? resourcesRoot = null,
             Configuration.AppConfig? appConfig = null)
         {
-            var extensions = pdfExtensions ?? new List<string> { ".pdf" };
+            var extensions = pdfExtensions ?? [".pdf"];
             return await _batchProcessor.ProcessDocumentsAsync(
                 input,
                 output,

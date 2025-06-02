@@ -7,7 +7,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
     /// <summary>
     /// Provides functionality for converting HTML or TXT files to markdown notes, with optional AI summary.
     /// </summary>
-    public class MarkdownNoteProcessor
+    public partial class MarkdownNoteProcessor
     {
         private readonly ILogger<MarkdownNoteProcessor> _logger;
         private readonly MarkdownNoteBuilder _noteBuilder;
@@ -114,10 +114,13 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
             return _noteBuilder.BuildNote(metadata, aiSummary);
         }
 
-        private string StripHtmlTags(string html)
+        private static string StripHtmlTags(string html)
         {
             // Simple HTML tag stripper for placeholder; replace with a real converter for production
-            return System.Text.RegularExpressions.Regex.Replace(html, "<.*?>", string.Empty);
+            return MyRegex().Replace(html, string.Empty);
         }
+
+        [System.Text.RegularExpressions.GeneratedRegex("<.*?>")]
+        private static partial System.Text.RegularExpressions.Regex MyRegex();
     }
 }

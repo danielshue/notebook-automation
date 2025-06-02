@@ -57,11 +57,11 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             _verbose = verbose;
 
             // Fields to process for tags (generalized)
-            _fieldsToProcess = new HashSet<string>
-            {
+            _fieldsToProcess =
+            [
                 "course", "lecture", "topic", "subjects", "professor",
                 "university", "program", "assignment", "type", "author"
-            };
+            ];
         }
 
         /// <summary>
@@ -86,11 +86,11 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             _verbose = verbose;
 
             // Use provided fields if any, otherwise use defaults
-            _fieldsToProcess = fieldsToProcess ?? new HashSet<string>
-            {
+            _fieldsToProcess = fieldsToProcess ??
+            [
                 "course", "lecture", "topic", "subjects", "professor",
                 "university", "program", "assignment", "type", "author"
-            };
+            ];
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                         if (content.TrimStart().StartsWith("---"))
                         {
                             _logger.LogDebug("Content appears to have frontmatter but extraction failed. First 50 chars: {Content}",
-                                content.Length > 50 ? content.Substring(0, 50) + "..." : content);
+                                content.Length > 50 ? content[..50] + "..." : content);
                         }
                     }
                     return false;
@@ -199,7 +199,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                     {
                         _logger.LogInformation("Empty or invalid frontmatter in file: {FilePath}", filePath);
                         _logger.LogDebug("Frontmatter content that failed parsing: {Frontmatter}",
-                            frontmatter.Length > 100 ? frontmatter.Substring(0, 100) + "..." : frontmatter);
+                            frontmatter.Length > 100 ? frontmatter[..100] + "..." : frontmatter);
                     }
                     return false;
                 }
@@ -216,7 +216,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                     frontmatterDict["tags"] = updatedTags;
 
                     // Update the content with the new frontmatter
-                    string updatedFrontmatter = _yamlHelper.SerializeYaml(frontmatterDict);
+                    string updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
                     string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
 
                     if (_dryRun)
@@ -324,7 +324,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             string content)
         {
             // Extract existing tags
-            var existingTags = _yamlHelper.ExtractTags(frontmatter);
+            var existingTags = YamlHelper.ExtractTags(frontmatter);
             var initialTagCount = existingTags.Count;
 
             // Add new nested tags based on frontmatter fields
@@ -356,7 +356,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             }
 
             // Update frontmatter with new tags
-            frontmatter = _yamlHelper.UpdateTags(frontmatter, existingTags);
+            frontmatter = YamlHelper.UpdateTags(frontmatter, existingTags);
 
             if (_dryRun)
             {
@@ -378,7 +378,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
         /// </summary>
         /// <param name="frontmatter">The frontmatter dictionary.</param>
         /// <returns>A list of existing tags.</returns>
-        public List<string> GetExistingTags(Dictionary<string, object> frontmatter)
+        public static List<string> GetExistingTags(Dictionary<string, object> frontmatter)
         {
             var result = new List<string>();
 
@@ -470,7 +470,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
         /// </summary>
         /// <param name="fieldName">The field name.</param>
         /// <returns>The tag prefix.</returns>
-        public string GetTagPrefixForField(string fieldName)
+        public static string GetTagPrefixForField(string fieldName)
         {
             // Map field names to tag prefixes
             return fieldName switch
@@ -494,7 +494,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
         /// </summary>
         /// <param name="value">The raw tag value.</param>
         /// <returns>Normalized tag value.</returns>
-        public string NormalizeTagValue(string value)
+        public static string NormalizeTagValue(string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -552,7 +552,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 _logger.LogInformation("[DRY RUN] Would restructure tags in {FilePath}", filePath);
                 return true;
             }
-            var updatedFrontmatter = _yamlHelper.SerializeYaml(frontmatterDict);
+            var updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
             var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
             await File.WriteAllTextAsync(filePath, updatedContent);
             _logger.LogInformation("Restructured tags in {FilePath}", filePath);
@@ -569,7 +569,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             string content = await File.ReadAllTextAsync(filePath);
             string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
             var frontmatterDict = string.IsNullOrEmpty(frontmatter)
-                ? new Dictionary<string, object>()
+                ? []
                 : _yamlHelper.ParseYamlToDictionary(frontmatter);
             var exampleTags = new List<string> { "mba/course/finance", "type/note/case-study", "subject/leadership" };
             if (frontmatterDict.ContainsKey("tags"))
@@ -583,7 +583,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 _logger.LogInformation("[DRY RUN] Would add example tags to {FilePath}", filePath);
                 return true;
             }
-            var updatedFrontmatter = _yamlHelper.SerializeYaml(frontmatterDict);
+            var updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
             var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
             await File.WriteAllTextAsync(filePath, updatedContent);
             _logger.LogInformation("Added example tags to {FilePath}", filePath);
@@ -618,7 +618,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             string content = await File.ReadAllTextAsync(filePath);
             string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
             var frontmatterDict = string.IsNullOrEmpty(frontmatter)
-                ? new Dictionary<string, object>()
+                ? []
                 : _yamlHelper.ParseYamlToDictionary(frontmatter);
             // Example: Ensure required fields exist
             var requiredFields = new[] { "title", "type", "tags" };
@@ -639,7 +639,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             }
             if (modified)
             {
-                var updatedFrontmatter = _yamlHelper.SerializeYaml(frontmatterDict);
+                var updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
                 var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
                 await File.WriteAllTextAsync(filePath, updatedContent);
                 _logger.LogInformation("Enforced metadata consistency in {FilePath}", filePath);
@@ -730,7 +730,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                         _logger.LogInformation("No frontmatter found in file, creating new frontmatter: {FilePath}", filePath);
                     }
                     // Create new frontmatter
-                    frontmatterDict = new Dictionary<string, object>();
+                    frontmatterDict = [];
                 }
                 else
                 {
@@ -812,16 +812,16 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 foreach (var file in markdownFiles)
                 {
                     string content = await File.ReadAllTextAsync(file);
-                    var diagnosis = _yamlHelper.DiagnoseYamlFrontmatter(content);
+                    var (Success, Message, Data) = _yamlHelper.DiagnoseYamlFrontmatter(content);
 
-                    if (!diagnosis.Success)
+                    if (!Success)
                     {
                         filesWithIssues++;
-                        results.Add((file, diagnosis.Message));
+                        results.Add((file, Message));
 
                         if (_verbose)
                         {
-                            _logger.LogWarning("YAML issue in {FilePath}: {Message}", file, diagnosis.Message);
+                            _logger.LogWarning("YAML issue in {FilePath}: {Message}", file, Message);
                         }
                     }
                 }

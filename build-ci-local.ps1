@@ -8,6 +8,7 @@
 .EXAMPLE
     .\build-ci-local.ps1
     .\build-ci-local.ps1 -SkipTests
+    .\build-ci-local.ps1 -SkipFormat
     .\build-ci-local.ps1 -Configuration Debug
 #>
 
@@ -20,6 +21,9 @@ param(
     [string]$Configuration = "Release",
       [Parameter(HelpMessage="Skip cleaning before build")]
     [switch]$SkipClean,
+    
+    [Parameter(HelpMessage="Skip code formatting to speed up the build")]
+    [switch]$SkipFormat,
     
     [Parameter(HelpMessage="Show verbose output")]
     [switch]$VerboseOutput
@@ -85,10 +89,29 @@ try {    Write-Host "🚀 Starting Local CI Build Pipeline" -ForegroundColor $Cy
     dotnet restore $SolutionPath
     if ($LASTEXITCODE -ne 0) {
         throw "Restore failed with exit code $LASTEXITCODE"
+    }    Write-Success "Dependencies restored successfully"
+    
+    # Step 3: Code Formatting (mirrors CI preparation)
+    if (-not $SkipFormat) {
+        Write-Step "Step 3: Code Formatting"
+        Write-Host "Applying code formatting standards..." -ForegroundColor $Yellow
+        
+        if ($VerboseOutput) {
+            dotnet format $SolutionPath --verbosity normal
+        } else {
+            dotnet format $SolutionPath
+        }
+        if ($LASTEXITCODE -ne 0) {
+            Write-Warning "Code formatting encountered issues but continuing..."
+            Write-Host "You may want to review the changes and commit them." -ForegroundColor $Yellow
+        } else {
+            Write-Success "Code formatting completed successfully"
+        }
+    } else {
+        Write-Warning "Skipping code formatting"
     }
-    Write-Success "Dependencies restored successfully"
-      # Step 3: Build Solution (mirrors CI)
-    Write-Step "Step 3: Build Solution"
+      # Step 4: Build Solution (mirrors CI)
+    Write-Step "Step 4: Build Solution"
     Write-Host "Build command: dotnet build `"$SolutionPath`" --configuration $Configuration --no-restore" -ForegroundColor $Yellow
     
     if ($VerboseOutput) {
@@ -99,10 +122,9 @@ try {    Write-Host "🚀 Starting Local CI Build Pipeline" -ForegroundColor $Cy
     if ($LASTEXITCODE -ne 0) {
         throw "Build failed with exit code $LASTEXITCODE"
     }
-    Write-Success "Build completed successfully"
-      # Step 4: Run Tests (mirrors CI)
+    Write-Success "Build completed successfully"    # Step 5: Run Tests (mirrors CI)
     if (-not $SkipTests) {
-        Write-Step "Step 4: Run Tests with Coverage"
+        Write-Step "Step 5: Run Tests with Coverage"
         $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
         
         if ($VerboseOutput) {
@@ -116,9 +138,8 @@ try {    Write-Host "🚀 Starting Local CI Build Pipeline" -ForegroundColor $Cy
         Write-Success "All tests passed"
     } else {
         Write-Warning "Skipping tests"
-    }
-      # Step 5: Test Publish Operations (mirrors CI publish steps)
-    Write-Step "Step 5: Test Publish Operations"
+    }    # Step 6: Test Publish Operations (mirrors CI publish steps)
+    Write-Step "Step 6: Test Publish Operations"
     $cliProjectPath = Join-Path $ScriptDir "src\c-sharp\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj"
     $tempPublishDir = Join-Path $ScriptDir "temp_publish_test"
     
@@ -144,9 +165,8 @@ try {    Write-Host "🚀 Starting Local CI Build Pipeline" -ForegroundColor $Cy
             Remove-Item -Recurse -Force $tempPublishDir -ErrorAction SilentlyContinue
         }
     }
-    
-    # Step 6: Run Static Code Analysis (mirrors CI - this runs last)
-    Write-Step "Step 6: Static Code Analysis"
+      # Step 7: Run Static Code Analysis (mirrors CI - this runs last)
+    Write-Step "Step 7: Static Code Analysis"
     dotnet format $SolutionPath --verify-no-changes --severity error
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Code formatting issues detected!"
@@ -168,8 +188,7 @@ try {    Write-Host "🚀 Starting Local CI Build Pipeline" -ForegroundColor $Cy
     Write-Host "`n💥 LOCAL CI BUILD PIPELINE FAILED! 💥" -ForegroundColor $Red
     Write-Host "Error: $($_.Exception.Message)" -ForegroundColor $Red
     Write-Host "`nPlease fix the issues above before pushing to the repository." -ForegroundColor $Yellow
-    
-    # Display helpful commands
+      # Display helpful commands
     Write-Host "`nHelpful Commands:" -ForegroundColor $Cyan
     Write-Host "  Fix formatting: dotnet format $SolutionPath" -ForegroundColor $Yellow
     Write-Host "  Run tests only: dotnet test $TestProjectPath --configuration $Configuration" -ForegroundColor $Yellow
