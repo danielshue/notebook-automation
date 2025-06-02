@@ -5,16 +5,10 @@ namespace NotebookAutomation.Core.Utils
     /// <summary>
     /// Provides a reusable way to build markdown notes with YAML frontmatter.
     /// </summary>
-    public class MarkdownNoteBuilder
+    public class MarkdownNoteBuilder(ILogger? logger = null)
     {
-        private readonly ILogger? _logger;
-        private readonly YamlHelper _yamlHelper;
-
-        public MarkdownNoteBuilder(ILogger? logger = null)
-        {
-            _logger = logger;
-            _yamlHelper = new YamlHelper(logger);
-        }
+        private readonly ILogger? _logger = logger;
+        private readonly YamlHelper _yamlHelper = new YamlHelper(logger);
 
         /// <summary>
         /// Builds a markdown note with only YAML frontmatter (no body).
@@ -28,7 +22,7 @@ namespace NotebookAutomation.Core.Utils
             int end = yaml.IndexOf("---", 3, StringComparison.Ordinal);
             if (end > 0)
             {
-                return yaml.Substring(0, end + 3) + "\n\n";
+                return yaml[..(end + 3)] + "\n\n";
             }
             return yaml.TrimEnd() + "\n\n";
         }

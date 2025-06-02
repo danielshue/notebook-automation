@@ -18,10 +18,7 @@ namespace NotebookAutomation.Core.Configuration
         /// <returns>The same configuration builder.</returns>
         public static IConfigurationBuilder AddObject(this IConfigurationBuilder configurationBuilder, object obj)
         {
-            if (obj == null)
-            {
-                throw new ArgumentNullException(nameof(obj));
-            }
+            ArgumentNullException.ThrowIfNull(obj);
 
             var dictionary = ConvertToDictionary(obj);
             return configurationBuilder.AddInMemoryCollection(dictionary);

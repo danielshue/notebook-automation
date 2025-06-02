@@ -149,7 +149,7 @@ namespace NotebookAutomation.Core.Utils
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && path.Length > 1 && path[1] == ':')
             {
                 // Make sure the drive letter is uppercase
-                path = char.ToUpper(path[0]) + path.Substring(1);
+                path = char.ToUpper(path[0]) + path[1..];
             }
 
             return path;
@@ -232,11 +232,11 @@ namespace NotebookAutomation.Core.Utils
 
             if (normalizedFull.StartsWith(normalizedBase))
             {
-                var relativePath = normalizedFull.Substring(normalizedBase.Length);
+                var relativePath = normalizedFull[normalizedBase.Length..];
                 // Remove leading directory separator if present
                 if (relativePath.StartsWith(Path.DirectorySeparatorChar.ToString()))
                 {
-                    relativePath = relativePath.Substring(1);
+                    relativePath = relativePath[1..];
                 }
                 return relativePath;
             }
@@ -301,7 +301,7 @@ namespace NotebookAutomation.Core.Utils
                     prefixLength++;
                 }
 
-                commonPrefix = commonPrefix.Substring(0, prefixLength);
+                commonPrefix = commonPrefix[..prefixLength];
                 if (string.IsNullOrEmpty(commonPrefix))
                 {
                     return string.Empty;
@@ -312,7 +312,7 @@ namespace NotebookAutomation.Core.Utils
             var lastSeparatorIndex = commonPrefix.LastIndexOf(Path.DirectorySeparatorChar);
             if (lastSeparatorIndex >= 0)
             {
-                return commonPrefix.Substring(0, lastSeparatorIndex + 1);
+                return commonPrefix[..(lastSeparatorIndex + 1)];
             }
 
             return string.Empty;

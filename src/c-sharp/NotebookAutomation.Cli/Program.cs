@@ -83,7 +83,7 @@ namespace NotebookAutomation.Cli
             vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());
-            videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
             pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
@@ -101,7 +101,7 @@ namespace NotebookAutomation.Cli
             oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var versionCommands = new VersionCommands();
-            versionCommands.Register(rootCommand);
+            VersionCommands.Register(rootCommand);
 
             // Print help if no subcommand or arguments are provided
             if (args.Length == 0)
@@ -112,7 +112,7 @@ namespace NotebookAutomation.Cli
 
             // Print available subcommands if no valid subcommand is provided
             rootCommand.TreatUnmatchedTokensAsErrors = true;
-            rootCommand.SetHandler((InvocationContext context) =>
+            rootCommand.SetHandler(context =>
             {
                 if (context.ParseResult.Tokens.Count == 0)
                 {

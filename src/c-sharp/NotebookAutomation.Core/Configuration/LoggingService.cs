@@ -44,11 +44,17 @@ namespace NotebookAutomation.Core.Configuration
     /// </list>    
     /// </para>
     /// </remarks>    
-    public class LoggingService : ILoggingService
+    /// <remarks>
+    /// Initializes a new instance of the LoggingService class with a logging directory.
+    /// This constructor is used for early initialization before AppConfig is available.
+    /// </remarks>
+    /// <param name="loggingDir">The directory where log files should be stored.</param>       
+    /// <param name="debug">Whether debug mode is enabled.</param>
+    public class LoggingService(string loggingDir, bool debug = false) : ILoggingService
     {
         // Core properties for logging configuration
-        private readonly string _loggingDir;
-        private readonly bool _debug;
+        private readonly string _loggingDir = loggingDir ?? Path.Combine(AppContext.BaseDirectory, "logs");
+        private readonly bool _debug = debug;
 
         // The initialized loggers and factory (null until ConfigureLogging is called)
         private SerilogILogger? _serilogLogger;
@@ -58,8 +64,8 @@ namespace NotebookAutomation.Core.Configuration
         private ILogger? _failedLogger;
 
         // Synchronization object for thread safety
-        private readonly object _initLock = new object();
-        private volatile bool _isInitialized;
+        private readonly Lock _initLock = new();
+        private volatile bool _isInitialized = false;
 
         /// <summary>
         /// Gets the main Serilog logger instance used for general logging.
@@ -85,19 +91,6 @@ namespace NotebookAutomation.Core.Configuration
         /// Gets the specialized logger instance used for recording failed operations.
         /// </summary>
         public ILogger FailedLogger => EnsureInitialized()._failedLogger!;
-
-        /// <summary>
-        /// Initializes a new instance of the LoggingService class with a logging directory.
-        /// This constructor is used for early initialization before AppConfig is available.
-        /// </summary>
-        /// <param name="loggingDir">The directory where log files should be stored.</param>       
-        /// <param name="debug">Whether debug mode is enabled.</param>
-        public LoggingService(string loggingDir, bool debug = false)
-        {
-            _loggingDir = loggingDir ?? Path.Combine(AppContext.BaseDirectory, "logs");
-            _debug = debug;
-            _isInitialized = false;
-        }
 
         /// <summary>
         /// Ensures that the loggers are initialized and returns the current instance.
@@ -192,7 +185,7 @@ namespace NotebookAutomation.Core.Configuration
         /// <param name="loggingDir">Directory for log files.</param>
         /// <param name="debug">Whether debug logging is enabled.</param>
         /// <returns>A configured Serilog logger instance.</returns>
-        private SerilogILogger CreateSerilogLogger(string loggingDir, bool debug)
+        private static SerilogILogger CreateSerilogLogger(string loggingDir, bool debug)
         {
             try
             {

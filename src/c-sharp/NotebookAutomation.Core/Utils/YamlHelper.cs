@@ -13,27 +13,14 @@ namespace NotebookAutomation.Core.Utils
     /// frontmatter found in markdown documents, with special consideration for
     /// preserving formatting and handling Obsidian-specific conventions.
     /// </summary>
-    public class YamlHelper : IYamlHelper
+    /// <remarks>
+    /// Initializes a new instance of the YamlHelper class.
+    /// </remarks>
+    /// <param name="logger">Optional logger for diagnostics.</param>
+    public partial class YamlHelper(ILogger? logger = null) : IYamlHelper
     {
-        private readonly ILogger? _logger;
-        private readonly Regex _frontmatterRegex;
-
-        /// <summary>
-        /// Initializes a new instance of the YamlHelper class.
-        /// </summary>
-        /// <param name="logger">Optional logger for diagnostics.</param>
-        public YamlHelper(ILogger? logger = null)
-        {
-            _logger = logger;
-            // Updated regex to handle various line ending styles and whitespace patterns
-            // This pattern accounts for:
-            // - Different line endings (CR, LF, CRLF)
-            // - Optional whitespace after the opening and closing delimiters
-            // - Exact three hyphens for the delimiters (---) as per YAML spec
-            _frontmatterRegex = new Regex(
-                @"^\s*---\s*[\r\n]+(.+?)[\r\n]+\s*---\s*[\r\n]+",
-                RegexOptions.Singleline | RegexOptions.Compiled);
-        }
+        private readonly ILogger? _logger = logger;
+        private readonly Regex _frontmatterRegex = MyRegex();
 
         /// <summary>
         /// Extracts the YAML frontmatter from markdown content.
@@ -54,7 +41,7 @@ namespace NotebookAutomation.Core.Utils
                 if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug("Content does not appear to have frontmatter. First 20 chars: {Content}",
-                        markdown.Length > 20 ? markdown.Substring(0, 20) + "..." : markdown);
+                        markdown.Length > 20 ? markdown[..20] + "..." : markdown);
                 }
                 return null;
             }
@@ -70,7 +57,7 @@ namespace NotebookAutomation.Core.Utils
                     if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
                     {
                         _logger.LogDebug("Content appears to have frontmatter but didn't match regex pattern. First 50 chars: {Content}",
-                            markdown.Length > 50 ? markdown.Substring(0, 50) + "..." : markdown);
+                            markdown.Length > 50 ? markdown[..50] + "..." : markdown);
                     }
                     return null;
                 }
@@ -121,7 +108,7 @@ namespace NotebookAutomation.Core.Utils
             if (string.IsNullOrWhiteSpace(yaml))
             {
                 _logger?.LogDebug("Empty YAML content provided for parsing");
-                return new Dictionary<string, object>();
+                return [];
             }
 
             try
@@ -133,7 +120,7 @@ namespace NotebookAutomation.Core.Utils
                 if (!yaml.Contains(':') && !yaml.Contains('-'))
                 {
                     _logger?.LogWarning("YAML content does not contain any key-value pairs or lists");
-                    return new Dictionary<string, object>();
+                    return [];
                 }
 
                 var deserializer = new DeserializerBuilder()
@@ -142,7 +129,7 @@ namespace NotebookAutomation.Core.Utils
                     .Build();
 
                 var result = deserializer.Deserialize<Dictionary<string, object>>(yaml);
-                return result ?? new Dictionary<string, object>();
+                return result ?? [];
             }
             catch (YamlDotNet.Core.YamlException yamlEx)
             {
@@ -154,10 +141,10 @@ namespace NotebookAutomation.Core.Utils
                 if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug("Problematic YAML content (first 100 chars): {YamlContent}",
-                        yaml.Length > 100 ? yaml.Substring(0, 100) + "..." : yaml);
+                        yaml.Length > 100 ? yaml[..100] + "..." : yaml);
                 }
 
-                return new Dictionary<string, object>();
+                return [];
             }
             catch (Exception ex)
             {
@@ -167,10 +154,10 @@ namespace NotebookAutomation.Core.Utils
                 if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug("Failed YAML content (first 100 chars): {YamlContent}",
-                        yaml.Length > 100 ? yaml.Substring(0, 100) + "..." : yaml);
+                        yaml.Length > 100 ? yaml[..100] + "..." : yaml);
                 }
 
-                return new Dictionary<string, object>();
+                return [];
             }
         }
 
@@ -209,7 +196,7 @@ namespace NotebookAutomation.Core.Utils
         /// </summary>
         /// <param name="frontmatter">The frontmatter as a dictionary.</param>
         /// <returns>The created markdown content.</returns>
-        public string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter)
+        public static string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter)
         {
             var serializer = new SerializerBuilder()
                 // Use the default naming convention to preserve original key names
@@ -234,7 +221,7 @@ namespace NotebookAutomation.Core.Utils
                 return markdown;
 
             // Return the content after the frontmatter block
-            return markdown.Substring(match.Length).TrimStart();
+            return markdown[match.Length..].TrimStart();
         }
 
         /// <summary>
@@ -242,13 +229,12 @@ namespace NotebookAutomation.Core.Utils
         /// </summary>
         /// <param name="frontmatter">The frontmatter as a dictionary.</param>
         /// <returns>A set of tags found in the frontmatter.</returns>
-        public HashSet<string> ExtractTags(Dictionary<string, object> frontmatter)
+        public static HashSet<string> ExtractTags(Dictionary<string, object> frontmatter)
         {
             var result = new HashSet<string>();
 
-            if (frontmatter.ContainsKey("tags"))
+            if (frontmatter.TryGetValue("tags", out object? tags))
             {
-                var tags = frontmatter["tags"];
 
                 // Handle different formats of tags
                 if (tags is List<object> tagList)
@@ -275,17 +261,14 @@ namespace NotebookAutomation.Core.Utils
                  /// <param name="frontmatter">The frontmatter dictionary to update.</param>
                  /// <param name="tags">The set of tags to set.</param>
                  /// <returns>The updated frontmatter.</returns>
-        public Dictionary<string, object> UpdateTags(Dictionary<string, object> frontmatter, HashSet<string> tags)
+        public static Dictionary<string, object> UpdateTags(Dictionary<string, object> frontmatter, HashSet<string> tags)
         {
             if (tags.Count > 0)
             {
                 // Store tags as string array for YAML format consistency
                 frontmatter["tags"] = tags.ToArray();
             }
-            else if (frontmatter.ContainsKey("tags"))
-            {
-                frontmatter.Remove("tags");
-            }
+            else frontmatter.Remove("tags");
 
             return frontmatter;
         }
@@ -341,7 +324,7 @@ namespace NotebookAutomation.Core.Utils
                 if (!File.Exists(filePath))
                 {
                     _logger?.LogWarningWithPath("File not found: {filePath}", filePath);
-                    return new Dictionary<string, object>();
+                    return [];
                 }
 
                 var content = File.ReadAllText(filePath, Encoding.UTF8);
@@ -349,7 +332,7 @@ namespace NotebookAutomation.Core.Utils
 
                 if (frontmatter == null)
                 {
-                    return new Dictionary<string, object>();
+                    return [];
                 }
 
                 return ParseYamlToDictionary(frontmatter);
@@ -357,7 +340,7 @@ namespace NotebookAutomation.Core.Utils
             catch (Exception ex)
             {
                 _logger?.LogErrorWithPath(ex, "Failed to load frontmatter from file: {filePath}", filePath);
-                return new Dictionary<string, object>();
+                return [];
             }
         }
 
@@ -388,7 +371,7 @@ namespace NotebookAutomation.Core.Utils
         /// </summary>
         /// <param name="data">The dictionary to serialize.</param>
         /// <returns>The serialized YAML string.</returns>
-        public string SerializeYaml(Dictionary<string, object> data)
+        public static string SerializeYaml(Dictionary<string, object> data)
         {
             var serializer = new SerializerBuilder()
                 // Use the default naming convention to preserve original key names
@@ -490,6 +473,9 @@ namespace NotebookAutomation.Core.Utils
                 return (false, $"Unexpected error during YAML diagnosis: {ex.Message}", null);
             }
         }
+
+        [GeneratedRegex(@"^\s*---\s*[\r\n]+(.+?)[\r\n]+\s*---\s*[\r\n]+", RegexOptions.Compiled | RegexOptions.Singleline)]
+        private static partial Regex MyRegex();
     }
     public interface IYamlHelper
     {

@@ -6,6 +6,7 @@ set -e  # Exit on any error
 # Configuration
 CONFIGURATION=${1:-Release}
 SKIP_TESTS=${2:-false}
+SKIP_FORMAT=${3:-false}
 
 # Colors
 GREEN='\033[0;32m'
@@ -44,14 +45,29 @@ write_step "Step 1: Restore Dependencies"
 dotnet restore "$SOLUTION_PATH"
 write_success "Dependencies restored successfully"
 
-# Step 2: Build Solution (mirrors CI)
-write_step "Step 2: Build Solution"
+# Step 3: Code Formatting (mirrors CI preparation)
+if [ "$SKIP_FORMAT" != "true" ]; then
+    write_step "Step 3: Code Formatting"
+    echo -e "${YELLOW}Applying code formatting standards...${NC}"
+    
+    if ! dotnet format "$SOLUTION_PATH"; then
+        write_warning "Code formatting encountered issues but continuing..."
+        echo -e "${YELLOW}You may want to review the changes and commit them.${NC}"
+    else
+        write_success "Code formatting completed successfully"
+    fi
+else
+    write_warning "Skipping code formatting"
+fi
+
+# Step 4: Build Solution (mirrors CI)
+write_step "Step 4: Build Solution"
 dotnet build "$SOLUTION_PATH" --configuration "$CONFIGURATION" --no-restore
 write_success "Build completed successfully"
 
-# Step 3: Run Tests (mirrors CI)
+# Step 5: Run Tests (mirrors CI)
 if [ "$SKIP_TESTS" != "true" ]; then
-    write_step "Step 3: Run Tests with Coverage"
+    write_step "Step 5: Run Tests with Coverage"
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
     dotnet test "$TEST_PROJECT_PATH" \
         --configuration "$CONFIGURATION" \
@@ -63,8 +79,8 @@ else
     write_warning "Skipping tests"
 fi
 
-# Step 4: Test Publish Operations (mirrors CI publish steps)
-write_step "Step 4: Test Publish Operations"
+# Step 6: Test Publish Operations (mirrors CI publish steps)
+write_step "Step 6: Test Publish Operations"
 CLI_PROJECT_PATH="$SCRIPT_DIR/src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj"
 TEMP_PUBLISH_DIR="$SCRIPT_DIR/temp_publish_test"
 
@@ -93,8 +109,8 @@ if [ -d "$TEMP_PUBLISH_DIR" ]; then
     rm -rf "$TEMP_PUBLISH_DIR"
 fi
 
-# Step 5: Run Static Code Analysis (mirrors CI - this runs last)
-write_step "Step 5: Static Code Analysis"
+# Step 7: Run Static Code Analysis (mirrors CI - this runs last)
+write_step "Step 7: Static Code Analysis"
 if ! dotnet format "$SOLUTION_PATH" --verify-no-changes --severity error; then
     write_error "Code formatting issues detected!"
     echo -e "${YELLOW}Run 'dotnet format $SOLUTION_PATH' to fix formatting issues${NC}"

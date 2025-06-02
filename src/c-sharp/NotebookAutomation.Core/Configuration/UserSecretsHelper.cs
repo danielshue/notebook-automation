@@ -5,18 +5,13 @@ namespace NotebookAutomation.Core.Configuration
     /// <summary>
     /// Provides convenient access to user secrets in the application.
     /// </summary>
-    public class UserSecretsHelper
+    /// <remarks>
+    /// Initializes a new instance of the UserSecretsHelper class.
+    /// </remarks>
+    /// <param name="configuration">The configuration to use for accessing user secrets.</param>
+    public class UserSecretsHelper(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
-
-        /// <summary>
-        /// Initializes a new instance of the UserSecretsHelper class.
-        /// </summary>
-        /// <param name="configuration">The configuration to use for accessing user secrets.</param>
-        public UserSecretsHelper(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+        private readonly IConfiguration _configuration = configuration;
 
         /// <summary>
         /// Gets an OpenAI API key from user secrets, if available.

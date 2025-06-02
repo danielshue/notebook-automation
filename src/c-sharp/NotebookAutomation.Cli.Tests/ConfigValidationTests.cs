@@ -100,7 +100,7 @@ namespace NotebookAutomation.Cli.Tests
         public void RequireMicrosoftGraph_ReturnsFalse_WhenScopesIsNullOrEmpty()
         {
             var config1 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = null } };
-            var config2 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = new List<string>() } };
+            var config2 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = [] } };
             Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config1));
             Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config2));
         }
@@ -165,7 +165,7 @@ namespace NotebookAutomation.Cli.Tests
                     ClientId = null,
                     ApiEndpoint = "",
                     Authority = null,
-                    Scopes = new List<string>()
+                    Scopes = []
                 }
             };
             var result = ConfigValidation.RequireMicrosoftGraph(config);
@@ -182,7 +182,7 @@ namespace NotebookAutomation.Cli.Tests
                     ClientId = "id",
                     ApiEndpoint = "endpoint",
                     Authority = "authority",
-                    Scopes = new List<string> { "scope1" }
+                    Scopes = ["scope1"]
                 }
             };
             var result = ConfigValidation.RequireMicrosoftGraph(config);

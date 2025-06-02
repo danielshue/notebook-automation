@@ -50,7 +50,7 @@ namespace NotebookAutomation.Cli.Commands
             // add-nested command
             var addNestedCommand = new Command("add-nested", "Add nested tags based on frontmatter fields");
             addNestedCommand.AddArgument(pathArg);
-            addNestedCommand.SetHandler(async (InvocationContext context) =>
+            addNestedCommand.SetHandler(async context =>
             {
                 // Print usage/help if required argument is missing
                 var pathValue = context.ParseResult.GetValueForArgument(pathArg);
@@ -76,7 +76,7 @@ namespace NotebookAutomation.Cli.Commands
             // clean-index command
             var cleanIndexCommand = new Command("clean-index", "Clean tags from index files");
             cleanIndexCommand.AddArgument(pathArg);
-            cleanIndexCommand.SetHandler(async (InvocationContext context) =>
+            cleanIndexCommand.SetHandler(async context =>
             {
                 var pathValue = context.ParseResult.GetValueForArgument(pathArg);
                 if (string.IsNullOrEmpty(pathValue))
@@ -101,7 +101,7 @@ namespace NotebookAutomation.Cli.Commands
             // consolidate command
             var consolidateCommand = new Command("consolidate", "Consolidate tags in markdown files");
             consolidateCommand.AddArgument(pathArg);
-            consolidateCommand.SetHandler(async (InvocationContext context) =>
+            consolidateCommand.SetHandler(async context =>
             {
                 var pathValue = context.ParseResult.GetValueForArgument(pathArg);
                 if (string.IsNullOrEmpty(pathValue))
@@ -126,7 +126,7 @@ namespace NotebookAutomation.Cli.Commands
             // restructure-tags command
             var restructureCommand = new Command("restructure", "Restructure tags for consistency");
             restructureCommand.AddArgument(pathArg);
-            restructureCommand.SetHandler(async (InvocationContext context) =>
+            restructureCommand.SetHandler(async context =>
             {
                 var pathValue = context.ParseResult.GetValueForArgument(pathArg);
                 if (string.IsNullOrEmpty(pathValue))
@@ -151,7 +151,7 @@ namespace NotebookAutomation.Cli.Commands
             // add-example-tags command
             var addExampleCommand = new Command("add-example", "Add example tags to a file");
             addExampleCommand.AddArgument(pathArg);
-            addExampleCommand.SetHandler(async (InvocationContext context) =>
+            addExampleCommand.SetHandler(async context =>
             {
                 var pathValue = context.ParseResult.GetValueForArgument(pathArg);
                 if (string.IsNullOrEmpty(pathValue))
@@ -176,7 +176,7 @@ namespace NotebookAutomation.Cli.Commands
             // metadata-check command
             var metadataCommand = new Command("metadata-check", "Check and enforce metadata consistency");
             metadataCommand.AddArgument(pathArg);
-            metadataCommand.SetHandler(async (InvocationContext context) =>
+            metadataCommand.SetHandler(async context =>
             {
                 var pathValue = context.ParseResult.GetValueForArgument(pathArg);
                 if (string.IsNullOrEmpty(pathValue))
@@ -205,7 +205,7 @@ namespace NotebookAutomation.Cli.Commands
             var valueArg = new Argument<string>("value", "The value to set for the key");
             updateFrontmatterCommand.AddArgument(keyArg);
             updateFrontmatterCommand.AddArgument(valueArg);
-            updateFrontmatterCommand.SetHandler(async (InvocationContext context) =>
+            updateFrontmatterCommand.SetHandler(async context =>
             {
                 var pathValue = context.ParseResult.GetValueForArgument(pathArg);
                 var keyValue = context.ParseResult.GetValueForArgument(keyArg);
@@ -234,7 +234,7 @@ namespace NotebookAutomation.Cli.Commands
             // diagnose-yaml command
             var diagnoseYamlCommand = new Command("diagnose-yaml", "Diagnose YAML frontmatter issues in markdown files");
             diagnoseYamlCommand.AddArgument(pathArg);
-            diagnoseYamlCommand.SetHandler(async (InvocationContext context) =>
+            diagnoseYamlCommand.SetHandler(async context =>
             {
                 var pathValue = context.ParseResult.GetValueForArgument(pathArg);
                 if (string.IsNullOrEmpty(pathValue))
@@ -252,7 +252,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                await this.DiagnoseYamlAsync(path, config, debug, verbose);
+                await DiagnoseYamlAsync(path, config, debug, verbose);
             });
 
             // Create a parent command for all tag-related operations
@@ -268,7 +268,7 @@ namespace NotebookAutomation.Cli.Commands
 
             // Error handler for invalid tag subcommands
             tagCommand.TreatUnmatchedTokensAsErrors = true;
-            tagCommand.SetHandler((InvocationContext context) =>
+            tagCommand.SetHandler(context =>
             {
                 AnsiConsoleHelper.WriteUsage(
                     "Usage: notebookautomation tag <subcommand> [options]",
@@ -471,7 +471,7 @@ namespace NotebookAutomation.Cli.Commands
                  /// <param name="debug">Whether to output debug information.</param>
                  /// <param name="verbose">Whether to output verbose information.</param>
                  /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task DiagnoseYamlAsync(string path, string? configPath, bool debug, bool verbose)
+        private static async Task DiagnoseYamlAsync(string path, string? configPath, bool debug, bool verbose)
         {
             try
             {
@@ -560,7 +560,7 @@ namespace NotebookAutomation.Cli.Commands
         ///     <description>TagsRemoved: Number of tags that were removed.</description>
         ///   </item>        /// </list>
         /// </remarks>
-        private void LogStats(ILogger logger, Dictionary<string, int> stats)
+        private static void LogStats(ILogger logger, Dictionary<string, int> stats)
         {
             logger.LogInformation("Tag processing completed with the following statistics:");
             logger.LogInformation("- Files processed: {Count}", stats.GetValueOrDefault("FilesProcessed", 0));

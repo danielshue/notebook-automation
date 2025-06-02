@@ -56,7 +56,7 @@ namespace NotebookAutomation.Core.Utils
 
             // If just the filename is too long, truncate it
             if (fileName.Length >= maxLength)
-                return "..." + fileName.Substring(Math.Max(0, fileName.Length - maxLength + 4));
+                return "..." + fileName[Math.Max(0, fileName.Length - maxLength + 4)..];
 
             // Calculate how much path we can include
             int pathLength = maxLength - fileName.Length - 4; // 4 for "...\"
@@ -68,12 +68,12 @@ namespace NotebookAutomation.Core.Utils
                 return path; // Shouldn't happen since we already checked path.Length > maxLength
 
             // Get the end portion of the directory path
-            string shortenedDirectory = directory.Substring(directory.Length - pathLength);
+            string shortenedDirectory = directory[^pathLength..];
 
             // Find the first directory separator to ensure we start with a complete directory name
             int firstSeparatorIndex = shortenedDirectory.IndexOf(System.IO.Path.DirectorySeparatorChar);
             if (firstSeparatorIndex > 0)
-                shortenedDirectory = shortenedDirectory.Substring(firstSeparatorIndex);
+                shortenedDirectory = shortenedDirectory[firstSeparatorIndex..];
 
             return "..." + shortenedDirectory + System.IO.Path.DirectorySeparatorChar + fileName;
         }

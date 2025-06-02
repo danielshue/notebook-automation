@@ -15,7 +15,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
     [TestClass]
     public class VaultCommandsTests
     {
-        private readonly Mock<ILogger<VaultCommands>> _mockLogger = new Mock<ILogger<VaultCommands>>();
+        private readonly Mock<ILogger<VaultCommands>> _mockLogger = new();
 
         [TestMethod]
         public async Task GenerateIndexCommand_PrintsUsage_WhenNoArgs()

@@ -25,7 +25,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <item><description>Copyright information</description></item>
         /// </list>
         /// </remarks>
-        public void Register(RootCommand rootCommand)
+        public static void Register(RootCommand rootCommand)
         {
             var versionCommand = new Command("version", "Display version information");
             versionCommand.SetHandler(() =>

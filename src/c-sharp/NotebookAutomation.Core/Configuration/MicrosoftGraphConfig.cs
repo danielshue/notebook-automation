@@ -29,7 +29,7 @@ namespace NotebookAutomation.Core.Configuration
         /// Scopes required for Microsoft Graph API access.
         /// </summary>
         [JsonPropertyName("scopes")]
-        public List<string> Scopes { get; set; } = new List<string>();
+        public List<string> Scopes { get; set; } = [];
 
 
         public string? TenantId { get; set; }

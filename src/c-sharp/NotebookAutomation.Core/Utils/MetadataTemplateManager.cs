@@ -14,12 +14,12 @@ namespace NotebookAutomation.Core.Utils
     /// It provides methods to get templates by type and manage template-related operations.
     /// </para>
     /// </remarks>
-    public class MetadataTemplateManager
+    public partial class MetadataTemplateManager
     {
         private readonly ILogger _logger;
         private readonly string _metadataFilePath;
         private readonly YamlHelper _yamlHelper;
-        private Dictionary<string, Dictionary<string, object>> _templates;
+        private readonly Dictionary<string, Dictionary<string, object>> _templates;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MetadataTemplateManager"/> class.
@@ -39,7 +39,7 @@ namespace NotebookAutomation.Core.Utils
                 throw new ArgumentException("Metadata file path is not configured in appConfig");
 
             _yamlHelper = new YamlHelper(logger);
-            _templates = new Dictionary<string, Dictionary<string, object>>();
+            _templates = [];
 
             LoadTemplates();
         }
@@ -72,7 +72,7 @@ namespace NotebookAutomation.Core.Utils
                         var template = _yamlHelper.ParseYamlToDictionary(document);
 
                         // Normalize tags to string arrays if present
-                        if (template.ContainsKey("tags") && template["tags"] is System.Collections.IEnumerable enumerable && !(template["tags"] is string))
+                        if (template.TryGetValue("tags", out object? value) && value is System.Collections.IEnumerable enumerable && value is not string)
                         {
                             var tagArray = enumerable.Cast<object>()
                                 .Select(tag => tag?.ToString() ?? string.Empty)
@@ -80,10 +80,9 @@ namespace NotebookAutomation.Core.Utils
                                 .ToArray();
                             template["tags"] = tagArray;
                         }
-
-                        if (template.Count > 0 && template.ContainsKey("template-type"))
+                        if (template.Count > 0 && template.TryGetValue("template-type", out object? templateTypeValue))
                         {
-                            string templateType = template["template-type"].ToString() ?? string.Empty;
+                            string templateType = templateTypeValue.ToString() ?? string.Empty;
                             if (!string.IsNullOrEmpty(templateType))
                             {
                                 _templates[templateType] = template;
@@ -128,7 +127,7 @@ namespace NotebookAutomation.Core.Utils
         /// <returns>A list of template type names.</returns>
         public List<string> GetTemplateTypes()
         {
-            return _templates.Keys.ToList();
+            return [.. _templates.Keys];
         }
 
         /// <summary>
@@ -187,13 +186,12 @@ namespace NotebookAutomation.Core.Utils
                 // If the field is missing or has an empty/null value, fill with calculated or template default
                 bool shouldFillFromTemplate = false;
 
-                if (!enhancedMetadata.ContainsKey(key))
+                if (!enhancedMetadata.TryGetValue(key, out object? existingValue))
                 {
                     shouldFillFromTemplate = true;
                 }
                 else
                 {
-                    var existingValue = enhancedMetadata[key];
                     if (existingValue == null)
                     {
                         shouldFillFromTemplate = true;
@@ -244,7 +242,7 @@ namespace NotebookAutomation.Core.Utils
                             else if (templateValue != null)
                             {
                                 // Special handling for tags - convert to string array
-                                if (key == "tags" && templateValue is System.Collections.IEnumerable enumerable && !(templateValue is string))
+                                if (key == "tags" && templateValue is System.Collections.IEnumerable enumerable && templateValue is not string)
                                 {
                                     var tagArray = enumerable.Cast<object>()
                                         .Select(tag => tag?.ToString() ?? string.Empty)
@@ -292,7 +290,7 @@ namespace NotebookAutomation.Core.Utils
         /// </summary>
         /// <param name="noteType">The type of document being processed.</param>
         /// <returns>The corresponding template type.</returns>
-        private string DetermineTemplateType(string noteType)
+        private static string DetermineTemplateType(string noteType)
         {
             return noteType switch
             {
@@ -309,20 +307,22 @@ namespace NotebookAutomation.Core.Utils
         /// </summary>
         /// <param name="content">The full YAML file content.</param>
         /// <returns>An array of individual YAML document strings.</returns>
-        private string[] SplitYamlDocuments(string content)
+        private static string[] SplitYamlDocuments(string content)
         {
             // Split on --- but only at line beginnings (not in the middle of a line)
             // This regex matches the document separator pattern
-            var regex = new Regex(@"^---\s*$", RegexOptions.Multiline);
+            var regex = MyRegex();
 
             // First, split the content into segments
             var segments = regex.Split(content);
 
             // Filter out empty segments and trim each segment
-            return segments
+            return [.. segments
                 .Where(s => !string.IsNullOrWhiteSpace(s))
-                .Select(s => s.Trim())
-                .ToArray();
+                .Select(s => s.Trim())];
         }
+
+        [GeneratedRegex(@"^---\s*$", RegexOptions.Multiline)]
+        private static partial Regex MyRegex();
     }
 }

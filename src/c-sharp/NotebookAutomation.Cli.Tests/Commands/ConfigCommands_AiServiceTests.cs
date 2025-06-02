@@ -10,7 +10,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
     [TestClass]
     public class ConfigCommands_AiServiceTests
     {
-        private AppConfig GetDefaultConfig()
+        private static AppConfig GetDefaultConfig()
         {
             return new AppConfig
             {
@@ -30,7 +30,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var config = GetDefaultConfig();
             bool result = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                !.Invoke(null, new object[] { config, "aiservice.provider", "azure" }) as bool? ?? false;
+                !.Invoke(null, [config, "aiservice.provider", "azure"]) as bool? ?? false;
             Assert.IsTrue(result);
             Assert.AreEqual("azure", config.AiService.Provider);
         }
@@ -41,7 +41,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var config = GetDefaultConfig();
             bool result = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                !.Invoke(null, new object[] { config, "aiservice.openai.model", "gpt-4o" }) as bool? ?? false;
+                !.Invoke(null, [config, "aiservice.openai.model", "gpt-4o"]) as bool? ?? false;
             Assert.IsTrue(result);
             Assert.AreEqual("gpt-4o", config.AiService.OpenAI.Model);
         }
@@ -52,7 +52,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var config = GetDefaultConfig();
             bool result = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                !.Invoke(null, new object[] { config, "aiservice.openai.endpoint", "https://custom.openai.com" }) as bool? ?? false;
+                !.Invoke(null, [config, "aiservice.openai.endpoint", "https://custom.openai.com"]) as bool? ?? false;
             Assert.IsTrue(result);
             Assert.AreEqual("https://custom.openai.com", config.AiService.OpenAI.Endpoint);
         }
@@ -63,7 +63,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var config = GetDefaultConfig();
             bool result = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                !.Invoke(null, new object[] { config, "aiservice.azure.model", "azure-gpt" }) as bool? ?? false;
+                !.Invoke(null, [config, "aiservice.azure.model", "azure-gpt"]) as bool? ?? false;
             Assert.IsTrue(result);
             Assert.AreEqual("azure-gpt", config.AiService.Azure.Model);
         }
@@ -74,10 +74,10 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var config = GetDefaultConfig();
             bool endpointResult = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                !.Invoke(null, new object[] { config, "aiservice.azure.endpoint", "https://azure.openai.com" }) as bool? ?? false;
+                !.Invoke(null, [config, "aiservice.azure.endpoint", "https://azure.openai.com"]) as bool? ?? false;
             bool deploymentResult = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                !.Invoke(null, new object[] { config, "aiservice.azure.deployment", "my-deployment" }) as bool? ?? false;
+                !.Invoke(null, [config, "aiservice.azure.deployment", "my-deployment"]) as bool? ?? false;
             Assert.IsTrue(endpointResult);
             Assert.IsTrue(deploymentResult);
             Assert.AreEqual("https://azure.openai.com", config.AiService.Azure.Endpoint);
@@ -90,10 +90,10 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var config = GetDefaultConfig();
             bool modelResult = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                !.Invoke(null, new object[] { config, "aiservice.foundry.model", "foundry-llm" }) as bool? ?? false;
+                !.Invoke(null, [config, "aiservice.foundry.model", "foundry-llm"]) as bool? ?? false;
             bool endpointResult = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-                !.Invoke(null, new object[] { config, "aiservice.foundry.endpoint", "https://foundry.ai" }) as bool? ?? false;
+                !.Invoke(null, [config, "aiservice.foundry.endpoint", "https://foundry.ai"]) as bool? ?? false;
             Assert.IsTrue(modelResult);
             Assert.IsTrue(endpointResult);
             Assert.AreEqual("foundry-llm", config.AiService.Foundry.Model);

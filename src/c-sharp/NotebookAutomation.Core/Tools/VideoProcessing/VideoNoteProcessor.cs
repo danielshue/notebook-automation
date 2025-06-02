@@ -104,7 +104,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     { "title", FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileNameWithoutExtension(videoPath)) },
                     { "type", "note/video-note" },
                     { "status", "unwatched" },
-                    { "author", new string[0] }, // Empty string array with correct field name
+                    { "author", Array.Empty<string>() }, // Empty string array with correct field name
                     { "onedrive-shared-link", string.Empty }, // Will be populated by OneDrive service if available
                     { "onedrive_fullpath_file_reference", Path.GetFullPath(videoPath) }, // Full path to the video
                     { "transcript", string.Empty } // Will be populated if transcript file is found
@@ -229,7 +229,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 promptFileName ??= "final_summary_prompt";
 
                 // If variables dictionary wasn't provided, create one
-                variables ??= new Dictionary<string, string>();
+                variables ??= [];
 
                 // If title variable wasn't provided, extract it from the file name if possible
                 if (!variables.ContainsKey("title"))
@@ -239,7 +239,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     // Try to extract title from the first line if it starts with "Video file: "
                     if (text.StartsWith("Video file: "))
                     {
-                        string fileName = text.Split('\n')[0].Substring("Video file: ".Length).Trim();
+                        string fileName = text.Split('\n')[0]["Video file: ".Length..].Trim();
                         title = FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileNameWithoutExtension(fileName));
                     }
 
@@ -309,16 +309,16 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             var yamlHelper = new YamlHelper(Logger);
 
             // Use default metadata if none provided
-            metadata = metadata ?? new Dictionary<string, object>();
+            metadata ??= [];
 
             // Debug: Log the original summary
             Logger.LogInformation("VideoNoteProcessor.GenerateMarkdownNote called - Original AI summary (first 200 chars): {Summary}",
-                bodyText.Length > 200 ? bodyText.Substring(0, 200) + "..." : bodyText);
+                bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText);
 
             // Extract any existing frontmatter from the AI summary
             string? summaryFrontmatter = yamlHelper.ExtractFrontmatter(bodyText);
 
-            Dictionary<string, object> summaryMetadata = new();
+            Dictionary<string, object> summaryMetadata = [];
 
             if (!string.IsNullOrWhiteSpace(summaryFrontmatter))
             {
@@ -335,15 +335,15 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
 
             // Debug: Log the cleaned summary
             Logger.LogInformation("Cleaned summary (first 200 chars): {CleanSummary}",
-                cleanSummary.Length > 200 ? cleanSummary.Substring(0, 200) + "..." : cleanSummary);
+                cleanSummary.Length > 200 ? cleanSummary[..200] + "..." : cleanSummary);
 
             // Merge metadata: video metadata takes precedence, but preserve AI tags if they exist
             var mergedMetadata = new Dictionary<string, object>(metadata);
 
             // If AI summary has tags and video metadata doesn't, use AI tags
-            if (summaryMetadata.ContainsKey("tags") && !mergedMetadata.ContainsKey("tags"))
+            if (summaryMetadata.TryGetValue("tags", out object? value) && !mergedMetadata.ContainsKey("tags"))
             {
-                mergedMetadata["tags"] = summaryMetadata["tags"];
+                mergedMetadata["tags"] = value;
             }
 
             // Merge other non-conflicting AI metadata
@@ -355,7 +355,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 }
             }            // Apply path-based hierarchy detection if file path is available
             // Note: We temporarily add the path to metadata just for hierarchy detection
-            var pathForHierarchy = metadata.ContainsKey("_internal_path") ? metadata["_internal_path"].ToString() : null;
+            var pathForHierarchy = metadata.TryGetValue("_internal_path", out object? pathValue) ? pathValue.ToString() : null;
             if (!string.IsNullOrEmpty(pathForHierarchy) && _hierarchyDetector != null)
             {
                 try
@@ -363,7 +363,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     Logger.LogDebugWithPath("Detecting hierarchy information from path: {FilePath}", pathForHierarchy);
                     var hierarchyInfo = _hierarchyDetector!.FindHierarchyInfo(pathForHierarchy);
                     // Update metadata with detected hierarchy information
-                    mergedMetadata = _hierarchyDetector!.UpdateMetadataWithHierarchy(mergedMetadata, hierarchyInfo);
+                    mergedMetadata = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(mergedMetadata, hierarchyInfo);
                     Logger.LogInformationWithPath(
                         "Added hierarchy metadata - Program: {Program}, Course: {Course}, Class: {Class}",
                         pathForHierarchy!,
@@ -490,7 +490,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     .Select(path => new FileInfo(path))
                     .ToList();
 
-                if (!candidates.Any())
+                if (candidates.Count == 0)
                 {
                     Logger.LogDebug("No transcript candidates found in: {Path}", searchPath);
                     continue;
@@ -506,9 +506,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
                     if (nameWithoutExt.StartsWith(fileNameWithoutExt + ".") &&
-                        IsLikelyLanguageCode(nameWithoutExt.Substring(fileNameWithoutExt.Length + 1)))
+                        IsLikelyLanguageCode(nameWithoutExt[(fileNameWithoutExt.Length + 1)..]))
                     {
-                        string langCode = nameWithoutExt.Substring(fileNameWithoutExt.Length + 1);
+                        string langCode = nameWithoutExt[(fileNameWithoutExt.Length + 1)..];
                         Logger.LogInformation("Found language-specific transcript ({LangCode}): {Path}", langCode, candidate.FullName);
                         return File.ReadAllText(candidate.FullName);
                     }
@@ -518,9 +518,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 foreach (var candidate in candidates)
                 {
                     string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
-                    if (nameWithoutExt.StartsWith(altBaseName + ".") && IsLikelyLanguageCode(nameWithoutExt.Substring(altBaseName.Length + 1)))
+                    if (nameWithoutExt.StartsWith(altBaseName + ".") && IsLikelyLanguageCode(nameWithoutExt[(altBaseName.Length + 1)..]))
                     {
-                        string langCode = nameWithoutExt.Substring(altBaseName.Length + 1);
+                        string langCode = nameWithoutExt[(altBaseName.Length + 1)..];
                         Logger.LogInformation("Found language-specific transcript with normalized name ({LangCode}): {Path}", langCode, candidate.FullName);
                         return File.ReadAllText(candidate.FullName);
                     }
@@ -633,7 +633,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     .Select(path => new FileInfo(path))
                     .ToList();
 
-                if (!candidates.Any())
+                if (candidates.Count == 0)
                 {
                     Logger.LogDebugWithPath("No transcript candidates found in: {FilePath}", searchPath);
                     continue;
@@ -649,9 +649,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
                     if (nameWithoutExt.StartsWith(fileNameWithoutExt + ".") &&
-                        IsLikelyLanguageCode(nameWithoutExt.Substring(fileNameWithoutExt.Length + 1)))
+                        IsLikelyLanguageCode(nameWithoutExt[(fileNameWithoutExt.Length + 1)..]))
                     {
-                        string langCode = nameWithoutExt.Substring(fileNameWithoutExt.Length + 1);
+                        string langCode = nameWithoutExt[(fileNameWithoutExt.Length + 1)..];
                         Logger.LogDebugWithPath($"Found language-specific transcript ({langCode}): {{FilePath}}", candidate.FullName);
                         return candidate.FullName;
                     }
@@ -661,9 +661,9 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 foreach (var candidate in candidates)
                 {
                     string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
-                    if (nameWithoutExt.StartsWith(altBaseName + ".") && IsLikelyLanguageCode(nameWithoutExt.Substring(altBaseName.Length + 1)))
+                    if (nameWithoutExt.StartsWith(altBaseName + ".") && IsLikelyLanguageCode(nameWithoutExt[(altBaseName.Length + 1)..]))
                     {
-                        string langCode = nameWithoutExt.Substring(altBaseName.Length + 1);
+                        string langCode = nameWithoutExt[(altBaseName.Length + 1)..];
                         Logger.LogInformation("Found language-specific transcript with normalized name ({LangCode}): {Path}", langCode, candidate.FullName);
                         return candidate.FullName;
                     }
@@ -730,7 +730,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// var isNotLanguageCode = IsLikelyLanguageCode("123"); // Returns false
         /// </code>
         /// </example>
-        private bool IsLikelyLanguageCode(string code)
+        private static bool IsLikelyLanguageCode(string code)
         {
             if (string.IsNullOrWhiteSpace(code))
                 return false;
@@ -888,7 +888,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 summaryInput = $"Video file: {Path.GetFileName(videoPath)}\n(No transcript available. Using metadata only.)";
                 Logger.LogInformation("No transcript found. Using metadata for AI summary for video: {VideoPath}", videoPath);
             }
-            string aiSummary = string.Empty;
+            string aiSummary;
             if (noSummary)
             {
                 // When no summary is requested, create minimal content with Note section                // Skip AI summarizer entirely to avoid API calls

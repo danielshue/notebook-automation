@@ -46,7 +46,7 @@ namespace NotebookAutomation.Cli.Commands
 
             var generateIndexCommand = new Command("generate-index", "Generate a vault index");
             generateIndexCommand.AddArgument(pathArg);
-            generateIndexCommand.SetHandler(async (InvocationContext context) =>
+            generateIndexCommand.SetHandler(async context =>
             {
                 // If path argument is missing, print usage and return
                 if (string.IsNullOrWhiteSpace(context.ParseResult.GetValueForArgument(pathArg)))
@@ -68,7 +68,7 @@ namespace NotebookAutomation.Cli.Commands
 
             var ensureMetadataCommand = new Command("ensure-metadata", "Ensure consistent metadata across vault files");
             ensureMetadataCommand.AddArgument(pathArg);
-            ensureMetadataCommand.SetHandler(async (InvocationContext context) =>
+            ensureMetadataCommand.SetHandler(async context =>
             {
                 string path = context.ParseResult.GetValueForArgument(pathArg);
                 string? config = context.ParseResult.GetValueForOption(configOption);

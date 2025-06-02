@@ -45,11 +45,10 @@ namespace NotebookAutomation.Core.Services
              /// <exception cref="ArgumentException">Thrown when overlap is greater than or equal to chunkSize</exception>
         public List<string> SplitTextIntoChunks(string text, int chunkSize, int overlap)
         {
-            if (text == null)
-                throw new ArgumentNullException(nameof(text));
+            ArgumentNullException.ThrowIfNull(text);
 
             if (string.IsNullOrEmpty(text))
-                return new List<string>();
+                return [];
 
             if (chunkSize <= 0)
                 throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be positive");

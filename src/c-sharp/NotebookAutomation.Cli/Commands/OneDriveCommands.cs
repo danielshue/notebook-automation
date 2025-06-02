@@ -50,7 +50,7 @@ namespace NotebookAutomation.Cli.Commands
             var listCommand = new Command("list", "List files and folders in OneDrive");
             var pathArgument = new Argument<string>("path", "Path to list (default: root)") { Arity = ArgumentArity.ZeroOrOne };
             listCommand.AddArgument(pathArgument);
-            listCommand.SetHandler(async (InvocationContext context) =>
+            listCommand.SetHandler(async context =>
             {
                 // Print usage/help if required argument is missing (path is optional, but show help if both path and config are missing)
                 var path = context.ParseResult.GetValueForArgument(pathArgument);
@@ -78,7 +78,7 @@ namespace NotebookAutomation.Cli.Commands
             var localPathArgument = new Argument<string>("local-path", "Local path to save to");
             downloadCommand.AddArgument(remotePathArgument);
             downloadCommand.AddArgument(localPathArgument);
-            downloadCommand.SetHandler(async (InvocationContext context) =>
+            downloadCommand.SetHandler(async context =>
             {
                 string remotePath = context.ParseResult.GetValueForArgument(remotePathArgument);
                 string localPath = context.ParseResult.GetValueForArgument(localPathArgument);
@@ -106,7 +106,7 @@ namespace NotebookAutomation.Cli.Commands
             var uploadRemotePath = new Argument<string>("remote-path", "Destination path in OneDrive");
             uploadCommand.AddArgument(uploadLocalPath);
             uploadCommand.AddArgument(uploadRemotePath);
-            uploadCommand.SetHandler(async (InvocationContext context) =>
+            uploadCommand.SetHandler(async context =>
             {
                 string localPath = context.ParseResult.GetValueForArgument(uploadLocalPath);
                 string remotePath = context.ParseResult.GetValueForArgument(uploadRemotePath);
@@ -132,7 +132,7 @@ namespace NotebookAutomation.Cli.Commands
             var searchCommand = new Command("search", "Search for files in OneDrive");
             var queryArgument = new Argument<string>("query", "Search query");
             searchCommand.AddArgument(queryArgument);
-            searchCommand.SetHandler(async (InvocationContext context) =>
+            searchCommand.SetHandler(async context =>
             {
                 string query = context.ParseResult.GetValueForArgument(queryArgument);
                 if (string.IsNullOrEmpty(query))
@@ -158,13 +158,13 @@ namespace NotebookAutomation.Cli.Commands
             var syncLocalPath = new Argument<string>("local-path", "Local folder to sync");
             var syncRemotePath = new Argument<string>("remote-path", "OneDrive folder to sync") { Arity = ArgumentArity.ZeroOrOne };
             var directionOption = new Option<string>(
-                aliases: new[] { "--direction", "-d" },
+                aliases: ["--direction", "-d"],
                 description: "Sync direction: up (local to OneDrive), down (OneDrive to local), or both",
                 getDefaultValue: () => "both");
             syncCommand.AddArgument(syncLocalPath);
             syncCommand.AddArgument(syncRemotePath);
             syncCommand.AddOption(directionOption);
-            syncCommand.SetHandler(async (InvocationContext context) =>
+            syncCommand.SetHandler(async context =>
             {
                 string localPath = context.ParseResult.GetValueForArgument(syncLocalPath);
                 string? remotePath = context.ParseResult.GetValueForArgument(syncRemotePath);
@@ -192,7 +192,7 @@ namespace NotebookAutomation.Cli.Commands
                     debug,
                     verbose,
                     dryRun,
-                    new[] { (Key: "direction", Value: direction ?? "both") }
+                    [(Key: "direction", Value: direction ?? "both")]
                 );
             });
 

@@ -8,6 +8,14 @@ namespace NotebookAutomation.Cli.Commands
     /// </summary>
     public static class ConfigValidation
     {
+        private static readonly string[] collection = new[] {
+                    "paths.onedrive_fullpath_root",
+                    "paths.notebook_vault_fullpath_root",
+                    "paths.metadata_file",
+                    "paths.onedrive_resources_basepath",
+                    "paths.logging_dir"
+                };
+
         /// <summary>
         /// Validates that all required path values are present in the configuration.
         /// </summary>
@@ -22,16 +30,10 @@ namespace NotebookAutomation.Cli.Commands
         /// <returns>True if all required paths are present; otherwise, false.</returns>
         public static bool RequireAllPaths(AppConfig config, out List<string> missingKeys)
         {
-            missingKeys = new List<string>();
+            missingKeys = [];
             if (config.Paths == null)
             {
-                missingKeys.AddRange(new[] {
-                    "paths.onedrive_fullpath_root",
-                    "paths.notebook_vault_fullpath_root",
-                    "paths.metadata_file",
-                    "paths.onedrive_resources_basepath",
-                    "paths.logging_dir"
-                });
+                missingKeys.AddRange(collection);
                 return false;
             }
             if (string.IsNullOrWhiteSpace(config.Paths.OnedriveFullpathRoot))

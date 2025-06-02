@@ -27,7 +27,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var versionCommands = new VersionCommands();
 
             // Act
-            versionCommands.Register(rootCommand);
+            VersionCommands.Register(rootCommand);
 
             // Assert
             var versionCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "version");

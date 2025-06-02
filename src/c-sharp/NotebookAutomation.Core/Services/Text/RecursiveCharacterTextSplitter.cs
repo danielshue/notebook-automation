@@ -14,7 +14,7 @@ namespace NotebookAutomation.Core.Services.Text
     /// first trying to split on the strongest separators (e.g., triple newlines, headers) and then
     /// progressively moving to weaker ones (e.g., single spaces) if necessary.
     /// </remarks>
-    public class RecursiveCharacterTextSplitter
+    public partial class RecursiveCharacterTextSplitter
     {
         private readonly ILogger _logger;
         private readonly int _chunkSize;
@@ -48,8 +48,8 @@ namespace NotebookAutomation.Core.Services.Text
             }
 
             // Default separator hierarchy, from strongest to weakest
-            _separators = separators ?? new List<string>
-            {
+            _separators = separators ??
+            [
                 "\n\n\n",   // Triple line break (major section)
                 "\n\n",     // Double line break (paragraph)
                 "\n",       // Single line break
@@ -60,15 +60,15 @@ namespace NotebookAutomation.Core.Services.Text
                 ",",        // Comma
                 " ",        // Space (word boundary)
                 ""          // Character level (last resort)
-            };
+            ];
 
             _keepSeparator = keepSeparator;
 
             // Initialize special patterns for markdown and code content
-            _specialPatterns = new List<(Regex Pattern, int Priority)>
-            {
+            _specialPatterns =
+            [
                 // Markdown headers (keep them as separate chunks if possible)
-                (new Regex(@"^\s*(#{1,6})\s+.+$", RegexOptions.Multiline), 10),
+                (MyRegex(), 10),
                 
                 // Code blocks (try to keep complete code blocks together)
                 (new Regex(@"```[\s\S]*?```", RegexOptions.Multiline), 20),
@@ -78,7 +78,7 @@ namespace NotebookAutomation.Core.Services.Text
                 
                 // Numbered lists (try to keep list items together)
                 (new Regex(@"^\s*\d+\.\s+.+$", RegexOptions.Multiline), 15)
-            };
+            ];
         }
 
         /// <summary>
@@ -147,14 +147,14 @@ namespace NotebookAutomation.Core.Services.Text
             if (string.IsNullOrEmpty(text))
             {
                 _logger.LogWarning("Empty text provided to SplitText");
-                return new List<string>();
+                return [];
             }
 
             if (EstimateTokenCount(text) <= _chunkSize)
             {
                 _logger.LogDebug("Text fits in a single chunk ({TextLength} chars, ~{EstimatedTokens} tokens)",
                     text.Length, EstimateTokenCount(text));
-                return new List<string> { text };
+                return [text];
             }
 
             _logger.LogInformation("Splitting text of {TextLength} chars into chunks (max tokens: {MaxTokens}, overlap: {OverlapTokens})",
@@ -200,7 +200,7 @@ namespace NotebookAutomation.Core.Services.Text
                     // Add text before this match if it exists
                     if (match.Index > lastEnd)
                     {
-                        var between = text.Substring(lastEnd, match.Index - lastEnd);
+                        var between = text[lastEnd..match.Index];
                         if (!string.IsNullOrWhiteSpace(between))
                         {
                             result.Add(between);
@@ -215,7 +215,7 @@ namespace NotebookAutomation.Core.Services.Text
                 // Add any remaining text after the last match
                 if (lastEnd < text.Length)
                 {
-                    var remaining = text.Substring(lastEnd);
+                    var remaining = text[lastEnd..];
                     if (!string.IsNullOrWhiteSpace(remaining))
                     {
                         result.Add(remaining);
@@ -355,7 +355,7 @@ namespace NotebookAutomation.Core.Services.Text
             int estimatedCharsPerToken = 4; // Rough estimate
             int overlapChars = Math.Min(_chunkOverlap * estimatedCharsPerToken, text.Length);
 
-            return text.Substring(text.Length - overlapChars);
+            return text[^overlapChars..];
         }
 
         /// <summary>
@@ -401,7 +401,7 @@ namespace NotebookAutomation.Core.Services.Text
                 {
                     if (currentSize > 0)
                     {
-                        currentChunk.Append(" ");
+                        currentChunk.Append(' ');
                     }
                     currentChunk.Append(chunk);
                     currentSize += chunkTokens;
@@ -435,7 +435,7 @@ namespace NotebookAutomation.Core.Services.Text
                 return splits;
             }
 
-            var segments = text.Split(new[] { separator }, StringSplitOptions.None);
+            var segments = text.Split([separator], StringSplitOptions.None);
 
             for (int i = 0; i < segments.Length; i++)
             {
@@ -464,7 +464,7 @@ namespace NotebookAutomation.Core.Services.Text
         /// <param name="text">The text to split</param>
         /// <param name="maxTokens">Maximum tokens per chunk</param>
         /// <returns>List of character-level chunks</returns>
-        private List<string> SplitByCharacters(string text, int maxTokens)
+        private static List<string> SplitByCharacters(string text, int maxTokens)
         {
             var chunks = new List<string>();
             var estimatedCharsPerToken = 4; // Rough estimate
@@ -484,12 +484,12 @@ namespace NotebookAutomation.Core.Services.Text
         /// </summary>
         /// <param name="text">Text to estimate token count for</param>
         /// <returns>Estimated token count</returns>
-        private int EstimateTokenCount(string text)
+        private static int EstimateTokenCount(string text)
         {
             if (string.IsNullOrEmpty(text)) return 0;
 
             // Split by whitespace to get a rough word count
-            string[] words = text.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            string[] words = text.Split([' ', '\n', '\r', '\t'], StringSplitOptions.RemoveEmptyEntries);
 
             // Count punctuation and special characters separately as they often become individual tokens
             int punctuationCount = text.Count(c => !char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c));
@@ -507,5 +507,8 @@ namespace NotebookAutomation.Core.Services.Text
             // Apply a safety factor of 1.2 to avoid underestimation
             return (int)(estimatedTokens * 1.2);
         }
+
+        [GeneratedRegex(@"^\s*(#{1,6})\s+.+$", RegexOptions.Multiline)]
+        private static partial Regex MyRegex();
     }
 }

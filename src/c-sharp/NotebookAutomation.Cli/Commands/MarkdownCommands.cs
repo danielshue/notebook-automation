@@ -44,13 +44,13 @@ namespace NotebookAutomation.Cli.Commands
         public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var srcDirsOption = new Option<string[]>(
-                aliases: new[] { "--src-dirs", "-s" },
+                aliases: ["--src-dirs", "-s"],
                 description: "Source directories containing files to convert")
             {
                 AllowMultipleArgumentsPerToken = true
             };
             var destDirOption = new Option<string>(
-                aliases: new[] { "--dest-dir", "-d" },
+                aliases: ["--dest-dir", "-d"],
                 description: "Destination directory for generated markdown files");
 
             var markdownCommand = new Command("generate-markdown", "Generate markdown from HTML, TXT, and EPUB sources");
@@ -61,9 +61,9 @@ namespace NotebookAutomation.Cli.Commands
             markdownCommand.AddOption(verboseOption);
             markdownCommand.AddOption(dryRunOption);
 
-            markdownCommand.SetHandler(async (InvocationContext context) =>
+            markdownCommand.SetHandler(async context =>
             {
-                string[] srcDirs = context.ParseResult.GetValueForOption(srcDirsOption) ?? Array.Empty<string>();
+                string[] srcDirs = context.ParseResult.GetValueForOption(srcDirsOption) ?? [];
                 string? destDir = context.ParseResult.GetValueForOption(destDirOption);
                 string? config = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);

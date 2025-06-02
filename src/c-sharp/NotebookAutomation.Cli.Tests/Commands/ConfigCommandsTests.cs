@@ -56,7 +56,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             System.Console.SetOut(stringWriter);
             try
             {
-                configCommands.PrintViewUsage();
+                ConfigCommands.PrintViewUsage();
             }
             finally
             {
@@ -98,7 +98,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var updateConfigKey = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             Assert.IsNotNull(updateConfigKey);
-            var result = updateConfigKey.Invoke(null, new object[] { config, "video_extensions", "mp4,webm,avi" });
+            var result = updateConfigKey.Invoke(null, [config, "video_extensions", "mp4,webm,avi"]);
             Assert.IsTrue((bool)result!, "UpdateConfigKey did not return true");
             Assert.IsNotNull(config.VideoExtensions, "VideoExtensions is null");
             // Defensive: trim and check for whitespace issues
@@ -116,7 +116,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var updateConfigKey = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             Assert.IsNotNull(updateConfigKey);
-            var result = updateConfigKey.Invoke(null, new object[] { config, "aiservice.provider", "openai" });
+            var result = updateConfigKey.Invoke(null, [config, "aiservice.provider", "openai"]);
             Assert.IsTrue((bool)result!);
             Assert.AreEqual("openai", config.AiService.Provider);
         }
@@ -128,7 +128,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var updateConfigKey = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             Assert.IsNotNull(updateConfigKey);
-            var result = updateConfigKey.Invoke(null, new object[] { config, "aiservice.openai.model", "gpt-4" });
+            var result = updateConfigKey.Invoke(null, [config, "aiservice.openai.model", "gpt-4"]);
             Assert.IsTrue((bool)result!);
             Assert.IsNotNull(config.AiService.OpenAI);
             Assert.AreEqual("gpt-4", config.AiService.OpenAI.Model);
@@ -141,7 +141,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var updateConfigKey = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             Assert.IsNotNull(updateConfigKey);
-            var result = updateConfigKey.Invoke(null, new object[] { config, "aiservice.azure.deployment", "my-deploy" });
+            var result = updateConfigKey.Invoke(null, [config, "aiservice.azure.deployment", "my-deploy"]);
             Assert.IsTrue((bool)result!);
             Assert.IsNotNull(config.AiService.Azure);
             Assert.AreEqual("my-deploy", config.AiService.Azure.Deployment);
@@ -154,7 +154,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var updateConfigKey = typeof(ConfigCommands)
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             Assert.IsNotNull(updateConfigKey);
-            var result = updateConfigKey.Invoke(null, new object[] { config, "aiservice.foundry.endpoint", "https://foundry.ai" });
+            var result = updateConfigKey.Invoke(null, [config, "aiservice.foundry.endpoint", "https://foundry.ai"]);
             Assert.IsTrue((bool)result!);
             Assert.IsNotNull(config.AiService.Foundry);
             Assert.AreEqual("https://foundry.ai", config.AiService.Foundry.Endpoint);
@@ -168,16 +168,16 @@ namespace NotebookAutomation.Cli.Tests.Commands
             Assert.IsNotNull(maskSecretMethod);
 
             // Null
-            var resultNull = maskSecretMethod.Invoke(configCommands, new object[] { null });
+            var resultNull = maskSecretMethod.Invoke(configCommands, [null]);
             Assert.AreEqual("[Not Set]", resultNull);
             // Empty
-            var resultEmpty = maskSecretMethod.Invoke(configCommands, new object[] { "" });
+            var resultEmpty = maskSecretMethod.Invoke(configCommands, [""]);
             Assert.AreEqual("[Not Set]", resultEmpty);
             // Short secret
-            var resultShort = maskSecretMethod.Invoke(configCommands, new object[] { "abc123" });
+            var resultShort = maskSecretMethod.Invoke(configCommands, ["abc123"]);
             Assert.AreEqual("[Set]", resultShort);
             // Long secret
-            var resultLong = maskSecretMethod.Invoke(configCommands, new object[] { "1234567890abcdef" });
+            var resultLong = maskSecretMethod.Invoke(configCommands, ["1234567890abcdef"]);
             // For long secrets, expect a masked string: first 4 chars, then asterisks, then last 4 chars
             Assert.IsTrue(resultLong is string);
             var longMasked = (string)resultLong;
@@ -201,10 +201,10 @@ namespace NotebookAutomation.Cli.Tests.Commands
                 .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             Assert.IsNotNull(updateConfigKey);
             // Unknown section
-            var result1 = updateConfigKey.Invoke(null, new object[] { config, "unknownsection.key", "value" });
+            var result1 = updateConfigKey.Invoke(null, [config, "unknownsection.key", "value"]);
             Assert.IsFalse((bool)result1!);
             // Too few parts
-            var result2 = updateConfigKey.Invoke(null, new object[] { config, "justone", "value" });
+            var result2 = updateConfigKey.Invoke(null, [config, "justone", "value"]);
             Assert.IsFalse((bool)result2!);
         }
 
@@ -229,7 +229,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             try
             {
                 // Act: Directly call the usage method
-                configCommands.PrintViewUsage();
+                ConfigCommands.PrintViewUsage();
             }
             finally
             {

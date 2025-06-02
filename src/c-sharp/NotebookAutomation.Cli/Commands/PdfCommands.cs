@@ -37,10 +37,10 @@ namespace NotebookAutomation.Cli.Commands
         public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var inputOption = new Option<string>(
-                aliases: new[] { "--input", "-i" },
+                aliases: ["--input", "-i"],
                 description: "Path to the input PDF file or directory");
             var outputOption = new Option<string>(
-                aliases: new[] { "--output", "-o" },
+                aliases: ["--output", "-o"],
                 description: "Path to the output markdown file or directory");
 
             var pdfCommand = new Command("pdf-notes", "PDF notes processing commands");
@@ -48,7 +48,7 @@ namespace NotebookAutomation.Cli.Commands
             pdfCommand.AddOption(outputOption);
 
             // Show help if no subcommand or options are provided
-            pdfCommand.SetHandler((InvocationContext context) =>
+            pdfCommand.SetHandler(context =>
             {
                 // Print usage/help if required argument is missing
                 var input = context.ParseResult.GetValueForOption(inputOption);

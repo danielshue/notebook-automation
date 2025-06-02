@@ -6,7 +6,7 @@ namespace NotebookAutomation.Core.Utils
     /// <summary>
     /// Provides utility methods for generating friendly titles from file names or paths.
     /// </summary>
-    public static class FriendlyTitleHelper
+    public static partial class FriendlyTitleHelper
     {
         /// <summary>
         /// Returns a friendly title from a file name (removes numbers, underscores, extension, trims, and capitalizes).
@@ -17,18 +17,18 @@ namespace NotebookAutomation.Core.Utils
         {
             if (string.IsNullOrWhiteSpace(fileName)) return "Title";            // Remove leading numbers and separators (handle multiple consecutive patterns)
             string name = fileName;
-            while (Regex.IsMatch(name, @"^[0-9]+([_\-\s]+)", RegexOptions.IgnoreCase))
+            while (MyRegex().IsMatch(name))
             {
-                name = Regex.Replace(name, @"^[0-9]+([_\-\s]+)", "", RegexOptions.IgnoreCase);
+                name = MyRegex().Replace(name, "");
             }
 
             // Replace dashes/underscores with spaces
             name = Regex.Replace(name, "[_\\-]+", " ");            // Remove common structural words
-            string[] wordsToRemove = {
+            string[] wordsToRemove = [
                 @"\blesson\b", @"\blessons\b", @"\bmodule\b", @"\bmodules\b",
                 @"\bcourse\b", @"\bcourses\b",
                 @"\band\b", @"\bto\b", @"\bof\b"
-            };
+            ];
             string pattern = string.Join("|", wordsToRemove);
             name = Regex.Replace(name, pattern, " ", RegexOptions.IgnoreCase);
 
@@ -46,7 +46,7 @@ namespace NotebookAutomation.Core.Utils
             titleCased = Regex.Replace(titleCased, @"\bIi\b", "II");
 
             // Fix known acronyms to all caps
-            string[] knownAcronyms = { "CVP", "ROI", "KPI", "MBA", "CEO", "CFO", "COO", "CTO", "CIO", "CMO" };
+            string[] knownAcronyms = ["CVP", "ROI", "KPI", "MBA", "CEO", "CFO", "COO", "CTO", "CIO", "CMO"];
             foreach (var acronym in knownAcronyms)
             {
                 titleCased = Regex.Replace(
@@ -61,5 +61,8 @@ namespace NotebookAutomation.Core.Utils
 
             return titleCased;
         }
+
+        [GeneratedRegex(@"^[0-9]+([_\-\s]+)", RegexOptions.IgnoreCase, "en-US")]
+        private static partial Regex MyRegex();
     }
 }

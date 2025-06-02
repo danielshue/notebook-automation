@@ -7,21 +7,15 @@ namespace NotebookAutomation.Core.Tools.Shared
      /// Abstract base class for document note processors (PDF, video, etc.).
      /// Provides shared logic for AI summary, markdown generation, and logging.
      /// </summary>
-    public abstract class DocumentNoteProcessorBase
+     /// <remarks>
+     /// Initializes a new instance of the DocumentNoteProcessorBase class with logger and AISummarizer.
+     /// </remarks>
+     /// <param name="logger">The logger instance.</param>
+     /// <param name="aiSummarizer">The AISummarizer instance for generating AI-powered summaries.</param>
+    public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiSummarizer)
     {
-        protected readonly ILogger Logger;
-        protected readonly AISummarizer Summarizer;
-
-        /// <summary>
-        /// Initializes a new instance of the DocumentNoteProcessorBase class with logger and AISummarizer.
-        /// </summary>
-        /// <param name="logger">The logger instance.</param>
-        /// <param name="aiSummarizer">The AISummarizer instance for generating AI-powered summaries.</param>
-        protected DocumentNoteProcessorBase(ILogger logger, AISummarizer aiSummarizer)
-        {
-            Logger = logger;
-            Summarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer), "AISummarizer must be provided via DI.");
-        }
+        protected readonly ILogger Logger = logger;
+        protected readonly AISummarizer Summarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer), "AISummarizer must be provided via DI.");
 
         /// <summary>
         /// Extracts the main text/content and metadata from the document.
@@ -45,14 +39,14 @@ namespace NotebookAutomation.Core.Tools.Shared
                 Logger.LogInformation("Variables being passed to summarizer:");
                 foreach (var kvp in variables)
                 {
-                    var preview = kvp.Value?.Length > 50 ? kvp.Value.Substring(0, 50) + "..." : kvp.Value;
+                    var preview = kvp.Value?.Length > 50 ? kvp.Value[..50] + "..." : kvp.Value;
                     Logger.LogInformation("  {Key}: {ValuePreview}", kvp.Key, preview);
                 }
 
                 if (variables.TryGetValue("yaml-frontmatter", out var yamlValue))
                 {
                     Logger.LogInformation("Found yaml-frontmatter in variables dictionary: {ValuePreview}",
-                        yamlValue?.Length > 100 ? yamlValue.Substring(0, 100) + "..." : yamlValue ?? "null");
+                        yamlValue?.Length > 100 ? yamlValue[..100] + "..." : yamlValue ?? "null");
                 }
                 else
                 {

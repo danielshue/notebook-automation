@@ -83,10 +83,8 @@ namespace NotebookAutomation.Core.Configuration
             bool debug = false,
             string? configFilePath = null)
         {
-            if (services == null)
-                throw new ArgumentNullException(nameof(services));
-            if (configuration == null)
-                throw new ArgumentNullException(nameof(configuration));
+            ArgumentNullException.ThrowIfNull(services);
+            ArgumentNullException.ThrowIfNull(configuration);
 
             // Register and configure services by category
             RegisterLoggingServices(services, configuration, debug);
@@ -124,7 +122,7 @@ namespace NotebookAutomation.Core.Configuration
                 var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
                 var builder = Kernel.CreateBuilder();
 
-                builder.Services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
+                builder.Services.AddSingleton(loggerFactory);
 
                 var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
                 if (providerType == "openai" && aiConfig.OpenAI != null)
@@ -245,7 +243,7 @@ namespace NotebookAutomation.Core.Configuration
                     logger,
                     microsoftGraph?.ClientId ?? string.Empty,
                     microsoftGraph?.TenantId ?? string.Empty,
-                    microsoftGraph?.Scopes?.ToArray() ?? Array.Empty<string>()
+                    microsoftGraph?.Scopes?.ToArray() ?? []
                 );
             });
 

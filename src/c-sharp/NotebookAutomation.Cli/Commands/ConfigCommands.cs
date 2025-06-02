@@ -52,7 +52,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <summary>
         /// Prints the usage/help for the 'config view' command.
         /// </summary>
-        internal void PrintViewUsage()
+        internal static void PrintViewUsage()
         {
             AnsiConsoleHelper.WriteUsage(
                 "Usage: config view [options]",
@@ -74,7 +74,7 @@ namespace NotebookAutomation.Cli.Commands
 
             // config list-keys
             var listKeysCommand = new Command("list-keys", "List all available configuration keys that can be updated");
-            listKeysCommand.SetHandler((InvocationContext context) =>
+            listKeysCommand.SetHandler(context =>
             {
                 PrintAvailableConfigKeys(context);
             });
@@ -82,7 +82,7 @@ namespace NotebookAutomation.Cli.Commands
 
             // config view
             var viewCommand = new Command("view", "Show the current configuration");
-            viewCommand.SetHandler((InvocationContext context) =>
+            viewCommand.SetHandler(context =>
             {
                 // Check if any arguments were provided
                 if (context.ParseResult.Tokens.Count == 0 && context.ParseResult.UnparsedTokens.Count == 0)
@@ -117,7 +117,7 @@ namespace NotebookAutomation.Cli.Commands
                 keyArg,
                 valueArg
             };
-            updateCommand.SetHandler((InvocationContext context) =>
+            updateCommand.SetHandler(context =>
             {
                 try
                 {
@@ -179,13 +179,11 @@ namespace NotebookAutomation.Cli.Commands
             // config secrets
             var secretsCommand = new Command("secrets", "Display status of user secrets");
             configCommand.AddCommand(secretsCommand);
-            secretsCommand.SetHandler((InvocationContext context) =>
+            secretsCommand.SetHandler(context =>
             {
                 try
                 {
-                    var userSecretsHelper = Program.ServiceProvider.GetService(typeof(UserSecretsHelper)) as UserSecretsHelper;
-
-                    if (userSecretsHelper == null)
+                    if (Program.ServiceProvider.GetService(typeof(UserSecretsHelper)) is not UserSecretsHelper userSecretsHelper)
                     {
                         AnsiConsoleHelper.WriteError("User secrets helper is not available.");
                         return;
@@ -221,7 +219,7 @@ namespace NotebookAutomation.Cli.Commands
             configCommand.AddCommand(updateCommand);
 
             // Show help if no subcommand is provided for the config command
-            configCommand.SetHandler((InvocationContext context) =>
+            configCommand.SetHandler(context =>
             {
                 if (context.ParseResult.Tokens.Count == 0 && context.ParseResult.UnparsedTokens.Count == 0)
                 {
@@ -273,7 +271,7 @@ namespace NotebookAutomation.Cli.Commands
             // Special case: top-level key for video_extensions
             if (key.Equals("video_extensions", StringComparison.OrdinalIgnoreCase))
             {
-                appConfig.SetVideoExtensions(value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList());
+                appConfig.SetVideoExtensions([.. value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]);
                 return true;
             }
             if (parts.Length == 2)
@@ -300,7 +298,7 @@ namespace NotebookAutomation.Cli.Commands
                             case "client_id": mg.ClientId = value; return true;
                             case "api_endpoint": mg.ApiEndpoint = value; return true;
                             case "authority": mg.Authority = value; return true;
-                            case "scopes": mg.Scopes = value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList(); return true;
+                            case "scopes": mg.Scopes = [.. value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]; return true;
                         }
                         break;
                     case "aiservice":
@@ -311,7 +309,7 @@ namespace NotebookAutomation.Cli.Commands
                         }
                         break;
                     case "video_extensions":
-                        appConfig.SetVideoExtensions(value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList());
+                        appConfig.SetVideoExtensions([.. value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]);
                         return true;
                 }
             }
@@ -323,7 +321,7 @@ namespace NotebookAutomation.Cli.Commands
                 switch (provider)
                 {
                     case "openai":
-                        if (aiService.OpenAI == null) aiService.OpenAI = new NotebookAutomation.Core.Configuration.OpenAiProviderConfig();
+                        aiService.OpenAI ??= new NotebookAutomation.Core.Configuration.OpenAiProviderConfig();
                         switch (prop)
                         {
                             case "model": aiService.OpenAI.Model = value; return true;
@@ -331,7 +329,7 @@ namespace NotebookAutomation.Cli.Commands
                         }
                         break;
                     case "azure":
-                        if (aiService.Azure == null) aiService.Azure = new NotebookAutomation.Core.Configuration.AzureProviderConfig();
+                        aiService.Azure ??= new NotebookAutomation.Core.Configuration.AzureProviderConfig();
                         switch (prop)
                         {
                             case "model": aiService.Azure.Model = value; return true;
@@ -340,7 +338,7 @@ namespace NotebookAutomation.Cli.Commands
                         }
                         break;
                     case "foundry":
-                        if (aiService.Foundry == null) aiService.Foundry = new NotebookAutomation.Core.Configuration.FoundryProviderConfig();
+                        aiService.Foundry ??= new NotebookAutomation.Core.Configuration.FoundryProviderConfig();
                         switch (prop)
                         {
                             case "model": aiService.Foundry.Model = value; return true;
@@ -359,7 +357,7 @@ namespace NotebookAutomation.Cli.Commands
         public static void PrintConfigFormatted(AppConfig appConfig)
         {
             // Helper for aligned output
-            void PrintAligned(string key, string value)
+            static void PrintAligned(string key, string value)
             {
                 const int keyWidth = 32; // Adjusted for longer keys
                 Console.WriteLine($"  {AnsiColors.OKCYAN}{AnsiColors.BOLD}{key,-keyWidth}{AnsiColors.ENDC}: {AnsiColors.OKGREEN}{value}{AnsiColors.ENDC}");
@@ -372,7 +370,7 @@ namespace NotebookAutomation.Cli.Commands
             }
 
             // Yellow foreground on blue background, bold, spanning the CLI width
-            int width = 0;
+            int width;
             try { width = Console.WindowWidth; } catch { width = 80; }
             string headerText = "   Notebook Automation Configuration   ";
             int padLeft = (width - headerText.Length) / 2;
@@ -512,7 +510,7 @@ namespace NotebookAutomation.Cli.Commands
                 }
 
                 // Always show where the API key is sourced from
-                string? apiKey = null;
+                string? apiKey;
                 try { apiKey = ai.GetApiKey(); } catch { apiKey = null; }
                 string apiKeyStatus;
                 if (!string.IsNullOrEmpty(apiKey))
@@ -542,7 +540,7 @@ namespace NotebookAutomation.Cli.Commands
         /// Displays the status of user secrets in the configuration.
         /// </summary>
         /// <param name="userSecrets">The user secrets helper.</param>
-        private void DisplayUserSecrets(UserSecretsHelper userSecrets)
+        private static void DisplayUserSecrets(UserSecretsHelper userSecrets)
         {
             AnsiConsoleHelper.WriteHeading("User Secrets Status");
 
@@ -570,7 +568,7 @@ namespace NotebookAutomation.Cli.Commands
         /// </summary>
         /// <param name="secret">The secret to mask.</param>
         /// <returns>A masked version of the secret, or "[Not Set]" if it's null or empty.</returns>
-        private string MaskSecret(string? secret)
+        private static string MaskSecret(string? secret)
         {
             if (string.IsNullOrEmpty(secret))
             {
