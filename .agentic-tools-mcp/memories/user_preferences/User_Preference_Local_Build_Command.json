@@ -1,0 +1,8 @@
+{
+  "id": "ab00a153-99dc-4744-aae8-09991c912ffa",
+  "title": "User Preference: Local Build Command",
+  "details": "## User Build Command Preference\n\n**When user asks to \"perform a local build\" or \"run a local build\":**\n- Use `run_vs_code_task` tool with task ID: `shell: local-ci-build`\n- This runs the full CI pipeline locally including:\n  1. Clean Solution\n  2. Restore Dependencies\n  3. Code Formatting with `dotnet format`\n  4. Build Solution\n  5. Run Tests with Coverage\n  6. Test Publish Operations\n  7. Static Code Analysis\n\n**Variations the user might request:**\n- \"Quick build\" → use task ID: `shell: local-ci-build-quick` (skips tests and formatting)\n- \"Build without tests\" → use task ID: `shell: local-ci-build-skip-tests`\n- \"Just compile\" → use task ID: `shell: build-dotnet-sln`\n\n**Workspace Details:**\n- workspaceFolder: `d:\\source\\notebook-automation-csharp-migration`\n- The local-ci-build task mirrors GitHub Actions CI pipeline exactly\n- Best practice for catching issues before pushing to repository",
+  "category": "user_preferences",
+  "dateCreated": "2025-06-02T17:00:17.257Z",
+  "dateUpdated": "2025-06-02T17:00:17.257Z"
+}

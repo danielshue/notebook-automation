@@ -23,12 +23,10 @@ namespace NotebookAutomation.Core.Configuration
         public AzureProviderConfig? Azure { get; set; }
 
         [JsonPropertyName("foundry")]
-        public FoundryProviderConfig? Foundry { get; set; }
-
-        /// <summary>
-        /// Returns the API key for the configured AI provider.
-        /// </summary>
-        /// <returns>The API key string, or null if not set.</returns>
+        public FoundryProviderConfig? Foundry { get; set; }        /// <summary>
+                                                                   /// Returns the API key for the configured AI provider.
+                                                                   /// </summary>
+                                                                   /// <returns>The API key string, or null if not set.</returns>
         public string? GetApiKey()
         {
             var providerType = Provider?.ToLowerInvariant() ?? "openai";
@@ -40,6 +38,34 @@ namespace NotebookAutomation.Core.Configuration
                 _ => null
             };
         }
+
+        /// <summary>
+        /// Convenience property to get the model for the active provider.
+        /// This allows direct access via indexer like appConfig["aiservice:Model"]
+        /// </summary>
+        [JsonIgnore]
+        public string? Model
+        {
+            get
+            {
+                var providerType = Provider?.ToLowerInvariant() ?? "openai";
+                return providerType switch
+                {
+                    "openai" => OpenAI?.Model,
+                    "azure" => Azure?.Model,
+                    "foundry" => Foundry?.Model,
+                    _ => null
+                };
+            }
+        }
+
+        /// <summary>
+        /// Convenience property to get the API key for the active provider.
+        /// This allows direct access via indexer like appConfig["aiservice:api_key"]
+        /// </summary>
+        [JsonPropertyName("api_key")]
+        [JsonIgnore]
+        public string? ApiKey => GetApiKey();
     }
 
     public class OpenAiProviderConfig
