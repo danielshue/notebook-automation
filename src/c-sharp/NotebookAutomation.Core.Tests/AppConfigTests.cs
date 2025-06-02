@@ -279,17 +279,20 @@ public class AppConfigTests
     public void LoadFromJsonFile_ShouldLoadConfigurationCorrectly()
     {
         // Arrange - Create a temporary config file
-        string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
-        var config = new
+        string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");        var config = new
         {
             paths = new
             {
-                resources_root = "/resources",
+                onedrive_fullpath_root = "/resources",
                 logging_dir = "/logs"
             },
             aiservice = new
             {
-                model = "gpt-4"
+                provider = "openai",
+                openai = new
+                {
+                    model = "gpt-4"
+                }
             }
         };
 
@@ -298,29 +301,14 @@ public class AppConfigTests
         try
         {
             // Act
-            AppConfig appConfig = AppConfig.LoadFromJsonFile(tempFile);
-            // Assert
+            AppConfig appConfig = AppConfig.LoadFromJsonFile(tempFile);            // Assert
             Assert.IsNotNull(appConfig);
             Assert.AreEqual("/resources", appConfig.Paths.OnedriveFullpathRoot);
             Assert.AreEqual("/logs", appConfig.Paths.LoggingDir);
-            // Set up the configuration for testing                // Create a configuration with the API key
-            Dictionary<string, string> configDict = new Dictionary<string, string>
-            {
-                {"UserSecrets:OpenAI:ApiKey", "test-api-key"}
-            };
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(configDict)
-                .Build();
-            // No SetConfiguration; set provider/model directly
-            appConfig.AiService.Provider = "openai";
-            if (appConfig.AiService.OpenAI == null)
-            {
-                appConfig.AiService.OpenAI = new OpenAiProviderConfig();
-            }
-
-            appConfig.AiService.OpenAI.Model = "gpt-4";
-            Assert.AreEqual("test-api-key", appConfig.AiService.GetApiKey());
-            Assert.AreEqual("gpt-4", appConfig.AiService.OpenAI?.Model);
+            Assert.AreEqual("gpt-4", appConfig.AiService.Model);
+            
+            // Note: GetApiKey() reads from environment variables, not configuration,
+            // so we don't test it here since this test focuses on JSON file loading
         }
         finally
         {

@@ -158,26 +158,24 @@ namespace NotebookAutomation.Cli.Tests.Commands
             Assert.IsTrue((bool)result!);
             Assert.IsNotNull(config.AiService.Foundry);
             Assert.AreEqual("https://foundry.ai", config.AiService.Foundry.Endpoint);
-        }
-        [TestMethod]
+        }        [TestMethod]
         public void MaskSecret_ReturnsMaskedOrNotSet()
         {
             var configCommands = new ConfigCommands();
             var maskSecretMethod = typeof(ConfigCommands)
-                .GetMethod("MaskSecret", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                .GetMethod("MaskSecret", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             Assert.IsNotNull(maskSecretMethod);
 
             // Null
-            var resultNull = maskSecretMethod.Invoke(configCommands, [null]);
+            var resultNull = maskSecretMethod.Invoke(null, [null]);
             Assert.AreEqual("[Not Set]", resultNull);
             // Empty
-            var resultEmpty = maskSecretMethod.Invoke(configCommands, [""]);
-            Assert.AreEqual("[Not Set]", resultEmpty);
-            // Short secret
-            var resultShort = maskSecretMethod.Invoke(configCommands, ["abc123"]);
+            var resultEmpty = maskSecretMethod.Invoke(null, [""]);
+            Assert.AreEqual("[Not Set]", resultEmpty);            // Short secret
+            var resultShort = maskSecretMethod.Invoke(null, ["abc123"]);
             Assert.AreEqual("[Set]", resultShort);
             // Long secret
-            var resultLong = maskSecretMethod.Invoke(configCommands, ["1234567890abcdef"]);
+            var resultLong = maskSecretMethod.Invoke(null, ["1234567890abcdef"]);
             // For long secrets, expect a masked string: first 4 chars, then asterisks, then last 4 chars
             Assert.IsTrue(resultLong is string);
             var longMasked = (string)resultLong;
