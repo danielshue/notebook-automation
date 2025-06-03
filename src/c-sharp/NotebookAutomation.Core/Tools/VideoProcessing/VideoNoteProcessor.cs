@@ -215,7 +215,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// Console.WriteLine(summary);
         /// </code>
         /// </example>
-        public override async Task<string> GenerateAiSummaryAsync(string text, Dictionary<string, string>? variables = null, string? promptFileName = null)
+        public override async Task<string> GenerateAiSummaryAsync(string? text, Dictionary<string, string>? variables = null, string? promptFileName = null)
         {
             if (string.IsNullOrEmpty(text))
             {
