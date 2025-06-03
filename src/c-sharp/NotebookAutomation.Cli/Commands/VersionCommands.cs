@@ -28,22 +28,27 @@ namespace NotebookAutomation.Cli.Commands
         public static void Register(RootCommand rootCommand)
         {
             var versionCommand = new Command("version", "Display version information");
+
+            // Command for displaying detailed version info
+            var detailedCommand = new Command("detailed", "Display detailed version information");
+            versionCommand.Add(detailedCommand);
+
             versionCommand.SetHandler(() =>
             {
                 Assembly? entryAssembly = Assembly.GetEntryAssembly();
                 if (entryAssembly != null)
                 {
-
                     // In single-file publish, entryAssembly.Location is empty. Use MainModule.FileName.
                     string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
                     var versionInfo = !string.IsNullOrEmpty(exePath)
                         ? FileVersionInfo.GetVersionInfo(exePath)
                         : null;
 
-                    var companyName = versionInfo?.CompanyName ?? "Unknown Company";
-                    var copyrightInfo = versionInfo?.LegalCopyright ?? "Unknown Copyright";
+                    var companyName = versionInfo?.CompanyName ?? "Notebook Automation";
+                    var copyrightInfo = versionInfo?.LegalCopyright ?? "Copyright © 2025";
 
-                    AnsiConsoleHelper.WriteInfo($"Notebook Automation v1.0.0 {Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown"}");
+                    var version = Assembly.GetExecutingAssembly().GetName().Version;
+                    AnsiConsoleHelper.WriteInfo($"Notebook Automation v{version}");
                     AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
                     AnsiConsoleHelper.WriteInfo($"{companyName}");
                     AnsiConsoleHelper.WriteInfo($"Copyright {copyrightInfo}");
@@ -52,8 +57,21 @@ namespace NotebookAutomation.Cli.Commands
                 {
                     AnsiConsoleHelper.WriteError("Unable to retrieve version information. Entry assembly is null.");
                 }
-
             });
+
+            // Handler for detailed version command
+            detailedCommand.SetHandler(() =>
+            {
+                var versionInfo = VersionHelper.GetVersionInfo();
+
+                AnsiConsoleHelper.WriteHeading("Detailed Version Information");
+
+                foreach (var info in versionInfo)
+                {
+                    AnsiConsoleHelper.WriteKeyValue(info.Key, info.Value);
+                }
+            });
+
             rootCommand.Add(versionCommand);
         }
     }

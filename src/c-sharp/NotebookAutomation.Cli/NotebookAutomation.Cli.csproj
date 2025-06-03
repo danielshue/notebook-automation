@@ -19,6 +19,10 @@
     <Copyright>Copyright 2025</Copyright>
     <!-- PublishSingleFile and SelfContained should only be set during publish operations -->
     <!-- These properties cause build issues when set during regular builds -->
+    <!-- Make assembly version info available as C# constants -->
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <IsPublishable>True</IsPublishable>

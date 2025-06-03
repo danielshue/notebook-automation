@@ -1,0 +1,16 @@
+<Project>  <PropertyGroup>
+    <!-- Set the version for all projects in the solution -->
+    <!-- For NuGet packages, we need a valid semantic version without wildcards -->
+    <Version>1.0.0.0</Version>    <!-- Assembly version needs to be a valid version without wildcards for NuGet restore -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <!-- File version needs a valid version string without wildcards -->
+    <FileVersion>1.0.0.0</FileVersion>
+    <InformationalVersion>1.0.0-development</InformationalVersion>
+    <!-- Enable deterministic builds for CI -->
+    <Deterministic>false</Deterministic>
+    <Company>Dan Shue</Company>
+    <Copyright>Copyright © 2025</Copyright>
+    <Product>Notebook Automation</Product>
+    <Authors>Dan Shue</Authors>
+  </PropertyGroup>
+</Project>
