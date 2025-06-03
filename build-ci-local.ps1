@@ -10,6 +10,7 @@
     .\build-ci-local.ps1 -SkipTests
     .\build-ci-local.ps1 -SkipFormat
     .\build-ci-local.ps1 -Configuration Debug
+    .\build-ci-local.ps1 -TestAllArch
 #>
 
 param(
@@ -19,11 +20,15 @@ param(
     [Parameter(HelpMessage="Build configuration (Debug/Release)")]
     [ValidateSet("Debug", "Release")]
     [string]$Configuration = "Release",
-      [Parameter(HelpMessage="Skip cleaning before build")]
+    
+    [Parameter(HelpMessage="Skip cleaning before build")]
     [switch]$SkipClean,
     
     [Parameter(HelpMessage="Skip code formatting to speed up the build")]
     [switch]$SkipFormat,
+    
+    [Parameter(HelpMessage="Test all architectures (x64, ARM64)")]
+    [switch]$TestAllArch,
     
     [Parameter(HelpMessage="Show verbose output")]
     [switch]$VerboseOutput
@@ -109,20 +114,67 @@ try {    Write-Host "🚀 Starting Local CI Build Pipeline" -ForegroundColor $Cy
         }
     } else {
         Write-Warning "Skipping code formatting"
-    }
-      # Step 4: Build Solution (mirrors CI)
-    Write-Step "Step 4: Build Solution"
+    }    # Step 4: Generate Version Information
+    Write-Step "Step 4: Generate Version Information"
+    $buildDate = Get-Date
+    
+    # Microsoft recommended format: major.minor.build.revision
+    # where build is typically days since a base date and revision is seconds since midnight / 2
+    
+    # Calculate build number (days since Jan 1, 2024)
+    $baseDate = Get-Date -Year 2024 -Month 1 -Day 1
+    $daysSinceBase = [math]::Floor(($buildDate - $baseDate).TotalDays)
+    
+    # Calculate revision (seconds since midnight / 2)
+    $midnight = $buildDate.Date
+    $secondsSinceMidnight = [math]::Floor(($buildDate - $midnight).TotalSeconds)
+    $revision = [math]::Floor($secondsSinceMidnight / 2)
+    
+    # Format version strings
+    $major = 1
+    $minor = 0
+    
+    # For NuGet package version (must be valid SemVer)
+    $packageVersion = "$major.$minor.0"
+    
+    # For assembly version - must be a specific version for NuGet restore
+    $assemblyVersion = "$major.$minor.0.0"
+    
+    # For file version - use MS recommended format
+    $fileVersion = "$major.$minor.$daysSinceBase.$revision"
+    
+    # For logging purposes, we also keep a timestamp-based version for easier human reading
+    $timestampVersion = $buildDate.ToString("yyMMdd.HHmm")
+    
+    Write-Host "Package Version: $packageVersion" -ForegroundColor $Yellow
+    Write-Host "Assembly Version: $assemblyVersion" -ForegroundColor $Yellow
+    Write-Host "File Version: $fileVersion" -ForegroundColor $Yellow
+    Write-Host "Timestamp: $timestampVersion" -ForegroundColor $Yellow
+    
+    # Step 5: Build Solution (mirrors CI)
+    Write-Step "Step 5: Build Solution"
     Write-Host "Build command: dotnet build `"$SolutionPath`" --configuration $Configuration --no-restore" -ForegroundColor $Yellow
+      $buildParams = @(
+        "build",
+        "$SolutionPath",
+        "--configuration", "$Configuration",
+        "--no-restore",
+        "/p:Version=$packageVersion", 
+        "/p:FileVersion=$fileVersion",
+        "/p:AssemblyVersion=$assemblyVersion"
+    )
     
     if ($VerboseOutput) {
-        dotnet build "$SolutionPath" --configuration $Configuration --no-restore --verbosity normal
-    } else {
-        dotnet build "$SolutionPath" --configuration $Configuration --no-restore
+        $buildParams += "--verbosity"
+        $buildParams += "normal"
     }
+    
+    & dotnet $buildParams
+    
     if ($LASTEXITCODE -ne 0) {
         throw "Build failed with exit code $LASTEXITCODE"
     }
-    Write-Success "Build completed successfully"    # Step 5: Run Tests (mirrors CI)
+    Write-Success "Build completed successfully with version $buildVersion"# Step 5: Run Tests (mirrors CI)
     if (-not $SkipTests) {
         Write-Step "Step 5: Run Tests with Coverage"
         $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
@@ -145,19 +197,77 @@ try {    Write-Host "🚀 Starting Local CI Build Pipeline" -ForegroundColor $Cy
     
     try {
         # Test win-x64 publish (mirrors CI)
-        Write-Host "Testing win-x64 publish..." -ForegroundColor $Yellow
-        dotnet publish $cliProjectPath -c $Configuration -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true --output "$tempPublishDir\win-x64"
+        Write-Host "Testing win-x64 publish with version info:" -ForegroundColor $Yellow
+        Write-Host "  - Package Version: $packageVersion" -ForegroundColor $Yellow
+        Write-Host "  - File Version: $fileVersion" -ForegroundColor $Yellow
+        
+        dotnet publish $cliProjectPath -c $Configuration -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$packageVersion /p:FileVersion=$fileVersion /p:AssemblyVersion=$assemblyVersion --output "$tempPublishDir\win-x64"
         if ($LASTEXITCODE -ne 0) {
             throw "win-x64 publish failed with exit code $LASTEXITCODE"
         }
         
+        # Verify win-x64 binary
+        $winX64Binary = Join-Path "$tempPublishDir\win-x64" "NotebookAutomation.exe"
+        if (-not (Test-Path $winX64Binary)) {
+            throw "win-x64 binary not found at $winX64Binary"
+        }
+          # Test the win-x64 binary with version command
+        # Only test if not in CI environment and either TestAllArch is true or platform is x64
+        if ((-not $env:CI) -and ($TestAllArch -or [Environment]::Is64BitOperatingSystem)) {
+            Write-Host "Testing win-x64 binary with version command..." -ForegroundColor $Yellow
+            & $winX64Binary version
+            if ($LASTEXITCODE -ne 0) {
+                throw "win-x64 binary test failed with exit code $LASTEXITCODE"
+            }
+            Write-Success "win-x64 binary test passed"
+        }
+        
         # Test win-arm64 publish (mirrors CI)
-        Write-Host "Testing win-arm64 publish..." -ForegroundColor $Yellow
-        dotnet publish $cliProjectPath -c $Configuration -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true --output "$tempPublishDir\win-arm64"
+        Write-Host "`nTesting win-arm64 publish..." -ForegroundColor $Yellow
+        dotnet publish $cliProjectPath -c $Configuration -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$packageVersion /p:FileVersion=$fileVersion /p:AssemblyVersion=$assemblyVersion --output "$tempPublishDir\win-arm64"
         if ($LASTEXITCODE -ne 0) {
             throw "win-arm64 publish failed with exit code $LASTEXITCODE"
         }
-          Write-Success "Publish operations completed successfully"
+          # Verify win-arm64 binary
+        $winArm64Binary = Join-Path "$tempPublishDir\win-arm64" "NotebookAutomation.exe"
+        if (-not (Test-Path $winArm64Binary)) {
+            throw "win-arm64 binary not found at $winArm64Binary"
+        }
+        
+        # Test the win-arm64 binary with version command if possible
+        # Only attempt this on ARM64 hardware or if explicitly testing all architectures
+        $isArm64Hardware = (Get-CimInstance -Class Win32_ComputerSystem).SystemType -like "*ARM64*"
+        if ((-not $env:CI) -and ($TestAllArch -or $isArm64Hardware)) {
+            Write-Host "Testing win-arm64 binary with version command..." -ForegroundColor $Yellow
+            try {
+                & $winArm64Binary version
+                if ($LASTEXITCODE -ne 0) {
+                    throw "win-arm64 binary test failed with exit code $LASTEXITCODE"
+                }
+                Write-Success "win-arm64 binary test passed"
+            }
+            catch {
+                if ($isArm64Hardware) {
+                    # If we're on ARM64 hardware and it still failed, that's a real error
+                    throw
+                }
+                else {
+                    # On non-ARM64 hardware, just warn that we couldn't test
+                    Write-Warning "Could not test ARM64 binary on non-ARM64 hardware. This is expected."
+                    Write-Warning "To fully test ARM64 binary, run this script on ARM64 hardware or use emulation."
+                }
+            }
+        }
+        
+        # Check file sizes to verify they are reasonable
+        $x64Size = (Get-Item $winX64Binary).Length / 1MB
+        $arm64Size = (Get-Item $winArm64Binary).Length / 1MB
+        
+        Write-Host "`nBinary sizes:" -ForegroundColor $Yellow
+        Write-Host "  - win-x64: $([math]::Round($x64Size, 2)) MB" -ForegroundColor $Yellow
+        Write-Host "  - win-arm64: $([math]::Round($arm64Size, 2)) MB" -ForegroundColor $Yellow
+        
+        Write-Success "Publish operations completed successfully"
     }
     finally {
         # Clean up temp publish directory

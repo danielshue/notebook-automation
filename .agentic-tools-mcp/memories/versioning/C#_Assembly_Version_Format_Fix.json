@@ -1,0 +1,8 @@
+{
+  "id": "8a741703-1f9b-42db-814a-72e912a9f7ac",
+  "title": "C# Assembly Version Format Fix",
+  "details": "Fixed an issue with invalid assembly version string format in the Notebook Automation project. \n\n## Problem\nThe project was using a wildcard format '1.0.0.*' for AssemblyVersion in the Directory.Build.props file, which is valid for AssemblyVersion attribute but not valid for NuGet package restore.\n\n## Solution\n1. Changed AssemblyVersion in Directory.Build.props from '1.0.0.*' to '1.0.0.0'\n2. Updated build-ci-local.ps1 to use explicit AssemblyVersion parameter\n3. Modified the build parameters to include /p:AssemblyVersion=$assemblyVersion\n4. Updated the GitHub workflows to include ASSEMBLY_VERSION environment variable\n\n## Technical Details\n- The wildcard notation is valid only in AssemblyVersion attribute declarations but not in NuGet package versioning\n- Assembly versions must be in the format major.minor.build.revision for NuGet restore operations\n- The auto-incrementing behavior is now handled through the FileVersion parameter\n- BuildDate and BuildNumber are now used to generate unique FileVersion values\n\n## Notes\n- The warning CS7035 about version string format still appears, but it's just a warning, not an error\n- While Microsoft recommends using major.minor.build.revision format, the build succeeds with our current approach\n- All tests pass with the new versioning approach\n- Both local and CI workflows updated to use consistent version parameters",
+  "category": "versioning",
+  "dateCreated": "2025-06-03T15:07:24.098Z",
+  "dateUpdated": "2025-06-03T15:07:24.098Z"
+}

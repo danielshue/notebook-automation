@@ -1,0 +1,8 @@
+{
+  "id": "f3a021a6-d965-48ff-ad73-12f518e73274",
+  "title": "Version Scheme for Notebook Automation",
+  "details": "**Version Scheme Details**\n\nThe Notebook Automation CLI now uses a standardized automatic versioning scheme:\n\n- Main version format: `1.0.0.*` where the asterisk will automatically increment the build number each time the application is compiled.\n- The versioning is managed through a `Directory.Build.props` file at the solution level.\n- Key properties set:\n  - Version: 1.0.0.*\n  - AssemblyVersion: 1.0.0.*\n  - FileVersion: 1.0.0.*\n  - InformationalVersion: 1.0.0-development\n\nThe `Deterministic` property is set to false to allow for automatic build number incrementation.\n\nA `VersionHelper` utility class has been added to provide detailed version information including:\n- Assembly version\n- File version\n- Product version\n- Runtime information\n- Build timestamp\n- OS and architecture details\n\nVersion information can be accessed via:\n1. Basic command: `version`\n2. Detailed command: `version detailed`\n\nThis versioning scheme was implemented on June 3, 2025.",
+  "category": "project_configuration",
+  "dateCreated": "2025-06-03T14:36:19.366Z",
+  "dateUpdated": "2025-06-03T14:36:19.366Z"
+}
