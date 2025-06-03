@@ -591,7 +591,9 @@ namespace NotebookAutomation.Core.Tools.Shared
                     return $"{(ms / 1000):F2}s";
                 }
                 return $"{ms:F0}ms";
-            }            // Count queue stats by type and status
+            }
+
+            // Count queue stats by type and status
             Dictionary<string, int> documentTypeStats = new();
             Dictionary<DocumentProcessingStatus, int> statusStats = new();
 
