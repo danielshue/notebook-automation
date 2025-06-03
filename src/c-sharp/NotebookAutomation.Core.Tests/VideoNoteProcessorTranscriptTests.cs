@@ -34,10 +34,10 @@ public class VideoNoteProcessorTranscriptTests
         _tempDirectory = Path.Combine(Path.GetTempPath(), $"VideoProcessorTests_{Guid.NewGuid()}");
         Directory.CreateDirectory(_tempDirectory);
         _logger = NullLogger<VideoNoteProcessor>.Instance;
-        PromptTemplateService promptService = new PromptTemplateService(
+        PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
             new AppConfig());
-        AISummarizer aiSummarizer = new AISummarizer(
+        AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
@@ -98,7 +98,7 @@ public class VideoNoteProcessorTranscriptTests
     {
         // Arrange
         string videoPath = CreateTestVideoFile(_tempDirectory);
-        string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test_video.txt");
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video.txt");
 
         // Act
         string? result = _processor.TryLoadTranscript(videoPath);
@@ -116,7 +116,7 @@ public class VideoNoteProcessorTranscriptTests
     {
         // Arrange
         string videoPath = CreateTestVideoFile(_tempDirectory);
-        string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test_video.md");
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video.md");
 
         // Act
         string? result = _processor.TryLoadTranscript(videoPath);
@@ -136,7 +136,7 @@ public class VideoNoteProcessorTranscriptTests
         string videoPath = CreateTestVideoFile(_tempDirectory);
         string transcriptsDir = Path.Combine(_tempDirectory, "Transcripts");
         Directory.CreateDirectory(transcriptsDir);
-        string transcriptPath = CreateTestTranscriptFile(transcriptsDir, "test_video.txt");
+        _ = CreateTestTranscriptFile(transcriptsDir, "test_video.txt");
 
         // Act
         string? result = _processor.TryLoadTranscript(videoPath);
@@ -154,7 +154,7 @@ public class VideoNoteProcessorTranscriptTests
     {
         // Arrange
         string videoPath = CreateTestVideoFile(_tempDirectory);
-        string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test_video.en.txt", "English transcript");
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video.en.txt", "English transcript");
 
         // Act
         string? result = _processor.TryLoadTranscript(videoPath);
@@ -172,7 +172,7 @@ public class VideoNoteProcessorTranscriptTests
     {
         // Arrange
         string videoPath = CreateTestVideoFile(_tempDirectory, "test video with spaces.mp4");
-        string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test video with spaces.txt");
+        _ = CreateTestTranscriptFile(_tempDirectory, "test video with spaces.txt");
 
         // Act
         string? result = _processor.TryLoadTranscript(videoPath);
@@ -190,7 +190,7 @@ public class VideoNoteProcessorTranscriptTests
     {
         // Arrange
         string videoPath = CreateTestVideoFile(_tempDirectory, "test-video-with-hyphens.mp4");
-        string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test_video_with_hyphens.txt");
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video_with_hyphens.txt");
 
         // Act
         string? result = _processor.TryLoadTranscript(videoPath);
@@ -208,7 +208,7 @@ public class VideoNoteProcessorTranscriptTests
     {
         // Arrange
         string videoPath = CreateTestVideoFile(_tempDirectory, "test-video.mp4");
-        string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test_video.en-us.txt", "English-US transcript");
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video.en-us.txt", "English-US transcript");
 
         // Act
         string? result = _processor.TryLoadTranscript(videoPath);

@@ -67,7 +67,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="rootCommand">The root command to add subcommands to.</param>
         /// <param name="configOption">The global config file option.</param>
         /// <param name="debugOption">The global debug option.</param>
-        public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption)
+        public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption)
         {
             // Config command group (no special AI options)
             var configCommand = new Command("config", "Configuration management commands");
@@ -313,7 +313,7 @@ namespace NotebookAutomation.Cli.Commands
                         return true;
                 }
             }
-            else if (parts.Length == 3 && parts[0].ToLowerInvariant() == "aiservice")
+            else if (parts.Length == 3 && parts[0].Equals("aiservice", StringComparison.InvariantCultureIgnoreCase))
             {
                 var provider = parts[1].ToLowerInvariant();
                 var prop = parts[2];

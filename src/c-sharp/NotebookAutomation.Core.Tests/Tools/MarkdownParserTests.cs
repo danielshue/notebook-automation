@@ -55,7 +55,7 @@ public class MarkdownParserTests
     [TestMethod]
     public void CombineMarkdown_CombinesFrontmatterAndContent()
     {
-        Dictionary<string, object> frontmatter = new Dictionary<string, object> { { "title", "Test" } };
+        Dictionary<string, object> frontmatter = new() { { "title", "Test" } };
         string content = "# Heading\nBody";
         string result = _parser.CombineMarkdown(frontmatter, content);
         Assert.IsTrue(result.Contains("title: Test"));
@@ -65,7 +65,7 @@ public class MarkdownParserTests
     [TestMethod]
     public async Task WriteFileAsync_WritesFileAndReturnsTrue()
     {
-        Dictionary<string, object> frontmatter = new Dictionary<string, object> { { "title", "Test" } };
+        Dictionary<string, object> frontmatter = new() { { "title", "Test" } };
         string content = "# Heading\nBody";
         string tempFile = Path.GetTempFileName();
         try
@@ -85,7 +85,7 @@ public class MarkdownParserTests
     [TestMethod]
     public async Task WriteFileAsync_Error_LogsAndReturnsFalse()
     {
-        Dictionary<string, object> frontmatter = new Dictionary<string, object> { { "title", "Test" } };
+        Dictionary<string, object> frontmatter = new() { { "title", "Test" } };
         string content = "# Heading\nBody";
         // Use an invalid path to force an error
         string invalidPath = Path.Combine(Path.GetTempPath(), "?invalid:file.md");

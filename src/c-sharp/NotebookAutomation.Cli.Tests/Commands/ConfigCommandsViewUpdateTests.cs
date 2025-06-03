@@ -19,7 +19,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var rootCommand = new RootCommand();
             var configOption = new Option<string>("--config");
             var debugOption = new Option<bool>("--debug");
-            configCommands.Register(rootCommand, configOption, debugOption);
+            ConfigCommands.Register(rootCommand, configOption, debugOption);
             var view = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config")
                 ?.Subcommands.FirstOrDefault(c => c.Name == "view") as Command;
             Assert.IsNotNull(view, "view command should be registered");
@@ -34,7 +34,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var rootCommand = new RootCommand();
             var configOption = new Option<string>("--config");
             var debugOption = new Option<bool>("--debug");
-            configCommands.Register(rootCommand, configOption, debugOption);
+            ConfigCommands.Register(rootCommand, configOption, debugOption);
             var update = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config")
                 ?.Subcommands.FirstOrDefault(c => c.Name == "update") as Command;
             Assert.IsNotNull(update, "update command should be registered");

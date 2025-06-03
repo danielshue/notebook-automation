@@ -17,7 +17,7 @@ public class OneDriveServicePathMappingTests
     [TestMethod]
     public void MapLocalToOneDrivePath_MapsCorrectly()
     {
-        OneDriveService service = new OneDriveService(Mock.Of<ILogger<OneDriveService>>(), "client", "tenant", []);
+        OneDriveService service = new(Mock.Of<ILogger<OneDriveService>>(), "client", "tenant", []);
         string localRoot = Path.Combine("C:", "Users", "Test", "Vault");
         string oneDriveRoot = "Vault";
         service.ConfigureVaultRoots(localRoot, oneDriveRoot);
@@ -31,7 +31,7 @@ public class OneDriveServicePathMappingTests
     [TestMethod]
     public void MapOneDriveToLocalPath_MapsCorrectly()
     {
-        OneDriveService service = new OneDriveService(Mock.Of<ILogger<OneDriveService>>(), "client", "tenant", []);
+        OneDriveService service = new(Mock.Of<ILogger<OneDriveService>>(), "client", "tenant", []);
         string localRoot = Path.Combine("C:", "Users", "Test", "Vault");
         string oneDriveRoot = "Vault";
         service.ConfigureVaultRoots(localRoot, oneDriveRoot);
@@ -44,7 +44,7 @@ public class OneDriveServicePathMappingTests
     [TestMethod]
     public void MapLocalToOneDrivePath_ThrowsIfNotUnderRoot()
     {
-        OneDriveService service = new OneDriveService(Mock.Of<ILogger<OneDriveService>>(), "client", "tenant", []);
+        OneDriveService service = new(Mock.Of<ILogger<OneDriveService>>(), "client", "tenant", []);
         string localRoot = Path.Combine("C:", "Users", "Test", "Vault");
         string oneDriveRoot = "Vault";
         service.ConfigureVaultRoots(localRoot, oneDriveRoot);
@@ -55,7 +55,7 @@ public class OneDriveServicePathMappingTests
     [TestMethod]
     public void MapOneDriveToLocalPath_ThrowsIfNotUnderRoot()
     {
-        OneDriveService service = new OneDriveService(Mock.Of<ILogger<OneDriveService>>(), "client", "tenant", []);
+        OneDriveService service = new(Mock.Of<ILogger<OneDriveService>>(), "client", "tenant", []);
         string localRoot = Path.Combine("C:", "Users", "Test", "Vault");
         string oneDriveRoot = "Vault";
         service.ConfigureVaultRoots(localRoot, oneDriveRoot);

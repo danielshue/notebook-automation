@@ -13,16 +13,10 @@ namespace NotebookAutomation.Core.Tools.Shared
     /// </remarks>
     /// <param name="logger">The logger instance.</param>
     /// <param name="aiSummarizer">The AISummarizer instance for generating AI-powered summaries.</param>
-    public abstract class DocumentNoteProcessorBase
+    public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiSummarizer)
     {
-        protected readonly ILogger Logger;
-        protected readonly AISummarizer Summarizer;
-
-        protected DocumentNoteProcessorBase(ILogger logger, AISummarizer aiSummarizer)
-        {
-            Logger = logger ?? throw new ArgumentNullException(nameof(logger), "Logger must be provided via DI.");
-            Summarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer), "AISummarizer must be provided via DI.");
-        }
+        protected readonly ILogger Logger = logger ?? throw new ArgumentNullException(nameof(logger), "Logger must be provided via DI.");
+        protected readonly AISummarizer Summarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer), "AISummarizer must be provided via DI.");
 
         /// <summary>
         /// Extracts the main text/content and metadata from the document.

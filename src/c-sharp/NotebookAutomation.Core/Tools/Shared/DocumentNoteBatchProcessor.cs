@@ -19,8 +19,8 @@ namespace NotebookAutomation.Core.Tools.Shared
         private readonly AISummarizer _aiSummarizer;
 
         // Queue-related fields
-        private readonly List<QueueItem> _processingQueue = new();
-        private readonly object _queueLock = new();
+        private readonly List<QueueItem> _processingQueue = [];
+        private readonly Lock _queueLock = new();
 
         [GeneratedRegex(@"^##\s+Notes\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
         private static partial System.Text.RegularExpressions.Regex MyRegex();
@@ -171,7 +171,7 @@ namespace NotebookAutomation.Core.Tools.Shared
             var setupResult = ValidateAndSetupProcessing(input, output, appConfig);
             if (!setupResult.HasValue)
             {
-                return CreateErrorResult("Input validation failed");
+                return DocumentNoteBatchProcessor<TProcessor>.CreateErrorResult("Input validation failed");
             }
 
             var (effectiveInput, effectiveOutput) = setupResult.Value;
@@ -186,7 +186,7 @@ namespace NotebookAutomation.Core.Tools.Shared
             var files = DiscoverAndFilterFiles(effectiveInput, fileExtensions, retryFailed, effectiveOutput, failedFilesListName);
             if (files == null)
             {
-                return CreateErrorResult("File discovery failed");
+                return DocumentNoteBatchProcessor<TProcessor>.CreateErrorResult("File discovery failed");
             }
 
             // Initialize processing queue with discovered files
@@ -290,7 +290,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                         totalSummaryTime = totalSummaryTime.Add(processingTime);
                     }
 
-                    if (item.Metadata.ContainsKey("TokenCount") && item.Metadata["TokenCount"] is int tokenCount)
+                    if (item.Metadata.TryGetValue("TokenCount", out object? value) && value is int tokenCount)
                     {
                         totalTokens += tokenCount;
                     }
@@ -306,7 +306,7 @@ namespace NotebookAutomation.Core.Tools.Shared
         /// </summary>
         /// <param name="errorMessage">The error message</param>
         /// <returns>BatchProcessResult indicating failure</returns>
-        private BatchProcessResult CreateErrorResult(string errorMessage)
+        private static BatchProcessResult CreateErrorResult(string errorMessage)
         {
             return new BatchProcessResult
             {
@@ -594,26 +594,28 @@ namespace NotebookAutomation.Core.Tools.Shared
             }
 
             // Count queue stats by type and status
-            Dictionary<string, int> documentTypeStats = new();
-            Dictionary<DocumentProcessingStatus, int> statusStats = new();
+            Dictionary<string, int> documentTypeStats = [];
+            Dictionary<DocumentProcessingStatus, int> statusStats = [];
 
             lock (_queueLock)
             {
                 foreach (var item in _processingQueue)
                 {
                     // Count by document type
-                    if (!documentTypeStats.ContainsKey(item.DocumentType))
+                    if (!documentTypeStats.TryGetValue(item.DocumentType, out int docTypeValue))
                     {
-                        documentTypeStats[item.DocumentType] = 0;
+                        docTypeValue = 0;
+                        documentTypeStats[item.DocumentType] = docTypeValue;
                     }
-                    documentTypeStats[item.DocumentType]++;
+                    documentTypeStats[item.DocumentType] = ++docTypeValue;
 
                     // Count by status
-                    if (!statusStats.ContainsKey(item.Status))
+                    if (!statusStats.TryGetValue(item.Status, out int statusValue))
                     {
-                        statusStats[item.Status] = 0;
+                        statusValue = 0;
+                        statusStats[item.Status] = statusValue;
                     }
-                    statusStats[item.Status]++;
+                    statusStats[item.Status] = ++statusValue;
                 }
             }
             // Prepare type and status summary
@@ -631,13 +633,13 @@ namespace NotebookAutomation.Core.Tools.Shared
             }
 
             // Add status statistics
-            if (statusStats.ContainsKey(DocumentProcessingStatus.Completed))
+            if (statusStats.TryGetValue(DocumentProcessingStatus.Completed, out int completedValue))
             {
-                summary += $"Successfully completed: {statusStats[DocumentProcessingStatus.Completed]}\n";
+                summary += $"Successfully completed: {completedValue}\n";
             }
-            if (statusStats.ContainsKey(DocumentProcessingStatus.Failed))
+            if (statusStats.TryGetValue(DocumentProcessingStatus.Failed, out int failedValue))
             {
-                summary += $"Failed: {statusStats[DocumentProcessingStatus.Failed]}\n";
+                summary += $"Failed: {failedValue}\n";
             }
 
             // Add timing statistics

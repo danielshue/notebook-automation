@@ -884,7 +884,7 @@ namespace NotebookAutomation.Core.Services
         /// <summary>
         /// Finds similar names to a target using Levenshtein distance.
         /// </summary>
-        private List<string> FindSimilarNames(string target, List<string> candidates, int maxSuggestions = 3)
+        private static List<string> FindSimilarNames(string target, List<string> candidates, int maxSuggestions = 3)
         {
             var ranked = candidates
                 .Where(n => !string.IsNullOrEmpty(n))
@@ -1101,6 +1101,6 @@ namespace NotebookAutomation.Core.Services
                  /// <param name="uri">The URI being requested</param>
                  /// <returns>Whether this provider can authenticate</returns>
         public AllowedHostsValidator AllowedHostsValidator => new(validHosts);
-        internal static readonly string[] validHosts = new[] { "graph.microsoft.com" };
+        internal static readonly string[] validHosts = ["graph.microsoft.com"];
     }
 }

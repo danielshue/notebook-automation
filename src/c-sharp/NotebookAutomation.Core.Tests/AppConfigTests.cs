@@ -20,7 +20,7 @@ public class AppConfigCoverageBoostTests
     [TestMethod]
     public void Constructor_WithUnderlyingConfiguration_LoadsSections()
     {
-        Dictionary<string, string> configDict = new Dictionary<string, string>
+        Dictionary<string, string> configDict = new()
         {
             {"paths:notebook_vault_fullpath_root", "/vault"},
             {"paths:onedrive_resources_basepath", "/base"},
@@ -42,8 +42,8 @@ public class AppConfigCoverageBoostTests
             {"video_extensions:1", ".avi"}
         };
         IConfigurationRoot configuration = new ConfigurationBuilder().AddInMemoryCollection(configDict).Build();
-        Mock<ILogger<AppConfig>> logger = new Mock<ILogger<AppConfig>>();
-        AppConfig appConfig = new AppConfig(configuration, logger.Object);
+        Mock<ILogger<AppConfig>> logger = new();
+        AppConfig appConfig = new(configuration, logger.Object);
         Assert.AreEqual("/vault", appConfig.Paths.NotebookVaultFullpathRoot);
         Assert.AreEqual("cid", appConfig.MicrosoftGraph.ClientId);
         Assert.AreEqual("gpt-4", appConfig.AiService.OpenAI?.Model);
@@ -56,7 +56,7 @@ public class AppConfigCoverageBoostTests
     public void LoadConfiguration_FileBased_LoadsAndLogs()
     {
         string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
-        AppConfig config = new AppConfig
+        AppConfig config = new()
         {
             Paths = new PathsConfig { LoggingDir = "/logs" },
             MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "cid" },
@@ -76,8 +76,8 @@ public class AppConfigCoverageBoostTests
     public void SaveToJsonFile_And_ErrorHandling()
     {
         string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
-        Mock<ILogger<AppConfig>> logger = new Mock<ILogger<AppConfig>>();
-        AppConfig appConfig = new AppConfig { Paths = new PathsConfig { LoggingDir = "/logs" } };
+        Mock<ILogger<AppConfig>> logger = new();
+        AppConfig appConfig = new() { Paths = new PathsConfig { LoggingDir = "/logs" } };
         appConfig.SaveToJsonFile(tempFile);
         Assert.IsTrue(File.Exists(tempFile));
         File.Delete(tempFile);
@@ -88,26 +88,26 @@ public class AppConfigCoverageBoostTests
     [TestMethod]
     public void GetSection_And_GetChildren_WithAndWithoutUnderlyingConfig()
     {
-        AppConfig appConfig = new AppConfig();
+        AppConfig appConfig = new();
         IConfigurationSection section = appConfig.GetSection("paths");
         Assert.AreEqual("paths", section.Key);
-        List<IConfigurationSection> children = appConfig.GetChildren().ToList();
+        List<IConfigurationSection> children = [.. appConfig.GetChildren()];
         Assert.IsTrue(children.Any(c => c.Key.Equals("Paths", StringComparison.OrdinalIgnoreCase)));
         // With underlying config
-        Dictionary<string, string> configDict = new Dictionary<string, string> { { "paths:logging_dir", "/logs" } };
+        Dictionary<string, string> configDict = new() { { "paths:logging_dir", "/logs" } };
         IConfigurationRoot configuration = new ConfigurationBuilder().AddInMemoryCollection(configDict).Build();
-        Mock<ILogger<AppConfig>> logger = new Mock<ILogger<AppConfig>>();
-        AppConfig appConfig2 = new AppConfig(configuration, logger.Object);
+        Mock<ILogger<AppConfig>> logger = new();
+        AppConfig appConfig2 = new(configuration, logger.Object);
         IConfigurationSection section2 = appConfig2.GetSection("paths");
         Assert.IsNotNull(section2);
-        List<IConfigurationSection> children2 = appConfig2.GetChildren().ToList();
-        Assert.IsTrue(children2.Count != 0);
+        List<IConfigurationSection> children2 = [.. appConfig2.GetChildren()];
+        Assert.AreNotEqual(0, children2.Count);
     }
 
     [TestMethod]
     public void Exists_And_Indexer_ComplexCases()
     {
-        AppConfig appConfig = new AppConfig
+        AppConfig appConfig = new()
         {
             Paths = new PathsConfig { LoggingDir = "logs" }
         };
@@ -135,11 +135,9 @@ public class AppConfigTests
     }    /// <summary>
          /// Helper method to set up API key configuration for testing
          /// </summary>
-    private static void SetupApiKeyConfigurationForTesting(AppConfig config, string apiKey)
-    {
+    private static void SetupApiKeyConfigurationForTesting(AppConfig config, string apiKey) =>
         // Set the environment variable directly for the provider
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", apiKey);
-    }
 
     /// <summary>
     /// Tests the basic property indexer access with both direct and nested keys.
@@ -148,7 +146,7 @@ public class AppConfigTests
     public void Indexer_ShouldReturnValueForExistingKeys()
     {
         // Arrange
-        AppConfig appConfig = new AppConfig
+        AppConfig appConfig = new()
         {
             Paths = new PathsConfig
             {
@@ -178,7 +176,7 @@ public class AppConfigTests
     public void Indexer_ShouldReturnNullForNonExistentKeys()
     {
         // Arrange
-        AppConfig appConfig = new AppConfig();
+        AppConfig appConfig = new();
 
         // Act & Assert
         Assert.IsNull(appConfig["nonExistentKey"]);
@@ -192,7 +190,7 @@ public class AppConfigTests
     public void Indexer_ShouldSetValueForExistingKeys()
     {
         // Arrange
-        AppConfig appConfig = new AppConfig
+        AppConfig appConfig = new()
         {
             Paths = new PathsConfig()
         };
@@ -212,7 +210,7 @@ public class AppConfigTests
     public void GetSection_ShouldReturnValidSection()
     {
         // Arrange
-        AppConfig appConfig = new AppConfig
+        AppConfig appConfig = new()
         {
             Paths = new PathsConfig
             {
@@ -237,7 +235,7 @@ public class AppConfigTests
     public void Exists_ShouldReturnCorrectResults()
     {
         // Arrange
-        AppConfig appConfig = new AppConfig
+        AppConfig appConfig = new()
         {
             Paths = new PathsConfig
             {
@@ -261,10 +259,10 @@ public class AppConfigTests
     public void GetChildren_ShouldReturnAllTopLevelSections()
     {
         // Arrange
-        AppConfig appConfig = new AppConfig();
+        AppConfig appConfig = new();
 
         // Act
-        List<IConfigurationSection> children = appConfig.GetChildren().ToList();
+        List<IConfigurationSection> children = [.. appConfig.GetChildren()];
 
         // Assert
         Assert.IsTrue(children.Count > 0);
@@ -330,7 +328,7 @@ public class AppConfigTests
     {
         // Arrange
         string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
-        AppConfig appConfig = new AppConfig
+        AppConfig appConfig = new()
         {
             Paths = new PathsConfig
             {
@@ -370,7 +368,7 @@ public class AppConfigTests
     [TestMethod]
     public void WithUnderlyingConfiguration_ShouldUseUnderlyingValues()
     {        // Arrange
-        Dictionary<string, string> configValues = new Dictionary<string, string>
+        Dictionary<string, string> configValues = new()
         {
             {"paths:notebook_vault_fullpath_root", "/config-vault"},
             {"paths:onedrive_resources_basepath", "/config-resources-base"},
@@ -390,7 +388,7 @@ public class AppConfigTests
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(configValues)
             .Build();        // Create test configuration using constructor with the real configuration
-        AppConfig appConfig = new AppConfig(configuration, _loggerMock.Object);// Act & Assert
+        AppConfig appConfig = new(configuration, _loggerMock.Object);// Act & Assert
         Assert.AreEqual("/config-vault", appConfig.Paths.NotebookVaultFullpathRoot);
         Assert.AreEqual("/config-resources", appConfig.Paths.OnedriveFullpathRoot);
         Assert.AreEqual("/config-logs", appConfig.Paths.LoggingDir);
@@ -405,7 +403,7 @@ public class AppConfigAdditionalTests
     [TestMethod]
     public void SetVideoExtensions_ShouldUpdateList()
     {
-        AppConfig appConfig = new AppConfig();
+        AppConfig appConfig = new();
         List<string> list = [".mp4", ".avi"];
         appConfig.SetVideoExtensions(list);
         CollectionAssert.AreEqual(list, appConfig.VideoExtensions);
@@ -421,7 +419,7 @@ public class AppConfigAdditionalTests
     [TestMethod]
     public void Exists_ShouldHandleJsonPropertyNameAndDirectProperty()
     {
-        AppConfig appConfig = new AppConfig
+        AppConfig appConfig = new()
         {
             Paths = new PathsConfig { LoggingDir = "logs" }
         };
@@ -432,7 +430,7 @@ public class AppConfigAdditionalTests
     [TestMethod]
     public void GetReloadToken_ShouldReturnToken()
     {
-        AppConfig appConfig = new AppConfig();
+        AppConfig appConfig = new();
         Microsoft.Extensions.Primitives.IChangeToken token = appConfig.GetReloadToken();
         Assert.IsNotNull(token);
     }
@@ -440,7 +438,7 @@ public class AppConfigAdditionalTests
     [TestMethod]
     public void Indexer_SetNestedAndDirectProperties_ShouldUpdateValues()
     {
-        AppConfig appConfig = new AppConfig();
+        AppConfig appConfig = new();
         appConfig["Paths:LoggingDir"] = "logs";
         appConfig["DebugEnabled"] = "true";
         Assert.AreEqual("logs", appConfig.Paths.LoggingDir);
@@ -450,7 +448,7 @@ public class AppConfigAdditionalTests
     [TestMethod]
     public void SetPropertyValue_ShouldHandleVariousTypes()
     {
-        AppConfig appConfig = new AppConfig();
+        AppConfig appConfig = new();
         appConfig["DebugEnabled"] = "true";
         appConfig["Paths:LoggingDir"] = "logs";
         appConfig["Paths:NotebookVaultFullpathRoot"] = "vault";

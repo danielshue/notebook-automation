@@ -49,13 +49,13 @@ public class AISummarizerAdditionalTests
         // Create a kernel with mock service that returns the expected response
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);
 
         string inputText = "Content to summarize";
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             ["course"] = "Test Course",
             ["type"] = "lecture_notes",
@@ -63,7 +63,7 @@ public class AISummarizerAdditionalTests
         };
         string promptName = "custom_prompt";
 
-        using CancellationTokenSource cts = new CancellationTokenSource();
+        using CancellationTokenSource cts = new();
         CancellationToken token = cts.Token;
 
         // Act
@@ -98,7 +98,7 @@ This is the actual content that follows YAML frontmatter.";
         // Create a kernel with mock service
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);
@@ -121,12 +121,12 @@ This is the actual content that follows YAML frontmatter.";
         // Create a kernel but it shouldn't be used since we have whitespace input
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);
 
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             ["content"] = "   \t\n  ",
             ["course"] = "Test Course"
@@ -149,7 +149,7 @@ This is the actual content that follows YAML frontmatter.";
         string expectedResponse = "Summary of large content";
 
         // Create a kernel with mock service
-        Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse); AISummarizer summarizer = new AISummarizer(
+        Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse); AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);
@@ -168,7 +168,7 @@ This is the actual content that follows YAML frontmatter.";
         // Arrange            // Create a test kernel
         Kernel kernel = TestKernelHelper.CreateTestKernel();
 
-        AISummarizer summarizer = new AISummarizer(_mockLogger.Object,
+        AISummarizer summarizer = new(_mockLogger.Object,
             _mockPromptService,
             kernel);
 
@@ -192,7 +192,7 @@ This is the actual content that follows YAML frontmatter.";
         // Create a kernel with mock service
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);
@@ -214,7 +214,7 @@ This is the actual content that follows YAML frontmatter.";
         // Create a kernel but it won't be used because there's no prompt service
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             null, // No prompt service
             kernel);

@@ -54,7 +54,7 @@ date-created: 2025-04-19";
         _appConfigMock = new Mock<AppConfig>();
 
         // Create the real config and set it up
-        AppConfig realConfig = new AppConfig
+        AppConfig realConfig = new()
         {
             Paths = new PathsConfig
             {
@@ -79,7 +79,7 @@ date-created: 2025-04-19";
     public void LoadTemplates_ValidMetadataFile_LoadsAllTemplates()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
+        MetadataTemplateManager templateManager = new(_loggerMock.Object, _testAppConfig);
 
         // Act
         List<string> templateTypes = templateManager.GetTemplateTypes();
@@ -93,7 +93,7 @@ date-created: 2025-04-19";
     public void GetTemplate_ExistingType_ReturnsTemplate()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
+        MetadataTemplateManager templateManager = new(_loggerMock.Object, _testAppConfig);
 
         // Act
         Dictionary<string, object> template = templateManager.GetTemplate("video-reference");
@@ -107,7 +107,7 @@ date-created: 2025-04-19";
     public void GetTemplate_NonExistentType_ReturnsNull()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
+        MetadataTemplateManager templateManager = new(_loggerMock.Object, _testAppConfig);
 
         // Act
         Dictionary<string, object> template = templateManager.GetTemplate("non-existent-type");
@@ -119,8 +119,8 @@ date-created: 2025-04-19";
     public void GetFilledTemplate_ProvidesValues_ReplacesPlaceholders()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
-        Dictionary<string, string> values = new Dictionary<string, string>
+        MetadataTemplateManager templateManager = new(_loggerMock.Object, _testAppConfig);
+        Dictionary<string, string> values = new()
         {
             { "title", "Custom Video Title" },
             { "date-created", "2025-05-25" }
@@ -139,8 +139,8 @@ date-created: 2025-04-19";
     public void EnhanceMetadataWithTemplate_VideoNote_AppliesVideoTemplate()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
-        Dictionary<string, object> metadata = new Dictionary<string, object>
+        MetadataTemplateManager templateManager = new(_loggerMock.Object, _testAppConfig);
+        Dictionary<string, object> metadata = new()
         {
             { "title", "Custom Video Title" },
             { "source_file", "c:/path/to/video.mp4" }
@@ -166,8 +166,8 @@ date-created: 2025-04-19";
     public void EnhanceMetadataWithTemplate_PdfNote_AppliesPdfTemplate()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new MetadataTemplateManager(_loggerMock.Object, _testAppConfig);
-        Dictionary<string, object> metadata = new Dictionary<string, object>
+        MetadataTemplateManager templateManager = new(_loggerMock.Object, _testAppConfig);
+        Dictionary<string, object> metadata = new()
         {
             { "title", "Custom PDF Title" },
             { "source_file", "c:/path/to/document.pdf" }

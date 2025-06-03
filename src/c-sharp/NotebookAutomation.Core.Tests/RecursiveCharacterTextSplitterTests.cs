@@ -27,7 +27,7 @@ public class RecursiveCharacterTextSplitterTests
     public void SplitText_WithEmptyText_ReturnsEmptyList()
     {
         // Arrange
-        RecursiveCharacterTextSplitter splitter = new RecursiveCharacterTextSplitter(_mockLogger.Object);
+        RecursiveCharacterTextSplitter splitter = new(_mockLogger.Object);
 
         // Act
         System.Collections.Generic.List<string> result = splitter.SplitText(string.Empty);
@@ -44,7 +44,7 @@ public class RecursiveCharacterTextSplitterTests
     public void SplitText_WithSmallText_ReturnsSingleChunk()
     {
         // Arrange
-        RecursiveCharacterTextSplitter splitter = new RecursiveCharacterTextSplitter(_mockLogger.Object, 1000);
+        RecursiveCharacterTextSplitter splitter = new(_mockLogger.Object, 1000);
         string smallText = "This is a small text that should fit in a single chunk.";
 
         // Act
@@ -100,10 +100,10 @@ public class RecursiveCharacterTextSplitterTests
     {
         // Arrange
         int maxTokens = 100;
-        RecursiveCharacterTextSplitter splitter = new RecursiveCharacterTextSplitter(_mockLogger.Object, maxTokens, 20);
+        RecursiveCharacterTextSplitter splitter = new(_mockLogger.Object, maxTokens, 20);
 
         // Create a large text with many paragraphs
-        System.Text.StringBuilder largeText = new System.Text.StringBuilder();
+        System.Text.StringBuilder largeText = new();
         for (int i = 0; i < 50; i++)
         {
             largeText.AppendLine($"This is paragraph {i + 1} with some content that should be considered as one logical unit.");

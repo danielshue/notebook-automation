@@ -8,13 +8,13 @@ namespace NotebookAutomation.Cli.Commands
     /// </summary>
     public static class ConfigValidation
     {
-        private static readonly string[] collection = new[] {
+        private static readonly string[] collection = [
                     "paths.onedrive_fullpath_root",
                     "paths.notebook_vault_fullpath_root",
                     "paths.metadata_file",
                     "paths.onedrive_resources_basepath",
                     "paths.logging_dir"
-                };
+                ];
 
         /// <summary>
         /// Validates that all required path values are present in the configuration.

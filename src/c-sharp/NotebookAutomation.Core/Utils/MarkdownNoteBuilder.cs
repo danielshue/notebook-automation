@@ -8,7 +8,7 @@ namespace NotebookAutomation.Core.Utils
     public class MarkdownNoteBuilder(ILogger? logger = null)
     {
         private readonly ILogger? _logger = logger;
-        private readonly YamlHelper _yamlHelper = new YamlHelper(logger);
+        private readonly YamlHelper _yamlHelper = new(logger);
 
         /// <summary>
         /// Builds a markdown note with only YAML frontmatter (no body).

@@ -56,10 +56,10 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_ReplacesTemplateVariables()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
         string template = "Hello {{name}}, welcome to {{course}}!";
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             { "name", "John" },
             { "course", "MBA Programming" }
@@ -79,10 +79,10 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesMissingVariables()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
         string template = "Hello {{name}}, welcome to {{course}}!";
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             { "name", "John" }
             // 'course' is intentionally missing
@@ -102,10 +102,10 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_IgnoresExtraVariables()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
         string template = "Hello {{name}}!";
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             { "name", "John" },
             { "course", "MBA Programming" } // Extra variable
@@ -125,8 +125,8 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesComplexTemplates()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
         string template = @"# 📝 Notes for {{course}}
 
 ## 🧩 Topics Covered in {{module}}
@@ -144,7 +144,7 @@ public class PromptTemplateServiceTests
 - {{takeaway1}}
 - {{takeaway2}}";
 
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             { "course", "Financial Management" },
             { "module", "Risk Assessment" },
@@ -179,13 +179,13 @@ public class PromptTemplateServiceTests
     public async Task LoadAndSubstituteAsync_LoadsTemplateAndSubstitutesVariables()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
         string templatePath = Path.Combine(_testFolder, "test_template.md");
         string templateContent = "Hello {{name}}, welcome to {{course}}!";
         await File.WriteAllTextAsync(templatePath, templateContent);
 
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             { "name", "John" },
             { "course", "MBA Programming" }
@@ -205,10 +205,10 @@ public class PromptTemplateServiceTests
     public async Task LoadAndSubstituteAsync_ReturnsEmptyStringWhenFileNotFound()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
         string nonExistentPath = Path.Combine(_testFolder, "non_existent.md");
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             { "name", "John" }
         };
@@ -237,8 +237,8 @@ public class PromptTemplateServiceTests
         // we're going to test the fallback to default templates
 
         // Arrange - Create a service with a mocked logger that we can verify
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
 
         // Act
         string result = await service.LoadTemplateAsync("non_existent_template");
@@ -264,8 +264,8 @@ public class PromptTemplateServiceTests
     public async Task LoadTemplateAsync_GetsCorrectDefaultTemplate()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
 
         // Act
         string chunkResult = await service.LoadTemplateAsync("chunk_summary_prompt");
@@ -324,7 +324,7 @@ public class PromptTemplateServiceTests
         );
 
         // Create service
-        TestablePromptTemplateService service = new TestablePromptTemplateService(_loggerMock.Object, promptsDir);
+        TestablePromptTemplateService service = new(_loggerMock.Object, promptsDir);
 
         // Act
         string result = await service.LoadTemplateAsyncWithPath("test_template");
@@ -343,7 +343,7 @@ public class PromptTemplateServiceTests
         // for testing purposes.
 
         // Arrange
-        TestablePromptTemplateService service = new TestablePromptTemplateService(_loggerMock.Object, _testFolder);
+        TestablePromptTemplateService service = new(_loggerMock.Object, _testFolder);
 
         // Act
         string chunkTemplate = service.GetDefaultTemplateForTest("chunk_summary_prompt");
@@ -378,8 +378,8 @@ public class PromptTemplateServiceTests
         string templatePath = Path.Combine(promptsDir, "welcome_template.md");
         await File.WriteAllTextAsync(templatePath, templateContent);
 
-        TestablePromptTemplateService service = new TestablePromptTemplateService(_loggerMock.Object, promptsDir);
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        TestablePromptTemplateService service = new(_loggerMock.Object, promptsDir);
+        Dictionary<string, string> variables = new()
         {
             { "name", "John" },
             { "course", "Advanced Financial Management" }
@@ -400,11 +400,11 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesNestedVariables()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
         string template = "Hello {{name}}, your course is {{course}}";
 
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             { "name", "John" },
             { "course", "MBA {{specialization}}" } // This contains another variable marker
@@ -417,7 +417,7 @@ public class PromptTemplateServiceTests
         Assert.AreEqual("Hello John, your course is MBA {{specialization}}", result);
 
         // Now if we substitute again with the specialization
-        Dictionary<string, string> moreVariables = new Dictionary<string, string>
+        Dictionary<string, string> moreVariables = new()
         {
             { "specialization", "Finance" }
         };
@@ -433,11 +433,11 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesWhitespaceInVariableNames()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
         string template = "Hello {{  name  }}, welcome to {{ course}}!";
 
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             { "name", "John" },
             { "course", "MBA Program" }
@@ -455,8 +455,8 @@ public class PromptTemplateServiceTests
     public async Task LoadTemplateAsync_HandlesExceptions()
     {
         // Arrange - Create a mock FileSystem that throws an exception
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
 
         // We need to use a path that will cause an exception
         // In this case, we'll use a path with invalid characters
@@ -491,11 +491,11 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesMultilingualContent()
     {
         // Arrange
-        AppConfig config = new AppConfig();
-        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, config);
+        AppConfig config = new();
+        PromptTemplateService service = new(_loggerMock.Object, config);
         string template = "{{greeting}}, {{name}}! {{message}}";
 
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             { "greeting", "你好" }, // Chinese
             { "name", "João" },     // Portuguese name

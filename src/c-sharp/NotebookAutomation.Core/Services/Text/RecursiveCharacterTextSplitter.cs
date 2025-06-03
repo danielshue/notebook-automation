@@ -71,13 +71,13 @@ namespace NotebookAutomation.Core.Services.Text
                 (MyRegex(), 10),
                 
                 // Code blocks (try to keep complete code blocks together)
-                (new Regex(@"```[\s\S]*?```", RegexOptions.Multiline), 20),
+                (MyRegex1(), 20),
                 
                 // Bulleted lists (try to keep list items together)
-                (new Regex(@"^\s*[-*+]\s+.+$", RegexOptions.Multiline), 15),
+                (MyRegex2(), 15),
                 
                 // Numbered lists (try to keep list items together)
-                (new Regex(@"^\s*\d+\.\s+.+$", RegexOptions.Multiline), 15)
+                (MyRegex3(), 15)
             ];
         }
 
@@ -510,5 +510,11 @@ namespace NotebookAutomation.Core.Services.Text
 
         [GeneratedRegex(@"^\s*(#{1,6})\s+.+$", RegexOptions.Multiline)]
         private static partial Regex MyRegex();
+        [GeneratedRegex(@"```[\s\S]*?```", RegexOptions.Multiline)]
+        private static partial Regex MyRegex1();
+        [GeneratedRegex(@"^\s*[-*+]\s+.+$", RegexOptions.Multiline)]
+        private static partial Regex MyRegex2();
+        [GeneratedRegex(@"^\s*\d+\.\s+.+$", RegexOptions.Multiline)]
+        private static partial Regex MyRegex3();
     }
 }

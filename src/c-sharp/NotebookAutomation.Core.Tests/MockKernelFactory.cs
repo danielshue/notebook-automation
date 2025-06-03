@@ -17,7 +17,7 @@ public static class MockKernelFactory
     public static Kernel CreateKernelWithMockService(string response = "Mock AI response")
     {
         // Create our mock text generation service
-        SimpleTextGenerationService mockService = new SimpleTextGenerationService
+        SimpleTextGenerationService mockService = new()
         {
             Response = response
         };
