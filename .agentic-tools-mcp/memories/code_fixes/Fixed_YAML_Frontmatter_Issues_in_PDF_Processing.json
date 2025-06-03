@@ -1,0 +1,8 @@
+{
+  "id": "bc19418e-28f8-487c-baf5-a1ae1c326343",
+  "title": "Fixed YAML Frontmatter Issues in PDF Processing",
+  "details": "Fixed issues with YAML frontmatter in PDF processing:\n\n1. Fixed the duplicate \"---\" separator issue:\n   - Modified YamlHelper.UpdateFrontmatter and CreateMarkdownWithFrontmatter to ensure proper formatting with a single set of separators\n   - Changed BuildYamlFrontmatter in PdfNoteProcessor to return only the YAML content without separators\n\n2. Made sure all required fields are included in the frontmatter:\n   - template-type: pdf-reference\n   - auto-generated-state: writable\n   - author (derived from authors field)\n   - module (empty if not available)\n   - lesson (empty if not available)\n   - comprehension: 0\n   - completion-date (empty)\n   - date-review (empty)\n   - onedrive-shared-link (empty if not available)\n   - onedrive_fullpath_file_reference\n   - publisher: University of Illinois at Urbana-Champaign\n   - pdf-size\n   - pdf-uploaded\n\n3. Ensured unwanted fields are removed:\n   - aliases\n   - pdf-link\n   - permalink\n\n4. Fixed how the frontmatter is passed to the AI summarizer:\n   - Made sure the yaml-frontmatter variable doesn't include the \"---\" separators\n   - Properly handled the field in GeneratePdfSummaryAsync\n\nThese changes ensure consistent YAML frontmatter in the generated markdown files with proper formatting and all required fields.",
+  "category": "code_fixes",
+  "dateCreated": "2025-06-02T21:19:19.451Z",
+  "dateUpdated": "2025-06-02T21:19:19.451Z"
+}

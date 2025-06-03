@@ -33,8 +33,7 @@
       "endpoint": "http://localhost:8000/v1/chat/completions",
       "model": "foundry-llm-model-name"
     }
-  },
-  "video_extensions": [
+  },  "video_extensions": [
     ".mp4",
     ".mov",
     ".avi",
@@ -44,5 +43,8 @@
     ".mpg",
     ".mpeg",
     ".m4v"
+  ],
+  "pdf_extensions": [
+    ".pdf"
   ]
 }

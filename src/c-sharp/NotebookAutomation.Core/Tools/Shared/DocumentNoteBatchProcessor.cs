@@ -1,11 +1,53 @@
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Utils;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tools.Shared
 {
+    /// <summary>
+    /// Represents the progress of document processing, including the current file and status.
+    /// </summary>
+    public class DocumentProcessingProgressEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets the path of the file being processed.
+        /// </summary>
+        public string FilePath { get; }
+        
+        /// <summary>
+        /// Gets the current processing status message.
+        /// </summary>
+        public string Status { get; }
+        
+        /// <summary>
+        /// Gets the current file index being processed.
+        /// </summary>
+        public int CurrentFile { get; }
+        
+        /// <summary>
+        /// Gets the total number of files to process.
+        /// </summary>
+        public int TotalFiles { get; }
+        
+        /// <summary>
+        /// Initializes a new instance of the DocumentProcessingProgressEventArgs class.
+        /// </summary>
+        /// <param name="filePath">The path of the file being processed.</param>
+        /// <param name="status">The current processing status message.</param>
+        /// <param name="currentFile">The current file index being processed.</param>
+        /// <param name="totalFiles">The total number of files to process.</param>
+        public DocumentProcessingProgressEventArgs(string filePath, string status, int currentFile, int totalFiles)
+        {
+            FilePath = filePath;
+            Status = status;
+            CurrentFile = currentFile;
+            TotalFiles = totalFiles;
+        }
+    }
+
     /// <summary>
     /// Generic batch processor for document note processors (PDF, video, etc.).
     /// Handles file discovery, error handling, and output for any DocumentNoteProcessorBase subclass.
@@ -15,6 +57,23 @@ namespace NotebookAutomation.Core.Tools.Shared
         private readonly ILogger<DocumentNoteBatchProcessor<TProcessor>> _logger;
         private readonly TProcessor _processor;
         private readonly AISummarizer _aiSummarizer;
+        
+        /// <summary>
+        /// Event triggered when processing progress changes.
+        /// </summary>
+        public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged;
+        
+        /// <summary>
+        /// Raises the ProcessingProgressChanged event.
+        /// </summary>
+        /// <param name="filePath">The path of the file being processed.</param>
+        /// <param name="status">The current processing status message.</param>
+        /// <param name="currentFile">The current file index being processed.</param>
+        /// <param name="totalFiles">The total number of files to process.</param>
+        protected virtual void OnProcessingProgressChanged(string filePath, string status, int currentFile, int totalFiles)
+        {
+            ProcessingProgressChanged?.Invoke(this, new DocumentProcessingProgressEventArgs(filePath, status, currentFile, totalFiles));
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DocumentNoteBatchProcessor{TProcessor}"/> class.
@@ -111,7 +170,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                 {
                     files.AddRange(Directory.GetFiles(effectiveInput, "*" + ext, SearchOption.AllDirectories));
                 }
-                _logger.LogInformation("Found {Count} files in directory: {Dir}", files.Count, effectiveInput);
+                _logger.LogInformationWithPath("Found {Count} files in directory: {FilePath}", effectiveInput, files.Count);
             }
             else if (File.Exists(effectiveInput) && fileExtensions.Exists(ext => effectiveInput.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
             {
@@ -156,12 +215,24 @@ namespace NotebookAutomation.Core.Tools.Shared
             var batchStopwatch = Stopwatch.StartNew();
             var totalSummaryTime = TimeSpan.Zero;
             var totalTokens = 0;
+            int fileIndex = 0;
+            int totalFiles = files.Count;
 
             foreach (var filePath in files)
             {
-                var fileStopwatch = Stopwatch.StartNew(); try
+                fileIndex++;
+                var fileStopwatch = Stopwatch.StartNew();
+                
+                // Send progress event
+                OnProcessingProgressChanged(
+                    filePath, 
+                    $"Processing file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}", 
+                    fileIndex, 
+                    totalFiles);
+                
+                try
                 {
-                    _logger.LogInformation("Processing file: {FilePath}", filePath);
+                    _logger.LogInformationWithPath("Processing file: {FilePath}", filePath);
                     string outputDir = effectiveOutput ?? "Generated";
                     Directory.CreateDirectory(outputDir);
 
@@ -178,16 +249,28 @@ namespace NotebookAutomation.Core.Tools.Shared
                     // If not forceOverwrite and file exists, skip
                     if (!forceOverwrite && File.Exists(outputPath))
                     {
-                        _logger.LogWarning("Output file exists and --force not set, skipping: {OutputPath}", outputPath);
+                        _logger.LogWarningWithPath("Output file exists and --force not set, skipping: {FilePath}", outputPath);
                         continue;
-                    }
-
-                    // Extraction and note generation
+                    }                    // Extraction and note generation
+                    OnProcessingProgressChanged(
+                        filePath, 
+                        $"Extracting content from file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}", 
+                        fileIndex, 
+                        totalFiles);
+                        
                     var (text, metadata) = await _processor.ExtractTextAndMetadataAsync(filePath);
+                    
+                    // Update progress with content length information
+                    OnProcessingProgressChanged(
+                        filePath, 
+                        $"Extracted {text.Length:N0} characters from file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}", 
+                        fileIndex, 
+                        totalFiles);
+                        
                     if (!string.IsNullOrWhiteSpace(effectiveResourcesRoot))
                     {
                         metadata["resources_root"] = effectiveResourcesRoot;
-                    }                    // If this is a VideoNoteProcessor, use the specialized method
+                    }// If this is a VideoNoteProcessor, use the specialized method
                     string markdown = string.Empty;
                     string summaryText = string.Empty;
                     int summaryTokens = 0;
@@ -236,12 +319,96 @@ namespace NotebookAutomation.Core.Tools.Shared
                     }                    // Use the base implementation for non-video processors or if video-specific method wasn't available
                     if (!usedVideoProcessor)
                     {
+                        // Check if this is a PdfNoteProcessor
+                        bool isPdfProcessor = typeof(TProcessor).Name.Contains("Pdf");
+                        
                         if (noSummary)
                         {
                             summaryText = string.Empty; // No summary when disabled
                         }
+                        else if (isPdfProcessor)
+                        {
+                            // Use reflection to call the specialized GeneratePdfSummaryAsync method
+                            var generateMethod = _processor.GetType().GetMethod("GeneratePdfSummaryAsync");
+                            if (generateMethod != null)
+                            {
+                                _logger.LogDebug("Using specialized GeneratePdfSummaryAsync method for PDF processing");
+                                
+                                // Update progress to show we're preparing for AI summary generation
+                                OnProcessingProgressChanged(
+                                    filePath, 
+                                    $"Analyzing PDF content for AI summary ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}", 
+                                    fileIndex, 
+                                    totalFiles);
+                                
+                                // Pass the metadata to the GeneratePdfSummaryAsync method
+                                var task = (Task<string>)generateMethod.Invoke(_processor,
+                                [
+                                    text,
+                                    metadata,
+                                    null // promptFileName
+                                ])!;
+
+                                summaryText = await task;
+                                
+                                // Update progress after summary generation
+                                OnProcessingProgressChanged(
+                                    filePath, 
+                                    $"AI summary generated for PDF ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}", 
+                                    fileIndex, 
+                                    totalFiles);
+                                
+                                // Estimate tokens
+                                var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                                if (estimateTokenMethod != null)
+                                {
+                                    var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, [summaryText]);
+                                    if (tokenResult != null)
+                                    {
+                                        summaryTokens = (int)tokenResult;
+                                        // Add token count to progress message
+                                        OnProcessingProgressChanged(
+                                            filePath, 
+                                            $"AI summary completed with {summaryTokens:N0} tokens ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}", 
+                                            fileIndex, 
+                                            totalFiles);
+                                    }
+                                }
+                            }                            else
+                            {
+                                _logger.LogWarning("PdfNoteProcessor found but GeneratePdfSummaryAsync method not available. Using base method.");
+                                
+                                // Update progress to show we're generating the AI summary
+                                OnProcessingProgressChanged(
+                                    filePath, 
+                                    $"Generating AI summary for file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}", 
+                                    fileIndex, 
+                                    totalFiles);
+                                    
+                                summaryText = await _processor.GenerateAiSummaryAsync(text);
+                                // Normal token estimation as fallback
+                                var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                                if (estimateTokenMethod != null)
+                                {
+                                    var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, [summaryText]);
+                                    if (tokenResult != null)
+                                    {
+                                        summaryTokens = (int)tokenResult;
+                                    }
+                                }
+                            }
+                        }
                         else
                         {
+                            // For other processors, use the standard GenerateAiSummaryAsync
+
+                            // Update progress to show we're generating the AI summary
+                            OnProcessingProgressChanged(
+                                filePath,
+                                $"Generating AI summary for file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}",
+                                fileIndex,
+                                totalFiles);
+
                             summaryText = await _processor.GenerateAiSummaryAsync(text);
                             var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                             if (estimateTokenMethod != null)
@@ -262,17 +429,24 @@ namespace NotebookAutomation.Core.Tools.Shared
                         markdown = _processor.GenerateMarkdownNote(summaryText, metadata, noteType, includeNoteTypeTitle: false);
                     }
 
+                    // Update progress to show markdown generation
+                    OnProcessingProgressChanged(
+                        filePath, 
+                        $"Generating markdown content ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}", 
+                        fileIndex, 
+                        totalFiles);
+
                     // Ensure markdown is initialized
                     if (markdown == null)
                     {
-                        _logger.LogError("Markdown generation failed for file: {FilePath}", filePath);
+                        _logger.LogErrorWithPath("Markdown generation failed for file: {FilePath}", filePath);
                         markdown = "Error generating markdown content";
                     }
 
                     summaryStopwatch.Stop();
                     totalSummaryTime += summaryStopwatch.Elapsed;
                     totalTokens += summaryTokens;
-                    _logger.LogInformation("Summary for file: {FilePath} took {ElapsedMs} ms, tokens: {Tokens}", filePath, summaryStopwatch.ElapsedMilliseconds, summaryTokens);                    // Check if existing file has readonly auto-generated-state
+                    _logger.LogInformationWithPath("Summary for file: {FilePath} took {ElapsedMs} ms, tokens: {Tokens}", filePath, summaryStopwatch.ElapsedMilliseconds, summaryTokens);                    // Check if existing file has readonly auto-generated-state
                     bool isReadOnly = false;
                     if (File.Exists(outputPath))
                     {
@@ -280,7 +454,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                         isReadOnly = yamlHelper.IsFileReadOnly(outputPath);
                         if (isReadOnly)
                         {
-                            _logger.LogInformation("Skipping file modification due to readonly auto-generated-state: {OutputPath}", outputPath);
+                            _logger.LogInformationWithPath("Skipping file modification due to readonly auto-generated-state: {FilePath}", outputPath);
                             continue; // Skip to next file
                         }
                     }
@@ -293,23 +467,41 @@ namespace NotebookAutomation.Core.Tools.Shared
 
                     if (!dryRun)
                     {
+                        // Update progress to show file writing
+                        OnProcessingProgressChanged(
+                            filePath, 
+                            $"Writing markdown to file ({fileIndex}/{totalFiles}): {Path.GetFileNameWithoutExtension(filePath)}.md", 
+                            fileIndex, 
+                            totalFiles);
+                            
                         await File.WriteAllTextAsync(outputPath, markdown);
-                        _logger.LogInformation("Markdown note saved to: {OutputPath}", outputPath);
+                        
+                        // Update progress after file is written
+                        OnProcessingProgressChanged(
+                            filePath, 
+                            $"Successfully saved markdown note ({fileIndex}/{totalFiles}): {Path.GetFileNameWithoutExtension(filePath)}.md", 
+                            fileIndex, 
+                            totalFiles);
+                            
+                        _logger.LogInformationWithPath("Markdown note saved to: {FilePath}", outputPath);
                     }
                     else
                     {
-                        _logger.LogInformation("[DRY RUN] Markdown note would be generated for: {FilePath}", filePath);
+                        _logger.LogInformationWithPath("[DRY RUN] Markdown note would be generated for: {FilePath}", filePath);
                     }
                     processed++;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to process file: {FilePath}", filePath);
+                    _logger.LogErrorWithPath(ex, "Failed to process file: {FilePath}", filePath);
                     failedFilesForRetry.Add(filePath);
                     failed++;
                 }
                 fileStopwatch.Stop();
-                _logger.LogInformation("Processing file: {FilePath} took {ElapsedMs} ms", filePath, fileStopwatch.ElapsedMilliseconds);
+                _logger.LogInformationWithPath("Processing file: {FilePath} took {ElapsedMs} ms", filePath, fileStopwatch.ElapsedMilliseconds);
+
+                // Report progress after each file
+                OnProcessingProgressChanged(filePath, "Processed", processed, files.Count);
             }
             batchStopwatch.Stop();
 
@@ -318,7 +510,7 @@ namespace NotebookAutomation.Core.Tools.Shared
             {
                 var failedListPath = Path.Combine(effectiveOutput ?? "Generated", failedFilesListName);
                 File.WriteAllLines(failedListPath, failedFilesForRetry);
-                _logger.LogInformation("Wrote failed file list to: {Path}", failedListPath);
+                _logger.LogInformationWithPath("Wrote failed file list to: {FilePath}", failedListPath);
             }
 
             _logger.LogInformation("Document processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);

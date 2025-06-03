@@ -81,10 +81,8 @@ namespace NotebookAutomation.Cli
             vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());
-            VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-
-            var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
-            pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);            var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
+            PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var markdownCommands = new MarkdownCommands(
                 loggerFactory.CreateLogger<MarkdownCommands>(),

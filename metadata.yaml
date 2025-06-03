@@ -157,9 +157,6 @@ onedrive-shared-link:
 # onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
 onedrive_fullpath_file_reference: 
 
-# pages: 1-10, 5-15, 20-25
-pages: 
-
 # publication-year: 2023
 publication-year:
 
@@ -191,34 +188,86 @@ video-size:
 video-uploaded:
 
 ---
+# Description: Links to a video file stored in OneDrive for improved sharing and accessibility.
+# template-type: video-reference | pdf-reference | case-studies-index | readings-index | resources-index | assignment-individual | assignment-group | assignment-quiz | note-case-study | resource-reading | pdf-reference
 template-type: pdf-reference
 
 # auto-generated-state: writable | read-only
 auto-generated-state: writable
-template-description: Reference to a PDF file in OneDrive.
-title: PDF Title
-type: reference
 
-# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4
+# type: note/video-note | note/case-study | resource/reading | assignment/individual | assignment/group | assignment/quiz | index
+type: note/case-study
+
+# title: PDF Title (populated automatically based off a friendly name of the PDF)
+title: 
+
+# The following fields are grouped and sorted as requested (with their comments):
+
+# authors: Author Names (array of names)
+authors:
+
+# program, course, class, module, lesson (grouped together)
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
+# module: Module Name (populated automatically)
+module:
+
+# lesson: Lesson Name (populated automatically)
+lesson:
+
+# comprehension: 0 | 1 | 2 | 3 | 4 | 5 (populated automatically)
+comprehension: 0
+
+# completion-date: YYYY-MM-DD (blank by default)
+completion-date:
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created: 
+
+# date-modified: YYYY-MM-DD  (blank by default)
+date-modified: 
+
+# date-review: YYYY-MM-DD (blank by default)
+date-review:
+
+# onedrive-shared-link: path/to/shared-link (populated automatically)
+onedrive-shared-link:
+
+# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
 onedrive_fullpath_file_reference: 
 
-# onedrive-sharing-link: path/to/sharing-link
-onedrive-sharing-link: 
+# publisher: Publisher Name
+publisher: University of Illinois at Urbana-Champaign
 
-program: Program Name
-course: Course Name
-class: Class Name
-date-created: YYYY-MM-DD
-tags:
-  - pdf
-  - reading
-  - course-materials
-pdf-uploaded: YYYY-MM-DD
-pdf-size: 1.23 MB
-status: unread
-completion-date: 
-review-date: 
-comprehension:
+# status: read | unread | in-progress
+status: unread 
+
+# tags: line separated tags (blank by default)
+#  - "tag1"
+#  - "tag2"
+#  - "tag3"
+tags: 
+
+# pdf-size: 0 MB
+pdf-size:
+
+# pdf-uploaded: YYYY-MM-DD (populated automatically)
+pdf-uploaded:
+
+# pdf-page-count: (populated automatically)
+page-count: 
+
+# pages: 1-10, 5-15, 20-25
+pages: 
+
 ---
 template-type: case-studies-index
 auto-generated-state: writable

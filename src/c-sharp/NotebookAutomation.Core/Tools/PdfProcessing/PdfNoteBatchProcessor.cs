@@ -41,6 +41,15 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
         private readonly DocumentNoteBatchProcessor<PdfNoteProcessor> _batchProcessor = batchProcessor ?? throw new ArgumentNullException(nameof(batchProcessor));
 
         /// <summary>
+        /// Event triggered when processing progress changes.
+        /// </summary>
+        public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
+        {
+            add => _batchProcessor.ProcessingProgressChanged += value;
+            remove => _batchProcessor.ProcessingProgressChanged -= value;
+        }
+
+        /// <summary>
         /// Processes one or more PDF files, generating markdown notes for each.
         /// </summary>
         /// <param name="input">Input file path or directory containing PDF files.</param>

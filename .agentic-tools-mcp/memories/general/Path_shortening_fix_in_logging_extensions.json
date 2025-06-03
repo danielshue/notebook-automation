@@ -1,0 +1,8 @@
+{
+  "id": "cc1b562c-47f8-414c-b766-ec1c5855daa3",
+  "title": "Path shortening fix in logging extensions",
+  "details": "I need to test the path shortening functionality in the logging extensions. This memory is created to record the changes made to fix the issue.\n\nI identified that the `PdfNoteProcessor` and `DocumentNoteBatchProcessor` classes were not using the specialized path-formatting extension methods (`LogInformationWithPath`, `LogWarningWithPath`, etc.) which are needed to properly shorten file paths in log messages when not in debug mode.\n\nThe changes included:\n1. Adding the appropriate using directive to the `DocumentNoteBatchProcessor.cs` file: `using NotebookAutomation.Core.Utils;`\n2. Replacing direct logging calls with the path-aware alternatives:\n   - `Logger.LogInformation(\"File: {Path}\", path)` → `Logger.LogInformationWithPath(\"File: {FilePath}\", path)`\n   - `Logger.LogError(\"File not found: {Path}\", path)` → `Logger.LogErrorWithPath(\"File not found: {FilePath}\", path)`\n   - etc.\n\nThe key distinction is that the specialized extension methods always accept the file path as the first parameter after the message template, and they expect the placeholder in the template to be named `{FilePath}` rather than a custom name.\n\nThis change ensures that file paths are properly shortened in log messages when the application is not running in debug mode, making logs cleaner and more readable.",
+  "category": "general",
+  "dateCreated": "2025-06-02T22:18:05.055Z",
+  "dateUpdated": "2025-06-02T22:18:05.055Z"
+}

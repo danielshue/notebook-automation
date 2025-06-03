@@ -46,13 +46,17 @@ namespace NotebookAutomation.Core.Configuration
         /// AI Service configuration section.
         /// </summary>
         [JsonPropertyName("aiservice")]
-        public AIServiceConfig AiService { get; set; } = new AIServiceConfig();
-
-        /// <summary>
+        public AIServiceConfig AiService { get; set; } = new AIServiceConfig();        /// <summary>
         /// List of video file extensions to process.
         /// </summary>
         [JsonPropertyName("video_extensions")]
         public List<string> VideoExtensions { get; set; } = [];
+
+        /// <summary>
+        /// List of PDF file extensions to process.
+        /// </summary>
+        [JsonPropertyName("pdf_extensions")]
+        public List<string> PdfExtensions { get; set; } = [".pdf"];
 
         /// <summary>
         /// Default constructor.
@@ -142,13 +146,22 @@ namespace NotebookAutomation.Core.Configuration
                                 Endpoint = aiSection.GetSection("foundry")["endpoint"] ?? string.Empty
                             }
                         };
-                    }
-
-                    // Load video extensions
+                    }                    // Load video extensions
                     var videoExtensionsSection = _underlyingConfiguration.GetSection("video_extensions");
                     if (videoExtensionsSection.Exists())
                     {
                         VideoExtensions = [.. videoExtensionsSection
+                            .GetChildren()
+                            .Select(x => x.Value)
+                            .Where(x => !string.IsNullOrEmpty(x))
+                            .Select(x => x!)];
+                    }
+
+                    // Load PDF extensions
+                    var pdfExtensionsSection = _underlyingConfiguration.GetSection("pdf_extensions");
+                    if (pdfExtensionsSection.Exists())
+                    {
+                        PdfExtensions = [.. pdfExtensionsSection
                             .GetChildren()
                             .Select(x => x.Value)
                             .Where(x => !string.IsNullOrEmpty(x))
@@ -168,12 +181,12 @@ namespace NotebookAutomation.Core.Configuration
                             PropertyNameCaseInsensitive = true
                         };
                         var loaded = JsonSerializer.Deserialize<AppConfig>(json, options);
-                        if (loaded != null)
-                        {
+                        if (loaded != null)                        {
                             Paths = loaded.Paths;
                             MicrosoftGraph = loaded.MicrosoftGraph;
                             AiService = loaded.AiService;
                             VideoExtensions = loaded.VideoExtensions;
+                            PdfExtensions = loaded.PdfExtensions;
                         }
                     }
                     else
@@ -343,12 +356,20 @@ namespace NotebookAutomation.Core.Configuration
                 _logger?.LogError(ex, $"Error saving configuration to {configPath}");
                 throw;
             }
-        }
-
-        public void SetVideoExtensions(List<string> list)
+        }        public void SetVideoExtensions(List<string> list)
         {
             _logger?.LogInformation($"Setting video extensions: {string.Join(", ", list)}");
             VideoExtensions = list ?? [];
+        }
+
+        /// <summary>
+        /// Sets the PDF file extensions to process.
+        /// </summary>
+        /// <param name="list">List of PDF file extensions.</param>
+        public void SetPdfExtensions(List<string> list)
+        {
+            _logger?.LogInformation($"Setting PDF extensions: {string.Join(", ", list)}");
+            PdfExtensions = list ?? [".pdf"];
         }
 
         /// <summary>
