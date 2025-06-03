@@ -47,8 +47,8 @@ namespace NotebookAutomation.Core.Configuration
         /// </summary>
         [JsonPropertyName("aiservice")]
         public AIServiceConfig AiService { get; set; } = new AIServiceConfig();        /// <summary>
-        /// List of video file extensions to process.
-        /// </summary>
+                                                                                       /// List of video file extensions to process.
+                                                                                       /// </summary>
         [JsonPropertyName("video_extensions")]
         public List<string> VideoExtensions { get; set; } = [];
 
@@ -181,7 +181,8 @@ namespace NotebookAutomation.Core.Configuration
                             PropertyNameCaseInsensitive = true
                         };
                         var loaded = JsonSerializer.Deserialize<AppConfig>(json, options);
-                        if (loaded != null)                        {
+                        if (loaded != null)
+                        {
                             Paths = loaded.Paths;
                             MicrosoftGraph = loaded.MicrosoftGraph;
                             AiService = loaded.AiService;
@@ -356,7 +357,8 @@ namespace NotebookAutomation.Core.Configuration
                 _logger?.LogError(ex, $"Error saving configuration to {configPath}");
                 throw;
             }
-        }        public void SetVideoExtensions(List<string> list)
+        }
+        public void SetVideoExtensions(List<string> list)
         {
             _logger?.LogInformation($"Setting video extensions: {string.Join(", ", list)}");
             VideoExtensions = list ?? [];

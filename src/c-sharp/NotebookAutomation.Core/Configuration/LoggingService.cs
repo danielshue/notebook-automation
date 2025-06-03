@@ -193,7 +193,8 @@ namespace NotebookAutomation.Core.Configuration
                 if (!Directory.Exists(loggingDir))
                 {
                     Directory.CreateDirectory(loggingDir);
-                }                var appAssemblyName = GetAssemblyName();
+                }
+                var appAssemblyName = GetAssemblyName();
                 var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;
                 var consoleMinLevel = debug ? LogEventLevel.Debug : LogEventLevel.Warning;
                 var date = DateTime.Now.ToString("yyyyMMdd");

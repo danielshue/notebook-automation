@@ -67,7 +67,8 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
-                await this.ExecuteOneDriveCommandAsync("list", path, null, config, debug, verbose, dryRun);            });
+                await this.ExecuteOneDriveCommandAsync("list", path, null, config, debug, verbose, dryRun);
+            });
 
             // Download command
             var downloadCommand = new Command("download", "TODO: Download a file from OneDrive");

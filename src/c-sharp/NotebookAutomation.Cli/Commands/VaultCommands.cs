@@ -41,7 +41,7 @@ namespace NotebookAutomation.Cli.Commands
         public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var pathArg = new Argument<string>("path", "Path to the vault directory");
-            var vaultCommand = new Command("vault", "Vault management commands");            var generateIndexCommand = new Command("generate-index", "TODO: Generate a vault index");
+            var vaultCommand = new Command("vault", "Vault management commands"); var generateIndexCommand = new Command("generate-index", "TODO: Generate a vault index");
             generateIndexCommand.AddArgument(pathArg);
             generateIndexCommand.SetHandler(async context =>
             {
@@ -61,7 +61,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 await this.ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun);
-            });            var ensureMetadataCommand = new Command("ensure-metadata", "TODO: Update YAML frontmatter with program/course/class metadata based on directory structure");
+            }); var ensureMetadataCommand = new Command("ensure-metadata", "TODO: Update YAML frontmatter with program/course/class metadata based on directory structure");
             ensureMetadataCommand.AddArgument(pathArg);
             ensureMetadataCommand.SetHandler(async context =>
             {

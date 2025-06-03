@@ -35,13 +35,13 @@ namespace NotebookAutomation.Cli.Commands
             _logger = logger;
             _logger.LogInformationWithPath("PDF command initialized", "PdfCommands.cs");
         }        /// <summary>
-        /// Registers the 'pdf-notes' command with the root command.
-        /// </summary>
-        /// <param name="rootCommand">The root command to add PDF processing commands to.</param>
-        /// <param name="configOption">The global config file option.</param>
-        /// <param name="debugOption">The global debug option.</param>
-        /// <param name="verboseOption">The global verbose output option.</param>
-        /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
+                 /// Registers the 'pdf-notes' command with the root command.
+                 /// </summary>
+                 /// <param name="rootCommand">The root command to add PDF processing commands to.</param>
+                 /// <param name="configOption">The global config file option.</param>
+                 /// <param name="debugOption">The global debug option.</param>
+                 /// <param name="verboseOption">The global verbose output option.</param>
+                 /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
         public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
         {
             var inputOption = new Option<string?>(
@@ -304,11 +304,11 @@ namespace NotebookAutomation.Cli.Commands
                 try
                 {
                     // Hook up progress events to update the spinner
-                    batchProcessor.ProcessingProgressChanged += (sender, e) => 
+                    batchProcessor.ProcessingProgressChanged += (sender, e) =>
                     {
                         AnsiConsoleHelper.UpdateSpinnerMessage(e.Status);
                     };
-                    
+
                     var result = await batchProcessor.ProcessPdfsAsync(
                         // Use the input from command line
                         input,
@@ -342,6 +342,7 @@ namespace NotebookAutomation.Cli.Commands
                 }
             });
 
-            rootCommand.AddCommand(pdfCommand);        }
+            rootCommand.AddCommand(pdfCommand);
+        }
     }
 }

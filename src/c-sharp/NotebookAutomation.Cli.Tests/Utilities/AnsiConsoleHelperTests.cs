@@ -3,6 +3,7 @@ using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Cli.Utilities;
 using System.IO;
+using System.Threading;
 
 namespace NotebookAutomation.Cli.Tests.Utilities
 {
@@ -26,14 +27,22 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         [TestCleanup]
         public void Cleanup()
         {
+            // Give Spectre.Console time to finish writing before disposing
+            Thread.Sleep(100);
             Console.SetOut(_originalOut!);
-            _stringWriter?.Dispose();
-        }
 
+            // Don't dispose the StringWriter immediately - let GC handle it
+            // This prevents ObjectDisposedException when Spectre.Console tries to write asynchronously
+            _stringWriter = null;
+        }
         [TestMethod]
         public void WriteUsage_PrintsUsageWithColors()
         {
             AnsiConsoleHelper.WriteUsage("usage", "desc", "opts");
+
+            // Give Spectre.Console time to write
+            Thread.Sleep(50);
+
             var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("usage"));
             Assert.IsTrue(output.Contains("desc"));
@@ -44,14 +53,21 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteInfo_PrintsInfoWithColors()
         {
             AnsiConsoleHelper.WriteInfo("info message");
+
+            // Give Spectre.Console time to write
+            Thread.Sleep(50);
+
             var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("info message"));
         }
-
         [TestMethod]
         public void WriteWarning_PrintsWarningWithColors()
         {
             AnsiConsoleHelper.WriteWarning("warn message");
+
+            // Give Spectre.Console time to write
+            Thread.Sleep(50);
+
             var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("warn message"));
         }
@@ -60,6 +76,10 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteError_PrintsErrorWithColors()
         {
             AnsiConsoleHelper.WriteError("error message");
+
+            // Give Spectre.Console time to write
+            Thread.Sleep(50);
+
             var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("error message"));
         }
@@ -68,6 +88,10 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteSuccess_PrintsSuccessWithColors()
         {
             AnsiConsoleHelper.WriteSuccess("success message");
+
+            // Give Spectre.Console time to write
+            Thread.Sleep(50);
+
             var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("success message"));
         }
@@ -76,6 +100,10 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteHeading_PrintsHeadingWithColors()
         {
             AnsiConsoleHelper.WriteHeading("heading");
+
+            // Give Spectre.Console time to write
+            Thread.Sleep(50);
+
             var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("heading"));
         }
@@ -84,6 +112,10 @@ namespace NotebookAutomation.Cli.Tests.Utilities
         public void WriteKeyValue_PrintsKeyValueWithColors()
         {
             AnsiConsoleHelper.WriteKeyValue("key", "value");
+
+            // Give Spectre.Console time to write
+            Thread.Sleep(50);
+
             var output = _stringWriter!.ToString();
             Assert.IsTrue(output.Contains("key:"));
             Assert.IsTrue(output.Contains("value"));
