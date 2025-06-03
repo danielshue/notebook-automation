@@ -793,7 +793,7 @@ namespace NotebookAutomation.Core.Configuration
                 // This is a simplified implementation
                 // In a real scenario, you would query the underlying configuration 
                 // to get the actual child keys
-                return new List<string>();
+                return [];
             }
 
             public IChangeToken GetReloadToken() => _configuration.GetReloadToken();

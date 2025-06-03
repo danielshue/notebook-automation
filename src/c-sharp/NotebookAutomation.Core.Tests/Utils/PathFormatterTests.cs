@@ -123,7 +123,7 @@ public class PathFormatterTests
     {
         // Arrange
         string logMessage = null;
-        MockLogger<PathFormatterTests> logger = new MockLogger<PathFormatterTests>((level, msg) => logMessage = msg);
+        MockLogger<PathFormatterTests> logger = new((level, msg) => logMessage = msg);
         string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";            // Act
         NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(
             logger,
@@ -144,7 +144,7 @@ public class PathFormatterTests
     {
         // Arrange
         string logMessage = null;
-        MockLogger<PathFormatterTests> logger = new MockLogger<PathFormatterTests>((level, msg) => logMessage = msg);
+        MockLogger<PathFormatterTests> logger = new((level, msg) => logMessage = msg);
         string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
 
         // Act

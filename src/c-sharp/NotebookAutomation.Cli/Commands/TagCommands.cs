@@ -227,7 +227,7 @@ namespace NotebookAutomation.Cli.Commands
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                await this.ProcessUpdateFrontmatterAsync(path, key, value, config, debug, verbose, dryRun);
+                await ProcessUpdateFrontmatterAsync(path, key, value, config, debug, verbose, dryRun);
             });
 
 
@@ -397,7 +397,7 @@ namespace NotebookAutomation.Cli.Commands
         /// <param name="verbose">Whether verbose output is enabled.</param>
         /// <param name="dryRun">Whether to simulate without making changes.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        private async Task ProcessUpdateFrontmatterAsync(string path, string key, string value, string? configPath, bool debug, bool verbose, bool dryRun)
+        private static async Task ProcessUpdateFrontmatterAsync(string path, string key, string value, string? configPath, bool debug, bool verbose, bool dryRun)
         {
             try
             {

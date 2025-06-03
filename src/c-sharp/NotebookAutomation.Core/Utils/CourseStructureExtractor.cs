@@ -115,7 +115,7 @@ namespace NotebookAutomation.Core.Utils
         /// Extracts module and lesson information by analyzing numbered directory patterns.        /// </summary>
         /// <param name="dir">Starting directory to analyze.</param>
         /// <returns>A tuple with (module, lesson) information, where either may be null.</returns>
-        private (string? module, string? lesson) ExtractByNumberedPattern(DirectoryInfo dir)
+        private static (string? module, string? lesson) ExtractByNumberedPattern(DirectoryInfo dir)
         {
             string? module = null;
             string? lesson = null;
@@ -192,13 +192,17 @@ namespace NotebookAutomation.Core.Utils
         public static string CleanModuleOrLessonName(string folderName)
         {
             // Remove numbering prefix (e.g., 01_, 02-, etc.), replace hyphens/underscores, title case
-            string clean = Regex.Replace(folderName, @"^\d+[_-]?", "");
+            string clean = MyRegex1().Replace(folderName, "");
             clean = clean.Replace("-", " ").Replace("_", " ");
-            clean = Regex.Replace(clean, @"\s+", " ").Trim();
+            clean = MyRegex2().Replace(clean, " ").Trim();
             return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(clean);
         }
 
         [GeneratedRegex(@"^(\d+)[_-]", RegexOptions.Compiled)]
         private static partial Regex MyRegex();
+        [GeneratedRegex(@"^\d+[_-]?")]
+        private static partial Regex MyRegex1();
+        [GeneratedRegex(@"\s+")]
+        private static partial Regex MyRegex2();
     }
 }

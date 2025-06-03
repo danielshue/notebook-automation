@@ -29,7 +29,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var videoCommands = new VideoCommands(_mockLogger.Object);
+            _ = new VideoCommands(_mockLogger.Object);
             VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Ensure DI is initialized for handler

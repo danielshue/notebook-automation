@@ -42,7 +42,7 @@ namespace NotebookAutomation.Core.Utils
         private readonly string _notebookVaultRoot = appConfig?.Paths?.NotebookVaultFullpathRoot
                 ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
         private readonly string? _programOverride = programOverride;
-        private readonly YamlHelper _yamlHelper = new YamlHelper(logger);
+        private readonly YamlHelper _yamlHelper = new(logger);
         private readonly bool _verbose = verbose;
 
         /// <summary>

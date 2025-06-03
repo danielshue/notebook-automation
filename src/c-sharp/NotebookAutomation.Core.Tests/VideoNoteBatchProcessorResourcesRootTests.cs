@@ -36,7 +36,7 @@ public class VideoNoteBatchProcessorResourcesRootTests
         _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
 
         // Create a TestableAISummarizer that can be used in tests
-        TestableAISummarizer testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());            // Create a mock for IOneDriveService
+        TestableAISummarizer testAISummarizer = new(Mock.Of<ILogger<AISummarizer>>());            // Create a mock for IOneDriveService
         IOneDriveService mockOneDriveService = Mock.Of<IOneDriveService>();            // Set up mock with test dependencies (add the optional AppConfig parameter)
         _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
             MockBehavior.Loose,
@@ -47,7 +47,7 @@ public class VideoNoteBatchProcessorResourcesRootTests
 
         // Create a custom batch processor that will directly create a file with the resourcesRoot
         // so we can test that the parameter is being passed correctly
-        Mock<DocumentNoteBatchProcessor<VideoNoteProcessor>> mockBatchProcessor = new Mock<DocumentNoteBatchProcessor<VideoNoteProcessor>>(
+        Mock<DocumentNoteBatchProcessor<VideoNoteProcessor>> mockBatchProcessor = new(
             _loggerMock.Object,
             _videoNoteProcessorMock.Object,
             testAISummarizer);

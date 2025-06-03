@@ -186,7 +186,7 @@ public class TagProcessorTests
     public async Task UpdateFrontmatterKeyAsync_DryRun_DoesNotModifyFiles()
     {
         // Arrange
-        TagProcessor dryRunProcessor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, true, true); // true = dryRun
+        TagProcessor dryRunProcessor = new(_loggerMock.Object, _failedLoggerMock.Object, true, true); // true = dryRun
         string filePath = Path.Combine(_tempDir, "test.md");
         string originalContent = await File.ReadAllTextAsync(filePath);
 
@@ -218,22 +218,22 @@ public class TagProcessorTests
     public void GetExistingTags_WithDifferentFormats_ExtractsCorrectly()
     {
         // Arrange
-        Dictionary<string, object> frontmatterWithStringTags = new Dictionary<string, object>
+        Dictionary<string, object> frontmatterWithStringTags = new()
         {
             { "tags", "tag1, tag2, tag3" }
         };
 
-        Dictionary<string, object> frontmatterWithListTags = new Dictionary<string, object>
+        Dictionary<string, object> frontmatterWithListTags = new()
         {
             { "tags", new List<object> { "tag1", "tag2", "tag3" } }
         };
 
-        Dictionary<string, object> frontmatterWithEmptyTags = new Dictionary<string, object>
+        Dictionary<string, object> frontmatterWithEmptyTags = new()
         {
             { "tags", "" }
         };
 
-        Dictionary<string, object> frontmatterWithNoTags = new Dictionary<string, object>
+        Dictionary<string, object> frontmatterWithNoTags = new()
         {
             { "title", "No Tags" }
         };
@@ -254,7 +254,7 @@ public class TagProcessorTests
     public void GenerateNestedTags_WithDifferentFields_CreatesCorrectHierarchy()
     {
         // Arrange
-        Dictionary<string, object> frontmatter = new Dictionary<string, object>
+        Dictionary<string, object> frontmatter = new()
         {
             { "course", "Finance 101" },
             { "professor", "Dr. Jane Doe" },
@@ -615,7 +615,7 @@ semester: Fall 2025
         await File.WriteAllTextAsync(filePath, content);
 
         // Create a processor with custom fields to process
-        TagProcessor customFieldsProcessor = new TagProcessor(
+        TagProcessor customFieldsProcessor = new(
             _loggerMock.Object,
             _failedLoggerMock.Object,
             false,
@@ -842,7 +842,7 @@ type: Note
             "category", "platform", "technology", "level"
         ];
 
-        TagProcessor customProcessor = new TagProcessor(
+        TagProcessor customProcessor = new(
             _loggerMock.Object,
             _failedLoggerMock.Object,
             false,
@@ -915,7 +915,7 @@ level: Advanced
     public async Task ProcessDirectoryAsync_DryRun_LogsButDoesNotModify()
     {
         // Arrange
-        TagProcessor dryRunProcessor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, true, true);
+        TagProcessor dryRunProcessor = new(_loggerMock.Object, _failedLoggerMock.Object, true, true);
 
         string mainFile = Path.Combine(_tempDir, "dry_run_test.md");
         await File.WriteAllTextAsync(mainFile, @"---

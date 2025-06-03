@@ -5,11 +5,11 @@ namespace NotebookAutomation.Cli.Utilities
     /// </summary>
     public static class AnsiConsoleHelper
     {
-        private static readonly char[] SpinnerChars = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' };
+        private static readonly char[] SpinnerChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
         private static int _spinnerIndex = 0;
         private static bool _spinnerActive = false;
         private static CancellationTokenSource? _spinnerCancellation;
-        private static object _spinnerLock = new object();
+        private static readonly Lock _spinnerLock = new();
         private static string _currentSpinnerMessage = string.Empty;
 
         /// <summary>

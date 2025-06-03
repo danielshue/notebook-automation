@@ -29,7 +29,7 @@ public class VideoNoteProcessorNoSummaryTests
 
         // Create a mock AI summarizer with required dependencies
         ILogger<AISummarizer> mockAiLogger = new LoggerFactory().CreateLogger<AISummarizer>();
-        TestPromptTemplateService testPromptService = new TestPromptTemplateService();
+        TestPromptTemplateService testPromptService = new();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
         _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
 

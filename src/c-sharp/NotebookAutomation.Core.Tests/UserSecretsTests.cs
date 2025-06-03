@@ -43,7 +43,7 @@ public class UserSecretsTests
             IConfigurationRoot config = configBuilder.Build();
 
             // Act
-            UserSecretsHelper helper = new UserSecretsHelper(config);
+            UserSecretsHelper helper = new(config);
 
             // Assert
             Assert.AreEqual("test-openai-key", helper.GetOpenAIApiKey());
@@ -69,7 +69,7 @@ public class UserSecretsTests
         IConfigurationRoot config = new ConfigurationBuilder().Build();
 
         // Act
-        UserSecretsHelper helper = new UserSecretsHelper(config);
+        UserSecretsHelper helper = new(config);
 
         // Assert - should not throw exceptions
         Assert.IsNull(helper.GetOpenAIApiKey());

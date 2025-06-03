@@ -35,7 +35,7 @@ public class TokenProviderTests
         // Arrange
         ILogger logger = Mock.Of<ILogger>();
         Microsoft.Identity.Client.IPublicClientApplication msalApp = Mock.Of<Microsoft.Identity.Client.IPublicClientApplication>();
-        string[] scopes = new[] { "scope" };
+        string[] scopes = ["scope"];
 
         // Act & Assert
         Assert.ThrowsExactly<ArgumentNullException>(() =>

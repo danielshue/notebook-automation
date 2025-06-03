@@ -29,14 +29,14 @@ public class VideoNoteProcessorDITests
     {
         // Arrange
         NullLogger<VideoNoteProcessor> logger = NullLogger<VideoNoteProcessor>.Instance;
-        PromptTemplateService promptService = new PromptTemplateService(
+        PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
             new AppConfig());
-        AISummarizer aiSummarizer = new AISummarizer(
+        AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
-        VideoNoteProcessor processor = new VideoNoteProcessor(logger, aiSummarizer);
+        VideoNoteProcessor processor = new(logger, aiSummarizer);
 
         // Act - Using null OpenAI key should return simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text");
@@ -50,14 +50,14 @@ public class VideoNoteProcessorDITests
     {
         // Arrange
         NullLogger<VideoNoteProcessor> logger = NullLogger<VideoNoteProcessor>.Instance;
-        PromptTemplateService promptService = new PromptTemplateService(
+        PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
             new AppConfig());
-        AISummarizer aiSummarizer = new AISummarizer(
+        AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
-        VideoNoteProcessor processor = new VideoNoteProcessor(logger, aiSummarizer);
+        VideoNoteProcessor processor = new(logger, aiSummarizer);
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text");
         // Assert - fallback behavior should return simulated summary

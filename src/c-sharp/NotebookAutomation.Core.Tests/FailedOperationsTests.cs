@@ -18,10 +18,10 @@ public class FailedOperationsTests
     [TestMethod]
     public void RecordFailedFileOperation_WithException_LogsError()
     {
-        Mock<ILogger> mockLogger = new Mock<ILogger>();
+        Mock<ILogger> mockLogger = new();
         string filePath = "test.txt";
         string operation = "Read";
-        InvalidOperationException exception = new InvalidOperationException("fail!");
+        InvalidOperationException exception = new("fail!");
 
         FailedOperations.RecordFailedFileOperation(mockLogger.Object, filePath, operation, exception);
 
@@ -38,7 +38,7 @@ public class FailedOperationsTests
     [TestMethod]
     public void RecordFailedFileOperation_WithCustomError_LogsError()
     {
-        Mock<ILogger> mockLogger = new Mock<ILogger>();
+        Mock<ILogger> mockLogger = new();
         string filePath = "test.txt";
         string operation = "Write";
         string errorMessage = "custom error";
@@ -60,7 +60,7 @@ public class FailedOperationsTests
     {
         string filePath = "test.txt";
         string operation = "Delete";
-        Exception exception = new Exception("fail");
+        Exception exception = new("fail");
         Assert.ThrowsExactly<ArgumentNullException>(() =>
             FailedOperations.RecordFailedFileOperation(null, filePath, operation, exception));
     }

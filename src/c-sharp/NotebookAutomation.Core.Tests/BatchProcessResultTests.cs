@@ -36,8 +36,8 @@ public class BatchProcessResultTests
         _pdfLoggerMock = new Mock<ILogger<PdfNoteProcessor>>();
         _aiLoggerMock = new Mock<ILogger<AISummarizer>>();
         _aiSummarizerMock = new Mock<AISummarizer>(_aiLoggerMock.Object, null, null, null);
-        PdfNoteProcessor pdfNoteProcessor = new PdfNoteProcessor(_pdfLoggerMock.Object, _aiSummarizerMock.Object);
-        DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(_loggerMock.Object, pdfNoteProcessor, _aiSummarizerMock.Object);
+        PdfNoteProcessor pdfNoteProcessor = new(_pdfLoggerMock.Object, _aiSummarizerMock.Object);
+        DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor = new(_loggerMock.Object, pdfNoteProcessor, _aiSummarizerMock.Object);
         _processor = new PdfNoteBatchProcessor(batchProcessor);
         _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         _outputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

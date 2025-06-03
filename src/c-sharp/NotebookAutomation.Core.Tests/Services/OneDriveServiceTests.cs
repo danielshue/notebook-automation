@@ -23,25 +23,25 @@ public class OneDriveServiceTests
     public async Task AuthenticateAsync_UsesInjectedMsalApp_DoesNotLaunchBrowser()
     {
         // Arrange
-        Mock<ILogger<OneDriveService>> logger = new Mock<ILogger<OneDriveService>>();
-        Mock<Microsoft.Identity.Client.IPublicClientApplication> msalMock = new Mock<Microsoft.Identity.Client.IPublicClientApplication>();
-        Mock<Microsoft.Identity.Client.AcquireTokenSilentParameterBuilder> silentBuilderMock = new Mock<Microsoft.Identity.Client.AcquireTokenSilentParameterBuilder>(null, null, null);
-        Mock<Microsoft.Identity.Client.AcquireTokenInteractiveParameterBuilder> interactiveBuilderMock = new Mock<Microsoft.Identity.Client.AcquireTokenInteractiveParameterBuilder>(null, null);
+        Mock<ILogger<OneDriveService>> logger = new();
+        Mock<Microsoft.Identity.Client.IPublicClientApplication> msalMock = new();
+        Mock<Microsoft.Identity.Client.AcquireTokenSilentParameterBuilder> silentBuilderMock = new(null, null, null);
+        Mock<Microsoft.Identity.Client.AcquireTokenInteractiveParameterBuilder> interactiveBuilderMock = new(null, null);
         // Setup chained builder methods
         interactiveBuilderMock.Setup(b => b.WithPrompt(It.IsAny<Microsoft.Identity.Client.Prompt>())).Returns(interactiveBuilderMock.Object);
-        Mock<Microsoft.Identity.Client.IAccount> fakeAccount = new Mock<Microsoft.Identity.Client.IAccount>();
-        Mock<Microsoft.Identity.Client.AuthenticationResult> fakeResult = new Mock<Microsoft.Identity.Client.AuthenticationResult>(
+        Mock<Microsoft.Identity.Client.IAccount> fakeAccount = new();
+        Mock<Microsoft.Identity.Client.AuthenticationResult> fakeResult = new(
             "token", false, "user", DateTimeOffset.Now, DateTimeOffset.Now.AddHours(1),
             string.Empty, null, null, "Bearer", null, null, null, null, null, null);
 
         // Setup silent to throw UI required, then interactive to return fake result
         silentBuilderMock.Setup(b => b.ExecuteAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new Microsoft.Identity.Client.MsalUiRequiredException("code", "message"));
         interactiveBuilderMock.Setup(b => b.ExecuteAsync(It.IsAny<CancellationToken>())).ReturnsAsync(fakeResult.Object);
-        msalMock.Setup(m => m.GetAccountsAsync()).ReturnsAsync(new[] { fakeAccount.Object });
+        msalMock.Setup(m => m.GetAccountsAsync()).ReturnsAsync([fakeAccount.Object]);
         msalMock.Setup(m => m.AcquireTokenSilent(It.IsAny<string[]>(), It.IsAny<Microsoft.Identity.Client.IAccount>())).Returns(silentBuilderMock.Object);
         msalMock.Setup(m => m.AcquireTokenInteractive(It.IsAny<string[]>())).Returns(interactiveBuilderMock.Object);
 
-        OneDriveService service = new OneDriveService(logger.Object, "clientId", "tenantId", ["scope"], msalMock.Object);
+        OneDriveService service = new(logger.Object, "clientId", "tenantId", ["scope"], msalMock.Object);
 
         // Act
         await service.AuthenticateAsync();
@@ -58,7 +58,7 @@ public class OneDriveServiceTests
     public void Constructor_ThrowsOnNullArguments()
     {
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
-        string[] scopes = new[] { "scope" };
+        string[] scopes = ["scope"];
         Assert.ThrowsExactly<ArgumentNullException>(() =>
             new OneDriveService(null, "clientId", "tenantId", scopes));
         Assert.ThrowsExactly<ArgumentNullException>(() =>
@@ -73,8 +73,8 @@ public class OneDriveServiceTests
     [Ignore("Requires MSAL browser interaction or deeper refactor; skip in CI.")]
     public void SetForceRefresh_UpdatesStateAndLogs()
     {
-        Mock<ILogger<OneDriveService>> logger = new Mock<ILogger<OneDriveService>>();
-        OneDriveService service = new OneDriveService(logger.Object, "clientId", "tenantId", ["scope"]);
+        Mock<ILogger<OneDriveService>> logger = new();
+        OneDriveService service = new(logger.Object, "clientId", "tenantId", ["scope"]);
         service.SetForceRefresh(true);
         service.SetForceRefresh(false);
         logger.Verify(l => l.Log(
@@ -89,7 +89,7 @@ public class OneDriveServiceTests
     public void ConfigureVaultRoots_SetsTrimmedValues()
     {
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
-        OneDriveService service = new OneDriveService(logger, "clientId", "tenantId", ["scope"]);
+        OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         service.ConfigureVaultRoots("C:/vault/", "onedrive/root/");
         // No exception means success; further validation would require reflection or exposing properties for test
     }
@@ -98,7 +98,7 @@ public class OneDriveServiceTests
     public void MapLocalToOneDrivePath_ThrowsIfNotConfigured()
     {
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
-        OneDriveService service = new OneDriveService(logger, "clientId", "tenantId", ["scope"]);
+        OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         Assert.ThrowsExactly<InvalidOperationException>(() =>
             service.MapLocalToOneDrivePath("C:/vault/file.txt"));
     }
@@ -107,7 +107,7 @@ public class OneDriveServiceTests
     public void MapLocalToOneDrivePath_ThrowsIfPathNotUnderRoot()
     {
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
-        OneDriveService service = new OneDriveService(logger, "clientId", "tenantId", ["scope"]);
+        OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         service.ConfigureVaultRoots("C:/vault", "onedrive/root");
         Assert.ThrowsExactly<ArgumentException>(() =>
             service.MapLocalToOneDrivePath("C:/other/file.txt"));
@@ -117,7 +117,7 @@ public class OneDriveServiceTests
     public void MapLocalToOneDrivePath_ReturnsExpectedPath()
     {
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
-        OneDriveService service = new OneDriveService(logger, "clientId", "tenantId", ["scope"]);
+        OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         service.ConfigureVaultRoots("C:/vault", "onedrive/root");
         string file = System.IO.Path.Combine("C:/vault", "sub", "file.txt");
         string expected = "onedrive/root/sub/file.txt";
@@ -129,7 +129,7 @@ public class OneDriveServiceTests
     public void MapOneDriveToLocalPath_ThrowsIfNotConfigured()
     {
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
-        OneDriveService service = new OneDriveService(logger, "clientId", "tenantId", ["scope"]);
+        OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         Assert.ThrowsExactly<InvalidOperationException>(() =>
             service.MapOneDriveToLocalPath("onedrive/root/file.txt"));
     }
@@ -138,7 +138,7 @@ public class OneDriveServiceTests
     public void MapOneDriveToLocalPath_ThrowsIfPathNotUnderRoot()
     {
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
-        OneDriveService service = new OneDriveService(logger, "clientId", "tenantId", ["scope"]);
+        OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         service.ConfigureVaultRoots("C:/vault", "onedrive/root");
         Assert.ThrowsExactly<ArgumentException>(() =>
             service.MapOneDriveToLocalPath("otherroot/file.txt"));
@@ -148,7 +148,7 @@ public class OneDriveServiceTests
     public void MapOneDriveToLocalPath_ReturnsExpectedPath()
     {
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
-        OneDriveService service = new OneDriveService(logger, "clientId", "tenantId", ["scope"]);
+        OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         service.ConfigureVaultRoots("C:/vault", "onedrive/root");
         string result = service.MapOneDriveToLocalPath("onedrive/root/sub/file.txt");
         string expected = System.IO.Path.Combine("C:/vault", "sub", "file.txt");
@@ -159,7 +159,7 @@ public class OneDriveServiceTests
     public void SetCliOptions_SetsOptionsOrDefaults()
     {
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
-        OneDriveService service = new OneDriveService(logger, "clientId", "tenantId", ["scope"]);
+        OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         service.SetCliOptions(null); // Should not throw
         service.SetCliOptions(new OneDriveCliOptions()); // Should not throw
     }

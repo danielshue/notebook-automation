@@ -92,7 +92,7 @@ namespace NotebookAutomation.Cli
             markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var configCommands = new ConfigCommands();
-            configCommands.Register(rootCommand, configOption, debugOption);
+            ConfigCommands.Register(rootCommand, configOption, debugOption);
 
             var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>());
             oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

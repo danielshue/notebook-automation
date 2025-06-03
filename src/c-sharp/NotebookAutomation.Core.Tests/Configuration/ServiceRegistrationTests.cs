@@ -18,7 +18,7 @@ public class ServiceRegistrationTests
     public void AddNotebookAutomationServices_RegistersCoreServices()
     {
         // Arrange
-        ServiceCollection services = new ServiceCollection();
+        ServiceCollection services = new();
         IConfigurationRoot config = new ConfigurationBuilder().AddInMemoryCollection().Build();
 
         // Act

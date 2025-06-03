@@ -267,7 +267,7 @@ namespace NotebookAutomation.Core.Services
             {
                 _logger.LogWarning("Semantic kernel is not available for chunked summarization. Returning simulated summary.");
                 // Still call the chunking service to make sure the tests pass
-                List<string> chunks = _chunkingService.SplitTextIntoChunks(inputText, _maxChunkTokens, _overlapTokens);
+                _ = _chunkingService.SplitTextIntoChunks(inputText, _maxChunkTokens, _overlapTokens);
                 return "[Simulated AI summary]";
             }
 

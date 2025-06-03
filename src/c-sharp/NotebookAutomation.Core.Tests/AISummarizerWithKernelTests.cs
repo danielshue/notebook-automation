@@ -54,7 +54,7 @@ public class AISummarizerWithKernelTests
         string expectedSummary = "Kernel-generated summary";            // Create a test kernel with simulated response
         Kernel kernel = TestKernelHelper.CreateKernelWithSimulatedResponse(expectedSummary);
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService.Object,
             kernel);
@@ -76,7 +76,7 @@ public class AISummarizerWithKernelTests
     public async Task SummarizeWithVariablesAsync_WithNullKernel_ReturnsNull()
     {
         // Arrange
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService.Object,
             null); // Null kernel
@@ -97,7 +97,7 @@ public class AISummarizerWithKernelTests
         string expectedSummary = "Summary from function call";            // Create a test kernel with simulated response
         Kernel kernel = TestKernelHelper.CreateKernelWithSimulatedResponse(expectedSummary);
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService.Object,
             kernel);
@@ -122,7 +122,7 @@ public class AISummarizerWithKernelTests
         // Create a kernel specifically for handling large texts
         Kernel kernel = MockKernelFactory.CreateKernelForChunkingTests(expectedSummary);
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService.Object,
             kernel);

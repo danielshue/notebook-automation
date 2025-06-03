@@ -35,7 +35,8 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var configOption = new System.CommandLine.Option<string>("--config");
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-            var dryRunOption = new System.CommandLine.Option<bool>("--dry-run"); var pdfCommands = new PdfCommands(_mockLogger.Object);
+            var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
+            _ = new PdfCommands(_mockLogger.Object);
             PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var originalOut = Console.Out;

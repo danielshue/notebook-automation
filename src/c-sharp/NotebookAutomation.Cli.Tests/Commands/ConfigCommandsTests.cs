@@ -21,8 +21,8 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var rootCommand = new System.CommandLine.RootCommand();
             var configOption = new System.CommandLine.Option<string>("--config");
             var debugOption = new System.CommandLine.Option<bool>("--debug");
-            var configCommands = new ConfigCommands();
-            configCommands.Register(rootCommand, configOption, debugOption);
+            _ = new ConfigCommands();
+            ConfigCommands.Register(rootCommand, configOption, debugOption);
 
             var consoleOut = new System.IO.StringWriter();
             var originalOut = System.Console.Out;
@@ -50,7 +50,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         [TestMethod]
         public void PrintViewUsage_PrintsExpectedUsage()
         {
-            var configCommands = new ConfigCommands();
+            _ = new ConfigCommands();
             var originalOut = System.Console.Out;
             var stringWriter = new System.IO.StringWriter();
             System.Console.SetOut(stringWriter);
@@ -162,7 +162,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         [TestMethod]
         public void MaskSecret_ReturnsMaskedOrNotSet()
         {
-            var configCommands = new ConfigCommands();
+            _ = new ConfigCommands();
             var maskSecretMethod = typeof(ConfigCommands)
                 .GetMethod("MaskSecret", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             Assert.IsNotNull(maskSecretMethod);
@@ -221,7 +221,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         public void ConfigShow_NoArgs_PrintsUsage()
         {
             // Arrange
-            var configCommands = new ConfigCommands();
+            _ = new ConfigCommands();
             var originalOut = System.Console.Out;
             var stringWriter = new System.IO.StringWriter();
             System.Console.SetOut(stringWriter);
@@ -250,7 +250,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var configOption = new System.CommandLine.Option<string>("--config");
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var configCommands = new ConfigCommands();
-            configCommands.Register(rootCommand, configOption, debugOption);
+            ConfigCommands.Register(rootCommand, configOption, debugOption);
 
             // Act
             var configCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config") as System.CommandLine.Command;
@@ -280,7 +280,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var configCommands = new ConfigCommands();
 
             // Act
-            configCommands.Register(rootCommand, configOption, debugOption);
+            ConfigCommands.Register(rootCommand, configOption, debugOption);
 
             // Assert
             var configCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config");

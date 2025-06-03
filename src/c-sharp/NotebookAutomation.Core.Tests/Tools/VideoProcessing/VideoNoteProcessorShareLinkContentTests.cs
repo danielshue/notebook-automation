@@ -30,7 +30,7 @@ public class VideoNoteProcessorShareLinkContentTests
 
         // Create a real AISummarizer with test dependencies
         ILogger<AISummarizer> mockAiLogger = new LoggerFactory().CreateLogger<AISummarizer>();
-        TestPromptTemplateService testPromptService = new TestPromptTemplateService();
+        TestPromptTemplateService testPromptService = new();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
         _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
 
@@ -64,7 +64,7 @@ public class VideoNoteProcessorShareLinkContentTests
         .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
         .ReturnsAsync(shareLink);
 
-        VideoNoteProcessor processor = new VideoNoteProcessor(
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _oneDriveServiceMock.Object,
@@ -109,7 +109,7 @@ public class VideoNoteProcessorShareLinkContentTests
     public async Task GenerateVideoNoteAsync_WithNoShareLinks_DoesNotContainReferencesSection()
     {
         // Arrange
-        VideoNoteProcessor processor = new VideoNoteProcessor(
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _oneDriveServiceMock.Object,
@@ -146,7 +146,7 @@ public class VideoNoteProcessorShareLinkContentTests
             .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((string)null); // Simulate failed share link generation
 
-        VideoNoteProcessor processor = new VideoNoteProcessor(
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _oneDriveServiceMock.Object,

@@ -46,7 +46,7 @@ public class TextChunkingServiceTests
     public void SplitTextIntoChunks_LongText_ReturnsMultipleChunks()
     {
         // Arrange
-        string text = new string('A', 250); // 250 characters
+        string text = new('A', 250); // 250 characters
         int chunkSize = 100;
         int overlap = 20;
 
@@ -151,7 +151,7 @@ public class TextChunkingServiceTests
     public void SplitTextIntoChunks_ZeroOverlap_WorksCorrectly()
     {
         // Arrange
-        string text = new string('A', 200); // 200 characters
+        string text = new('A', 200); // 200 characters
         int chunkSize = 100;
         int overlap = 0;
 
@@ -275,7 +275,7 @@ public class TextChunkingServiceTests
     public void EstimateTokenCount_LargeText_ReturnsCorrectEstimate()
     {
         // Arrange
-        string text = new string('A', 10000); // 10,000 characters
+        string text = new('A', 10000); // 10,000 characters
         int expectedTokens = (int)Math.Ceiling(10000 / 4.0); // 2,500 tokens
 
         // Act
@@ -296,7 +296,7 @@ public class TextChunkingServiceTests
     public void SplitAndEstimate_Integration_WorksCorrectly()
     {
         // Arrange
-        string text = new string('A', 1000); // 1000 characters
+        string text = new('A', 1000); // 1000 characters
         int chunkSize = 400;
         int overlap = 50;
 

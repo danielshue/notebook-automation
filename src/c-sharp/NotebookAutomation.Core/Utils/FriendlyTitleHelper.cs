@@ -23,7 +23,7 @@ namespace NotebookAutomation.Core.Utils
             }
 
             // Replace dashes/underscores with spaces
-            name = Regex.Replace(name, "[_\\-]+", " ");            // Remove common structural words
+            name = MyRegex1().Replace(name, " ");            // Remove common structural words
             string[] wordsToRemove = [
                 @"\blesson\b", @"\blessons\b", @"\bmodule\b", @"\bmodules\b",
                 @"\bcourse\b", @"\bcourses\b",
@@ -33,7 +33,7 @@ namespace NotebookAutomation.Core.Utils
             name = Regex.Replace(name, pattern, " ", RegexOptions.IgnoreCase);
 
             // Clean up whitespace
-            name = Regex.Replace(name, "\\s+", " ").Trim();
+            name = MyRegex2().Replace(name, " ").Trim();
 
             // Use fallback for short titles
             if (name.Length < 3)
@@ -43,7 +43,7 @@ namespace NotebookAutomation.Core.Utils
             string titleCased = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name);
 
             // Fix Roman numerals ("Ii" to "II")
-            titleCased = Regex.Replace(titleCased, @"\bIi\b", "II");
+            titleCased = MyRegex3().Replace(titleCased, "II");
 
             // Fix known acronyms to all caps
             string[] knownAcronyms = ["CVP", "ROI", "KPI", "MBA", "CEO", "CFO", "COO", "CTO", "CIO", "CMO"];
@@ -64,5 +64,11 @@ namespace NotebookAutomation.Core.Utils
 
         [GeneratedRegex(@"^[0-9]+([_\-\s]+)", RegexOptions.IgnoreCase, "en-US")]
         private static partial Regex MyRegex();
+        [GeneratedRegex("[_\\-]+")]
+        private static partial Regex MyRegex1();
+        [GeneratedRegex("\\s+")]
+        private static partial Regex MyRegex2();
+        [GeneratedRegex(@"\bIi\b")]
+        private static partial Regex MyRegex3();
     }
 }

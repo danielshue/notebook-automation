@@ -88,8 +88,7 @@ internal class TestableAISummarizerForProtected : AISummarizer
 
         // Add an await to make it properly async
         await Task.Delay(1, cancellationToken);
-
-        List<string> chunks = chunkingService.SplitTextIntoChunks(inputText, 8000, 500);
+        _ = chunkingService.SplitTextIntoChunks(inputText, 8000, 500);
         return "[Simulated AI summary]";
     }
 

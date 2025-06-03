@@ -19,7 +19,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var rootCommand = new RootCommand();
             var configOption = new Option<string>("--config");
             var debugOption = new Option<bool>("--debug");
-            configCommands.Register(rootCommand, configOption, debugOption);
+            ConfigCommands.Register(rootCommand, configOption, debugOption);
             var displaySecrets = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config")
                 ?.Subcommands.FirstOrDefault(c => c.Name == "display-secrets") as Command;
             Assert.IsNotNull(displaySecrets, "display-secrets command should be registered");
@@ -34,7 +34,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var rootCommand = new RootCommand();
             var configOption = new Option<string>("--config");
             var debugOption = new Option<bool>("--debug");
-            configCommands.Register(rootCommand, configOption, debugOption);
+            ConfigCommands.Register(rootCommand, configOption, debugOption);
             var secrets = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config")
                 ?.Subcommands.FirstOrDefault(c => c.Name == "secrets") as Command;
             Assert.IsNotNull(secrets, "secrets command should be registered");

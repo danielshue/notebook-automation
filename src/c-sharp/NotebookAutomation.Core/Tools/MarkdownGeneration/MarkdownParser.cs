@@ -18,7 +18,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
     public partial class MarkdownParser(ILogger logger)
     {
         private readonly ILogger _logger = logger;
-        private readonly YamlHelper _yamlHelper = new YamlHelper(logger);
+        private readonly YamlHelper _yamlHelper = new(logger);
 
         /// <summary>
         /// Regular expression for detecting YAML frontmatter.
@@ -123,7 +123,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
                 return (0, string.Empty);
             }
 
-            var match = Regex.Match(headerLine, @"^(#+)\s+(.+)$");
+            var match = MyRegex1().Match(headerLine);
             if (!match.Success)
             {
                 return (0, headerLine.Trim());
@@ -189,5 +189,7 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration
 
         [GeneratedRegex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline)]
         private static partial Regex MyRegex();
+        [GeneratedRegex(@"^(#+)\s+(.+)$")]
+        private static partial Regex MyRegex1();
     }
 }

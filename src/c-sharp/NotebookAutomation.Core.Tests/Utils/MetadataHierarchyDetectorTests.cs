@@ -25,7 +25,7 @@ public class MetadataHierarchyDetectorTests
         _appConfigMock = new Mock<AppConfig>();
 
         // Create the real config and set it up
-        AppConfig realConfig = new AppConfig
+        AppConfig realConfig = new()
         {
             Paths = new PathsConfig
             {
@@ -47,7 +47,7 @@ public class MetadataHierarchyDetectorTests
         Directory.CreateDirectory(Path.GetDirectoryName(filePath));
         File.WriteAllText(filePath, "test file content");
 
-        MetadataHierarchyDetector detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
 
         // Act
         Dictionary<string, string> result = detector.FindHierarchyInfo(filePath);
@@ -74,7 +74,7 @@ public class MetadataHierarchyDetectorTests
         Directory.CreateDirectory(Path.GetDirectoryName(filePath));
         File.WriteAllText(filePath, "test file content");
 
-        MetadataHierarchyDetector detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
 
         // Act
         Dictionary<string, string> result = detector.FindHierarchyInfo(filePath);
@@ -94,15 +94,16 @@ public class MetadataHierarchyDetectorTests
     public void UpdateMetadataWithHierarchy_AddsHierarchyInfo()
     {
         // Arrange
-        MetadataHierarchyDetector detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        _ = new        // Arrange
+        MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
-        Dictionary<string, object> metadata = new Dictionary<string, object>
+        Dictionary<string, object> metadata = new()
         {
             { "title", "Test Video" },
             { "source_file", "c:/path/to/video.mp4" }
         };
 
-        Dictionary<string, string> hierarchyInfo = new Dictionary<string, string>
+        Dictionary<string, string> hierarchyInfo = new()
         {
             { "program", "MBA Program" },
             { "course", "Finance" },
@@ -121,9 +122,10 @@ public class MetadataHierarchyDetectorTests
     public void UpdateMetadataWithHierarchy_DoesNotOverrideExistingValues()
     {
         // Arrange
-        MetadataHierarchyDetector detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        _ = new        // Arrange
+        MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
-        Dictionary<string, object> metadata = new Dictionary<string, object>
+        Dictionary<string, object> metadata = new()
         {
             { "title", "Test Video" },
             { "source_file", "c:/path/to/video.mp4" },
@@ -131,7 +133,7 @@ public class MetadataHierarchyDetectorTests
             { "course", "Existing Course" }
         };
 
-        Dictionary<string, string> hierarchyInfo = new Dictionary<string, string>
+        Dictionary<string, string> hierarchyInfo = new()
         {
             { "program", "MBA Program" },
             { "course", "Finance" },

@@ -20,7 +20,7 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
     /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>    
     public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer) : DocumentNoteProcessorBase(logger, aiSummarizer)
     {
-        private readonly YamlHelper _yamlHelper = new YamlHelper(logger);
+        private readonly YamlHelper _yamlHelper = new(logger);
         private string _yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter
 
         /// <summary>
@@ -360,7 +360,9 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
             }
 
             // Make a copy to avoid modifying the original metadata
-            Dictionary<string, object> metadataCopy = new(metadata);
+            _ = new
+            // Make a copy to avoid modifying the original metadata
+            Dictionary<string, object>(metadata);
 
             Logger.LogInformationWithPath("Starting AI summarization process with prompt template: {FilePath}",
                 effectivePrompt);

@@ -44,7 +44,7 @@ public class SimpleTextGenerationService : ITextGenerationService
         // In a real service this would use the prompt to generate the response
         // For testing purposes, we just return the predefined response
         return Task.FromResult<IReadOnlyList<TextContent>>(
-            new[] { new TextContent(Response) });
+            [new TextContent(Response)]);
     }
 
     /// <summary>

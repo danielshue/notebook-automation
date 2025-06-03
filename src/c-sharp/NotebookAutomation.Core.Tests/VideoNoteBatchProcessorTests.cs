@@ -40,8 +40,8 @@ public class VideoNoteBatchProcessorTests
         _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
 
         // Create a proper TestableAISummarizer that can be used for testing
-        TestableAISummarizer testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());            // Create real VideoNoteProcessor instead of a mock
-        VideoNoteProcessor videoNoteProcessor = new VideoNoteProcessor(Mock.Of<ILogger<VideoNoteProcessor>>(), testAISummarizer, null, null);
+        TestableAISummarizer testAISummarizer = new(Mock.Of<ILogger<AISummarizer>>());            // Create real VideoNoteProcessor instead of a mock
+        VideoNoteProcessor videoNoteProcessor = new(Mock.Of<ILogger<VideoNoteProcessor>>(), testAISummarizer, null, null);
 
         _batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(_loggerMock.Object, videoNoteProcessor, testAISummarizer);
         _processor = new VideoNoteBatchProcessor(_batchProcessor);

@@ -276,7 +276,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             string content)
         {
             if (!frontmatter.ContainsKey("tags") &&
-                !frontmatter.Any(kv => kv.Key.ToLowerInvariant() == "tags"))
+                !frontmatter.Any(kv => kv.Key.Equals("tags", StringComparison.InvariantCultureIgnoreCase)))
             {
                 // No tags to clear
                 return false;
@@ -287,7 +287,7 @@ namespace NotebookAutomation.Core.Tools.TagManagement
 
             // Check for tags with different case
             var tagsKey = frontmatter.Keys
-                .FirstOrDefault(k => k.ToLowerInvariant() == "tags");
+                .FirstOrDefault(k => k.Equals("tags", StringComparison.InvariantCultureIgnoreCase));
 
             if (tagsKey != null)
             {
@@ -665,10 +665,10 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 { "FilesWithErrors", 0 }
             };
 
-            if (File.Exists(path) && Path.GetExtension(path).ToLowerInvariant() == ".md")
+            if (File.Exists(path) && Path.GetExtension(path).Equals(".md", StringComparison.InvariantCultureIgnoreCase))
             {
                 // Process a single file
-                bool success = await UpdateFrontmatterKeyInFileAsync(path, key, value);
+                _ = await UpdateFrontmatterKeyInFileAsync(path, key, value);
                 return Stats;
             }
             else if (Directory.Exists(path))

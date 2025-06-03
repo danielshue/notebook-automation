@@ -18,15 +18,15 @@ public class VideoNoteProcessorTests
     public async Task GenerateAiSummaryAsync_FallsBackToNewAISummarizer_WhenNotInjected()
     {
         // Arrange
-        Mock<ILogger<VideoNoteProcessor>> loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
-        PromptTemplateService promptService = new PromptTemplateService(
+        Mock<ILogger<VideoNoteProcessor>> loggerMock = new();
+        PromptTemplateService promptService = new(
             Mock.Of<ILogger<PromptTemplateService>>(),
             new AppConfig());
-        AISummarizer aiSummarizer = new AISummarizer(
+        AISummarizer aiSummarizer = new(
             Mock.Of<ILogger<AISummarizer>>(),
             promptService,
             null);
-        VideoNoteProcessor processor = new VideoNoteProcessor(loggerMock.Object, aiSummarizer);
+        VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer);
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text");
         // Assert - fallback behavior should return simulated summary

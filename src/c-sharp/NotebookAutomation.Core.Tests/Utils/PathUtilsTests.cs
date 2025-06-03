@@ -122,12 +122,12 @@ public class PathUtilsTests
     [TestMethod]
     public void GetCommonBasePath_ReturnsCommonPrefix()
     {
-        string[] paths = new[]
-        {
+        string[] paths =
+        [
             Path.Combine("C:", "Projects", "Test", "src", "a.txt"),
             Path.Combine("C:", "Projects", "Test", "src", "b.txt"),
             Path.Combine("C:", "Projects", "Test", "src", "sub", "c.txt")
-        };
+        ];
         string expected = Path.Combine("C:", "Projects", "Test", "src") + Path.DirectorySeparatorChar;
         Assert.AreEqual(expected, PathUtils.GetCommonBasePath(paths));
     }
@@ -135,22 +135,22 @@ public class PathUtilsTests
     [TestMethod]
     public void GetCommonBasePath_ReturnsEmpty_WhenNoCommonality()
     {
-        string[] paths = new[]
-        {
+        string[] paths =
+        [
             Path.Combine("C:", "A", "file1.txt"),
             Path.Combine("D:", "B", "file2.txt")
-        };
+        ];
         Assert.AreEqual(string.Empty, PathUtils.GetCommonBasePath(paths));
     }
 
     [TestMethod]
-    public void GetCommonBasePath_ReturnsEmpty_WhenEmptyInput() => Assert.AreEqual(string.Empty, PathUtils.GetCommonBasePath(Array.Empty<string>()));
+    public void GetCommonBasePath_ReturnsEmpty_WhenEmptyInput() => Assert.AreEqual(string.Empty, PathUtils.GetCommonBasePath([]));
 
     [TestMethod]
     public void GetCommonBasePath_ReturnsDir_WhenSinglePath()
     {
         string path = Path.Combine("C:", "Projects", "Test", "src", "a.txt");
         string expected = Path.GetDirectoryName(path) + Path.DirectorySeparatorChar;
-        Assert.AreEqual(expected, PathUtils.GetCommonBasePath(new[] { path }));
+        Assert.AreEqual(expected, PathUtils.GetCommonBasePath([path]));
     }
 }

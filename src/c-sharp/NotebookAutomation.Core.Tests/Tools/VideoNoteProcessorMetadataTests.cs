@@ -74,7 +74,7 @@ video-uploaded:";
 
         File.WriteAllText(_testMetadataFile, testMetadata);
 
-        PathsConfig mockPaths = new PathsConfig
+        PathsConfig mockPaths = new()
         {
             NotebookVaultFullpathRoot = _testVaultRoot,
             MetadataFile = _testMetadataFile
@@ -111,7 +111,7 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithPathBasedMetadata_AppliesHierarchyDetection()
     {
         // Arrange
-        VideoNoteProcessor processor = new VideoNoteProcessor(
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _oneDriveServiceMock.Object,
@@ -123,7 +123,7 @@ video-uploaded:";
         Directory.CreateDirectory(Path.GetDirectoryName(videoPath));
         File.WriteAllText(videoPath, "fake video content");
 
-        Dictionary<string, object> metadata = new Dictionary<string, object>
+        Dictionary<string, object> metadata = new()
         {
             { "title", "Test Video" },
             { "_internal_path", videoPath }
@@ -144,12 +144,12 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithTemplate_AppliesTemplateMetadata()
     {
         // Arrange
-        VideoNoteProcessor processor = new VideoNoteProcessor(
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _oneDriveServiceMock.Object,
             _appConfig
-        ); Dictionary<string, object> metadata = new Dictionary<string, object>
+        ); Dictionary<string, object> metadata = new()
         {
             { "title", "Test Video" },
             { "_internal_path", "c:/path/to/video.mp4" }
@@ -171,7 +171,7 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithTemplateAndHierarchy_AppliesBoth()
     {
         // Arrange
-        VideoNoteProcessor processor = new VideoNoteProcessor(
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _oneDriveServiceMock.Object,
@@ -181,7 +181,7 @@ video-uploaded:";
         string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
         // Create test video file
         Directory.CreateDirectory(Path.GetDirectoryName(videoPath));
-        File.WriteAllText(videoPath, "fake video content"); Dictionary<string, object> metadata = new Dictionary<string, object>
+        File.WriteAllText(videoPath, "fake video content"); Dictionary<string, object> metadata = new()
         {
             { "title", "Test Video" },
             { "_internal_path", videoPath }
@@ -207,7 +207,7 @@ video-uploaded:";
     public async Task ProcessVideoAsync_AppliesPathBasedMetadataAndTemplate()
     {
         // Arrange
-        VideoNoteProcessor processor = new VideoNoteProcessor(
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _oneDriveServiceMock.Object,
@@ -242,7 +242,7 @@ video-uploaded:";
     public async Task GenerateVideoNoteAsync_WithNoSummary_SuppressesBodyOutputsOnlyFrontmatter()
     {
         // Arrange
-        VideoNoteProcessor processor = new VideoNoteProcessor(
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _oneDriveServiceMock.Object,
@@ -285,7 +285,7 @@ video-uploaded:";
             .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(testShareLink);
 
-        VideoNoteProcessor processor = new VideoNoteProcessor(
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _oneDriveServiceMock.Object,

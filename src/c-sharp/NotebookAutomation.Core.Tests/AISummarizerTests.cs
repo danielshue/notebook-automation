@@ -43,7 +43,7 @@ public class AISummarizerTests
         // Arrange
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);
@@ -65,7 +65,7 @@ public class AISummarizerTests
         // Arrange
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);
@@ -88,7 +88,7 @@ public class AISummarizerTests
         string expectedResponse = "Summary of the basic text";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);
@@ -113,13 +113,13 @@ public class AISummarizerTests
         string expectedResponse = "Summary with variables";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);
 
         string inputText = "Text to summarize with variables";
-        Dictionary<string, string> variables = new Dictionary<string, string>
+        Dictionary<string, string> variables = new()
         {
             ["course"] = "Test Course",
             ["type"] = "lecture_notes"
@@ -140,7 +140,7 @@ public class AISummarizerTests
         // Arrange
         Kernel kernel = TestKernelHelper.CreateTestKernel();
 
-        AISummarizer summarizer = new AISummarizer(
+        AISummarizer summarizer = new(
             _mockLogger.Object,
             _mockPromptService,
             kernel);

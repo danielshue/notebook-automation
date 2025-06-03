@@ -74,12 +74,12 @@ public class TestSummarizerTests
         string promptsPath = Path.GetFullPath(Path.Combine(projectDir, "..", "..", "..", "..", "..", "prompts"));
 
         // Create AppConfig with paths
-        PathsConfig pathsConfig = new PathsConfig
+        PathsConfig pathsConfig = new()
         {
             PromptsPath = promptsPath
         };
 
-        AppConfig appConfig = new AppConfig()
+        AppConfig appConfig = new()
         {
             Paths = pathsConfig
         };
@@ -90,7 +90,9 @@ public class TestSummarizerTests
             appConfig);
 
         // Create a test implementation of ITextGenerationService
-        TestTextGenerationService textGenerationService = new TestTextGenerationService();
+        _ = new
+        // Create a test implementation of ITextGenerationService
+        TestTextGenerationService();
 
         // Create AISummarizer with dependencies
         _summarizer = new AISummarizer(
