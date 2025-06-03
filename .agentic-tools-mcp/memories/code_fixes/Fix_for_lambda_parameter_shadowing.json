@@ -1,0 +1,8 @@
+{
+  "id": "6e0a4cc2-d9c1-4810-8006-7841d03ab1e1",
+  "title": "Fix for lambda parameter shadowing",
+  "details": "On June 2, 2025, we fixed a variable shadowing issue in `DocumentNoteBatchProcessor.cs`. The file had compilation errors caused by lambda expression parameters shadowing variables in the outer scope.\n\nThe error was in a LINQ expression:\n```csharp\nvar typesSummary = string.Join(\", \", documentTypeStats.Select(kvp => $\"{kvp.Key}: {kvp.Value}\"));\n```\n\nWe fixed it by renaming the lambda parameter to avoid possible shadowing:\n```csharp\nvar typesSummary = string.Join(\", \", documentTypeStats.Select(typeEntry => $\"{typeEntry.Key}: {typeEntry.Value}\"));\n```\n\nThis resolved multiple errors:\n1. CS0136: A local or parameter named 'value' cannot be declared in this scope because that name is used in an enclosing local scope\n2. CS0128: A local variable or function named 'value' is already defined in this scope\n\nThe issue was related to variable shadowing, where the lambda parameter 'kvp' accessing the 'Value' property was interpreted as declaring a variable named 'value' that conflicted with a variable in an outer scope.\n\nAlways use more descriptive parameter names in lambda expressions to avoid conflicts with existing variables.",
+  "category": "code_fixes",
+  "dateCreated": "2025-06-03T05:53:21.799Z",
+  "dateUpdated": "2025-06-03T05:53:21.799Z"
+}

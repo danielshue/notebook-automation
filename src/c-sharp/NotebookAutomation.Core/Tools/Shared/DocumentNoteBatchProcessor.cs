@@ -615,7 +615,8 @@ namespace NotebookAutomation.Core.Tools.Shared
                     }
                     statusStats[item.Status]++;
                 }
-            }            // Prepare type and status summary
+            }
+            // Prepare type and status summary
             var typesSummary = string.Join(", ", documentTypeStats.Select(typeEntry => $"{typeEntry.Key}: {typeEntry.Value}"));
 
             // Prepare summary string for CLI or UI output
