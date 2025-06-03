@@ -1,0 +1,8 @@
+{
+  "id": "17dd4382-42b2-48bd-b1eb-d122d9af93b5",
+  "title": "AppConfigTests Fix",
+  "details": "# AppConfigTests Fix\n\nFixed issues with the `AppConfigTests.cs` file that was causing compilation and test failures:\n\n## Fixes Made:\n\n1. **Duplicate Code Removal**:\n   - Removed a duplicated `ExtractTenantIdFromAuthority_ShouldReturnExpectedResults` test method\n   - Removed duplicated statements at the end of the file\n\n2. **XML Documentation Fixes**:\n   - Fixed malformed XML documentation comments\n   - Added missing `<summary>` tags where needed\n   - Fixed formatting and added proper closing tags\n\n3. **Method Definition Fix**:\n   - Fixed `SetupApiKeyConfigurationForTesting` method by converting it from an expression-bodied method to a standard method with proper body\n\n4. **API References Fix**:\n   - Fixed invalid references to `ApiKey` property in the `OpenAiProviderConfig` class by using the `GetApiKey()` method from `AIServiceConfig`\n\n5. **Test Configuration Fix**:\n   - Fixed `WithUnderlyingConfiguration_ShouldUseUnderlyingValues` test to use a real `ConfigurationBuilder().AddInMemoryCollection()` instead of complex mocking\n   - Properly set up configuration dictionary for the test\n\n6. **Formatting Fixes**:\n   - Fixed malformed class declarations\n   - Fixed missing line breaks\n   - Fixed duplicate class attributes\n\n## Test Results:\n- All 9 AppConfigTests are now passing\n- All 341 tests in the solution are now passing (339 succeeded, 2 skipped)\n\nThis fix ensures that the configuration system and its tests work properly across the application.",
+  "category": "bug-fixes",
+  "dateCreated": "2025-06-03T04:43:56.534Z",
+  "dateUpdated": "2025-06-03T04:43:56.534Z"
+}

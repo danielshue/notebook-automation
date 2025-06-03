@@ -4,7 +4,8 @@ namespace NotebookAutomation.Cli.Utilities
     /// Provides helper methods for consistent ANSI-colored console output in CLI commands.
     /// </summary>
     public static class AnsiConsoleHelper
-    {        private static readonly char[] SpinnerChars = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' };
+    {
+        private static readonly char[] SpinnerChars = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' };
         private static int _spinnerIndex = 0;
         private static bool _spinnerActive = false;
         private static CancellationTokenSource? _spinnerCancellation;
@@ -84,9 +85,9 @@ namespace NotebookAutomation.Cli.Utilities
         {
             Console.WriteLine($"{AnsiColors.OKCYAN}{key}:{AnsiColors.ENDC} {value}");
         }        /// <summary>
-        /// Starts a spinner animation with a message to indicate ongoing processing.
-        /// </summary>
-        /// <param name="message">The message to display alongside the spinner.</param>
+                 /// Starts a spinner animation with a message to indicate ongoing processing.
+                 /// </summary>
+                 /// <param name="message">The message to display alongside the spinner.</param>
         public static void StartSpinner(string message)
         {
             lock (_spinnerLock)
@@ -100,17 +101,17 @@ namespace NotebookAutomation.Cli.Utilities
                 _currentSpinnerMessage = message;
                 _spinnerCancellation = new CancellationTokenSource();
                 var token = _spinnerCancellation.Token;
-                
+
                 // Write the initial message without a newline
                 Console.Write($"{AnsiColors.OKBLUE}{SpinnerChars[_spinnerIndex]} {_currentSpinnerMessage}{AnsiColors.ENDC}");
-                
+
                 // Ensure stdout is flushed immediately so the spinner is visible
-                Console.Out.Flush();Task.Run(() =>
+                Console.Out.Flush(); Task.Run(() =>
                 {
                     while (!token.IsCancellationRequested)
                     {
                         Thread.Sleep(100);
-                        
+
                         lock (_spinnerLock)
                         {
                             if (token.IsCancellationRequested)
@@ -126,7 +127,7 @@ namespace NotebookAutomation.Cli.Utilities
                                 Console.Write("\r");
                                 // Print updated spinner and message
                                 Console.Write($"{AnsiColors.OKBLUE}{SpinnerChars[_spinnerIndex]} {_currentSpinnerMessage}{AnsiColors.ENDC}");
-                                
+
                                 _spinnerIndex = (_spinnerIndex + 1) % SpinnerChars.Length;
                             }
                             catch (Exception)
@@ -140,8 +141,8 @@ namespace NotebookAutomation.Cli.Utilities
                 }, token);
             }
         }        /// <summary>
-        /// Stops the spinner animation and clears the line.
-        /// </summary>
+                 /// Stops the spinner animation and clears the line.
+                 /// </summary>
         public static void StopSpinner()
         {
             lock (_spinnerLock)
@@ -150,7 +151,7 @@ namespace NotebookAutomation.Cli.Utilities
                 {
                     _spinnerCancellation?.Cancel();
                     _spinnerActive = false;
-                    
+
                     try
                     {
                         // Clear the spinner line using ANSI escape codes
@@ -162,15 +163,15 @@ namespace NotebookAutomation.Cli.Utilities
                     {
                         // If console operations fail, just add a line break
                     }
-                    
+
                     // Always write a new line to ensure clean state for next output
                     Console.WriteLine();
                 }
             }
         }        /// <summary>
-        /// Updates the spinner message while keeping the animation running.
-        /// </summary>
-        /// <param name="message">The new message to display.</param>
+                 /// Updates the spinner message while keeping the animation running.
+                 /// </summary>
+                 /// <param name="message">The new message to display.</param>
         public static void UpdateSpinnerMessage(string message)
         {
             lock (_spinnerLock)
@@ -178,7 +179,7 @@ namespace NotebookAutomation.Cli.Utilities
                 if (_spinnerActive)
                 {
                     _currentSpinnerMessage = message;
-                    
+
                     try
                     {
                         // Update the message in-place using ANSI escape codes

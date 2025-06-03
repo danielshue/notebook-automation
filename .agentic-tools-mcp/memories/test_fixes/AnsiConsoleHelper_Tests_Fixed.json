@@ -1,0 +1,8 @@
+{
+  "id": "92c7990c-4621-4fc0-81f4-8bdd5662ad55",
+  "title": "AnsiConsoleHelper Tests Fixed",
+  "details": "Successfully fixed the AnsiConsoleHelperTests.cs ObjectDisposedException issue that was blocking CLI tests.\n\n**Root Cause:**\nThe tests were disposing StringWriter before Spectre.Console finished writing to it asynchronously, causing ObjectDisposedException: \"Cannot write to a closed TextWriter\".\n\n**Solution Applied:**\n1. **Added timing delay**: Added Thread.Sleep(50) in each test method after calling AnsiConsoleHelper methods to give Spectre.Console time to complete writing.\n\n2. **Modified test cleanup**: \n   - Added Thread.Sleep(100) in Cleanup() method before restoring Console.Out\n   - Removed explicit StringWriter.Dispose() call, letting GC handle disposal instead\n   - Set _stringWriter to null to prevent accidental access\n\n3. **Updated test pattern**: Each test method now follows this pattern:\n   ```csharp\n   AnsiConsoleHelper.WriteXxx(\"message\");\n   Thread.Sleep(50); // Give Spectre.Console time to write\n   var output = _stringWriter!.ToString();\n   Assert.IsTrue(output.Contains(\"message\"));\n   ```\n\n**Test Results:**\n- All 7 AnsiConsoleHelper tests now pass ✅\n- WriteInfo, WriteWarning, WriteError, WriteSuccess, WriteHeading, WriteKeyValue, WriteUsage all working\n- Test execution time: ~2.0s (acceptable for timing-based solution)\n\n**Files Modified:**\n- `src/c-sharp/NotebookAutomation.Cli.Tests/Utilities/AnsiConsoleHelperTests.cs`\n\nThis fix maintains the existing AnsiConsoleHelper functionality while making tests compatible with Spectre.Console's asynchronous writing behavior.",
+  "category": "test_fixes",
+  "dateCreated": "2025-06-03T04:23:20.099Z",
+  "dateUpdated": "2025-06-03T04:23:20.099Z"
+}

@@ -177,10 +177,10 @@ namespace NotebookAutomation.Core.Utils
             var serializer = new SerializerBuilder()
                 // Use the default naming convention to preserve original key names
                 .Build();
-                
+
             var yamlString = serializer.Serialize(frontmatter);
             // Add just one set of --- separators with proper newlines
-            var newFrontmatter = $"---\n{yamlString}---\n\n"; 
+            var newFrontmatter = $"---\n{yamlString}---\n\n";
 
             if (_frontmatterRegex.IsMatch(markdown))
             {

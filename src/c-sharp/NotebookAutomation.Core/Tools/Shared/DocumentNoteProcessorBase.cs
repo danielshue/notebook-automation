@@ -30,7 +30,7 @@ namespace NotebookAutomation.Core.Tools.Shared
         /// <param name="filePath">Path to the document file.</param>
         /// <returns>Tuple of extracted text/content and metadata dictionary.</returns>
         public abstract Task<(string Text, Dictionary<string, object> Metadata)> ExtractTextAndMetadataAsync(string filePath);
-        
+
         /// <summary>
         /// Generates an AI summary for the given text using OpenAI.
         /// </summary>        /// <param name="text">The extracted text/content.</param>
@@ -38,20 +38,21 @@ namespace NotebookAutomation.Core.Tools.Shared
         /// <param name="promptFileName">Optional name of the prompt template file to use.</param>
         /// <returns>The summary text, or a simulated summary if unavailable.</returns>
         public virtual async Task<string> GenerateAiSummaryAsync(string? text, Dictionary<string, string>? variables = null, string? promptFileName = null)
-        {            Logger.LogInformation("Starting AI summary generation process");
+        {
+            Logger.LogInformation("Starting AI summary generation process");
             Logger.LogDebug("Using AISummarizer to generate summary.");
-            
+
             // Check for null text
             if (text == null)
             {
                 Logger.LogWarning("Null text provided to summarizer");
                 return "[No content to summarize]";
             }
-            
+
             // Log content size
             int textSize = text.Length;
             int estimatedTokens = textSize / 4; // Rough estimate: ~4 characters per token
-            Logger.LogInformation("Text to summarize: {CharCount:N0} characters (~{TokenCount:N0} estimated tokens)", 
+            Logger.LogInformation("Text to summarize: {CharCount:N0} characters (~{TokenCount:N0} estimated tokens)",
                 textSize, estimatedTokens);
 
             // Enhanced debug logging for yaml-frontmatter
@@ -61,7 +62,7 @@ namespace NotebookAutomation.Core.Tools.Shared
                 foreach (var kvp in variables)
                 {
                     var preview = kvp.Value?.Length > 50 ? kvp.Value[..50] + "..." : kvp.Value;
-                    Logger.LogInformation("  Variable {Key}: {Length:N0} chars - {ValuePreview}", 
+                    Logger.LogInformation("  Variable {Key}: {Length:N0} chars - {ValuePreview}",
                         kvp.Key, kvp.Value?.Length ?? 0, preview);
                 }
 
@@ -87,22 +88,22 @@ namespace NotebookAutomation.Core.Tools.Shared
                 return "[Simulated AI summary]";
             }
 
-            Logger.LogInformation("Sending content to AI service for summarization (prompt: {PromptFile})", 
+            Logger.LogInformation("Sending content to AI service for summarization (prompt: {PromptFile})",
                 promptFileName ?? "default");
-            
+
             var summary = await Summarizer.SummarizeWithVariablesAsync(text, variables, promptFileName);
-            
+
             if (string.IsNullOrWhiteSpace(summary))
             {
                 Logger.LogWarning("AISummarizer returned an empty summary. Using simulated summary.");
                 return "[Simulated AI summary]";
             }
-            
+
             int summaryLength = summary.Length;
             int summaryEstimatedTokens = summaryLength / 4;
             Logger.LogInformation("Successfully generated AI summary: {CharCount:N0} characters (~{TokenCount:N0} estimated tokens)",
                 summaryLength, summaryEstimatedTokens);
-                
+
             return summary;
         }
 

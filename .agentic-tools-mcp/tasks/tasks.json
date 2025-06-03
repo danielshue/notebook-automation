@@ -62,11 +62,20 @@
     {
       "id": "ccef0131-a85c-41b0-ae64-3788fa77ef49",
       "name": "Implement Spectre.Console Status Widget",
-      "details": "Successfully implemented Spectre.Console Status Widget in the AnsiConsoleHelper class:\n\n1. Added Spectre.Console NuGet package (version 0.50.0) to the project\n2. Completely refactored AnsiConsoleHelper to use Spectre.Console's Status widget for spinner animations\n3. Replaced the custom ANSI color handling with Spectre.Console's Markup system\n4. Maintained the same public API to ensure backward compatibility\n5. Preserved the message pause functionality (5500ms delay between message changes)\n6. Improved thread safety and resource cleanup with proper cancellation tokens\n7. Enhanced cross-platform support through Spectre.Console's terminal capability detection\n\nThe new implementation is more robust, better handles different terminal types, and leverages modern libraries instead of custom ANSI code manipulation. The code is also more maintainable and extensible, allowing for easier styling changes in the future.",
+      "details": "Replace the custom spinner implementation in AnsiConsoleHelper with Spectre.Console's Status widget to provide better console feedback for long-running operations. Key requirements:\n\n1. Maintain backward compatibility with the existing AnsiConsoleHelper interface\n2. Keep the message pause functionality (5500ms pause when messages change)\n3. Implement proper cursor handling and terminal capability detection\n4. Use Spectre.Console's built-in spinner styles instead of custom Unicode characters\n5. Add async support for modern coding patterns\n6. Ensure proper cleanup of resources\n\nProgress:\n- Added Spectre.Console package to the NotebookAutomation.Cli project\n- Implemented comprehensive document processing queue system in DocumentNoteBatchProcessor\n- Added rich status tracking with document type detection\n- Maintained backward compatibility with existing UI\n- Added detailed event notifications for queue changes",
       "projectId": "3dee4b39-cce9-4bc4-9d68-bcb5f4f02ed6",
       "completed": true,
       "createdAt": "2025-06-03T01:23:24.782Z",
-      "updatedAt": "2025-06-03T01:48:56.131Z"
+      "updatedAt": "2025-06-03T02:43:22.901Z"
+    },
+    {
+      "id": "3f541dbd-f673-4278-bebe-b1495a2645b2",
+      "name": "Extract Enums and Classes from DocumentNoteBatchProcessor",
+      "details": "Extract the following enums and classes from DocumentNoteBatchProcessor.cs into separate files for better code organization:\n1. DocumentProcessingStatus enum -> DocumentProcessingStatus.cs\n2. ProcessingStage enum -> ProcessingStage.cs  \n3. QueueItem class -> QueueItem.cs\n4. QueueChangedEventArgs class -> QueueChangedEventArgs.cs\n5. DocumentProcessingProgressEventArgs class -> DocumentProcessingProgressEventArgs.cs\n\nEach file should be placed in the appropriate namespace and include proper XML documentation. Update DocumentNoteBatchProcessor.cs to remove the extracted code and ensure all using statements are updated as needed.",
+      "projectId": "3dee4b39-cce9-4bc4-9d68-bcb5f4f02ed6",
+      "completed": true,
+      "createdAt": "2025-06-03T02:59:18.833Z",
+      "updatedAt": "2025-06-03T03:51:30.837Z"
     }
   ],
   "subtasks": [
@@ -163,12 +172,12 @@
     {
       "id": "315bd0a3-c559-4f30-b98e-98a29e6b2d6f",
       "name": "Refactor AnsiConsoleHelper to use Spectre.Console",
-      "details": "Successfully refactored AnsiConsoleHelper to use Spectre.Console:\n\n1. Added Spectre.Console NuGet package (version 0.50.0)\n2. Implemented the Status widget for spinner animations\n3. Replaced all ANSI color output with Spectre.Console's Markup system\n4. Maintained the message pause functionality (5500ms)\n5. Improved thread safety and resource cleanup with proper cancellation tokens\n6. Kept the same public API for backward compatibility\n\nThe implementation is now more robust with better cross-platform support and terminal capability detection.",
+      "details": "Update the AnsiConsoleHelper class to use Spectre.Console while maintaining the existing public API. \n\nKey changes:\n1. Added Spectre.Console NuGet package to the NotebookAutomation.Cli project\n2. Implemented comprehensive document processing queue system in DocumentNoteBatchProcessor\n3. Added document type detection based on file extension\n4. Added detailed status tracking with ProcessingStage enum\n5. Implemented QueueItem class to track document-specific information\n6. Added QueueChanged event for notifications\n7. Updated batch summary with document type statistics\n8. Maintained backward compatibility with existing UI\n9. Provided a solid foundation for future UI improvements",
       "taskId": "ccef0131-a85c-41b0-ae64-3788fa77ef49",
       "projectId": "3dee4b39-cce9-4bc4-9d68-bcb5f4f02ed6",
       "completed": true,
       "createdAt": "2025-06-03T01:23:39.303Z",
-      "updatedAt": "2025-06-03T01:48:36.040Z"
+      "updatedAt": "2025-06-03T02:43:42.275Z"
     }
   ]
 }

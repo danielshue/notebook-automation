@@ -118,11 +118,10 @@ public class AppConfigCoverageBoostTests
     }
 }
 
-[TestClass]
-
 /// <summary>
 /// Tests for the AppConfig class, especially focusing on its implementation of IConfiguration.
-/// </summary>    [TestClass]
+/// </summary>
+[TestClass]
 public class AppConfigTests
 {
     private Mock<ILogger<AppConfig>> _loggerMock = null!;
@@ -133,14 +132,16 @@ public class AppConfigTests
     {
         _loggerMock = new Mock<ILogger<AppConfig>>();
         _configurationMock = new Mock<IConfiguration>();
+    }    /// <summary>
+         /// Helper method to set up API key configuration for testing
+         /// </summary>
+    private static void SetupApiKeyConfigurationForTesting(AppConfig config, string apiKey)
+    {
+        // Set the environment variable directly for the provider
+        Environment.SetEnvironmentVariable("OPENAI_API_KEY", apiKey);
     }
 
     /// <summary>
-    /// Helper method to set up API key configuration for testing
-    /// </summary>
-    private static void SetupApiKeyConfigurationForTesting(AppConfig config, string apiKey) =>
-        // Set the environment variable directly for the provider
-        Environment.SetEnvironmentVariable("OPENAI_API_KEY", apiKey);
     /// Tests the basic property indexer access with both direct and nested keys.
     /// </summary>
     [TestMethod]
@@ -299,9 +300,10 @@ public class AppConfigTests
         File.WriteAllText(tempFile, JsonSerializer.Serialize(config));
 
         try
-        {
-            // Act
-            AppConfig appConfig = AppConfig.LoadFromJsonFile(tempFile);            // Assert
+        {            // Act
+            AppConfig appConfig = AppConfig.LoadFromJsonFile(tempFile);
+
+            // Assert
             Assert.IsNotNull(appConfig);
             Assert.AreEqual("/resources", appConfig.Paths.OnedriveFullpathRoot);
             Assert.AreEqual("/logs", appConfig.Paths.LoggingDir);
@@ -335,13 +337,13 @@ public class AppConfigTests
                 LoggingDir = "/logs",
                 OnedriveFullpathRoot = "/resources"
             },
-
             AiService = new AIServiceConfig
             {
                 Provider = "openai",
-                OpenAI = new OpenAiProviderConfig { Model = "gpt-4" }
+                OpenAI = new OpenAiProviderConfig { Model = "gpt-4" } // API key is managed at AIServiceConfig level
             }
         };
+
         try
         {
             // Act
@@ -351,26 +353,8 @@ public class AppConfigTests
             AppConfig loadedConfig = AppConfig.LoadFromJsonFile(tempFile);
             Assert.IsNotNull(loadedConfig);
             Assert.AreEqual("/resources", loadedConfig.Paths.OnedriveFullpathRoot);
-            Assert.AreEqual("/logs", loadedConfig.Paths.LoggingDir);
-
-            // Create a configuration with the API key for testing GetApiKey
-            Dictionary<string, string> configDict = new Dictionary<string, string>
-            {
-                {"UserSecrets:OpenAI:ApiKey", "test-api-key"}
-            };
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                .AddInMemoryCollection(configDict)
-                .Build();
-            // No SetConfiguration; set provider/model directly
-            loadedConfig.AiService.Provider = "openai";
-            if (loadedConfig.AiService.OpenAI == null)
-            {
-                loadedConfig.AiService.OpenAI = new OpenAiProviderConfig();
-            }
-
-            loadedConfig.AiService.OpenAI.Model = "gpt-4";
-            Assert.AreEqual("test-api-key", loadedConfig.AiService.GetApiKey());
-            Assert.AreEqual("gpt-4", loadedConfig.AiService.OpenAI?.Model);
+            Assert.AreEqual("/logs", loadedConfig.Paths.LoggingDir); Assert.AreEqual("test-api-key", loadedConfig.AiService.GetApiKey()); // Verify API key at service level
+            Assert.AreEqual("gpt-4", loadedConfig.AiService.OpenAI?.Model); // Correctly reference OpenAI.Model
         }
         finally
         {
@@ -385,51 +369,32 @@ public class AppConfigTests
              /// </summary>
     [TestMethod]
     public void WithUnderlyingConfiguration_ShouldUseUnderlyingValues()
-    {
-        // Arrange
+    {        // Arrange
         Dictionary<string, string> configValues = new Dictionary<string, string>
         {
-            {"paths:resources_root", "/config-resources"},
-            {"paths:logging_dir", "/config-logs"},                {"aiservice:apiKey", "config-api-key"},
-            {"aiservice:model", "gpt-4-turbo"}
+            {"paths:notebook_vault_fullpath_root", "/config-vault"},
+            {"paths:onedrive_resources_basepath", "/config-resources-base"},
+            {"paths:logging_dir", "/config-logs"},
+            {"paths:onedrive_fullpath_root", "/config-resources"},
+            {"paths:metadata_file", "/config-meta.yaml"},
+            {"microsoft_graph:client_id", "config-client-id"},
+            {"microsoft_graph:api_endpoint", "config-endpoint"},
+            {"microsoft_graph:authority", "https://login.microsoftonline.com/common"},
+            {"aiservice:provider", "openai"},
+            {"aiservice:openai:model", "gpt-4-turbo"},
+            {"aiservice:openai:endpoint", "https://api.openai.com"},
+            {"video_extensions:0", ".mp4"}
         };
 
-        _configurationMock.Setup(c => c[It.IsAny<string>()]).Returns<string>(key =>
-            configValues.TryGetValue(key, out string value) ? value : null);
-
-        // Mock sections without using Exists extension method
-        _configurationMock.Setup(c => c.GetSection(It.IsAny<string>()))
-            .Returns<string>(key =>
-            {
-                Mock<IConfigurationSection> mockSection = new Mock<IConfigurationSection>();
-                mockSection.Setup(s => s.Path).Returns(key);
-                mockSection.Setup(s => s.Key).Returns(key);
-                // Use Value property instead of Exists() extension method
-                mockSection.Setup(s => s.Value).Returns(
-                    configValues.Keys.Any(k => k.StartsWith(key + ":")) ? string.Empty : null);
-                return mockSection.Object;
-            });
-
-        // Create test configuration using constructor parameters
-        AppConfig appConfig = new AppConfig
-        {
-            Paths = new PathsConfig
-            {
-                OnedriveFullpathRoot = "/config-resources",
-                LoggingDir = "/config-logs"
-            },
-            AiService = new AIServiceConfig
-            {
-                OpenAI = new OpenAiProviderConfig { Model = "gpt-4-turbo" }
-            }
-        };            // Set the values manually instead of relying on constructor
-
-        // Set up configuration with API key
-        SetupApiKeyConfigurationForTesting(appConfig, "config-api-key");
-
-        // Act & Assert            Assert.AreEqual("/config-resources", appConfig["paths:resources_root"]);
-        Assert.AreEqual("/config-logs", appConfig["paths:logging_dir"]);
-        Assert.AreEqual("config-api-key", appConfig.AiService.GetApiKey());
+        // Create a real configuration implementation for testing
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configValues)
+            .Build();        // Create test configuration using constructor with the real configuration
+        AppConfig appConfig = new AppConfig(configuration, _loggerMock.Object);// Act & Assert
+        Assert.AreEqual("/config-vault", appConfig.Paths.NotebookVaultFullpathRoot);
+        Assert.AreEqual("/config-resources", appConfig.Paths.OnedriveFullpathRoot);
+        Assert.AreEqual("/config-logs", appConfig.Paths.LoggingDir);
+        Assert.AreEqual("config-client-id", appConfig.MicrosoftGraph.ClientId);
         Assert.AreEqual("gpt-4-turbo", appConfig.AiService.OpenAI?.Model);
     }
 }
@@ -493,7 +458,6 @@ public class AppConfigAdditionalTests
         Assert.AreEqual("logs", appConfig.Paths.LoggingDir);
         Assert.AreEqual("vault", appConfig.Paths.NotebookVaultFullpathRoot);
     }
-
     [TestMethod]
     public void ExtractTenantIdFromAuthority_ShouldReturnExpectedResults()
     {

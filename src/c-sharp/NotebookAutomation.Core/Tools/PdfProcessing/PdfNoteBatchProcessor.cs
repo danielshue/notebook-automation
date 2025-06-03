@@ -1,3 +1,4 @@
+using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Tools.Shared;
 
 namespace NotebookAutomation.Core.Tools.PdfProcessing

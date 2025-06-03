@@ -31,7 +31,8 @@ namespace NotebookAutomation.Cli
         /// </summary>
         /// <param name="args">Command-line arguments.</param>
         /// <returns>Exit code (0 for success, non-zero for error).</returns>
-        public static async Task<int> Main(string[] args)        {
+        public static async Task<int> Main(string[] args)
+        {
             // Create the root command with description
             var rootCommand = new RootCommand(
                 description: "Comprehensive toolkit for managing course-related content between OneDrive and Obsidian notebooks.");
@@ -81,7 +82,7 @@ namespace NotebookAutomation.Cli
             vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());
-            VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);            var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
+            VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption); var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
             PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var markdownCommands = new MarkdownCommands(

@@ -1,0 +1,8 @@
+{
+  "id": "c36da89e-68d0-4126-8030-cf07bf3edb30",
+  "title": "ProcessDocumentsAsync Method Refactoring",
+  "details": "## ProcessDocumentsAsync Method Refactoring\n\n**Goal**: Break down the extremely long ProcessDocumentsAsync method (600+ lines) into smaller, focused methods following SOLID principles.\n\n**Current Method Responsibilities**:\n1. Input validation and path setup\n2. File discovery and filtering (including retry logic)\n3. Processing queue initialization  \n4. Main processing loop for each file:\n   - Content extraction with progress updates\n   - AI summary generation (with processor-specific logic)\n   - Markdown generation and file writing\n   - Error handling and queue status updates\n5. Statistics compilation and result creation\n\n**Planned Refactoring Structure**:\n- `ValidateAndSetupProcessing` ✅ - input validation and path setup\n- `DiscoverAndFilterFiles` ✅ - file discovery and retry filtering  \n- `InitializeProcessingQueue` ✅ - queue setup\n- `ProcessSingleFileAsync` - main file processing logic\n- `ExtractContentAsync` ✅ - content extraction with progress updates\n- `GenerateAISummaryAsync` ✅ - AI summary generation\n- `GenerateAndSaveMarkdownAsync` - markdown creation and file writing\n- `CompileProcessingResults` - statistics and result creation\n\n**Implementation Status**:\n- Helper methods partially implemented\n- Need to refactor main ProcessDocumentsAsync to use these methods\n- Need to ensure all error handling and progress tracking is preserved\n- Must maintain thread-safety for queue operations",
+  "category": "refactoring",
+  "dateCreated": "2025-06-03T03:58:33.606Z",
+  "dateUpdated": "2025-06-03T03:58:33.606Z"
+}
