@@ -1,0 +1,8 @@
+{
+  "id": "79a9fd7c-e25a-4ede-8826-fdde5a19592c",
+  "title": "Spinner animation fix in AnsiConsoleHelper",
+  "details": "The spinner animation in the PDF processing UI was showing each status update on a new line instead of updating in-place. This was making the terminal output cluttered with repeated \"Processing PDF files from file: ...\" messages.\n\nThe fix involved:\n\n1. Adding a `_currentSpinnerMessage` field to the AnsiConsoleHelper class to maintain the current message state\n2. Updating the `StartSpinner` method to use this field and clear the line properly with each update\n3. Modifying the `UpdateSpinnerMessage` method to update the field and redraw the spinner correctly\n\nThis ensures that when we rapidly update the progress message during PDF processing, the spinner animation stays on a single line and updates in-place rather than creating a new line for each status update.\n\nThe spinner animation now properly shows:\n- A spinning character (⠋, ⠙, ⠹, etc.) that updates\n- The current processing message that can be changed dynamically\n- All on a single line that clears and updates in-place\n\nThe changes were made to `AnsiConsoleHelper.cs` in the `NotebookAutomation.Cli.Utilities` namespace.",
+  "category": "general",
+  "dateCreated": "2025-06-02T22:28:34.791Z",
+  "dateUpdated": "2025-06-02T22:28:34.791Z"
+}

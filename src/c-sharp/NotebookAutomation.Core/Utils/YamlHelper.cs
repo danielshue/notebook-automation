@@ -177,9 +177,10 @@ namespace NotebookAutomation.Core.Utils
             var serializer = new SerializerBuilder()
                 // Use the default naming convention to preserve original key names
                 .Build();
-
+                
             var yamlString = serializer.Serialize(frontmatter);
-            var newFrontmatter = $"---\n{yamlString}---\n";
+            // Add just one set of --- separators with proper newlines
+            var newFrontmatter = $"---\n{yamlString}---\n\n"; 
 
             if (_frontmatterRegex.IsMatch(markdown))
             {
@@ -203,6 +204,7 @@ namespace NotebookAutomation.Core.Utils
                 .Build();
 
             var yamlString = serializer.Serialize(frontmatter);
+            // Add just one set of --- separators with proper newlines
             return $"---\n{yamlString}---\n\n";
         }
 
@@ -255,12 +257,14 @@ namespace NotebookAutomation.Core.Utils
             }
 
             return result;
-        }        /// <summary>
-                 /// Updates frontmatter with new tags.
-                 /// </summary>
-                 /// <param name="frontmatter">The frontmatter dictionary to update.</param>
-                 /// <param name="tags">The set of tags to set.</param>
-                 /// <returns>The updated frontmatter.</returns>
+        }
+
+        /// <summary>
+        /// Updates frontmatter with new tags.
+        /// </summary>
+        /// <param name="frontmatter">The frontmatter dictionary to update.</param>
+        /// <param name="tags">The set of tags to set.</param>
+        /// <returns>The updated frontmatter.</returns>
         public static Dictionary<string, object> UpdateTags(Dictionary<string, object> frontmatter, HashSet<string> tags)
         {
             if (tags.Count > 0)

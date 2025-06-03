@@ -35,9 +35,8 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var configOption = new System.CommandLine.Option<string>("--config");
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-            var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var pdfCommands = new PdfCommands(_mockLogger.Object);
-            pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");            var pdfCommands = new PdfCommands(_mockLogger.Object);
+            PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var originalOut = Console.Out;
             var stringWriter = new System.IO.StringWriter();
@@ -82,20 +81,16 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var pdfCommands = new PdfCommands(_mockLogger.Object);
-
-            // Act
-            pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+            var pdfCommands = new PdfCommands(_mockLogger.Object);            // Act
+            PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Assert
             var pdfNotesCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "pdf-notes");
-            Assert.IsNotNull(pdfNotesCommand, "pdf-notes command should be registered on the root command.");
-
-            // Check options
+            Assert.IsNotNull(pdfNotesCommand, "pdf-notes command should be registered on the root command.");            // Check options
             var optionNames = pdfNotesCommand.Options.SelectMany(o => o.Aliases).ToList();
             CollectionAssert.Contains(optionNames, "--input", "pdf-notes should have '--input' option");
             CollectionAssert.Contains(optionNames, "-i", "pdf-notes should have '-i' option");
-            CollectionAssert.Contains(optionNames, "--output", "pdf-notes should have '--output' option");
+            CollectionAssert.Contains(optionNames, "--overwrite-output-dir", "pdf-notes should have '--overwrite-output-dir' option");
             CollectionAssert.Contains(optionNames, "-o", "pdf-notes should have '-o' option");
         }
     }

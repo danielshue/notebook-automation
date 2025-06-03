@@ -6,6 +6,20 @@
       "description": "Complete Obsidian / OneDrive Toolset",
       "createdAt": "2025-06-01T04:51:13.793Z",
       "updatedAt": "2025-06-01T04:51:13.793Z"
+    },
+    {
+      "id": "8bb6e48b-bf3c-4bcc-a642-98983e551d13",
+      "name": "PDF Command Feature Parity Implementation",
+      "description": "Implementing full CLI feature parity between PDF and Video commands by updating PdfCommands.cs to include all advanced options, service integration, and proper batch processing functionality.",
+      "createdAt": "2025-06-02T19:18:40.880Z",
+      "updatedAt": "2025-06-02T19:18:40.880Z"
+    },
+    {
+      "id": "3dee4b39-cce9-4bc4-9d68-bcb5f4f02ed6",
+      "name": "Notebook Automation C# Improvements",
+      "description": "Project to improve the C# implementation of the Notebook Automation tool with modern libraries and best practices.",
+      "createdAt": "2025-06-03T01:23:10.574Z",
+      "updatedAt": "2025-06-03T01:23:10.574Z"
     }
   ],
   "tasks": [
@@ -35,6 +49,24 @@
       "completed": false,
       "createdAt": "2025-06-02T18:33:27.075Z",
       "updatedAt": "2025-06-02T18:33:27.075Z"
+    },
+    {
+      "id": "8845c360-f9cc-4cce-b810-ab75a2db816d",
+      "name": "Implement Full PDF Command CLI Features",
+      "details": "Update PdfCommands.cs to match VideoCommands.cs functionality:\n1. Add all missing command-line options (--no-summary, --force, --retry-failed, etc.)\n2. Implement proper dependency injection and service integration\n3. Add configuration validation and display\n4. Integrate with PdfNoteBatchProcessor properly\n5. Add OneDrive service integration\n6. Implement proper error handling and result reporting\n7. Update unit tests accordingly",
+      "projectId": "8bb6e48b-bf3c-4bcc-a642-98983e551d13",
+      "completed": false,
+      "createdAt": "2025-06-02T19:18:46.555Z",
+      "updatedAt": "2025-06-02T19:18:46.555Z"
+    },
+    {
+      "id": "ccef0131-a85c-41b0-ae64-3788fa77ef49",
+      "name": "Implement Spectre.Console Status Widget",
+      "details": "Successfully implemented Spectre.Console Status Widget in the AnsiConsoleHelper class:\n\n1. Added Spectre.Console NuGet package (version 0.50.0) to the project\n2. Completely refactored AnsiConsoleHelper to use Spectre.Console's Status widget for spinner animations\n3. Replaced the custom ANSI color handling with Spectre.Console's Markup system\n4. Maintained the same public API to ensure backward compatibility\n5. Preserved the message pause functionality (5500ms delay between message changes)\n6. Improved thread safety and resource cleanup with proper cancellation tokens\n7. Enhanced cross-platform support through Spectre.Console's terminal capability detection\n\nThe new implementation is more robust, better handles different terminal types, and leverages modern libraries instead of custom ANSI code manipulation. The code is also more maintainable and extensible, allowing for easier styling changes in the future.",
+      "projectId": "3dee4b39-cce9-4bc4-9d68-bcb5f4f02ed6",
+      "completed": true,
+      "createdAt": "2025-06-03T01:23:24.782Z",
+      "updatedAt": "2025-06-03T01:48:56.131Z"
     }
   ],
   "subtasks": [
@@ -127,6 +159,16 @@
       "completed": true,
       "createdAt": "2025-06-01T13:30:25.738Z",
       "updatedAt": "2025-06-01T15:30:36.757Z"
+    },
+    {
+      "id": "315bd0a3-c559-4f30-b98e-98a29e6b2d6f",
+      "name": "Refactor AnsiConsoleHelper to use Spectre.Console",
+      "details": "Successfully refactored AnsiConsoleHelper to use Spectre.Console:\n\n1. Added Spectre.Console NuGet package (version 0.50.0)\n2. Implemented the Status widget for spinner animations\n3. Replaced all ANSI color output with Spectre.Console's Markup system\n4. Maintained the message pause functionality (5500ms)\n5. Improved thread safety and resource cleanup with proper cancellation tokens\n6. Kept the same public API for backward compatibility\n\nThe implementation is now more robust with better cross-platform support and terminal capability detection.",
+      "taskId": "ccef0131-a85c-41b0-ae64-3788fa77ef49",
+      "projectId": "3dee4b39-cce9-4bc4-9d68-bcb5f4f02ed6",
+      "completed": true,
+      "createdAt": "2025-06-03T01:23:39.303Z",
+      "updatedAt": "2025-06-03T01:48:36.040Z"
     }
   ]
 }
