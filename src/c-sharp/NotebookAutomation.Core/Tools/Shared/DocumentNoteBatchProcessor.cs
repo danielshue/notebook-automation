@@ -615,10 +615,8 @@ namespace NotebookAutomation.Core.Tools.Shared
                     }
                     statusStats[item.Status]++;
                 }
-            }
-
-            // Prepare type and status summary
-            var typesSummary = string.Join(", ", documentTypeStats.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+            }            // Prepare type and status summary
+            var typesSummary = string.Join(", ", documentTypeStats.Select(typeEntry => $"{typeEntry.Key}: {typeEntry.Value}"));
 
             // Prepare summary string for CLI or UI output
             string summary = "\n================ Batch Processing Summary ================\n"
