@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -8,9 +9,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Moq;
+
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -36,12 +40,40 @@ public class VideoNoteProcessorTranscriptTests
         _logger = NullLogger<VideoNoteProcessor>.Instance;
         PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
-            new AppConfig());
-        AISummarizer aiSummarizer = new(
+            new AppConfig()); AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
-            null);
-        _processor = new VideoNoteProcessor(_logger, aiSummarizer);
+            null);        // Create mock YamlHelper
+        var yamlHelperMock = new Mock<IYamlHelper>();
+
+        // Setup mock YamlHelper
+        yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
+            .Returns<string>(markdown => markdown.Contains("---") ? markdown.Substring(markdown.IndexOf("---", 3) + 3) : markdown);
+
+        yamlHelperMock.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
+            .Returns(new Dictionary<string, object>
+            {
+                { "template-type", "video-reference" },
+                { "type", "video-reference" },
+                { "title", "Test Video" },
+                { "tags", new[] { "video", "reference" } }
+            });
+
+        yamlHelperMock.Setup(m => m.ExtractFrontmatter(It.IsAny<string>()))
+            .Returns("template-type: video-reference\ntitle: Test Video");
+
+        yamlHelperMock.Setup(m => m.SerializeToYaml(It.IsAny<Dictionary<string, object>>()))
+            .Returns("---\ntemplate-type: video-reference\ntitle: Test Video\n---\n");
+
+        var mockYamlHelper = yamlHelperMock.Object;
+        _processor = new VideoNoteProcessor(
+            _logger,
+            aiSummarizer,
+            mockYamlHelper,  // Required YamlHelper parameter
+            null,  // Optional OneDriveService
+            null,  // Optional AppConfig
+            null   // Optional LoggingService
+        );
     }
 
     /// <summary>

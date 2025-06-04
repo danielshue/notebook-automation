@@ -342,24 +342,78 @@ course: Course Name
 date-created: 2025-04-29
 status: in-progress
 ---
-template-type: note-case-study
-auto-generated-state: writable
-template-description: Case Study for the course or class.
-title: Case Study 1
-type: note/case-study
-program: Program Name
-course: Course Name
-date-created: 2025-04-29
-status: not-started
----
+# Description: HTML or text file stored in OneDrive for improved sharing and accessibility which have been converted to markdown.
+# for exampe, a reading or resource that is in HTML format to markdown such as instuctions, guidelines, or other text-based content.
+# in some cases, we can use the filename (e.g. *-instructions.md) to know that it should be this template-type.
+# template-type: video-reference | pdf-reference | case-studies-index | readings-index | resources-index | assignment-individual | assignment-group | assignment-quiz | note-case-study | resource-reading | pdf-reference
 template-type: resource-reading
+
+# auto-generated-state: writable | read-only
 auto-generated-state: writable
-template-description: Required Reading for the course or class.
-title: Required Reading 1
-type: resource/reading
-program: Program Name
-course: Course Name
-date-created: 2025-04-29
-status: not-started
-pages: 10-15
-source: RequiredReading.pdf
+
+# type: note/video-note | note/case-study | note/reading | assignment/individual | assignment/group | assignment/quiz | index
+type: note/reading
+
+# title: Reading Title (populated automatically based off a friendly name of the Filen name of the reading)
+title: 
+
+# The following fields are grouped and sorted as requested (with their comments):
+
+# authors: Author Names (array of names)
+authors:
+
+# program, course, class, module, lesson (grouped together)
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
+# module: Module Name (populated automatically)
+module:
+
+# lesson: Lesson Name (populated automatically)
+lesson:
+
+# comprehension: 0 | 1 | 2 | 3 | 4 | 5 (populated automatically)
+comprehension: 0
+
+# completion-date: YYYY-MM-DD (blank by default)
+completion-date:
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created: 
+
+# date-modified: YYYY-MM-DD  (blank by default)
+date-modified: 
+
+# date-review: YYYY-MM-DD (blank by default)
+date-review:
+
+# onedrive-shared-link: path/to/shared-link (populated automatically)
+onedrive-shared-link:
+
+# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
+onedrive_fullpath_file_reference: 
+
+# publisher: Publisher Name
+publisher: University of Illinois at Urbana-Champaign
+
+# status: read | unread | in-progress
+status: unread 
+
+# tags: line separated tags (blank by default)
+#  - "tag1"
+#  - "tag2"
+#  - "tag3"
+tags: 
+
+# pdf-page-count: (populated automatically)
+page-count: 
+
+# pages: 1-10, 5-15, 20-25
+pages: 

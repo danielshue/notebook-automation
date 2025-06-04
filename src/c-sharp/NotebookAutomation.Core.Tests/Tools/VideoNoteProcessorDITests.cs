@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests.Tools;
 
@@ -36,7 +37,8 @@ public class VideoNoteProcessorDITests
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
-        VideoNoteProcessor processor = new(logger, aiSummarizer);
+        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper);
 
         // Act - Using null OpenAI key should return simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text");
@@ -57,7 +59,8 @@ public class VideoNoteProcessorDITests
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
-        VideoNoteProcessor processor = new(logger, aiSummarizer);
+        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper);
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text");
         // Assert - fallback behavior should return simulated summary

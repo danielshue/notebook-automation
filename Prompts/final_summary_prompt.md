@@ -39,7 +39,7 @@ Your output structure must exactly follow this format:
 
 ---
 
-{{$yamlfrontmatter}}
+[yamlfrontmatter]
 
 ---
 

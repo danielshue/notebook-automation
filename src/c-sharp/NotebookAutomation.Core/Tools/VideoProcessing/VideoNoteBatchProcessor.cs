@@ -1,5 +1,6 @@
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Models;
 
 namespace NotebookAutomation.Core.Tools.VideoProcessing
 {
@@ -40,6 +41,24 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// The generic batch processor that handles the actual batch processing logic.
         /// </summary>
         private readonly DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor = batchProcessor;
+
+        /// <summary>
+        /// Event triggered when processing progress changes.
+        /// </summary>
+        public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
+        {
+            add => _batchProcessor.ProcessingProgressChanged += value;
+            remove => _batchProcessor.ProcessingProgressChanged -= value;
+        }
+
+        /// <summary>
+        /// Event triggered when the processing queue changes.
+        /// </summary>
+        public event EventHandler<QueueChangedEventArgs>? QueueChanged
+        {
+            add => _batchProcessor.QueueChanged += value;
+            remove => _batchProcessor.QueueChanged -= value;
+        }
 
         /// <summary>
         /// Processes one or more video files, generating markdown notes for each.

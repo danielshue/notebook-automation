@@ -3,6 +3,8 @@ using NotebookAutomation.Core.Utils;
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Configuration;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace NotebookAutomation.Core.Tools.VideoProcessing
 {
@@ -18,7 +20,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
     /// <para>
     /// It integrates with external services like OneDrive for share link generation and uses AI summarization 
     /// for creating intelligent summaries of video content.
-    /// </para>
+    /// </para>    
     /// <para>
     /// This class is designed to work with various video formats and supports hierarchical metadata detection 
     /// based on file paths.
@@ -30,6 +32,8 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         private readonly AppConfig? _appConfig;
         private readonly MetadataTemplateManager? _templateManager;
         private readonly MetadataHierarchyDetector? _hierarchyDetector;
+        private readonly IYamlHelper _yamlHelper;
+        private readonly ILoggingService? _loggingService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class.
@@ -37,20 +41,19 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// <param name="logger">The logger instance for logging diagnostic and error information.</param>
         /// <param name="aiSummarizer">The AI summarizer service for generating summaries.</param>
         /// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>
-        /// <param name="appConfig">Optional application configuration for metadata management.</param>
+        /// <param name="appConfig">Optional application configuration for metadata management.</param>        /// <param name="yamlHelper">The YAML helper for processing YAML frontmatter in markdown documents.</param>
+        /// <param name="loggingService">Optional logging service for creating typed loggers.</param>
         /// <remarks>
         /// This constructor initializes the video note processor with optional services for metadata management
         /// and hierarchical detection. If <paramref name="appConfig"/> is provided, it attempts to initialize
         /// the metadata template manager and hierarchy detector.
         /// </remarks>
-        public VideoNoteProcessor(
-            ILogger<VideoNoteProcessor> logger,
-            AISummarizer aiSummarizer,
-            IOneDriveService? oneDriveService = null,
-            AppConfig? appConfig = null) : base(logger, aiSummarizer)
+        public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, IOneDriveService? oneDriveService = null, AppConfig? appConfig = null, ILoggingService? loggingService = null) : base(logger, aiSummarizer)
         {
             _oneDriveService = oneDriveService;
             _appConfig = appConfig;
+            _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
+            _loggingService = loggingService;
 
             // Initialize template manager and hierarchy detector if appConfig is provided
             if (_appConfig != null)
@@ -59,10 +62,29 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                 {
                     if (!string.IsNullOrEmpty(_appConfig.Paths.MetadataFile))
                     {
-                        _templateManager = new MetadataTemplateManager(logger, _appConfig);
+                        if (_loggingService != null)
+                        {
+                            var templateLogger = _loggingService.GetLogger<MetadataTemplateManager>(); _templateManager = new MetadataTemplateManager(templateLogger, _appConfig, _yamlHelper);
+                        }
+                        else
+                        {
+                            _templateManager = new MetadataTemplateManager(logger, _appConfig, _yamlHelper);
+                        }
                     }
 
-                    _hierarchyDetector = new MetadataHierarchyDetector(logger, _appConfig);
+                    // Use logging service if available, otherwise fall back to a new logger factory
+                    if (_loggingService != null)
+                    {
+                        var hierarchyLogger = _loggingService.GetLogger<MetadataHierarchyDetector>();
+                        _hierarchyDetector = new MetadataHierarchyDetector(hierarchyLogger, _appConfig);
+                    }
+                    else
+                    {
+                        // Fall back to creating a local logger factory if no logging service provided
+                        var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+                        var hierarchyLogger = loggerFactory.CreateLogger<MetadataHierarchyDetector>();
+                        _hierarchyDetector = new MetadataHierarchyDetector(hierarchyLogger, _appConfig);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -108,10 +130,12 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
                     { "onedrive-shared-link", string.Empty }, // Will be populated by OneDrive service if available
                     { "onedrive_fullpath_file_reference", Path.GetFullPath(videoPath) }, // Full path to the video
                     { "transcript", string.Empty } // Will be populated if transcript file is found
-                };
+                };            // Extract module and lesson from directory structure
 
-            // Extract module and lesson from directory structure
-            var courseStructureExtractor = new CourseStructureExtractor(Logger);
+
+            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            var courseLogger = loggerFactory.CreateLogger<CourseStructureExtractor>();
+            var courseStructureExtractor = new CourseStructureExtractor(courseLogger);
             courseStructureExtractor.ExtractModuleAndLesson(videoPath, metadata);
 
             // Extract file creation date but exclude unwanted metadata fields
@@ -213,8 +237,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// var processor = new VideoNoteProcessor(logger, aiSummarizer);
         /// var summary = await processor.GenerateAiSummaryAsync("Transcript content", new Dictionary<string, string> { { "title", "Sample Video" } });
         /// Console.WriteLine(summary);
-        /// </code>
-        /// </example>
+        /// </code>        /// </example>
         public override async Task<string> GenerateAiSummaryAsync(string? text, Dictionary<string, string>? variables = null, string? promptFileName = null)
         {
             if (string.IsNullOrEmpty(text))
@@ -245,6 +268,21 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
 
                     variables["title"] = title;
                     Logger.LogDebug("Added title '{Title}' to prompt variables", title);
+                }                // Add YAML frontmatter as a variable if not already present
+                if (!variables.ContainsKey("yamlfrontmatter"))
+                {
+                    // Build basic YAML frontmatter for video notes
+                    var basicMetadata = new Dictionary<string, object>
+                    {
+                        ["title"] = variables.GetValueOrDefault("title", "Untitled Video"),
+                        ["template-type"] = "video-reference",
+                        ["auto-generated-state"] = "writable",
+                        ["type"] = "note/video"
+                    };
+
+                    string yamlContent = BuildYamlFrontmatter(basicMetadata);
+                    variables["yamlfrontmatter"] = yamlContent;
+                    Logger.LogDebug("Built and added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer", yamlContent.Length);
                 }
 
                 // Call base implementation with our enriched variables
@@ -254,6 +292,130 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             {
                 Logger.LogError(ex, "Error generating AI summary");
                 return "[Error during summarization]";
+            }
+        }
+
+        /// <summary>
+        /// Builds a YAML frontmatter string using the video metadata and following the template structure.
+        /// </summary>
+        /// <param name="metadata">The video metadata dictionary.</param>
+        /// <returns>A YAML frontmatter string suitable for use in the prompt template.</returns>
+        private string BuildYamlFrontmatter(Dictionary<string, object> metadata)
+        {
+            try
+            {
+                // Create a dictionary with the expected YAML frontmatter structure for videos
+                var yamlData = new Dictionary<string, object>
+                {
+                    ["template-type"] = "video-reference",
+                    ["auto-generated-state"] = "writable",
+                    ["type"] = "note/video"
+                };
+
+                // Add title if available
+                if (metadata.TryGetValue("title", out var title) && title != null)
+                {
+                    yamlData["title"] = title?.ToString() ?? "Untitled Video";
+                }
+
+                // Add program, course, class, module, lesson if available
+                if (metadata.TryGetValue("program", out var program) && program != null)
+                {
+                    yamlData["program"] = program?.ToString() ?? string.Empty;
+                }
+
+                if (metadata.TryGetValue("course", out var course) && course != null)
+                {
+                    yamlData["course"] = course?.ToString() ?? string.Empty;
+                }
+
+                if (metadata.TryGetValue("class", out var className) && className != null)
+                {
+                    yamlData["class"] = className?.ToString() ?? string.Empty;
+                }
+
+                if (metadata.TryGetValue("module", out var module) && module != null)
+                {
+                    yamlData["module"] = module?.ToString() ?? string.Empty;
+                }
+                else
+                {
+                    yamlData["module"] = string.Empty;  // Ensure module is always included
+                }
+
+                if (metadata.TryGetValue("lesson", out var lesson) && lesson != null)
+                {
+                    yamlData["lesson"] = lesson?.ToString() ?? string.Empty;
+                }
+                else
+                {
+                    yamlData["lesson"] = string.Empty;  // Ensure lesson is always included
+                }
+
+                // Add fixed values
+                yamlData["comprehension"] = 0;
+
+                // Add date fields
+                yamlData["date-created"] = DateTime.Now.ToString("yyyy-MM-dd");
+
+                // Add empty date review/completion fields
+                yamlData["completion-date"] = string.Empty;
+                yamlData["date-review"] = string.Empty;
+
+                // Add video-specific information
+                if (metadata.TryGetValue("onedrive_fullpath_file_reference", out var filePath) && filePath != null)
+                {
+                    yamlData["onedrive_fullpath_file_reference"] = filePath?.ToString() ?? string.Empty;
+                }
+
+                if (metadata.TryGetValue("onedrive-shared-link", out var shareLink) && shareLink != null)
+                {
+                    yamlData["onedrive-shared-link"] = shareLink?.ToString() ?? string.Empty;
+                }
+                else
+                {
+                    yamlData["onedrive-shared-link"] = string.Empty;  // Ensure onedrive-shared-link is always included
+                }
+
+                if (metadata.TryGetValue("video-duration", out var duration) && duration != null)
+                {
+                    yamlData["video-duration"] = duration?.ToString() ?? string.Empty;
+                }
+
+                if (metadata.TryGetValue("video-size", out var videoSize) && videoSize != null)
+                {
+                    yamlData["video-size"] = videoSize?.ToString() ?? string.Empty;
+                }
+
+                // Set status as unread by default
+                yamlData["status"] = "unread";
+
+                // Add resources_root if available
+                if (metadata.TryGetValue("onedrive_fullpath_root", out var resourcesRoot) && resourcesRoot != null)
+                {
+                    yamlData["onedrive_fullpath_root"] = resourcesRoot?.ToString() ?? string.Empty;
+                }
+
+                // Explicitly remove unwanted fields if they exist
+                yamlData.Remove("aliases");
+                yamlData.Remove("permalink");
+
+                // Serialize to YAML - without the --- separators
+                var serializer = new SerializerBuilder()
+                    .WithNamingConvention(CamelCaseNamingConvention.Instance)
+                    .Build();
+
+                string yamlString = serializer.Serialize(yamlData);
+
+                int yamlLength = yamlString.Length;
+                int fields = yamlData.Count;
+                Logger.LogDebug("Generated YAML frontmatter for video: {Length} chars, {FieldCount} fields", yamlLength, fields);
+                return yamlString;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to build YAML frontmatter for video");
+                return string.Empty;
             }
         }
 
@@ -304,25 +466,22 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
         /// </code>
         /// </example>
         public override string GenerateMarkdownNote(string bodyText, Dictionary<string, object>? metadata = null, string noteType = "Document Note", bool suppressBody = false, bool includeNoteTypeTitle = false)
-        {
-            // For video notes, we need special handling to extract and merge frontmatter
-            var yamlHelper = new YamlHelper(Logger);
+        {            // For video notes, we need special handling to extract and merge frontmatter using the injected helper
+            // Use the injected YAML helper
 
             // Use default metadata if none provided
             metadata ??= [];
 
             // Debug: Log the original summary
             Logger.LogInformation("VideoNoteProcessor.GenerateMarkdownNote called - Original AI summary (first 200 chars): {Summary}",
-                bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText);
-
-            // Extract any existing frontmatter from the AI summary
-            string? summaryFrontmatter = yamlHelper.ExtractFrontmatter(bodyText);
+                bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText);            // Extract any existing frontmatter from the AI summary
+            string? summaryFrontmatter = _yamlHelper.ExtractFrontmatter(bodyText);
 
             Dictionary<string, object> summaryMetadata = [];
 
             if (!string.IsNullOrWhiteSpace(summaryFrontmatter))
             {
-                summaryMetadata = yamlHelper.ParseYamlToDictionary(summaryFrontmatter);
+                summaryMetadata = _yamlHelper.ParseYamlToDictionary(summaryFrontmatter);
                 Logger.LogInformation("Extracted frontmatter from AI summary with {Count} fields", summaryMetadata.Count);
             }
             else
@@ -331,7 +490,7 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             }
 
             // Remove frontmatter from the summary content using YamlHelper
-            string cleanSummary = yamlHelper.RemoveFrontmatter(bodyText);
+            string cleanSummary = _yamlHelper.RemoveFrontmatter(bodyText);
 
             // Debug: Log the cleaned summary
             Logger.LogInformation("Cleaned summary (first 200 chars): {CleanSummary}",
@@ -899,14 +1058,15 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing
             else
             {
                 // Only call AI summarizer when summary is actually requested
-                Logger.LogInformation("Generating AI summary for video: {VideoPath}", videoPath);
-
-                // Pass title from metadata for prompt variables
+                Logger.LogInformation("Generating AI summary for video: {VideoPath}", videoPath);                // Pass title and metadata for prompt variables
                 var promptVariables = new Dictionary<string, string>();
                 if (metadata.TryGetValue("title", out var titleObj) && titleObj != null)
                 {
                     promptVariables["title"] = titleObj.ToString() ?? "Untitled Video";
-                }
+                }                // Add YAML frontmatter as a variable
+                string yamlContent = BuildYamlFrontmatter(metadata);
+                promptVariables["yamlfrontmatter"] = yamlContent;
+                Logger.LogDebug("Added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer", yamlContent.Length);
 
                 aiSummary = await GenerateAiSummaryAsync(summaryInput, promptVariables, "final_summary_prompt");
             }

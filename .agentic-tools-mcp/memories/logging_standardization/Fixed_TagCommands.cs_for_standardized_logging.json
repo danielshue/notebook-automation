@@ -1,0 +1,8 @@
+{
+  "id": "8c88b723-db5f-4ccb-b68e-412939d39dd4",
+  "title": "Fixed TagCommands.cs for standardized logging",
+  "details": "Updated the TagCommands.cs file to use the IYamlHelper from the DI container instead of passing a boolean parameter to the TagProcessor constructor. This change was necessary because the TagProcessor constructor was updated to require an IYamlHelper instance as part of the logging standardization initiative.\n\nKey changes:\n1. Added serviceProvider.GetRequiredService<IYamlHelper>() to get the YamlHelper instance\n2. Updated all TagProcessor constructor calls to include the YamlHelper as the third parameter\n3. Verified that the CLI project builds successfully with these changes\n\nNext steps:\n- Fix the test failures in the Core.Tests project that are still using the old constructor signatures\n- Focus on TagProcessorTests.cs which has multiple instances of the issue",
+  "category": "logging_standardization",
+  "dateCreated": "2025-06-03T22:46:53.699Z",
+  "dateUpdated": "2025-06-03T22:46:53.699Z"
+}

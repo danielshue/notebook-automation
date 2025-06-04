@@ -1,0 +1,8 @@
+{
+  "id": "43aa6377-3e8d-4b90-a8c3-2a96e462dd4e",
+  "title": "Fixed redundant progress status in CLI commands",
+  "details": "## Issue\nThe progress reporting in both VideoCommands.cs and PdfCommands.cs had redundant information in the status message. The status coming from the processor already included the file count (like \"2/14:\") but we were adding another count prefix (\"Processing video 2 of 14:\"), resulting in redundant information and alignment issues.\n\n## Fix Applied\n1. Updated both VideoCommands.cs and PdfCommands.cs to display only the status message from the processor without adding our own file count prefix:\n\n```csharp\nbatchProcessor.ProcessingProgressChanged += (sender, e) =>\n{\n    // Escape any markup to avoid Spectre.Console parsing issues\n    string safeStatus = e.Status.Replace(\"[\", \"[[\").Replace(\"]\", \"]]\");\n    // The status already contains file count information, so we don't need to add it\n    updateStatus(safeStatus);\n};\n```\n\n2. Removed the previous format where we were adding a prefix:\n```csharp\n// Old format\nupdateStatus($\"Processing video {e.CurrentFile} of {e.TotalFiles}: {safeStatus}\");\n\n// New format - uses just the status from the processor\nupdateStatus(safeStatus);\n```\n\n3. Fixed an issue with the event handler formatting that was causing compilation errors.\n\n## Benefits\n- Cleaner status messages without redundant information\n- Better alignment of text in the console\n- Consistent display format across all commands\n- Relies on the processor to format the status message consistently\n\n## Verified\n- Built the solution successfully with the changes",
+  "category": "cli-improvements",
+  "dateCreated": "2025-06-03T19:55:19.863Z",
+  "dateUpdated": "2025-06-03T19:55:19.863Z"
+}

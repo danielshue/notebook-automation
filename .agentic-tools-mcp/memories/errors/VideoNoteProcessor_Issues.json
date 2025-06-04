@@ -1,0 +1,8 @@
+{
+  "id": "0ce60d7c-51d8-4879-9d27-1f734f826b2a",
+  "title": "VideoNoteProcessor Issues",
+  "details": "# VideoNoteProcessor Code Issues\n\nThere appear to be issues with the `VideoNoteProcessor.cs` file which is preventing successful compilation:\n\n1. Error CS1022: Type or namespace definition, or end-of-file expected at line 29\n2. Error CS1022: Type or namespace definition, or end-of-file expected at line 1111\n\nThe key issue seems to be a formatting problem in the file, specifically:\n- Line 23 has the class declaration on the same line as the closing `</remarks>` tag, which is causing parsing issues\n- The file may have other XML documentation formatting issues\n\nWe're not able to directly modify the `VideoNoteProcessor.cs` file at this time due to these formatting issues. Our approach should be:\n\n1. Inform the developer about the formatting issues in VideoNoteProcessor.cs that need to be fixed first\n2. Once the formatting is fixed:\n   - Update VideoNoteProcessor to accept an ILoggingService parameter\n   - Use the logging service for creating all child loggers\n   - Remove direct LoggerFactory instantiations\n\nWe should also check for similar issues in:\n- PdfNoteProcessor.cs (also found to have direct LoggerFactory instantiations)\n- Any other processor classes that might be following the same pattern",
+  "category": "errors",
+  "dateCreated": "2025-06-03T22:25:27.235Z",
+  "dateUpdated": "2025-06-03T22:25:27.235Z"
+}

@@ -12,15 +12,14 @@ namespace NotebookAutomation.Core.Tools.TagManagement
     /// - Consolidating tags across files
     /// - Restructuring tag hierarchies
     /// - Cleaning tags from index files
-    /// - Restructuring tags for consistency
-    /// - Adding example tags for demonstration/testing
+    /// - Restructuring tags for consistency    /// - Adding example tags for demonstration/testing
     /// - Checking and enforcing metadata consistency
     /// </summary>
     public class TagProcessor
     {
         private readonly ILogger<TagProcessor> _logger;
         private readonly ILogger _failedLogger;
-        private readonly YamlHelper _yamlHelper;
+        private readonly IYamlHelper _yamlHelper;
         private readonly bool _dryRun;
         private readonly bool _verbose;
         private readonly HashSet<string> _fieldsToProcess;
@@ -35,24 +34,24 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             { "TagsAdded", 0 },
             { "IndexFilesCleared", 0 },
             { "FilesWithErrors", 0 }
-        };
-
-        /// <summary>
-        /// Initializes a new instance of the TagProcessor.
-        /// </summary>
-        /// <param name="logger">Logger for general diagnostics.</param>
-        /// <param name="failedLogger">Logger for recording failed operations.</param>
-        /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
-        /// <param name="verbose">Whether to provide verbose output.</param>
+        };        /// <summary>
+                  /// Initializes a new instance of the TagProcessor.
+                  /// </summary>
+                  /// <param name="logger">Logger for general diagnostics.</param>
+                  /// <param name="failedLogger">Logger for recording failed operations.</param>
+                  /// <param name="yamlHelper">Helper for YAML processing.</param>
+                  /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
+                  /// <param name="verbose">Whether to provide verbose output.</param>
         public TagProcessor(
             ILogger<TagProcessor> logger,
             ILogger failedLogger,
+            IYamlHelper yamlHelper,
             bool dryRun = false,
             bool verbose = false)
         {
-            _logger = logger;
-            _failedLogger = failedLogger;
-            _yamlHelper = new YamlHelper(logger);
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _failedLogger = failedLogger ?? throw new ArgumentNullException(nameof(failedLogger));
+            _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
             _dryRun = dryRun;
             _verbose = verbose;
 
@@ -69,19 +68,21 @@ namespace NotebookAutomation.Core.Tools.TagManagement
         /// </summary>
         /// <param name="logger">Logger for general diagnostics.</param>
         /// <param name="failedLogger">Logger for recording failed operations.</param>
+        /// <param name="yamlHelper">Helper for YAML processing.</param>
         /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
         /// <param name="verbose">Whether to provide verbose output.</param>
         /// <param name="fieldsToProcess">Specific frontmatter fields to process for tag generation.</param>
         public TagProcessor(
             ILogger<TagProcessor> logger,
             ILogger failedLogger,
+            IYamlHelper yamlHelper,
             bool dryRun = false,
             bool verbose = false,
             HashSet<string>? fieldsToProcess = null)
         {
-            _logger = logger;
-            _failedLogger = failedLogger;
-            _yamlHelper = new YamlHelper(logger);
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _failedLogger = failedLogger ?? throw new ArgumentNullException(nameof(failedLogger));
+            _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
             _dryRun = dryRun;
             _verbose = verbose;
 
@@ -217,7 +218,8 @@ namespace NotebookAutomation.Core.Tools.TagManagement
 
                     // Update the content with the new frontmatter
                     string updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
-                    string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
+                    var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
+                    string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
 
                     if (_dryRun)
                     {
@@ -553,7 +555,8 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 return true;
             }
             var updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
-            var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
+            var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
+            string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
             await File.WriteAllTextAsync(filePath, updatedContent);
             _logger.LogInformation("Restructured tags in {FilePath}", filePath);
             Stats["FilesModified"]++;
@@ -584,7 +587,8 @@ namespace NotebookAutomation.Core.Tools.TagManagement
                 return true;
             }
             var updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
-            var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
+            var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
+            string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
             await File.WriteAllTextAsync(filePath, updatedContent);
             _logger.LogInformation("Added example tags to {FilePath}", filePath);
             Stats["FilesModified"]++;
@@ -640,7 +644,8 @@ namespace NotebookAutomation.Core.Tools.TagManagement
             if (modified)
             {
                 var updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
-                var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatter);
+                var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
+                var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
                 await File.WriteAllTextAsync(filePath, updatedContent);
                 _logger.LogInformation("Enforced metadata consistency in {FilePath}", filePath);
                 Stats["FilesModified"]++;

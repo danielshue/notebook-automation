@@ -1,0 +1,8 @@
+{
+  "id": "ce282bd1-fe2f-4269-a682-0a17ff0ca0ad",
+  "title": "PDF Commands use modern Spectre.Console progress",
+  "details": "## Changes Made\nI updated the PdfCommands.cs to use the newer Spectre.Console WithStatusAsync pattern for progress reporting, matching the implementation in VideoCommands.cs. This ensures consistent behavior across all CLI commands and fixes the progress reporting to update in place rather than printing new lines for each animation update.\n\n## Implementation Details\n1. Replaced the legacy spinner implementation in PdfCommands.cs:\n   - Removed `AnsiConsoleHelper.StartSpinner()` and `AnsiConsoleHelper.StopSpinner()`\n   - Implemented `AnsiConsoleHelper.WithStatusAsync<BatchProcessResult>()` with a callback to update status\n\n2. Added proper markup escaping for status messages to avoid Spectre.Console parsing issues:\n   ```csharp\n   string safeStatus = e.Status.Replace(\"[\", \"[[\").Replace(\"]\", \"]]\");\n   ```\n\n3. Added necessary namespace import:\n   ```csharp\n   using NotebookAutomation.Core.Tools.Shared;\n   ```\n\n4. Updated exception handling to remove manual spinner management since WithStatusAsync handles this automatically\n\n## Benefits\n- Consistent progress reporting behavior across all CLI commands\n- Single line in-place progress updates rather than multiple lines\n- Modern Spectre.Console based implementation\n- Improved error handling with automatic cleanup of resources\n- Cleaner code with less manual spinner management\n\n## Tested\nBuilt the solution successfully and verified that there are no compilation errors.",
+  "category": "cli-improvements",
+  "dateCreated": "2025-06-03T19:47:24.015Z",
+  "dateUpdated": "2025-06-03T19:47:24.015Z"
+}

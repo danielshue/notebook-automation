@@ -11,6 +11,7 @@ using Moq;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests.Tools;
 
@@ -21,6 +22,7 @@ public class VideoNoteProcessorMetadataTests
     private TestAISummarizer _aiSummarizer;
     private Mock<IOneDriveService> _oneDriveServiceMock;
     private AppConfig _appConfig;
+    private Mock<IYamlHelper> _yamlHelperMock;
     private string _testMetadataFile;
     private string _testVaultRoot;
 
@@ -30,6 +32,23 @@ public class VideoNoteProcessorMetadataTests
         _loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
         _aiSummarizer = new TestAISummarizer();
         _oneDriveServiceMock = new Mock<IOneDriveService>();
+        _yamlHelperMock = new Mock<IYamlHelper>();
+
+        // Setup YamlHelper mock
+        _yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
+            .Returns<string>(markdown => markdown.Contains("---") ? markdown.Substring(markdown.IndexOf("---", 3) + 3) : markdown);
+
+        _yamlHelperMock.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
+            .Returns(new Dictionary<string, object>
+            {
+                { "template-type", "video-reference" },
+                { "type", "video-reference" },
+                { "title", "Test Video" },
+                { "tags", new[] { "video", "reference" } }
+            });
+
+        _yamlHelperMock.Setup(m => m.ExtractFrontmatter(It.IsAny<string>()))
+            .Returns("template-type: video-reference\ntitle: Test Video");
 
         // Create test directories and files
         _testVaultRoot = Path.Combine(Path.GetTempPath(), "TestVault");
@@ -114,6 +133,7 @@ video-uploaded:";
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
+            _yamlHelperMock.Object,
             _oneDriveServiceMock.Object,
             _appConfig
         );
@@ -139,7 +159,6 @@ video-uploaded:";
         Assert.IsTrue(markdownNote.Contains("course: Supply Chain"));
         Assert.IsTrue(markdownNote.Contains("class: Class 1"));
     }
-
     [TestMethod]
     public void GenerateMarkdownNote_WithTemplate_AppliesTemplateMetadata()
     {
@@ -147,6 +166,7 @@ video-uploaded:";
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
+            _yamlHelperMock.Object,
             _oneDriveServiceMock.Object,
             _appConfig
         ); Dictionary<string, object> metadata = new()
@@ -166,7 +186,6 @@ video-uploaded:";
         // Assert that the note body is present (not suppressed)
         Assert.IsTrue(markdownNote.Contains("This is a test summary."), "Missing summary body");
     }
-
     [TestMethod]
     public void GenerateMarkdownNote_WithTemplateAndHierarchy_AppliesBoth()
     {
@@ -174,6 +193,7 @@ video-uploaded:";
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
+            _yamlHelperMock.Object,
             _oneDriveServiceMock.Object,
             _appConfig
         );
@@ -202,7 +222,6 @@ video-uploaded:";
         // Assert that the note body is present (not suppressed)
         Assert.IsTrue(markdownNote.Contains("This is a test summary."), "Missing summary body");
     }
-
     [TestMethod]
     public async Task ProcessVideoAsync_AppliesPathBasedMetadataAndTemplate()
     {
@@ -210,6 +229,7 @@ video-uploaded:";
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
+            _yamlHelperMock.Object,
             _oneDriveServiceMock.Object,
             _appConfig
         );
@@ -237,7 +257,6 @@ video-uploaded:";
         Assert.IsTrue(markdown.Contains("AI summary of the video content"), "Missing summary body");
 
     }
-
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithNoSummary_SuppressesBodyOutputsOnlyFrontmatter()
     {
@@ -245,6 +264,7 @@ video-uploaded:";
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
+            _yamlHelperMock.Object,
             _oneDriveServiceMock.Object,
             _appConfig
         );
@@ -283,11 +303,10 @@ video-uploaded:";
         // Arrange
         string testShareLink = "https://onedrive.live.com/view.aspx?test=example"; _oneDriveServiceMock
             .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(testShareLink);
-
-        VideoNoteProcessor processor = new(
+            .ReturnsAsync(testShareLink); VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
+            _yamlHelperMock.Object,
             _oneDriveServiceMock.Object,
             _appConfig
         );

@@ -12,6 +12,7 @@ using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -33,17 +34,22 @@ public class VideoNoteBatchProcessorResourcesRootTests
         _outputDir = Path.Combine(_testDir, "output");
         Directory.CreateDirectory(_outputDir);
 
-        _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
-
-        // Create a TestableAISummarizer that can be used in tests
-        TestableAISummarizer testAISummarizer = new(Mock.Of<ILogger<AISummarizer>>());            // Create a mock for IOneDriveService
-        IOneDriveService mockOneDriveService = Mock.Of<IOneDriveService>();            // Set up mock with test dependencies (add the optional AppConfig parameter)
+        _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();        // Create a TestableAISummarizer that can be used in tests
+        TestableAISummarizer testAISummarizer = new(Mock.Of<ILogger<AISummarizer>>());
+        // Create a mock for IOneDriveService
+        IOneDriveService mockOneDriveService = Mock.Of<IOneDriveService>();
+        // Create mock YamlHelper
+        var mockYamlHelper = Mock.Of<IYamlHelper>();
+        // Set up mock with test dependencies and updated constructor signature
         _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
             MockBehavior.Loose,
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             testAISummarizer,
-            mockOneDriveService,
-            null as AppConfig);
+            mockYamlHelper, // Required YamlHelper parameter
+            mockOneDriveService, // Optional OneDriveService
+            null as AppConfig, // Optional AppConfig
+            null // Optional LoggingService
+        );
 
         // Create a custom batch processor that will directly create a file with the resourcesRoot
         // so we can test that the parameter is being passed correctly

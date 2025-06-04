@@ -14,12 +14,12 @@ namespace NotebookAutomation.Core.Tests.Utils;
 [TestClass]
 public class MetadataHierarchyDetectorTests
 {
-    private Mock<ILogger> _loggerMock;
+    private Mock<ILogger<MetadataHierarchyDetector>> _loggerMock;
     private Mock<AppConfig> _appConfigMock;
     private AppConfig _testAppConfig; [TestInitialize]
     public void Setup()
     {
-        _loggerMock = new Mock<ILogger>();
+        _loggerMock = new Mock<ILogger<MetadataHierarchyDetector>>();
 
         // Create a real AppConfig instance instead of mocking it
         _appConfigMock = new Mock<AppConfig>();
