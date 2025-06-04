@@ -1,0 +1,8 @@
+{
+  "id": "00af4a0e-b6cc-407e-8341-17718ee0b5b7",
+  "title": "Fixed API key environment variable test failure",
+  "details": "# Fixed AppConfigTests.SaveToJsonFile_ShouldSaveConfigurationCorrectly Test\n\nThe final remaining test failure in the C# notebook automation codebase was fixed in the `AppConfigTests.cs` file. The issue was with the `SaveToJsonFile_ShouldSaveConfigurationCorrectly` test, which was failing due to issues with environment variable handling.\n\n## Root Cause\nThe test was setting the `OPENAI_API_KEY` environment variable but wasn't properly assuring it was set throughout the test execution. The `AIServiceConfig` class doesn't store API keys in the config file, but instead reads them from environment variables at runtime.\n\n## Solution\nThe test was updated to:\n1. Properly save the original environment variable value before modifying it\n2. Use `EnvironmentVariableTarget.Process` to ensure the variable is set correctly\n3. Verify that the environment variable is set correctly before testing\n4. Fix and organize the assertions to make the test more readable\n5. Ensure cleanup of the environment variable in the finally block\n\n## Key Learning\n- API keys should never be stored in config files - they are retrieved from environment variables\n- When testing environment variable-dependent code, be sure to save and restore the original values\n- Use `EnvironmentVariableTarget.Process` to ensure variables are set for the current process\n\nWith this fix, all tests in the project now pass successfully, including the CI build script.",
+  "category": "test-fixes",
+  "dateCreated": "2025-06-04T05:18:08.680Z",
+  "dateUpdated": "2025-06-04T05:18:08.680Z"
+}
