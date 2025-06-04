@@ -76,13 +76,20 @@ namespace NotebookAutomation.Core.Services
         /// </summary>
         /// <param name="localPath">The local file path to map.</param>
         /// <returns>The corresponding OneDrive path.</returns>
-        string MapLocalToOneDrivePath(string localPath);
+        string MapLocalToOneDrivePath(string localPath);        /// <summary>
+                                                                /// Maps an OneDrive file path to its corresponding local path.
+                                                                /// </summary>
+                                                                /// <param name="oneDrivePath">The OneDrive file path to map.</param>
+                                                                /// <returns>The corresponding local path.</returns>
+        string MapOneDriveToLocalPath(string oneDrivePath);
 
         /// <summary>
-        /// Maps an OneDrive file path to its corresponding local path.
+        /// Gets a share link for a file in OneDrive.
         /// </summary>
-        /// <param name="oneDrivePath">The OneDrive file path to map.</param>
-        /// <returns>The corresponding local path.</returns>
-        string MapOneDriveToLocalPath(string oneDrivePath);
+        /// <param name="filePath">The path of the file to get a share link for.</param>
+        /// <param name="forceRefresh">Whether to force refresh the share link.</param>
+        /// <param name="cancellationToken">Optional cancellation token.</param>
+        /// <returns>The share link information as a JSON string.</returns>
+        Task<string> GetShareLinkAsync(string filePath, bool forceRefresh = false, CancellationToken cancellationToken = default);
     }
 }

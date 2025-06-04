@@ -18,7 +18,7 @@ namespace NotebookAutomation.Core.Utils
     {
         private readonly ILogger _logger;
         private readonly string _metadataFilePath;
-        private readonly YamlHelper _yamlHelper;
+        private readonly IYamlHelper _yamlHelper;
         private readonly Dictionary<string, Dictionary<string, object>> _templates;
 
         /// <summary>
@@ -26,9 +26,11 @@ namespace NotebookAutomation.Core.Utils
         /// </summary>
         /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
         /// <param name="appConfig">The application configuration.</param>
-        public MetadataTemplateManager(ILogger logger, AppConfig appConfig)
+        /// <param name="yamlHelper">The YAML helper service for parsing metadata.</param>
+        public MetadataTemplateManager(ILogger logger, AppConfig appConfig, IYamlHelper yamlHelper)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
 
             if (appConfig?.Paths == null)
                 throw new ArgumentNullException(nameof(appConfig), "Application config paths must be provided");
@@ -38,7 +40,6 @@ namespace NotebookAutomation.Core.Utils
             if (string.IsNullOrWhiteSpace(_metadataFilePath))
                 throw new ArgumentException("Metadata file path is not configured in appConfig");
 
-            _yamlHelper = new YamlHelper(logger);
             _templates = [];
 
             LoadTemplates();

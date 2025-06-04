@@ -1004,8 +1004,36 @@ namespace NotebookAutomation.Core.Services
             if (!normOneDrivePath.StartsWith(_oneDriveVaultRoot, StringComparison.OrdinalIgnoreCase))
                 throw new ArgumentException($"OneDrive path '{oneDrivePath}' is not under the configured OneDrive vault root '{_oneDriveVaultRoot}'.");
             var relative = normOneDrivePath[_oneDriveVaultRoot.Length..].TrimStart('/');
-            var localPath = Path.Combine(_localVaultRoot, relative.Replace('/', Path.DirectorySeparatorChar));
-            return localPath;
+            var localPath = Path.Combine(_localVaultRoot, relative.Replace('/', Path.DirectorySeparatorChar)); return localPath;
+        }
+
+        /// <summary>
+        /// Gets a share link for a file in OneDrive.
+        /// </summary>
+        /// <param name="filePath">The path of the file to get a share link for.</param>
+        /// <param name="forceRefresh">Whether to force refresh the share link.</param>
+        /// <param name="cancellationToken">Optional cancellation token.</param>
+        /// <returns>The share link information as a JSON string.</returns>
+        async Task<string> IOneDriveService.GetShareLinkAsync(string filePath, bool forceRefresh, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await AuthenticateAsync();
+
+                if (_graphClient == null)
+                {
+                    throw new InvalidOperationException("Graph client not initialized. Authentication failed.");
+                }
+
+                // For now, just return the same result as CreateShareLinkAsync
+                string? shareLink = await CreateShareLinkAsync(filePath, "view", "anonymous", cancellationToken);
+                return shareLink ?? "{}";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting share link for file: {FilePath}", filePath);
+                throw;
+            }
         }
 
         /// <summary>

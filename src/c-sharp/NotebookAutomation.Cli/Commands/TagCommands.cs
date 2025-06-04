@@ -328,14 +328,14 @@ namespace NotebookAutomation.Cli.Commands
 
                 // Always show the active config file being used
                 string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
-                AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
-
-                // Create a new TagProcessor with command-specific options
-                // For TagProcessor we can't use DI directly since we need to pass dryRun and verbose
+                AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");                // Create a new TagProcessor with command-specific options
+                // For TagProcessor we need to get the IYamlHelper from DI
                 var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
+                var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
                 var tagProcessor = new TagProcessor(
                     tagProcessorLogger,
                     failedLogger,
+                    yamlHelper,
                     dryRun,
                     verbose);
 
@@ -422,13 +422,13 @@ namespace NotebookAutomation.Cli.Commands
                 string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
                 AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
 
-                logger.LogInformation("Executing update-frontmatter command on path: {Path}, key: {Key}, value: {Value}", path, key, value);
-
-                // Create a new TagProcessor with command-specific options
+                logger.LogInformation("Executing update-frontmatter command on path: {Path}, key: {Key}, value: {Value}", path, key, value);                // Create a new TagProcessor with command-specific options
                 var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
+                var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
                 var tagProcessor = new TagProcessor(
                     tagProcessorLogger,
                     failedLogger,
+                    yamlHelper,
                     dryRun,
                     verbose);
 
@@ -501,7 +501,8 @@ namespace NotebookAutomation.Cli.Commands
 
                 // Create processor
                 var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
-                var processor = new TagProcessor(tagProcessorLogger, failedLogger, false, verbose);
+                var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
+                var processor = new TagProcessor(tagProcessorLogger, failedLogger, yamlHelper, false, verbose);
 
                 // Run diagnosis
                 var results = await processor.DiagnoseFrontmatterIssuesAsync(path);

@@ -71,11 +71,11 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
                             metadata["subject"] = info.Subject;
                         if (!string.IsNullOrWhiteSpace(info?.Keywords))
                             metadata["keywords"] = info.Keywords;
-                    }
-
-                    // Extract module and lesson information
+                    }                    // Extract module and lesson information
                     Logger.LogDebugWithPath("Extracting course structure information", pdfPath);
-                    var courseStructureExtractor = new CourseStructureExtractor(Logger);
+                    var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+                    var courseLogger = loggerFactory.CreateLogger<CourseStructureExtractor>();
+                    var courseStructureExtractor = new CourseStructureExtractor(courseLogger);
                     courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);
 
                     // Add file information for PDF
@@ -339,23 +339,21 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing
             {
                 variables["title"] = titleObj.ToString() ?? "Untitled PDF";
                 Logger.LogInformationWithPath("Added title to variables: {Title}", effectivePrompt, variables["title"]);
-            }
-
-            // Add YAML frontmatter as a variable - but don't wrap it in --- separators
+            }            // Add YAML frontmatter as a variable - but don't wrap it in --- separators
             // as that will be handled by the template/prompt
             if (!string.IsNullOrEmpty(_yamlFrontmatter))
             {
                 // The _yamlFrontmatter should now contain just the YAML content without separators
-                variables["yaml-frontmatter"] = _yamlFrontmatter;
-                Logger.LogInformationWithPath("Added yaml-frontmatter variable ({Length:N0} chars) for AI summarizer",
+                variables["yamlfrontmatter"] = _yamlFrontmatter;
+                Logger.LogInformationWithPath("Added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer",
                     effectivePrompt, _yamlFrontmatter.Length);
             }
             else
             {
                 // Build it now if not already built - again without wrapping in --- separators
                 string yamlContent = BuildYamlFrontmatter(metadata);
-                variables["yaml-frontmatter"] = yamlContent;
-                Logger.LogInformationWithPath("Built and added yaml-frontmatter variable ({Length:N0} chars) for AI summarizer",
+                variables["yamlfrontmatter"] = yamlContent;
+                Logger.LogInformationWithPath("Built and added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer",
                     effectivePrompt, yamlContent.Length);
             }
 

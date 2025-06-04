@@ -1,13 +1,16 @@
 using System.CommandLine;
 using System.Runtime.CompilerServices;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.PdfProcessing;
+using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Utils;
 using NotebookAutomation.Cli.Utilities;
-using System.Runtime.InteropServices;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
@@ -295,36 +298,34 @@ namespace NotebookAutomation.Cli.Commands
 
                 logger.LogInformation("Processing {Type}: {Path}",
                     isFile ? "file" : "directory",
-                    input);
-                logger.LogInformationWithPath("Output will be written to: {OutputPath}", "PdfCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated");
-
-                // Start the spinner animation to show processing
-                AnsiConsoleHelper.StartSpinner($"Processing PDF files from {(isFile ? "file" : "directory")}: {input}");
-
-                try
+                    input); logger.LogInformationWithPath("Output will be written to: {OutputPath}", "PdfCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"); try
                 {
-                    // Hook up progress events to update the spinner
-                    batchProcessor.ProcessingProgressChanged += (sender, e) =>
-                    {
-                        AnsiConsoleHelper.UpdateSpinnerMessage(e.Status);
-                    };
+                    // Use the newer Spectre.Console status display with live updates
+                    var result = await AnsiConsoleHelper.WithStatusAsync<BatchProcessResult>(
+                        async (updateStatus) =>
+                        {                            // Hook up progress events to update the status
+                            batchProcessor.ProcessingProgressChanged += (sender, e) =>
+                            {
+                                // Escape any markup to avoid Spectre.Console parsing issues
+                                string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
+                                // The status already contains file count information, so we don't need to add it
+                                updateStatus(safeStatus);
+                            };
 
-                    var result = await batchProcessor.ProcessPdfsAsync(
-                        // Use the input from command line
-                        input,
-                        overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",
-                        pdfExtensions,
-                        openAiApiKey,
-                        dryRun,
-                        noSummary,
-                        force,
-                        retryFailed,
-                        timeout,
-                        localResourcesPathForBatchProcessor, // Use the full resources path for proper path calculations
-                        appConfig);
-
-                    // Stop the spinner before showing results
-                    AnsiConsoleHelper.StopSpinner();
+                            return await batchProcessor.ProcessPdfsAsync(
+                                input,
+                                overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",
+                                pdfExtensions,
+                                openAiApiKey,
+                                dryRun,
+                                noSummary,
+                                force,
+                                retryFailed,
+                                timeout,
+                                localResourcesPathForBatchProcessor,
+                                appConfig);
+                        },
+                        $"Processing PDF files from {(isFile ? "file" : "directory")}: {input}");
 
                     logger.LogInformation("PDF processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
                     logger.LogInformationWithPath("PDF processing completed. Success: {Processed}, Failed: {Failed}", "PdfCommands.cs", result.Processed, result.Failed);
@@ -335,8 +336,7 @@ namespace NotebookAutomation.Cli.Commands
                 }
                 catch (Exception ex)
                 {
-                    // Stop the spinner if an error occurs
-                    AnsiConsoleHelper.StopSpinner();
+                    // No need to stop spinner manually, WithStatusAsync handles this
                     AnsiConsoleHelper.WriteError($"Error processing PDF files: {ex.Message}");
                     logger.LogErrorWithPath(ex, "Error processing PDF files", "PdfCommands.cs");
                 }

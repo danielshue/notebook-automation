@@ -12,13 +12,13 @@ namespace NotebookAutomation.Core.Tests.Utils;
 [TestClass]
 public class CourseStructureExtractorTests
 {
-    private Mock<ILogger> _mockLogger;
+    private Mock<ILogger<CourseStructureExtractor>> _mockLogger;
     private CourseStructureExtractor _extractor;
 
     [TestInitialize]
     public void Setup()
     {
-        _mockLogger = new Mock<ILogger>();
+        _mockLogger = new Mock<ILogger<CourseStructureExtractor>>();
         _extractor = new CourseStructureExtractor(_mockLogger.Object);
     }
 

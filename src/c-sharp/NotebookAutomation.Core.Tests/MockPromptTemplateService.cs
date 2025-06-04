@@ -112,13 +112,27 @@ public class MockPromptTemplateService : IPromptService
     {
         string template = await LoadTemplateAsync(templateName);
         return SubstituteVariables(template, variables);
-    }
+    }    /// <summary>
+         /// Processes template with variables for compatibility with AISummarizer tests.
+         /// </summary>
+         /// <param name="template">The template string with placeholders.</param>
+         /// <param name="variables">Dictionary of variable names and values.</param>
+         /// <returns>The template with variables substituted.</returns>
+    public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(SubstituteVariables(template, variables));
 
     /// <summary>
-    /// Processes template with variables for compatibility with AISummarizer tests.
+    /// Verifies that a specific variable was substituted in the template.
     /// </summary>
-    /// <param name="template">The template string with placeholders.</param>
-    /// <param name="variables">Dictionary of variable names and values.</param>
-    /// <returns>The template with variables substituted.</returns>
-    public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(SubstituteVariables(template, variables));
+    /// <param name="variableName">Name of the variable to check.</param>
+    /// <param name="expectedValue">Expected value after substitution.</param>
+    /// <returns>True if the variable was substituted with the expected value, false otherwise.</returns>
+    /// <remarks>This method is used to verify YAML frontmatter substitution in tests.</remarks>
+    public bool VerifySubstitution(string variableName, string expectedValue)
+    {
+        if (LastVariables != null && LastVariables.TryGetValue(variableName, out var actualValue))
+        {
+            return actualValue == expectedValue;
+        }
+        return false;
+    }
 }

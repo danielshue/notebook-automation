@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 
@@ -33,7 +34,8 @@ public class VideoNoteProcessorNoSummaryTests
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
         _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
 
-        _processor = new VideoNoteProcessor(_logger, _aiSummarizer);
+        var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>());
+        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper);
 
         // Create temporary directory and mock video file
         _tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());

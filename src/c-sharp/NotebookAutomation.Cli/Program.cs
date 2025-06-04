@@ -76,9 +76,7 @@ namespace NotebookAutomation.Cli
             logger.LogInformationWithPath("Application started", "Program.cs");
 
             var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>());
-            tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-
-            var vaultCommands = new VaultCommands(loggerFactory.CreateLogger<VaultCommands>());
+            tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption); var vaultCommands = new VaultCommands(loggerFactory.CreateLogger<VaultCommands>(), serviceProvider);
             vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());

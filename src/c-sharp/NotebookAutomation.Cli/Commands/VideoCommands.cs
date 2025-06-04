@@ -3,7 +3,9 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Core.Utils;
 using NotebookAutomation.Cli.Utilities;
@@ -274,28 +276,50 @@ namespace NotebookAutomation.Cli.Commands
 
                 logger.LogInformation("Processing {Type}: {Path}",
                     isFile ? "file" : "directory",
-                    input);
-                logger.LogInformationWithPath("Output will be written to: {OutputPath}", "VideoCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated");
-                var result = await batchProcessor.ProcessVideosAsync(
-                    // Use the input from command line
-                    input,
-                    overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",
-                    videoExtensions,
-                    openAiApiKey,
-                    dryRun,
-                    noSummary,
-                    force,
-                    retryFailed,
-                    timeout,
-                    localResourcesPathForBatchProcessor, // Use the full resources path for proper path calculations
-                    appConfig,
-                    noShareLinks);
+                    input); logger.LogInformationWithPath("Output will be written to: {OutputPath}", "VideoCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated");
 
-                logger.LogInformation("Video processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
-                logger.LogInformationWithPath("Video processing completed. Success: {Processed}, Failed: {Failed}", "VideoCommands.cs", result.Processed, result.Failed);
-                if (!string.IsNullOrWhiteSpace(result.Summary))
+                try
                 {
-                    AnsiConsoleHelper.WriteInfo(result.Summary);
+                    // Use the newer Spectre.Console status display with live updates
+                    var result = await AnsiConsoleHelper.WithStatusAsync<BatchProcessResult>(
+                        async (updateStatus) =>
+                        {                            // Hook up progress events to update the status
+                            batchProcessor.ProcessingProgressChanged += (sender, e) =>
+                            {
+                                // Escape any markup to avoid Spectre.Console parsing issues
+                                string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
+                                // The status already contains file count information, so we don't need to add it
+                                updateStatus(safeStatus);
+                            };
+
+                            return await batchProcessor.ProcessVideosAsync(
+                                input,
+                                overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",
+                                videoExtensions,
+                                openAiApiKey,
+                                dryRun,
+                                noSummary,
+                                force,
+                                retryFailed,
+                                timeout,
+                                localResourcesPathForBatchProcessor,
+                                appConfig,
+                                noShareLinks);
+                        },
+                        $"Processing video files from {(isFile ? "file" : "directory")}: {input}");
+
+                    logger.LogInformation("Video processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
+                    logger.LogInformationWithPath("Video processing completed. Success: {Processed}, Failed: {Failed}", "VideoCommands.cs", result.Processed, result.Failed);
+                    if (!string.IsNullOrWhiteSpace(result.Summary))
+                    {
+                        AnsiConsoleHelper.WriteInfo(result.Summary);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // No need to stop spinner manually, WithStatusAsync handles this
+                    AnsiConsoleHelper.WriteError($"Error processing video files: {ex.Message}");
+                    logger.LogErrorWithPath(ex, "Error processing video files", "VideoCommands.cs");
                 }
             });
 

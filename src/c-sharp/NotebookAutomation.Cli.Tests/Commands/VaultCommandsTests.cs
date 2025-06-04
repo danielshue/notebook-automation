@@ -5,17 +5,18 @@ using System;
 using System.Threading.Tasks;
 using System.CommandLine.Parsing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 
 namespace NotebookAutomation.Cli.Tests.Commands
-{
-    /// <summary>
-    /// Unit tests for VaultCommands.
-    /// </summary>
+{    /// <summary>
+     /// Unit tests for VaultCommands.
+     /// </summary>
     [TestClass]
     public class VaultCommandsTests
     {
         private readonly Mock<ILogger<VaultCommands>> _mockLogger = new();
+        private readonly Mock<IServiceProvider> _mockServiceProvider = new();
 
         [TestMethod]
         public async Task GenerateIndexCommand_PrintsUsage_WhenNoArgs()
@@ -26,7 +27,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var vaultCommands = new VaultCommands(_mockLogger.Object);
+            var vaultCommands = new VaultCommands(_mockLogger.Object, _mockServiceProvider.Object);
             vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
             // Capture console output
@@ -52,7 +53,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
         public void VaultCommand_Initialization_ShouldSucceed()
         {
             // Arrange
-            var command = new VaultCommands(_mockLogger.Object);
+            var command = new VaultCommands(_mockLogger.Object, _mockServiceProvider.Object);
             // Act & Assert
             Assert.IsNotNull(command);
         }
@@ -66,7 +67,7 @@ namespace NotebookAutomation.Cli.Tests.Commands
             var debugOption = new System.CommandLine.Option<bool>("--debug");
             var verboseOption = new System.CommandLine.Option<bool>("--verbose");
             var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-            var vaultCommands = new VaultCommands(_mockLogger.Object);
+            var vaultCommands = new VaultCommands(_mockLogger.Object, _mockServiceProvider.Object);
 
             // Act
             vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

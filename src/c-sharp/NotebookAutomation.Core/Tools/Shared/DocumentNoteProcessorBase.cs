@@ -59,10 +59,9 @@ namespace NotebookAutomation.Core.Tools.Shared
                     Logger.LogInformation("  Variable {Key}: {Length:N0} chars - {ValuePreview}",
                         kvp.Key, kvp.Value?.Length ?? 0, preview);
                 }
-
-                if (variables.TryGetValue("yaml-frontmatter", out var yamlValue))
+                if (variables.TryGetValue("yamlfrontmatter", out var yamlValue))
                 {
-                    Logger.LogInformation("Found yaml-frontmatter ({Length:N0} chars): {ValuePreview}",
+                    Logger.LogInformation("Found yamlfrontmatter ({Length:N0} chars): {ValuePreview}",
                         yamlValue?.Length ?? 0,
                         yamlValue?.Length > 100 ? yamlValue[..100] + "..." : yamlValue ?? "null");
                 }

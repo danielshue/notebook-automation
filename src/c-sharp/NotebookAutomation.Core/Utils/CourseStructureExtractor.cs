@@ -23,11 +23,10 @@ namespace NotebookAutomation.Core.Utils
     /// </remarks>
     /// <remarks>
     /// Initializes a new instance of the <see cref="CourseStructureExtractor"/> class.
-    /// </remarks>
-    /// <param name="logger">Logger for diagnostic and warning messages.</param>
-    public partial class CourseStructureExtractor(ILogger logger)
+    /// </remarks>    /// <param name="logger">Logger for diagnostic and warning messages.</param>
+    public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> logger)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly ILogger<CourseStructureExtractor> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private static readonly Regex NumberPrefixRegex = MyRegex();
 
         /// <summary>

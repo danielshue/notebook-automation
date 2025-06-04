@@ -27,7 +27,7 @@ Your output structure must exactly follow this format:
 
 ---
 
-{{yaml-frontmatter}}
+[yamlfrontmatter]
 
 ---
 

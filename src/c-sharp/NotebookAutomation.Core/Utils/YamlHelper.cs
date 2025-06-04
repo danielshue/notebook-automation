@@ -13,14 +13,19 @@ namespace NotebookAutomation.Core.Utils
     /// frontmatter found in markdown documents, with special consideration for
     /// preserving formatting and handling Obsidian-specific conventions.
     /// </summary>
-    /// <remarks>
-    /// Initializes a new instance of the YamlHelper class.
-    /// </remarks>
-    /// <param name="logger">Optional logger for diagnostics.</param>
-    public partial class YamlHelper(ILogger? logger = null) : IYamlHelper
+    public partial class YamlHelper : IYamlHelper
     {
-        private readonly ILogger? _logger = logger;
+        private readonly ILogger _logger;
         private readonly Regex _frontmatterRegex = MyRegex();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="YamlHelper"/> class.
+        /// </summary>
+        /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+        public YamlHelper(ILogger logger)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        }
 
         /// <summary>
         /// Extracts the YAML frontmatter from markdown content.
@@ -31,14 +36,14 @@ namespace NotebookAutomation.Core.Utils
         {
             if (string.IsNullOrEmpty(markdown))
             {
-                _logger?.LogDebug("Empty markdown content provided for frontmatter extraction");
+                _logger.LogDebug("Empty markdown content provided for frontmatter extraction");
                 return null;
             }
 
             // Check if the content seems to have frontmatter (starts with ---)
             if (!markdown.TrimStart().StartsWith("---"))
             {
-                if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
+                if (_logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug("Content does not appear to have frontmatter. First 20 chars: {Content}",
                         markdown.Length > 20 ? markdown[..20] + "..." : markdown);
@@ -53,8 +58,7 @@ namespace NotebookAutomation.Core.Utils
                 if (!match.Success)
                 {
                     // If regex did not match but content starts with ---, we might have a malformed frontmatter
-                    // Log more details for debugging
-                    if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
+                    // Log more details for debugging                    if (_logger.IsEnabled(LogLevel.Debug))
                     {
                         _logger.LogDebug("Content appears to have frontmatter but didn't match regex pattern. First 50 chars: {Content}",
                             markdown.Length > 50 ? markdown[..50] + "..." : markdown);
@@ -66,7 +70,7 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Error extracting frontmatter from markdown");
+                _logger.LogError(ex, "Error extracting frontmatter from markdown");
                 return null;
             }
         }
@@ -93,33 +97,79 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Failed to parse YAML content");
+                _logger.LogError(ex, "Failed to parse YAML content");
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Parses YAML frontmatter to a dictionary.
-        /// </summary>
-        /// <param name="yaml">The YAML content to parse.</param>
-        /// <returns>The parsed dictionary, or an empty dictionary if parsing failed.</returns>
+        }        /// <summary>
+                 /// Parses YAML frontmatter to a dictionary.
+                 /// </summary>
+                 /// <param name="yaml">The YAML content to parse.</param>
+                 /// <returns>The parsed dictionary, or an empty dictionary if parsing failed.</returns>        
         public Dictionary<string, object> ParseYamlToDictionary(string yaml)
         {
             if (string.IsNullOrWhiteSpace(yaml))
             {
-                _logger?.LogDebug("Empty YAML content provided for parsing");
+                _logger.LogDebug("Empty YAML content provided for parsing");
                 return [];
             }
 
             try
             {
                 // Trim the input to remove any leading/trailing whitespace that might cause issues
-                yaml = yaml.Trim();
+                yaml = yaml.Trim();                // Handle markdown code blocks that the AI sometimes generates, with various patterns
+                if (yaml.Contains("```yaml") || yaml.Contains("```yml"))
+                {
+                    _logger.LogWarning("Detected nested YAML code block in frontmatter - attempting to fix");
+
+                    // Extract the actual YAML content from inside the code block
+                    var startIndex = yaml.Contains("```yaml")
+                        ? yaml.IndexOf("```yaml") + 7
+                        : yaml.IndexOf("```yml") + 6;
+                    var endIndex = yaml.LastIndexOf("```");
+
+                    if (startIndex > 6 && endIndex > startIndex)
+                    {
+                        // Extract the content between the code block markers
+                        yaml = yaml[startIndex..endIndex].Trim();
+                        _logger.LogInformation("Extracted YAML content from nested code block");
+                    }
+                }
+                // Also handle plain markdown code blocks
+                else if (yaml.Contains("```"))
+                {
+                    _logger.LogWarning("Detected generic code block in frontmatter - attempting to fix");
+                    var startIndex = yaml.IndexOf("```") + 3;
+
+                    // Check if there's a newline after the opening ```
+                    if (yaml.Length > startIndex && yaml[startIndex] == '\n')
+                    {
+                        startIndex++; // Skip the newline
+                    }
+                    else if (yaml.Length > startIndex && yaml[startIndex] == '\r' && yaml.Length > startIndex + 1 && yaml[startIndex + 1] == '\n')
+                    {
+                        startIndex += 2; // Skip CRLF
+                    }
+
+                    var endIndex = yaml.LastIndexOf("```");
+
+                    if (startIndex > 3 && endIndex > startIndex)
+                    {
+                        yaml = yaml[startIndex..endIndex].Trim();
+                        _logger.LogInformation("Extracted content from generic code block");
+                    }
+                }
+
+                // Fix common YAML formatting issues from AI responses
+                // Remove trailing spaces at end of each line (common in markdown formatting)
+                yaml = string.Join("\n",
+                    yaml.Split('\n')
+                        .Select(line => line.TrimEnd())
+                );
 
                 // Simple validation of YAML structure
                 if (!yaml.Contains(':') && !yaml.Contains('-'))
                 {
-                    _logger?.LogWarning("YAML content does not contain any key-value pairs or lists");
+                    _logger.LogWarning("YAML content does not contain any key-value pairs or lists");
                     return [];
                 }
 
@@ -134,11 +184,11 @@ namespace NotebookAutomation.Core.Utils
             catch (YamlDotNet.Core.YamlException yamlEx)
             {
                 // More specific logging for YAML syntax errors
-                _logger?.LogError(yamlEx, "YAML syntax error: {ErrorMessage} at Line {Line}, Column {Column}",
+                _logger.LogError(yamlEx, "YAML syntax error: {ErrorMessage} at Line {Line}, Column {Column}",
                     yamlEx.Message, yamlEx.Start.Line, yamlEx.Start.Column);
 
                 // Log the problematic content for debugging
-                if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
+                if (_logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug("Problematic YAML content (first 100 chars): {YamlContent}",
                         yaml.Length > 100 ? yaml[..100] + "..." : yaml);
@@ -148,10 +198,10 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger?.LogError(ex, "Failed to parse YAML content to dictionary");
+                _logger.LogError(ex, "Failed to parse YAML content to dictionary");
 
                 // Debug log the content for easier troubleshooting
-                if (_logger != null && _logger.IsEnabled(LogLevel.Debug))
+                if (_logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug("Failed YAML content (first 100 chars): {YamlContent}",
                         yaml.Length > 100 ? yaml[..100] + "..." : yaml);
@@ -311,7 +361,7 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger?.LogErrorWithPath(ex, "Failed to check if file is read-only: {filePath}", filePath);
+                _logger.LogErrorWithPath(ex, "Failed to check if file is read-only: {filePath}", filePath);
                 return false;
             }
         }
@@ -327,7 +377,7 @@ namespace NotebookAutomation.Core.Utils
             {
                 if (!File.Exists(filePath))
                 {
-                    _logger?.LogWarningWithPath("File not found: {filePath}", filePath);
+                    _logger.LogWarningWithPath("File not found: {filePath}", filePath);
                     return [];
                 }
 
@@ -343,7 +393,7 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger?.LogErrorWithPath(ex, "Failed to load frontmatter from file: {filePath}", filePath);
+                _logger.LogErrorWithPath(ex, "Failed to load frontmatter from file: {filePath}", filePath);
                 return [];
             }
         }
@@ -365,7 +415,7 @@ namespace NotebookAutomation.Core.Utils
             }
             catch (Exception ex)
             {
-                _logger?.LogErrorWithPath(ex, "Failed to save markdown with updated frontmatter: {filePath}", filePath);
+                _logger.LogErrorWithPath(ex, "Failed to save markdown with updated frontmatter: {filePath}", filePath);
                 return false;
             }
         }
@@ -386,12 +436,36 @@ namespace NotebookAutomation.Core.Utils
         }
 
         /// <summary>
-        /// Replaces the frontmatter in a markdown document.
+        /// Serializes a dictionary to YAML format.
+        /// </summary>
+        /// <param name="data">The dictionary to serialize.</param>
+        /// <returns>The serialized YAML string.</returns>
+        public string SerializeToYaml(Dictionary<string, object> data)
+        {
+            var serializer = new SerializerBuilder()
+                .DisableAliases()
+                .Build();
+
+            return serializer.Serialize(data);
+        }        /// <summary>
+                 /// Replaces the frontmatter in a markdown document with new frontmatter.
+                 /// </summary>
+                 /// <param name="markdown">The markdown content.</param>
+                 /// <param name="newFrontmatter">The new frontmatter as a dictionary.</param>
+                 /// <returns>The updated markdown content.</returns>
+        public string ReplaceFrontmatter(string markdown, Dictionary<string, object> newFrontmatter)
+        {
+            var yamlContent = SerializeToYaml(newFrontmatter);
+            return ReplaceWithYamlContent(markdown, yamlContent);
+        }
+
+        /// <summary>
+        /// Replaces the frontmatter in a markdown document with raw YAML content.
         /// </summary>
         /// <param name="content">The original markdown content.</param>
-        /// <param name="newFrontmatter">The new frontmatter to insert.</param>
+        /// <param name="newFrontmatterYaml">The new frontmatter YAML content.</param>
         /// <returns>The updated markdown content.</returns>
-        public string ReplaceFrontmatter(string content, string newFrontmatter)
+        private string ReplaceWithYamlContent(string content, string newFrontmatterYaml)
         {
             if (string.IsNullOrEmpty(content))
             {
@@ -402,11 +476,11 @@ namespace NotebookAutomation.Core.Utils
             if (!match.Success)
             {
                 // If no frontmatter, add it to the beginning
-                return $"---\n{newFrontmatter}\n---\n\n{content}";
+                return $"---\n{newFrontmatterYaml}\n---\n\n{content}";
             }
 
             // Replace the existing frontmatter
-            return _frontmatterRegex.Replace(content, $"---\n{newFrontmatter}\n---\n");
+            return _frontmatterRegex.Replace(content, $"---\n{newFrontmatterYaml}\n---\n");
         }
 
         /// <summary>
@@ -480,50 +554,5 @@ namespace NotebookAutomation.Core.Utils
 
         [GeneratedRegex(@"^\s*---\s*[\r\n]+(.+?)[\r\n]+\s*---\s*[\r\n]+", RegexOptions.Compiled | RegexOptions.Singleline)]
         private static partial Regex MyRegex();
-    }
-    public interface IYamlHelper
-    {
-        /// <summary>
-        /// Extracts the YAML frontmatter from markdown content.
-        /// </summary>
-        /// <param name="markdown">The markdown content to parse.</param>
-        /// <returns>The YAML frontmatter as a string, or null if not found.</returns>
-        string? ExtractFrontmatter(string markdown);
-
-        /// <summary>
-        /// Parses YAML frontmatter to a dictionary.
-        /// </summary>
-        /// <param name="yaml">The YAML content to parse.</param>
-        /// <returns>The parsed dictionary, or an empty dictionary if parsing failed.</returns>
-        Dictionary<string, object> ParseYamlToDictionary(string yaml);
-
-        /// <summary>
-        /// Updates existing markdown content with new frontmatter.
-        /// </summary>
-        /// <param name="markdown">The original markdown content.</param>
-        /// <param name="frontmatter">The new frontmatter as a dictionary.</param>
-        /// <returns>The updated markdown content.</returns>
-        string UpdateFrontmatter(string markdown, Dictionary<string, object> frontmatter);
-
-        /// <summary>
-        /// Loads frontmatter from a markdown file.
-        /// </summary>
-        /// <param name="filePath">Path to the markdown file.</param>
-        /// <returns>The parsed frontmatter as a dictionary, or an empty dictionary on error.</returns>
-        Dictionary<string, object> LoadFrontmatterFromFile(string filePath);
-
-        /// <summary>
-        /// Checks if the auto-generated-state in frontmatter indicates the content is read-only.
-        /// </summary>
-        /// <param name="frontmatter">The frontmatter dictionary to check.</param>
-        /// <returns>True if the auto-generated-state is "read-only" or "readonly", false otherwise.</returns>
-        bool IsAutoGeneratedStateReadOnly(Dictionary<string, object> frontmatter);
-
-        /// <summary>
-        /// Checks if a markdown file has readonly auto-generated-state in its frontmatter.
-        /// </summary>
-        /// <param name="filePath">Path to the markdown file to check.</param>
-        /// <returns>True if the file has readonly auto-generated-state, false otherwise.</returns>
-        bool IsFileReadOnly(string filePath);
-    }
+    }    // Interface moved to IYamlHelper.cs
 }

@@ -8,6 +8,7 @@ using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.TagManagement;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Core.Tools.PdfProcessing;
+using NotebookAutomation.Core.Tools.Vault;
 
 using NotebookAutomation.Core.Utils;
 using Serilog;
@@ -120,9 +121,12 @@ namespace NotebookAutomation.Core.Configuration
                 var aiConfig = appConfig.AiService;
                 var loggingService = provider.GetRequiredService<LoggingService>();
                 var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-                var builder = Kernel.CreateBuilder();
+                var skbuilder = Kernel.CreateBuilder();
 
-                builder.Services.AddSingleton(loggerFactory);
+                // add logging to Semantic Kernel
+                skbuilder.Services.AddSingleton(loggerFactory);
+
+                skbuilder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
 
                 var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
                 if (providerType == "openai" && aiConfig.OpenAI != null)
@@ -130,7 +134,7 @@ namespace NotebookAutomation.Core.Configuration
                     var openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
                     var endpoint = aiConfig.OpenAI.Endpoint ?? "https://api.openai.com/v1/chat/completions";
                     var model = aiConfig.OpenAI.Model ?? "gpt-4o";
-                    builder.AddOpenAIChatCompletion(model, openAiKey ?? string.Empty, endpoint);
+                    skbuilder.AddOpenAIChatCompletion(model, openAiKey ?? string.Empty, endpoint);
                 }
                 else if (providerType == "azure" && aiConfig.Azure != null)
                 {
@@ -138,16 +142,18 @@ namespace NotebookAutomation.Core.Configuration
                     var endpoint = aiConfig.Azure.Endpoint ?? string.Empty;
                     var deployment = aiConfig.Azure.Deployment ?? string.Empty;
                     var model = aiConfig.Azure.Model ?? string.Empty;
-                    builder.AddAzureOpenAIChatCompletion(deployment, endpoint, apiKey: azureKey, null, modelId: model ?? string.Empty);
+                    skbuilder.AddAzureOpenAIChatCompletion(deployment, endpoint, apiKey: azureKey, null, modelId: model ?? string.Empty);
                 }
                 else if (providerType == "foundry" && aiConfig.Foundry != null)
                 {
                     var foundryKey = Environment.GetEnvironmentVariable("FOUNDRY_API_KEY") ?? string.Empty;
                     var endpoint = aiConfig.Foundry.Endpoint ?? string.Empty;
                     var model = aiConfig.Foundry.Model ?? string.Empty;
-                    builder.AddOpenAIChatCompletion(model, foundryKey, endpoint);
+                    skbuilder.AddOpenAIChatCompletion(model, foundryKey, endpoint);
                 }
-                var kernel = builder.Build();
+
+                // Build the kernel
+                var kernel = skbuilder.Build();
                 return kernel;
             });
 
@@ -179,13 +185,14 @@ namespace NotebookAutomation.Core.Configuration
             // Register Video processor
             services.AddScoped(provider =>
             {
-                var loggingService = provider.GetRequiredService<ILoggingService>();
-                var logger = loggingService.GetLogger<VideoNoteProcessor>();
+                var loggingService = provider.GetRequiredService<ILoggingService>(); var logger = loggingService.GetLogger<VideoNoteProcessor>();
                 var aiSummarizer = provider.GetRequiredService<AISummarizer>();
                 var appConfig = provider.GetRequiredService<AppConfig>();
                 // Use GetService instead of GetRequiredService since OneDriveService is optional
                 var oneDriveService = provider.GetService<IOneDriveService>();
-                return new VideoNoteProcessor(logger, aiSummarizer, oneDriveService, appConfig);
+                var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+                // Pass yamlHelper first, then the optional parameters, and lastly the loggingService
+                return new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, oneDriveService, appConfig, loggingService);
             });
 
             // Register VideoNoteBatchProcessor
@@ -197,7 +204,8 @@ namespace NotebookAutomation.Core.Configuration
                 var aiSummarizer = provider.GetRequiredService<AISummarizer>();
                 var appConfig = provider.GetRequiredService<AppConfig>();
                 var oneDriveService = provider.GetService<IOneDriveService>();
-                var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, oneDriveService, appConfig);
+                var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+                var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, yamlHelper, oneDriveService, appConfig, loggingService);
                 var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(batchLogger, videoProcessor, aiSummarizer);
                 return new VideoNoteBatchProcessor(batchProcessor);
             });
@@ -217,10 +225,30 @@ namespace NotebookAutomation.Core.Configuration
                 var loggingService = provider.GetRequiredService<ILoggingService>();
                 var batchLogger = loggingService.GetLogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>();
                 var processorLogger = loggingService.GetLogger<PdfNoteProcessor>();
-                var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-                var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer);
+                var aiSummarizer = provider.GetRequiredService<AISummarizer>(); var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer);
                 var batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(batchLogger, pdfProcessor, aiSummarizer);
                 return new PdfNoteBatchProcessor(batchProcessor);
+            });
+
+            // Register Vault Metadata processors
+            services.AddScoped(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<MetadataEnsureProcessor>();
+                var appConfig = provider.GetRequiredService<AppConfig>();
+                var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+                var metadataDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+                var structureExtractor = provider.GetRequiredService<CourseStructureExtractor>();
+                return new MetadataEnsureProcessor(logger, appConfig, yamlHelper, metadataDetector, structureExtractor);
+            });
+
+            services.AddScoped(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<MetadataEnsureBatchProcessor>();
+                var appConfig = provider.GetRequiredService<AppConfig>();
+                var metadataProcessor = provider.GetRequiredService<MetadataEnsureProcessor>();
+                return new MetadataEnsureBatchProcessor(logger, metadataProcessor, appConfig);
             });
 
             return services;
@@ -305,25 +333,53 @@ namespace NotebookAutomation.Core.Configuration
                     debug);
 
                 return appConfig;
-            });
-
-            // Register UserSecretsHelper
+            });            // Register UserSecretsHelper
             services.AddSingleton<UserSecretsHelper>();
-            services.AddSingleton<IYamlHelper, YamlHelper>();
+
+            // Register YamlHelper with proper logging from LoggingService
+            services.AddSingleton<IYamlHelper>(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<YamlHelper>();
+                return new YamlHelper(logger);
+            });
 
             return services;
         }
 
         /// <summary>
-        /// Registers metadata-related services for the application.
+        /// Registers metadata-related services for the application.       
         /// </summary>
         /// <param name="services">The service collection to configure.</param>
         /// <returns>The configured service collection.</returns>
         private static IServiceCollection RegisterMetadataServices(IServiceCollection services)
         {
             // Register metadata-related services
-            services.AddScoped<MetadataTemplateManager>();
-            services.AddScoped<MetadataHierarchyDetector>();
+            services.AddScoped<MetadataTemplateManager>(provider =>
+            {
+                var logger = provider.GetRequiredService<ILoggingService>().GetLogger<MetadataTemplateManager>();
+                var appConfig = provider.GetRequiredService<AppConfig>();
+                var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+                return new MetadataTemplateManager(logger, appConfig, yamlHelper);
+            });
+
+            // Register MetadataHierarchyDetector with factory
+            services.AddScoped<MetadataHierarchyDetector>(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<MetadataHierarchyDetector>();
+                var appConfig = provider.GetRequiredService<AppConfig>();
+                return new MetadataHierarchyDetector(logger, appConfig);
+            });
+
+            // Register CourseStructureExtractor with factory
+            services.AddScoped<CourseStructureExtractor>(provider =>
+            {
+                var loggingService = provider.GetRequiredService<ILoggingService>();
+                var logger = loggingService.GetLogger<CourseStructureExtractor>();
+                return new CourseStructureExtractor(logger);
+            });
+
             services.AddScoped<TagProcessor>();
 
             return services;

@@ -1,0 +1,8 @@
+{
+  "id": "9cc636fb-525b-46fe-acbc-ff5b71ac3664",
+  "title": "Vault Ensure-Metadata Command Analysis",
+  "details": "Analysis of requirements for implementing \"vault ensure-metadata\" command:\n\n## Goal\nImplement a CLI command that updates YAML frontmatter in markdown files with metadata extracted from directory structure, using a queue-based batch processing pattern.\n\n## Key Utilities Available\n1. **CourseStructureExtractor**: Extracts \"module\" and \"lesson\" from file paths using regex patterns\n2. **MetadataHierarchyDetector**: Extracts \"program\", \"course\", and \"class\" from directory hierarchy\n3. **YamlHelper**: Complete YAML frontmatter handling (extract, parse, update, save)\n4. **DocumentNoteBatchProcessor<T>**: Generic batch processing with queue, progress tracking, and error handling\n\n## Recommendation: Use Both Utilities\n- CourseStructureExtractor: For fine-grained file-level metadata (module/lesson)\n- MetadataHierarchyDetector: For directory-level metadata (program/course/class)\n- Combine results to create comprehensive metadata for each file\n\n## Implementation Plan\n1. Create MetadataEnsureProcessor : DocumentNoteProcessorBase\n2. Create MetadataEnsureBatchProcessor : DocumentNoteBatchProcessor<MetadataEnsureProcessor>\n3. For each markdown file:\n   - Extract existing frontmatter (YamlHelper)\n   - Get directory hierarchy metadata (MetadataHierarchyDetector)\n   - Get file-specific metadata (CourseStructureExtractor)\n   - Merge and update frontmatter\n   - Save updated file (YamlHelper.SaveMarkdownWithFrontmatter)\n4. Add command to VaultCommands.cs replacing the current stub",
+  "category": "implementation_plan",
+  "dateCreated": "2025-06-03T16:11:31.744Z",
+  "dateUpdated": "2025-06-03T16:11:31.744Z"
+}

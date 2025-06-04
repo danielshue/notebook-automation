@@ -8,6 +8,7 @@ using Moq;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests.Tools;
 
@@ -26,7 +27,8 @@ public class VideoNoteProcessorTests
             Mock.Of<ILogger<AISummarizer>>(),
             promptService,
             null);
-        VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer);
+        Mock<IYamlHelper> yamlHelperMock = new();
+        VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer, yamlHelperMock.Object);
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text");
         // Assert - fallback behavior should return simulated summary

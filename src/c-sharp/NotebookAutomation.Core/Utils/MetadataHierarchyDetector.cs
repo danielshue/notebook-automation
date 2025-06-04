@@ -26,19 +26,18 @@ namespace NotebookAutomation.Core.Utils
     /// </para>
     /// </remarks>
     /// <remarks>
-    /// Initializes a new instance of the <see cref="MetadataHierarchyDetector"/> class.
-    /// </remarks>
+    /// Initializes a new instance of the <see cref="MetadataHierarchyDetector"/> class.    /// </remarks>
     /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
     /// <param name="appConfig">The application configuration.</param>
     /// <param name="programOverride">Optional explicit program name override.</param>
     /// <param name="verbose">Whether to output verbose logging information.</param>
     public class MetadataHierarchyDetector(
-        ILogger logger,
+        ILogger<MetadataHierarchyDetector> logger,
         AppConfig appConfig,
         string? programOverride = null,
         bool verbose = false)
     {
-        private readonly ILogger _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly ILogger<MetadataHierarchyDetector> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly string _notebookVaultRoot = appConfig?.Paths?.NotebookVaultFullpathRoot
                 ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
         private readonly string? _programOverride = programOverride;

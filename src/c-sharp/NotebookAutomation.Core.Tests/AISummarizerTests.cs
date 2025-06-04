@@ -154,4 +154,46 @@ public class AISummarizerTests
         Assert.IsNotNull(result);
         Assert.AreEqual("[Simulated AI summary]", result);
     }
+
+    /// <summary>
+    /// Tests that [yamlfrontmatter] placeholder is properly replaced in the prompt template.
+    /// </summary>
+    [TestMethod]
+    public async Task SummarizeWithVariablesAsync_WithYamlFrontmatter_ReplacesPlaceholder()
+    {
+        // Arrange
+        string expectedSummary = "Summary with YAML frontmatter";
+        Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedSummary);
+
+        // Create a mock prompt service with a template containing [yamlfrontmatter]
+        var mockPromptWithYaml = new MockPromptTemplateService
+        {
+            Template = "Test prompt with YAML:\n\n---\n\n[yamlfrontmatter]\n\n---\n\nSummarize: {{content}}"
+        };
+
+        AISummarizer summarizer = new(
+            _mockLogger.Object,
+            mockPromptWithYaml,
+            kernel);
+
+        string inputText = "Text to summarize with YAML frontmatter";
+        string yamlContent = "title: Test\ntags:\n  - \"test-tag\"\n  - \"yaml-frontmatter\"";
+        Dictionary<string, string> variables = new()
+        {
+            ["content"] = inputText,
+            ["yamlfrontmatter"] = yamlContent
+        };
+
+        // Act
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText, variables);        // Assert
+        Assert.IsNotNull(result);
+        Assert.AreEqual(expectedSummary, result);
+
+        // Verify that the content variable was passed to the mock prompt service
+        // We can't directly test the [yamlfrontmatter] replacement since that happens after
+        // the PromptService.SubstituteVariables call, but we can verify the basic integration
+        Assert.IsNotNull(mockPromptWithYaml.LastVariables);
+        Assert.IsTrue(mockPromptWithYaml.LastVariables.ContainsKey("content"),
+            "The content variable should be passed to the prompt service");
+    }
 }

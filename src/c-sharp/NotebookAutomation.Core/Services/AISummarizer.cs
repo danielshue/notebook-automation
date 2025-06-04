@@ -167,12 +167,19 @@ namespace NotebookAutomation.Core.Services
             // Load and process the prompt template
             string? prompt = null;
             if (_promptService != null)
-            {
-                // Load the prompt template and substitute variables
+            {                // Load the prompt template and substitute variables
                 prompt = await _promptService.LoadTemplateAsync(effectivePromptFileName);
                 if (variables != null && variables.Count > 0 && !string.IsNullOrEmpty(prompt))
                 {
+                    // First substitute through the PromptService for {{variables}}
                     prompt = _promptService.SubstituteVariables(prompt, variables);
+                    // Then handle the special [yamlfrontmatter] replacement
+                    if (variables.TryGetValue("yamlfrontmatter", out var yamlValue))
+                    {
+                        prompt = prompt.Replace("[yamlfrontmatter]", yamlValue);
+                        _logger.LogDebug("Replaced [yamlfrontmatter] placeholder with YAML content ({Length} chars)", yamlValue?.Length ?? 0);
+                    }
+
                     _logger.LogDebug("Substituted variables in prompt template");
                 }
             }
