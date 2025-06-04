@@ -153,6 +153,15 @@
       "completed": true,
       "createdAt": "2025-06-04T04:43:35.942Z",
       "updatedAt": "2025-06-04T04:43:43.674Z"
+    },
+    {
+      "id": "d8c74d2a-870c-418c-8300-050783296473",
+      "name": "Improved Version Display in CLI",
+      "details": "Enhanced the version display in the CLI application to show the more meaningful file version number instead of just the assembly version.\n\n## Changes Made\n1. Modified `VersionCommands.cs` to prioritize showing the file version which includes build number and revision\n2. Simplified the version retrieval logic to reuse the already obtained versionInfo object\n3. Added fallbacks for compatibility to ensure version is always displayed correctly\n4. Tested the changes with both `dotnet run` and the local CI build process\n\n## Benefits\n- More informative version output that includes build information\n- Better traceability for deployed applications\n- Consistent with standard .NET versioning practices\n- Helpful for users to identify exact builds when reporting issues\n\n## Files Modified\n- `src/c-sharp/NotebookAutomation.Cli/Commands/VersionCommands.cs`\n\n## Version Format\nNow shows version in format: `1.0.518.xxxxx` where:\n- 1.0 = Major.Minor version\n- 518 = Build number (days since Jan 1, 2024)\n- xxxxx = Revision (seconds since midnight / 2)",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-04T05:02:50.260Z",
+      "updatedAt": "2025-06-04T05:03:02.730Z"
     }
   ],
   "subtasks": [

@@ -45,10 +45,11 @@ namespace NotebookAutomation.Cli.Commands
                         : null;
 
                     var companyName = versionInfo?.CompanyName ?? "Notebook Automation";
-                    var copyrightInfo = versionInfo?.LegalCopyright ?? "Copyright © 2025";
+                    var copyrightInfo = versionInfo?.LegalCopyright ?? "Copyright © 2025";                    // Get the more detailed file version if available, otherwise fall back to assembly version
+                    var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+                    string fileVersion = versionInfo?.FileVersion ?? assemblyVersion?.ToString() ?? "1.0.0.0";
 
-                    var version = Assembly.GetExecutingAssembly().GetName().Version;
-                    AnsiConsoleHelper.WriteInfo($"Notebook Automation v{version}");
+                    AnsiConsoleHelper.WriteInfo($"Notebook Automation v{fileVersion}");
                     AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
                     AnsiConsoleHelper.WriteInfo($"{companyName}");
                     AnsiConsoleHelper.WriteInfo($"Copyright {copyrightInfo}");
