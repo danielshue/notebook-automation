@@ -318,44 +318,59 @@ public class AppConfigTests
                 File.Delete(tempFile);
             }
         }
-    }
-
-    /// <summary>
-    /// Tests saving configuration to JSON file.
-    /// </summary>
+    }    /// <summary>
+         /// Tests saving configuration to JSON file.
+         /// </summary>
     [TestMethod]
     public void SaveToJsonFile_ShouldSaveConfigurationCorrectly()
     {
         // Arrange
         string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
-        AppConfig appConfig = new()
-        {
-            Paths = new PathsConfig
-            {
-                LoggingDir = "/logs",
-                OnedriveFullpathRoot = "/resources"
-            },
-            AiService = new AIServiceConfig
-            {
-                Provider = "openai",
-                OpenAI = new OpenAiProviderConfig { Model = "gpt-4" } // API key is managed at AIServiceConfig level
-            }
-        };
+
+        // Save the existing environment variable to restore later
+        string? originalApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 
         try
         {
+            // Set the test API key - ensuring it's set both for the current process and test
+            const string testApiKey = "test-api-key";
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", testApiKey, EnvironmentVariableTarget.Process);
+
+            AppConfig appConfig = new()
+            {
+                Paths = new PathsConfig
+                {
+                    LoggingDir = "/logs",
+                    OnedriveFullpathRoot = "/resources"
+                },
+                AiService = new AIServiceConfig
+                {
+                    Provider = "openai",
+                    OpenAI = new OpenAiProviderConfig { Model = "gpt-4" } // API key is managed at AIServiceConfig level
+                }
+            };
+
             // Act
             appConfig.SaveToJsonFile(tempFile);
+
+            // Verify API key is set correctly
+            Assert.AreEqual(testApiKey, Environment.GetEnvironmentVariable("OPENAI_API_KEY"));
 
             // Assert - Load it back and verify
             AppConfig loadedConfig = AppConfig.LoadFromJsonFile(tempFile);
             Assert.IsNotNull(loadedConfig);
             Assert.AreEqual("/resources", loadedConfig.Paths.OnedriveFullpathRoot);
-            Assert.AreEqual("/logs", loadedConfig.Paths.LoggingDir); Assert.AreEqual("test-api-key", loadedConfig.AiService.GetApiKey()); // Verify API key at service level
-            Assert.AreEqual("gpt-4", loadedConfig.AiService.OpenAI?.Model); // Correctly reference OpenAI.Model
+            Assert.AreEqual("/logs", loadedConfig.Paths.LoggingDir);
+
+            // The API key should be retrieved from the environment variable
+            Assert.AreEqual(testApiKey, loadedConfig.AiService.GetApiKey());
+            Assert.AreEqual("gpt-4", loadedConfig.AiService.OpenAI?.Model);
         }
         finally
         {
+            // Restore the original API key
+            Environment.SetEnvironmentVariable("OPENAI_API_KEY", originalApiKey);
+
             // Clean up
             if (File.Exists(tempFile))
             {
