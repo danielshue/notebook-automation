@@ -53,7 +53,8 @@ jobs:
           # Pass version to pyinstaller using --version-file option
           for spec in *.spec; do
             pyinstaller "$spec" --version-file="<(echo \"FileVersion=${{ env.BUILD_VERSION }}\nProductVersion=${{ env.BUILD_VERSION }}\")"
-          done      - name: Upload EXEs as workflow artifacts
+          done      
+      - name: Upload EXEs as workflow artifacts
         uses: actions/upload-artifact@v4
         with:
           name: cli-executables
