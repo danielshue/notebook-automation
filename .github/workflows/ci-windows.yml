@@ -16,6 +16,16 @@ on:
       - '.github/workflows/**'
       - '!.agentic-tools-mcp/**'
 
+# Control workflow execution retention - deletes workflow runs after 14 days
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Controls automatic cleanup of workflow runs
+# Keeps only the 10 most recent workflow runs and deletes older runs
+permissions:
+  actions: write
+
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
@@ -87,26 +97,28 @@ jobs:
 
       - name: Build solution
         run: dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }}
-
+        
       - name: Run tests with coverage
         run: |
           dotnet test src/c-sharp/NotebookAutomation.Core.Tests/ --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
-
+          
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results-windows
           path: src/c-sharp/NotebookAutomation.Core.Tests/TestResults/*.trx
+          retention-days: 7 # Keep test results for 7 days
 
       - name: Upload coverage results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-windows
-          path: src/c-sharp/NotebookAutomation.Core.Tests/TestResults/**/*.xml        
+          path: src/c-sharp/NotebookAutomation.Core.Tests/TestResults/**/*.xml
+          retention-days: 7 # Keep coverage reports for 7 days
 
       - name: Publish single-file EXE (win-x64)
         run: |
@@ -126,6 +138,7 @@ jobs:
           path: |
             publish/win-x64/
             publish/win-arm64/
+          retention-days: 14 # Keep executables for 14 days (longer than test artifacts)
 
       - name: Run static code analysis
         run: dotnet format src/c-sharp/NotebookAutomation.sln --verify-no-changes --severity error
