@@ -13,6 +13,16 @@ on:
       - '.agentic-tools-mcp/**'
   workflow_dispatch:
 
+# Control workflow execution retention - deletes workflow runs after 14 days
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Controls automatic cleanup of workflow runs
+# Keeps only the 10 most recent workflow runs and deletes older runs
+permissions:
+  actions: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -43,10 +53,9 @@ jobs:
           # Pass version to pyinstaller using --version-file option
           for spec in *.spec; do
             pyinstaller "$spec" --version-file="<(echo \"FileVersion=${{ env.BUILD_VERSION }}\nProductVersion=${{ env.BUILD_VERSION }}\")"
-          done
-
-      - name: Upload EXEs as workflow artifacts
+          done      - name: Upload EXEs as workflow artifacts
         uses: actions/upload-artifact@v4
         with:
           name: cli-executables
           path: dist/*
+          retention-days: 14 # Keep executables for 14 days
