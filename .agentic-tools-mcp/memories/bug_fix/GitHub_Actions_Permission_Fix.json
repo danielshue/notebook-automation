@@ -1,0 +1,8 @@
+{
+  "id": "d3695ec9-01fd-405b-8f3b-80d4fd049bb1",
+  "title": "GitHub Actions Permission Fix",
+  "details": "Fixed GitHub Actions \"Repository not found\" error in the CI workflow.\n\n**Problem:**\n- GitHub Actions workflow was failing at the checkout step with \"Repository not found\" error\n- This is a common issue with private repositories where GitHub Actions lacks proper permissions\n\n**Root Cause:**\n- The workflow permissions section only had `actions: write` \n- Missing `contents: read` permission which is required to checkout repository code\n- For private repositories, explicit token configuration is recommended\n\n**Solution Applied:**\n1. Added `contents: read` to the permissions section in .github/workflows/ci-windows.yml\n2. Added explicit `token: ${{ secrets.GITHUB_TOKEN }}` to the checkout step\n3. Fixed YAML formatting issues in the workflow file\n\n**Files Changed:**\n- .github/workflows/ci-windows.yml: Updated permissions and checkout configuration\n\n**Commit:** a31ffb9 - \"fix(ci): Add contents:read permission and explicit token for private repo access\"\n\n**Status:** Fix deployed and pushed to repository. Workflow should now have proper permissions to access the private repository and complete the checkout step successfully.",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-05T16:28:48.596Z",
+  "dateUpdated": "2025-06-05T16:28:48.596Z"
+}
