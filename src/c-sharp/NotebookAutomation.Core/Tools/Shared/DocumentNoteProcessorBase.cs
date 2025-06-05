@@ -2,12 +2,15 @@
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.Shared;
+
 /// <summary>
 /// Abstract base class for document note processors (PDF, video, etc.).
-/// Provides shared logic for AI summary, markdown generation, and logging.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the DocumentNoteProcessorBase class with logger and AISummarizer.
+/// The <c>DocumentNoteProcessorBase</c> class provides shared logic for processing
+/// document notes, including AI summary generation, markdown creation, and logging.
+/// It serves as a foundation for specialized processors that handle specific document
+/// types, such as PDFs and videos.
 /// </remarks>
 /// <param name="logger">The logger instance.</param>
 /// <param name="aiSummarizer">The AISummarizer instance for generating AI-powered summaries.</param>
@@ -31,7 +34,6 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
     /// <returns>The summary text, or a simulated summary if unavailable.</returns>
     public virtual async Task<string> GenerateAiSummaryAsync(string? text, Dictionary<string, string>? variables = null, string? promptFileName = null)
     {
-        Logger.LogInformation("Starting AI summary generation process");
         Logger.LogDebug("Using AISummarizer to generate summary.");
 
         // Check for null text

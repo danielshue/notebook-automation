@@ -8,27 +8,28 @@ using NotebookAutomation.Core.Utils;
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands;
+
 /// <summary>
 /// Provides CLI commands for managing tags in markdown files within an Obsidian vault.
-/// 
+/// </summary>
+/// <remarks>
 /// This class registers the 'tag' command group and its subcommands for tag management operations,
 /// including adding nested tags based on frontmatter fields, cleaning tags from index files,
 /// consolidating tags, restructuring tags for consistency, adding example tags, and
 /// checking/enforcing metadata consistency.
-/// </summary>
-/// <remarks>
-/// The tag management commands utilize the <see cref="TagProcessor"/> class from the Core library
-/// to perform the actual tag operations. This class serves as a bridge between the command-line
-/// interface and the core functionality.
 /// </remarks>
 public class TagCommands
 {
     private readonly ILogger<TagCommands> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TagCommands"/> class.
+    /// </summary>
+    /// <param name="logger">The logger instance for logging information and errors.</param>
     public TagCommands(ILogger<TagCommands> logger)
     {
-        _logger = logger;
-        _logger.LogInformationWithPath("Tag command initialized", "TagCommands.cs");
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _logger.LogDebug("Tag command initialized");
     }
 
     /// <summary>
@@ -39,8 +40,19 @@ public class TagCommands
     /// <param name="debugOption">The global debug option.</param>
     /// <param name="verboseOption">The global verbose output option.</param>
     /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-    public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+    public void Register(
+        RootCommand rootCommand,
+        Option<string> configOption,
+        Option<bool> debugOption,
+        Option<bool> verboseOption,
+        Option<bool> dryRunOption)
     {
+        ArgumentNullException.ThrowIfNull(rootCommand);
+        ArgumentNullException.ThrowIfNull(configOption);
+        ArgumentNullException.ThrowIfNull(debugOption);
+        ArgumentNullException.ThrowIfNull(verboseOption);
+        ArgumentNullException.ThrowIfNull(dryRunOption);
+
         var pathArg = new Argument<string>("path", "Path to the directory or file to process");
 
         // add-nested command
@@ -555,7 +567,8 @@ public class TagCommands
     ///   </item>
     ///   <item>
     ///     <description>TagsRemoved: Number of tags that were removed.</description>
-    ///   </item>        /// </list>
+    ///   </item>
+    /// </list>
     /// </remarks>
     private static void LogStats(ILogger logger, Dictionary<string, int> stats)
     {

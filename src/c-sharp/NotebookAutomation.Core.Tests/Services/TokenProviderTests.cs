@@ -33,13 +33,13 @@ public class TokenProviderTests
 
         // Act & Assert
         Assert.ThrowsExactly<ArgumentNullException>(() =>
-            new NotebookAutomation.Core.Services.TokenProvider(null, scopes, logger));
+            new Core.Services.TokenProvider(null, scopes, logger));
 
         Assert.ThrowsExactly<ArgumentNullException>(() =>
-            new NotebookAutomation.Core.Services.TokenProvider(msalApp, null, logger));
+            new Core.Services.TokenProvider(msalApp, null, logger));
 
         Assert.ThrowsExactly<ArgumentNullException>(() =>
-            new NotebookAutomation.Core.Services.TokenProvider(msalApp, scopes, null));
+            new Core.Services.TokenProvider(msalApp, scopes, null));
     }
 
     // Additional tests for GetAuthorizationTokenAsync and AllowedHostsValidator would require

@@ -7,10 +7,34 @@ using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.Shared;
+
 /// <summary>
 /// Generic batch processor for document note processors (PDF, video, etc.).
-/// Handles file discovery, error handling, and output for any DocumentNoteProcessorBase subclass.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This class provides functionality for batch processing of documents using any subclass of
+/// <see cref="DocumentNoteProcessorBase"/>. It supports:
+/// <list type="bullet">
+/// <item><description>File discovery and filtering based on extensions</description></item>
+/// <item><description>Queue management for processing tasks</description></item>
+/// <item><description>Error handling and logging</description></item>
+/// <item><description>Event-driven updates for processing progress and queue changes</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The batch processor integrates with the AI summarizer for generating summaries and provides
+/// detailed diagnostic information during processing.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// var processor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(logger, pdfProcessor, aiSummarizer);
+/// processor.ProcessingProgressChanged += (sender, args) => Console.WriteLine(args.Progress);
+/// processor.QueueChanged += (sender, args) => Console.WriteLine(args.Queue);
+/// processor.StartProcessing("input", "output");
+/// </code>
+/// </example>
 public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : DocumentNoteProcessorBase
 {
     private readonly ILogger<DocumentNoteBatchProcessor<TProcessor>> _logger;
@@ -21,9 +45,31 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     private readonly List<QueueItem> _processingQueue = [];
     private readonly Lock _queueLock = new();
 
+    /// <summary>
+    /// Matches markdown headers for notes (e.g., "## Notes").
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This regex is used to identify markdown headers specifically labeled as "Notes" in the content.
+    /// It matches headers with two hashes followed by the word "Notes".
+    /// </para>
+    /// </remarks>
     [GeneratedRegex(@"^##\s+Notes\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
-    private static partial System.Text.RegularExpressions.Regex MyRegex();
+    private static partial Regex NotesHeaderRegex();
 
+    /// <summary>
+    /// Maps document types (e.g., PDF, VIDEO) to their associated file extensions.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This dictionary is used to filter and identify files for processing based on their extensions.
+    /// Supported document types and extensions include:
+    /// <list type="bullet">
+    /// <item><description>PDF: ".pdf"</description></item>
+    /// <item><description>VIDEO: ".mp4", ".mov", ".avi", ".mkv", ".wmv"</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
     private readonly Dictionary<string, List<string>> _documentTypeExtensions = new()
     {
         ["PDF"] = [".pdf"],
@@ -33,16 +79,53 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     /// <summary>
     /// Event triggered when processing progress changes.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This event is raised whenever the progress of the batch processing operation changes.
+    /// Subscribers can use this event to update progress indicators or logs.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// processor.ProcessingProgressChanged += (sender, args) => Console.WriteLine(args.Progress);
+    /// </code>
+    /// </example>
     public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged;
 
     /// <summary>
     /// Event triggered when the processing queue changes.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This event is raised whenever the processing queue is updated (e.g., items added or removed).
+    /// Subscribers can use this event to monitor the state of the queue.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// processor.QueueChanged += (sender, args) => Console.WriteLine(args.Queue);
+    /// </code>
+    /// </example>
     public event EventHandler<QueueChangedEventArgs>? QueueChanged;
 
     /// <summary>
-    /// Gets a read-only view of the current processing queue
+    /// Gets a read-only view of the current processing queue.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This property provides a snapshot of the current processing queue, allowing external
+    /// components to inspect the queue without modifying it.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var queue = processor.Queue;
+    /// foreach (var item in queue)
+    /// {
+    ///     Console.WriteLine(item.FilePath);
+    /// }
+    /// </code>
+    /// </example>
     public IReadOnlyList<QueueItem> Queue
     {
         get
@@ -140,7 +223,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     /// <param name="fileExtensions">List of file extensions to recognize as valid files.</param>
     /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
     /// <param name="dryRun">If true, simulates processing without writing output files.</param>
-    /// <param name="noSummary">If true, disables OpenAI summary generation.</param>        
+    /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
     /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
     /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
     /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>
@@ -473,7 +556,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         bool isReadOnly = false;
         if (File.Exists(outputPath))
         {
-            var yamlHelper = new Utils.YamlHelper(_logger);
+            var yamlHelper = new YamlHelper(_logger);
             isReadOnly = yamlHelper.IsFileReadOnly(outputPath);
             if (isReadOnly)
             {
@@ -752,7 +835,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             string existingContent = File.ReadAllText(existingFilePath);
 
             // Find the "## Notes" section in the existing file
-            var notesRegex = MyRegex();
+            var notesRegex = NotesHeaderRegex();
 
             var match = notesRegex.Match(existingContent);
             if (match.Success)
@@ -907,7 +990,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                 [
                     filePath,
                     openAiApiKey,
-                    null, // promptFileName 
+                    null, // promptFileName
                     noSummary,
                     timeoutSeconds,
                     resourcesRoot,

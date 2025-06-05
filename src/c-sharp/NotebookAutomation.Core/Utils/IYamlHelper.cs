@@ -46,11 +46,13 @@ public interface IYamlHelper
     /// <param name="markdown">The markdown content.</param>
     /// <param name="newFrontmatter">The new frontmatter as a dictionary.</param>
     /// <returns>The updated markdown content.</returns>
-    string UpdateFrontmatter(string markdown, Dictionary<string, object> newFrontmatter);        /// <summary>
-                                                                                                 /// Diagnostics for YAML frontmatter in markdown content.
-                                                                                                 /// </summary>
-                                                                                                 /// <param name="markdown">The markdown content to diagnose.</param>
-                                                                                                 /// <returns>A tuple with success status, message, and parsed data if available.</returns>
+    string UpdateFrontmatter(string markdown, Dictionary<string, object> newFrontmatter);
+
+    /// <summary>
+    /// Diagnostics for YAML frontmatter in markdown content.
+    /// </summary>
+    /// <param name="markdown">The markdown content to diagnose.</param>
+    /// <returns>A tuple with success status, message, and parsed data if available.</returns>
     (bool Success, string Message, Dictionary<string, object>? Data) DiagnoseYamlFrontmatter(string markdown);
 
     /// <summary>

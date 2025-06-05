@@ -1,12 +1,4 @@
-﻿// -----------------------------------------------------------------------------
-// PathUtils.cs
-// Utilities for cross-platform file path normalization and directory management.
-//
-// Example:
-//     string normalized = PathUtils.NormalizePath("C:/Users/Example/file.md");
-// -----------------------------------------------------------------------------
-
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace NotebookAutomation.Core.Utils;
 /// <summary>
@@ -14,7 +6,7 @@ namespace NotebookAutomation.Core.Utils;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The PathUtils class contains static methods for common path-related operations 
+/// The PathUtils class contains static methods for common path-related operations
 /// needed throughout the notebook automation system, such as:
 /// <list type="bullet">
 ///   <item><description>Finding paths relative to the application or directory</description></item>

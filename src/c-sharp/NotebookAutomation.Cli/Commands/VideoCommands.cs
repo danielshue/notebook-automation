@@ -3,25 +3,42 @@
 using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Core.Utils;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
-namespace NotebookAutomation.Cli.Commands;    /// <summary>
-                                              /// Provides CLI commands for processing video files and generating markdown notes.
-                                              /// 
-                                              /// This class registers the 'video-notes' command for processing video files to extract 
-                                              /// metadata, generate markdown notes with appropriate frontmatter, and optionally 
-                                              /// include references to the original video file.
-                                              /// </summary>
-                                              /// <remarks>
-                                              /// The video processing functionality utilizes the <see cref="VideoNoteProcessingEntrypoint"/>
-                                              /// from the Core library to handle the actual processing of video files. The supported 
-                                              /// video formats are defined in the application configuration and typically include
-                                              /// MP4, MOV, AVI, MKV, WEBM, and others.
-                                              /// </remarks>
+namespace NotebookAutomation.Cli.Commands;
+
+/// <summary>
+/// Provides CLI commands for processing video files and generating markdown notes.
+/// </summary>
+/// <remarks>
+/// <para>
+/// This class registers the 'video-notes' command for processing video files to extract
+/// metadata, generate markdown notes with appropriate frontmatter, and optionally
+/// include references to the original video file. It supports:
+/// <list type="bullet">
+/// <item><description>Video file discovery and filtering</description></item>
+/// <item><description>Metadata extraction (e.g., duration, resolution, codec)</description></item>
+/// <item><description>Markdown note generation with YAML frontmatter</description></item>
+/// <item><description>Integration with the Core library for video processing</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The video processing functionality utilizes the <see cref="VideoNoteProcessingEntrypoint"/>
+/// from the Core library to handle the actual processing of video files. The supported
+/// video formats are defined in the application configuration and typically include
+/// MP4, MOV, AVI, MKV, WEBM, and others.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// var rootCommand = new RootCommand();
+/// VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+/// rootCommand.Invoke("video-notes --input videos --output notes");
+/// </code>
+/// </example>
 public class VideoCommands
 {
     private readonly ILogger<VideoCommands> _logger;
@@ -40,6 +57,20 @@ public class VideoCommands
     /// <param name="debugOption">The global debug option.</param>
     /// <param name="verboseOption">The global verbose output option.</param>
     /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
+    /// <remarks>
+    /// <para>
+    /// This method adds the 'video-notes' command to the root command, enabling users to process
+    /// video files and generate markdown notes. It defines options for input, output, and other
+    /// global settings.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var rootCommand = new RootCommand();
+    /// VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+    /// rootCommand.Invoke("video-notes --input videos --output notes");
+    /// </code>
+    /// </example>
     public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
     {
         var inputOption = new Option<string?>(
@@ -277,7 +308,7 @@ public class VideoCommands
             try
             {
                 // Use the newer Spectre.Console status display with live updates
-                var result = await AnsiConsoleHelper.WithStatusAsync<BatchProcessResult>(
+                var result = await AnsiConsoleHelper.WithStatusAsync(
                     async (updateStatus) =>
                     {                            // Hook up progress events to update the status
                         batchProcessor.ProcessingProgressChanged += (sender, e) =>

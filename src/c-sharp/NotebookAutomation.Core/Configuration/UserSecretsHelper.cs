@@ -3,7 +3,9 @@
 /// Provides convenient access to user secrets in the application.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the UserSecretsHelper class.
+/// The <c>UserSecretsHelper</c> class simplifies the retrieval of sensitive information
+/// stored in user secrets, such as API keys and client credentials. It leverages the
+/// application's configuration system to access these secrets securely.
 /// </remarks>
 /// <param name="configuration">The configuration to use for accessing user secrets.</param>
 public class UserSecretsHelper(IConfiguration configuration)

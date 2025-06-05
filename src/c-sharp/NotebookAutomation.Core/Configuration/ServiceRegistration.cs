@@ -9,6 +9,7 @@ using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Configuration;
+
 /// <summary>
 /// Provides centralized registration of all core services, dependency injection, and logging for the Notebook Automation application.
 /// </summary>
@@ -71,7 +72,7 @@ public static class ServiceRegistration
     /// <param name="services">The service collection to configure.</param>
     /// <param name="configuration">The application configuration.</param>
     /// <param name="debug">Whether debug mode is enabled.</param>
-    /// <returns>The configured service collection.</returns>        
+    /// <returns>The configured service collection.</returns>
     public static IServiceCollection AddNotebookAutomationServices(this IServiceCollection services,
         IConfiguration configuration,
         bool debug = false,
@@ -276,7 +277,7 @@ public static class ServiceRegistration
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     /// <param name="debug">Whether debug mode is enabled.</param>
-    /// <returns>The configured service collection.</returns>        
+    /// <returns>The configured service collection.</returns>
     private static IServiceCollection RegisterLoggingServices(IServiceCollection services, IConfiguration configuration, bool debug)
     {
         // Determine logging directory from configuration
@@ -288,7 +289,7 @@ public static class ServiceRegistration
 
         // Register the LoggingService as a singleton early, before any other components
         services.AddSingleton<ILoggingService>(_ => new LoggingService(loggingDir, debug));
-        services.AddSingleton<LoggingService>(provider => (LoggingService)provider.GetRequiredService<ILoggingService>());
+        services.AddSingleton(provider => (LoggingService)provider.GetRequiredService<ILoggingService>());
 
         // Now configure Microsoft.Extensions.Logging to use our LoggingService
         services.AddLogging(builder =>
@@ -341,14 +342,14 @@ public static class ServiceRegistration
     }
 
     /// <summary>
-    /// Registers metadata-related services for the application.       
+    /// Registers metadata-related services for the application.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     /// <returns>The configured service collection.</returns>
     private static IServiceCollection RegisterMetadataServices(IServiceCollection services)
     {
         // Register metadata-related services
-        services.AddScoped<MetadataTemplateManager>(provider =>
+        services.AddScoped(provider =>
         {
             var logger = provider.GetRequiredService<ILoggingService>().GetLogger<MetadataTemplateManager>();
             var appConfig = provider.GetRequiredService<AppConfig>();
@@ -357,7 +358,7 @@ public static class ServiceRegistration
         });
 
         // Register MetadataHierarchyDetector with factory
-        services.AddScoped<MetadataHierarchyDetector>(provider =>
+        services.AddScoped(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<MetadataHierarchyDetector>();
@@ -366,7 +367,7 @@ public static class ServiceRegistration
         });
 
         // Register CourseStructureExtractor with factory
-        services.AddScoped<CourseStructureExtractor>(provider =>
+        services.AddScoped(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<CourseStructureExtractor>();

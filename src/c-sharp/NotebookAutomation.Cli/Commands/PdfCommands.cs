@@ -4,43 +4,55 @@ using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.PdfProcessing;
-using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Utils;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands;
+
 /// <summary>
 /// Provides CLI commands for processing PDF files and converting them to markdown notes.
-/// 
-/// This class registers the 'pdf-notes' command for processing PDF files to extract 
-/// text content, generate markdown notes with appropriate frontmatter, and optionally 
-/// include AI-generated summaries and OneDrive integration.
 /// </summary>
 /// <remarks>
-/// The PDF processing functionality utilizes the <see cref="PdfNoteBatchProcessor"/>
-/// from the Core library to handle the actual processing of PDF files. The supported 
-/// PDF formats are defined in the application configuration and typically include
-/// .pdf and other PDF-based formats.
+/// This class registers the 'pdf-notes' command for processing PDF files to extract
+/// text content, generate markdown notes with appropriate frontmatter, and optionally
+/// include AI-generated summaries and OneDrive integration.
 /// </remarks>
 public class PdfCommands
 {
     private readonly ILogger<PdfCommands> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PdfCommands"/> class.
+    /// </summary>
+    /// <param name="logger">The logger instance for logging information and errors.</param>
     public PdfCommands(ILogger<PdfCommands> logger)
     {
-        _logger = logger;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _logger.LogInformationWithPath("PDF command initialized", "PdfCommands.cs");
-    }        /// <summary>
-             /// Registers the 'pdf-notes' command with the root command.
-             /// </summary>
-             /// <param name="rootCommand">The root command to add PDF processing commands to.</param>
-             /// <param name="configOption">The global config file option.</param>
-             /// <param name="debugOption">The global debug option.</param>
-             /// <param name="verboseOption">The global verbose output option.</param>
-             /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-    public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+    }
+
+    /// <summary>
+    /// Registers the 'pdf-notes' command with the root command.
+    /// </summary>
+    /// <param name="rootCommand">The root command to add PDF processing commands to.</param>
+    /// <param name="configOption">The global config file option.</param>
+    /// <param name="debugOption">The global debug option.</param>
+    /// <param name="verboseOption">The global verbose output option.</param>
+    /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
+    public static void Register(
+        RootCommand rootCommand,
+        Option<string> configOption,
+        Option<bool> debugOption,
+        Option<bool> verboseOption,
+        Option<bool> dryRunOption)
     {
+        ArgumentNullException.ThrowIfNull(rootCommand);
+        ArgumentNullException.ThrowIfNull(configOption);
+        ArgumentNullException.ThrowIfNull(debugOption);
+        ArgumentNullException.ThrowIfNull(verboseOption);
+        ArgumentNullException.ThrowIfNull(dryRunOption);
+
         var inputOption = new Option<string?>(
             aliases: ["--input", "-i"],
             description: "Path to the input PDF file or directory (will auto-detect if it's a file or folder)")
@@ -292,12 +304,16 @@ public class PdfCommands
 
             logger.LogInformation("Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
-                input); logger.LogInformationWithPath("Output will be written to: {OutputPath}", "PdfCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"); try
+                input);
+            logger.LogInformationWithPath("Output will be written to: {OutputPath}", "PdfCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated");
+
+            try
             {
                 // Use the newer Spectre.Console status display with live updates
-                var result = await AnsiConsoleHelper.WithStatusAsync<BatchProcessResult>(
+                var result = await AnsiConsoleHelper.WithStatusAsync(
                     async (updateStatus) =>
-                    {                            // Hook up progress events to update the status
+                    {
+                        // Hook up progress events to update the status
                         batchProcessor.ProcessingProgressChanged += (sender, e) =>
                         {
                             // Escape any markup to avoid Spectre.Console parsing issues

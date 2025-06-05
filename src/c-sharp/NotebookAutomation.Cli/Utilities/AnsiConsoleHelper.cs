@@ -3,9 +3,14 @@
 using Spectre.Console;
 
 namespace NotebookAutomation.Cli.Utilities;
+
 /// <summary>
 /// Provides helper methods for consistent ANSI-colored console output in CLI commands.
 /// </summary>
+/// <remarks>
+/// This class includes methods for writing colored messages, managing spinner animations,
+/// and integrating Spectre.Console progress displays for batch operations.
+/// </remarks>
 public static class AnsiConsoleHelper
 {
     private static readonly char[] _spinnerChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
@@ -105,7 +110,9 @@ public static class AnsiConsoleHelper
             _spinnerActive = true;
             _currentSpinnerMessage = message;
             _spinnerCancellation = new CancellationTokenSource();
-            var token = _spinnerCancellation.Token;                // Write the initial message without a newline
+            var token = _spinnerCancellation.Token;
+
+            // Write the initial message without a newline
             Console.Write($"{AnsiColors.OKBLUE}{_spinnerChars[_spinnerIndex]} {_currentSpinnerMessage}{AnsiColors.ENDC}");
 
             // Ensure stdout is flushed immediately so the spinner is visible
@@ -142,9 +149,11 @@ public static class AnsiConsoleHelper
                 }
             }, token);
         }
-    }        /// <summary>
-             /// Stops the spinner animation and clears the line.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Stops the spinner animation and clears the line.
+    /// </summary>
     public static void StopSpinner()
     {
         lock (_spinnerLock)
@@ -185,7 +194,8 @@ public static class AnsiConsoleHelper
                 _currentSpinnerMessage = message;
 
                 try
-                {                        // Update the message in-place using ANSI escape codes
+                {
+                    // Update the message in-place using ANSI escape codes
                     Console.Write("\r");
                     Console.Write(new string(' ', Console.WindowWidth > 1 ? Console.WindowWidth - 1 : 80));
                     Console.Write("\r");

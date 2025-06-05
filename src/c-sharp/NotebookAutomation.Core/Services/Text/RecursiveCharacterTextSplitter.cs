@@ -1,16 +1,36 @@
 ﻿using System.Text.RegularExpressions;
 
 namespace NotebookAutomation.Core.Services.Text;
+
 /// <summary>
 /// A sophisticated text splitter that recursively splits text based on a hierarchy of separators,
 /// preserving semantic boundaries and ensuring better context maintenance between chunks.
 /// </summary>
 /// <remarks>
+/// <para>
 /// This implementation is inspired by the RecursiveCharacterTextSplitter concept from LangChain
-/// but adapted specifically for C# and the NotebookAutomation project. The splitter works by
-/// first trying to split on the strongest separators (e.g., triple newlines, headers) and then
-/// progressively moving to weaker ones (e.g., single spaces) if necessary.
+/// but adapted specifically for C# and the NotebookAutomation project. The splitter works by:
+/// <list type="bullet">
+/// <item><description>Splitting on the strongest separators first (e.g., triple newlines, headers)</description></item>
+/// <item><description>Progressively moving to weaker separators (e.g., single spaces) if necessary</description></item>
+/// <item><description>Preserving special patterns like markdown headers, code blocks, and lists</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The splitter is optimized for handling markdown and code content, ensuring semantic boundaries
+/// are maintained while splitting text into manageable chunks.
+/// </para>
 /// </remarks>
+/// <example>
+/// <code>
+/// var splitter = new RecursiveCharacterTextSplitter(logger);
+/// var chunks = splitter.SplitText("This is a sample text with multiple paragraphs.");
+/// foreach (var chunk in chunks)
+/// {
+///     Console.WriteLine(chunk);
+/// }
+/// </code>
+/// </example>
 public partial class RecursiveCharacterTextSplitter
 {
     private readonly ILogger _logger;
@@ -21,13 +41,25 @@ public partial class RecursiveCharacterTextSplitter
     private readonly List<(Regex Pattern, int Priority)> _specialPatterns;
 
     /// <summary>
-    /// Initializes a new instance of the RecursiveCharacterTextSplitter class.
+    /// Initializes a new instance of the <see cref="RecursiveCharacterTextSplitter"/> class.
     /// </summary>
-    /// <param name="logger">Logger for diagnostic information</param>
-    /// <param name="chunkSize">Maximum size of each chunk in estimated tokens</param>
-    /// <param name="chunkOverlap">Number of tokens to overlap between chunks</param>
-    /// <param name="separators">Optional list of separators to use for splitting, in order of priority</param>
-    /// <param name="keepSeparator">Whether to keep the separator with the chunk</param>
+    /// <param name="logger">Logger for diagnostic information.</param>
+    /// <param name="chunkSize">Maximum size of each chunk in estimated tokens.</param>
+    /// <param name="chunkOverlap">Number of tokens to overlap between chunks.</param>
+    /// <param name="separators">Optional list of separators to use for splitting, in order of priority.</param>
+    /// <param name="keepSeparator">Whether to keep the separator with the chunk.</param>
+    /// <remarks>
+    /// <para>
+    /// This constructor initializes the splitter with default or custom settings for chunk size,
+    /// overlap, and separator hierarchy. It validates input parameters and ensures the chunk overlap
+    /// is smaller than the chunk size.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var splitter = new RecursiveCharacterTextSplitter(logger, chunkSize: 3000, chunkOverlap: 500);
+    /// </code>
+    /// </example>
     public RecursiveCharacterTextSplitter(
         ILogger logger,
         int chunkSize = 3000,
@@ -65,26 +97,37 @@ public partial class RecursiveCharacterTextSplitter
         _specialPatterns =
         [
             // Markdown headers (keep them as separate chunks if possible)
-            (MyRegex(), 10),
-            
+            (MarkdownHeaderRegex(), 10),
+
             // Code blocks (try to keep complete code blocks together)
-            (MyRegex1(), 20),
-            
+            (CodeBlockRegex(), 20),
+
             // Bulleted lists (try to keep list items together)
-            (MyRegex2(), 15),
-            
+            (BulletedListRegex(), 15),
+
             // Numbered lists (try to keep list items together)
-            (MyRegex3(), 15)
+            (NumberedListRegex(), 15)
         ];
     }
 
     /// <summary>
     /// Creates a recursive text splitter optimized for markdown content.
     /// </summary>
-    /// <param name="logger">Logger for diagnostic information</param>
-    /// <param name="chunkSize">Maximum size of each chunk in estimated tokens</param>
-    /// <param name="chunkOverlap">Number of tokens to overlap between chunks</param>
-    /// <returns>A RecursiveCharacterTextSplitter configured for markdown content</returns>
+    /// <param name="logger">Logger for diagnostic information.</param>
+    /// <param name="chunkSize">Maximum size of each chunk in estimated tokens.</param>
+    /// <param name="chunkOverlap">Number of tokens to overlap between chunks.</param>
+    /// <returns>A RecursiveCharacterTextSplitter configured for markdown content.</returns>
+    /// <remarks>
+    /// <para>
+    /// This factory method creates a splitter with a separator hierarchy optimized for markdown content,
+    /// including headers, paragraph breaks, and other markdown-specific patterns.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var markdownSplitter = RecursiveCharacterTextSplitter.CreateForMarkdown(logger);
+    /// </code>
+    /// </example>
     public static RecursiveCharacterTextSplitter CreateForMarkdown(
         ILogger logger,
         int chunkSize = 3000,
@@ -505,12 +548,51 @@ public partial class RecursiveCharacterTextSplitter
         return (int)(estimatedTokens * 1.2);
     }
 
+    /// <summary>
+    /// Matches markdown headers (e.g., "# Header", "## Subheader") with levels 1 to 6.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This regex is used to identify markdown headers in text and split them into separate chunks.
+    /// It matches headers with leading hashes followed by a space and text.
+    /// </para>
+    /// </remarks>
     [GeneratedRegex(@"^\s*(#{1,6})\s+.+$", RegexOptions.Multiline)]
-    private static partial Regex MyRegex();
+    private static partial Regex MarkdownHeaderRegex();
+
+    /// <summary>
+    /// Matches code blocks enclosed in triple backticks (e.g., "```code```"), including multiline blocks.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This regex is used to identify code blocks in markdown or text files and keep them as separate chunks.
+    /// It matches content enclosed within triple backticks.
+    /// </para>
+    /// </remarks>
     [GeneratedRegex(@"```[\s\S]*?```", RegexOptions.Multiline)]
-    private static partial Regex MyRegex1();
+    private static partial Regex CodeBlockRegex();
+
+    /// <summary>
+    /// Matches bulleted list items (e.g., "- Item", "* Item", "+ Item") in text.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This regex is used to identify bulleted list items in text and keep them together as separate chunks.
+    /// It matches lines starting with a bullet character followed by text.
+    /// </para>
+    /// </remarks>
     [GeneratedRegex(@"^\s*[-*+]\s+.+$", RegexOptions.Multiline)]
-    private static partial Regex MyRegex2();
+    private static partial Regex BulletedListRegex();
+
+    /// <summary>
+    /// Matches numbered list items (e.g., "1. Item", "2. Item") in text.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This regex is used to identify numbered list items in text and keep them together as separate chunks.
+    /// It matches lines starting with a number followed by a period and text.
+    /// </para>
+    /// </remarks>
     [GeneratedRegex(@"^\s*\d+\.\s+.+$", RegexOptions.Multiline)]
-    private static partial Regex MyRegex3();
+    private static partial Regex NumberedListRegex();
 }

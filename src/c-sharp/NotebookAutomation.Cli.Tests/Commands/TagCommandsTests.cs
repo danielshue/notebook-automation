@@ -45,7 +45,7 @@ public class TagCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             await parser.InvokeAsync("tag clean-index");
         }
         finally
@@ -76,7 +76,7 @@ public class TagCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             await parser.InvokeAsync("tag consolidate");
         }
         finally
@@ -107,7 +107,7 @@ public class TagCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             await parser.InvokeAsync("tag restructure");
         }
         finally
@@ -138,7 +138,7 @@ public class TagCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             await parser.InvokeAsync("tag add-example");
         }
         finally
@@ -169,7 +169,7 @@ public class TagCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             await parser.InvokeAsync("tag metadata-check");
         }
         finally
@@ -200,7 +200,7 @@ public class TagCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             // Only provide the subcommand, missing all required arguments
             await parser.InvokeAsync("tag update-frontmatter");
         }
@@ -232,7 +232,7 @@ public class TagCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             await parser.InvokeAsync("tag diagnose-yaml");
         }
         finally

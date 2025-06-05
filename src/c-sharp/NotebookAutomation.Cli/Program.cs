@@ -3,12 +3,16 @@ using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Utils;
 
-namespace NotebookAutomation.Cli;    /// <summary>
-                                     /// Main entry point for the Notebook Automation CLI.
-                                     /// 
-                                     /// This program provides a unified command-line interface for accessing
-                                     /// all the notebook automation tools.
-                                     /// </summary>
+namespace NotebookAutomation.Cli;
+
+/// <summary>
+/// Main entry point for the Notebook Automation CLI.
+/// </summary>
+/// <remarks>
+/// This program provides a unified command-line interface for accessing
+/// all the notebook automation tools, including commands for managing
+/// course-related content between OneDrive and Obsidian notebooks.
+/// </remarks>
 public class Program
 {
     private static IServiceProvider? _serviceProvider;
@@ -16,6 +20,7 @@ public class Program
     /// <summary>
     /// Gets the service provider for dependency injection.
     /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if the service provider is not initialized.</exception>
     public static IServiceProvider ServiceProvider
     {
         get => _serviceProvider ?? throw new InvalidOperationException("Service provider not initialized. Call SetupDependencyInjection first.");
@@ -124,7 +129,9 @@ public class Program
 
                 context.Console.WriteLine("\nRun 'notebookautomation.exe [command] --help' for more information on a specific command.");
             }
-        });            // The root command no longer handles AI provider/model/endpoint options globally.
+        });
+
+        // The root command no longer handles AI provider/model/endpoint options globally.
         // These are now handled under the config command group only.
 
         // Print config file path before any command except help/version
@@ -150,10 +157,11 @@ public class Program
     }
 
     /// <summary>
-    /// Sets up dependency injection container with configuration and services.
+    /// Sets up the dependency injection container with configuration and services.
     /// </summary>
     /// <param name="configPath">Path to the configuration file.</param>
     /// <param name="debug">Whether debug mode is enabled.</param>
+    /// <returns>An <see cref="IServiceProvider"/> instance configured with application services.</returns>
     public static IServiceProvider SetupDependencyInjection(string? configPath, bool debug)
     {
         // Determine environment
@@ -168,7 +176,7 @@ public class Program
         var services = new ServiceCollection();
 
         // Register configuration
-        services.AddSingleton<IConfiguration>(configuration);
+        services.AddSingleton(configuration);
 
         // Add notebook automation services using ServiceRegistration
         services.AddNotebookAutomationServices(configuration, debug, configPath);

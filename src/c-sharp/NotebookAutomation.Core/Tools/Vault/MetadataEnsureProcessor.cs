@@ -391,7 +391,7 @@ public class MetadataEnsureProcessor(
     }        /// <summary>
              /// Logs the changes made to metadata for debugging.
              /// </summary>
-             /// <param name="original">Original metadata.</param>        
+             /// <param name="original">Original metadata.</param>
              /// <param name="updated">Updated metadata.</param>
              /// <param name="filePath">Optional file path for detailed logging.</param>
     private void LogMetadataChanges(Dictionary<string, object> original, Dictionary<string, object> updated, string? filePath = null)
@@ -441,7 +441,7 @@ public class MetadataEnsureProcessor(
             string filePath_full = filePath != null ? $"{filePath}" : "unknown file";
 
             // Create detailed summary of changes for this file
-            var metadataSummary = new System.Text.StringBuilder();
+            var metadataSummary = new StringBuilder();
             metadataSummary.AppendLine($"--- Metadata changes for {filePath_full} ---");
 
             if (additions.Count > 0)
@@ -511,7 +511,7 @@ public class MetadataEnsureProcessor(
 public static class DictionaryExtensions
 {
     /// <summary>
-    /// Gets a value from dictionary or returns default if key doesn't exist.        
+    /// Gets a value from dictionary or returns default if key doesn't exist.
     /// </summary>
     public static TValue? GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue? defaultValue = default)
         where TKey : notnull

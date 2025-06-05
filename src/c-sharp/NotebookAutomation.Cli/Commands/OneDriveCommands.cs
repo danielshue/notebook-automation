@@ -10,16 +10,33 @@ using NotebookAutomation.Core.Utils;
 namespace NotebookAutomation.Cli.Commands;
 /// <summary>
 /// Provides CLI commands for interacting with OneDrive through Microsoft Graph API.
-/// 
-/// This class registers the 'onedrive' command group and its subcommands for OneDrive operations,
-/// including listing files, downloading files from OneDrive, uploading files to OneDrive,
-/// searching for files, and synchronizing files between local and OneDrive locations.
 /// </summary>
 /// <remarks>
+/// <para>
+/// This class registers the 'onedrive' command group and its subcommands for OneDrive operations,
+/// including:
+/// <list type="bullet">
+/// <item><description>Listing files and folders</description></item>
+/// <item><description>Downloading files from OneDrive</description></item>
+/// <item><description>Uploading files to OneDrive</description></item>
+/// <item><description>Searching for files</description></item>
+/// <item><description>Synchronizing files between local and OneDrive locations</description></item>
+/// </list>
+/// </para>
+/// <para>
 /// The OneDrive commands utilize the <see cref="OneDriveService"/> from the Core library
 /// to perform the actual OneDrive operations. These commands require proper authentication
 /// with Microsoft Graph API, which is handled by the OneDriveService.
+/// </para>
 /// </remarks>
+/// <example>
+/// <code>
+/// var rootCommand = new RootCommand();
+/// var oneDriveCommands = new OneDriveCommands(logger);
+/// oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+/// rootCommand.Invoke("onedrive list --path /Documents");
+/// </code>
+/// </example>
 public class OneDriveCommands
 {
     private readonly ILogger<OneDriveCommands> _logger;
@@ -38,6 +55,20 @@ public class OneDriveCommands
     /// <param name="debugOption">The global debug option.</param>
     /// <param name="verboseOption">The global verbose output option.</param>
     /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
+    /// <remarks>
+    /// <para>
+    /// This method adds the 'onedrive' command group to the root command, enabling users to perform
+    /// various OneDrive operations. It defines subcommands for listing, downloading, uploading,
+    /// searching, and synchronizing files.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var rootCommand = new RootCommand();
+    /// oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+    /// rootCommand.Invoke("onedrive list --path /Documents");
+    /// </code>
+    /// </example>
     public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
     {
         var oneDriveCommand = new Command("onedrive", "OneDrive file management commands");            // List files command

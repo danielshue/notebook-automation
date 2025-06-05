@@ -3,16 +3,33 @@
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.MarkdownGeneration;
+
 /// <summary>
 /// Parser for markdown content with frontmatter handling.
-/// 
-/// This class provides functionality for parsing and manipulating markdown content,
-/// including frontmatter extraction, content formatting, and structure analysis.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the MarkdownParser.
+/// <para>
+/// This class provides functionality for parsing and manipulating markdown content,
+/// including:
+/// <list type="bullet">
+/// <item><description>Frontmatter extraction</description></item>
+/// <item><description>Content formatting</description></item>
+/// <item><description>Structure analysis</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The parser integrates with the YAML helper for frontmatter processing and provides
+/// detailed logging for diagnostics.
+/// </para>
 /// </remarks>
-/// <param name="logger">Logger for diagnostics.</param>
+/// <example>
+/// <code>
+/// var parser = new MarkdownParser(logger);
+/// var (frontmatter, content) = await parser.ParseFileAsync("example.md");
+/// Console.WriteLine(frontmatter);
+/// Console.WriteLine(content);
+/// </code>
+/// </example>
 public partial class MarkdownParser(ILogger logger)
 {
     private readonly ILogger _logger = logger;
@@ -21,13 +38,34 @@ public partial class MarkdownParser(ILogger logger)
     /// <summary>
     /// Regular expression for detecting YAML frontmatter.
     /// </summary>
-    public static readonly Regex FrontmatterRegex = MyRegex();
+    /// <remarks>
+    /// <para>
+    /// This regex is used to identify and extract YAML frontmatter blocks from markdown files.
+    /// It matches blocks enclosed within triple dashes ("---") and captures the content between them.
+    /// </para>
+    /// </remarks>
+    public static readonly Regex FrontmatterRegex = YamlFrontmatterRegex();
 
     /// <summary>
     /// Extracts the frontmatter and content from a markdown file.
     /// </summary>
     /// <param name="filePath">Path to the markdown file.</param>
     /// <returns>A tuple containing the frontmatter dictionary and the content body.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method reads the markdown file, extracts the YAML frontmatter using the <see cref="FrontmatterRegex"/>,
+
+    /// and separates the remaining content body. If the file does not exist or an error occurs, it logs the issue
+    /// and returns empty results.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var (frontmatter, content) = await parser.ParseFileAsync("example.md");
+    /// Console.WriteLine(frontmatter);
+    /// Console.WriteLine(content);
+    /// </code>
+    /// </example>
     public async Task<(Dictionary<string, object> Frontmatter, string Content)> ParseFileAsync(string filePath)
     {
         if (!File.Exists(filePath))
@@ -121,7 +159,7 @@ public partial class MarkdownParser(ILogger logger)
             return (0, string.Empty);
         }
 
-        var match = MyRegex1().Match(headerLine);
+        var match = MarkdownHeaderRegex().Match(headerLine);
         if (!match.Success)
         {
             return (0, headerLine.Trim());
@@ -185,8 +223,27 @@ public partial class MarkdownParser(ILogger logger)
             .ToLowerInvariant();
     }
 
+    /// <summary>
+    /// Matches YAML frontmatter blocks (e.g., "---\nkey: value\n---").
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This regex is used to extract YAML frontmatter from markdown files. It matches blocks enclosed
+    /// within triple dashes ("---") and captures the content between them.
+    /// </para>
+    /// </remarks>
     [GeneratedRegex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline)]
-    private static partial Regex MyRegex();
+    private static partial Regex YamlFrontmatterRegex();
+
+    /// <summary>
+    /// Matches markdown headers (e.g., "# Header", "## Subheader") with levels 1 to 6.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This regex is used to identify markdown headers in text and extract their level and content.
+    /// It matches headers with leading hashes followed by a space and text.
+    /// </para>
+    /// </remarks>
     [GeneratedRegex(@"^(#+)\s+(.+)$")]
-    private static partial Regex MyRegex1();
+    private static partial Regex MarkdownHeaderRegex();
 }

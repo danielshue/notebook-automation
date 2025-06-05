@@ -3,37 +3,16 @@ using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Tools.Shared;
 
 namespace NotebookAutomation.Core.Tools.VideoProcessing;
+
 /// <summary>
 /// Provides batch processing capabilities for converting multiple video files to markdown notes.
 /// </summary>
 /// <remarks>
-/// <para>
-/// The VideoNoteBatchProcessor class coordinates the processing of multiple video files,
-/// either from a specified directory or a single file path. It leverages the 
-/// <see cref="VideoNoteProcessor"/> to handle the details of metadata extraction, 
-/// transcript loading, and note generation for each video.
-/// </para>
-/// <para>
-/// This batch processor is responsible for:
-/// </para>
-/// <list type="bullet">
-/// <item><description>Identifying video files based on their extensions</description></item>
-/// <item><description>Coordinating the processing of each video file</description></item>
-/// <item><description>Managing output directory creation and file writing</description></item>
-/// <item><description>Tracking success and failure counts</description></item>
-/// <item><description>Supporting dry run mode for testing without file writes</description></item>
-/// </list>
-/// <para>
-/// The class is designed to be used by both CLI and API interfaces, providing a central
-/// point for video batch processing operations with appropriate logging and error handling.
-/// This implementation delegates all batch processing logic to the generic 
-/// <see cref="DocumentNoteBatchProcessor{TProcessor}"/> for maintainability and code reuse.
-/// </para>
+/// The <c>VideoNoteBatchProcessor</c> class coordinates the processing of multiple video files,
+/// leveraging the <see cref="VideoNoteProcessor"/> for metadata extraction, transcript loading,
+/// and note generation. It supports dry-run mode, output directory management, and eventing
+/// for real-time progress tracking.
 /// </remarks>
-/// <remarks>
-/// Initializes a new instance of the <see cref="VideoNoteBatchProcessor"/> class with a batch processor.
-/// </remarks>
-/// <param name="batchProcessor">The batch processor to use for processing video notes.</param>
 public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcessor> batchProcessor)
 {
     /// <summary>
@@ -74,7 +53,7 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
     /// <remarks>
     /// <para>
     /// This method delegates to the generic <see cref="DocumentNoteBatchProcessor{TProcessor}"/>
-    /// for all batch processing operations while maintaining backward compatibility with 
+    /// for all batch processing operations while maintaining backward compatibility with
     /// existing video-specific API.
     /// </para>
     /// </remarks>
@@ -87,7 +66,7 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
     ///     "path/to/notes",
     ///     new List&lt;string&gt; { ".mp4", ".mov", ".avi" },
     ///     "sk-yourapikeyhere");
-    /// 
+    ///
     /// Console.WriteLine($"Processed: {result.processed}, Failed: {result.failed}");
     /// </code>
     /// </example>

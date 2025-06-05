@@ -19,9 +19,9 @@ public class ConfigCommandsTests
     public async System.Threading.Tasks.Task ListKeysCommand_PrintsAllAvailableConfigKeys()
     {
         // Arrange
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
         _ = new ConfigCommands();
         ConfigCommands.Register(rootCommand, configOption, debugOption);
 
@@ -72,7 +72,7 @@ public class ConfigCommandsTests
     public void PrintConfigFormatted_MinimalConfig_PrintsNotSet()
     {
         // Arrange: minimal config with nulls
-        var config = new NotebookAutomation.Core.Configuration.AppConfig();
+        var config = new Core.Configuration.AppConfig();
         var originalOut = System.Console.Out;
         var stringWriter = new System.IO.StringWriter();
         System.Console.SetOut(stringWriter);
@@ -95,7 +95,7 @@ public class ConfigCommandsTests
     [TestMethod]
     public void UpdateConfigKey_VideoExtensions_ParsesList()
     {
-        var config = new NotebookAutomation.Core.Configuration.AppConfig();
+        var config = new Core.Configuration.AppConfig();
         var updateConfigKey = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         Assert.IsNotNull(updateConfigKey);
@@ -113,7 +113,7 @@ public class ConfigCommandsTests
     [TestMethod]
     public void UpdateConfigKey_AiServiceProvider_UpdatesProvider()
     {
-        var config = new NotebookAutomation.Core.Configuration.AppConfig();
+        var config = new Core.Configuration.AppConfig();
         var updateConfigKey = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         Assert.IsNotNull(updateConfigKey);
@@ -125,7 +125,7 @@ public class ConfigCommandsTests
     [TestMethod]
     public void UpdateConfigKey_AiServiceOpenAiModel_UpdatesModel()
     {
-        var config = new NotebookAutomation.Core.Configuration.AppConfig();
+        var config = new Core.Configuration.AppConfig();
         var updateConfigKey = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         Assert.IsNotNull(updateConfigKey);
@@ -138,7 +138,7 @@ public class ConfigCommandsTests
     [TestMethod]
     public void UpdateConfigKey_AiServiceAzureDeployment_UpdatesDeployment()
     {
-        var config = new NotebookAutomation.Core.Configuration.AppConfig();
+        var config = new Core.Configuration.AppConfig();
         var updateConfigKey = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         Assert.IsNotNull(updateConfigKey);
@@ -151,7 +151,7 @@ public class ConfigCommandsTests
     [TestMethod]
     public void UpdateConfigKey_AiServiceFoundryEndpoint_UpdatesEndpoint()
     {
-        var config = new NotebookAutomation.Core.Configuration.AppConfig();
+        var config = new Core.Configuration.AppConfig();
         var updateConfigKey = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         Assert.IsNotNull(updateConfigKey);
@@ -196,7 +196,7 @@ public class ConfigCommandsTests
     [TestMethod]
     public void UpdateConfigKey_InvalidKey_ReturnsFalse()
     {
-        var config = new NotebookAutomation.Core.Configuration.AppConfig();
+        var config = new Core.Configuration.AppConfig();
         var updateConfigKey = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         Assert.IsNotNull(updateConfigKey);
@@ -247,14 +247,14 @@ public class ConfigCommandsTests
     public void Register_ConfigCommand_HasViewAndUpdateSubcommands()
     {
         // Arrange
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
         var configCommands = new ConfigCommands();
         ConfigCommands.Register(rootCommand, configOption, debugOption);
 
         // Act
-        var configCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config") as System.CommandLine.Command;
+        var configCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config") as Command;
 
         // Assert
         Assert.IsNotNull(configCommand, "config command should be registered on the root command.");
@@ -275,9 +275,9 @@ public class ConfigCommandsTests
     public void Register_AddsConfigCommandToRoot()
     {
         // Arrange
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
         var configCommands = new ConfigCommands();
 
         // Act

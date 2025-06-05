@@ -8,16 +8,13 @@ using NotebookAutomation.Core.Utils;
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands;
+
 /// <summary>
 /// Provides CLI commands for managing and processing Obsidian vault directories.
-/// 
-/// This class registers the 'vault' command group and its subcommands for vault management,
-/// including generating index files and ensuring metadata consistency across markdown files.
 /// </summary>
 /// <remarks>
-/// The vault commands manage the overall organization and structure of an Obsidian vault,
-/// which is a collection of markdown files and related assets. These commands help maintain
-/// proper structure and metadata consistency throughout the vault.
+/// This class registers the 'vault' command group and its subcommands for vault management,
+/// including generating index files and ensuring metadata consistency across markdown files.
 /// </remarks>
 public class VaultCommands
 {
@@ -26,14 +23,14 @@ public class VaultCommands
     private readonly AppConfig _appConfig;
 
     /// <summary>
-    /// Initializes a new instance of the VaultCommands class.
+    /// Initializes a new instance of the <see cref="VaultCommands"/> class.
     /// </summary>
-    /// <param name="logger">The logger.</param>
-    /// <param name="serviceProvider">The service provider.</param>
+    /// <param name="logger">The logger instance for logging information and errors.</param>
+    /// <param name="serviceProvider">The service provider for dependency injection.</param>
     public VaultCommands(ILogger<VaultCommands> logger, IServiceProvider serviceProvider)
     {
-        _logger = logger;
-        _serviceProvider = serviceProvider;
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _appConfig = serviceProvider.GetRequiredService<AppConfig>();
         _logger.LogInformationWithPath("Vault command initialized", "VaultCommands.cs");
     }
@@ -46,8 +43,19 @@ public class VaultCommands
     /// <param name="debugOption">The global debug option.</param>
     /// <param name="verboseOption">The global verbose output option.</param>
     /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-    public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+    public void Register(
+        RootCommand rootCommand,
+        Option<string> configOption,
+        Option<bool> debugOption,
+        Option<bool> verboseOption,
+        Option<bool> dryRunOption)
     {
+        ArgumentNullException.ThrowIfNull(rootCommand);
+        ArgumentNullException.ThrowIfNull(configOption);
+        ArgumentNullException.ThrowIfNull(debugOption);
+        ArgumentNullException.ThrowIfNull(verboseOption);
+        ArgumentNullException.ThrowIfNull(dryRunOption);
+
         var pathArg = new Argument<string>("path", "Path to the vault directory");
         var vaultCommand = new Command("vault", "Vault management commands");
 
@@ -55,7 +63,6 @@ public class VaultCommands
         generateIndexCommand.AddArgument(pathArg);
         generateIndexCommand.SetHandler(async context =>
         {
-            // If path argument is missing, print usage and return
             if (string.IsNullOrWhiteSpace(context.ParseResult.GetValueForArgument(pathArg)))
             {
                 AnsiConsoleHelper.WriteUsage(
@@ -106,7 +113,8 @@ public class VaultCommands
     /// <list type="bullet">
     /// <item><description>generate-index: Creates index files for each directory in the vault</description></item>
     /// <item><description>ensure-metadata: Updates YAML frontmatter with program/course/class metadata based on directory hierarchy (Program/Course/Class structure)</description></item>
-    /// </list>        /// </remarks>
+    /// </list>
+    /// </remarks>
     private async Task ExecuteVaultCommandAsync(
         string command,
         string path,
@@ -115,8 +123,6 @@ public class VaultCommands
         bool verbose,
         bool dryRun)
     {
-        // Configuration is loaded via DI, so we don't need to validate configPath
-        // Just ensure we have a valid _appConfig instance
         if (_appConfig == null)
         {
             _logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "VaultCommands.cs");
@@ -165,53 +171,53 @@ public class VaultCommands
     /// <summary>
     /// Executes the generate-index command (placeholder implementation).
     /// </summary>
+    /// <param name="path">Path to the vault directory.</param>
+    /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task ExecuteGenerateIndexAsync(string path, bool dryRun)
     {
-        // TODO: Implement generate-index functionality
         _logger.LogWarningWithPath("Generate-index command is not yet implemented", "VaultCommands.cs");
         await Task.CompletedTask;
     }
+
     /// <summary>
     /// Executes the ensure-metadata command using the MetadataEnsureBatchProcessor.
-    /// </summary>        
+    /// </summary>
+    /// <param name="path">Path to the vault directory.</param>
+    /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
+    /// <param name="verbose">Whether to enable verbose output.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task ExecuteEnsureMetadataAsync(string path, bool dryRun, bool verbose)
     {
         try
         {
             _logger.LogInformationWithPath("Starting metadata ensure process for vault: {VaultPath}", "VaultCommands.cs", path);
 
-            // Get the batch processor from DI
             var batchProcessor = _serviceProvider.GetRequiredService<MetadataEnsureBatchProcessor>();
 
-            // Use the same approach as video commands for consistent animated progress output
-            var result = await AnsiConsoleHelper.WithStatusAsync<MetadataBatchResult>(
+            var result = await AnsiConsoleHelper.WithStatusAsync(
                 async (updateStatus) =>
-                {                        // Hook up progress events to update the status display
+                {
                     batchProcessor.ProcessingProgressChanged += (sender, e) =>
                     {
-                        // Escape any markup to avoid Spectre.Console parsing issues
                         string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
                         updateStatus(safeStatus);
                     };
 
-                    // Execute the batch processing
                     return await batchProcessor.EnsureMetadataAsync(
                         vaultPath: path,
                         dryRun: dryRun,
-                        forceOverwrite: false, // Could be made configurable via CLI option
-                        retryFailed: false     // Could be made configurable via CLI option
+                        forceOverwrite: false,
+                        retryFailed: false
                     );
                 },
                 $"Processing metadata for vault: {Path.GetFileName(path)}"
             );
 
-            // Log the results
             if (result.Success)
             {
-                // Report completion message that's similar to video/pdf commands
                 string prefix = dryRun ? "[DRY RUN] " : "";
 
-                // Write a clear summary message
                 AnsiConsoleHelper.WriteSuccess($"\n{prefix}Metadata processing completed");
                 AnsiConsoleHelper.WriteInfo($"  Files processed: {result.ProcessedFiles}");
                 AnsiConsoleHelper.WriteInfo($"  Files skipped: {result.SkippedFiles}");
@@ -219,12 +225,12 @@ public class VaultCommands
                 {
                     AnsiConsoleHelper.WriteWarning($"  Files failed: {result.FailedFiles}");
                 }
-                AnsiConsoleHelper.WriteInfo($"  Total files: {result.TotalFiles}");                      // For dry run, indicate where detailed changes can be found
+                AnsiConsoleHelper.WriteInfo($"  Total files: {result.TotalFiles}");
+
                 if (dryRun)
                 {
                     AnsiConsoleHelper.WriteInfo("\nDetailed metadata changes are available in the log file:");
 
-                    // Get the actual log file path from the logging service
                     var loggingService = _serviceProvider.GetRequiredService<ILoggingService>();
                     var logFilePath = loggingService.CurrentLogFilePath;
 
@@ -234,20 +240,17 @@ public class VaultCommands
                     }
                     else if (_appConfig?.Paths?.LoggingDir != null)
                     {
-                        // Fallback to manual construction if service doesn't provide path
                         string logPath = _appConfig.Paths.LoggingDir;
                         string logFile = Path.Combine(logPath, $"notebookautomation.core_{DateTime.Now:yyyyMMdd}.log");
                         AnsiConsoleHelper.WriteInfo($"  {logFile}");
                     }
 
-                    // Only show verbose tip when not already running in verbose mode
                     if (!verbose)
                     {
                         AnsiConsoleHelper.WriteInfo("\nTip: Run with --verbose to see more details about proposed changes.");
                     }
                 }
 
-                // Still log to the file for record-keeping
                 _logger.LogInformationWithPath(
                     "{Prefix}Metadata processing completed: {Processed} processed, {Skipped} skipped, {Failed} failed out of {Total} total files",
                     "VaultCommands.cs",

@@ -1,42 +1,67 @@
-﻿/// <summary>
-/// Configuration for file paths used in the application.
-/// </summary>
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace NotebookAutomation.Core.Configuration;
+/// <summary>
+/// Represents the configuration settings for various file paths used in the application.
+/// </summary>
+/// <remarks>
+/// This class encapsulates paths for directories and files that are essential for the application's
+/// operation, including paths for OneDrive resources, notebook vaults, metadata files, logging,
+/// and prompt templates. It is designed to be serialized and deserialized from JSON configuration files.
+/// </remarks>
 public class PathsConfig
-{        /// <summary>
-         /// Full path to the root directory where OneDrive files are stored locally.
-         /// </summary>
+{
+    /// <summary>
+    /// Full path to the root directory where OneDrive files are stored locally.
+    /// </summary>
+    /// <remarks>
+    /// This path is used to locate the local storage directory for OneDrive files.
+    /// </remarks>
     [JsonPropertyName("onedrive_fullpath_root")]
     public string OnedriveFullpathRoot { get; set; } = string.Empty;
+
     /// <summary>
     /// Full path to the root directory for the notebook vault.
     /// </summary>
+    /// <remarks>
+    /// This path is used to locate the directory where notebook vault files are stored.
+    /// </remarks>
     [JsonPropertyName("notebook_vault_fullpath_root")]
     public string NotebookVaultFullpathRoot { get; set; } = string.Empty;
 
     /// <summary>
     /// Path to the metadata file.
     /// </summary>
+    /// <remarks>
+    /// The metadata file contains structured information about the application's resources.
+    /// </remarks>
     [JsonPropertyName("metadata_file")]
     public string MetadataFile { get; set; } = string.Empty;
 
     /// <summary>
     /// Base path for OneDrive resources.
     /// </summary>
+    /// <remarks>
+    /// This path is used to locate the base directory for OneDrive-related resources.
+    /// </remarks>
     [JsonPropertyName("onedrive_resources_basepath")]
     public string OnedriveResourcesBasepath { get; set; } = string.Empty;
 
     /// <summary>
     /// Directory for log files.
     /// </summary>
+    /// <remarks>
+    /// This directory is used to store application log files for debugging and monitoring purposes.
+    /// </remarks>
     [JsonPropertyName("logging_dir")]
     public string LoggingDir { get; set; } = string.Empty;
 
     /// <summary>
     /// Directory containing prompt template files.
     /// </summary>
+    /// <remarks>
+    /// This directory is used to store template files for generating prompts in the application.
+    /// </remarks>
     [JsonPropertyName("prompts_path")]
     public string PromptsPath { get; set; } = string.Empty;
 }

@@ -27,7 +27,7 @@ public class RecursiveCharacterTextSplitterTests
         RecursiveCharacterTextSplitter splitter = new(_mockLogger.Object);
 
         // Act
-        System.Collections.Generic.List<string> result = splitter.SplitText(string.Empty);
+        List<string> result = splitter.SplitText(string.Empty);
 
         // Assert
         Assert.IsNotNull(result);
@@ -45,7 +45,7 @@ public class RecursiveCharacterTextSplitterTests
         string smallText = "This is a small text that should fit in a single chunk.";
 
         // Act
-        System.Collections.Generic.List<string> result = splitter.SplitText(smallText);
+        List<string> result = splitter.SplitText(smallText);
 
         // Assert
         Assert.AreEqual(1, result.Count);
@@ -75,7 +75,7 @@ public class RecursiveCharacterTextSplitterTests
                          "And some more text after the code block.";
 
         // Act
-        System.Collections.Generic.List<string> result = splitter.SplitText(markdown);
+        List<string> result = splitter.SplitText(markdown);
 
         // Assert
 
@@ -108,7 +108,7 @@ public class RecursiveCharacterTextSplitterTests
         }
 
         // Act
-        System.Collections.Generic.List<string> result = splitter.SplitText(largeText.ToString());
+        List<string> result = splitter.SplitText(largeText.ToString());
 
         // Assert
         Assert.IsTrue(result.Count > 5); // We should have several chunks

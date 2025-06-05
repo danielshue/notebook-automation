@@ -9,12 +9,33 @@ using NotebookAutomation.Core.Utils;
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands;
+
 /// <summary>
 /// Provides CLI commands for generating markdown notes from various source formats.
-/// 
-/// This class registers the 'generate-markdown' command, which converts HTML, TXT, and EPUB files
-/// to markdown format, optionally using OpenAI for summarization.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This class registers the 'generate-markdown' command, which converts HTML, TXT, and EPUB files
+/// to markdown format, optionally using OpenAI for summarization. It supports:
+/// <list type="bullet">
+/// <item><description>Source file discovery and filtering</description></item>
+/// <item><description>Markdown note generation with YAML frontmatter</description></item>
+/// <item><description>Integration with AI summarization for enhanced notes</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The markdown generation functionality utilizes the <see cref="MarkdownNoteProcessor"/>
+/// from the Core library to handle the actual processing of source files.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// var rootCommand = new RootCommand();
+/// var markdownCommands = new MarkdownCommands(logger, appConfig, serviceProvider);
+/// markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+/// rootCommand.Invoke("generate-markdown --src-dirs input --dest-dir output");
+/// </code>
+/// </example>
 public class MarkdownCommands
 {
     private readonly ILogger<MarkdownCommands> _logger;
@@ -37,6 +58,20 @@ public class MarkdownCommands
     /// <param name="debugOption">The global debug option.</param>
     /// <param name="verboseOption">The global verbose option.</param>
     /// <param name="dryRunOption">The global dry-run option.</param>
+    /// <remarks>
+    /// <para>
+    /// This method adds the 'generate-markdown' command to the root command, enabling users to convert
+    /// source files to markdown format. It defines options for source directories, destination directory,
+    /// and other global settings.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var rootCommand = new RootCommand();
+    /// markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+    /// rootCommand.Invoke("generate-markdown --src-dirs input --dest-dir output");
+    /// </code>
+    /// </example>
     public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
     {
         var srcDirsOption = new Option<string[]>(

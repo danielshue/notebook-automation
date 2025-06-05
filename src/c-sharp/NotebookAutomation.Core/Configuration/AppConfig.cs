@@ -3,60 +3,69 @@
 using Microsoft.Extensions.Primitives;
 
 namespace NotebookAutomation.Core.Configuration;
+
 /// <summary>
-/// Application configuration for Notebook Automation.
-/// 
+/// Represents the application configuration for Notebook Automation.
+/// </summary>
+/// <remarks>
 /// This class handles loading and providing access to centralized configuration
 /// settings for the Notebook Automation system, including paths, API settings,
 /// and application defaults.
-/// 
-/// Implements IConfiguration to provide standard configuration access patterns.
-/// </summary>
+/// </remarks>
 public class AppConfig : IConfiguration
 {
     /// <summary>
-    /// The path to the configuration file used to load this AppConfig.
+    /// The logger instance for logging configuration-related messages.
+    /// </summary>
+    private readonly ILogger<AppConfig>? _logger;
+
+    /// <summary>
+    /// The underlying configuration provider.
+    /// </summary>
+    private readonly IConfiguration? _underlyingConfiguration;
+
+    /// <summary>
+    /// Gets or sets the path to the configuration file used to load this AppConfig.
     /// </summary>
     public string? ConfigFilePath { get; set; }
 
     /// <summary>
-    /// Whether debug mode is enabled for this configuration.
+    /// Gets or sets a value indicating whether debug mode is enabled for this configuration.
     /// </summary>
     public bool DebugEnabled { get; set; }
 
-    private readonly ILogger<AppConfig>? _logger;
-    private readonly IConfiguration? _underlyingConfiguration;
-
     /// <summary>
-    /// Paths configuration section.
+    /// Gets or sets the paths configuration section.
     /// </summary>
     [JsonPropertyName("paths")]
     public PathsConfig Paths { get; set; } = new PathsConfig();
 
     /// <summary>
-    /// Microsoft Graph API configuration section.
+    /// Gets or sets the Microsoft Graph API configuration section.
     /// </summary>
     [JsonPropertyName("microsoft_graph")]
     public MicrosoftGraphConfig MicrosoftGraph { get; set; } = new MicrosoftGraphConfig();
 
     /// <summary>
-    /// AI Service configuration section.
+    /// Gets or sets the AI Service configuration section.
     /// </summary>
     [JsonPropertyName("aiservice")]
-    public AIServiceConfig AiService { get; set; } = new AIServiceConfig();        /// <summary>
-                                                                                   /// List of video file extensions to process.
-                                                                                   /// </summary>
+    public AIServiceConfig AiService { get; set; } = new AIServiceConfig();
+
+    /// <summary>
+    /// Gets or sets the list of video file extensions to process.
+    /// </summary>
     [JsonPropertyName("video_extensions")]
     public List<string> VideoExtensions { get; set; } = [];
 
     /// <summary>
-    /// List of PDF file extensions to process.
+    /// Gets or sets the list of PDF file extensions to process.
     /// </summary>
     [JsonPropertyName("pdf_extensions")]
     public List<string> PdfExtensions { get; set; } = [".pdf"];
 
     /// <summary>
-    /// Default constructor.
+    /// Default constructor for manual initialization.
     /// </summary>
     public AppConfig()
     {
@@ -79,9 +88,14 @@ public class AppConfig : IConfiguration
         // Load configuration sections
         LoadConfiguration();
     }
+
     /// <summary>
     /// Loads configuration from the configuration provider.
     /// </summary>
+    /// <remarks>
+    /// This method attempts to load configuration settings from the underlying configuration provider.
+    /// If the provider is unavailable, it falls back to file-based configuration loading.
+    /// </remarks>
     private void LoadConfiguration()
     {
         string? loadedConfigPath = null;
@@ -207,8 +221,8 @@ public class AppConfig : IConfiguration
     /// <summary>
     /// Extracts tenant ID from authority URL or returns "common" for multi-tenant scenarios.
     /// </summary>
-    /// <param name="authority">The authority URL (e.g., "https://login.microsoftonline.com/common")</param>
-    /// <returns>Tenant ID extracted from URL, "common" for multi-tenant, or empty string if not found</returns>
+    /// <param name="authority">The authority URL (e.g., "https://login.microsoftonline.com/common").</param>
+    /// <returns>Tenant ID extracted from URL, "common" for multi-tenant, or empty string if not found.</returns>
     private static string ExtractTenantIdFromAuthority(string authority)
     {
         if (string.IsNullOrEmpty(authority))
@@ -284,19 +298,19 @@ public class AppConfig : IConfiguration
         {
             // Current directory
             Path.Combine(Directory.GetCurrentDirectory(), configFileName),
-            
+
             // User's home directory
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".notebook-automation", configFileName),
-            
+
             // Application directory
             Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configFileName),
-            
+
             // Parent directory of application
             Path.Combine(Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.FullName ?? string.Empty, configFileName),
-            
+
             // Config directory in current directory
             Path.Combine(Directory.GetCurrentDirectory(), "config", configFileName),
-            
+
             // Source directory for development environment
             Path.Combine(Directory.GetCurrentDirectory(), "src", "c-sharp", configFileName)
         };
@@ -316,7 +330,7 @@ public class AppConfig : IConfiguration
     /// Saves the current configuration to the specified JSON file.
     /// </summary>
     /// <param name="configPath">Path where the configuration should be saved.</param>
-    /// <exception cref="System.IO.IOException">Thrown when the file cannot be written to.</exception>
+    /// <exception cref="IOException">Thrown when the file cannot be written to.</exception>
     public void SaveToJsonFile(string configPath)
     {
         _logger?.LogInformation($"Saving configuration to {configPath}");
@@ -355,6 +369,11 @@ public class AppConfig : IConfiguration
             throw;
         }
     }
+
+    /// <summary>
+    /// Sets the video file extensions to process.
+    /// </summary>
+    /// <param name="list">List of video file extensions.</param>
     public void SetVideoExtensions(List<string> list)
     {
         _logger?.LogInformation($"Setting video extensions: {string.Join(", ", list)}");
@@ -530,8 +549,8 @@ public class AppConfig : IConfiguration
                         .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase))) ?? (currentObj?.GetType().GetProperties()
                             .FirstOrDefault(p =>
                             {
-                                return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                                    .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
+                                return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
+                                    .FirstOrDefault() is JsonPropertyNameAttribute attr && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
                             }));
                     if (property == null)
                     {
@@ -570,8 +589,8 @@ public class AppConfig : IConfiguration
             directProperty = GetType().GetProperties()
                 .FirstOrDefault(p =>
                 {
-                    return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                        .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
+                    return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
+                        .FirstOrDefault() is JsonPropertyNameAttribute attr && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
                 });
 
             if (directProperty != null)
@@ -598,8 +617,8 @@ public class AppConfig : IConfiguration
                         .FirstOrDefault(p => string.Equals(p.Name, part, StringComparison.OrdinalIgnoreCase))) ?? (currentObj?.GetType().GetProperties()
                             .FirstOrDefault(p =>
                             {
-                                return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                                    .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
+                                return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
+                                    .FirstOrDefault() is JsonPropertyNameAttribute attr && string.Equals(attr.Name, part, StringComparison.OrdinalIgnoreCase);
                             }));
                     if (property == null || !property.CanRead)
                     {
@@ -625,8 +644,8 @@ public class AppConfig : IConfiguration
                         .FirstOrDefault(p => string.Equals(p.Name, finalPart, StringComparison.OrdinalIgnoreCase)) ?? currentObj.GetType().GetProperties()
                             .FirstOrDefault(p =>
                             {
-                                return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                                    .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, finalPart, StringComparison.OrdinalIgnoreCase);
+                                return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
+                                    .FirstOrDefault() is JsonPropertyNameAttribute attr && string.Equals(attr.Name, finalPart, StringComparison.OrdinalIgnoreCase);
                             });
                     if (finalProperty != null && finalProperty.CanWrite)
                     {
@@ -642,8 +661,8 @@ public class AppConfig : IConfiguration
                 .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase)) ?? GetType().GetProperties()
                     .FirstOrDefault(p =>
                     {
-                        return p.GetCustomAttributes(typeof(System.Text.Json.Serialization.JsonPropertyNameAttribute), true)
-                            .FirstOrDefault() is System.Text.Json.Serialization.JsonPropertyNameAttribute attr && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
+                        return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
+                            .FirstOrDefault() is JsonPropertyNameAttribute attr && string.Equals(attr.Name, key, StringComparison.OrdinalIgnoreCase);
                     });
             if (directProperty != null && directProperty.CanWrite)
             {
@@ -743,10 +762,8 @@ public class AppConfig : IConfiguration
         }
     }
 
-    #endregion
-
     /// <summary>
-    /// Helper class to implement ConfigurationSection
+    /// Helper class to implement ConfigurationSection.
     /// </summary>
     private class ConfigurationSection(IConfiguration configuration, string key, string? parentPath = null) : IConfigurationSection
     {
@@ -754,22 +771,47 @@ public class AppConfig : IConfiguration
         private readonly string _key = key;
         private readonly string _path = string.IsNullOrEmpty(parentPath) ? key : $"{parentPath}:{key}";
 
+        /// <summary>
+        /// Gets the key of the configuration section.
+        /// </summary>
         public string Key => _key;
+
+        /// <summary>
+        /// Gets the path of the configuration section.
+        /// </summary>
         public string Path => _path;
+
+        /// <summary>
+        /// Gets or sets the value of the configuration section.
+        /// </summary>
         public string? Value
         {
             get => _configuration[_path];
             set => _configuration[_path] = value;
         }
 
+        /// <summary>
+        /// Indexer to get or set a configuration value by key.
+        /// </summary>
+        /// <param name="key">The key of the configuration value.</param>
+        /// <returns>The configuration value.</returns>
         public string? this[string key]
         {
             get => _configuration[$"{_path}:{key}"];
             set => _configuration[$"{_path}:{key}"] = value;
         }
 
+        /// <summary>
+        /// Gets a configuration sub-section with the specified key.
+        /// </summary>
+        /// <param name="key">The key of the configuration section.</param>
+        /// <returns>The configuration sub-section.</returns>
         public IConfigurationSection GetSection(string key) => new ConfigurationSection(_configuration, key, _path);
 
+        /// <summary>
+        /// Gets the immediate descendant configuration sub-sections.
+        /// </summary>
+        /// <returns>The configuration sub-sections.</returns>
         public IEnumerable<IConfigurationSection> GetChildren()
         {
             // Get properties of the object this section represents
@@ -788,11 +830,17 @@ public class AppConfig : IConfiguration
         private static IEnumerable<string> GetPropertyKeys()
         {
             // This is a simplified implementation
-            // In a real scenario, you would query the underlying configuration 
+            // In a real scenario, you would query the underlying configuration
             // to get the actual child keys
             return [];
         }
 
+        /// <summary>
+        /// Gets a change token that can be used to observe when this configuration is reloaded.
+        /// </summary>
+        /// <returns>A change token.</returns>
         public IChangeToken GetReloadToken() => _configuration.GetReloadToken();
     }
 }
+
+#endregion

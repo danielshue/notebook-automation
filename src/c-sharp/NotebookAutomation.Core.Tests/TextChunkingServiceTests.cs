@@ -27,7 +27,7 @@ public class TextChunkingServiceTests
         int overlap = 10;
 
         // Act
-        System.Collections.Generic.List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
 
         // Assert
         Assert.IsNotNull(result);
@@ -47,7 +47,7 @@ public class TextChunkingServiceTests
         int overlap = 20;
 
         // Act
-        System.Collections.Generic.List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
 
         // Assert
         Assert.IsNotNull(result);
@@ -77,7 +77,7 @@ public class TextChunkingServiceTests
         int overlap = 10;
 
         // Act
-        System.Collections.Generic.List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
 
         // Assert
         Assert.IsNotNull(result);
@@ -152,7 +152,7 @@ public class TextChunkingServiceTests
         int overlap = 0;
 
         // Act
-        System.Collections.Generic.List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
 
         // Assert
         Assert.IsNotNull(result);
@@ -297,7 +297,7 @@ public class TextChunkingServiceTests
         int overlap = 50;
 
         // Act
-        System.Collections.Generic.List<string> chunks = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> chunks = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
         int totalEstimatedTokens = 0;
         foreach (string chunk in chunks)
         {

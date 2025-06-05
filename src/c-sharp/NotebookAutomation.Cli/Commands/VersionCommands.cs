@@ -4,9 +4,10 @@ using System.Reflection;
 using NotebookAutomation.Cli.Utilities;
 
 namespace NotebookAutomation.Cli.Commands;
+
 /// <summary>
 /// Provides CLI commands for displaying version information about the application.
-/// 
+///
 /// This class registers the 'version' command that shows the application version,
 /// the .NET runtime version, and copyright information.
 /// </summary>

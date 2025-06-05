@@ -45,7 +45,7 @@ public class MarkdownCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             await parser.InvokeAsync("generate-markdown");
         }
         finally

@@ -14,20 +14,36 @@ public class DocumentProcessingProgressEventArgs(string filePath, string status,
     /// <summary>
     /// Gets the path of the file being processed.
     /// </summary>
+    /// <remarks>
+    /// This property provides the full path to the file currently being processed.
+    /// It is useful for logging and tracking the progress of document processing tasks.
+    /// </remarks>
     public string FilePath { get; } = filePath;
 
     /// <summary>
     /// Gets the current processing status message.
     /// </summary>
+    /// <remarks>
+    /// This property contains a descriptive message about the current status of the
+    /// document processing operation, such as "Processing" or "Completed".
+    /// </remarks>
     public string Status { get; } = status;
 
     /// <summary>
     /// Gets the current file index being processed.
     /// </summary>
+    /// <remarks>
+    /// This property indicates the index of the file currently being processed in the
+    /// batch, starting from 1. It is useful for displaying progress to the user.
+    /// </remarks>
     public int CurrentFile { get; } = currentFile;
 
     /// <summary>
     /// Gets the total number of files to process.
     /// </summary>
+    /// <remarks>
+    /// This property specifies the total number of files in the batch that are being
+    /// processed. It is useful for calculating the overall progress percentage.
+    /// </remarks>
     public int TotalFiles { get; } = totalFiles;
 }
