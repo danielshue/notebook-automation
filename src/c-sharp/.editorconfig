@@ -1,0 +1,196 @@
+# .editorconfig for C# projects
+
+root = true
+
+[*.cs]
+# Indentation and spacing
+indent_style = space
+indent_size = 4
+tab_width = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+# Charset
+charset = utf-8-bom
+
+# Line length
+max_line_length = 100
+
+# C# specific code style rules
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = true
+
+# New line preferences
+csharp_new_line_before_open_brace = all
+csharp_new_line_between_query_expression_clauses = true
+
+# Organize usings - comprehensive settings
+dotnet_separate_import_directive_groups = true
+dotnet_sort_system_directives_first = true
+
+# Remove unused usings
+dotnet_diagnostic.IDE0005.severity = warning
+
+# Using directive preferences
+csharp_using_directive_placement = outside_namespace:warning
+
+# Additional using organization rules
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+dotnet_style_qualification_for_method = false:warning
+dotnet_style_qualification_for_event = false:warning
+
+# Naming conventions
+# Private fields should start with underscore and be camelCase
+dotnet_naming_rule.private_fields_should_be_underscore_camel_case.severity = warning
+dotnet_naming_rule.private_fields_should_be_underscore_camel_case.symbols = private_fields
+dotnet_naming_rule.private_fields_should_be_underscore_camel_case.style = underscore_camel_case_style
+
+# Internal fields should start with underscore and be camelCase
+dotnet_naming_rule.internal_fields_should_be_underscore_camel_case.severity = warning
+dotnet_naming_rule.internal_fields_should_be_underscore_camel_case.symbols = internal_fields
+dotnet_naming_rule.internal_fields_should_be_underscore_camel_case.style = underscore_camel_case_style
+
+# Private static fields should start with underscore and be camelCase
+dotnet_naming_rule.private_static_fields_should_be_underscore_camel_case.severity = warning
+dotnet_naming_rule.private_static_fields_should_be_underscore_camel_case.symbols = private_static_fields
+dotnet_naming_rule.private_static_fields_should_be_underscore_camel_case.style = underscore_camel_case_style
+
+# Public fields should be PascalCase (if used)
+dotnet_naming_rule.public_fields_should_be_pascal_case.severity = warning
+dotnet_naming_rule.public_fields_should_be_pascal_case.symbols = public_fields
+dotnet_naming_rule.public_fields_should_be_pascal_case.style = pascal_case_style
+
+# Define symbols
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_fields.required_modifiers =
+
+dotnet_naming_symbols.internal_fields.applicable_kinds = field
+dotnet_naming_symbols.internal_fields.applicable_accessibilities = internal
+dotnet_naming_symbols.internal_fields.required_modifiers =
+
+dotnet_naming_symbols.private_static_fields.applicable_kinds = field
+dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private
+dotnet_naming_symbols.private_static_fields.required_modifiers = static
+
+dotnet_naming_symbols.public_fields.applicable_kinds = field
+dotnet_naming_symbols.public_fields.applicable_accessibilities = public
+dotnet_naming_symbols.public_fields.required_modifiers =
+
+# Define styles
+dotnet_naming_style.underscore_camel_case_style.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case_style.required_prefix = _
+
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+
+# File encoding
+end_of_line = crlf
+
+# C# code style preferences
+
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = false:suggestion
+csharp_style_var_elsewhere = false:suggestion
+
+csharp_style_expression_bodied_methods = when_on_single_line:suggestion
+csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+csharp_style_expression_bodied_ctors = when_on_single_line:suggestion
+
+csharp_prefer_braces = true:suggestion
+
+# XML documentation
+dotnet_style_require_documentation = true:suggestion
+
+# File-scoped namespaces
+csharp_style_namespace_declarations = file_scoped:suggestion
+
+# Modern C# Features and Patterns
+
+# Pattern matching preferences
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_prefer_pattern_matching = true:suggestion
+csharp_style_prefer_not_pattern = true:suggestion
+
+# Target-typed new expressions
+csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
+
+# Collection expressions (C# 12+)
+dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
+
+# String preferences
+csharp_style_prefer_utf8_string_literals = true:suggestion
+
+# Primary constructors (when appropriate)
+csharp_style_prefer_primary_constructors = false:suggestion
+
+# Modern null checks
+csharp_style_throw_expression = true:suggestion
+csharp_style_conditional_delegate_call = true:suggestion
+
+# Record types and init properties
+dotnet_style_prefer_auto_properties = true:suggestion
+dotnet_style_prefer_object_initializer = true:suggestion
+dotnet_style_prefer_collection_initializer = true:suggestion
+
+# Async preferences
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+dotnet_style_prefer_conditional_expression_over_return = false:suggestion
+
+# Simplify expressions
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
+dotnet_style_prefer_compound_assignment = true:suggestion
+
+# Code block preferences
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_prefer_local_over_anonymous_function = true:suggestion
+csharp_style_prefer_index_operator = true:suggestion
+csharp_style_prefer_range_operator = true:suggestion
+
+# String interpolation
+csharp_style_prefer_interpolated_string_over_concatenation = true:suggestion
+
+# Modern C# Diagnostic Rules (enforce best practices)
+
+# Pattern matching
+dotnet_diagnostic.IDE0078.severity = suggestion  # Use pattern matching
+dotnet_diagnostic.IDE0083.severity = suggestion  # Use pattern matching (not operator)
+dotnet_diagnostic.IDE0170.severity = suggestion  # Prefer extended property pattern
+
+# Collection expressions
+dotnet_diagnostic.IDE0300.severity = suggestion  # Use collection expression for array
+dotnet_diagnostic.IDE0301.severity = suggestion  # Use collection expression for empty
+dotnet_diagnostic.IDE0302.severity = suggestion  # Use collection expression for stackalloc
+dotnet_diagnostic.IDE0303.severity = suggestion  # Use collection expression for Create()
+dotnet_diagnostic.IDE0304.severity = suggestion  # Use collection expression for builder
+dotnet_diagnostic.IDE0305.severity = suggestion  # Use collection expression for fluent
+
+# Target-typed new
+dotnet_diagnostic.IDE0090.severity = suggestion  # Use 'new(...)'
+
+# String literals
+dotnet_diagnostic.IDE0071.severity = suggestion  # Simplify interpolation
+dotnet_diagnostic.IDE0072.severity = suggestion  # Add missing cases to switch
+dotnet_diagnostic.IDE0260.severity = suggestion  # Use pattern matching
+
+# Modern async patterns
+dotnet_diagnostic.IDE1006.severity = warning     # Naming styles (already configured)
+
+# Null checks
+dotnet_diagnostic.IDE0016.severity = suggestion  # Use throw expression
+dotnet_diagnostic.IDE0031.severity = suggestion  # Use null propagation
+
+# Range and index operators
+dotnet_diagnostic.IDE0056.severity = suggestion  # Use index operator
+dotnet_diagnostic.IDE0057.severity = suggestion  # Use range operator
+
+# Primary constructors and records
+dotnet_diagnostic.IDE0290.severity = suggestion  # Use primary constructor
+
+# Simplifications
+dotnet_diagnostic.IDE0045.severity = suggestion  # Use conditional expression for assignment
+dotnet_diagnostic.IDE0046.severity = none        # Don't prefer conditional expression for return
+dotnet_diagnostic.IDE0054.severity = suggestion  # Use compound assignment
+dotnet_diagnostic.IDE0074.severity = suggestion  # Use compound assignment

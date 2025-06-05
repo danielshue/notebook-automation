@@ -1,9 +1,4 @@
-﻿using System.Threading.Tasks;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Moq;
+﻿using Moq;
 
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;

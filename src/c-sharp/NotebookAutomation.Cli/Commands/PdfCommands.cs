@@ -1,348 +1,341 @@
-using System.CommandLine;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-
+using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.PdfProcessing;
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Utils;
-using NotebookAutomation.Cli.Utilities;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
-namespace NotebookAutomation.Cli.Commands
+namespace NotebookAutomation.Cli.Commands;
+/// <summary>
+/// Provides CLI commands for processing PDF files and converting them to markdown notes.
+/// 
+/// This class registers the 'pdf-notes' command for processing PDF files to extract 
+/// text content, generate markdown notes with appropriate frontmatter, and optionally 
+/// include AI-generated summaries and OneDrive integration.
+/// </summary>
+/// <remarks>
+/// The PDF processing functionality utilizes the <see cref="PdfNoteBatchProcessor"/>
+/// from the Core library to handle the actual processing of PDF files. The supported 
+/// PDF formats are defined in the application configuration and typically include
+/// .pdf and other PDF-based formats.
+/// </remarks>
+public class PdfCommands
 {
-    /// <summary>
-    /// Provides CLI commands for processing PDF files and converting them to markdown notes.
-    /// 
-    /// This class registers the 'pdf-notes' command for processing PDF files to extract 
-    /// text content, generate markdown notes with appropriate frontmatter, and optionally 
-    /// include AI-generated summaries and OneDrive integration.
-    /// </summary>
-    /// <remarks>
-    /// The PDF processing functionality utilizes the <see cref="PdfNoteBatchProcessor"/>
-    /// from the Core library to handle the actual processing of PDF files. The supported 
-    /// PDF formats are defined in the application configuration and typically include
-    /// .pdf and other PDF-based formats.
-    /// </remarks>
-    public class PdfCommands
+    private readonly ILogger<PdfCommands> _logger;
+
+    public PdfCommands(ILogger<PdfCommands> logger)
     {
-        private readonly ILogger<PdfCommands> _logger;
-
-        public PdfCommands(ILogger<PdfCommands> logger)
+        _logger = logger;
+        _logger.LogInformationWithPath("PDF command initialized", "PdfCommands.cs");
+    }        /// <summary>
+             /// Registers the 'pdf-notes' command with the root command.
+             /// </summary>
+             /// <param name="rootCommand">The root command to add PDF processing commands to.</param>
+             /// <param name="configOption">The global config file option.</param>
+             /// <param name="debugOption">The global debug option.</param>
+             /// <param name="verboseOption">The global verbose output option.</param>
+             /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
+    public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+    {
+        var inputOption = new Option<string?>(
+            aliases: ["--input", "-i"],
+            description: "Path to the input PDF file or directory (will auto-detect if it's a file or folder)")
         {
-            _logger = logger;
-            _logger.LogInformationWithPath("PDF command initialized", "PdfCommands.cs");
-        }        /// <summary>
-                 /// Registers the 'pdf-notes' command with the root command.
-                 /// </summary>
-                 /// <param name="rootCommand">The root command to add PDF processing commands to.</param>
-                 /// <param name="configOption">The global config file option.</param>
-                 /// <param name="debugOption">The global debug option.</param>
-                 /// <param name="verboseOption">The global verbose output option.</param>
-                 /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-        public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+            IsRequired = true
+        };
+
+        var outputOption = new Option<string>(
+            aliases: ["--overwrite-output-dir", "-o"],
+            description: "Override the default output directory (normally uses notebook_vault_fullpath_root from config)");
+
+        var resourcesRootOption = new Option<string?>(
+            aliases: ["--onedrive-fullpath-root"],
+            description: "Override OneDrive fullpath root directory"
+        );
+
+        var noSummaryOption = new Option<bool>(
+            aliases: ["--no-summary"],
+            description: "Skip summary generation (summary is generated by default)"
+        );
+
+        var retryFailedOption = new Option<bool>(
+            aliases: ["--retry-failed"],
+            description: "Retry only failed files from previous run"
+        );
+
+        var forceOption = new Option<bool>(
+            aliases: ["--force"],
+            description: "Overwrite existing notes"
+        );
+
+        var timeoutOption = new Option<int?>(
+            aliases: ["--timeout"],
+            description: "Set API request timeout (seconds)"
+        );
+
+        var refreshAuthOption = new Option<bool>(
+            aliases: ["--refresh-auth"],
+            description: "Force refresh Microsoft Graph API authentication"
+        );
+
+        var noShareLinksOption = new Option<bool>(
+            aliases: ["--no-share-links"],
+            description: "Skip OneDrive share link creation (links are created by default)"
+        );
+
+        var pdfCommand = new Command("pdf-notes", "PDF notes and metadata commands");
+
+        pdfCommand.AddOption(inputOption);
+        pdfCommand.AddOption(outputOption);
+        pdfCommand.AddOption(resourcesRootOption);
+        pdfCommand.AddOption(noSummaryOption);
+        pdfCommand.AddOption(retryFailedOption);
+        pdfCommand.AddOption(forceOption);
+        pdfCommand.AddOption(timeoutOption);
+        pdfCommand.AddOption(refreshAuthOption);
+        pdfCommand.AddOption(noShareLinksOption);
+
+        pdfCommand.SetHandler(async context =>
         {
-            var inputOption = new Option<string?>(
-                aliases: ["--input", "-i"],
-                description: "Path to the input PDF file or directory (will auto-detect if it's a file or folder)")
+            string? input = context.ParseResult.GetValueForOption(inputOption);
+            string? overrideOutputDir = context.ParseResult.GetValueForOption(outputOption);
+            string? config = context.ParseResult.GetValueForOption(configOption);
+            bool debug = context.ParseResult.GetValueForOption(debugOption);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+            string? resourcesRoot = context.ParseResult.GetValueForOption(resourcesRootOption);
+            bool noSummary = context.ParseResult.GetValueForOption(noSummaryOption);
+            bool retryFailed = context.ParseResult.GetValueForOption(retryFailedOption);
+            bool force = context.ParseResult.GetValueForOption(forceOption);
+            int? timeout = context.ParseResult.GetValueForOption(timeoutOption);
+            bool refreshAuth = context.ParseResult.GetValueForOption(refreshAuthOption);
+            bool noShareLinks = context.ParseResult.GetValueForOption(noShareLinksOption);
+
+            // Print usage/help if required argument is missing
+            if (string.IsNullOrEmpty(input))
             {
-                IsRequired = true
-            };
+                AnsiConsoleHelper.WriteUsage(
+                    "Usage: notebookautomation pdf-notes --input <file|dir> [options]",
+                    pdfCommand.Description ?? string.Empty,
+                    string.Join("\n", pdfCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
+                );
+                return;
+            }
 
-            var outputOption = new Option<string>(
-                aliases: ["--overwrite-output-dir", "-o"],
-                description: "Override the default output directory (normally uses notebook_vault_fullpath_root from config)");
-
-            var resourcesRootOption = new Option<string?>(
-                aliases: ["--onedrive-fullpath-root"],
-                description: "Override OneDrive fullpath root directory"
-            );
-
-            var noSummaryOption = new Option<bool>(
-                aliases: ["--no-summary"],
-                description: "Skip summary generation (summary is generated by default)"
-            );
-
-            var retryFailedOption = new Option<bool>(
-                aliases: ["--retry-failed"],
-                description: "Retry only failed files from previous run"
-            );
-
-            var forceOption = new Option<bool>(
-                aliases: ["--force"],
-                description: "Overwrite existing notes"
-            );
-
-            var timeoutOption = new Option<int?>(
-                aliases: ["--timeout"],
-                description: "Set API request timeout (seconds)"
-            );
-
-            var refreshAuthOption = new Option<bool>(
-                aliases: ["--refresh-auth"],
-                description: "Force refresh Microsoft Graph API authentication"
-            );
-
-            var noShareLinksOption = new Option<bool>(
-                aliases: ["--no-share-links"],
-                description: "Skip OneDrive share link creation (links are created by default)"
-            );
-
-            var pdfCommand = new Command("pdf-notes", "PDF notes and metadata commands");
-
-            pdfCommand.AddOption(inputOption);
-            pdfCommand.AddOption(outputOption);
-            pdfCommand.AddOption(resourcesRootOption);
-            pdfCommand.AddOption(noSummaryOption);
-            pdfCommand.AddOption(retryFailedOption);
-            pdfCommand.AddOption(forceOption);
-            pdfCommand.AddOption(timeoutOption);
-            pdfCommand.AddOption(refreshAuthOption);
-            pdfCommand.AddOption(noShareLinksOption);
-
-            pdfCommand.SetHandler(async context =>
+            // Initialize dependency injection if needed
+            if (config != null)
             {
-                string? input = context.ParseResult.GetValueForOption(inputOption);
-                string? overrideOutputDir = context.ParseResult.GetValueForOption(outputOption);
-                string? config = context.ParseResult.GetValueForOption(configOption);
-                bool debug = context.ParseResult.GetValueForOption(debugOption);
-                bool verbose = context.ParseResult.GetValueForOption(verboseOption);
-                bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-                string? resourcesRoot = context.ParseResult.GetValueForOption(resourcesRootOption);
-                bool noSummary = context.ParseResult.GetValueForOption(noSummaryOption);
-                bool retryFailed = context.ParseResult.GetValueForOption(retryFailedOption);
-                bool force = context.ParseResult.GetValueForOption(forceOption);
-                int? timeout = context.ParseResult.GetValueForOption(timeoutOption);
-                bool refreshAuth = context.ParseResult.GetValueForOption(refreshAuthOption);
-                bool noShareLinks = context.ParseResult.GetValueForOption(noShareLinksOption);
-
-                // Print usage/help if required argument is missing
-                if (string.IsNullOrEmpty(input))
+                if (!File.Exists(config))
                 {
-                    AnsiConsoleHelper.WriteUsage(
-                        "Usage: notebookautomation pdf-notes --input <file|dir> [options]",
-                        pdfCommand.Description ?? string.Empty,
-                        string.Join("\n", pdfCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                    );
+                    AnsiConsoleHelper.WriteError($"Configuration file not found: {config}");
                     return;
                 }
+                Program.SetupDependencyInjection(config, debug);
+            }
 
-                // Initialize dependency injection if needed
-                if (config != null)
+            // Use DI container to get services
+            var serviceProvider = Program.ServiceProvider;
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("PdfCommands");
+            var loggingService = serviceProvider.GetRequiredService<LoggingService>();
+
+            var appConfig = serviceProvider.GetRequiredService<AppConfig>();
+            var batchProcessor = serviceProvider.GetRequiredService<PdfNoteBatchProcessor>();
+
+            // Handle refresh auth flag - set force refresh on OneDriveService if requested
+            if (refreshAuth)
+            {
+                try
                 {
-                    if (!File.Exists(config))
+                    var oneDriveService = serviceProvider.GetService<IOneDriveService>();
+                    if (oneDriveService != null)
                     {
-                        AnsiConsoleHelper.WriteError($"Configuration file not found: {config}");
-                        return;
+                        oneDriveService.SetForceRefresh(true);
+                        AnsiConsoleHelper.WriteInfo("Force refresh authentication enabled for OneDrive");
                     }
-                    Program.SetupDependencyInjection(config, debug);
-                }
-
-                // Use DI container to get services
-                var serviceProvider = Program.ServiceProvider;
-                var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-                var logger = loggerFactory.CreateLogger("PdfCommands");
-                var loggingService = serviceProvider.GetRequiredService<LoggingService>();
-
-                var appConfig = serviceProvider.GetRequiredService<AppConfig>();
-                var batchProcessor = serviceProvider.GetRequiredService<PdfNoteBatchProcessor>();
-
-                // Handle refresh auth flag - set force refresh on OneDriveService if requested
-                if (refreshAuth)
-                {
-                    try
+                    else
                     {
-                        var oneDriveService = serviceProvider.GetService<IOneDriveService>();
-                        if (oneDriveService != null)
-                        {
-                            oneDriveService.SetForceRefresh(true);
-                            AnsiConsoleHelper.WriteInfo("Force refresh authentication enabled for OneDrive");
-                        }
-                        else
-                        {
-                            logger.LogWarningWithPath("OneDrive service not available - --refresh-auth flag ignored", "PdfCommands.cs");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogWarningWithPath(ex, "Failed to set force refresh on OneDrive service", "PdfCommands.cs");
-                    }
-                }
-
-                // Determine effective resources root (prioritize command line over config)
-                string? effectiveResourcesRoot = resourcesRoot;
-                if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig?.Paths != null)
-                {
-                    effectiveResourcesRoot = appConfig.Paths.OnedriveFullpathRoot;
-                }
-
-                // Build the full local resources path for path calculations
-                string? localResourcesPathForBatchProcessor = null;
-
-                // Configure OneDriveService with vault roots if available
-                if (!string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig?.Paths != null)
-                {
-                    try
-                    {
-                        var oneDriveService = serviceProvider.GetService<IOneDriveService>();
-                        if (oneDriveService != null && !string.IsNullOrWhiteSpace(appConfig.Paths.OnedriveResourcesBasepath))
-                        {
-                            // Build the local resources path by combining OneDrive sync root with resources subpath
-                            var localResourcesPath = Path.Combine(effectiveResourcesRoot,
-                                appConfig.Paths.OnedriveResourcesBasepath.TrimStart('/', '\\'));
-                            localResourcesPath = Path.GetFullPath(localResourcesPath);
-
-                            // Store this for batch processor to use for path calculations
-                            localResourcesPathForBatchProcessor = localResourcesPath;
-
-                            // Configure vault roots: local resources folder -> OneDrive resources path
-                            oneDriveService.ConfigureVaultRoots(localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
-                            logger.LogInformationWithPath("Configured OneDrive vault roots - Local: {LocalRoot}, OneDrive: {OneDriveRoot}", "PdfCommands.cs", localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogWarningWithPath(ex, "Failed to configure OneDrive vault roots", "PdfCommands.cs");
-                    }
-                }
-
-                // Output the configured settings before processing
-                AnsiConsoleHelper.WriteInfo($"Configured settings:");
-                AnsiConsoleHelper.WriteInfo($"  Debug: {debug}");
-                AnsiConsoleHelper.WriteInfo($"  Config file: {config}");
-                AnsiConsoleHelper.WriteInfo($"  Input: {input}");
-                AnsiConsoleHelper.WriteInfo($"  Output directory: {overrideOutputDir ?? "(default)"}");
-                AnsiConsoleHelper.WriteInfo($"  Dry run: {dryRun}");
-                AnsiConsoleHelper.WriteInfo($"  Skip summary: {noSummary}");
-                AnsiConsoleHelper.WriteInfo($"  Force overwrite: {force}");
-                AnsiConsoleHelper.WriteInfo($"  Retry failed: {retryFailed}");
-                AnsiConsoleHelper.WriteInfo($"  Timeout: {(timeout.HasValue ? timeout.Value.ToString() : "(default)")}");
-                AnsiConsoleHelper.WriteInfo($"  OneDrive fullpath root: {effectiveResourcesRoot ?? "(not configured)"}");
-                AnsiConsoleHelper.WriteInfo($"  Config OneDrive root: {appConfig?.Paths?.OnedriveFullpathRoot ?? "(not set)"}");
-                AnsiConsoleHelper.WriteInfo($"  Skip share links: {noShareLinks}");
-                AnsiConsoleHelper.WriteInfo($"  PDF extensions: {string.Join(", ", appConfig?.PdfExtensions ?? [".pdf"])}");
-
-                // Display more detailed AI service configuration
-                AnsiConsoleHelper.WriteInfo($"  AI Provider: {appConfig?.AiService?.Provider ?? "openai"}");
-
-                string selectedModel = "(not set)";
-                string selectedEndpoint = "(not set)";
-
-                switch (appConfig?.AiService?.Provider?.ToLowerInvariant())
-                {
-                    case "azure":
-                        selectedModel = appConfig?.AiService?.Azure?.Model ?? "(not set)";
-                        selectedEndpoint = appConfig?.AiService?.Azure?.Endpoint ?? "(not set)";
-                        AnsiConsoleHelper.WriteInfo($"  AI Model: {selectedModel}");
-                        AnsiConsoleHelper.WriteInfo($"  AI Deployment: {appConfig?.AiService?.Azure?.Deployment ?? "(not set)"}");
-                        AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {selectedEndpoint}");
-                        break;
-
-                    case "foundry":
-                        selectedModel = appConfig?.AiService?.Foundry?.Model ?? "(not set)";
-                        selectedEndpoint = appConfig?.AiService?.Foundry?.Endpoint ?? "(not set)";
-                        AnsiConsoleHelper.WriteInfo($"  AI Model: {selectedModel}");
-                        AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {selectedEndpoint}");
-                        break;
-
-                    case "openai":
-                    default:
-                        selectedModel = appConfig?.AiService?.OpenAI?.Model ?? "(not set)";
-                        selectedEndpoint = appConfig?.AiService?.OpenAI?.Endpoint ?? "https://api.openai.com/v1/chat/completions";
-                        AnsiConsoleHelper.WriteInfo($"  AI Model: {selectedModel}");
-                        AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {selectedEndpoint}");
-                        break;
-                }
-
-                // Display API key status (without revealing the key)
-                string? apiKey = appConfig?.AiService?.GetApiKey();
-                AnsiConsoleHelper.WriteInfo($"  API Key: {(string.IsNullOrEmpty(apiKey) ? "Not configured" : "Configured")}");
-
-                AnsiConsoleHelper.WriteInfo($"  Logging Dir: {appConfig?.Paths?.LoggingDir}");
-
-                // Validate AI config before proceeding
-                if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
-                {
-                    logger.LogErrorWithPath("AI configuration is missing or incomplete. Exiting.", "PdfCommands.cs");
-                    return;
-                }
-
-                // Get PDF extensions from config
-                var pdfExtensions = appConfig.PdfExtensions ?? [".pdf"];
-
-                // Get AI API key from environment or config
-                string? openAiApiKey = appConfig.AiService?.GetApiKey();
-
-                // Process PDFs
-                // Verify that we have an input source
-                if (string.IsNullOrWhiteSpace(input))
-                {
-                    logger.LogErrorWithPath("Input source is required. Use --input/-i to specify a PDF file or folder.", "PdfCommands.cs");
-                    return;
-                }
-
-                // Auto-detect if input is a file or folder
-                bool isFile = File.Exists(input);
-                bool isDirectory = Directory.Exists(input);
-
-                if (!isFile && !isDirectory)
-                {
-                    logger.LogErrorWithPath("Input path does not exist or is not accessible: {Path}", "PdfCommands.cs", input);
-                    return;
-                }
-
-                logger.LogInformation("Processing {Type}: {Path}",
-                    isFile ? "file" : "directory",
-                    input); logger.LogInformationWithPath("Output will be written to: {OutputPath}", "PdfCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"); try
-                {
-                    // Use the newer Spectre.Console status display with live updates
-                    var result = await AnsiConsoleHelper.WithStatusAsync<BatchProcessResult>(
-                        async (updateStatus) =>
-                        {                            // Hook up progress events to update the status
-                            batchProcessor.ProcessingProgressChanged += (sender, e) =>
-                            {
-                                // Escape any markup to avoid Spectre.Console parsing issues
-                                string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
-                                // The status already contains file count information, so we don't need to add it
-                                updateStatus(safeStatus);
-                            };
-
-                            return await batchProcessor.ProcessPdfsAsync(
-                                input,
-                                overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",
-                                pdfExtensions,
-                                openAiApiKey,
-                                dryRun,
-                                noSummary,
-                                force,
-                                retryFailed,
-                                timeout,
-                                localResourcesPathForBatchProcessor,
-                                appConfig);
-                        },
-                        $"Processing PDF files from {(isFile ? "file" : "directory")}: {input}");
-
-                    logger.LogInformation("PDF processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
-                    logger.LogInformationWithPath("PDF processing completed. Success: {Processed}, Failed: {Failed}", "PdfCommands.cs", result.Processed, result.Failed);
-                    if (!string.IsNullOrWhiteSpace(result.Summary))
-                    {
-                        AnsiConsoleHelper.WriteInfo(result.Summary);
+                        logger.LogWarningWithPath("OneDrive service not available - --refresh-auth flag ignored", "PdfCommands.cs");
                     }
                 }
                 catch (Exception ex)
                 {
-                    // No need to stop spinner manually, WithStatusAsync handles this
-                    AnsiConsoleHelper.WriteError($"Error processing PDF files: {ex.Message}");
-                    logger.LogErrorWithPath(ex, "Error processing PDF files", "PdfCommands.cs");
+                    logger.LogWarningWithPath(ex, "Failed to set force refresh on OneDrive service", "PdfCommands.cs");
                 }
-            });
+            }
 
-            rootCommand.AddCommand(pdfCommand);
-        }
+            // Determine effective resources root (prioritize command line over config)
+            string? effectiveResourcesRoot = resourcesRoot;
+            if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig?.Paths != null)
+            {
+                effectiveResourcesRoot = appConfig.Paths.OnedriveFullpathRoot;
+            }
+
+            // Build the full local resources path for path calculations
+            string? localResourcesPathForBatchProcessor = null;
+
+            // Configure OneDriveService with vault roots if available
+            if (!string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig?.Paths != null)
+            {
+                try
+                {
+                    var oneDriveService = serviceProvider.GetService<IOneDriveService>();
+                    if (oneDriveService != null && !string.IsNullOrWhiteSpace(appConfig.Paths.OnedriveResourcesBasepath))
+                    {
+                        // Build the local resources path by combining OneDrive sync root with resources subpath
+                        var localResourcesPath = Path.Combine(effectiveResourcesRoot,
+                            appConfig.Paths.OnedriveResourcesBasepath.TrimStart('/', '\\'));
+                        localResourcesPath = Path.GetFullPath(localResourcesPath);
+
+                        // Store this for batch processor to use for path calculations
+                        localResourcesPathForBatchProcessor = localResourcesPath;
+
+                        // Configure vault roots: local resources folder -> OneDrive resources path
+                        oneDriveService.ConfigureVaultRoots(localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
+                        logger.LogInformationWithPath("Configured OneDrive vault roots - Local: {LocalRoot}, OneDrive: {OneDriveRoot}", "PdfCommands.cs", localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarningWithPath(ex, "Failed to configure OneDrive vault roots", "PdfCommands.cs");
+                }
+            }
+
+            // Output the configured settings before processing
+            AnsiConsoleHelper.WriteInfo($"Configured settings:");
+            AnsiConsoleHelper.WriteInfo($"  Debug: {debug}");
+            AnsiConsoleHelper.WriteInfo($"  Config file: {config}");
+            AnsiConsoleHelper.WriteInfo($"  Input: {input}");
+            AnsiConsoleHelper.WriteInfo($"  Output directory: {overrideOutputDir ?? "(default)"}");
+            AnsiConsoleHelper.WriteInfo($"  Dry run: {dryRun}");
+            AnsiConsoleHelper.WriteInfo($"  Skip summary: {noSummary}");
+            AnsiConsoleHelper.WriteInfo($"  Force overwrite: {force}");
+            AnsiConsoleHelper.WriteInfo($"  Retry failed: {retryFailed}");
+            AnsiConsoleHelper.WriteInfo($"  Timeout: {(timeout.HasValue ? timeout.Value.ToString() : "(default)")}");
+            AnsiConsoleHelper.WriteInfo($"  OneDrive fullpath root: {effectiveResourcesRoot ?? "(not configured)"}");
+            AnsiConsoleHelper.WriteInfo($"  Config OneDrive root: {appConfig?.Paths?.OnedriveFullpathRoot ?? "(not set)"}");
+            AnsiConsoleHelper.WriteInfo($"  Skip share links: {noShareLinks}");
+            AnsiConsoleHelper.WriteInfo($"  PDF extensions: {string.Join(", ", appConfig?.PdfExtensions ?? [".pdf"])}");
+
+            // Display more detailed AI service configuration
+            AnsiConsoleHelper.WriteInfo($"  AI Provider: {appConfig?.AiService?.Provider ?? "openai"}");
+
+            string selectedModel = "(not set)";
+            string selectedEndpoint = "(not set)";
+
+            switch (appConfig?.AiService?.Provider?.ToLowerInvariant())
+            {
+                case "azure":
+                    selectedModel = appConfig?.AiService?.Azure?.Model ?? "(not set)";
+                    selectedEndpoint = appConfig?.AiService?.Azure?.Endpoint ?? "(not set)";
+                    AnsiConsoleHelper.WriteInfo($"  AI Model: {selectedModel}");
+                    AnsiConsoleHelper.WriteInfo($"  AI Deployment: {appConfig?.AiService?.Azure?.Deployment ?? "(not set)"}");
+                    AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {selectedEndpoint}");
+                    break;
+
+                case "foundry":
+                    selectedModel = appConfig?.AiService?.Foundry?.Model ?? "(not set)";
+                    selectedEndpoint = appConfig?.AiService?.Foundry?.Endpoint ?? "(not set)";
+                    AnsiConsoleHelper.WriteInfo($"  AI Model: {selectedModel}");
+                    AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {selectedEndpoint}");
+                    break;
+
+                case "openai":
+                default:
+                    selectedModel = appConfig?.AiService?.OpenAI?.Model ?? "(not set)";
+                    selectedEndpoint = appConfig?.AiService?.OpenAI?.Endpoint ?? "https://api.openai.com/v1/chat/completions";
+                    AnsiConsoleHelper.WriteInfo($"  AI Model: {selectedModel}");
+                    AnsiConsoleHelper.WriteInfo($"  AI Endpoint: {selectedEndpoint}");
+                    break;
+            }
+
+            // Display API key status (without revealing the key)
+            string? apiKey = appConfig?.AiService?.GetApiKey();
+            AnsiConsoleHelper.WriteInfo($"  API Key: {(string.IsNullOrEmpty(apiKey) ? "Not configured" : "Configured")}");
+
+            AnsiConsoleHelper.WriteInfo($"  Logging Dir: {appConfig?.Paths?.LoggingDir}");
+
+            // Validate AI config before proceeding
+            if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
+            {
+                logger.LogErrorWithPath("AI configuration is missing or incomplete. Exiting.", "PdfCommands.cs");
+                return;
+            }
+
+            // Get PDF extensions from config
+            var pdfExtensions = appConfig.PdfExtensions ?? [".pdf"];
+
+            // Get AI API key from environment or config
+            string? openAiApiKey = appConfig.AiService?.GetApiKey();
+
+            // Process PDFs
+            // Verify that we have an input source
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                logger.LogErrorWithPath("Input source is required. Use --input/-i to specify a PDF file or folder.", "PdfCommands.cs");
+                return;
+            }
+
+            // Auto-detect if input is a file or folder
+            bool isFile = File.Exists(input);
+            bool isDirectory = Directory.Exists(input);
+
+            if (!isFile && !isDirectory)
+            {
+                logger.LogErrorWithPath("Input path does not exist or is not accessible: {Path}", "PdfCommands.cs", input);
+                return;
+            }
+
+            logger.LogInformation("Processing {Type}: {Path}",
+                isFile ? "file" : "directory",
+                input); logger.LogInformationWithPath("Output will be written to: {OutputPath}", "PdfCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"); try
+            {
+                // Use the newer Spectre.Console status display with live updates
+                var result = await AnsiConsoleHelper.WithStatusAsync<BatchProcessResult>(
+                    async (updateStatus) =>
+                    {                            // Hook up progress events to update the status
+                        batchProcessor.ProcessingProgressChanged += (sender, e) =>
+                        {
+                            // Escape any markup to avoid Spectre.Console parsing issues
+                            string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
+                            // The status already contains file count information, so we don't need to add it
+                            updateStatus(safeStatus);
+                        };
+
+                        return await batchProcessor.ProcessPdfsAsync(
+                            input,
+                            overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",
+                            pdfExtensions,
+                            openAiApiKey,
+                            dryRun,
+                            noSummary,
+                            force,
+                            retryFailed,
+                            timeout,
+                            localResourcesPathForBatchProcessor,
+                            appConfig);
+                    },
+                    $"Processing PDF files from {(isFile ? "file" : "directory")}: {input}");
+
+                logger.LogInformation("PDF processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
+                logger.LogInformationWithPath("PDF processing completed. Success: {Processed}, Failed: {Failed}", "PdfCommands.cs", result.Processed, result.Failed);
+                if (!string.IsNullOrWhiteSpace(result.Summary))
+                {
+                    AnsiConsoleHelper.WriteInfo(result.Summary);
+                }
+            }
+            catch (Exception ex)
+            {
+                // No need to stop spinner manually, WithStatusAsync handles this
+                AnsiConsoleHelper.WriteError($"Error processing PDF files: {ex.Message}");
+                logger.LogErrorWithPath(ex, "Error processing PDF files", "PdfCommands.cs");
+            }
+        });
+
+        rootCommand.AddCommand(pdfCommand);
     }
 }

@@ -1,10 +1,4 @@
-﻿using System;
-
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using NotebookAutomation.Core.Configuration;
+﻿using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Tests.Configuration;
 

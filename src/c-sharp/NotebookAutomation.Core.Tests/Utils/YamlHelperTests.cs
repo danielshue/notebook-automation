@@ -1,9 +1,4 @@
-﻿using System.Collections.Generic;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using NotebookAutomation.Core.Utils;
+﻿using NotebookAutomation.Core.Utils;
 
 #nullable enable
 

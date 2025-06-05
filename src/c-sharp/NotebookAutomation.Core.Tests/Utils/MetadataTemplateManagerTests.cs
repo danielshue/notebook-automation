@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.IO;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.IO;
 
 using Moq;
 

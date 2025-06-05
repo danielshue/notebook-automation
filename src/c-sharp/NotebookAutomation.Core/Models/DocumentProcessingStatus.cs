@@ -1,28 +1,26 @@
-namespace NotebookAutomation.Core.Models
+﻿namespace NotebookAutomation.Core.Models;
+/// <summary>
+/// Represents the status of a document in the processing queue
+/// </summary>
+public enum DocumentProcessingStatus
 {
     /// <summary>
-    /// Represents the status of a document in the processing queue
+    /// The document is waiting to be processed
     /// </summary>
-    public enum DocumentProcessingStatus
-    {
-        /// <summary>
-        /// The document is waiting to be processed
-        /// </summary>
-        Waiting,
+    Waiting,
 
-        /// <summary>
-        /// The document is currently being processed
-        /// </summary>
-        Processing,
+    /// <summary>
+    /// The document is currently being processed
+    /// </summary>
+    Processing,
 
-        /// <summary>
-        /// The document has been successfully processed
-        /// </summary>
-        Completed,
+    /// <summary>
+    /// The document has been successfully processed
+    /// </summary>
+    Completed,
 
-        /// <summary>
-        /// Processing the document failed
-        /// </summary>
-        Failed
-    }
+    /// <summary>
+    /// Processing the document failed
+    /// </summary>
+    Failed
 }

@@ -1,15 +1,11 @@
-﻿using NotebookAutomation.Core.Configuration;
-#nullable enable
+﻿using System.Linq;
 
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
+
+#nullable enable
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -33,17 +29,19 @@ public class TestableAISummarizer(ILogger<AISummarizer> logger) : AISummarizer(l
     /// Sets up a predefined result to be returned by SummarizeAsync method.
     /// </summary>
     /// <param name="result">The result string to return from SummarizeAsync</param>
-    public void SetupSummarizeAsyncResult(string result) => _summarizeAsyncResult = result;        /// <summary>
-                                                                                                   /// Override the SummarizeWithVariablesAsync method to return the predefined result in tests.
-                                                                                                   /// </summary>
-                                                                                                   /// <param name="inputText">The text to summarize (ignored in test)</param>
-                                                                                                   /// <param name="variables">Optional variables to substitute in the prompt template</param>
-                                                                                                   /// <param name="promptFileName">Optional prompt file name</param>
-                                                                                                   /// <param name="cancellationToken">Cancellation token</param>
-                                                                                                   /// <returns>The predefined summary result</returns>
+    public void SetupSummarizeAsyncResult(string result) => _summarizeAsyncResult = result;
+
+    /// <summary>
+    /// Override the SummarizeWithVariablesAsync method to return the predefined result in tests.
+    /// </summary>
+    /// <param name="inputText">The text to summarize (ignored in test)</param>
+    /// <param name="variables">Optional variables to substitute in the prompt template</param>
+    /// <param name="promptFileName">Optional prompt file name</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>The predefined summary result</returns>
     public override Task<string?> SummarizeWithVariablesAsync(
         string inputText,
-        System.Collections.Generic.Dictionary<string, string>? variables = null,
+        Dictionary<string, string>? variables = null,
         string? promptFileName = null,
         CancellationToken cancellationToken = default)
     {

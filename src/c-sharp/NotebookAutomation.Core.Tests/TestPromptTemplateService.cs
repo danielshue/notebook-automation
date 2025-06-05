@@ -1,9 +1,6 @@
 ﻿using NotebookAutomation.Core.Configuration;
 // Enable nullable reference types for this file
 #nullable enable
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
 using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests;

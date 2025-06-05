@@ -1,81 +1,77 @@
-#nullable enable
+﻿#nullable enable
 
-using Microsoft.Extensions.Logging;
-
-namespace NotebookAutomation.Core.Utils
+namespace NotebookAutomation.Core.Utils;
+/// <summary>
+/// Utility class for formatting file paths in log messages.
+/// </summary>
+public static class PathFormatter
 {
     /// <summary>
-    /// Utility class for formatting file paths in log messages.
+    /// Maximum length for truncated paths in log messages.
     /// </summary>
-    public static class PathFormatter
+    private const int _maxPathLength = 80;
+
+    /// <summary>
+    /// Formats a file path for logging based on the log level.
+    /// Uses the full path for Debug or Trace levels, and a shortened path otherwise.
+    /// </summary>
+    /// <param name="path">The file path to format.</param>
+    /// <param name="logLevel">The logging level.</param>
+    /// <returns>The formatted path string.</returns>
+    public static string Format(string path, LogLevel logLevel)
     {
-        /// <summary>
-        /// Maximum length for truncated paths in log messages.
-        /// </summary>
-        private const int MaxPathLength = 80;
+        if (string.IsNullOrEmpty(path))
+            return string.Empty;
 
-        /// <summary>
-        /// Formats a file path for logging based on the log level.
-        /// Uses the full path for Debug or Trace levels, and a shortened path otherwise.
-        /// </summary>
-        /// <param name="path">The file path to format.</param>
-        /// <param name="logLevel">The logging level.</param>
-        /// <returns>The formatted path string.</returns>
-        public static string Format(string path, LogLevel logLevel)
+        // For Debug or Trace level, use the full path
+        if (logLevel == LogLevel.Debug || logLevel == LogLevel.Trace)
         {
-            if (string.IsNullOrEmpty(path))
-                return string.Empty;
-
-            // For Debug or Trace level, use the full path
-            if (logLevel == LogLevel.Debug || logLevel == LogLevel.Trace)
-            {
-                return path;
-            }
-
-            // For other levels, show a shortened path
-            return ShortenPath(path, MaxPathLength);
+            return path;
         }
 
-        /// <summary>
-        /// Shortens a path to not exceed the specified maximum length.
-        /// Keeps the filename and as much of the path as possible.
-        /// </summary>
-        /// <param name="path">The path to shorten.</param>
-        /// <param name="maxLength">Maximum allowed length.</param>
-        /// <returns>A shortened path.</returns>
-        public static string ShortenPath(string path, int maxLength)
-        {
-            if (string.IsNullOrEmpty(path))
-                return string.Empty;
+        // For other levels, show a shortened path
+        return ShortenPath(path, _maxPathLength);
+    }
 
-            if (path.Length <= maxLength)
-                return path;
+    /// <summary>
+    /// Shortens a path to not exceed the specified maximum length.
+    /// Keeps the filename and as much of the path as possible.
+    /// </summary>
+    /// <param name="path">The path to shorten.</param>
+    /// <param name="maxLength">Maximum allowed length.</param>
+    /// <returns>A shortened path.</returns>
+    public static string ShortenPath(string path, int maxLength)
+    {
+        if (string.IsNullOrEmpty(path))
+            return string.Empty;
 
-            // Always include the file name
-            string fileName = System.IO.Path.GetFileName(path);
+        if (path.Length <= maxLength)
+            return path;
 
-            // If just the filename is too long, truncate it
-            if (fileName.Length >= maxLength)
-                return "..." + fileName[Math.Max(0, fileName.Length - maxLength + 4)..];
+        // Always include the file name
+        string fileName = System.IO.Path.GetFileName(path);
 
-            // Calculate how much path we can include
-            int pathLength = maxLength - fileName.Length - 4; // 4 for "...\"
-            if (pathLength <= 0)
-                return "..." + System.IO.Path.DirectorySeparatorChar + fileName;
+        // If just the filename is too long, truncate it
+        if (fileName.Length >= maxLength)
+            return "..." + fileName[Math.Max(0, fileName.Length - maxLength + 4)..];
 
-            string directory = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
-            if (directory.Length <= pathLength)
-                return path; // Shouldn't happen since we already checked path.Length > maxLength
+        // Calculate how much path we can include
+        int pathLength = maxLength - fileName.Length - 4; // 4 for "...\"
+        if (pathLength <= 0)
+            return "..." + System.IO.Path.DirectorySeparatorChar + fileName;
 
-            // Get the end portion of the directory path
-            string shortenedDirectory = directory[^pathLength..];
+        string directory = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
+        if (directory.Length <= pathLength)
+            return path; // Shouldn't happen since we already checked path.Length > maxLength
 
-            // Find the first directory separator to ensure we start with a complete directory name
-            int firstSeparatorIndex = shortenedDirectory.IndexOf(System.IO.Path.DirectorySeparatorChar);
-            if (firstSeparatorIndex > 0)
-                shortenedDirectory = shortenedDirectory[firstSeparatorIndex..];
+        // Get the end portion of the directory path
+        string shortenedDirectory = directory[^pathLength..];
 
-            return "..." + shortenedDirectory + System.IO.Path.DirectorySeparatorChar + fileName;
-        }
+        // Find the first directory separator to ensure we start with a complete directory name
+        int firstSeparatorIndex = shortenedDirectory.IndexOf(System.IO.Path.DirectorySeparatorChar);
+        if (firstSeparatorIndex > 0)
+            shortenedDirectory = shortenedDirectory[firstSeparatorIndex..];
+
+        return "..." + shortenedDirectory + System.IO.Path.DirectorySeparatorChar + fileName;
     }
 }

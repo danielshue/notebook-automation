@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-namespace NotebookAutomation.Core.Tests;
+﻿namespace NotebookAutomation.Core.Tests;
 
 /// <summary>
 /// Tests for the MockTextChunkingService class to ensure it works correctly for testing purposes.

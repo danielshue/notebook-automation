@@ -1,95 +1,95 @@
-namespace NotebookAutomation.Core.Services
+﻿namespace NotebookAutomation.Core.Services;
+/// <summary>
+/// Interface for OneDrive service operations including authentication, file operations, and sharing.
+/// </summary>
+public interface IOneDriveService
 {
     /// <summary>
-    /// Interface for OneDrive service operations including authentication, file operations, and sharing.
+    /// Authenticates with Microsoft Graph using device code flow.
     /// </summary>
-    public interface IOneDriveService
-    {
-        /// <summary>
-        /// Authenticates with Microsoft Graph using device code flow.
-        /// </summary>
-        Task AuthenticateAsync();
+    Task AuthenticateAsync();
 
-        /// <summary>
-        /// Sets the force refresh flag to bypass cached tokens on next authentication.
-        /// </summary>
-        /// <param name="forceRefresh">If true, will force refresh authentication tokens ignoring cache.</param>
-        void SetForceRefresh(bool forceRefresh);
+    /// <summary>
+    /// Sets the force refresh flag to bypass cached tokens on next authentication.
+    /// </summary>
+    /// <param name="forceRefresh">If true, will force refresh authentication tokens ignoring cache.</param>
+    void SetForceRefresh(bool forceRefresh);
 
-        /// <summary>
-        /// Forces a refresh of the authentication tokens by clearing cache and re-authenticating.
-        /// </summary>
-        /// <returns>Task representing the async refresh operation.</returns>
-        Task RefreshAuthenticationAsync();
+    /// <summary>
+    /// Forces a refresh of the authentication tokens by clearing cache and re-authenticating.
+    /// </summary>
+    /// <returns>Task representing the async refresh operation.</returns>
+    Task RefreshAuthenticationAsync();
 
-        /// <summary>
-        /// Downloads a file from OneDrive to a local path.
-        /// </summary>
-        /// <param name="oneDrivePath">The OneDrive file path.</param>
-        /// <param name="localPath">The local destination path.</param>
-        /// <param name="cancellationToken">Optional cancellation token.</param>
-        Task DownloadFileAsync(string oneDrivePath, string localPath, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Downloads a file from OneDrive to a local path.
+    /// </summary>
+    /// <param name="oneDrivePath">The OneDrive file path.</param>
+    /// <param name="localPath">The local destination path.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    Task DownloadFileAsync(string oneDrivePath, string localPath, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Lists files in a OneDrive folder.
-        /// </summary>
-        /// <param name="oneDriveFolder">The OneDrive folder path.</param>
-        /// <param name="cancellationToken">Optional cancellation token.</param>
-        /// <returns>List of file names.</returns>
-        Task<List<string>> ListFilesAsync(string oneDriveFolder, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Lists files in a OneDrive folder.
+    /// </summary>
+    /// <param name="oneDriveFolder">The OneDrive folder path.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>List of file names.</returns>
+    Task<List<string>> ListFilesAsync(string oneDriveFolder, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Uploads a local file to OneDrive at the specified path.
-        /// </summary>
-        /// <param name="localPath">The local file path.</param>
-        /// <param name="oneDrivePath">The OneDrive destination path (including filename).</param>
-        /// <param name="cancellationToken">Optional cancellation token.</param>
-        Task UploadFileAsync(string localPath, string oneDrivePath, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Uploads a local file to OneDrive at the specified path.
+    /// </summary>
+    /// <param name="localPath">The local file path.</param>
+    /// <param name="oneDrivePath">The OneDrive destination path (including filename).</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    Task UploadFileAsync(string localPath, string oneDrivePath, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Creates a shareable link for a file in OneDrive.
-        /// </summary>
-        /// <param name="filePath">The local file path or OneDrive file path. If it's a local path, it will be converted to a OneDrive-relative path.</param>
-        /// <param name="linkType">The type of sharing link to create. Default is "view".</param>
-        /// <param name="scope">The scope of the sharing link. Default is "anonymous".</param>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>The shareable link URL if successful, null otherwise.</returns>
-        Task<string?> CreateShareLinkAsync(string filePath, string linkType = "view", string scope = "anonymous", CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Creates a shareable link for a file in OneDrive.
+    /// </summary>
+    /// <param name="filePath">The local file path or OneDrive file path. If it's a local path, it will be converted to a OneDrive-relative path.</param>
+    /// <param name="linkType">The type of sharing link to create. Default is "view".</param>
+    /// <param name="scope">The scope of the sharing link. Default is "anonymous".</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The shareable link URL if successful, null otherwise.</returns>
+    Task<string?> CreateShareLinkAsync(string filePath, string linkType = "view", string scope = "anonymous", CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Searches for files or folders in OneDrive by name or pattern.
-        /// </summary>
-        /// <param name="query">The search query string.</param>
-        /// <param name="cancellationToken">Optional cancellation token.</param>
-        /// <returns>List of file/folder metadata matching the query.</returns>
-        Task<List<Dictionary<string, object>>> SearchFilesAsync(string query, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Searches for files or folders in OneDrive by name or pattern.
+    /// </summary>
+    /// <param name="query">The search query string.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>List of file/folder metadata matching the query.</returns>
+    Task<List<Dictionary<string, object>>> SearchFilesAsync(string query, CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Configures the local and OneDrive vault root directories for path mapping.
-        /// </summary>
-        /// <param name="localVaultRoot">The local vault root directory path.</param>
-        /// <param name="oneDriveVaultRoot">The OneDrive vault root directory path.</param>
-        void ConfigureVaultRoots(string localVaultRoot, string oneDriveVaultRoot);
+    /// <summary>
+    /// Configures the local and OneDrive vault root directories for path mapping.
+    /// </summary>
+    /// <param name="localVaultRoot">The local vault root directory path.</param>
+    /// <param name="oneDriveVaultRoot">The OneDrive vault root directory path.</param>
+    void ConfigureVaultRoots(string localVaultRoot, string oneDriveVaultRoot);
 
-        /// <summary>
-        /// Maps a local file path to its corresponding OneDrive path.
-        /// </summary>
-        /// <param name="localPath">The local file path to map.</param>
-        /// <returns>The corresponding OneDrive path.</returns>
-        string MapLocalToOneDrivePath(string localPath);        /// <summary>
-                                                                /// Maps an OneDrive file path to its corresponding local path.
-                                                                /// </summary>
-                                                                /// <param name="oneDrivePath">The OneDrive file path to map.</param>
-                                                                /// <returns>The corresponding local path.</returns>
-        string MapOneDriveToLocalPath(string oneDrivePath);
+    /// <summary>
+    /// Maps a local file path to its corresponding OneDrive path.
+    /// </summary>
+    /// <param name="localPath">The local file path to map.</param>
+    /// <returns>The corresponding OneDrive path.</returns>
+    string MapLocalToOneDrivePath(string localPath);
 
-        /// <summary>
-        /// Gets a share link for a file in OneDrive.
-        /// </summary>
-        /// <param name="filePath">The path of the file to get a share link for.</param>
-        /// <param name="forceRefresh">Whether to force refresh the share link.</param>
-        /// <param name="cancellationToken">Optional cancellation token.</param>
-        /// <returns>The share link information as a JSON string.</returns>
-        Task<string> GetShareLinkAsync(string filePath, bool forceRefresh = false, CancellationToken cancellationToken = default);
-    }
+    /// <summary>
+    /// Maps an OneDrive file path to its corresponding local path.
+    /// </summary>
+    /// <param name="oneDrivePath">The OneDrive file path to map.</param>
+    /// <returns>The corresponding local path.</returns>
+    string MapOneDriveToLocalPath(string oneDrivePath);
+
+    /// <summary>
+    /// Gets a share link for a file in OneDrive.
+    /// </summary>
+    /// <param name="filePath">The path of the file to get a share link for.</param>
+    /// <param name="forceRefresh">Whether to force refresh the share link.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The share link information as a JSON string.</returns>
+    Task<string> GetShareLinkAsync(string filePath, bool forceRefresh = false, CancellationToken cancellationToken = default);
 }

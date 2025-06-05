@@ -53,6 +53,23 @@
 - Make sure the using statements are cleaned up and organized
 - Shorten the fully qualified names where appropriate and use `using` directives for namespaces
 
+## Modern C# Features (C# 12+)
+- **Use file-scoped namespaces** for all new files: `namespace MyNamespace;` instead of wrapping in braces
+- **Prefer primary constructors** for simple classes that primarily initialize fields:
+  ```csharp
+  public class Person(string name, int age)
+  {
+      public string Name => name;
+      public int Age => age;
+  }
+  ```
+- **Use target-typed new expressions** where type is obvious: `List<string> items = new();`
+- **Use collection expressions** for collection initialization: `string[] names = ["Alice", "Bob"];`
+- **Use pattern matching** extensively for cleaner conditional logic
+- **Use record types** for immutable data classes: `public record Person(string Name, int Age);`
+- **Use global using statements** in GlobalUsings.cs to reduce repetitive imports
+- **Prefer switch expressions** over traditional switch statements where appropriate
+
 ## Project-Specific Patterns
 - Use System.IO.Path or FileSystem abstractions instead of pathlib
 - Implement a centralized logging system (consider NLog, Serilog, or Microsoft.Extensions.Logging)

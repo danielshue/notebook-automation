@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using NotebookAutomation.Core.Utils;
+﻿using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests.Utils;
 

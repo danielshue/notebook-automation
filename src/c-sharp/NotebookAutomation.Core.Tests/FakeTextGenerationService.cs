@@ -1,10 +1,5 @@
 ﻿// Enable nullable reference types for this file
 #nullable enable
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 
