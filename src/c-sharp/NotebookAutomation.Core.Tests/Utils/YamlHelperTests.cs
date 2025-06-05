@@ -238,7 +238,9 @@ tags:
         Assert.IsTrue(success);
         Assert.IsNotNull(data);
         Assert.AreEqual("Test Document", data!["title"]);
-    }    /// <summary>
+    }
+
+    /// <summary>
     /// Test that DiagnoseYamlFrontmatter correctly identifies problems in YAML frontmatter.
     /// </summary>
     [TestMethod]
