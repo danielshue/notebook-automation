@@ -55,7 +55,7 @@ namespace NotebookAutomation.Cli.Commands
         {
             var pathArg = new Argument<string>("path", "Path to the vault directory");
             var vaultCommand = new Command("vault", "Vault management commands");
-            
+
             var generateIndexCommand = new Command("generate-index", "Generate a vault index file");
             generateIndexCommand.AddArgument(pathArg);
             generateIndexCommand.SetHandler(async context =>
@@ -76,8 +76,8 @@ namespace NotebookAutomation.Cli.Commands
                 bool verbose = context.ParseResult.GetValueForOption(verboseOption);
                 bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
                 await this.ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun);
-            }); 
-            
+            });
+
             var ensureMetadataCommand = new Command("ensure-metadata", "Update YAML frontmatter with program/course/class metadata based on directory structure");
             ensureMetadataCommand.AddArgument(pathArg);
             ensureMetadataCommand.SetHandler(async context =>
@@ -94,7 +94,7 @@ namespace NotebookAutomation.Cli.Commands
             vaultCommand.AddCommand(generateIndexCommand);
             vaultCommand.AddCommand(ensureMetadataCommand);
             rootCommand.AddCommand(vaultCommand);
-        }        
+        }
 
         /// <summary>
         /// Executes a vault command on the specified path.
@@ -176,7 +176,7 @@ namespace NotebookAutomation.Cli.Commands
             _logger.LogWarningWithPath("Generate-index command is not yet implemented", "VaultCommands.cs");
             await Task.CompletedTask;
         }
-          /// <summary>
+        /// <summary>
         /// Executes the ensure-metadata command using the MetadataEnsureBatchProcessor.
         /// </summary>        
         private async Task ExecuteEnsureMetadataAsync(string path, bool dryRun, bool verbose)
@@ -187,18 +187,18 @@ namespace NotebookAutomation.Cli.Commands
 
                 // Get the batch processor from DI
                 var batchProcessor = _serviceProvider.GetRequiredService<MetadataEnsureBatchProcessor>();
-                
+
                 // Use the same approach as video commands for consistent animated progress output
                 var result = await AnsiConsoleHelper.WithStatusAsync<MetadataBatchResult>(
-                    async (updateStatus) => 
+                    async (updateStatus) =>
                     {                        // Hook up progress events to update the status display
-                        batchProcessor.ProcessingProgressChanged += (sender, e) => 
+                        batchProcessor.ProcessingProgressChanged += (sender, e) =>
                         {
                             // Escape any markup to avoid Spectre.Console parsing issues
                             string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
                             updateStatus(safeStatus);
                         };
-                        
+
                         // Execute the batch processing
                         return await batchProcessor.EnsureMetadataAsync(
                             vaultPath: path,
@@ -215,37 +215,43 @@ namespace NotebookAutomation.Cli.Commands
                 {
                     // Report completion message that's similar to video/pdf commands
                     string prefix = dryRun ? "[DRY RUN] " : "";
-                    
+
                     // Write a clear summary message
                     AnsiConsoleHelper.WriteSuccess($"\n{prefix}Metadata processing completed");
                     AnsiConsoleHelper.WriteInfo($"  Files processed: {result.ProcessedFiles}");
                     AnsiConsoleHelper.WriteInfo($"  Files skipped: {result.SkippedFiles}");
-                    if (result.FailedFiles > 0) {
+                    if (result.FailedFiles > 0)
+                    {
                         AnsiConsoleHelper.WriteWarning($"  Files failed: {result.FailedFiles}");
                     }
                     AnsiConsoleHelper.WriteInfo($"  Total files: {result.TotalFiles}");                      // For dry run, indicate where detailed changes can be found
-                    if (dryRun) {
+                    if (dryRun)
+                    {
                         AnsiConsoleHelper.WriteInfo("\nDetailed metadata changes are available in the log file:");
-                        
+
                         // Get the actual log file path from the logging service
                         var loggingService = _serviceProvider.GetRequiredService<ILoggingService>();
                         var logFilePath = loggingService.CurrentLogFilePath;
-                        
-                        if (!string.IsNullOrEmpty(logFilePath)) {
+
+                        if (!string.IsNullOrEmpty(logFilePath))
+                        {
                             AnsiConsoleHelper.WriteInfo($"  {logFilePath}");
-                        } else if (_appConfig?.Paths?.LoggingDir != null) {
+                        }
+                        else if (_appConfig?.Paths?.LoggingDir != null)
+                        {
                             // Fallback to manual construction if service doesn't provide path
                             string logPath = _appConfig.Paths.LoggingDir;
                             string logFile = Path.Combine(logPath, $"notebookautomation.core_{DateTime.Now:yyyyMMdd}.log");
                             AnsiConsoleHelper.WriteInfo($"  {logFile}");
                         }
-                        
+
                         // Only show verbose tip when not already running in verbose mode
-                        if (!verbose) {
+                        if (!verbose)
+                        {
                             AnsiConsoleHelper.WriteInfo("\nTip: Run with --verbose to see more details about proposed changes.");
                         }
                     }
-                    
+
                     // Still log to the file for record-keeping
                     _logger.LogInformationWithPath(
                         "{Prefix}Metadata processing completed: {Processed} processed, {Skipped} skipped, {Failed} failed out of {Total} total files",

@@ -4,8 +4,8 @@ using Microsoft.Extensions.Logging;
 
 namespace NotebookAutomation.Core.Utils
 {    /// <summary>
-    /// Extension methods for ILogger to support both file path formatting and general string formatting.
-    /// </summary>
+     /// Extension methods for ILogger to support both file path formatting and general string formatting.
+     /// </summary>
     public static class LoggerExtensions
     {
         /// <summary>
@@ -60,12 +60,12 @@ namespace NotebookAutomation.Core.Utils
         {
             logger.Log(logLevel, eventId, exception, message, args);
         }        /// <summary>
-        /// Logs an information message with a formatted file path.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="message">The message template with {FilePath} placeholder.</param>
-        /// <param name="filePath">The file path to format and log.</param>
-        /// <param name="args">Additional arguments for the message template.</param>
+                 /// Logs an information message with a formatted file path.
+                 /// </summary>
+                 /// <param name="logger">The logger.</param>
+                 /// <param name="message">The message template with {FilePath} placeholder.</param>
+                 /// <param name="filePath">The file path to format and log.</param>
+                 /// <param name="args">Additional arguments for the message template.</param>
         public static void LogInformationWithPath(
             this ILogger logger,
             string message,
@@ -74,11 +74,11 @@ namespace NotebookAutomation.Core.Utils
         {
             LogWithFormattedPath(logger, LogLevel.Information, 0, null, message, filePath, args);
         }        /// <summary>
-        /// Logs an information message with general string formatting support.
-        /// </summary>
-        /// <param name="logger">The logger.</param>
-        /// <param name="message">The message template with placeholders.</param>
-        /// <param name="args">Arguments for the message template placeholders.</param>
+                 /// Logs an information message with general string formatting support.
+                 /// </summary>
+                 /// <param name="logger">The logger.</param>
+                 /// <param name="message">The message template with placeholders.</param>
+                 /// <param name="args">Arguments for the message template placeholders.</param>
         public static void LogInformationFormatted(
             this ILogger logger,
             string message,

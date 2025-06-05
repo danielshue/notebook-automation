@@ -34,16 +34,16 @@ jobs:
         os: [windows-latest]
         dotnet-version: ['9.0.x']
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -51,7 +51,7 @@ jobs:
           dotnet-version: ${{ matrix.dotnet-version }}
 
       - name: Restore dependencies
-        run: dotnet restore src/c-sharp/NotebookAutomation.sln      
+        run: dotnet restore src/c-sharp/NotebookAutomation.sln
 
       - name: Format code (optional)
         if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'auto-format')
@@ -62,48 +62,48 @@ jobs:
         id: version
         run: |
           $buildDate = Get-Date
-          
+
           # Microsoft recommended format: major.minor.build.revision
           # where build is typically days since a base date and revision is seconds since midnight / 2
-          
+
           # Calculate build number (days since Jan 1, 2024)
           $baseDate = Get-Date -Year 2024 -Month 1 -Day 1
           $daysSinceBase = [math]::Floor(($buildDate - $baseDate).TotalDays)
-          
+
           # For CI builds, use GitHub run number as revision for traceability
           $revision = $env:GITHUB_RUN_NUMBER
-          
+
           # Format version strings
           $major = 1
           $minor = 0
-          
+
           # For NuGet package version (must be valid SemVer)
           $packageVersion = "$major.$minor.0"
-          
+
           # For assembly version - must be a specific version for NuGet restore
           $assemblyVersion = "$major.$minor.0.0"
-          
+
           # For file version - use MS recommended format
           $fileVersion = "$major.$minor.$daysSinceBase.$revision"
-          
+
           echo "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
           echo "FILE_VERSION=$fileVersion" >> $env:GITHUB_ENV
           echo "ASSEMBLY_VERSION=$assemblyVersion" >> $env:GITHUB_ENV
-          
+
           echo "Package Version: $packageVersion"
           echo "File Version: $fileVersion"
           echo "Assembly Version: $assemblyVersion"
-        shell: pwsh      
+        shell: pwsh
 
       - name: Build solution
         run: dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }}
-        
+
       - name: Run tests with coverage
         run: |
           dotnet test src/c-sharp/NotebookAutomation.Core.Tests/ --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
-          
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4

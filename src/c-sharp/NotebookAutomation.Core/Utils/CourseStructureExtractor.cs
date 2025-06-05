@@ -51,7 +51,7 @@ namespace NotebookAutomation.Core.Utils
 
                 // First attempt: Extract from filename itself
                 (module, lesson) = ExtractFromFilename(fileInfo.Name);
-                _logger.LogDebugWithPath("Filename extraction result - Module: {Module}, Lesson: {Lesson}", 
+                _logger.LogDebugWithPath("Filename extraction result - Module: {Module}, Lesson: {Lesson}",
                     nameof(CourseStructureExtractor), module ?? "null", lesson ?? "null", filePath);
 
                 if (dir != null)
@@ -62,7 +62,7 @@ namespace NotebookAutomation.Core.Utils
                         var (dirModule, dirLesson) = ExtractByKeywords(dir);
                         module ??= dirModule;
                         lesson ??= dirLesson;
-                        _logger.LogDebugWithPath("Keyword extraction result - Module: {Module}, Lesson: {Lesson}", 
+                        _logger.LogDebugWithPath("Keyword extraction result - Module: {Module}, Lesson: {Lesson}",
                             nameof(CourseStructureExtractor), module ?? "null", lesson ?? "null", filePath);
                     }
 
@@ -72,7 +72,7 @@ namespace NotebookAutomation.Core.Utils
                         var (numModule, numLesson) = ExtractByNumberedPattern(dir);
                         module ??= numModule;
                         lesson ??= numLesson;
-                        _logger.LogDebugWithPath("Numbered pattern extraction result - Module: {Module}, Lesson: {Lesson}", 
+                        _logger.LogDebugWithPath("Numbered pattern extraction result - Module: {Module}, Lesson: {Lesson}",
                             nameof(CourseStructureExtractor), module ?? "null", lesson ?? "null", filePath);
                     }
                 }
@@ -92,7 +92,7 @@ namespace NotebookAutomation.Core.Utils
                 // Log summary if we found any information
                 if (!string.IsNullOrEmpty(module) || !string.IsNullOrEmpty(lesson))
                 {
-                    _logger.LogDebugWithPath("Successfully extracted - Module: '{Module}', Lesson: '{Lesson}'", 
+                    _logger.LogDebugWithPath("Successfully extracted - Module: '{Module}', Lesson: '{Lesson}'",
                         nameof(CourseStructureExtractor), module ?? "not found", lesson ?? "not found", filePath);
                 }
                 else
@@ -137,9 +137,9 @@ namespace NotebookAutomation.Core.Utils
 
             return (module, lesson);
         }        /// <summary>
-        /// Extracts module and lesson information by analyzing numbered directory patterns.        /// </summary>
-        /// <param name="dir">Starting directory to analyze.</param>
-        /// <returns>A tuple with (module, lesson) information, where either may be null.</returns>
+                 /// Extracts module and lesson information by analyzing numbered directory patterns.        /// </summary>
+                 /// <param name="dir">Starting directory to analyze.</param>
+                 /// <returns>A tuple with (module, lesson) information, where either may be null.</returns>
         private static (string? module, string? lesson) ExtractByNumberedPattern(DirectoryInfo dir)
         {
             string? module = null;
@@ -151,15 +151,15 @@ namespace NotebookAutomation.Core.Utils
 
             // Enhanced pattern detection: Check multiple directory levels for common patterns
             var directories = new List<DirectoryInfo?> { currentDir, parentDir, grandParentDir };
-            
+
             // First pass: Look for explicit module/lesson indicators in any directory level
             foreach (var directory in directories.Where(d => d != null))
             {
                 var dirName = directory!.Name.ToLowerInvariant();
-                
+
                 // Check for module indicators
-                if (module == null && (HasNumberPrefix(directory.Name) || 
-                    dirName.Contains("module") || 
+                if (module == null && (HasNumberPrefix(directory.Name) ||
+                    dirName.Contains("module") ||
                     dirName.Contains("course") ||
                     dirName.Contains("week") ||
                     dirName.Contains("unit")))
@@ -183,15 +183,15 @@ namespace NotebookAutomation.Core.Utils
                         }
                     }
                 }
-                
+
                 // Check for lesson indicators
-                if (lesson == null && (HasNumberPrefix(directory.Name) || 
-                    dirName.Contains("lesson") || 
+                if (lesson == null && (HasNumberPrefix(directory.Name) ||
+                    dirName.Contains("lesson") ||
                     dirName.Contains("session") ||
                     dirName.Contains("lecture") ||
                     dirName.Contains("class")))
                 {
-                    if (dirName.Contains("lesson") || dirName.Contains("session") || 
+                    if (dirName.Contains("lesson") || dirName.Contains("session") ||
                         dirName.Contains("lecture") || dirName.Contains("class"))
                     {
                         lesson = CleanModuleOrLessonName(directory.Name);
@@ -201,7 +201,7 @@ namespace NotebookAutomation.Core.Utils
             if (currentDir != null && parentDir != null)
             {
                 // Only treat current directory as lesson if parent looks like a module container
-                if (lesson == null && HasNumberPrefix(currentDir.Name) && 
+                if (lesson == null && HasNumberPrefix(currentDir.Name) &&
                     (parentDir.Name.ToLowerInvariant().Contains("module") ||
                      parentDir.Name.ToLowerInvariant().Contains("course") ||
                      parentDir.Name.ToLowerInvariant().Contains("week") ||
@@ -210,11 +210,11 @@ namespace NotebookAutomation.Core.Utils
                 {
                     lesson = CleanModuleOrLessonName(currentDir.Name);
                 }
-                
+
                 if (module == null && HasNumberPrefix(parentDir.Name))
                 {
                     // Use parent as module if we found a lesson, or if parent contains module indicators
-                    if (lesson != null || 
+                    if (lesson != null ||
                         parentDir.Name.ToLowerInvariant().Contains("module") ||
                         parentDir.Name.ToLowerInvariant().Contains("course") ||
                         parentDir.Name.ToLowerInvariant().Contains("week") ||
@@ -234,10 +234,10 @@ namespace NotebookAutomation.Core.Utils
 
             return (module, lesson);
         }        /// <summary>
-        /// Determines if a directory name has a numeric prefix like "01_", "02-", or other structured patterns.
-        /// </summary>
-        /// <param name="dirName">Name of the directory to check.</param>
-        /// <returns>True if the directory name starts with a numeric prefix or contains structured numbering.</returns>
+                 /// Determines if a directory name has a numeric prefix like "01_", "02-", or other structured patterns.
+                 /// </summary>
+                 /// <param name="dirName">Name of the directory to check.</param>
+                 /// <returns>True if the directory name starts with a numeric prefix or contains structured numbering.</returns>
         private static bool HasNumberPrefix(string dirName)
         {
             if (string.IsNullOrEmpty(dirName))
@@ -249,15 +249,15 @@ namespace NotebookAutomation.Core.Utils
 
             // Additional patterns for course structures
             string lowerName = dirName.ToLowerInvariant();
-            
+
             // Week/Unit patterns: "Week 1", "Week-1", "Unit 2", etc.
             if (WeekUnitRegex().IsMatch(lowerName))
                 return true;
-                
+
             // Module/Lesson patterns: "Module 1", "Lesson 2", etc.
             if (ModuleLessonNumberRegex().IsMatch(lowerName))
                 return true;
-                
+
             // Session/Class patterns: "Session 1", "Class 3", etc.
             if (SessionClassNumberRegex().IsMatch(lowerName))
                 return true;
@@ -273,18 +273,18 @@ namespace NotebookAutomation.Core.Utils
         {
             // Remove numbering prefix (e.g., 01_, 02-, etc.), replace hyphens/underscores, title case
             string clean = MyRegex1().Replace(folderName, "");
-            
+
             // Convert camelCase to spaced words before other processing
             clean = CamelCaseRegex().Replace(clean, " ");
-            
+
             clean = clean.Replace("-", " ").Replace("_", " ");
             clean = MyRegex2().Replace(clean, " ").Trim();
             return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(clean);
         }        /// <summary>
-        /// Extracts module and lesson information from a filename.
-        /// </summary>
-        /// <param name="filename">The filename to analyze (without directory path).</param>
-        /// <returns>A tuple with (module, lesson) information, where either may be null.</returns>
+                 /// Extracts module and lesson information from a filename.
+                 /// </summary>
+                 /// <param name="filename">The filename to analyze (without directory path).</param>
+                 /// <returns>A tuple with (module, lesson) information, where either may be null.</returns>
         private static (string? module, string? lesson) ExtractFromFilename(string filename)
         {
             string? module = null;
@@ -353,7 +353,7 @@ namespace NotebookAutomation.Core.Utils
                 {
                     var number = numberedMatch.Groups[1].Value;
                     var content = numberedMatch.Groups[2].Value;
-                    
+
                     // Determine if this looks more like a module or lesson based on content
                     if (content.Contains("course", StringComparison.OrdinalIgnoreCase) ||
                         content.Contains("introduction", StringComparison.OrdinalIgnoreCase) ||
@@ -370,7 +370,8 @@ namespace NotebookAutomation.Core.Utils
             }
 
             return (module, lesson);
-        }[GeneratedRegex(@"^(\d+)[_-]", RegexOptions.Compiled)]
+        }
+        [GeneratedRegex(@"^(\d+)[_-]", RegexOptions.Compiled)]
         private static partial Regex MyRegex();
         [GeneratedRegex(@"^\d+[_-]?")]
         private static partial Regex MyRegex1();
@@ -392,14 +393,14 @@ namespace NotebookAutomation.Core.Utils
         private static partial Regex LessonNumberSeparatorRegex();
         [GeneratedRegex(@"^(\d+)[_-](.+)", RegexOptions.IgnoreCase)]
         private static partial Regex NumberedContentRegex();
-          // Enhanced directory pattern recognition
+        // Enhanced directory pattern recognition
         [GeneratedRegex(@"(week|unit)[_\s-]*\d+", RegexOptions.IgnoreCase)]
         private static partial Regex WeekUnitRegex();
         [GeneratedRegex(@"(module|lesson)[_\s-]*\d+", RegexOptions.IgnoreCase)]
         private static partial Regex ModuleLessonNumberRegex();
         [GeneratedRegex(@"(session|class)[_\s-]*\d+", RegexOptions.IgnoreCase)]
         private static partial Regex SessionClassNumberRegex();
-        
+
         // Pattern for camelCase to space conversion
         [GeneratedRegex(@"(?<=[a-z])(?=[A-Z])")]
         private static partial Regex CamelCaseRegex();
