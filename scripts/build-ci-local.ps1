@@ -197,7 +197,8 @@ try {
         Write-Success "All tests passed"
     }
     else {
-        Write-Warning "Skipping tests"    }    # Step 6: Test Publish Operations (mirrors CI publish steps)
+        Write-Warning "Skipping tests"    
+    }    # Step 6: Test Publish Operations (mirrors CI publish steps)
     Write-Step "Step 6: Test Publish Operations"
     $cliProjectPath = Join-Path $RepositoryRoot "src\c-sharp\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj"
     $tempPublishDir = Join-Path $ScriptDir "temp_publish_test"
