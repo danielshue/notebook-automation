@@ -14,7 +14,7 @@ insert_final_newline = true
 charset = utf-8-bom
 
 # Line length
-max_line_length = 100
+max_line_length = 120
 
 # C# specific code style rules
 dotnet_sort_system_directives_first = true
