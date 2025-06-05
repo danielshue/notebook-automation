@@ -54,7 +54,7 @@ namespace NotebookAutomation.Cli
             rootCommand.AddGlobalOption(configOption);
             rootCommand.AddGlobalOption(debugOption);
             rootCommand.AddGlobalOption(verboseOption);
-            rootCommand.AddGlobalOption(dryRunOption);            if (args.Contains("--debug") || args.Contains("-d"))
+            rootCommand.AddGlobalOption(dryRunOption); if (args.Contains("--debug") || args.Contains("-d"))
             {
                 AnsiConsoleHelper.WriteInfo($"Debug mode enabled");
             }            // Parse config option early to use it in dependency injection setup
@@ -69,13 +69,13 @@ namespace NotebookAutomation.Cli
             }
 
             // Handle --version manually before building the CLI to avoid conflicts
-            if (args.Contains("--version") || args.Contains("-v"))
-            {
-                AnsiConsoleHelper.WriteInfo($"Notebook Automation v1.0.0");
-                AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
-                AnsiConsoleHelper.WriteInfo("(c) 2025 Dan Shue");
-                return 0;
-            }
+            // if (args.Contains("--version") || args.Contains("-v"))
+            // {
+            //     AnsiConsoleHelper.WriteInfo($"Notebook Automation v1.0.0");
+            //     AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
+            //     AnsiConsoleHelper.WriteInfo("(c) 2025 Dan Shue");
+            //     return 0;
+            // }
 
             // Setup dependency injection with the parsed config path
             var serviceProvider = SetupDependencyInjection(configPath, args.Contains("--debug"));

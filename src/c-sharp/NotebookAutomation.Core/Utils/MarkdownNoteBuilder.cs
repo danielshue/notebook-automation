@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NotebookAutomation.Core.Utils
 {
@@ -8,7 +9,7 @@ namespace NotebookAutomation.Core.Utils
     public class MarkdownNoteBuilder(ILogger? logger = null)
     {
         private readonly ILogger? _logger = logger;
-        private readonly YamlHelper _yamlHelper = new(logger);
+        private readonly YamlHelper _yamlHelper = new(logger ?? NullLogger.Instance);
 
         /// <summary>
         /// Builds a markdown note with only YAML frontmatter (no body).

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,7 +21,7 @@ public class AppConfigCoverageBoostTests
     [TestMethod]
     public void Constructor_WithUnderlyingConfiguration_LoadsSections()
     {
-        Dictionary<string, string> configDict = new()
+        Dictionary<string, string?> configDict = new()
         {
             {"paths:notebook_vault_fullpath_root", "/vault"},
             {"paths:onedrive_resources_basepath", "/base"},
@@ -92,9 +93,8 @@ public class AppConfigCoverageBoostTests
         IConfigurationSection section = appConfig.GetSection("paths");
         Assert.AreEqual("paths", section.Key);
         List<IConfigurationSection> children = [.. appConfig.GetChildren()];
-        Assert.IsTrue(children.Any(c => c.Key.Equals("Paths", StringComparison.OrdinalIgnoreCase)));
-        // With underlying config
-        Dictionary<string, string> configDict = new() { { "paths:logging_dir", "/logs" } };
+        Assert.IsTrue(children.Any(c => c.Key.Equals("Paths", StringComparison.OrdinalIgnoreCase)));        // With underlying config
+        Dictionary<string, string?> configDict = new() { { "paths:logging_dir", "/logs" } };
         IConfigurationRoot configuration = new ConfigurationBuilder().AddInMemoryCollection(configDict).Build();
         Mock<ILogger<AppConfig>> logger = new();
         AppConfig appConfig2 = new(configuration, logger.Object);
@@ -379,11 +379,11 @@ public class AppConfigTests
         }
     }        /// <summary>
              /// Tests configuration with underlying IConfiguration.
-             /// </summary>
-    [TestMethod]
+             /// </summary>    [TestMethod]
     public void WithUnderlyingConfiguration_ShouldUseUnderlyingValues()
-    {        // Arrange
-        Dictionary<string, string> configValues = new()
+    {
+        // Arrange
+        Dictionary<string, string?> configValues = new()
         {
             {"paths:notebook_vault_fullpath_root", "/config-vault"},
             {"paths:onedrive_resources_basepath", "/config-resources-base"},
@@ -474,7 +474,7 @@ public class AppConfigAdditionalTests
     [TestMethod]
     public void ExtractTenantIdFromAuthority_ShouldReturnExpectedResults()
     {
-        System.Reflection.MethodInfo method = typeof(AppConfig).GetMethod("ExtractTenantIdFromAuthority", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        System.Reflection.MethodInfo? method = typeof(AppConfig).GetMethod("ExtractTenantIdFromAuthority", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         Assert.IsNotNull(method);
         Assert.AreEqual("common", method.Invoke(null, ["https://login.microsoftonline.com/common"]));
         Assert.AreEqual("12345678-1234-1234-1234-123456789abc", method.Invoke(null, ["https://login.microsoftonline.com/12345678-1234-1234-1234-123456789abc"]));

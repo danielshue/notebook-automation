@@ -34,9 +34,9 @@ namespace NotebookAutomation.Core.Configuration
         /// <typeparam name="T">The type to create the logger for.</typeparam>
         /// <returns>An ILogger{T} configured for the specified type.</returns>
         ILogger<T> GetLogger<T>();        /// <summary>
-        /// Configures the logging builder with the appropriate providers.
-        /// </summary>
-        /// <param name="builder">The logging builder to configure.</param>
+                                          /// Configures the logging builder with the appropriate providers.
+                                          /// </summary>
+                                          /// <param name="builder">The logging builder to configure.</param>
         void ConfigureLogging(ILoggingBuilder builder);
 
         /// <summary>

@@ -88,8 +88,8 @@ namespace NotebookAutomation.Core.Configuration
         /// Gets the main logger instance used for general application logging.
         /// </summary>
         public ILogger Logger => EnsureInitialized()._logger!;        /// <summary>
-        /// Gets the specialized logger instance used for recording failed operations.
-        /// </summary>
+                                                                      /// Gets the specialized logger instance used for recording failed operations.
+                                                                      /// </summary>
         public ILogger FailedLogger => EnsureInitialized()._failedLogger!;
 
         /// <summary>
@@ -184,11 +184,11 @@ namespace NotebookAutomation.Core.Configuration
             // Configure the builder with our Serilog logger
             builder.AddSerilog(SerilogLogger, dispose: true);
         }        /// <summary>
-        /// Creates a configured Serilog logger for the application.
-        /// </summary>
-        /// <param name="loggingDir">Directory for log files.</param>
-        /// <param name="debug">Whether debug logging is enabled.</param>
-        /// <returns>A configured Serilog logger instance.</returns>
+                 /// Creates a configured Serilog logger for the application.
+                 /// </summary>
+                 /// <param name="loggingDir">Directory for log files.</param>
+                 /// <param name="debug">Whether debug logging is enabled.</param>
+                 /// <returns>A configured Serilog logger instance.</returns>
         private SerilogILogger CreateSerilogLogger(string loggingDir, bool debug)
         {
             try
@@ -196,8 +196,9 @@ namespace NotebookAutomation.Core.Configuration
                 // Ensure directory exists
                 if (!Directory.Exists(loggingDir))
                 {
-                    Directory.CreateDirectory(loggingDir);                }
-                
+                    Directory.CreateDirectory(loggingDir);
+                }
+
                 var appAssemblyName = GetAssemblyName();
                 var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;
                 // Console should only show warnings and errors, regardless of debug mode

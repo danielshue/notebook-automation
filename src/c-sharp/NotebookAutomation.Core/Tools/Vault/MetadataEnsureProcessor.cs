@@ -88,7 +88,8 @@ namespace NotebookAutomation.Core.Tools.Vault
                 {
                     _logger.LogDebugWithPath("No metadata changes needed for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
                     return false;
-                }                if (dryRun)
+                }
+                if (dryRun)
                 {
                     _logger.LogInformationWithPath("DRY RUN: Would update metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
                     LogMetadataChanges(originalMetadata, metadata, filePath);
@@ -390,11 +391,11 @@ namespace NotebookAutomation.Core.Tools.Vault
 
             return true;
         }        /// <summary>
-        /// Logs the changes made to metadata for debugging.
-        /// </summary>
-        /// <param name="original">Original metadata.</param>        
-        /// <param name="updated">Updated metadata.</param>
-        /// <param name="filePath">Optional file path for detailed logging.</param>
+                 /// Logs the changes made to metadata for debugging.
+                 /// </summary>
+                 /// <param name="original">Original metadata.</param>        
+                 /// <param name="updated">Updated metadata.</param>
+                 /// <param name="filePath">Optional file path for detailed logging.</param>
         private void LogMetadataChanges(Dictionary<string, object> original, Dictionary<string, object> updated, string? filePath = null)
         {
             var changes = new List<string>();
@@ -440,11 +441,11 @@ namespace NotebookAutomation.Core.Tools.Vault
             {
                 string fileContext = filePath != null ? $" for file {Path.GetFileName(filePath)}" : "";
                 string filePath_full = filePath != null ? $"{filePath}" : "unknown file";
-                
+
                 // Create detailed summary of changes for this file
                 var metadataSummary = new System.Text.StringBuilder();
                 metadataSummary.AppendLine($"--- Metadata changes for {filePath_full} ---");
-                
+
                 if (additions.Count > 0)
                 {
                     metadataSummary.AppendLine("  Fields to add:");
@@ -453,7 +454,7 @@ namespace NotebookAutomation.Core.Tools.Vault
                         metadataSummary.AppendLine($"    + {addition}");
                     }
                 }
-                
+
                 if (modifications.Count > 0)
                 {
                     metadataSummary.AppendLine("  Fields to modify:");
@@ -462,7 +463,7 @@ namespace NotebookAutomation.Core.Tools.Vault
                         metadataSummary.AppendLine($"    * {modification}");
                     }
                 }
-                
+
                 if (deletions.Count > 0)
                 {
                     metadataSummary.AppendLine("  Fields to delete:");
@@ -471,34 +472,34 @@ namespace NotebookAutomation.Core.Tools.Vault
                         metadataSummary.AppendLine($"    - {deletion}");
                     }
                 }                // Log the detailed changes at debug level for the log file
-                _logger.LogDebugFormatted("Metadata changes for file:\n{DetailedChanges}", 
+                _logger.LogDebugFormatted("Metadata changes for file:\n{DetailedChanges}",
                     metadataSummary.ToString());
-                
+
                 // Log a summary line at info level - elevated from debug so it appears in console with --verbose
-                _logger.LogInformationFormatted("Metadata change summary{FileContext}: +{Adds} ~{Modifies} -{Deletes}", 
+                _logger.LogInformationFormatted("Metadata change summary{FileContext}: +{Adds} ~{Modifies} -{Deletes}",
                     fileContext,
                     additions.Count,
                     modifications.Count,
                     deletions.Count);
-                
+
                 // Keep detailed key-value changes at debug level for log file
                 if (additions.Count > 0)
                 {
-                    _logger.LogDebugFormatted("ADD operations{FileContext}: {AddedFields}", 
+                    _logger.LogDebugFormatted("ADD operations{FileContext}: {AddedFields}",
                         fileContext,
                         string.Join(", ", additions));
                 }
-                
+
                 if (modifications.Count > 0)
                 {
-                    _logger.LogDebugFormatted("MODIFY operations{FileContext}: {ModifiedFields}", 
+                    _logger.LogDebugFormatted("MODIFY operations{FileContext}: {ModifiedFields}",
                         fileContext,
                         string.Join(", ", modifications));
                 }
-                
+
                 if (deletions.Count > 0)
                 {
-                    _logger.LogDebugFormatted("DELETE operations{FileContext}: {DeletedFields}", 
+                    _logger.LogDebugFormatted("DELETE operations{FileContext}: {DeletedFields}",
                         fileContext,
                         string.Join(", ", deletions));
                 }
