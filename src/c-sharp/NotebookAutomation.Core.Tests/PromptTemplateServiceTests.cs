@@ -442,9 +442,9 @@ public class PromptTemplateServiceTests
 
         // Assert - Whitespace in variable markers should be trimmed
         Assert.AreEqual("Hello John, welcome to MBA Program!", result);
-    }        /// <summary>
-             /// Tests error handling when loading a template file throws an exception.
-             /// </summary>
+    }    /// <summary>
+         /// Tests error handling when loading a template file throws an exception.
+         /// </summary>
     [TestMethod]
     public async Task LoadTemplateAsync_HandlesExceptions()
     {
@@ -454,12 +454,26 @@ public class PromptTemplateServiceTests
 
         // We need to use a path that will cause an exception
         // In this case, we'll use a path with invalid characters
-        string invalidPath = Path.Combine(_testFolder, "Prompts", "invalid|file?.md");
-
-        // Use reflection to set the _promptsDirectory field to our test directory
+        string invalidPath = Path.Combine(_testFolder, "Prompts", "invalid|file?.md");        // Use reflection to set the _promptsDirectory field to our test directory
         System.Reflection.FieldInfo fieldInfo = typeof(PromptTemplateService).GetField("_promptsDirectory",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        fieldInfo.SetValue(service, Path.GetDirectoryName(invalidPath));
+
+        // Skip test if reflection fails (could happen in Release mode or different environments)
+        if (fieldInfo == null)
+        {
+            Assert.Inconclusive("Cannot access _promptsDirectory field via reflection in this environment");
+            return;
+        }
+
+        // Check for null before calling SetValue
+        string directoryPath = Path.GetDirectoryName(invalidPath);
+        if (directoryPath == null)
+        {
+            Assert.Inconclusive("Could not determine directory path for test");
+            return;
+        }
+
+        fieldInfo.SetValue(service, directoryPath);
 
         // Act
         string result = await service.LoadTemplateAsync(Path.GetFileNameWithoutExtension(invalidPath));

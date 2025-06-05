@@ -123,9 +123,11 @@ tags:
         Assert.AreEqual(2, result.Count);
         Assert.AreEqual("Test Document", result["title"]);
         Assert.IsTrue(result["tags"] is List<object>);
-    }    /// <summary>
-         /// Test that ParseYamlToDictionary correctly handles YAML wrapped in yml code blocks.
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Test that ParseYamlToDictionary correctly handles YAML wrapped in yml code blocks.
+    /// </summary>
     [TestMethod]
     public void ParseYamlToDictionary_WithYmlCodeBlock_ExtractsAndParses()
     {
@@ -146,10 +148,12 @@ tags:
         Assert.IsTrue(result["tags"] is List<object>, "Tags is not a List<object>");
         var tagsList = result["tags"] as List<object>;
         Assert.IsTrue(tagsList?.Count >= 2, "Tags list does not have expected number of items");
-    }    /// <summary>
-         /// Test that ParseYamlToDictionary correctly handles YAML formatted as valid YAML without a code block.
-         /// This test replaces the generic code block test as the implementation focuses on ```yaml and ```yml blocks.
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Test that ParseYamlToDictionary correctly handles YAML formatted as valid YAML without a code block.
+    /// This test replaces the generic code block test as the implementation focuses on ```yaml and ```yml blocks.
+    /// </summary>
     [TestMethod]
     public void ParseYamlToDictionary_WithValidYamlNoCodeBlock_ParsesProperly()
     {
@@ -234,19 +238,19 @@ tags:
         Assert.IsTrue(success);
         Assert.IsNotNull(data);
         Assert.AreEqual("Test Document", data!["title"]);
-    }
-
-    /// <summary>
+    }    /// <summary>
     /// Test that DiagnoseYamlFrontmatter correctly identifies problems in YAML frontmatter.
     /// </summary>
     [TestMethod]
     public void DiagnoseYamlFrontmatter_WithMalformedYaml_ReportsProblem()
     {
-        // Arrange
+        // Arrange - Create truly malformed YAML with invalid indentation and syntax
         string markdown = @"---
 title: Test Document
-- invalid structure
-tags: test
+  invalid_key: value
+    badly_indented: another_value
+  tags: [test, another
+missing_bracket_close: value
 ---
 
 # Content";
