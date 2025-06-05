@@ -1,9 +1,5 @@
-﻿// -----------------------------------------------------------------------------
-// ILoggingService.cs
-// Interface for centralized logging service for the Notebook Automation system.
-// -----------------------------------------------------------------------------
+﻿namespace NotebookAutomation.Core.Configuration;
 
-namespace NotebookAutomation.Core.Configuration;
 /// <summary>
 /// Defines the contract for a centralized logging service for the notebook automation system.
 /// </summary>
@@ -30,10 +26,12 @@ public interface ILoggingService
     /// </summary>
     /// <typeparam name="T">The type to create the logger for.</typeparam>
     /// <returns>An ILogger{T} configured for the specified type.</returns>
-    ILogger<T> GetLogger<T>();        /// <summary>
-                                      /// Configures the logging builder with the appropriate providers.
-                                      /// </summary>
-                                      /// <param name="builder">The logging builder to configure.</param>
+    ILogger<T> GetLogger<T>();
+
+    /// <summary>
+    /// Configures the logging builder with the appropriate providers.
+    /// </summary>
+    /// <param name="builder">The logging builder to configure.</param>
     void ConfigureLogging(ILoggingBuilder builder);
 
     /// <summary>

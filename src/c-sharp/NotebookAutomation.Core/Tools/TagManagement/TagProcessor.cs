@@ -3,15 +3,13 @@
 namespace NotebookAutomation.Core.Tools.TagManagement;
 /// <summary>
 /// Processes tags in markdown files and handles tag management operations.
-/// 
-/// This class provides functionality for:
-/// - Adding nested tags based on frontmatter fields
-/// - Consolidating tags across files
-/// - Restructuring tag hierarchies
-/// - Cleaning tags from index files
-/// - Restructuring tags for consistency    /// - Adding example tags for demonstration/testing
-/// - Checking and enforcing metadata consistency
 /// </summary>
+/// <remarks>
+/// The <c>TagProcessor</c> class provides functionality for managing tags in markdown files,
+/// including adding nested tags, restructuring tag hierarchies, clearing tags from index files,
+/// and enforcing metadata consistency. It supports dry-run mode for testing changes without
+/// modifying files and verbose logging for detailed diagnostics.
+/// </remarks>
 public class TagProcessor
 {
     private readonly ILogger<TagProcessor> _logger;
@@ -31,14 +29,16 @@ public class TagProcessor
         { "TagsAdded", 0 },
         { "IndexFilesCleared", 0 },
         { "FilesWithErrors", 0 }
-    };        /// <summary>
-              /// Initializes a new instance of the TagProcessor.
-              /// </summary>
-              /// <param name="logger">Logger for general diagnostics.</param>
-              /// <param name="failedLogger">Logger for recording failed operations.</param>
-              /// <param name="yamlHelper">Helper for YAML processing.</param>
-              /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
-              /// <param name="verbose">Whether to provide verbose output.</param>
+    };
+
+    /// <summary>
+    /// Initializes a new instance of the TagProcessor.
+    /// </summary>
+    /// <param name="logger">Logger for general diagnostics.</param>
+    /// <param name="failedLogger">Logger for recording failed operations.</param>
+    /// <param name="yamlHelper">Helper for YAML processing.</param>
+    /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
+    /// <param name="verbose">Whether to provide verbose output.</param>
     public TagProcessor(
         ILogger<TagProcessor> logger,
         ILogger failedLogger,

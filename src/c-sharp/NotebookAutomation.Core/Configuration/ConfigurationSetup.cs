@@ -1,7 +1,15 @@
 ﻿namespace NotebookAutomation.Core.Configuration;
+
 /// <summary>
-/// Helper class to set up application configuration with various sources, including user secrets.
+/// Provides methods to set up application configuration with support for various sources,
+/// including JSON files, environment variables, and user secrets.
 /// </summary>
+/// <remarks>
+/// This class simplifies the process of building a configuration for the application,
+/// ensuring compatibility with different environments (e.g., development, production).
+/// It supports optional user secrets and config file paths, making it flexible for
+/// various deployment scenarios.
+/// </remarks>
 public static class ConfigurationSetup
 {
     /// <summary>

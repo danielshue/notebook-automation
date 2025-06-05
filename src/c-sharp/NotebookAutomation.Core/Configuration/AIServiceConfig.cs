@@ -1,31 +1,48 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace NotebookAutomation.Core.Configuration;    /// <summary>
-                                                    /// OpenAI API configuration section.
-                                                    /// </summary>
-                                                    /// <summary>
-                                                    /// AIServiceConfig supports multiple providers (OpenAI, Azure, Foundry).
-                                                    /// API keys are NOT stored in config files. Use environment variables or user-secrets:
-                                                    ///   - OpenAI:   OPENAI_API_KEY
-                                                    ///   - Azure:    AZURE_OPEN_AI_API_KEY
-                                                    ///   - Foundry:  FOUNDRY_API_KEY (if required)
-                                                    /// </summary>
+namespace NotebookAutomation.Core.Configuration;
+
+/// <summary>
+/// Represents the configuration for AI services, supporting multiple providers such as OpenAI, Azure, and Foundry.
+/// </summary>
+/// <remarks>
+/// API keys are not stored in configuration files. Use environment variables or user-secrets:
+/// <list type="bullet">
+/// <item><description>OpenAI: OPENAI_API_KEY</description></item>
+/// <item><description>Azure: AZURE_OPEN_AI_API_KEY</description></item>
+/// <item><description>Foundry: FOUNDRY_API_KEY</description></item>
+/// </list>
+/// </remarks>
 public class AIServiceConfig
 {
+    /// <summary>
+    /// Gets or sets the provider name (e.g., OpenAI, Azure, Foundry).
+    /// </summary>
     [JsonPropertyName("provider")]
     public string? Provider { get; set; }
 
+    /// <summary>
+    /// Gets or sets the configuration for OpenAI provider.
+    /// </summary>
     [JsonPropertyName("openai")]
     public OpenAiProviderConfig? OpenAI { get; set; }
 
+    /// <summary>
+    /// Gets or sets the configuration for Azure provider.
+    /// </summary>
     [JsonPropertyName("azure")]
     public AzureProviderConfig? Azure { get; set; }
 
+    /// <summary>
+    /// Gets or sets the configuration for Foundry provider.
+    /// </summary>
     [JsonPropertyName("foundry")]
-    public FoundryProviderConfig? Foundry { get; set; }        /// <summary>
-                                                               /// Returns the API key for the configured AI provider.
-                                                               /// </summary>
-                                                               /// <returns>The API key string, or null if not set.</returns>
+    public FoundryProviderConfig? Foundry { get; set; }
+
+    /// <summary>
+    /// Returns the API key for the configured AI provider.
+    /// </summary>
+    /// <returns>The API key string, or null if not set.</returns>
     public string? GetApiKey()
     {
         var providerType = Provider?.ToLowerInvariant() ?? "openai";
@@ -39,9 +56,11 @@ public class AIServiceConfig
     }
 
     /// <summary>
-    /// Convenience property to get the model for the active provider.
-    /// This allows direct access via indexer like appConfig["aiservice:Model"]
+    /// Gets the model for the active provider.
     /// </summary>
+    /// <remarks>
+    /// This allows direct access via indexer like appConfig["aiservice:Model"].
+    /// </remarks>
     [JsonIgnore]
     public string? Model
     {
@@ -59,36 +78,72 @@ public class AIServiceConfig
     }
 
     /// <summary>
-    /// Convenience property to get the API key for the active provider.
-    /// This allows direct access via indexer like appConfig["aiservice:api_key"]
+    /// Gets the API key for the active provider.
     /// </summary>
+    /// <remarks>
+    /// This allows direct access via indexer like appConfig["aiservice:api_key"].
+    /// </remarks>
     [JsonPropertyName("api_key")]
     [JsonIgnore]
     public string? ApiKey => GetApiKey();
 }
 
+/// <summary>
+/// Represents the configuration for the OpenAI provider.
+/// </summary>
 public class OpenAiProviderConfig
 {
+    /// <summary>
+    /// Gets or sets the endpoint URL for the OpenAI API.
+    /// </summary>
     [JsonPropertyName("endpoint")]
     public string? Endpoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets the model name for the OpenAI API.
+    /// </summary>
     [JsonPropertyName("model")]
     public string? Model { get; set; }
 }
 
+/// <summary>
+/// Represents the configuration for the Azure provider.
+/// </summary>
 public class AzureProviderConfig
 {
+    /// <summary>
+    /// Gets or sets the endpoint URL for the Azure OpenAI API.
+    /// </summary>
     [JsonPropertyName("endpoint")]
     public string? Endpoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets the deployment name for the Azure OpenAI API.
+    /// </summary>
     [JsonPropertyName("deployment")]
     public string? Deployment { get; set; }
+
+    /// <summary>
+    /// Gets or sets the model name for the Azure OpenAI API.
+    /// </summary>
     [JsonPropertyName("model")]
     public string? Model { get; set; }
 }
 
+/// <summary>
+/// Represents the configuration for the Foundry provider.
+/// </summary>
 public class FoundryProviderConfig
 {
+    /// <summary>
+    /// Gets or sets the endpoint URL for the Foundry API.
+    /// </summary>
     [JsonPropertyName("endpoint")]
     public string? Endpoint { get; set; }
+
+    /// <summary>
+    /// Gets or sets the model name for the Foundry API.
+    /// </summary>
     [JsonPropertyName("model")]
     public string? Model { get; set; }
 }

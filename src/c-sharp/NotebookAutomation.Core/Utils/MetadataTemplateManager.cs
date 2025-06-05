@@ -1,17 +1,21 @@
-﻿using System.Text.RegularExpressions;
-
-using NotebookAutomation.Core.Configuration;
+﻿using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Utils;
 /// <summary>
-/// Manages template loading and metadata from the metadata.yaml file.
+/// Manages loading, parsing, and application of metadata templates from the <c>metadata.yaml</c> file.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This class is responsible for loading and parsing the metadata.yaml file,
-/// which contains template definitions for various document types used in the notebook vault.
-/// It provides methods to get templates by type and manage template-related operations.
+/// Responsible for loading and parsing the <c>metadata.yaml</c> file, which contains template definitions for various document types used in the notebook vault.
+/// Provides methods to retrieve, fill, and apply templates to document metadata.
 /// </para>
+/// <example>
+/// <code>
+/// var manager = new MetadataTemplateManager(logger, appConfig, yamlHelper);
+/// var template = manager.GetTemplate("video-reference");
+/// var filled = manager.GetFilledTemplate("video-reference", new Dictionary&lt;string, string&gt; { ["title"] = "Sample" });
+/// </code>
+/// </example>
 /// </remarks>
 public partial class MetadataTemplateManager
 {
@@ -45,8 +49,12 @@ public partial class MetadataTemplateManager
     }
 
     /// <summary>
-    /// Loads all templates from the metadata.yaml file.
+    /// Loads all templates from the <c>metadata.yaml</c> file into memory.
     /// </summary>
+    /// <remarks>
+    /// Parses each YAML document in the file and stores templates by their <c>template-type</c> key.
+    /// Logs errors and warnings for missing files or parse failures.
+    /// </remarks>
     public void LoadTemplates()
     {
         try
@@ -108,8 +116,13 @@ public partial class MetadataTemplateManager
     /// <summary>
     /// Gets a template by its type.
     /// </summary>
-    /// <param name="templateType">The type of template to retrieve.</param>
-    /// <returns>The template dictionary, or null if not found.</returns>
+    /// <param name="templateType">The type of template to retrieve (e.g., <c>video-reference</c>).</param>
+    /// <returns>A copy of the template dictionary, or <c>null</c> if not found.</returns>
+    /// <example>
+    /// <code>
+    /// var template = manager.GetTemplate("pdf-reference");
+    /// </code>
+    /// </example>
     public Dictionary<string, object>? GetTemplate(string templateType)
     {
         if (_templates.TryGetValue(templateType, out var template))
@@ -122,7 +135,7 @@ public partial class MetadataTemplateManager
     }
 
     /// <summary>
-    /// Gets all available template types.
+    /// Gets all available template types loaded from <c>metadata.yaml</c>.
     /// </summary>
     /// <returns>A list of template type names.</returns>
     public List<string> GetTemplateTypes()
@@ -133,9 +146,14 @@ public partial class MetadataTemplateManager
     /// <summary>
     /// Gets a template by type and fills in provided values for placeholders.
     /// </summary>
-    /// <param name="templateType">The type of template to retrieve.</param>
-    /// <param name="values">Dictionary of values to fill in.</param>
-    /// <returns>A filled template dictionary, or null if template not found.</returns>
+    /// <param name="templateType">The type of template to retrieve (e.g., <c>video-reference</c>).</param>
+    /// <param name="values">A dictionary of values to fill in for template placeholders.</param>
+    /// <returns>A filled template dictionary, or <c>null</c> if the template is not found.</returns>
+    /// <example>
+    /// <code>
+    /// var filled = manager.GetFilledTemplate("video-reference", new Dictionary&lt;string, string&gt; { ["title"] = "Sample" });
+    /// </code>
+    /// </example>
     public Dictionary<string, object>? GetFilledTemplate(string templateType, Dictionary<string, string> values)
     {
         var template = GetTemplate(templateType);
@@ -152,12 +170,22 @@ public partial class MetadataTemplateManager
         }
 
         return template;
-    }        /// <summary>
-             /// Enhances document metadata with appropriate template fields based on type.
-             /// </summary>
-             /// <param name="metadata">The current document metadata.</param>
-             /// <param name="noteType">The type of document being processed.</param>
-             /// <returns>Enhanced metadata with template fields added.</returns>
+    }
+
+    /// <summary>
+    /// Enhances document metadata with appropriate template fields based on the note type.
+    /// </summary>
+    /// <param name="metadata">The current document metadata to enhance.</param>
+    /// <param name="noteType">The type of document being processed (e.g., <c>Video Note</c>, <c>PDF Note</c>).</param>
+    /// <returns>Enhanced metadata with template fields added and defaults filled in.</returns>
+    /// <remarks>
+    /// Fields from the template are added if missing or empty in the original metadata. Special handling is applied for certain fields.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var enhanced = manager.EnhanceMetadataWithTemplate(metadata, "Video Note");
+    /// </code>
+    /// </example>
     public Dictionary<string, object> EnhanceMetadataWithTemplate(Dictionary<string, object> metadata, string noteType)
     {
         // Determine appropriate template type based on noteType
@@ -286,10 +314,10 @@ public partial class MetadataTemplateManager
     }
 
     /// <summary>
-    /// Determines the appropriate template type based on the note type.
+    /// Determines the appropriate template type string based on the note type.
     /// </summary>
-    /// <param name="noteType">The type of document being processed.</param>
-    /// <returns>The corresponding template type.</returns>
+    /// <param name="noteType">The type of document being processed (e.g., <c>Video Note</c>).</param>
+    /// <returns>The corresponding template type string (e.g., <c>video-reference</c>).</returns>
     private static string DetermineTemplateType(string noteType)
     {
         return noteType switch
@@ -303,15 +331,18 @@ public partial class MetadataTemplateManager
     }
 
     /// <summary>
-    /// Splits a YAML file with multiple documents separated by --- into individual document strings.
+    /// Splits a YAML file with multiple documents separated by <c>---</c> into individual document strings.
     /// </summary>
     /// <param name="content">The full YAML file content.</param>
     /// <returns>An array of individual YAML document strings.</returns>
+    /// <remarks>
+    /// Uses a regular expression to split only at line beginnings for document separators.
+    /// </remarks>
     private static string[] SplitYamlDocuments(string content)
     {
         // Split on --- but only at line beginnings (not in the middle of a line)
-        // This regex matches the document separator pattern
-        var regex = MyRegex();
+        // This regex matches the YAML document separator pattern (--- at the start of a line)
+        var regex = YamlDocumentSeparatorRegex();
 
         // First, split the content into segments
         var segments = regex.Split(content);
@@ -322,6 +353,14 @@ public partial class MetadataTemplateManager
             .Select(s => s.Trim())];
     }
 
+    /// <summary>
+    /// Gets a compiled regex that matches YAML document separators (lines containing only '---').
+    /// </summary>
+    /// <remarks>
+    /// Used to split a YAML file into individual documents by matching lines that consist solely of '---',
+    /// which is the standard YAML document separator.
+    /// </remarks>
+    /// <returns>A compiled <see cref="Regex"/> for splitting YAML documents.</returns>
     [GeneratedRegex(@"^---\s*$", RegexOptions.Multiline)]
-    private static partial Regex MyRegex();
+    private static partial Regex YamlDocumentSeparatorRegex();
 }

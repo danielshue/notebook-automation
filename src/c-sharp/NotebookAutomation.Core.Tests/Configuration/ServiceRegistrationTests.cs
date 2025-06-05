@@ -20,10 +20,10 @@ public class ServiceRegistrationTests
         ServiceProvider provider = services.BuildServiceProvider();
 
         // Assert: Key services should be resolvable
-        Assert.IsNotNull(provider.GetService<NotebookAutomation.Core.Configuration.AppConfig>());
-        Assert.IsNotNull(provider.GetService<NotebookAutomation.Core.Configuration.LoggingService>());
-        Assert.IsNotNull(provider.GetService<NotebookAutomation.Core.Services.PromptTemplateService>());
-        Assert.IsNotNull(provider.GetService<NotebookAutomation.Core.Services.AISummarizer>());
+        Assert.IsNotNull(provider.GetService<AppConfig>());
+        Assert.IsNotNull(provider.GetService<LoggingService>());
+        Assert.IsNotNull(provider.GetService<Core.Services.PromptTemplateService>());
+        Assert.IsNotNull(provider.GetService<Core.Services.AISummarizer>());
     }
 
     [TestMethod]

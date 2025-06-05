@@ -5,7 +5,7 @@
 /// <remarks>
 /// <para>
 /// The FailedOperations class provides a centralized way to handle operations that fail
-/// during execution. It works in conjunction with specialized loggers created by the 
+/// during execution. It works in conjunction with specialized loggers created by the
 /// <see cref="LoggingService"/> to record detailed information about failures in a consistent format.
 /// </para>
 /// <para>
@@ -13,7 +13,7 @@
 /// for constants and static methods related to failed operations.
 /// </para>
 /// <para>
-/// When operations fail, they should be logged using a failed logger (created with 
+/// When operations fail, they should be logged using a failed logger (created with
 /// <see cref="LoggingService.CreateFailedLogger"/>) to ensure consistent tracking and reporting
 /// of failures throughout the application.
 /// </para>
@@ -52,7 +52,7 @@ public static class FailedOperations
     /// </para>
     /// </remarks>
     public static void RecordFailedFileOperation(
-        Microsoft.Extensions.Logging.ILogger failedLogger,
+        ILogger failedLogger,
         string filePath,
         string operationName,
         Exception exception)
@@ -84,7 +84,7 @@ public static class FailedOperations
     /// </para>
     /// </remarks>
     public static void RecordFailedFileOperation(
-        Microsoft.Extensions.Logging.ILogger failedLogger,
+        ILogger failedLogger,
         string filePath,
         string operationName,
         string errorMessage)

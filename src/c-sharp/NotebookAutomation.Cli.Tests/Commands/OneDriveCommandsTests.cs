@@ -44,7 +44,7 @@ public class OneDriveCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             // Missing both required args
             await parser.InvokeAsync("onedrive download");
         }
@@ -75,7 +75,7 @@ public class OneDriveCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             // Missing both required args
             await parser.InvokeAsync("onedrive upload");
         }
@@ -106,7 +106,7 @@ public class OneDriveCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             // Missing required arg
             await parser.InvokeAsync("onedrive search");
         }
@@ -137,7 +137,7 @@ public class OneDriveCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             // Missing required arg
             await parser.InvokeAsync("onedrive sync");
         }
@@ -168,7 +168,7 @@ public class OneDriveCommandsTests
         Console.SetOut(stringWriter);
         try
         {
-            var parser = new System.CommandLine.Parsing.Parser(rootCommand);
+            var parser = new Parser(rootCommand);
             await parser.InvokeAsync("onedrive list");
         }
         finally

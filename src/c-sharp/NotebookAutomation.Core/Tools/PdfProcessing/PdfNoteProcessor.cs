@@ -9,14 +9,35 @@ using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace NotebookAutomation.Core.Tools.PdfProcessing;
+
 /// <summary>
-/// Provides functionality for extracting text from PDF files and generating markdown notes.
+/// Provides functionality for extracting text and metadata from PDF files and generating markdown notes.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class with logger and AI summarizer.
+/// <para>
+/// This class integrates with the AI summarizer and YAML helper to process PDF files and generate
+/// markdown notes. It supports:
+/// <list type="bullet">
+/// <item><description>Text extraction from PDF pages</description></item>
+/// <item><description>Metadata extraction (e.g., title, author, keywords)</description></item>
+/// <item><description>Course structure detection (module and lesson information)</description></item>
+/// <item><description>Markdown note generation with YAML frontmatter</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The class logs detailed diagnostic information during processing and handles errors gracefully.
+/// </para>
 /// </remarks>
+/// <example>
+/// <code>
+/// var processor = new PdfNoteProcessor(logger, aiSummarizer);
+/// var (text, metadata) = await processor.ExtractTextAndMetadataAsync("example.pdf");
+/// Console.WriteLine(text);
+/// Console.WriteLine(metadata);
+/// </code>
+/// </example>
 /// <param name="logger">Logger for diagnostics.</param>
-/// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>    
+/// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
 public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer) : DocumentNoteProcessorBase(logger, aiSummarizer)
 {
     private readonly YamlHelper _yamlHelper = new(logger);
@@ -27,6 +48,28 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
     /// </summary>
     /// <param name="pdfPath">Path to the PDF file.</param>
     /// <returns>Tuple of extracted text and metadata dictionary.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method reads the PDF file, extracts text from its pages, and collects metadata such as:
+    /// <list type="bullet">
+    /// <item><description>Page count</description></item>
+    /// <item><description>Title, author, subject, and keywords</description></item>
+    /// <item><description>File size and creation date</description></item>
+    /// <item><description>Course structure information (module and lesson)</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// The extracted text and metadata are returned as a tuple. If the file does not exist or an error occurs,
+    /// the method logs the issue and returns empty results.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var (text, metadata) = await processor.ExtractTextAndMetadataAsync("example.pdf");
+    /// Console.WriteLine(text);
+    /// Console.WriteLine(metadata);
+    /// </code>
+    /// </example>
     public override async Task<(string Text, Dictionary<string, object> Metadata)> ExtractTextAndMetadataAsync(string pdfPath)
     {
         var metadata = new Dictionary<string, object>();
@@ -41,7 +84,7 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
             Logger.LogInformationWithPath("Starting PDF content extraction: {FilePath}", pdfPath);
             extractedText = await Task.Run(() =>
             {
-                var sb = new System.Text.StringBuilder();
+                var sb = new StringBuilder();
                 using (PdfDocument document = PdfDocument.Open(pdfPath))
                 {
                     Logger.LogDebugWithPath("Opened PDF document with {PageCount} pages", pdfPath, document.NumberOfPages);
@@ -70,7 +113,9 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
                         metadata["subject"] = info.Subject;
                     if (!string.IsNullOrWhiteSpace(info?.Keywords))
                         metadata["keywords"] = info.Keywords;
-                }                    // Extract module and lesson information
+                }
+
+                // Extract module and lesson information
                 Logger.LogDebugWithPath("Extracting course structure information", pdfPath);
                 var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
                 var courseLogger = loggerFactory.CreateLogger<CourseStructureExtractor>();
@@ -303,7 +348,7 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
     /// <summary>
     /// Generates a markdown note from extracted PDF text and metadata.
     /// </summary>
-    /// <param name="pdfText">The extracted PDF text.</param>        
+    /// <param name="pdfText">The extracted PDF text.</param>
     /// <param name="metadata">Optional metadata for the note.</param>
     /// <returns>The generated markdown content.</returns>
     public string GenerateMarkdownNote(string pdfText, Dictionary<string, object>? metadata = null)

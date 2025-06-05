@@ -1,20 +1,27 @@
-﻿using System.Text.RegularExpressions;
-
-using YamlDotNet.Serialization;
+﻿using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace NotebookAutomation.Core.Utils;
+
 /// <summary>
 /// Helper class for working with YAML content in markdown files.
-/// 
-/// This class provides functionality for parsing, modifying, and serializing YAML
-/// frontmatter found in markdown documents, with special consideration for
-/// preserving formatting and handling Obsidian-specific conventions.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Provides functionality for parsing, modifying, and serializing YAML frontmatter found in markdown documents, with special consideration for preserving formatting and handling Obsidian-specific conventions.
+/// </para>
+/// <example>
+/// <code>
+/// var helper = new YamlHelper(logger);
+/// var frontmatter = helper.ExtractFrontmatter(markdown);
+/// var dict = helper.ParseYamlToDictionary(frontmatter);
+/// </code>
+/// </example>
+/// </remarks>
 public partial class YamlHelper : IYamlHelper
 {
     private readonly ILogger _logger;
-    private readonly Regex _frontmatterRegex = MyRegex();
+    private readonly Regex _frontmatterRegex = FrontmatterBlockRegex();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="YamlHelper"/> class.
@@ -30,6 +37,14 @@ public partial class YamlHelper : IYamlHelper
     /// </summary>
     /// <param name="markdown">The markdown content to parse.</param>
     /// <returns>The YAML frontmatter as a string, or null if not found.</returns>
+    /// <remarks>
+    /// Returns only the YAML block delimited by <c>---</c> at the start and end of the file.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var yaml = helper.ExtractFrontmatter(markdown);
+    /// </code>
+    /// </example>
     public string? ExtractFrontmatter(string markdown)
     {
         if (string.IsNullOrEmpty(markdown))
@@ -78,6 +93,9 @@ public partial class YamlHelper : IYamlHelper
     /// </summary>
     /// <param name="yaml">The YAML content to parse.</param>
     /// <returns>The parsed object, or null if parsing failed.</returns>
+    /// <remarks>
+    /// Uses YamlDotNet for deserialization.
+    /// </remarks>
     public object? ParseYaml(string yaml)
     {
         if (string.IsNullOrEmpty(yaml))
@@ -98,11 +116,16 @@ public partial class YamlHelper : IYamlHelper
             _logger.LogError(ex, "Failed to parse YAML content");
             return null;
         }
-    }        /// <summary>
-             /// Parses YAML frontmatter to a dictionary.
-             /// </summary>
-             /// <param name="yaml">The YAML content to parse.</param>
-             /// <returns>The parsed dictionary, or an empty dictionary if parsing failed.</returns>        
+    }
+
+    /// <summary>
+    /// Parses YAML frontmatter to a dictionary.
+    /// </summary>
+    /// <param name="yaml">The YAML content to parse.</param>
+    /// <returns>The parsed dictionary, or an empty dictionary if parsing failed.</returns>
+    /// <remarks>
+    /// Handles common formatting issues and code block wrappers.
+    /// </remarks>
     public Dictionary<string, object> ParseYamlToDictionary(string yaml)
     {
         if (string.IsNullOrWhiteSpace(yaml))
@@ -215,6 +238,9 @@ public partial class YamlHelper : IYamlHelper
     /// <param name="markdown">The original markdown content.</param>
     /// <param name="frontmatter">The new frontmatter as a dictionary.</param>
     /// <returns>The updated markdown content.</returns>
+    /// <remarks>
+    /// Replaces or inserts the YAML frontmatter block at the top of the markdown file.
+    /// </remarks>
     public string UpdateFrontmatter(string markdown, Dictionary<string, object> frontmatter)
     {
         if (string.IsNullOrEmpty(markdown))
@@ -245,6 +271,9 @@ public partial class YamlHelper : IYamlHelper
     /// </summary>
     /// <param name="frontmatter">The frontmatter as a dictionary.</param>
     /// <returns>The created markdown content.</returns>
+    /// <remarks>
+    /// Produces a markdown string with only the YAML frontmatter block.
+    /// </remarks>
     public static string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter)
     {
         var serializer = new SerializerBuilder()
@@ -279,6 +308,9 @@ public partial class YamlHelper : IYamlHelper
     /// </summary>
     /// <param name="frontmatter">The frontmatter as a dictionary.</param>
     /// <returns>A set of tags found in the frontmatter.</returns>
+    /// <remarks>
+    /// Handles both string and array formats for tags.
+    /// </remarks>
     public static HashSet<string> ExtractTags(Dictionary<string, object> frontmatter)
     {
         var result = new HashSet<string>();
@@ -445,12 +477,14 @@ public partial class YamlHelper : IYamlHelper
             .Build();
 
         return serializer.Serialize(data);
-    }        /// <summary>
-             /// Replaces the frontmatter in a markdown document with new frontmatter.
-             /// </summary>
-             /// <param name="markdown">The markdown content.</param>
-             /// <param name="newFrontmatter">The new frontmatter as a dictionary.</param>
-             /// <returns>The updated markdown content.</returns>
+    }
+
+    /// <summary>
+    /// Replaces the frontmatter in a markdown document with new frontmatter.
+    /// </summary>
+    /// <param name="markdown">The markdown content.</param>
+    /// <param name="newFrontmatter">The new frontmatter as a dictionary.</param>
+    /// <returns>The updated markdown content.</returns>
     public string ReplaceFrontmatter(string markdown, Dictionary<string, object> newFrontmatter)
     {
         var yamlContent = SerializeToYaml(newFrontmatter);
@@ -486,6 +520,9 @@ public partial class YamlHelper : IYamlHelper
     /// </summary>
     /// <param name="markdown">The markdown content to diagnose.</param>
     /// <returns>A diagnostic result containing information about YAML parsing issues.</returns>
+    /// <remarks>
+    /// Returns a tuple indicating success, a message, and the parsed data (if successful).
+    /// </remarks>
     public (bool Success, string Message, Dictionary<string, object>? Data) DiagnoseYamlFrontmatter(string markdown)
     {
         try
@@ -550,6 +587,14 @@ public partial class YamlHelper : IYamlHelper
         }
     }
 
+    /// <summary>
+    /// Gets a compiled regex that matches YAML frontmatter blocks at the start of a markdown file.
+    /// </summary>
+    /// <remarks>
+    /// Matches a block delimited by '---' at the start and end, capturing the YAML content in between.
+    /// Used for extracting and manipulating YAML frontmatter in markdown documents.
+    /// </remarks>
+    /// <returns>A compiled <see cref="Regex"/> for matching YAML frontmatter blocks.</returns>
     [GeneratedRegex(@"^\s*---\s*[\r\n]+(.+?)[\r\n]+\s*---\s*[\r\n]+", RegexOptions.Compiled | RegexOptions.Singleline)]
-    private static partial Regex MyRegex();
-}    // Interface moved to IYamlHelper.cs
+    private static partial Regex FrontmatterBlockRegex();
+}

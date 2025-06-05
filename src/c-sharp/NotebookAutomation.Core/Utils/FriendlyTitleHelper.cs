@@ -1,10 +1,15 @@
 ﻿using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace NotebookAutomation.Core.Utils;
+
 /// <summary>
 /// Provides utility methods for generating friendly titles from file names or paths.
 /// </summary>
+/// <remarks>
+/// The <c>FriendlyTitleHelper</c> class offers static methods to convert file names or paths
+/// into human-friendly titles by removing numbers, structural words, and formatting the result
+/// in title case. It also handles special cases such as acronyms and Roman numerals.
+/// </remarks>
 public static partial class FriendlyTitleHelper
 {
     /// <summary>
@@ -16,13 +21,15 @@ public static partial class FriendlyTitleHelper
     {
         if (string.IsNullOrWhiteSpace(fileName)) return "Title";            // Remove leading numbers and separators (handle multiple consecutive patterns)
         string name = fileName;
-        while (MyRegex().IsMatch(name))
+        while (LeadingNumberPattern().IsMatch(name))
         {
-            name = MyRegex().Replace(name, "");
+            name = LeadingNumberPattern().Replace(name, "");
         }
 
         // Replace dashes/underscores with spaces
-        name = MyRegex1().Replace(name, " ");            // Remove common structural words
+        name = SeparatorPattern().Replace(name, " ");
+
+        // Remove common structural words
         string[] wordsToRemove = [
             @"\blesson\b", @"\blessons\b", @"\bmodule\b", @"\bmodules\b",
             @"\bcourse\b", @"\bcourses\b",
@@ -32,7 +39,7 @@ public static partial class FriendlyTitleHelper
         name = Regex.Replace(name, pattern, " ", RegexOptions.IgnoreCase);
 
         // Clean up whitespace
-        name = MyRegex2().Replace(name, " ").Trim();
+        name = WhitespacePattern().Replace(name, " ").Trim();
 
         // Use fallback for short titles
         if (name.Length < 3)
@@ -42,7 +49,7 @@ public static partial class FriendlyTitleHelper
         string titleCased = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name);
 
         // Fix Roman numerals ("Ii" to "II")
-        titleCased = MyRegex3().Replace(titleCased, "II");
+        titleCased = RomanNumeralIIPattern().Replace(titleCased, "II");
 
         // Fix known acronyms to all caps
         string[] knownAcronyms = ["CVP", "ROI", "KPI", "MBA", "CEO", "CFO", "COO", "CTO", "CIO", "CMO"];
@@ -61,12 +68,31 @@ public static partial class FriendlyTitleHelper
         return titleCased;
     }
 
+    /// <summary>
+    /// Matches leading numbers followed by one or more separators (underscore, dash, or whitespace) at the start of a string.
+    /// Example: "01-Introduction" or "12_Module".
+    /// </summary>
     [GeneratedRegex(@"^[0-9]+([_\-\s]+)", RegexOptions.IgnoreCase, "en-US")]
-    private static partial Regex MyRegex();
+    private static partial Regex LeadingNumberPattern();
+
+    /// <summary>
+    /// Matches one or more separator characters (underscore or dash) anywhere in the string.
+    /// Example: "Lesson_One-Two".
+    /// </summary>
     [GeneratedRegex("[_\\-]+")]
-    private static partial Regex MyRegex1();
+    private static partial Regex SeparatorPattern();
+
+    /// <summary>
+    /// Matches one or more whitespace characters (spaces, tabs, etc.).
+    /// Used to normalize and trim whitespace in titles.
+    /// </summary>
     [GeneratedRegex("\\s+")]
-    private static partial Regex MyRegex2();
+    private static partial Regex WhitespacePattern();
+
+    /// <summary>
+    /// Matches the word "Ii" as a standalone word (case-sensitive by default).
+    /// Used to identify and replace Roman numeral II in titles.
+    /// </summary>
     [GeneratedRegex(@"\bIi\b")]
-    private static partial Regex MyRegex3();
+    private static partial Regex RomanNumeralIIPattern();
 }

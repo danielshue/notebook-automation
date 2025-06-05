@@ -4,18 +4,47 @@ using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Cli.Commands;
+
 /// <summary>
 /// Provides CLI commands for managing application configuration.
-/// 
-/// This class registers the 'config' command group, including subcommands for
-/// displaying and updating configuration values in the Notebook Automation CLI.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This class registers the 'config' command group, including subcommands for:
+/// <list type="bullet">
+/// <item><description>Displaying available configuration keys</description></item>
+/// <item><description>Updating configuration values</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The configuration keys include paths, Microsoft Graph API settings, video extensions,
+/// and AI service provider settings.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// var rootCommand = new RootCommand();
+/// ConfigCommands.Register(rootCommand);
+/// rootCommand.Invoke("config list");
+/// </code>
+/// </example>
 internal class ConfigCommands
 {
     /// <summary>
     /// Prints the available configuration keys that can be updated.
     /// </summary>
     /// <param name="context">The invocation context for output.</param>
+    /// <remarks>
+    /// <para>
+    /// This method displays a list of configuration keys that can be updated via the CLI.
+    /// The keys are grouped by category, such as paths, Microsoft Graph API settings, and AI service settings.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// ConfigCommands.PrintAvailableConfigKeys(context);
+    /// </code>
+    /// </example>
     public static void PrintAvailableConfigKeys(InvocationContext context)
     {
         context.Console.WriteLine("Available configuration keys:");
@@ -101,7 +130,7 @@ internal class ConfigCommands
                 var appConfig = AppConfig.LoadFromJsonFile(configFile);
                 PrintConfigFormatted(appConfig);
             }
-            catch (System.IO.FileNotFoundException ex)
+            catch (FileNotFoundException ex)
             {
                 AnsiConsoleHelper.WriteError($"Configuration file not found: {ex.FileName ?? ex.Message}");
             }
@@ -247,7 +276,7 @@ internal class ConfigCommands
         // Initialize dependency injection if needed
         if (configPath != null)
         {
-            if (!System.IO.File.Exists(configPath))
+            if (!File.Exists(configPath))
             {
                 AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
                 return;
@@ -319,7 +348,7 @@ internal class ConfigCommands
             switch (provider)
             {
                 case "openai":
-                    aiService.OpenAI ??= new NotebookAutomation.Core.Configuration.OpenAiProviderConfig();
+                    aiService.OpenAI ??= new OpenAiProviderConfig();
                     switch (prop)
                     {
                         case "model": aiService.OpenAI.Model = value; return true;
@@ -327,7 +356,7 @@ internal class ConfigCommands
                     }
                     break;
                 case "azure":
-                    aiService.Azure ??= new NotebookAutomation.Core.Configuration.AzureProviderConfig();
+                    aiService.Azure ??= new AzureProviderConfig();
                     switch (prop)
                     {
                         case "model": aiService.Azure.Model = value; return true;
@@ -336,7 +365,7 @@ internal class ConfigCommands
                     }
                     break;
                 case "foundry":
-                    aiService.Foundry ??= new NotebookAutomation.Core.Configuration.FoundryProviderConfig();
+                    aiService.Foundry ??= new FoundryProviderConfig();
                     switch (prop)
                     {
                         case "model": aiService.Foundry.Model = value; return true;

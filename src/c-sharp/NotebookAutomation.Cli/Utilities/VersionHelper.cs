@@ -2,15 +2,21 @@
 using System.Runtime.InteropServices;
 
 namespace NotebookAutomation.Cli.Utilities;
+
 /// <summary>
 /// Provides version-related utility functions for the application.
 /// </summary>
+/// <remarks>
+/// This class includes methods for retrieving detailed version information, assembly paths,
+/// build dates, and linker timestamps.
+/// </remarks>
 public static class VersionHelper
 {
     /// <summary>
     /// Gets detailed version information about the application.
     /// </summary>
-    /// <returns>A dictionary containing version information.</returns>
+    /// <returns>A dictionary containing version information, including assembly version,
+    /// runtime details, and build date.</returns>
     public static Dictionary<string, string> GetVersionInfo()
     {
         var versionInfo = new Dictionary<string, string>();
@@ -62,6 +68,7 @@ public static class VersionHelper
     /// <summary>
     /// Gets the informational version from assembly attributes.
     /// </summary>
+    /// <returns>The informational version string, or "Unknown" if not available.</returns>
     private static string GetInformationalVersion()
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
@@ -116,6 +123,9 @@ public static class VersionHelper
     /// </summary>
     /// <param name="filePath">The file path of the assembly.</param>
     /// <returns>The build timestamp as a DateTime.</returns>
+    /// <remarks>
+    /// The PE timestamp is the number of seconds since January 1, 1970 (Unix epoch).
+    /// </remarks>
     public static DateTime GetLinkerTimestamp(string filePath)
     {
         try

@@ -4,10 +4,32 @@ using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Services;
 /// <summary>
-/// Loads prompt templates and performs variable substitution.
-/// Handles different template types (chunk summary, final summary) and
-/// supports dynamic prompt file loading from prompts directory.
-/// </summary>    
+/// Service for loading prompt templates and performing variable substitution.
+/// Handles different template types (e.g., chunk summary, final summary) and supports dynamic prompt file loading.
+/// </summary>
+/// <remarks>
+/// <para>
+/// This service provides functionality for:
+/// <list type="bullet">
+/// <item><description>Loading prompt templates from a configured directory</description></item>
+/// <item><description>Substituting variables in templates</description></item>
+/// <item><description>Handling default templates for chunk and final summaries</description></item>
+/// <item><description>Dynamic initialization of the prompts directory</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The service integrates with application configuration to determine the prompts directory and provides
+/// fallback mechanisms to locate the directory in common project structures.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// var promptService = new PromptTemplateService(logger, config);
+/// var template = await promptService.LoadTemplateAsync("welcome_message");
+/// var prompt = promptService.SubstituteVariables(template, new Dictionary&lt;string, string&gt; { { "name", "John" } });
+/// Console.WriteLine(prompt);
+/// </code>
+/// </example>
 public partial class PromptTemplateService : IPromptService
 {
     private readonly ILogger<PromptTemplateService> _logger;
@@ -20,10 +42,20 @@ public partial class PromptTemplateService : IPromptService
     public static string DefaultFinalPrompt { get; } = "You are an educational content summarizer for MBA course materials. Your task is to synthesize multiple AI-generated summaries of content into a single, cohesive summary. You will receive YAML frontmatter below as placeholder that contains existing metadata - DO NOT modify this existing frontmatter structure except for tags.";
 
     /// <summary>
-    /// Initializes a new instance of the PromptTemplateService class with config.
+    /// Initializes a new instance of the <see cref="PromptTemplateService"/> class.
     /// </summary>
-    /// <param name="logge">The logger to use for logging.</param>
+    /// <param name="logger">The logger to use for logging.</param>
     /// <param name="config">The application configuration.</param>
+    /// <remarks>
+    /// <para>
+    /// This constructor initializes the service and sets up the prompts directory using the provided configuration.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var promptService = new PromptTemplateService(logger, config);
+    /// </code>
+    /// </example>
     public PromptTemplateService(ILogger<PromptTemplateService> logger, Configuration.AppConfig config)
     {
         _logger = logger;
@@ -34,6 +66,26 @@ public partial class PromptTemplateService : IPromptService
     /// Initializes the prompts directory using the configured path or searching in common locations.
     /// </summary>
     /// <param name="config">Optional application configuration.</param>
+    /// <remarks>
+    /// <para>
+    /// This method attempts to locate the prompts directory using the following strategies:
+    /// <list type="number">
+    /// <item><description>Configured path from application settings</description></item>
+    /// <item><description>Output directory of the application</description></item>
+    /// <item><description>Core project directory</description></item>
+    /// <item><description>Repository root directory</description></item>
+    /// <item><description>Parent repository root directory</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// If none of these locations contain the prompts directory, a warning is logged.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// promptService.InitializePromptsDirectory(config);
+    /// </code>
+    /// </example>
     private void InitializePromptsDirectory(Configuration.AppConfig config)
     {
         // First try to get the prompts directory from configuration if provided
@@ -80,7 +132,7 @@ public partial class PromptTemplateService : IPromptService
             return;
         }
 
-        // Try to find the repository root 
+        // Try to find the repository root
         string repoRoot = Path.GetFullPath(Path.Combine(baseDirectory, "../../../../.."));
         string rootPromptsDir = Path.Combine(repoRoot, "Prompts");
 
@@ -118,9 +170,8 @@ public partial class PromptTemplateService : IPromptService
     /// <param name="templatePath">Path to the prompt template file.</param>
     /// <param name="variables">Dictionary of variable names and values.</param>
     /// <returns>Prompt string with variables substituted.</returns>
-    public virtual async Task<string> LoadAndSubstituteAsync(string templatePath, Dictionary<string, string> variables)
+    public virtual async Task<string> LoadAndSubstituteAsync(string templatePath, Dictionary<string, string> substitutionValues)
     {
-
         if (!File.Exists(templatePath))
         {
             _logger.LogErrorWithPath(templatePath, "Prompt template not found");
@@ -128,7 +179,7 @@ public partial class PromptTemplateService : IPromptService
         }
 
         string template = await File.ReadAllTextAsync(templatePath);
-        string result = SubstituteVariables(template, variables);
+        string result = SubstituteVariables(template, substitutionValues);
         return result;
     }
 
@@ -138,17 +189,17 @@ public partial class PromptTemplateService : IPromptService
     /// <param name="template">The template string with placeholders.</param>
     /// <param name="variables">Dictionary of variable names and values.</param>
     /// <returns>The template with variables substituted.</returns>
-    public string SubstituteVariables(string template, Dictionary<string, string>? variables)
+    public string SubstituteVariables(string template, Dictionary<string, string>? substitutionValues)
     {
-        if (variables == null || string.IsNullOrEmpty(template))
+        if (substitutionValues == null || string.IsNullOrEmpty(template))
         {
             return template;
         }
 
-        return MyRegex().Replace(template, match =>
+        return TemplateVariableRegex().Replace(template, match =>
         {
             var key = match.Groups[1].Value.Trim();
-            return variables.TryGetValue(key, out var value) ? value : match.Value;
+            return substitutionValues.TryGetValue(key, out var value) ? value : match.Value;
         });
     }
 
@@ -158,10 +209,10 @@ public partial class PromptTemplateService : IPromptService
     /// <param name="templateName">Name of the template to load, without file extension.</param>
     /// <param name="variables">Dictionary of variables to substitute.</param>
     /// <returns>The prompt with variables substituted.</returns>
-    public async Task<string> GetPromptAsync(string templateName, Dictionary<string, string>? variables)
+    public async Task<string> GetPromptAsync(string templateName, Dictionary<string, string>? substitutionValues)
     {
         string template = await LoadTemplateAsync(templateName);
-        return SubstituteVariables(template, variables);
+        return SubstituteVariables(template, substitutionValues);
     }
 
     /// <summary>
@@ -198,11 +249,13 @@ public partial class PromptTemplateService : IPromptService
             _logger.LogErrorWithPath(templateName, $"Error loading template: {templateName}. Exception: {ex.Message}");
             return GetDefaultTemplate(templateName);
         }
-    }        /// <summary>
-             /// Gets a default template based on the template name.
-             /// </summary>
-             /// <param name="templateName">Name of the template.</param>
-             /// <returns>The default template content.</returns>
+    }
+
+    /// <summary>
+    /// Gets a default template based on the template name.
+    /// </summary>
+    /// <param name="templateName">Name of the template.</param>
+    /// <returns>The default template content.</returns>
     private string GetDefaultTemplate(string templateName)
     {
         _logger.LogWarningWithPath(templateName, "Using default template for");
@@ -221,11 +274,20 @@ public partial class PromptTemplateService : IPromptService
     /// <param name="template">The template string with placeholders.</param>
     /// <param name="variables">Dictionary of variable names and values.</param>
     /// <returns>The template with variables substituted.</returns>
-    public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables)
+    public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? substitutionValues)
     {
-        return Task.FromResult(SubstituteVariables(template, variables));
+        return Task.FromResult(SubstituteVariables(template, substitutionValues));
     }
 
+    /// <summary>
+    /// Generates a regular expression to match template variables enclosed in double curly braces.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="Regex"/> instance that matches placeholders in the format {{variable_name}}.
+    /// </returns>
+    /// <remarks>
+    /// This method uses the <see cref="GeneratedRegexAttribute"/> to define a compile-time constant regex.
+    /// </remarks>
     [GeneratedRegex("{{(.*?)}}")]
-    private static partial Regex MyRegex();
+    private static partial Regex TemplateVariableRegex();
 }

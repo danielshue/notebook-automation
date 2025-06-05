@@ -324,7 +324,7 @@ public class VideoNoteProcessorTranscriptTests
         File.WriteAllText(videoPath, "Simulated video content");
 
         string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test_video.txt", "Sample transcript content");            // Act
-        System.Collections.Generic.Dictionary<string, object> metadata = await _processor.ExtractMetadataAsync(videoPath);
+        Dictionary<string, object> metadata = await _processor.ExtractMetadataAsync(videoPath);
 
         // Use reflection to call the private FindTranscriptPath method
         System.Reflection.MethodInfo? methodInfo = typeof(VideoNoteProcessor).GetMethod("FindTranscriptPath",

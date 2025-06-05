@@ -3,8 +3,28 @@ using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Cli.Commands;
 /// <summary>
-/// Provides static helpers for config validation for feature-specific requirements.
+/// Provides static helpers for validating configuration values for feature-specific requirements.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This class includes methods for validating required paths in the application configuration.
+/// It ensures that all necessary configuration keys are present and logs missing keys.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// var config = new AppConfig();
+/// var isValid = ConfigValidation.RequireAllPaths(config, out var missingKeys);
+/// if (!isValid)
+/// {
+///     Console.WriteLine("Missing keys:");
+///     foreach (var key in missingKeys)
+///     {
+///         Console.WriteLine(key);
+///     }
+/// }
+/// </code>
+/// </example>
 public static class ConfigValidation
 {
     private static readonly string[] _collection = [
@@ -21,12 +41,24 @@ public static class ConfigValidation
     /// <param name="config">The AppConfig instance to validate.</param>
     /// <param name="missingKeys">A list of missing required path keys, if any.</param>
     /// <returns>True if all required paths are present; otherwise, false.</returns>
-    /// <summary>
-    /// Validates that all required path values are present in the configuration.
-    /// </summary>
-    /// <param name="config">The AppConfig instance to validate.</param>
-    /// <param name="missingKeys">A list of missing required path keys, if any.</param>
-    /// <returns>True if all required paths are present; otherwise, false.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method checks the configuration for required path keys, such as:
+    /// <list type="bullet">
+    /// <item><description>paths.onedrive_fullpath_root</description></item>
+    /// <item><description>paths.notebook_vault_fullpath_root</description></item>
+    /// <item><description>paths.metadata_file</description></item>
+    /// <item><description>paths.onedrive_resources_basepath</description></item>
+    /// <item><description>paths.logging_dir</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var config = new AppConfig();
+    /// var isValid = ConfigValidation.RequireAllPaths(config, out var missingKeys);
+    /// </code>
+    /// </example>
     public static bool RequireAllPaths(AppConfig config, out List<string> missingKeys)
     {
         missingKeys = [];

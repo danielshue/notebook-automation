@@ -7,23 +7,22 @@ using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace NotebookAutomation.Core.Tools.VideoProcessing;
+
 /// <summary>
-/// Represents a processor for handling video files to extract metadata, generate AI-powered summaries, 
+/// Represents a processor for handling video files to extract metadata, generate AI-powered summaries,
 /// and create markdown notes for knowledge management systems.
 /// </summary>
 /// <remarks>
-/// <para>
-/// The <see cref="VideoNoteProcessor"/> class provides functionality for processing video files, 
-/// including extracting metadata, loading transcripts, generating summaries, and producing markdown notes.
-/// </para>
-/// <para>
-/// It integrates with external services like OneDrive for share link generation and uses AI summarization 
-/// for creating intelligent summaries of video content.
-/// </para>    
-/// <para>
-/// This class is designed to work with various video formats and supports hierarchical metadata detection 
-/// based on file paths.
-/// </para>
+/// The <c>VideoNoteProcessor</c> class provides functionality for processing video files, including:
+/// <list type="bullet">
+///   <item><description>Extracting metadata and transcripts from video files</description></item>
+///   <item><description>Generating AI-powered summaries using external services</description></item>
+///   <item><description>Creating markdown notes with YAML frontmatter for knowledge management</description></item>
+///   <item><description>Integrating with OneDrive for share link generation</description></item>
+///   <item><description>Supporting hierarchical metadata detection based on file paths</description></item>
+/// </list>
+/// This class is designed to work with various video formats and supports extensibility for additional
+/// metadata management and logging services.
 /// </remarks>
 public class VideoNoteProcessor : DocumentNoteProcessorBase
 {
@@ -129,9 +128,8 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 { "onedrive-shared-link", string.Empty }, // Will be populated by OneDrive service if available
                 { "onedrive_fullpath_file_reference", Path.GetFullPath(videoPath) }, // Full path to the video
                 { "transcript", string.Empty } // Will be populated if transcript file is found
-            };            // Extract module and lesson from directory structure
-
-
+            };
+        // Extract module and lesson from directory structure
         var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
         var courseLogger = loggerFactory.CreateLogger<CourseStructureExtractor>();
         var courseStructureExtractor = new CourseStructureExtractor(courseLogger);
@@ -140,7 +138,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         // Extract file creation date but exclude unwanted metadata fields
         try
         {
-            var fileInfo = new FileInfo(videoPath);                // Date fields are now excluded per requirements
+            var fileInfo = new FileInfo(videoPath);
+
+            // Date fields are now excluded per requirements
             if (fileInfo.Exists)
             {
                 // Add the file size in a human-readable format
@@ -436,7 +436,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// The note is generated using the <see cref="MarkdownNoteBuilder"/> utility and follows
     /// the structure expected by Obsidian or similar markdown-based knowledge management systems.
     /// </para>
-    /// </remarks>        
+    /// </remarks>
     /// <summary>
     /// Generates a markdown note from the provided text and metadata.
     /// </summary>
@@ -944,7 +944,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     ///     "path/to/lecture.mp4",
     ///     "sk-yourapikeyhere",
     ///     "video_summary_prompt.md");
-    /// 
+    ///
     /// // Save the generated note
     /// File.WriteAllText("lecture_notes.md", markdownNote);
     /// </code>
@@ -985,7 +985,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     ///     "path/to/lecture.mp4",
     ///     "sk-yourapikeyhere",
     ///     "video_summary_prompt.md");
-    /// 
+    ///
     /// // Save the generated note
     /// File.WriteAllText("lecture_notes.md", markdownNote);
     /// </code>

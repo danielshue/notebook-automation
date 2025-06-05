@@ -1,52 +1,60 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\NotebookAutomation.Core\NotebookAutomation.Core.csproj" />
-  </ItemGroup><ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.5" />
-    <PackageReference Include="Spectre.Console" Version="0.50.0" />
-    <PackageReference Include="Spectre.Console.Cli" Version="0.50.0" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-  </ItemGroup>  <PropertyGroup>    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
-    <AssemblyName>NotebookAutomation</AssemblyName>
-    <UserSecretsId>30391e52-b669-419b-a859-fbd67b3c090b</UserSecretsId>
-    <GenerateDocumentationFile>False</GenerateDocumentationFile>    <PublishAot>False</PublishAot>
-    <Copyright>Copyright 2025</Copyright>
-    <!-- PublishSingleFile and SelfContained should only be set during publish operations -->
-    <!-- These properties cause build issues when set during regular builds -->
-    <!-- Make assembly version info available as C# constants -->
-    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
-    <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <IsPublishable>True</IsPublishable>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <IsPublishable>True</IsPublishable>
-  </PropertyGroup>
-
-  <!-- Copy prompts from repository root and Core project if they exist -->
-  <Target Name="CopyPrompts" BeforeTargets="Build">
-    <!-- Copy prompts from Core project -->
     <ItemGroup>
-      <CorePromptFiles Include="$(MSBuildThisFileDirectory)..\NotebookAutomation.Core\Prompts\*.md" />
+        <ProjectReference Include="..\NotebookAutomation.Core\NotebookAutomation.Core.csproj" />
     </ItemGroup>
-    <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\" SkipUnchangedFiles="true" />
-    
-    <!-- Copy prompts from repository root -->
     <ItemGroup>
-      <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\Prompts\*.md" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.5" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.5" />
+        <PackageReference Include="Spectre.Console" Version="0.50.0" />
+        <PackageReference Include="Spectre.Console.Cli" Version="0.50.0" />
+        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     </ItemGroup>
-    <Copy SourceFiles="@(RepoPromptFiles)" DestinationFolder="$(OutDir)Prompts\" SkipUnchangedFiles="true" />
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
+        <AssemblyName>NotebookAutomation</AssemblyName>
+        <UserSecretsId>30391e52-b669-419b-a859-fbd67b3c090b</UserSecretsId>
+        <GenerateDocumentationFile>False</GenerateDocumentationFile>
+        <PublishAot>False</PublishAot>
+        <Copyright>Copyright 2025</Copyright>
+        <!-- PublishSingleFile and SelfContained should only be set during publish operations -->
+        <!-- These properties cause build issues when set during regular builds -->
+        <!-- Make assembly version info available as C# constants -->
+        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+        <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
+        <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <IsPublishable>True</IsPublishable>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <IsPublishable>True</IsPublishable>
+    </PropertyGroup>
 
-    <!-- Log info about prompt files -->
-    <Message Text="Copying prompt files to output directory: $(OutDir)Prompts\" Importance="high" />
-  </Target>
+    <!-- Copy prompts from repository root and Core project if they exist -->
+    <Target Name="CopyPrompts" BeforeTargets="Build">
+        <!-- Copy prompts from Core project -->
+        <ItemGroup>
+            <CorePromptFiles
+                Include="$(MSBuildThisFileDirectory)..\NotebookAutomation.Core\Prompts\*.md" />
+        </ItemGroup>
+        <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\"
+            SkipUnchangedFiles="true" />
+
+        <!-- Copy prompts from repository root -->
+        <ItemGroup>
+            <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\Prompts\*.md" />
+        </ItemGroup>
+        <Copy SourceFiles="@(RepoPromptFiles)" DestinationFolder="$(OutDir)Prompts\"
+            SkipUnchangedFiles="true" />
+
+        <!-- Log info about prompt files -->
+        <Message Text="Copying prompt files to output directory: $(OutDir)Prompts\"
+            Importance="high" />
+    </Target>
 
 </Project>

@@ -1,4 +1,5 @@
 ﻿namespace NotebookAutomation.Core.Models;
+
 /// <summary>
 /// Represents the current processing stage of a document
 /// </summary>

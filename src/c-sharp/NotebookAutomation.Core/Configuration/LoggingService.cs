@@ -19,36 +19,32 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 using SerilogILogger = Serilog.ILogger;
 
 namespace NotebookAutomation.Core.Configuration;
+
 /// <summary>
 /// Provides centralized logging capabilities for the notebook automation system.
 /// </summary>
 /// <remarks>
 /// <para>
-/// The LoggingService class provides factory methods for creating appropriately configured
-/// ILogger instances for different parts of the application. It supports creating both standard
-/// loggers and specialized "failed" loggers that record operation failures in a dedicated format.
+/// The LoggingService class offers a robust logging infrastructure for the application,
+/// supporting both console and file-based logging. It provides factory methods for creating
+/// loggers tailored to specific application needs, including general-purpose loggers and
+/// specialized loggers for failed operations.
 /// </para>
 /// <para>
-/// This service configures console logging with colorization for better visibility of log levels,
-/// and can also be configured to write to log files when needed.
-/// </para>
-/// <para>
-/// The logging system follows standard logging levels:
+/// Key features include:
 /// <list type="bullet">
-///   <item><description>Trace: Detailed diagnostic information</description></item>
-///   <item><description>Debug: Diagnostic information useful during development</description></item>
-///   <item><description>Information: General information about application flow</description></item>
-///   <item><description>Warning: Non-critical issues that might need attention</description></item>
-///   <item><description>Error: Errors that don't stop the application but impair functionality</description></item>
-///   <item><description>Critical: Critical errors that might lead to application failure</description></item>
-/// </list>    
+///   <item><description>Support for Serilog-based logging with configurable levels</description></item>
+///   <item><description>Thread-safe initialization of logging resources</description></item>
+///   <item><description>Fallback mechanisms for console logging in case of initialization failures</description></item>
+///   <item><description>Integration with Microsoft.Extensions.Logging for typed loggers</description></item>
+/// </list>
 /// </para>
-/// </remarks>    
+/// </remarks>
 /// <remarks>
 /// Initializes a new instance of the LoggingService class with a logging directory.
 /// This constructor is used for early initialization before AppConfig is available.
 /// </remarks>
-/// <param name="loggingDir">The directory where log files should be stored.</param>       
+/// <param name="loggingDir">The directory where log files should be stored.</param>
 /// <param name="debug">Whether debug mode is enabled.</param>
 public class LoggingService(string loggingDir, bool debug = false) : ILoggingService
 {        // Core properties for logging configuration
@@ -87,9 +83,11 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// <summary>
     /// Gets the main logger instance used for general application logging.
     /// </summary>
-    public ILogger Logger => EnsureInitialized()._logger!;        /// <summary>
-                                                                  /// Gets the specialized logger instance used for recording failed operations.
-                                                                  /// </summary>
+    public ILogger Logger => EnsureInitialized()._logger!;
+
+    /// <summary>
+    /// Gets the specialized logger instance used for recording failed operations.
+    /// </summary>
     public ILogger FailedLogger => EnsureInitialized()._failedLogger!;
 
     /// <summary>
@@ -183,12 +181,14 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
 
         // Configure the builder with our Serilog logger
         builder.AddSerilog(SerilogLogger, dispose: true);
-    }        /// <summary>
-             /// Creates a configured Serilog logger for the application.
-             /// </summary>
-             /// <param name="loggingDir">Directory for log files.</param>
-             /// <param name="debug">Whether debug logging is enabled.</param>
-             /// <returns>A configured Serilog logger instance.</returns>
+    }
+
+    /// <summary>
+    /// Creates a configured Serilog logger for the application.
+    /// </summary>
+    /// <param name="loggingDir">Directory for log files.</param>
+    /// <param name="debug">Whether debug logging is enabled.</param>
+    /// <returns>A configured Serilog logger instance.</returns>
     private SerilogILogger CreateSerilogLogger(string loggingDir, bool debug)
     {
         try

@@ -4,61 +4,63 @@ using Microsoft.SemanticKernel.Connectors.OpenAI;
 // Enable nullable reference type annotations
 #nullable enable
 
-namespace NotebookAutomation.Core.Services;    /// <summary>
-                                               /// Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.
-                                               /// Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content
-                                               /// including video transcripts, PDF documents, and academic materials. Supports variable substitution
-                                               /// for metadata augmentation and configurable prompt templates.
-                                               /// </summary>
-                                               /// <remarks>
-                                               /// <para>
-                                               /// This class provides two main summarization strategies:
-                                               /// </para>
-                                               /// <list type="bullet">
-                                               /// <item><description>Direct summarization for smaller texts (under ~12,000 characters)</description></item>
-                                               /// <item><description>Chunked summarization with aggregation for larger texts</description></item>
-                                               /// </list>
-                                               /// <para>
-                                               /// The chunking strategy splits large texts into overlapping segments, processes each chunk independently,
-                                               /// then aggregates the results into a cohesive final summary. This approach ensures comprehensive coverage
-                                               /// while respecting token limits of the underlying AI models.
-                                               /// </para>
-                                               /// <para>
-                                               /// Supports fallback to ITextGenerationService for testing scenarios when SemanticKernel is unavailable.
-                                               /// </para>
-                                               /// </remarks>
-                                               /// <example>
-                                               /// <code>
-                                               /// // Basic usage
-                                               /// var summarizer = new AISummarizer(logger, promptService, kernel);
-                                               /// var summary = await summarizer.SummarizeWithVariablesAsync(longText);
-                                               /// 
-                                               /// // With metadata variables and custom prompt
-                                               /// var variables = new Dictionary&lt;string, string&gt;
-                                               /// {
-                                               ///     ["course"] = "MBA Strategy",
-                                               ///     ["type"] = "video_transcript",
-                                               ///     ["onedrivePath"] = "/courses/strategy/week1"
-                                               /// };
-                                               /// var summary = await summarizer.SummarizeWithVariablesAsync(
-                                               ///     inputText, 
-                                               ///     variables, 
-                                               ///     "chunk_summary_prompt"
-                                               /// );
-                                               /// </code>
-                                               /// </example>
-                                               /// <remarks>
-                                               /// Initializes a new instance of the AISummarizer class with SemanticKernel support.
-                                               /// </remarks>
-                                               /// <param name="logger">The logger instance for tracking operations and debugging</param>
-                                               /// <param name="promptService">Service for loading and processing prompt templates from the file system</param>
-                                               /// <param name="semanticKernel">Microsoft.SemanticKernel instance configured with Azure OpenAI</param>
-                                               /// <param name="chunkingService">Optional text chunking service for splitting large texts. If null, creates a default instance.</param>
-                                               /// <exception cref="ArgumentNullException">Thrown when logger is null</exception>
-                                               /// <remarks>
-                                               /// This constructor is the primary initialization path for production usage with Azure OpenAI.
-                                               /// The promptService and semanticKernel can be null for testing scenarios, but functionality will be limited.
-                                               /// </remarks>
+namespace NotebookAutomation.Core.Services;
+
+/// <summary>
+/// Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.
+/// Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content
+/// including video transcripts, PDF documents, and academic materials. Supports variable substitution
+/// for metadata augmentation and configurable prompt templates.
+/// </summary>
+/// <remarks>
+/// <para>
+/// This class provides two main summarization strategies:
+/// </para>
+/// <list type="bullet">
+/// <item><description>Direct summarization for smaller texts (under ~12,000 characters)</description></item>
+/// <item><description>Chunked summarization with aggregation for larger texts</description></item>
+/// </list>
+/// <para>
+/// The chunking strategy splits large texts into overlapping segments, processes each chunk independently,
+/// then aggregates the results into a cohesive final summary. This approach ensures comprehensive coverage
+/// while respecting token limits of the underlying AI models.
+/// </para>
+/// <para>
+/// Supports fallback to ITextGenerationService for testing scenarios when SemanticKernel is unavailable.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// // Basic usage
+/// var summarizer = new AISummarizer(logger, promptService, kernel);
+/// var summary = await summarizer.SummarizeWithVariablesAsync(longText);
+///
+/// // With metadata variables and custom prompt
+/// var variables = new Dictionary&lt;string, string&gt;
+/// {
+///     ["course"] = "MBA Strategy",
+///     ["type"] = "video_transcript",
+///     ["onedrivePath"] = "/courses/strategy/week1"
+/// };
+/// var summary = await summarizer.SummarizeWithVariablesAsync(
+///     inputText,
+///     variables,
+///     "chunk_summary_prompt"
+/// );
+/// </code>
+/// </example>
+/// <remarks>
+/// Initializes a new instance of the AISummarizer class with SemanticKernel support.
+/// </remarks>
+/// <param name="logger">The logger instance for tracking operations and debugging</param>
+/// <param name="promptService">Service for loading and processing prompt templates from the file system</param>
+/// <param name="semanticKernel">Microsoft.SemanticKernel instance configured with Azure OpenAI</param>
+/// <param name="chunkingService">Optional text chunking service for splitting large texts. If null, creates a default instance.</param>
+/// <exception cref="ArgumentNullException">Thrown when logger is null</exception>
+/// <remarks>
+/// This constructor is the primary initialization path for production usage with Azure OpenAI.
+/// The promptService and semanticKernel can be null for testing scenarios, but functionality will be limited.
+/// </remarks>
 public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptService, Kernel? semanticKernel, ITextChunkingService? chunkingService = null) : IAISummarizer
 {
     private readonly ILogger<AISummarizer> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -76,9 +78,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     /// The number of characters to overlap between adjacent chunks to maintain context continuity.
     /// Set to 500 characters to ensure important context isn't lost at chunk boundaries.
     /// </summary>
-    private readonly int _overlapTokens = 500; // Characters to overlap between chunks            
-
-
+    private readonly int _overlapTokens = 500; // Characters to overlap between chunks
 
     /// <summary>
     /// Generates an AI-powered summary for the given text using the best available AI framework.
@@ -119,7 +119,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     /// <code>
     /// // Basic summarization
     /// var summary = await summarizer.SummarizeWithVariablesAsync("Long text content...");
-    /// 
+    ///
     /// // With metadata variables for MBA coursework
     /// var variables = new Dictionary&lt;string, string&gt;
     /// {
@@ -128,19 +128,19 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     ///     ["onedrivePath"] = "/courses/strategy/week1"
     /// };
     /// var summary = await summarizer.SummarizeWithVariablesAsync(
-    ///     inputText, 
-    ///     variables, 
+    ///     inputText,
+    ///     variables,
     ///     "chunk_summary_prompt"
     /// );
-    /// 
+    ///
     /// // With cancellation support
     /// using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
     /// var summary = await summarizer.SummarizeWithVariablesAsync(
-    ///     inputText, 
-    ///     variables, 
-    ///     "chunk_summary_prompt", 
+    ///     inputText,
+    ///     variables,
+    ///     "chunk_summary_prompt",
     ///     cts.Token
-    /// );        
+    /// );
     /// </code>
     /// </example>
     public virtual async Task<string?> SummarizeWithVariablesAsync(string inputText, Dictionary<string, string>? variables = null, string? promptFileName = null, CancellationToken cancellationToken = default)
@@ -229,7 +229,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The summary text, or null if failed.</returns>
     /// <example>
-    /// <code>        
+    /// <code>
     /// <summary>
     /// Summarizes text using chunking to handle large inputs that exceed character limits.
     /// Uses modern Semantic Kernel approach with intelligent chunking optimized for MBA coursework.
@@ -260,7 +260,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     /// Chunk processing includes extensive debug logging to track the summarization pipeline.
     /// Each chunk is logged with its prompt, content, and resulting summary for troubleshooting.
     /// </para>
-    /// </remarks>        
+    /// </remarks>
     protected virtual async Task<string?> SummarizeWithChunkingAsync(string inputText, string? prompt, Dictionary<string, string>? variables, CancellationToken cancellationToken)
     {
         // Check for cancellation early
@@ -429,8 +429,6 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
                 return string.Empty;
             }
 
-
-
             return "[Simulated AI summary]";
         }
     }
@@ -471,7 +469,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     /// </summary>
     /// <returns>
     /// A task that represents the asynchronous load operation. The task result contains:
-    /// - The final summary prompt template content if successfully loaded  
+    /// - The final summary prompt template content if successfully loaded
     /// - null if the prompt service is unavailable or loading fails
     /// </returns>
     /// <remarks>
@@ -508,7 +506,8 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     /// A task that represents the asynchronous processing operation. The task result contains:
     /// - A tuple with the processed prompt (or null if loading failed) and the input text
     /// - The processed prompt will be loaded from promptFileName if the prompt parameter is empty
-    /// </returns>        /// <remarks>
+    /// </returns>
+    /// <remarks>
     /// This method serves as a preparation step for both direct and chunked summarization.
     /// It attempts to load the specified prompt template file when no prompt is provided directly.
     /// Loading failures are logged as warnings but do not prevent the operation from continuing.
@@ -586,7 +585,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     /// </para>
     /// </remarks>
     /// <exception cref="Exception">
-    /// Various exceptions may be thrown by the underlying SemanticKernel operations, 
+    /// Various exceptions may be thrown by the underlying SemanticKernel operations,
     /// all of which are caught, logged, and result in a null return value.
     /// </exception>
     protected virtual async Task<string?> SummarizeWithSemanticKernelAsync(string inputText, string prompt, CancellationToken cancellationToken)

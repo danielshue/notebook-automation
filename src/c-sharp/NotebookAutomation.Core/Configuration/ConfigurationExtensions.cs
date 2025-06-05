@@ -1,11 +1,16 @@
-﻿// Module: ConfigurationExtensions.cs
-// Extension methods for working with IConfiguration and ConfigurationBuilder.
-using System.Reflection;
+﻿using System.Reflection;
 
 namespace NotebookAutomation.Core.Configuration;
+
 /// <summary>
 /// Provides extension methods for IConfiguration and ConfigurationBuilder.
 /// </summary>
+/// <remarks>
+/// This class includes utility methods to simplify the process of adding custom objects
+/// as configuration sources and converting objects into key-value pairs for configuration.
+/// It is designed to handle both simple and complex objects, supporting nested properties
+/// and ensuring compatibility with the IConfiguration interface.
+/// </remarks>
 public static class ConfigurationExtensions
 {
     /// <summary>
@@ -14,6 +19,10 @@ public static class ConfigurationExtensions
     /// <param name="configurationBuilder">The configuration builder to add to.</param>
     /// <param name="obj">The object to serialize as configuration values.</param>
     /// <returns>The same configuration builder.</returns>
+    /// <remarks>
+    /// This method serializes the provided object into key-value pairs and adds them
+    /// to the configuration builder as an in-memory collection.
+    /// </remarks>
     public static IConfigurationBuilder AddObject(this IConfigurationBuilder configurationBuilder, object obj)
     {
         ArgumentNullException.ThrowIfNull(obj);
@@ -27,6 +36,10 @@ public static class ConfigurationExtensions
     /// </summary>
     /// <param name="obj">The object to convert.</param>
     /// <returns>A dictionary of key-value pairs.</returns>
+    /// <remarks>
+    /// This method recursively converts complex objects into nested dictionaries,
+    /// using colon-separated keys for nested properties.
+    /// </remarks>
     private static IDictionary<string, string?> ConvertToDictionary(object obj)
     {
         var dictionary = new Dictionary<string, string?>();

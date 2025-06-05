@@ -1,6 +1,7 @@
 ﻿#nullable enable
 
 namespace NotebookAutomation.Core.Utils;
+
 /// <summary>
 /// Utility class for formatting file paths in log messages.
 /// </summary>
@@ -49,7 +50,7 @@ public static class PathFormatter
             return path;
 
         // Always include the file name
-        string fileName = System.IO.Path.GetFileName(path);
+        string fileName = Path.GetFileName(path);
 
         // If just the filename is too long, truncate it
         if (fileName.Length >= maxLength)
@@ -58,9 +59,9 @@ public static class PathFormatter
         // Calculate how much path we can include
         int pathLength = maxLength - fileName.Length - 4; // 4 for "...\"
         if (pathLength <= 0)
-            return "..." + System.IO.Path.DirectorySeparatorChar + fileName;
+            return "..." + Path.DirectorySeparatorChar + fileName;
 
-        string directory = System.IO.Path.GetDirectoryName(path) ?? string.Empty;
+        string directory = Path.GetDirectoryName(path) ?? string.Empty;
         if (directory.Length <= pathLength)
             return path; // Shouldn't happen since we already checked path.Length > maxLength
 
@@ -68,10 +69,10 @@ public static class PathFormatter
         string shortenedDirectory = directory[^pathLength..];
 
         // Find the first directory separator to ensure we start with a complete directory name
-        int firstSeparatorIndex = shortenedDirectory.IndexOf(System.IO.Path.DirectorySeparatorChar);
+        int firstSeparatorIndex = shortenedDirectory.IndexOf(Path.DirectorySeparatorChar);
         if (firstSeparatorIndex > 0)
             shortenedDirectory = shortenedDirectory[firstSeparatorIndex..];
 
-        return "..." + shortenedDirectory + System.IO.Path.DirectorySeparatorChar + fileName;
+        return "..." + shortenedDirectory + Path.DirectorySeparatorChar + fileName;
     }
 }

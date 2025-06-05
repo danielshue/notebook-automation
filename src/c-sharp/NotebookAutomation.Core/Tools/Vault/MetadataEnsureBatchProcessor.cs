@@ -4,17 +4,16 @@ using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Models;
 
 namespace NotebookAutomation.Core.Tools.Vault;
+
 /// <summary>
 /// Batch processor for ensuring metadata in multiple markdown files.
-/// Provides queue management, progress tracking, and error handling capabilities
-/// with eventing support for UI integration and real-time monitoring.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the MetadataEnsureBatchProcessor class.
+/// The <c>MetadataEnsureBatchProcessor</c> class provides functionality for processing
+/// metadata in markdown files within a vault directory. It supports queue management,
+/// progress tracking, and error handling, with eventing capabilities for real-time
+/// monitoring and UI integration.
 /// </remarks>
-/// <param name="logger">The logger instance.</param>
-/// <param name="processor">The metadata ensure processor instance.</param>
-/// <param name="appConfig">The application configuration.</param>
 public class MetadataEnsureBatchProcessor(
     ILogger<MetadataEnsureBatchProcessor> logger,
     MetadataEnsureProcessor processor,
@@ -36,9 +35,11 @@ public class MetadataEnsureBatchProcessor(
     /// <summary>
     /// Event triggered when the processing queue changes.
     /// </summary>
-    public event EventHandler<QueueChangedEventArgs>? QueueChanged;        /// <summary>
-                                                                           /// Gets a read-only view of the current processing queue.
-                                                                           /// </summary>
+    public event EventHandler<QueueChangedEventArgs>? QueueChanged;
+
+    /// <summary>
+    /// Gets a read-only view of the current processing queue.
+    /// </summary>
     public IReadOnlyList<QueueItem> Queue
     {
         get
@@ -335,8 +336,10 @@ public class MetadataBatchResult
     /// <summary>
     /// Gets or sets the number of files that were skipped (no changes needed).
     /// </summary>
-    public int SkippedFiles { get; set; }        /// <summary>
-                                                 /// Gets or sets the number of files that failed to process.
-                                                 /// </summary>
+    public int SkippedFiles { get; set; }
+
+    /// <summary>
+    /// Gets or sets the number of files that failed to process.
+    /// </summary>
     public int FailedFiles { get; set; }
 }

@@ -1,34 +1,41 @@
 ﻿using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Utils;
+
 /// <summary>
-/// Detects hierarchical metadata (program, course, class) from file paths.
+/// Detects and infers hierarchical metadata (program, course, class) from file paths in a notebook vault.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This class implements path-based hierarchy detection similar to the Python version's ensure_metadata.py.
-/// It determines the appropriate program, course, and class metadata based on a file's location
-/// in the directory structure, following the conventions used in the notebook vault.
+/// Implements path-based hierarchy detection, mirroring the logic of the Python ensure_metadata.py script.
+/// Determines the appropriate program, course, and class metadata based on a file's location in the directory structure,
+/// following the conventions used in the notebook vault.
 /// </para>
 /// <para>
-/// Directory Structure Expected:
-/// - Root (main-index)
-///   - Program Folders (program-index)
-///     - Course Folders (course-index)
-///       - Class Folders (class-index)
-///         - Case Study Folders (case-study-index)
-///         - Module Folders (module-index)
-///           - Live Session Folder (live-session-index)
-///           - Lesson Folders (lesson-index)
-///             - Content Files (readings, videos, transcripts, etc.)
+/// <b>Expected Directory Structure:</b>
+/// <code>
+/// Root (main-index)
+/// └── Program Folders (program-index)
+///     └── Course Folders (course-index)
+///         └── Class Folders (class-index)
+///             ├── Case Study Folders (case-study-index)
+///             └── Module Folders (module-index)
+///                 ├── Live Session Folder (live-session-index)
+///                 └── Lesson Folders (lesson-index)
+///                     └── Content Files (readings, videos, transcripts, etc.)
+/// </code>
 /// </para>
+/// <para>
+/// The detector supports explicit program overrides, special handling for Value Chain Management, and robust fallback logic.
+/// </para>
+/// <example>
+/// <code>
+/// var detector = new MetadataHierarchyDetector(logger, appConfig);
+/// var info = detector.FindHierarchyInfo(@"C:\\notebook-vault\\MBA Program\\Course1\\ClassA\\Lesson1\\file.md");
+/// // info["program"] == "MBA Program", info["course"] == "Course1", info["class"] == "ClassA"
+/// </code>
+/// </example>
 /// </remarks>
-/// <remarks>
-/// Initializes a new instance of the <see cref="MetadataHierarchyDetector"/> class.    /// </remarks>
-/// <param name="logger">The logger to use for diagnostic and error reporting.</param>
-/// <param name="appConfig">The application configuration.</param>
-/// <param name="programOverride">Optional explicit program name override.</param>
-/// <param name="verbose">Whether to output verbose logging information.</param>
 public class MetadataHierarchyDetector(
     ILogger<MetadataHierarchyDetector> logger,
     AppConfig appConfig,
@@ -43,10 +50,20 @@ public class MetadataHierarchyDetector(
     private readonly bool _verbose = verbose;
 
     /// <summary>
-    /// Finds program, course, and class information by analyzing the file path and scanning parent directories.
+    /// Finds program, course, and class information by analyzing the file path and scanning parent directories for index files.
     /// </summary>
-    /// <param name="filePath">Path to the file to analyze.</param>
-    /// <returns>Dictionary with program, course, and class information.</returns>
+    /// <param name="filePath">The path to the file to analyze.</param>
+    /// <returns>A dictionary with keys <c>program</c>, <c>course</c>, and <c>class</c> containing the detected hierarchy information.</returns>
+    /// <remarks>
+    /// This method uses a combination of explicit program overrides, special-case logic for Value Chain Management, and directory traversal
+    /// to infer the correct metadata. It logs detailed information if verbose mode is enabled.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var info = detector.FindHierarchyInfo(@"C:\\notebook-vault\\MBA Program\\Course1\\ClassA\\Lesson1\\file.md");
+    /// // info["program"] == "MBA Program", info["course"] == "Course1", info["class"] == "ClassA"
+    /// </code>
+    /// </example>
     public Dictionary<string, string> FindHierarchyInfo(string filePath)
     {
         var info = new Dictionary<string, string>
@@ -319,11 +336,19 @@ public class MetadataHierarchyDetector(
     }
 
     /// <summary>
-    /// Updates metadata dictionary with program, course, and class information.
+    /// Updates a metadata dictionary with program, course, and class information from a hierarchy info dictionary.
     /// </summary>
-    /// <param name="metadata">The existing metadata dictionary to update.</param>
-    /// <param name="hierarchyInfo">The hierarchy information to apply.</param>
-    /// <returns>Updated metadata dictionary.</returns>
+    /// <param name="metadata">The existing metadata dictionary to update (will be mutated).</param>
+    /// <param name="hierarchyInfo">The hierarchy information to apply (should contain keys <c>program</c>, <c>course</c>, <c>class</c>).</param>
+    /// <returns>The updated metadata dictionary with hierarchy fields set if missing or empty.</returns>
+    /// <remarks>
+    /// Only updates fields that are missing or empty in the original metadata.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var updated = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, info);
+    /// </code>
+    /// </example>
     public static Dictionary<string, object> UpdateMetadataWithHierarchy(
         Dictionary<string, object> metadata,
         Dictionary<string, string> hierarchyInfo)
@@ -356,6 +381,14 @@ public class MetadataHierarchyDetector(
     }
 
     // Helper methods
+
+    /// <summary>
+    /// Gets a value from a dictionary by key, or returns a default if the key is missing or the value is null.
+    /// </summary>
+    /// <param name="dict">The dictionary to search.</param>
+    /// <param name="key">The key to look up.</param>
+    /// <param name="defaultValue">The value to return if the key is missing or null.</param>
+    /// <returns>The value from the dictionary, or the default value if not found.</returns>
     private static string GetValueOrDefault(Dictionary<string, object> dict, string key, string defaultValue)
     {
         if (dict.TryGetValue(key, out var value) && value != null)
@@ -365,6 +398,12 @@ public class MetadataHierarchyDetector(
         return defaultValue;
     }
 
+    /// <summary>
+    /// Determines if <paramref name="child"/> is a subdirectory of <paramref name="parent"/>.
+    /// </summary>
+    /// <param name="child">The child directory.</param>
+    /// <param name="parent">The parent directory.</param>
+    /// <returns><c>true</c> if <paramref name="child"/> is a subdirectory of <paramref name="parent"/>; otherwise, <c>false</c>.</returns>
     private static bool IsSubdirectoryOf(DirectoryInfo child, DirectoryInfo parent)
     {
         if (child == null || parent == null)
@@ -376,11 +415,22 @@ public class MetadataHierarchyDetector(
         return childPath.StartsWith(parentPath, StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>
+    /// Gets the depth (number of path segments) of a directory.
+    /// </summary>
+    /// <param name="dir">The directory to measure.</param>
+    /// <returns>The number of segments in the directory's full path.</returns>
     private static int GetPathDepth(DirectoryInfo dir)
     {
         return dir.FullName.Split(Path.DirectorySeparatorChar).Length;
     }
 
+    /// <summary>
+    /// Gets the relative path from <paramref name="basePath"/> to <paramref name="fullPath"/>.
+    /// </summary>
+    /// <param name="basePath">The base directory path.</param>
+    /// <param name="fullPath">The full file or directory path.</param>
+    /// <returns>The relative path from <paramref name="basePath"/> to <paramref name="fullPath"/>.</returns>
     private static string GetRelativePath(string basePath, string fullPath)
     {
         // Ensure trailing directory separator for proper relative path calculation
