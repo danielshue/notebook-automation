@@ -3,14 +3,14 @@ name: Build and Package C# Version of the Notebook Automation Tool
 on:
   push:
     branches:
-      - csharp-migration
+      - master
     paths:
       - 'src/c-sharp/**'
       - '.github/workflows/**'
       - '!.agentic-tools-mcp/**'
   pull_request:
     branches:
-      - csharp-migration
+      - master
     paths:
       - 'src/c-sharp/**'
       - '.github/workflows/**'
