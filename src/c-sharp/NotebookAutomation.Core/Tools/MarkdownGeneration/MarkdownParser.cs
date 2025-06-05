@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-using NotebookAutomation.Core.Utils;
+﻿using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.MarkdownGeneration;
 

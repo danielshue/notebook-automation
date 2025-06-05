@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace NotebookAutomation.Core.Services.Text;
+﻿namespace NotebookAutomation.Core.Services.Text;
 
 /// <summary>
 /// A sophisticated text splitter that recursively splits text based on a hierarchy of separators,

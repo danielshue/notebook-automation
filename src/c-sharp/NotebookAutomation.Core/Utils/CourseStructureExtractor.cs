@@ -1,6 +1,4 @@
-﻿using System.Text.RegularExpressions;
-
-namespace NotebookAutomation.Core.Utils;
+﻿namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
 /// Utility class for extracting course structure information (modules, lessons) from file paths.
