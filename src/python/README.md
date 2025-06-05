@@ -197,7 +197,7 @@ tests/                    # Unit and integration tests
 archived/                 # Older and backup scripts
 debug/                    # Debugging and troubleshooting scripts
 data/, cache/, logs/      # Data, cache, and log directories
-config.json, metadata.yaml, setup.py, ...
+config/config.json, config/metadata.yaml, setup.py, ...
 
 ```text
 notebook_automation/
@@ -214,7 +214,7 @@ tests/                    # Unit and integration tests
 archived/                 # Older and backup scripts
 debug/                    # Debugging and troubleshooting scripts
 data/, cache/, logs/      # Data, cache, and log directories
-config.json, metadata.yaml, setup.py, ...
+config/config.json, config/metadata.yaml, setup.py, ...
 ```
 
 See [docs/final_organization.md](docs/final_organization.md) for a full directory breakdown.
