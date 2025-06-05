@@ -46,5 +46,5 @@ dotnet test src/c-sharp/NotebookAutomation.sln
 Or use the dedicated CI script for a full verification:
 
 ```shell
-pwsh -File build-ci-local.ps1
+pwsh -File ../../scripts/build-ci-local.ps1
 ```
