@@ -16,10 +16,12 @@ bin/*
 *.dll
 bin/*.*
 
+
 # Distribution / packaging
 dist/
 build/
 *.egg-info/
+publish/
 
 # IDE specific files
 .idea/
@@ -220,3 +222,4 @@ src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.cspr
 src/c-sharp/coverage.cobertura.xml
 src/c-sharp/coverage.xml
 src/c-sharp/NotebookAutomation.Cli/coverage.cobertura.xml
+publish/win-arm64/Prompts/chunk_summary_prompt.md
