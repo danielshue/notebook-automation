@@ -1,0 +1,8 @@
+{
+  "id": "5487d5e2-0f7d-4679-a126-cd853599785c",
+  "title": "GitHub Actions Checkout Authentication Fix Attempt",
+  "details": "## Problem\nGitHub Actions checkout step was failing with \"Repository not found\" error even after adding explicit token and contents:read permission.\n\n## Root Cause Analysis\nThe issue appeared to be related to authentication complexity with private repositories. Possible causes:\n1. Cross-account authentication: Repository owner is `danielshue` but commits from `danshue_microsoft` \n2. Explicit token parameter may cause authentication conflicts\n3. Default GITHUB_TOKEN should have sufficient permissions for checkout\n\n## Solution Applied\n- Removed explicit `token: ${{ secrets.GITHUB_TOKEN }}` parameter from checkout step\n- Simplified checkout to use default authentication: `uses: actions/checkout@v4`\n- Kept `contents: read` permission in workflow permissions\n- Fixed YAML formatting issues during edit\n\n## Files Modified\n- `.github/workflows/ci-windows.yml`: Simplified checkout step\n\n## Status\n- Changes committed as commit a232f0c\n- Pushed to GitHub successfully  \n- Waiting for workflow to trigger and test the fix",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-05T17:06:32.522Z",
+  "dateUpdated": "2025-06-05T17:06:32.522Z"
+}
