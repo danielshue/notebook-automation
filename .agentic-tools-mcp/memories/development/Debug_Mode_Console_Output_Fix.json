@@ -1,0 +1,8 @@
+{
+  "id": "e9cc832a-25bf-44b2-97d9-874f35b94163",
+  "title": "Debug Mode Console Output Fix",
+  "details": "Successfully fixed the debug mode console output issue in the vault ensure-metadata command.\n\n## Problem\nDebug mode was outputting detailed metadata changes to both console and log files, making the console output verbose and cluttered.\n\n## Solution\nModified LoggingService.cs to change the console minimum log level from being debug-dependent to always being LogEventLevel.Warning. This ensures that:\n\n- Console output is clean and identical for both normal and debug modes\n- Debug details are only written to log files, not to console\n- Both modes still use the same animated progress spinner\n\n## Changes Made\nIn LoggingService.cs (line ~199):\n```csharp\n// OLD: var consoleMinLevel = debug ? LogEventLevel.Debug : LogEventLevel.Warning;\n// NEW: var consoleMinLevel = LogEventLevel.Warning; // Console should only show warnings and errors\n```\n\n## Result\n- Normal mode: Clean console output, summary info in log file\n- Debug mode: Same clean console output, detailed field-by-field changes in log file\n- Both modes: Identical animated progress spinner behavior\n\n## Testing\nVerified with test-vault that both modes now have identical console output while debug mode still provides detailed logging to the log file including field-by-field metadata changes with [DBG] entries.",
+  "category": "development",
+  "dateCreated": "2025-06-04T19:38:08.163Z",
+  "dateUpdated": "2025-06-04T19:38:08.163Z"
+}

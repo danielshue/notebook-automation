@@ -7,16 +7,24 @@ using System.CommandLine.Parsing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Cli.Tests.Commands
 {    /// <summary>
      /// Unit tests for VaultCommands.
-     /// </summary>
-    [TestClass]
+     /// </summary>    [TestClass]
     public class VaultCommandsTests
     {
         private readonly Mock<ILogger<VaultCommands>> _mockLogger = new();
         private readonly Mock<IServiceProvider> _mockServiceProvider = new();
+        private readonly Mock<AppConfig> _mockAppConfig = new();
+
+        public VaultCommandsTests()
+        {
+            // Setup the mock service provider to return AppConfig
+            _mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+                .Returns(_mockAppConfig.Object);
+        }
 
         [TestMethod]
         public async Task GenerateIndexCommand_PrintsUsage_WhenNoArgs()

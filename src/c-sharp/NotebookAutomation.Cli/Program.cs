@@ -54,11 +54,18 @@ namespace NotebookAutomation.Cli
             rootCommand.AddGlobalOption(configOption);
             rootCommand.AddGlobalOption(debugOption);
             rootCommand.AddGlobalOption(verboseOption);
-            rootCommand.AddGlobalOption(dryRunOption);
-
-            if (args.Contains("--debug") || args.Contains("-d"))
+            rootCommand.AddGlobalOption(dryRunOption);            if (args.Contains("--debug") || args.Contains("-d"))
             {
                 AnsiConsoleHelper.WriteInfo($"Debug mode enabled");
+            }            // Parse config option early to use it in dependency injection setup
+            string? configPath = null;
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                if (args[i] == "--config" || args[i] == "-c")
+                {
+                    configPath = args[i + 1];
+                    break;
+                }
             }
 
             // Handle --version manually before building the CLI to avoid conflicts
@@ -70,7 +77,8 @@ namespace NotebookAutomation.Cli
                 return 0;
             }
 
-            var serviceProvider = SetupDependencyInjection("config.json", args.Contains("--debug"));
+            // Setup dependency injection with the parsed config path
+            var serviceProvider = SetupDependencyInjection(configPath, args.Contains("--debug"));
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger<Program>();
             logger.LogInformationWithPath("Application started", "Program.cs");
@@ -130,34 +138,16 @@ namespace NotebookAutomation.Cli
             var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";
             if (!isHelp && !isVersion && !isConfigView)
             {
-                // Try to get config path from args, else fallback
-                string? configPath = null;
-                for (int i = 0; i < args.Length - 1; i++)
+                // Use the already parsed config path, else fallback
+                var finalConfigPath = configPath ?? AppConfig.FindConfigFile();
+                if (!string.IsNullOrEmpty(finalConfigPath))
                 {
-                    if (args[i] == "--config" || args[i] == "-c")
-                    {
-                        configPath = args[i + 1];
-                        break;
-                    }
-                }
-                if (string.IsNullOrEmpty(configPath))
-                {
-                    configPath = AppConfig.FindConfigFile();
-                }
-                if (!string.IsNullOrEmpty(configPath))
-                {
-                    AnsiConsoleHelper.WriteInfo($"Using configuration file: {configPath}");
+                    AnsiConsoleHelper.WriteInfo($"Using configuration file: {finalConfigPath}");
                 }
                 else
                 {
                     AnsiConsoleHelper.WriteInfo($"No configuration file found. Using defaults.");
                 }
-            }
-
-            // Make sure DI container is initialized with default config
-            if (_serviceProvider == null)
-            {
-                SetupDependencyInjection(null, false);
             }
 
             // Execute the command
