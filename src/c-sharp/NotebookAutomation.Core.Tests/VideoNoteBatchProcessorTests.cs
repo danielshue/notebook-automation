@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.IO;
 
 using Moq;
 
 using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Tools.VideoProcessing;

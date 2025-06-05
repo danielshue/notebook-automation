@@ -1,0 +1,8 @@
+{
+  "id": "1bdc02c2-7a1a-40b8-8260-5be958bc70a0",
+  "title": "Using Statements Organization Config",
+  "details": "USING STATEMENTS ORGANIZATION - SUCCESSFULLY CONFIGURED:\n\nEDITORCONFIG SETTINGS ADDED:\n1. ✅ dotnet_sort_system_directives_first = true\n2. ✅ dotnet_separate_import_directive_groups = true  \n3. ✅ dotnet_diagnostic.IDE0005.severity = warning (removes unused usings)\n4. ✅ csharp_using_directive_placement = outside_namespace:warning\n\nVS CODE INTEGRATION ADDED:\n- \"source.organizeImports\": \"explicit\" (organizes on save)\n- \"source.removeUnusedImports\": \"explicit\" (removes unused on save)\n\nORGANIZATION RULES APPLIED:\n1. System namespaces first (System.*, Microsoft.*)\n2. Third-party namespaces  \n3. Project namespaces (NotebookAutomation.*)\n4. Blank lines separate namespace groups\n5. Unused using statements flagged as warnings and auto-removed\n\nVERIFICATION:\n- dotnet format processed 87 files successfully\n- Using statements now follow consistent organization pattern\n- VS Code will auto-organize on save\n- Both CLI and IDE respect the same rules\n\nEXAMPLE ORGANIZATION:\n```csharp\nusing System.CommandLine;\nusing System.Runtime.CompilerServices;\n\nusing Microsoft.Extensions.DependencyInjection;\nusing Microsoft.Extensions.Logging;\n\nusing NotebookAutomation.Cli.Utilities;\nusing NotebookAutomation.Core.Configuration;\n```\n\nThe configuration ensures consistent using statement organization across the entire solution.",
+  "category": "project_configuration",
+  "dateCreated": "2025-06-05T02:04:58.319Z",
+  "dateUpdated": "2025-06-05T02:04:58.319Z"
+}

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Moq;
+﻿using Moq;
 
 namespace NotebookAutomation.Core.Tests.Services;
 

@@ -196,6 +196,15 @@
       "completed": false,
       "createdAt": "2025-06-05T01:00:24.964Z",
       "updatedAt": "2025-06-05T01:00:24.964Z"
+    },
+    {
+      "id": "651be4c5-76d5-4948-a690-ca39bce6661a",
+      "name": "Convert to File-Scoped Namespaces",
+      "details": "Convert all remaining C# files from brace-style namespaces to file-scoped namespaces. This includes:\n- Identifying files with `namespace X {` syntax\n- Converting to `namespace X;` syntax \n- Removing the closing brace and adjusting indentation\n- Ensuring proper formatting is maintained\n\nFiles to convert include:\n- Core utilities, services, models\n- CLI tests and commands\n- Configuration classes\n- Tool processors\n\nThis modernization will make the code more consistent and follow C# 10+ best practices.",
+      "projectId": "3dee4b39-cce9-4bc4-9d68-bcb5f4f02ed6",
+      "completed": true,
+      "createdAt": "2025-06-05T02:27:21.278Z",
+      "updatedAt": "2025-06-05T02:33:41.454Z"
     }
   ],
   "subtasks": [

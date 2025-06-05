@@ -1,6 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using NotebookAutomation.Core.Services;
+﻿using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests.Services;
 

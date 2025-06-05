@@ -1,18 +1,9 @@
 ﻿#nullable enable
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
 using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tests;
 using NotebookAutomation.Core.Tests.Helpers;
 
 namespace NotebookAutomation.Core.Tests;

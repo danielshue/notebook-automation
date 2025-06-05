@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.IO;
 
 using NotebookAutomation.Core.Utils;
 

@@ -1,9 +1,6 @@
 ﻿using System.IO;
 using System.Text.Json;
 
-using Microsoft.Extensions.Configuration;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Tests;

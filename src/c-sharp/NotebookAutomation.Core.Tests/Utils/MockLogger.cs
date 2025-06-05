@@ -1,8 +1,4 @@
-﻿using System;
-
-using Microsoft.Extensions.Logging;
-
-namespace NotebookAutomation.Core.Tests.Utils;
+﻿namespace NotebookAutomation.Core.Tests.Utils;
 
 /// <summary>
 /// Simple mock logger for testing purposes.

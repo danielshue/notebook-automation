@@ -1,6 +1,4 @@
-﻿using System;
-
-using Microsoft.SemanticKernel;
+﻿using Microsoft.SemanticKernel;
 
 namespace NotebookAutomation.Core.Tests.Helpers;
 

@@ -1,8 +1,5 @@
 ﻿using System.Linq;
 
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Moq;
 
 using NotebookAutomation.Core.Services.Text;
