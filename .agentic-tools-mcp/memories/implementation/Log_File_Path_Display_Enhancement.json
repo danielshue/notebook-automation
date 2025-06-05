@@ -1,0 +1,8 @@
+{
+  "id": "635b83cd-4c37-469c-90da-87bac0530d70",
+  "title": "Log File Path Display Enhancement",
+  "details": "TASK: Update CLI output to show full log file path - COMPLETED\n\nANALYSIS:\n- Issue 1: VaultCommands.cs manually constructs log file path using current date, but this might not match the actual log file created by LoggingService\n- Issue 2: Verbose tip was always shown, even when already running in verbose mode\n\nSOLUTION IMPLEMENTED:\n1. Added CurrentLogFilePath property to ILoggingService interface\n2. Implemented the property in LoggingService class that stores the actual log file path during logger creation\n3. Updated VaultCommands.cs to use the service property instead of manual path construction\n4. Added verbose parameter to ExecuteEnsureMetadataAsync method\n5. Updated logic to only show verbose tip when NOT running in verbose mode\n\nCHANGES MADE:\n- ILoggingService.cs: Added CurrentLogFilePath property\n- LoggingService.cs: Implemented CurrentLogFilePath property and stored path during initialization\n- VaultCommands.cs: \n  - Updated ExecuteEnsureMetadataAsync method signature to include verbose parameter\n  - Modified log file display logic to use LoggingService.CurrentLogFilePath\n  - Added conditional logic to only show verbose tip when verbose=false\n\nRESULTS:\n✅ Full log file path now displayed: D:\\...\\logs\\notebookautomation.core_20250604.log\n✅ Verbose tip only shown when not using --verbose flag\n✅ All tests pass, build successful",
+  "category": "implementation",
+  "dateCreated": "2025-06-04T23:23:45.911Z",
+  "dateUpdated": "2025-06-04T23:31:21.600Z"
+}

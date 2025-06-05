@@ -88,12 +88,10 @@ namespace NotebookAutomation.Core.Tools.Vault
                 {
                     _logger.LogDebugWithPath("No metadata changes needed for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
                     return false;
-                }
-
-                if (dryRun)
+                }                if (dryRun)
                 {
                     _logger.LogInformationWithPath("DRY RUN: Would update metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
-                    LogMetadataChanges(originalMetadata, metadata);
+                    LogMetadataChanges(originalMetadata, metadata, filePath);
                     return true;
                 }
 
@@ -391,31 +389,119 @@ namespace NotebookAutomation.Core.Tools.Vault
             }
 
             return true;
-        }
-
-        /// <summary>
+        }        /// <summary>
         /// Logs the changes made to metadata for debugging.
         /// </summary>
-        /// <param name="original">Original metadata.</param>
+        /// <param name="original">Original metadata.</param>        
         /// <param name="updated">Updated metadata.</param>
-        private void LogMetadataChanges(Dictionary<string, object> original, Dictionary<string, object> updated)
+        /// <param name="filePath">Optional file path for detailed logging.</param>
+        private void LogMetadataChanges(Dictionary<string, object> original, Dictionary<string, object> updated, string? filePath = null)
         {
             var changes = new List<string>();
+            var additions = new List<string>();
+            var modifications = new List<string>();
+            var deletions = new List<string>();
 
+            // Check for added or modified fields
             foreach (var kvp in updated)
             {
-                string originalValue = original.GetValueOrDefault(kvp.Key, "")?.ToString() ?? "";
-                string updatedValue = kvp.Value?.ToString() ?? "";
-
-                if (originalValue != updatedValue)
+                if (!original.TryGetValue(kvp.Key, out var originalValue))
                 {
-                    changes.Add($"{kvp.Key}: '{originalValue}' → '{updatedValue}'");
+                    // This is a new field
+                    additions.Add($"{kvp.Key}: '{kvp.Value}'");
+                    changes.Add($"ADD {kvp.Key}: '{kvp.Value}'");
+                }
+                else
+                {
+                    string origValue = originalValue?.ToString() ?? "";
+                    string updatedValue = kvp.Value?.ToString() ?? "";
+
+                    if (origValue != updatedValue)
+                    {
+                        // This is a modified field
+                        modifications.Add($"{kvp.Key}: '{origValue}' → '{updatedValue}'");
+                        changes.Add($"MODIFY {kvp.Key}: '{origValue}' → '{updatedValue}'");
+                    }
+                }
+            }
+
+            // Check for deleted fields
+            foreach (var kvp in original)
+            {
+                if (!updated.ContainsKey(kvp.Key))
+                {
+                    // This field was removed
+                    deletions.Add($"{kvp.Key}: '{kvp.Value}'");
+                    changes.Add($"DELETE {kvp.Key}: '{kvp.Value}'");
                 }
             }
 
             if (changes.Count > 0)
             {
-                _logger.LogDebugWithPath("Metadata changes: {Changes}", nameof(MetadataEnsureProcessor), string.Join(", ", changes));
+                string fileContext = filePath != null ? $" for file {Path.GetFileName(filePath)}" : "";
+                string filePath_full = filePath != null ? $"{filePath}" : "unknown file";
+                
+                // Create detailed summary of changes for this file
+                var metadataSummary = new System.Text.StringBuilder();
+                metadataSummary.AppendLine($"--- Metadata changes for {filePath_full} ---");
+                
+                if (additions.Count > 0)
+                {
+                    metadataSummary.AppendLine("  Fields to add:");
+                    foreach (var addition in additions)
+                    {
+                        metadataSummary.AppendLine($"    + {addition}");
+                    }
+                }
+                
+                if (modifications.Count > 0)
+                {
+                    metadataSummary.AppendLine("  Fields to modify:");
+                    foreach (var modification in modifications)
+                    {
+                        metadataSummary.AppendLine($"    * {modification}");
+                    }
+                }
+                
+                if (deletions.Count > 0)
+                {
+                    metadataSummary.AppendLine("  Fields to delete:");
+                    foreach (var deletion in deletions)
+                    {
+                        metadataSummary.AppendLine($"    - {deletion}");
+                    }
+                }                // Log the detailed changes at debug level for the log file
+                _logger.LogDebugFormatted("Metadata changes for file:\n{DetailedChanges}", 
+                    metadataSummary.ToString());
+                
+                // Log a summary line at info level - elevated from debug so it appears in console with --verbose
+                _logger.LogInformationFormatted("Metadata change summary{FileContext}: +{Adds} ~{Modifies} -{Deletes}", 
+                    fileContext,
+                    additions.Count,
+                    modifications.Count,
+                    deletions.Count);
+                
+                // Keep detailed key-value changes at debug level for log file
+                if (additions.Count > 0)
+                {
+                    _logger.LogDebugFormatted("ADD operations{FileContext}: {AddedFields}", 
+                        fileContext,
+                        string.Join(", ", additions));
+                }
+                
+                if (modifications.Count > 0)
+                {
+                    _logger.LogDebugFormatted("MODIFY operations{FileContext}: {ModifiedFields}", 
+                        fileContext,
+                        string.Join(", ", modifications));
+                }
+                
+                if (deletions.Count > 0)
+                {
+                    _logger.LogDebugFormatted("DELETE operations{FileContext}: {DeletedFields}", 
+                        fileContext,
+                        string.Join(", ", deletions));
+                }
             }
         }
     }
@@ -426,7 +512,8 @@ namespace NotebookAutomation.Core.Tools.Vault
     public static class DictionaryExtensions
     {
         /// <summary>
-        /// Gets a value from dictionary or returns default if key doesn't exist.        /// </summary>
+        /// Gets a value from dictionary or returns default if key doesn't exist.        
+        /// </summary>
         public static TValue? GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue? defaultValue = default)
             where TKey : notnull
         {

@@ -51,10 +51,12 @@ namespace NotebookAutomation.Core.Configuration
     /// <param name="loggingDir">The directory where log files should be stored.</param>       
     /// <param name="debug">Whether debug mode is enabled.</param>
     public class LoggingService(string loggingDir, bool debug = false) : ILoggingService
-    {
-        // Core properties for logging configuration
+    {        // Core properties for logging configuration
         private readonly string _loggingDir = loggingDir ?? Path.Combine(AppContext.BaseDirectory, "logs");
         private readonly bool _debug = debug;
+
+        // Current log file path (set during initialization)
+        private string? _currentLogFilePath;
 
         // The initialized loggers and factory (null until ConfigureLogging is called)
         private SerilogILogger? _serilogLogger;
@@ -85,12 +87,16 @@ namespace NotebookAutomation.Core.Configuration
         /// <summary>
         /// Gets the main logger instance used for general application logging.
         /// </summary>
-        public ILogger Logger => EnsureInitialized()._logger!;
-
-        /// <summary>
+        public ILogger Logger => EnsureInitialized()._logger!;        /// <summary>
         /// Gets the specialized logger instance used for recording failed operations.
         /// </summary>
         public ILogger FailedLogger => EnsureInitialized()._failedLogger!;
+
+        /// <summary>
+        /// Gets the full path to the current log file.
+        /// </summary>
+        /// <returns>The absolute path to the current log file, or null if logging is not configured to a file.</returns>
+        public string? CurrentLogFilePath => EnsureInitialized()._currentLogFilePath;
 
         /// <summary>
         /// Ensures that the loggers are initialized and returns the current instance.
@@ -177,28 +183,33 @@ namespace NotebookAutomation.Core.Configuration
 
             // Configure the builder with our Serilog logger
             builder.AddSerilog(SerilogLogger, dispose: true);
-        }
-
-        /// <summary>
+        }        /// <summary>
         /// Creates a configured Serilog logger for the application.
         /// </summary>
         /// <param name="loggingDir">Directory for log files.</param>
         /// <param name="debug">Whether debug logging is enabled.</param>
         /// <returns>A configured Serilog logger instance.</returns>
-        private static SerilogILogger CreateSerilogLogger(string loggingDir, bool debug)
+        private SerilogILogger CreateSerilogLogger(string loggingDir, bool debug)
         {
             try
             {
                 // Ensure directory exists
                 if (!Directory.Exists(loggingDir))
                 {
-                    Directory.CreateDirectory(loggingDir);
-                }
+                    Directory.CreateDirectory(loggingDir);                }
+                
                 var appAssemblyName = GetAssemblyName();
                 var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;
-                var consoleMinLevel = debug ? LogEventLevel.Debug : LogEventLevel.Warning;
+                // Console should only show warnings and errors, regardless of debug mode
+                // Debug information should only go to log files
+                var consoleMinLevel = LogEventLevel.Warning;
                 var date = DateTime.Now.ToString("yyyyMMdd");
+                var time = DateTime.Now.ToString("HHmmss");
+                // Use a consistent filename to avoid creating multiple log files per session
                 var logFilePath = Path.Combine(loggingDir, $"{appAssemblyName.ToLower()}_{date}.log");
+
+                // Store the log file path for external access
+                _currentLogFilePath = logFilePath;
 
                 // Configure and create Serilog logger
                 var loggerConfig = new LoggerConfiguration()
@@ -210,7 +221,8 @@ namespace NotebookAutomation.Core.Configuration
                         logFilePath,
                         rollingInterval: RollingInterval.Day,
                         retainedFileCountLimit: 7,
-                        restrictedToMinimumLevel: minLevel);
+                        restrictedToMinimumLevel: minLevel,
+                        shared: true);  // Add shared flag to allow multiple processes to write to the same file
 
                 return loggerConfig.CreateLogger().ForContext("SourceContext", appAssemblyName);
             }

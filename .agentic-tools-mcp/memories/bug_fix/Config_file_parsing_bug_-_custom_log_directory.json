@@ -1,0 +1,8 @@
+{
+  "id": "f400a947-f2d1-48c5-a0c5-1714200b1719",
+  "title": "Config file parsing bug - custom log directory",
+  "details": "The NotebookAutomation CLI has an issue where when a custom config file is passed via --config option, the logs are still written to the default location instead of the log directory specified in the custom config. This is because the config path parsing happens after dependency injection is set up, so the DI container is configured with the default config.\n\nThe fix requires refactoring Program.cs to:\n1. Parse the --config option from command line args BEFORE setting up DI\n2. Use the parsed config path during DI setup so logging is configured with the correct log directory\n3. Ensure the CurrentLogFilePath property shows the correct path for CLI output\n\nKey files involved:\n- src/c-sharp/NotebookAutomation.Cli/Program.cs (main entry point)\n- src/c-sharp/NotebookAutomation.Core/Configuration/LoggingService.cs (logging setup)\n- src/c-sharp/NotebookAutomation.Cli/Commands/VaultCommands.cs (CLI output)",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-04T23:38:11.015Z",
+  "dateUpdated": "2025-06-04T23:38:11.015Z"
+}

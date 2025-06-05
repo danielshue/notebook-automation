@@ -34,6 +34,13 @@
       "description": "Standardize all logging in the C# notebook automation project to use a single, centralized LoggingService. This includes updating all dependencies to use the LoggingService for their logging needs, ensuring that only one instance of LoggingService is used throughout the application, and that all loggers are obtained via LoggingService rather than created directly.",
       "createdAt": "2025-06-04T00:41:24.730Z",
       "updatedAt": "2025-06-04T00:41:24.730Z"
+    },
+    {
+      "id": "15188081-529e-47f1-b685-c88d2ec54f6e",
+      "name": "Metadata Extraction Enhancement",
+      "description": "Enhance the metadata extraction logic in the C# NotebookAutomation project to ensure robust capture of module and lesson information from filenames and directory structures, improving the completeness of YAML frontmatter metadata for course-related files.",
+      "createdAt": "2025-06-04T19:45:08.604Z",
+      "updatedAt": "2025-06-04T19:45:08.604Z"
     }
   ],
   "tasks": [
@@ -162,6 +169,24 @@
       "completed": true,
       "createdAt": "2025-06-04T05:02:50.260Z",
       "updatedAt": "2025-06-04T05:03:02.730Z"
+    },
+    {
+      "id": "945ad95f-4805-4df6-b3d6-629d3ac1684b",
+      "name": "Analysis of Current Extraction Logic",
+      "details": "Analyze the current CourseStructureExtractor implementation to identify potential enhancement areas:\n1. Review existing extraction patterns and test coverage\n2. Identify gaps in filename-based extraction (currently only directory-based)\n3. Research additional naming conventions used in course structures\n4. Evaluate logging and error handling capabilities\n5. Document current limitations and proposed improvements",
+      "projectId": "15188081-529e-47f1-b685-c88d2ec54f6e",
+      "completed": true,
+      "createdAt": "2025-06-04T19:45:14.842Z",
+      "updatedAt": "2025-06-04T19:45:29.081Z"
+    },
+    {
+      "id": "157be610-102c-4692-b21b-ed6d6e83c3ea",
+      "name": "Implement Enhanced Module/Lesson Extraction",
+      "details": "Successfully enhanced the CourseStructureExtractor to improve module and lesson extraction robustness. All 23 tests are now passing.\n\n**Key Enhancements Implemented:**\n\n1. **Enhanced Filename-based Extraction:**\n   - Added support for \"Week-X-Name\", \"Unit-X-Name\", \"Session-X-Name\", \"Class-X-Name\" patterns\n   - Improved regex patterns with proper capture groups for better parsing\n   - Added camelCase handling in CleanModuleOrLessonName method\n\n2. **Fixed Directory Pattern Logic:**\n   - Resolved issue where single-level courses were incorrectly setting both module and lesson\n   - Enhanced hierarchical fallback logic to only treat current directory as lesson when parent looks like module container\n   - Improved numbered pattern recognition\n\n3. **Improved Text Processing:**\n   - Added CamelCase to space conversion (e.g., \"BasicConcepts\" → \"Basic Concepts\")\n   - Better handling of numbered prefixes like \"02_session-planning-details\"\n   - Enhanced title case formatting\n\n4. **Enhanced Test Coverage:**\n   - All existing tests pass including edge cases\n   - Proper handling of single-level vs multi-level course structures\n   - Filename-based extraction working correctly for various naming conventions\n\n**Files Modified:**\n- CourseStructureExtractor.cs: Enhanced extraction logic, improved regex patterns, added camelCase handling\n- CourseStructureExtractorTests.cs: All 23 tests passing\n\n**Test Results:** ✅ 23/23 tests passing (was 18/23 before fixes)\n\nThe metadata extraction is now significantly more robust and handles a wide variety of course structure naming conventions while properly distinguishing between module and lesson levels.",
+      "projectId": "15188081-529e-47f1-b685-c88d2ec54f6e",
+      "completed": true,
+      "createdAt": "2025-06-04T19:45:37.894Z",
+      "updatedAt": "2025-06-04T19:54:47.118Z"
     }
   ],
   "subtasks": [
@@ -274,6 +299,16 @@
       "completed": false,
       "createdAt": "2025-06-04T00:55:05.844Z",
       "updatedAt": "2025-06-04T00:55:05.844Z"
+    },
+    {
+      "id": "b8633382-1357-41f4-823e-f520a9584f0c",
+      "name": "Fix Test Failures in CourseStructureExtractor",
+      "details": "Several test failures were identified in the CourseStructureExtractor tests:\n1. Single-level course test failing - lesson key being set when it shouldn't be\n2. Filename extraction has spacing/capitalization issues (e.g., \"Basicconcepts\" vs \"Basic Concepts\")\n3. Some filename patterns not matching correctly (numbered patterns like \"02_session-planning-details.md\")\n4. Directory fallback logic not working as expected\n\nNeed to fix the extraction logic to properly handle these cases.",
+      "taskId": "157be610-102c-4692-b21b-ed6d6e83c3ea",
+      "projectId": "15188081-529e-47f1-b685-c88d2ec54f6e",
+      "completed": true,
+      "createdAt": "2025-06-04T19:50:48.361Z",
+      "updatedAt": "2025-06-04T19:54:33.488Z"
     }
   ]
 }
