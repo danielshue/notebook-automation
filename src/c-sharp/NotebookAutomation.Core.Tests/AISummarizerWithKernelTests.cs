@@ -1,10 +1,14 @@
-﻿#nullable enable
+﻿// <copyright file="AISummarizerWithKernelTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/AISummarizerWithKernelTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 using Microsoft.SemanticKernel;
-
-using Moq;
-
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tests.Helpers;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -12,19 +16,19 @@ namespace NotebookAutomation.Core.Tests;
 /// Tests for AISummarizer specifically focused on Kernel integration.
 /// </summary>
 [TestClass]
-public class AISummarizerWithKernelTests
+internal class AISummarizerWithKernelTests
 {
-    private Mock<ILogger<AISummarizer>> _mockLogger = null!;
-    private Mock<IPromptService> _mockPromptService = null!;
+    private Mock<ILogger<AISummarizer>> mockLogger = null!;
+    private Mock<IPromptService> mockPromptService = null!;
 
     [TestInitialize]
     public void SetUp()
     {
-        _mockLogger = new Mock<ILogger<AISummarizer>>();
-        _mockPromptService = new Mock<IPromptService>();
-        _mockPromptService.Setup(p => p.LoadTemplateAsync(It.IsAny<string>()))
+        this.mockLogger = new Mock<ILogger<AISummarizer>>();
+        this.mockPromptService = new Mock<IPromptService>();
+        this.mockPromptService.Setup(p => p.LoadTemplateAsync(It.IsAny<string>()))
             .Returns(Task.FromResult("Template {{content}}"));
-        _mockPromptService
+        this.mockPromptService
             .Setup(p => p.ProcessTemplateAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()))
             .Returns((string template, Dictionary<string, string>? vars) =>
             {
@@ -33,11 +37,15 @@ public class AISummarizerWithKernelTests
                 {
                     result = template.Replace("{{content}}", value);
                 }
+
                 return Task.FromResult(result);
             });
-    }        /// <summary>
-             /// Tests that the summarizer works correctly with a real Kernel instance.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests that the summarizer works correctly with a real Kernel instance.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithRealKernel_ProcessesCorrectly()
     {
@@ -46,14 +54,14 @@ public class AISummarizerWithKernelTests
         Kernel kernel = TestKernelHelper.CreateKernelWithSimulatedResponse(expectedSummary);
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService.Object,
+            this.mockLogger.Object,
+            this.mockPromptService.Object,
             kernel);
 
         string inputText = "Text to be summarized by the kernel";
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputText);
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
@@ -63,25 +71,29 @@ public class AISummarizerWithKernelTests
     /// <summary>
     /// Tests that the summarizer handles null Kernel gracefully.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithNullKernel_ReturnsNull()
     {
         // Arrange
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService.Object,
+            this.mockLogger.Object,
+            this.mockPromptService.Object,
             null); // Null kernel
 
         string inputText = "Text that won't be summarized due to null kernel";
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputText);
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText).ConfigureAwait(false);
 
         // Assert
         Assert.IsNull(result);
-    }        /// <summary>
-             /// Tests that the summarizer correctly utilizes the Kernel for function calls.
-             /// </summary>        [TestMethod]
+    }
+
+    /// <summary>
+    /// Tests that the summarizer correctly utilizes the Kernel for function calls.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>        [TestMethod]
     public async Task SummarizeWithVariablesAsync_KernelFunctionCalls_ProcessedCorrectly()
     {
         // Arrange
@@ -89,21 +101,24 @@ public class AISummarizerWithKernelTests
         Kernel kernel = TestKernelHelper.CreateKernelWithSimulatedResponse(expectedSummary);
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService.Object,
+            this.mockLogger.Object,
+            this.mockPromptService.Object,
             kernel);
 
         string inputText = "Text for kernel function call";
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputText);
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual("[Simulated AI summary]", result);
-    }        /// <summary>
-             /// Tests summarization with large texts using Semantic Kernel chunking capabilities.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests summarization with large texts using Semantic Kernel chunking capabilities.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_LargeText_UsesSemanticKernel()
     {
@@ -114,19 +129,18 @@ public class AISummarizerWithKernelTests
         Kernel kernel = MockKernelFactory.CreateKernelForChunkingTests(expectedSummary);
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService.Object,
+            this.mockLogger.Object,
+            this.mockPromptService.Object,
             kernel);
 
         // Generate a large text that will require chunking
         string largeText = new('X', 50000);
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(largeText);
+        string? result = await summarizer.SummarizeWithVariablesAsync(largeText).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual("[Simulated AI summary]", result);
     }
 }
-

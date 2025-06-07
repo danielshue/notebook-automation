@@ -1,6 +1,16 @@
-﻿using System.Runtime.InteropServices;
+﻿// <copyright file="PathUtils.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Runtime.InteropServices;
 
 namespace NotebookAutomation.Core.Utils;
+
 /// <summary>
 /// Provides utility methods for working with file and directory paths.
 /// </summary>
@@ -21,7 +31,7 @@ namespace NotebookAutomation.Core.Utils;
 /// cross-platform path differences.
 /// </para>
 /// </remarks>
-public class PathUtils
+public static class PathUtils
 {
     /// <summary>
     /// Gets a path for a file relative to the application's base directory.
@@ -101,6 +111,7 @@ public class PathUtils
         {
             Directory.CreateDirectory(normalizedPath);
         }
+
         return normalizedPath;
     }
 
@@ -223,11 +234,13 @@ public class PathUtils
         if (normalizedFull.StartsWith(normalizedBase))
         {
             var relativePath = normalizedFull[normalizedBase.Length..];
+
             // Remove leading directory separator if present
             if (relativePath.StartsWith(Path.DirectorySeparatorChar.ToString()))
             {
                 relativePath = relativePath[1..];
             }
+
             return relativePath;
         }
 

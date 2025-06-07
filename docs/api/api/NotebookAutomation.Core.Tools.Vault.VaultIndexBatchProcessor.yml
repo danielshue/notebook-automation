@@ -1,0 +1,1337 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  commentId: T:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  id: VaultIndexBatchProcessor
+  parent: NotebookAutomation.Core.Tools.Vault
+  children:
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor},NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor,NotebookAutomation.Core.Configuration.AppConfig)
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync(System.String,System.Boolean,System.Collections.Generic.List{System.String},System.Boolean,System.String)
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue(System.String,System.Collections.Generic.List{System.String})
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.ProcessingProgressChanged
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.QueueChanged
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus(System.String,NotebookAutomation.Core.Models.DocumentProcessingStatus,NotebookAutomation.Core.Models.ProcessingStage,System.String,System.Int32,System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: VaultIndexBatchProcessor
+  nameWithType: VaultIndexBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: VaultIndexBatchProcessor
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 33
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Batch processor for generating vault index files in an Obsidian vault.
+  remarks: >-
+    The <code>VaultIndexBatchProcessor</code> class provides functionality for generating
+
+    index files for each folder in a vault directory. It supports queue management,
+
+    progress tracking, hierarchy detection, and error handling, with eventing capabilities
+
+    for real-time monitoring and UI integration.
+
+
+    Features:
+
+    - Generates folder-named index files (e.g., "Module 1.md" for "Module 1" folder)
+
+    - Auto-detects hierarchy levels (MBA, Program, Course, Class, Module, Lesson)
+
+    - Applies appropriate templates based on detected hierarchy
+
+    - Organizes content by type using YAML frontmatter and filename patterns
+
+    - Optional Obsidian Bases integration for dynamic content views
+
+    - Supports dry-run mode for previewing changes.
+  example: []
+  syntax:
+    content: public class VaultIndexBatchProcessor
+    content.vb: Public Class VaultIndexBatchProcessor
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor},NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor,NotebookAutomation.Core.Configuration.AppConfig)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor},NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor,NotebookAutomation.Core.Configuration.AppConfig)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor},NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor,NotebookAutomation.Core.Configuration.AppConfig)'
+  parent: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor>, VaultIndexProcessor, AppConfig)
+  nameWithType: VaultIndexBatchProcessor.VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor>, VaultIndexProcessor, AppConfig)
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.VaultIndexBatchProcessor(Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor>, NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor, NotebookAutomation.Core.Configuration.AppConfig)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 33
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Batch processor for generating vault index files in an Obsidian vault.
+  remarks: >-
+    The <code>VaultIndexBatchProcessor</code> class provides functionality for generating
+
+    index files for each folder in a vault directory. It supports queue management,
+
+    progress tracking, hierarchy detection, and error handling, with eventing capabilities
+
+    for real-time monitoring and UI integration.
+
+
+    Features:
+
+    - Generates folder-named index files (e.g., "Module 1.md" for "Module 1" folder)
+
+    - Auto-detects hierarchy levels (MBA, Program, Course, Class, Module, Lesson)
+
+    - Applies appropriate templates based on detected hierarchy
+
+    - Organizes content by type using YAML frontmatter and filename patterns
+
+    - Optional Obsidian Bases integration for dynamic content views
+
+    - Supports dry-run mode for previewing changes.
+  example: []
+  syntax:
+    content: public VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> logger, VaultIndexProcessor processor, AppConfig appConfig)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor}
+    - id: processor
+      type: NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor
+    - id: appConfig
+      type: NotebookAutomation.Core.Configuration.AppConfig
+    content.vb: Public Sub New(logger As ILogger(Of VaultIndexBatchProcessor), processor As VaultIndexProcessor, appConfig As AppConfig)
+  overload: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.#ctor*
+  nameWithType.vb: VaultIndexBatchProcessor.New(ILogger(Of VaultIndexBatchProcessor), VaultIndexProcessor, AppConfig)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.New(Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor), NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor, NotebookAutomation.Core.Configuration.AppConfig)
+  name.vb: New(ILogger(Of VaultIndexBatchProcessor), VaultIndexProcessor, AppConfig)
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.ProcessingProgressChanged
+  commentId: E:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.ProcessingProgressChanged
+  id: ProcessingProgressChanged
+  parent: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: ProcessingProgressChanged
+  nameWithType: VaultIndexBatchProcessor.ProcessingProgressChanged
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.ProcessingProgressChanged
+  type: Event
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessingProgressChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 48
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Event triggered when processing progress changes.
+  example: []
+  syntax:
+    content: public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
+    return:
+      type: System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+    content.vb: Public Event ProcessingProgressChanged As EventHandler(Of DocumentProcessingProgressEventArgs)
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.QueueChanged
+  commentId: E:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.QueueChanged
+  id: QueueChanged
+  parent: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: QueueChanged
+  nameWithType: VaultIndexBatchProcessor.QueueChanged
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.QueueChanged
+  type: Event
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: QueueChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 53
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Event triggered when the processing queue changes.
+  example: []
+  syntax:
+    content: public event EventHandler<QueueChangedEventArgs>? QueueChanged
+    return:
+      type: System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+    content.vb: Public Event QueueChanged As EventHandler(Of QueueChangedEventArgs)
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue
+  commentId: P:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue
+  id: Queue
+  parent: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: Queue
+  nameWithType: VaultIndexBatchProcessor.Queue
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Queue
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 58
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Gets a read-only view of the current processing queue.
+  example: []
+  syntax:
+    content: public IReadOnlyList<QueueItem> Queue { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+    content.vb: Public ReadOnly Property Queue As IReadOnlyList(Of QueueItem)
+  overload: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue*
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  id: OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  parent: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: OnProcessingProgressChanged(string, string, int, int)
+  nameWithType: VaultIndexBatchProcessor.OnProcessingProgressChanged(string, string, int, int)
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged(string, string, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: OnProcessingProgressChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 76
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Raises the ProcessingProgressChanged event.
+  example: []
+  syntax:
+    content: protected virtual void OnProcessingProgressChanged(string folderPath, string status, int currentFolder, int totalFolders)
+    parameters:
+    - id: folderPath
+      type: System.String
+      description: The path of the folder being processed.
+    - id: status
+      type: System.String
+      description: The current processing status message.
+    - id: currentFolder
+      type: System.Int32
+      description: The current folder index being processed.
+    - id: totalFolders
+      type: System.Int32
+      description: The total number of folders to process.
+    content.vb: Protected Overridable Sub OnProcessingProgressChanged(folderPath As String, status As String, currentFolder As Integer, totalFolders As Integer)
+  overload: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged*
+  nameWithType.vb: VaultIndexBatchProcessor.OnProcessingProgressChanged(String, String, Integer, Integer)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged(String, String, Integer, Integer)
+  name.vb: OnProcessingProgressChanged(String, String, Integer, Integer)
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  id: OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  parent: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: OnQueueChanged(QueueItem?)
+  nameWithType: VaultIndexBatchProcessor.OnQueueChanged(QueueItem?)
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem?)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: OnQueueChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 85
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Raises the QueueChanged event.
+  example: []
+  syntax:
+    content: protected virtual void OnQueueChanged(QueueItem? changedItem = null)
+    parameters:
+    - id: changedItem
+      type: NotebookAutomation.Core.Models.QueueItem
+      description: The specific item that changed, or null if the entire queue changed.
+    content.vb: Protected Overridable Sub OnQueueChanged(changedItem As QueueItem = Nothing)
+  overload: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged*
+  nameWithType.vb: VaultIndexBatchProcessor.OnQueueChanged(QueueItem)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  name.vb: OnQueueChanged(QueueItem)
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue(System.String,System.Collections.Generic.List{System.String})
+  commentId: M:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue(System.String,System.Collections.Generic.List{System.String})
+  id: InitializeProcessingQueue(System.String,System.Collections.Generic.List{System.String})
+  parent: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: InitializeProcessingQueue(string, List<string>?)
+  nameWithType: VaultIndexBatchProcessor.InitializeProcessingQueue(string, List<string>?)
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue(string, System.Collections.Generic.List<string>?)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: InitializeProcessingQueue
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 98
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Initializes the processing queue with folders from the specified vault directory.
+  example: []
+  syntax:
+    content: protected virtual void InitializeProcessingQueue(string vaultPath, List<string>? templateTypes = null)
+    parameters:
+    - id: vaultPath
+      type: System.String
+      description: Path to the vault directory to scan for folders.
+    - id: templateTypes
+      type: System.Collections.Generic.List{System.String}
+    content.vb: Protected Overridable Sub InitializeProcessingQueue(vaultPath As String, templateTypes As List(Of String) = Nothing)
+  overload: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue*
+  nameWithType.vb: VaultIndexBatchProcessor.InitializeProcessingQueue(String, List(Of String))
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue(String, System.Collections.Generic.List(Of String))
+  name.vb: InitializeProcessingQueue(String, List(Of String))
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus(System.String,NotebookAutomation.Core.Models.DocumentProcessingStatus,NotebookAutomation.Core.Models.ProcessingStage,System.String,System.Int32,System.Int32)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus(System.String,NotebookAutomation.Core.Models.DocumentProcessingStatus,NotebookAutomation.Core.Models.ProcessingStage,System.String,System.Int32,System.Int32)
+  id: UpdateQueueItemStatus(System.String,NotebookAutomation.Core.Models.DocumentProcessingStatus,NotebookAutomation.Core.Models.ProcessingStage,System.String,System.Int32,System.Int32)
+  parent: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: UpdateQueueItemStatus(string, DocumentProcessingStatus, ProcessingStage, string, int, int)
+  nameWithType: VaultIndexBatchProcessor.UpdateQueueItemStatus(string, DocumentProcessingStatus, ProcessingStage, string, int, int)
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus(string, NotebookAutomation.Core.Models.DocumentProcessingStatus, NotebookAutomation.Core.Models.ProcessingStage, string, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: UpdateQueueItemStatus
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 183
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Updates the status of a specific queue item and fires events.
+  example: []
+  syntax:
+    content: protected virtual void UpdateQueueItemStatus(string folderPath, DocumentProcessingStatus status, ProcessingStage stage, string statusMessage, int currentFolder, int totalFolders)
+    parameters:
+    - id: folderPath
+      type: System.String
+      description: The folder path to update.
+    - id: status
+      type: NotebookAutomation.Core.Models.DocumentProcessingStatus
+      description: The new processing status.
+    - id: stage
+      type: NotebookAutomation.Core.Models.ProcessingStage
+      description: The new processing stage.
+    - id: statusMessage
+      type: System.String
+      description: The new status message.
+    - id: currentFolder
+      type: System.Int32
+      description: Current folder index for progress tracking.
+    - id: totalFolders
+      type: System.Int32
+      description: Total folders for progress tracking.
+    content.vb: Protected Overridable Sub UpdateQueueItemStatus(folderPath As String, status As DocumentProcessingStatus, stage As ProcessingStage, statusMessage As String, currentFolder As Integer, totalFolders As Integer)
+  overload: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus*
+  nameWithType.vb: VaultIndexBatchProcessor.UpdateQueueItemStatus(String, DocumentProcessingStatus, ProcessingStage, String, Integer, Integer)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus(String, NotebookAutomation.Core.Models.DocumentProcessingStatus, NotebookAutomation.Core.Models.ProcessingStage, String, Integer, Integer)
+  name.vb: UpdateQueueItemStatus(String, DocumentProcessingStatus, ProcessingStage, String, Integer, Integer)
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync(System.String,System.Boolean,System.Collections.Generic.List{System.String},System.Boolean,System.String)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync(System.String,System.Boolean,System.Collections.Generic.List{System.String},System.Boolean,System.String)
+  id: GenerateIndexesAsync(System.String,System.Boolean,System.Collections.Generic.List{System.String},System.Boolean,System.String)
+  parent: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: GenerateIndexesAsync(string, bool, List<string>?, bool, string?)
+  nameWithType: VaultIndexBatchProcessor.GenerateIndexesAsync(string, bool, List<string>?, bool, string?)
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync(string, bool, System.Collections.Generic.List<string>?, bool, string?)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GenerateIndexesAsync
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+    startLine: 222
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Generates vault index files for folders in the specified directory.
+  example: []
+  syntax:
+    content: public Task<VaultIndexBatchResult> GenerateIndexesAsync(string vaultPath, bool dryRun = false, List<string>? templateTypes = null, bool forceOverwrite = false, string? vaultRoot = null)
+    parameters:
+    - id: vaultPath
+      type: System.String
+      description: Path to the vault directory.
+    - id: dryRun
+      type: System.Boolean
+      description: If true, simulates processing without making actual changes.
+    - id: templateTypes
+      type: System.Collections.Generic.List{System.String}
+      description: Optional filter for specific template types to generate.
+    - id: forceOverwrite
+      type: System.Boolean
+      description: If true, regenerates index files even if they already exist.
+    - id: vaultRoot
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult}
+      description: A summary of processing results.
+    content.vb: Public Function GenerateIndexesAsync(vaultPath As String, dryRun As Boolean = False, templateTypes As List(Of String) = Nothing, forceOverwrite As Boolean = False, vaultRoot As String = Nothing) As Task(Of VaultIndexBatchResult)
+  overload: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync*
+  nameWithType.vb: VaultIndexBatchProcessor.GenerateIndexesAsync(String, Boolean, List(Of String), Boolean, String)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync(String, Boolean, System.Collections.Generic.List(Of String), Boolean, String)
+  name.vb: GenerateIndexesAsync(String, Boolean, List(Of String), Boolean, String)
+references:
+- uid: NotebookAutomation.Core.Tools.Vault
+  commentId: N:NotebookAutomation.Core.Tools.Vault
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.Vault
+  nameWithType: NotebookAutomation.Core.Tools.Vault
+  fullName: NotebookAutomation.Core.Tools.Vault
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Vault
+    name: Vault
+    href: NotebookAutomation.Core.Tools.Vault.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Vault
+    name: Vault
+    href: NotebookAutomation.Core.Tools.Vault.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.#ctor
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor__NotebookAutomation_Core_Tools_Vault_VaultIndexProcessor_NotebookAutomation_Core_Configuration_AppConfig_
+  name: VaultIndexBatchProcessor
+  nameWithType: VaultIndexBatchProcessor.VaultIndexBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.VaultIndexBatchProcessor
+  nameWithType.vb: VaultIndexBatchProcessor.New
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<VaultIndexBatchProcessor>
+  nameWithType: ILogger<VaultIndexBatchProcessor>
+  fullName: Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor>
+  nameWithType.vb: ILogger(Of VaultIndexBatchProcessor)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor)
+  name.vb: ILogger(Of VaultIndexBatchProcessor)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+    name: VaultIndexBatchProcessor
+    href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+    name: VaultIndexBatchProcessor
+    href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor
+  commentId: T:NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor
+  parent: NotebookAutomation.Core.Tools.Vault
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor.html
+  name: VaultIndexProcessor
+  nameWithType: VaultIndexProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor
+- uid: NotebookAutomation.Core.Configuration.AppConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AppConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+  commentId: T:System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<DocumentProcessingProgressEventArgs>
+  nameWithType: EventHandler<DocumentProcessingProgressEventArgs>
+  fullName: System.EventHandler<NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs>
+  nameWithType.vb: EventHandler(Of DocumentProcessingProgressEventArgs)
+  fullName.vb: System.EventHandler(Of NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs)
+  name.vb: EventHandler(Of DocumentProcessingProgressEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+    name: DocumentProcessingProgressEventArgs
+    href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+    name: DocumentProcessingProgressEventArgs
+    href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+  commentId: T:System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<QueueChangedEventArgs>
+  nameWithType: EventHandler<QueueChangedEventArgs>
+  fullName: System.EventHandler<NotebookAutomation.Core.Models.QueueChangedEventArgs>
+  nameWithType.vb: EventHandler(Of QueueChangedEventArgs)
+  fullName.vb: System.EventHandler(Of NotebookAutomation.Core.Models.QueueChangedEventArgs)
+  name.vb: EventHandler(Of QueueChangedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+    name: QueueChangedEventArgs
+    href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+    name: QueueChangedEventArgs
+    href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_Queue
+  name: Queue
+  nameWithType: VaultIndexBatchProcessor.Queue
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue
+- uid: System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+  commentId: T:System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<QueueItem>
+  nameWithType: IReadOnlyList<QueueItem>
+  fullName: System.Collections.Generic.IReadOnlyList<NotebookAutomation.Core.Models.QueueItem>
+  nameWithType.vb: IReadOnlyList(Of QueueItem)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of NotebookAutomation.Core.Models.QueueItem)
+  name.vb: IReadOnlyList(Of QueueItem)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.QueueItem
+    name: QueueItem
+    href: NotebookAutomation.Core.Models.QueueItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.QueueItem
+    name: QueueItem
+    href: NotebookAutomation.Core.Models.QueueItem.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_OnProcessingProgressChanged_System_String_System_String_System_Int32_System_Int32_
+  name: OnProcessingProgressChanged
+  nameWithType: VaultIndexBatchProcessor.OnProcessingProgressChanged
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_OnQueueChanged_NotebookAutomation_Core_Models_QueueItem_
+  name: OnQueueChanged
+  nameWithType: VaultIndexBatchProcessor.OnQueueChanged
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged
+- uid: NotebookAutomation.Core.Models.QueueItem
+  commentId: T:NotebookAutomation.Core.Models.QueueItem
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.QueueItem.html
+  name: QueueItem
+  nameWithType: QueueItem
+  fullName: NotebookAutomation.Core.Models.QueueItem
+- uid: NotebookAutomation.Core.Models
+  commentId: N:NotebookAutomation.Core.Models
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Models
+  nameWithType: NotebookAutomation.Core.Models
+  fullName: NotebookAutomation.Core.Models
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_InitializeProcessingQueue_System_String_System_Collections_Generic_List_System_String__
+  name: InitializeProcessingQueue
+  nameWithType: VaultIndexBatchProcessor.InitializeProcessingQueue
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_UpdateQueueItemStatus_System_String_NotebookAutomation_Core_Models_DocumentProcessingStatus_NotebookAutomation_Core_Models_ProcessingStage_System_String_System_Int32_System_Int32_
+  name: UpdateQueueItemStatus
+  nameWithType: VaultIndexBatchProcessor.UpdateQueueItemStatus
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus
+- uid: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  commentId: T:NotebookAutomation.Core.Models.DocumentProcessingStatus
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.DocumentProcessingStatus.html
+  name: DocumentProcessingStatus
+  nameWithType: DocumentProcessingStatus
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingStatus
+- uid: NotebookAutomation.Core.Models.ProcessingStage
+  commentId: T:NotebookAutomation.Core.Models.ProcessingStage
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.ProcessingStage.html
+  name: ProcessingStage
+  nameWithType: ProcessingStage
+  fullName: NotebookAutomation.Core.Models.ProcessingStage
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_GenerateIndexesAsync_System_String_System_Boolean_System_Collections_Generic_List_System_String__System_Boolean_System_String_
+  name: GenerateIndexesAsync
+  nameWithType: VaultIndexBatchProcessor.GenerateIndexesAsync
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult}
+  commentId: T:System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<VaultIndexBatchResult>
+  nameWithType: Task<VaultIndexBatchResult>
+  fullName: System.Threading.Tasks.Task<NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult>
+  nameWithType.vb: Task(Of VaultIndexBatchResult)
+  fullName.vb: System.Threading.Tasks.Task(Of NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult)
+  name.vb: Task(Of VaultIndexBatchResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult
+    name: VaultIndexBatchResult
+    href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult
+    name: VaultIndexBatchResult
+    href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

@@ -1,4 +1,13 @@
-﻿using System.Diagnostics;
+// <copyright file="DocumentNoteBatchProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Diagnostics;
 
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Models;
@@ -34,15 +43,16 @@ namespace NotebookAutomation.Core.Tools.Shared;
 /// processor.StartProcessing("input", "output");
 /// </code>
 /// </example>
-public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : DocumentNoteProcessorBase
+public partial class DocumentNoteBatchProcessor<TProcessor>
+    where TProcessor : DocumentNoteProcessorBase
 {
-    private readonly ILogger<DocumentNoteBatchProcessor<TProcessor>> _logger;
-    private readonly TProcessor _processor;
-    private readonly AISummarizer _aiSummarizer;
+    private readonly ILogger<DocumentNoteBatchProcessor<TProcessor>> logger;
+    private readonly TProcessor processor;
+    private readonly AISummarizer aiSummarizer;
 
     // Queue-related fields
-    private readonly List<QueueItem> _processingQueue = [];
-    private readonly Lock _queueLock = new();
+    private readonly List<QueueItem> processingQueue = [];
+    private readonly Lock queueLock = new();
 
     /// <summary>
     /// Matches markdown headers for notes (e.g., "## Notes").
@@ -69,10 +79,10 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     /// </list>
     /// </para>
     /// </remarks>
-    private readonly Dictionary<string, List<string>> _documentTypeExtensions = new()
+    private readonly Dictionary<string, List<string>> documentTypeExtensions = new()
     {
         ["PDF"] = [".pdf"],
-        ["VIDEO"] = [".mp4", ".mov", ".avi", ".mkv", ".wmv"]
+        ["VIDEO"] = [".mp4", ".mov", ".avi", ".mkv", ".wmv"],
     };
 
     /// <summary>
@@ -129,9 +139,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     {
         get
         {
-            lock (_queueLock)
+            lock (this.queueLock)
             {
-                return _processingQueue.ToList().AsReadOnly();
+                return this.processingQueue.ToList().AsReadOnly();
             }
         }
     }
@@ -145,41 +155,48 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     /// <param name="totalFiles">The total number of files to process.</param>
     protected virtual void OnProcessingProgressChanged(string filePath, string status, int currentFile, int totalFiles)
     {
-        ProcessingProgressChanged?.Invoke(this, new DocumentProcessingProgressEventArgs(filePath, status, currentFile, totalFiles));
+        this.ProcessingProgressChanged?.Invoke(this, new DocumentProcessingProgressEventArgs(filePath, status, currentFile, totalFiles));
     }
 
     /// <summary>
     /// Raises the QueueChanged event.
     /// </summary>
-    /// <param name="changedItem">The specific item that changed, or null if the entire queue changed</param>
+    /// <param name="changedItem">The specific item that changed, or null if the entire queue changed.</param>
     protected virtual void OnQueueChanged(QueueItem? changedItem = null)
     {
-        lock (_queueLock)
+        lock (this.queueLock)
         {
-            QueueChanged?.Invoke(this, new QueueChangedEventArgs(_processingQueue.AsReadOnly(), changedItem));
+            this.QueueChanged?.Invoke(this, new QueueChangedEventArgs(this.processingQueue.AsReadOnly(), changedItem));
         }
     }
 
     /// <summary>
-    /// Determines the document type based on file extension
+    /// Determines the document type based on file extension.
     /// </summary>
-    /// <param name="filePath">File path to check</param>
-    /// <returns>Document type (e.g., "PDF", "VIDEO")</returns>
+    /// <param name="filePath">File path to check.</param>
+    /// <returns>Document type (e.g., "PDF", "VIDEO").</returns>
     protected virtual string GetDocumentType(string filePath)
     {
         string extension = Path.GetExtension(filePath).ToLowerInvariant();
 
-        foreach (var kvp in _documentTypeExtensions)
+        foreach (var kvp in this.documentTypeExtensions)
         {
             if (kvp.Value.Contains(extension))
+            {
                 return kvp.Key;
+            }
         }
 
         // Fallback: check if the processor is specialized
         if (typeof(TProcessor).Name.Contains("Pdf", StringComparison.OrdinalIgnoreCase))
+        {
             return "PDF";
+        }
+
         if (typeof(TProcessor).Name.Contains("Video", StringComparison.OrdinalIgnoreCase))
+        {
             return "VIDEO";
+        }
 
         return "DOCUMENT"; // Generic fallback
     }
@@ -194,12 +211,12 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     {
         if (logger is ILogger<DocumentNoteBatchProcessor<TProcessor>> genericLogger)
         {
-            _logger = genericLogger;
+            this.logger = genericLogger;
         }
         else
         {
             // Allow any ILogger for testing/mocking, but warn if not the expected type
-            _logger = logger as ILogger<DocumentNoteBatchProcessor<TProcessor>> ?? throw new ArgumentException("Logger must be ILogger<DocumentNoteBatchProcessor<TProcessor>> or compatible mock");
+            this.logger = logger as ILogger<DocumentNoteBatchProcessor<TProcessor>> ?? throw new ArgumentException("Logger must be ILogger<DocumentNoteBatchProcessor<TProcessor>> or compatible mock");
             if (logger.GetType().Name.Contains("Mock") || logger.GetType().Name.Contains("Proxy"))
             {
                 // Allow for test mocks
@@ -209,8 +226,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                 throw new ArgumentException("Logger must be ILogger<DocumentNoteBatchProcessor<TProcessor>>");
             }
         }
-        _processor = processor;
-        _aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
+
+        this.processor = processor;
+        this.aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
     }
 
     /// <summary>
@@ -249,7 +267,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         bool noShareLinks = false)
     {
         // Validate input parameters and setup processing
-        var setupResult = ValidateAndSetupProcessing(input, output, appConfig);
+        var setupResult = this.ValidateAndSetupProcessing(input, output, appConfig);
         if (!setupResult.HasValue)
         {
             return DocumentNoteBatchProcessor<TProcessor>.CreateErrorResult("Input validation failed");
@@ -258,20 +276,20 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         var (effectiveInput, effectiveOutput) = setupResult.Value;
 
         // Clear any existing queue
-        lock (_queueLock)
+        lock (this.queueLock)
         {
-            _processingQueue.Clear();
+            this.processingQueue.Clear();
         }
 
         // Discover and filter files to process
-        var files = DiscoverAndFilterFiles(effectiveInput, fileExtensions, retryFailed, effectiveOutput, failedFilesListName);
+        var files = this.DiscoverAndFilterFiles(effectiveInput, fileExtensions, retryFailed, effectiveOutput, failedFilesListName);
         if (files == null)
         {
             return DocumentNoteBatchProcessor<TProcessor>.CreateErrorResult("File discovery failed");
         }
 
         // Initialize processing queue with discovered files
-        InitializeProcessingQueue(files);
+        this.InitializeProcessingQueue(files);
 
         // Process all files
         var failedFilesForRetry = new List<string>();
@@ -296,9 +314,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
 
             // Get the queue item for this file
             QueueItem? queueItem = null;
-            lock (_queueLock)
+            lock (this.queueLock)
             {
-                queueItem = _processingQueue.FirstOrDefault(q => q.FilePath == filePath);
+                queueItem = this.processingQueue.FirstOrDefault(q => q.FilePath == filePath);
                 if (queueItem != null)
                 {
                     // Update queue item status
@@ -312,17 +330,17 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             // Notify queue change and send progress event
             if (queueItem != null)
             {
-                OnQueueChanged(queueItem);
+                this.OnQueueChanged(queueItem);
             }
 
-            OnProcessingProgressChanged(
+            this.OnProcessingProgressChanged(
                 filePath,
                 queueItem?.StatusMessage ?? $"Processing file {fileIndex + 1}/{files.Count}: {Path.GetFileName(filePath)}",
                 fileIndex + 1,
                 files.Count);                // Process the single file using the refactored helper method
-            var (success, errorMessage) = await ProcessSingleFileAsync(
+            var (success, errorMessage) = await this.ProcessSingleFileAsync(
                 filePath, queueItem, fileIndex + 1, files.Count, effectiveOutput, effectiveResourcesRoot,
-                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType);
+                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false);
 
             if (success)
             {
@@ -330,7 +348,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                 if (errorMessage?.Contains("Skipped") == true)
                 {
                     // Don't count skipped files as processed
-                    _logger.LogDebugWithPath("File skipped: {FilePath}", filePath);
+                    this.logger.LogDebugWithPath("File skipped: {FilePath}", filePath);
                 }
                 else
                 {
@@ -344,10 +362,10 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             }
 
             fileStopwatch.Stop();
-            _logger.LogInformationWithPath("Processing file: {FilePath} took {ElapsedMs} ms", filePath, fileStopwatch.ElapsedMilliseconds);
+            this.logger.LogInformationWithPath("Processing file: {FilePath} took {ElapsedMs} ms", filePath, fileStopwatch.ElapsedMilliseconds);
 
             // Report progress after each file
-            OnProcessingProgressChanged(filePath, "Processed", processed, files.Count);
+            this.OnProcessingProgressChanged(filePath, "Processed", processed, files.Count);
         }
 
         batchStopwatch.Stop();
@@ -357,13 +375,13 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         {
             var failedListPath = Path.Combine(effectiveOutput, failedFilesListName);
             File.WriteAllLines(failedListPath, failedFilesForRetry);
-            _logger.LogInformationWithPath("Wrote failed file list to: {FilePath}", failedListPath);
+            this.logger.LogInformationWithPath("Wrote failed file list to: {FilePath}", failedListPath);
         }
 
         // Calculate total summary time and tokens from queue items
-        lock (_queueLock)
+        lock (this.queueLock)
         {
-            foreach (var item in _processingQueue)
+            foreach (var item in this.processingQueue)
             {
                 if (item.ProcessingStartTime.HasValue && item.ProcessingEndTime.HasValue)
                 {
@@ -379,14 +397,14 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         }
 
         // Compile and return results
-        return CompileProcessingResults(processed, failed, batchStopwatch.Elapsed, totalSummaryTime, totalTokens);
+        return this.CompileProcessingResults(processed, failed, batchStopwatch.Elapsed, totalSummaryTime, totalTokens);
     }
 
     /// <summary>
-    /// Creates an error result for failed operations
+    /// Creates an error result for failed operations.
     /// </summary>
-    /// <param name="errorMessage">The error message</param>
-    /// <returns>BatchProcessResult indicating failure</returns>
+    /// <param name="errorMessage">The error message.</param>
+    /// <returns>BatchProcessResult indicating failure.</returns>
     private static BatchProcessResult CreateErrorResult(string errorMessage)
     {
         return new BatchProcessResult
@@ -399,26 +417,27 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             TotalTokens = 0,
             AverageFileTimeMs = 0,
             AverageSummaryTimeMs = 0,
-            AverageTokens = 0
+            AverageTokens = 0,
         };
     }
+
     /// <summary>
-    /// Processes a single file with complete error handling and progress tracking
+    /// Processes a single file with complete error handling and progress tracking.
     /// </summary>
-    /// <param name="filePath">Path to the file to process</param>
-    /// <param name="queueItem">Queue item for progress tracking</param>
-    /// <param name="fileIndex">Current file index</param>
-    /// <param name="totalFiles">Total number of files</param>
-    /// <param name="effectiveOutput">Output directory</param>
-    /// <param name="resourcesRoot">Resources root directory</param>
-    /// <param name="forceOverwrite">Whether to overwrite existing files</param>
-    /// <param name="dryRun">Whether this is a dry run</param>
-    /// <param name="openAiApiKey">OpenAI API key</param>
-    /// <param name="noSummary">Whether to skip summary generation</param>
-    /// <param name="timeoutSeconds">API timeout in seconds</param>
-    /// <param name="noShareLinks">Whether to skip share link generation</param>
-    /// <param name="noteType">Type of note to generate</param>
-    /// <returns>Tuple indicating success and any error message</returns>
+    /// <param name="filePath">Path to the file to process.</param>
+    /// <param name="queueItem">Queue item for progress tracking.</param>
+    /// <param name="fileIndex">Current file index.</param>
+    /// <param name="totalFiles">Total number of files.</param>
+    /// <param name="effectiveOutput">Output directory.</param>
+    /// <param name="resourcesRoot">Resources root directory.</param>
+    /// <param name="forceOverwrite">Whether to overwrite existing files.</param>
+    /// <param name="dryRun">Whether this is a dry run.</param>
+    /// <param name="openAiApiKey">OpenAI API key.</param>
+    /// <param name="noSummary">Whether to skip summary generation.</param>
+    /// <param name="timeoutSeconds">API timeout in seconds.</param>
+    /// <param name="noShareLinks">Whether to skip share link generation.</param>
+    /// <param name="noteType">Type of note to generate.</param>
+    /// <returns>Tuple indicating success and any error message.</returns>
     protected virtual async Task<(bool success, string? errorMessage)> ProcessSingleFileAsync(
         string filePath,
         QueueItem? queueItem,
@@ -436,22 +455,22 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     {
         try
         {
-            _logger.LogInformationWithPath("Processing file: {FilePath}", filePath);
+            this.logger.LogInformationWithPath("Processing file: {FilePath}", filePath);
             string outputDir = effectiveOutput;
             Directory.CreateDirectory(outputDir);
 
             // Generate output path based on processor type and directory structure
-            string outputPath = GenerateOutputPath(filePath, outputDir, resourcesRoot);
+            string outputPath = this.GenerateOutputPath(filePath, outputDir, resourcesRoot);
 
             // If not forceOverwrite and file exists, skip
             if (!forceOverwrite && File.Exists(outputPath))
             {
-                _logger.LogWarningWithPath("Output file exists and --force not set, skipping: {FilePath}", outputPath);
+                this.logger.LogWarningWithPath("Output file exists and --force not set, skipping: {FilePath}", outputPath);
                 return (true, "Skipped - file exists");
             }
 
             // Extract content with progress tracking
-            var (text, metadata) = await ExtractContentAsync(filePath, queueItem, fileIndex, totalFiles);
+            var (text, metadata) = await this.ExtractContentAsync(filePath, queueItem, fileIndex, totalFiles).ConfigureAwait(false);
 
             // Add resources root to metadata if specified
             if (!string.IsNullOrWhiteSpace(resourcesRoot))
@@ -460,21 +479,21 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             }
 
             // Generate AI summary with progress tracking
-            var (summaryText, summaryTokens, summaryTime) = await GenerateAISummaryAsync(
+            var (summaryText, summaryTokens, summaryTime) = await this.GenerateAISummaryAsync(
                 filePath, text, metadata, queueItem, fileIndex, totalFiles,
-                openAiApiKey, noSummary, timeoutSeconds, resourcesRoot, noShareLinks);
+                openAiApiKey, noSummary, timeoutSeconds, resourcesRoot, noShareLinks).ConfigureAwait(false);
 
             // Generate and save markdown
-            await GenerateAndSaveMarkdownAsync(
+            await this.GenerateAndSaveMarkdownAsync(
                 filePath, summaryText, metadata, noteType, outputPath,
-                queueItem, fileIndex, totalFiles, forceOverwrite, dryRun);
+                queueItem, fileIndex, totalFiles, forceOverwrite, dryRun).ConfigureAwait(false);
 
             return (true, null);
         }
         catch (Exception ex)
         {
             var errorMessage = $"Failed to process: {ex.Message}";
-            _logger.LogErrorWithPath(ex, "Failed to process file: {FilePath}", filePath);
+            this.logger.LogErrorWithPath(ex, "Failed to process file: {FilePath}", filePath);
 
             // Update queue status for failure
             if (queueItem != null)
@@ -482,7 +501,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                 queueItem.Status = DocumentProcessingStatus.Failed;
                 queueItem.StatusMessage = errorMessage;
                 queueItem.ProcessingEndTime = DateTime.Now;
-                OnQueueChanged(queueItem);
+                this.OnQueueChanged(queueItem);
             }
 
             return (false, errorMessage);
@@ -490,18 +509,19 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     }
 
     /// <summary>
-    /// Generates markdown content and saves it to file with progress tracking
+    /// Generates markdown content and saves it to file with progress tracking.
     /// </summary>
-    /// <param name="filePath">Source file path</param>
-    /// <param name="summaryText">Generated summary text</param>
-    /// <param name="metadata">File metadata</param>
-    /// <param name="noteType">Type of note to generate</param>
-    /// <param name="outputPath">Output file path</param>
-    /// <param name="queueItem">Queue item for progress tracking</param>
-    /// <param name="fileIndex">Current file index</param>
-    /// <param name="totalFiles">Total number of files</param>
-    /// <param name="forceOverwrite">Whether to overwrite existing files</param>
-    /// <param name="dryRun">Whether this is a dry run</param>
+    /// <param name="filePath">Source file path.</param>
+    /// <param name="summaryText">Generated summary text.</param>
+    /// <param name="metadata">File metadata.</param>
+    /// <param name="noteType">Type of note to generate.</param>
+    /// <param name="outputPath">Output file path.</param>
+    /// <param name="queueItem">Queue item for progress tracking.</param>
+    /// <param name="fileIndex">Current file index.</param>
+    /// <param name="totalFiles">Total number of files.</param>
+    /// <param name="forceOverwrite">Whether to overwrite existing files.</param>
+    /// <param name="dryRun">Whether this is a dry run.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     protected virtual async Task GenerateAndSaveMarkdownAsync(
         string filePath,
         string summaryText,
@@ -530,24 +550,24 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             {
                 queueItem.Stage = ProcessingStage.MarkdownCreation;
                 queueItem.StatusMessage = $"Generating markdown content ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}";
-                OnQueueChanged(queueItem);
+                this.OnQueueChanged(queueItem);
             }
 
             // Update progress to show markdown generation
-            OnProcessingProgressChanged(
+            this.OnProcessingProgressChanged(
                 filePath,
                 queueItem?.StatusMessage ?? $"Generating markdown content ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}",
                 fileIndex,
                 totalFiles);
 
             // Generate markdown using processor
-            markdown = _processor.GenerateMarkdownNote(summaryText, metadata, noteType, includeNoteTypeTitle: false);
+            markdown = this.processor.GenerateMarkdownNote(summaryText, metadata, noteType, includeNoteTypeTitle: false);
         }
 
         // Ensure markdown is initialized
         if (markdown == null)
         {
-            _logger.LogErrorWithPath("Markdown generation failed for file: {FilePath}", filePath);
+            this.logger.LogErrorWithPath("Markdown generation failed for file: {FilePath}", filePath);
             markdown = "Error generating markdown content";
         }
 
@@ -555,11 +575,11 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         bool isReadOnly = false;
         if (File.Exists(outputPath))
         {
-            var yamlHelper = new YamlHelper(_logger);
+            var yamlHelper = new YamlHelper(this.logger);
             isReadOnly = yamlHelper.IsFileReadOnly(outputPath);
             if (isReadOnly)
             {
-                _logger.LogInformationWithPath("Skipping file modification due to readonly auto-generated-state: {FilePath}", outputPath);
+                this.logger.LogInformationWithPath("Skipping file modification due to readonly auto-generated-state: {FilePath}", outputPath);
                 return; // Skip to next file
             }
         }
@@ -567,7 +587,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         // For video files, handle content preservation after "## Notes"
         if (typeof(TProcessor).Name.Contains("Video") && File.Exists(outputPath) && !forceOverwrite)
         {
-            markdown = PreserveUserContentAfterNotes(outputPath, markdown);
+            markdown = this.PreserveUserContentAfterNotes(outputPath, markdown);
         }
 
         if (!dryRun)
@@ -576,17 +596,17 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             if (queueItem != null)
             {
                 queueItem.StatusMessage = $"Writing markdown to file ({fileIndex}/{totalFiles}): {Path.GetFileNameWithoutExtension(filePath)}.md";
-                OnQueueChanged(queueItem);
+                this.OnQueueChanged(queueItem);
             }
 
             // Update progress to show file writing
-            OnProcessingProgressChanged(
+            this.OnProcessingProgressChanged(
                 filePath,
                 queueItem?.StatusMessage ?? $"Writing markdown to file ({fileIndex}/{totalFiles}): {Path.GetFileNameWithoutExtension(filePath)}.md",
                 fileIndex,
                 totalFiles);
 
-            await File.WriteAllTextAsync(outputPath, markdown);
+            await File.WriteAllTextAsync(outputPath, markdown).ConfigureAwait(false);
 
             // Update queue status after completion
             if (queueItem != null)
@@ -595,17 +615,17 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                 queueItem.Status = DocumentProcessingStatus.Completed;
                 queueItem.StatusMessage = $"Successfully saved markdown note ({fileIndex}/{totalFiles}): {Path.GetFileNameWithoutExtension(filePath)}.md";
                 queueItem.ProcessingEndTime = DateTime.Now;
-                OnQueueChanged(queueItem);
+                this.OnQueueChanged(queueItem);
             }
 
             // Update progress after file is written
-            OnProcessingProgressChanged(
+            this.OnProcessingProgressChanged(
                 filePath,
                 queueItem?.StatusMessage ?? $"Successfully saved markdown note ({fileIndex}/{totalFiles}): {Path.GetFileNameWithoutExtension(filePath)}.md",
                 fileIndex,
                 totalFiles);
 
-            _logger.LogInformationWithPath("Markdown note saved to: {FilePath}", outputPath);
+            this.logger.LogInformationWithPath("Markdown note saved to: {FilePath}", outputPath);
         }
         else
         {
@@ -616,22 +636,22 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                 queueItem.Status = DocumentProcessingStatus.Completed;
                 queueItem.StatusMessage = $"[DRY RUN] Markdown note would be generated for: {Path.GetFileName(filePath)}";
                 queueItem.ProcessingEndTime = DateTime.Now;
-                OnQueueChanged(queueItem);
+                this.OnQueueChanged(queueItem);
             }
 
-            _logger.LogInformationWithPath("[DRY RUN] Markdown note would be generated for: {FilePath}", filePath);
+            this.logger.LogInformationWithPath("[DRY RUN] Markdown note would be generated for: {FilePath}", filePath);
         }
     }
 
     /// <summary>
-    /// Compiles processing results and statistics into a BatchProcessResult
+    /// Compiles processing results and statistics into a BatchProcessResult.
     /// </summary>
-    /// <param name="processed">Number of successfully processed files</param>
-    /// <param name="failed">Number of failed files</param>
-    /// <param name="batchTime">Total batch processing time</param>
-    /// <param name="totalSummaryTime">Total AI summary time</param>
-    /// <param name="totalTokens">Total tokens used</param>
-    /// <returns>Compiled batch processing result</returns>
+    /// <param name="processed">Number of successfully processed files.</param>
+    /// <param name="failed">Number of failed files.</param>
+    /// <param name="batchTime">Total batch processing time.</param>
+    /// <param name="totalSummaryTime">Total AI summary time.</param>
+    /// <param name="totalTokens">Total tokens used.</param>
+    /// <returns>Compiled batch processing result.</returns>
     protected virtual BatchProcessResult CompileProcessingResults(
         int processed,
         int failed,
@@ -639,10 +659,10 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         TimeSpan totalSummaryTime,
         int totalTokens)
     {
-        _logger.LogInformation("Document processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);
-        _logger.LogInformation("Total batch processing time: {ElapsedMs} ms", batchTime.TotalMilliseconds);
-        _logger.LogInformation("Total summary time: {ElapsedMs} ms", totalSummaryTime.TotalMilliseconds);
-        _logger.LogInformation("Total tokens for all summaries: {TotalTokens}", totalTokens);
+        this.logger.LogInformation("Document processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);
+        this.logger.LogInformation("Total batch processing time: {ElapsedMs} ms", batchTime.TotalMilliseconds);
+        this.logger.LogInformation("Total summary time: {ElapsedMs} ms", totalSummaryTime.TotalMilliseconds);
+        this.logger.LogInformation("Total tokens for all summaries: {TotalTokens}", totalTokens);
 
         double avgFileTime = processed > 0 ? batchTime.TotalMilliseconds / processed : 0;
         double avgSummaryTime = processed > 0 ? totalSummaryTime.TotalMilliseconds / processed : 0;
@@ -652,11 +672,20 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         string FormatTime(TimeSpan ts)
         {
             if (ts.TotalHours >= 1)
+            {
                 return $"{(int)ts.TotalHours}h {ts.Minutes}m {ts.Seconds}s";
+            }
+
             if (ts.TotalMinutes >= 1)
+            {
                 return $"{ts.Minutes}m {ts.Seconds}s";
+            }
+
             if (ts.TotalSeconds >= 1)
+            {
                 return $"{ts.Seconds}s {ts.Milliseconds}ms";
+            }
+
             return $"{ts.Milliseconds}ms";
         }
 
@@ -667,10 +696,12 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                 var ts = TimeSpan.FromMilliseconds(ms);
                 return $"{(int)ts.TotalMinutes}m {ts.Seconds}s";
             }
+
             if (ms >= 1000)
             {
-                return $"{(ms / 1000):F2}s";
+                return $"{ms / 1000:F2}s";
             }
+
             return $"{ms:F0}ms";
         }
 
@@ -678,9 +709,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         Dictionary<string, int> documentTypeStats = [];
         Dictionary<DocumentProcessingStatus, int> statusStats = [];
 
-        lock (_queueLock)
+        lock (this.queueLock)
         {
-            foreach (var item in _processingQueue)
+            foreach (var item in this.processingQueue)
             {
                 // Count by document type
                 if (!documentTypeStats.TryGetValue(item.DocumentType, out int docTypeValue))
@@ -688,6 +719,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                     docTypeValue = 0;
                     documentTypeStats[item.DocumentType] = docTypeValue;
                 }
+
                 documentTypeStats[item.DocumentType] = ++docTypeValue;
 
                 // Count by status
@@ -696,9 +728,11 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                     statusValue = 0;
                     statusStats[item.Status] = statusValue;
                 }
+
                 statusStats[item.Status] = ++statusValue;
             }
         }
+
         // Prepare type and status summary
         var typesSummary = string.Join(", ", documentTypeStats.Select(typeEntry => $"{typeEntry.Key}: {typeEntry.Value}"));
 
@@ -718,6 +752,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         {
             summary += $"Successfully completed: {completedValue}\n";
         }
+
         if (statusStats.TryGetValue(DocumentProcessingStatus.Failed, out int failedValue))
         {
             summary += $"Failed: {failedValue}\n";
@@ -742,7 +777,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             TotalTokens = totalTokens,
             AverageFileTimeMs = avgFileTime,
             AverageSummaryTimeMs = avgSummaryTime,
-            AverageTokens = avgTokens
+            AverageTokens = avgTokens,
         };
     }
 
@@ -773,16 +808,16 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                     var resourcesRootInfo = new DirectoryInfo(resourcesRoot);
 
                     // Get the relative path from resources root to the input file's directory
-                    string relativePath = Path.GetRelativePath(resourcesRootInfo.FullName, inputFileInfo.DirectoryName ?? "");
+                    string relativePath = Path.GetRelativePath(resourcesRootInfo.FullName, inputFileInfo.DirectoryName ?? string.Empty);
 
                     // Log the original relative path for debugging
-                    _logger.LogDebug("Original relative path from resources root: {RelativePath}", relativePath);
+                    this.logger.LogDebug("Original relative path from resources root: {RelativePath}", relativePath);
 
                     // If the relative path starts with "." it means the file is directly in the resources root
                     // In that case, use empty path to put files directly in output directory
                     if (relativePath == "." || relativePath == ".\\")
                     {
-                        relativePath = "";
+                        relativePath = string.Empty;
                     }
 
                     // Create the output directory structure
@@ -790,14 +825,15 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                     Directory.CreateDirectory(targetDir);
 
                     var outputPath = Path.Combine(targetDir, fileName);
-                    _logger.LogDebug("Generated output path: {OutputPath}", outputPath);
+                    this.logger.LogDebug("Generated output path: {OutputPath}", outputPath);
 
                     return outputPath;
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to calculate relative path from resources root {ResourcesRoot} to {InputFile}, using flat structure",
+                    this.logger.LogWarning(ex, "Failed to calculate relative path from resources root {ResourcesRoot} to {InputFile}, using flat structure",
                         resourcesRoot, inputFilePath);
+
                     // Fall back to flat structure
                     return Path.Combine(outputDir, fileName);
                 }
@@ -867,18 +903,18 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to preserve user content from existing file: {FilePath}", existingFilePath);
+            this.logger.LogError(ex, "Failed to preserve user content from existing file: {FilePath}", existingFilePath);
             return newMarkdown;
         }
     }
 
     /// <summary>
-    /// Validates input parameters and sets up processing configuration
+    /// Validates input parameters and sets up processing configuration.
     /// </summary>
-    /// <param name="input">Input path</param>
-    /// <param name="output">Output path</param>
-    /// <param name="appConfig">Application configuration</param>
-    /// <returns>Tuple containing effective input and output paths, or null if validation failed</returns>
+    /// <param name="input">Input path.</param>
+    /// <param name="output">Output path.</param>
+    /// <param name="appConfig">Application configuration.</param>
+    /// <returns>Tuple containing effective input and output paths, or null if validation failed.</returns>
     protected virtual (string effectiveInput, string effectiveOutput)? ValidateAndSetupProcessing(
         string input,
         string? output,
@@ -889,7 +925,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
 
         if (string.IsNullOrWhiteSpace(effectiveInput))
         {
-            _logger.LogError("Input path is required. Config: {Config}", appConfig?.Paths?.NotebookVaultFullpathRoot);
+            this.logger.LogError("Input path is required. Config: {Config}", appConfig?.Paths?.NotebookVaultFullpathRoot);
             return null;
         }
 
@@ -897,13 +933,13 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     }
 
     /// <summary>
-    /// Extracts content and metadata from a file with progress tracking
+    /// Extracts content and metadata from a file with progress tracking.
     /// </summary>
-    /// <param name="filePath">Path to the file to extract from</param>
-    /// <param name="queueItem">Queue item to update with progress</param>
-    /// <param name="fileIndex">Current file index</param>
-    /// <param name="totalFiles">Total number of files</param>
-    /// <returns>Tuple containing extracted text and metadata</returns>
+    /// <param name="filePath">Path to the file to extract from.</param>
+    /// <param name="queueItem">Queue item to update with progress.</param>
+    /// <param name="fileIndex">Current file index.</param>
+    /// <param name="totalFiles">Total number of files.</param>
+    /// <returns>Tuple containing extracted text and metadata.</returns>
     protected virtual async Task<(string text, Dictionary<string, object> metadata)> ExtractContentAsync(
         string filePath,
         QueueItem? queueItem,
@@ -915,28 +951,28 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         {
             queueItem.Stage = ProcessingStage.ContentExtraction;
             queueItem.StatusMessage = $"Extracting content from {queueItem.DocumentType} file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}";
-            OnQueueChanged(queueItem);
+            this.OnQueueChanged(queueItem);
         }
 
         // For backward compatibility with current UI
-        OnProcessingProgressChanged(
+        this.OnProcessingProgressChanged(
             filePath,
             queueItem?.StatusMessage ?? $"Extracting content from file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}",
             fileIndex,
             totalFiles);
 
-        var (text, metadata) = await _processor.ExtractTextAndMetadataAsync(filePath);
+        var (text, metadata) = await this.processor.ExtractTextAndMetadataAsync(filePath).ConfigureAwait(false);
 
         // Store content length in queue metadata
         if (queueItem != null)
         {
             queueItem.Metadata["ContentLength"] = text.Length;
             queueItem.StatusMessage = $"Extracted {text.Length:N0} characters from {queueItem.DocumentType} file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}";
-            OnQueueChanged(queueItem);
+            this.OnQueueChanged(queueItem);
         }
 
         // Update progress with content length information
-        OnProcessingProgressChanged(
+        this.OnProcessingProgressChanged(
             filePath,
             queueItem?.StatusMessage ?? $"Extracted {text.Length:N0} characters from file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}",
             fileIndex,
@@ -944,21 +980,22 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
 
         return (text, metadata);
     }
+
     /// <summary>
-    /// Generates AI summary using processor-specific methods
+    /// Generates AI summary using processor-specific methods.
     /// </summary>
-    /// <param name="filePath">Path to the file being processed</param>
-    /// <param name="text">Extracted text content</param>
-    /// <param name="metadata">File metadata</param>
-    /// <param name="queueItem">Queue item to update with progress</param>
-    /// <param name="fileIndex">Current file index</param>
-    /// <param name="totalFiles">Total number of files</param>
-    /// <param name="openAiApiKey">OpenAI API key</param>
-    /// <param name="noSummary">Whether to skip summary generation</param>
-    /// <param name="timeoutSeconds">API timeout in seconds</param>
-    /// <param name="resourcesRoot">Resources root directory</param>
-    /// <param name="noShareLinks">Whether to skip share link generation</param>
-    /// <returns>Tuple containing summary text, token count, and summary time</returns>
+    /// <param name="filePath">Path to the file being processed.</param>
+    /// <param name="text">Extracted text content.</param>
+    /// <param name="metadata">File metadata.</param>
+    /// <param name="queueItem">Queue item to update with progress.</param>
+    /// <param name="fileIndex">Current file index.</param>
+    /// <param name="totalFiles">Total number of files.</param>
+    /// <param name="openAiApiKey">OpenAI API key.</param>
+    /// <param name="noSummary">Whether to skip summary generation.</param>
+    /// <param name="timeoutSeconds">API timeout in seconds.</param>
+    /// <param name="resourcesRoot">Resources root directory.</param>
+    /// <param name="noShareLinks">Whether to skip share link generation.</param>
+    /// <returns>Tuple containing summary text, token count, and summary time.</returns>
     protected virtual async Task<(string summaryText, int summaryTokens, TimeSpan summaryTime)> GenerateAISummaryAsync(
         string filePath,
         string text,
@@ -980,13 +1017,15 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         if (typeof(TProcessor).Name.Contains("Video"))
         {
             // Use reflection to call the specialized GenerateVideoNoteAsync method
-            var generateMethod = _processor.GetType().GetMethod("GenerateVideoNoteAsync");
+            var generateMethod = this.processor.GetType().GetMethod("GenerateVideoNoteAsync");
             if (generateMethod != null)
             {
-                _logger.LogDebug("Using specialized GenerateVideoNoteAsync method for video processing");
+                this.logger.LogDebug("Using specialized GenerateVideoNoteAsync method for video processing");
+
                 // Pass the noShareLinks parameter to the GenerateVideoNoteAsync method
-                var task = (Task<string>)generateMethod.Invoke(_processor,
-                [
+                var task = (Task<string>)generateMethod.Invoke(
+                    this.processor,
+                    [
                     filePath,
                     openAiApiKey,
                     null, // promptFileName
@@ -996,15 +1035,15 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
                     noShareLinks
                 ])!;
 
-                summaryText = await task; // For video, this contains the full markdown
+                summaryText = await task.ConfigureAwait(false); // For video, this contains the full markdown
 
                 // Estimate tokens
-                var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                var estimateTokenMethod = this.aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 if (estimateTokenMethod != null && !noSummary)
                 {
                     // Extract summary part from the markdown for token estimation
                     var testSummary = summaryText.Length > 300 ? summaryText[..300] : summaryText;
-                    var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, [testSummary]);
+                    var tokenResult = estimateTokenMethod.Invoke(this.aiSummarizer, [testSummary]);
                     if (tokenResult != null)
                     {
                         summaryTokens = (int)tokenResult;
@@ -1013,8 +1052,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             }
             else
             {
-                _logger.LogWarning("VideoNoteProcessor found but GenerateVideoNoteAsync method not available. Using base method.");
-                summaryText = await _processor.GenerateAiSummaryAsync(text);
+                this.logger.LogWarning("VideoNoteProcessor found but GenerateVideoNoteAsync method not available. Using base method.");
+                summaryText = await this.processor.GenerateAiSummaryAsync(text).ConfigureAwait(false);
             }
         }
         else if (noSummary)
@@ -1028,65 +1067,66 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             if (isPdfProcessor)
             {
                 // Use reflection to call the specialized GeneratePdfSummaryAsync method
-                var generateMethod = _processor.GetType().GetMethod("GeneratePdfSummaryAsync");
+                var generateMethod = this.processor.GetType().GetMethod("GeneratePdfSummaryAsync");
                 if (generateMethod != null)
                 {
-                    _logger.LogDebug("Using specialized GeneratePdfSummaryAsync method for PDF processing");
+                    this.logger.LogDebug("Using specialized GeneratePdfSummaryAsync method for PDF processing");
 
                     // Update queue status
                     if (queueItem != null)
                     {
                         queueItem.Stage = ProcessingStage.AISummaryGeneration;
                         queueItem.StatusMessage = $"Analyzing PDF content for AI summary ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}";
-                        OnQueueChanged(queueItem);
+                        this.OnQueueChanged(queueItem);
                     }
 
                     // Update progress to show we're preparing for AI summary generation
-                    OnProcessingProgressChanged(
+                    this.OnProcessingProgressChanged(
                         filePath,
                         queueItem?.StatusMessage ?? $"Analyzing PDF content for AI summary ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}",
                         fileIndex,
                         totalFiles);
 
                     // Pass the metadata to the GeneratePdfSummaryAsync method
-                    var task = (Task<string>)generateMethod.Invoke(_processor, [text, metadata, null])!;
-                    summaryText = await task;
+                    var task = (Task<string>)generateMethod.Invoke(this.processor, [text, metadata, null])!;
+                    summaryText = await task.ConfigureAwait(false);
 
                     // Update queue status
                     if (queueItem != null)
                     {
                         queueItem.StatusMessage = $"AI summary generated for PDF ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}";
-                        OnQueueChanged(queueItem);
+                        this.OnQueueChanged(queueItem);
                     }
                 }
                 else
                 {
-                    _logger.LogWarning("PdfNoteProcessor found but GeneratePdfSummaryAsync method not available. Using base method.");
-                    summaryText = await _processor.GenerateAiSummaryAsync(text);
+                    this.logger.LogWarning("PdfNoteProcessor found but GeneratePdfSummaryAsync method not available. Using base method.");
+                    summaryText = await this.processor.GenerateAiSummaryAsync(text).ConfigureAwait(false);
                 }
             }
             else
             {
                 // For other processors, use the standard GenerateAiSummaryAsync
-                OnProcessingProgressChanged(
+                this.OnProcessingProgressChanged(
                     filePath,
                     $"Generating AI summary for file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}",
                     fileIndex,
                     totalFiles);
 
-                summaryText = await _processor.GenerateAiSummaryAsync(text);
+                summaryText = await this.processor.GenerateAiSummaryAsync(text).ConfigureAwait(false);
             }
 
             // Estimate tokens
-            var estimateTokenMethod = _aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var estimateTokenMethod = this.aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             if (estimateTokenMethod != null)
             {
-                var tokenResult = estimateTokenMethod.Invoke(_aiSummarizer, [summaryText]);
+                var tokenResult = estimateTokenMethod.Invoke(this.aiSummarizer, [summaryText]);
                 if (tokenResult != null)
                 {
                     summaryTokens = (int)tokenResult;
+
                     // Add token count to progress message
-                    OnProcessingProgressChanged(
+                    this.OnProcessingProgressChanged(
                         filePath,
                         $"AI summary completed with {summaryTokens:N0} tokens ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}",
                         fileIndex,
@@ -1100,14 +1140,14 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     }
 
     /// <summary>
-    /// Discovers files to process based on input path and file extensions
+    /// Discovers files to process based on input path and file extensions.
     /// </summary>
-    /// <param name="effectiveInput">Effective input path</param>
-    /// <param name="fileExtensions">List of file extensions to process</param>
-    /// <param name="retryFailed">Whether to retry only failed files</param>
-    /// <param name="effectiveOutput">Output directory for failed files list</param>
-    /// <param name="failedFilesListName">Name of failed files list</param>
-    /// <returns>List of files to process, or null if discovery failed</returns>
+    /// <param name="effectiveInput">Effective input path.</param>
+    /// <param name="fileExtensions">List of file extensions to process.</param>
+    /// <param name="retryFailed">Whether to retry only failed files.</param>
+    /// <param name="effectiveOutput">Output directory for failed files list.</param>
+    /// <param name="failedFilesListName">Name of failed files list.</param>
+    /// <returns>List of files to process, or null if discovery failed.</returns>
     protected virtual List<string>? DiscoverAndFilterFiles(
         string effectiveInput,
         List<string> fileExtensions,
@@ -1123,7 +1163,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             {
                 files.AddRange(Directory.GetFiles(effectiveInput, "*" + ext, SearchOption.AllDirectories));
             }
-            _logger.LogInformationWithPath("Found {Count} files in directory: {FilePath}", effectiveInput, files.Count);
+
+            this.logger.LogInformationWithPath("Found {Count} files in directory: {FilePath}", effectiveInput, files.Count);
         }
         else if (File.Exists(effectiveInput) && fileExtensions.Exists(ext => effectiveInput.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
         {
@@ -1131,7 +1172,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
         }
         else
         {
-            _logger.LogError("Input must be a file or directory containing valid files: {Input}", effectiveInput);
+            this.logger.LogError("Input must be a file or directory containing valid files: {Input}", effectiveInput);
             return null;
         }
 
@@ -1143,11 +1184,11 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
             {
                 var failedFiles = new HashSet<string>(File.ReadAllLines(failedListPath));
                 files = files.FindAll(f => failedFiles.Contains(f));
-                _logger.LogInformation("Retrying {Count} previously failed files.", files.Count);
+                this.logger.LogInformation("Retrying {Count} previously failed files.", files.Count);
             }
             else
             {
-                _logger.LogWarning("No {FileName} found for retry; processing all files.", failedFilesListName);
+                this.logger.LogWarning("No {FileName} found for retry; processing all files.", failedFilesListName);
             }
         }
 
@@ -1155,36 +1196,36 @@ public partial class DocumentNoteBatchProcessor<TProcessor> where TProcessor : D
     }
 
     /// <summary>
-    /// Initializes the processing queue with discovered files
+    /// Initializes the processing queue with discovered files.
     /// </summary>
-    /// <param name="files">List of files to add to queue</param>
+    /// <param name="files">List of files to add to queue.</param>
     protected virtual void InitializeProcessingQueue(List<string> files)
     {
         // Clear any existing queue
-        lock (_queueLock)
+        lock (this.queueLock)
         {
-            _processingQueue.Clear();
+            this.processingQueue.Clear();
         }
 
         // Build the processing queue
         foreach (var filePath in files)
         {
             // Determine document type based on extension
-            string documentType = GetDocumentType(filePath);
+            string documentType = this.GetDocumentType(filePath);
 
             // Create queue item
             var queueItem = new QueueItem(filePath, documentType);
 
             // Add to processing queue
-            lock (_queueLock)
+            lock (this.queueLock)
             {
-                _processingQueue.Add(queueItem);
+                this.processingQueue.Add(queueItem);
             }
 
-            _logger.LogDebug("Added {DocumentType} file to queue: {FilePath}", documentType, filePath);
+            this.logger.LogDebug("Added {DocumentType} file to queue: {FilePath}", documentType, filePath);
         }
 
         // Notify that the queue has been populated
-        OnQueueChanged();
+        this.OnQueueChanged();
     }
 }

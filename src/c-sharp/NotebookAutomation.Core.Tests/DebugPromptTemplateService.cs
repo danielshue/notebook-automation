@@ -1,15 +1,16 @@
-using System;
-using System.IO;
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Utils;
-using Microsoft.Extensions.Logging;
-using Moq;
-
+﻿// <copyright file="DebugPromptTemplateService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/DebugPromptTemplateService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
-public class DebugPromptTemplateServiceTests
+internal class DebugPromptTemplateServiceTests
 {
     [TestMethod]
     public void Debug_PromptsDirectorySearch()
@@ -29,6 +30,7 @@ public class DebugPromptTemplateServiceTests
                         return content[(endIndex + 3)..].Trim();
                     }
                 }
+
                 return content;
             });
 

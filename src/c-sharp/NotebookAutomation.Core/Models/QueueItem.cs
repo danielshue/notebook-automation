@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Models;
+﻿// <copyright file="QueueItem.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Models/QueueItem.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Models;
 
 /// <summary>
 /// Represents a document in the processing queue.
@@ -9,8 +18,8 @@
 /// It provides properties to track the progress and state of the document throughout
 /// the processing lifecycle.
 /// </remarks>
-/// <param name="filePath">The path of the file to be processed</param>
-/// <param name="documentType">The document type (e.g., "PDF", "VIDEO")</param>
+/// <param name="filePath">The path of the file to be processed.</param>
+/// <param name="documentType">The document type (e.g., "PDF", "VIDEO").</param>
 public class QueueItem(string filePath, string documentType)
 {
     /// <summary>
@@ -39,7 +48,7 @@ public class QueueItem(string filePath, string documentType)
     public string DocumentType { get; } = documentType;
 
     /// <summary>
-    /// Gets or sets the current processing stage.
+    /// Gets the current processing stage.
     /// </summary>
     /// <remarks>
     /// This property tracks the specific stage of processing, such as "ContentExtraction"
@@ -48,7 +57,7 @@ public class QueueItem(string filePath, string documentType)
     public ProcessingStage Stage { get; internal set; } = ProcessingStage.NotStarted;
 
     /// <summary>
-    /// Gets or sets additional information about the file's current state.
+    /// Gets additional information about the file's current state.
     /// </summary>
     /// <remarks>
     /// This property provides a descriptive message about the file's current processing state.
@@ -56,7 +65,7 @@ public class QueueItem(string filePath, string documentType)
     public string StatusMessage { get; internal set; } = "Waiting to be processed";
 
     /// <summary>
-    /// Gets or sets the time when processing started for this file.
+    /// Gets the time when processing started for this file.
     /// </summary>
     /// <remarks>
     /// This property records the timestamp when processing began for the file.
@@ -64,7 +73,7 @@ public class QueueItem(string filePath, string documentType)
     public DateTime? ProcessingStartTime { get; internal set; }
 
     /// <summary>
-    /// Gets or sets the time when processing completed for this file.
+    /// Gets the time when processing completed for this file.
     /// </summary>
     /// <remarks>
     /// This property records the timestamp when processing finished for the file.

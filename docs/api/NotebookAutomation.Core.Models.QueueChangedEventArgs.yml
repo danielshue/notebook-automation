@@ -1,0 +1,566 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+  commentId: T:NotebookAutomation.Core.Models.QueueChangedEventArgs
+  id: QueueChangedEventArgs
+  parent: NotebookAutomation.Core.Models
+  children:
+  - NotebookAutomation.Core.Models.QueueChangedEventArgs.#ctor(System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem},NotebookAutomation.Core.Models.QueueItem)
+  - NotebookAutomation.Core.Models.QueueChangedEventArgs.ChangedItem
+  - NotebookAutomation.Core.Models.QueueChangedEventArgs.Queue
+  langs:
+  - csharp
+  - vb
+  name: QueueChangedEventArgs
+  nameWithType: QueueChangedEventArgs
+  fullName: NotebookAutomation.Core.Models.QueueChangedEventArgs
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/QueueChangedEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: QueueChangedEventArgs
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/QueueChangedEventArgs.cs
+    startLine: 18
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Event arguments for queue changes.
+  remarks: >-
+    The <code>QueueChangedEventArgs</code> class provides information about changes to the processing queue,
+
+    including the current state of the queue and the item that was changed, if applicable.
+  example: []
+  syntax:
+    content: 'public class QueueChangedEventArgs : EventArgs'
+    content.vb: Public Class QueueChangedEventArgs Inherits EventArgs
+  inheritance:
+  - System.Object
+  - System.EventArgs
+  inheritedMembers:
+  - System.EventArgs.Empty
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Models.QueueChangedEventArgs.#ctor(System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem},NotebookAutomation.Core.Models.QueueItem)
+  commentId: M:NotebookAutomation.Core.Models.QueueChangedEventArgs.#ctor(System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem},NotebookAutomation.Core.Models.QueueItem)
+  id: '#ctor(System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem},NotebookAutomation.Core.Models.QueueItem)'
+  parent: NotebookAutomation.Core.Models.QueueChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: QueueChangedEventArgs(IReadOnlyList<QueueItem>, QueueItem?)
+  nameWithType: QueueChangedEventArgs.QueueChangedEventArgs(IReadOnlyList<QueueItem>, QueueItem?)
+  fullName: NotebookAutomation.Core.Models.QueueChangedEventArgs.QueueChangedEventArgs(System.Collections.Generic.IReadOnlyList<NotebookAutomation.Core.Models.QueueItem>, NotebookAutomation.Core.Models.QueueItem?)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/QueueChangedEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/QueueChangedEventArgs.cs
+    startLine: 18
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Event arguments for queue changes.
+  remarks: >-
+    The <code>QueueChangedEventArgs</code> class provides information about changes to the processing queue,
+
+    including the current state of the queue and the item that was changed, if applicable.
+  example: []
+  syntax:
+    content: public QueueChangedEventArgs(IReadOnlyList<QueueItem> queue, QueueItem? changedItem = null)
+    parameters:
+    - id: queue
+      type: System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+    - id: changedItem
+      type: NotebookAutomation.Core.Models.QueueItem
+    content.vb: Public Sub New(queue As IReadOnlyList(Of QueueItem), changedItem As QueueItem = Nothing)
+  overload: NotebookAutomation.Core.Models.QueueChangedEventArgs.#ctor*
+  nameWithType.vb: QueueChangedEventArgs.New(IReadOnlyList(Of QueueItem), QueueItem)
+  fullName.vb: NotebookAutomation.Core.Models.QueueChangedEventArgs.New(System.Collections.Generic.IReadOnlyList(Of NotebookAutomation.Core.Models.QueueItem), NotebookAutomation.Core.Models.QueueItem)
+  name.vb: New(IReadOnlyList(Of QueueItem), QueueItem)
+- uid: NotebookAutomation.Core.Models.QueueChangedEventArgs.Queue
+  commentId: P:NotebookAutomation.Core.Models.QueueChangedEventArgs.Queue
+  id: Queue
+  parent: NotebookAutomation.Core.Models.QueueChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Queue
+  nameWithType: QueueChangedEventArgs.Queue
+  fullName: NotebookAutomation.Core.Models.QueueChangedEventArgs.Queue
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/QueueChangedEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Queue
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/QueueChangedEventArgs.cs
+    startLine: 26
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Gets the current state of the processing queue.
+  remarks: This property provides a snapshot of the queue's state at the time of the event.
+  example: []
+  syntax:
+    content: public IReadOnlyList<QueueItem> Queue { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+    content.vb: Public ReadOnly Property Queue As IReadOnlyList(Of QueueItem)
+  overload: NotebookAutomation.Core.Models.QueueChangedEventArgs.Queue*
+- uid: NotebookAutomation.Core.Models.QueueChangedEventArgs.ChangedItem
+  commentId: P:NotebookAutomation.Core.Models.QueueChangedEventArgs.ChangedItem
+  id: ChangedItem
+  parent: NotebookAutomation.Core.Models.QueueChangedEventArgs
+  langs:
+  - csharp
+  - vb
+  name: ChangedItem
+  nameWithType: QueueChangedEventArgs.ChangedItem
+  fullName: NotebookAutomation.Core.Models.QueueChangedEventArgs.ChangedItem
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/QueueChangedEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ChangedItem
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/QueueChangedEventArgs.cs
+    startLine: 35
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Gets the item that changed, if applicable.
+  remarks: >-
+    This property identifies the specific item in the queue that triggered the event.
+
+    It may be null if the event does not pertain to a specific item.
+  example: []
+  syntax:
+    content: public QueueItem? ChangedItem { get; }
+    parameters: []
+    return:
+      type: NotebookAutomation.Core.Models.QueueItem
+    content.vb: Public ReadOnly Property ChangedItem As QueueItem
+  overload: NotebookAutomation.Core.Models.QueueChangedEventArgs.ChangedItem*
+references:
+- uid: NotebookAutomation.Core.Models
+  commentId: N:NotebookAutomation.Core.Models
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Models
+  nameWithType: NotebookAutomation.Core.Models
+  fullName: NotebookAutomation.Core.Models
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.EventArgs
+  commentId: T:System.EventArgs
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs
+  name: EventArgs
+  nameWithType: EventArgs
+  fullName: System.EventArgs
+- uid: System.EventArgs.Empty
+  commentId: F:System.EventArgs.Empty
+  parent: System.EventArgs
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs.empty
+  name: Empty
+  nameWithType: EventArgs.Empty
+  fullName: System.EventArgs.Empty
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Models.QueueChangedEventArgs.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Models.QueueChangedEventArgs.#ctor
+  href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html#NotebookAutomation_Core_Models_QueueChangedEventArgs__ctor_System_Collections_Generic_IReadOnlyList_NotebookAutomation_Core_Models_QueueItem__NotebookAutomation_Core_Models_QueueItem_
+  name: QueueChangedEventArgs
+  nameWithType: QueueChangedEventArgs.QueueChangedEventArgs
+  fullName: NotebookAutomation.Core.Models.QueueChangedEventArgs.QueueChangedEventArgs
+  nameWithType.vb: QueueChangedEventArgs.New
+  fullName.vb: NotebookAutomation.Core.Models.QueueChangedEventArgs.New
+  name.vb: New
+- uid: System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+  commentId: T:System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<QueueItem>
+  nameWithType: IReadOnlyList<QueueItem>
+  fullName: System.Collections.Generic.IReadOnlyList<NotebookAutomation.Core.Models.QueueItem>
+  nameWithType.vb: IReadOnlyList(Of QueueItem)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of NotebookAutomation.Core.Models.QueueItem)
+  name.vb: IReadOnlyList(Of QueueItem)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.QueueItem
+    name: QueueItem
+    href: NotebookAutomation.Core.Models.QueueItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.QueueItem
+    name: QueueItem
+    href: NotebookAutomation.Core.Models.QueueItem.html
+  - name: )
+- uid: NotebookAutomation.Core.Models.QueueItem
+  commentId: T:NotebookAutomation.Core.Models.QueueItem
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.QueueItem.html
+  name: QueueItem
+  nameWithType: QueueItem
+  fullName: NotebookAutomation.Core.Models.QueueItem
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Models.QueueChangedEventArgs.Queue*
+  commentId: Overload:NotebookAutomation.Core.Models.QueueChangedEventArgs.Queue
+  href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html#NotebookAutomation_Core_Models_QueueChangedEventArgs_Queue
+  name: Queue
+  nameWithType: QueueChangedEventArgs.Queue
+  fullName: NotebookAutomation.Core.Models.QueueChangedEventArgs.Queue
+- uid: NotebookAutomation.Core.Models.QueueChangedEventArgs.ChangedItem*
+  commentId: Overload:NotebookAutomation.Core.Models.QueueChangedEventArgs.ChangedItem
+  href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html#NotebookAutomation_Core_Models_QueueChangedEventArgs_ChangedItem
+  name: ChangedItem
+  nameWithType: QueueChangedEventArgs.ChangedItem
+  fullName: NotebookAutomation.Core.Models.QueueChangedEventArgs.ChangedItem

@@ -1,7 +1,12 @@
-﻿using System.Linq;
-
-using Moq;
-
+﻿// <copyright file="RecursiveCharacterTextSplitterTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/RecursiveCharacterTextSplitterTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 using NotebookAutomation.Core.Services.Text;
 
 namespace NotebookAutomation.Core.Tests;
@@ -10,12 +15,12 @@ namespace NotebookAutomation.Core.Tests;
 /// Test suite for the RecursiveCharacterTextSplitter class.
 /// </summary>
 [TestClass]
-public class RecursiveCharacterTextSplitterTests
+internal class RecursiveCharacterTextSplitterTests
 {
-    private Mock<ILogger> _mockLogger = null!;
+    private Mock<ILogger> mockLogger = null!;
 
     [TestInitialize]
-    public void SetUp() => _mockLogger = new Mock<ILogger>();
+    public void SetUp() => this.mockLogger = new Mock<ILogger>();
 
     /// <summary>
     /// Tests that the splitter handles empty text correctly.
@@ -24,7 +29,7 @@ public class RecursiveCharacterTextSplitterTests
     public void SplitText_WithEmptyText_ReturnsEmptyList()
     {
         // Arrange
-        RecursiveCharacterTextSplitter splitter = new(_mockLogger.Object);
+        RecursiveCharacterTextSplitter splitter = new(this.mockLogger.Object);
 
         // Act
         List<string> result = splitter.SplitText(string.Empty);
@@ -41,7 +46,7 @@ public class RecursiveCharacterTextSplitterTests
     public void SplitText_WithSmallText_ReturnsSingleChunk()
     {
         // Arrange
-        RecursiveCharacterTextSplitter splitter = new(_mockLogger.Object, 1000);
+        RecursiveCharacterTextSplitter splitter = new(this.mockLogger.Object, 1000);
         string smallText = "This is a small text that should fit in a single chunk.";
 
         // Act
@@ -59,7 +64,7 @@ public class RecursiveCharacterTextSplitterTests
     public void SplitText_WithCodeBlocks_KeepsCodeBlocksTogether()
     {
         // Arrange
-        RecursiveCharacterTextSplitter splitter = RecursiveCharacterTextSplitter.CreateForMarkdown(_mockLogger.Object, 200, 50);
+        RecursiveCharacterTextSplitter splitter = RecursiveCharacterTextSplitter.CreateForMarkdown(this.mockLogger.Object, 200, 50);
 
         string markdown = "# Code Example\n\n" +
                          "Here is an example code block:\n\n" +
@@ -97,7 +102,7 @@ public class RecursiveCharacterTextSplitterTests
     {
         // Arrange
         int maxTokens = 100;
-        RecursiveCharacterTextSplitter splitter = new(_mockLogger.Object, maxTokens, 20);
+        RecursiveCharacterTextSplitter splitter = new(this.mockLogger.Object, maxTokens, 20);
 
         // Create a large text with many paragraphs
         System.Text.StringBuilder largeText = new();

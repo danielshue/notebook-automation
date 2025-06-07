@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Services;
+﻿// <copyright file="IOneDriveService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Services;
 
 /// <summary>
 /// Interface for OneDrive service operations including authentication, file operations, sharing, and path mapping.
@@ -49,6 +58,7 @@ public interface IOneDriveService
     /// Console.WriteLine("Authentication successful.");
     /// </code>
     /// </example>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task AuthenticateAsync();
 
     /// <summary>

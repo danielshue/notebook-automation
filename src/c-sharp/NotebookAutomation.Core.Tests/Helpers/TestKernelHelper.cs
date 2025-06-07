@@ -1,4 +1,13 @@
-﻿using Microsoft.SemanticKernel;
+﻿// <copyright file="TestKernelHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Helpers/TestKernelHelper.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using Microsoft.SemanticKernel;
 
 namespace NotebookAutomation.Core.Tests.Helpers;
 
@@ -6,7 +15,7 @@ namespace NotebookAutomation.Core.Tests.Helpers;
 /// Helper class for creating test kernels for AI summarization tests.
 /// This class replaces the previous MockTextGenerationServiceHelper which depended on ITextGenerationService.
 /// </summary>
-public static class TestKernelHelper
+internal static class TestKernelHelper
 {
     /// <summary>
     /// Creates a basic kernel for testing.
@@ -26,6 +35,7 @@ public static class TestKernelHelper
     public static Kernel CreateKernelWithSimulatedResponse(string simulatedResponse)
     {
         IKernelBuilder builder = Kernel.CreateBuilder();
+
         // Instead of mocking a service, we could register a test implementation
         // or configure the kernel in some other way if needed
         return builder.Build();

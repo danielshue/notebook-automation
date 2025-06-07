@@ -1,0 +1,98 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Models
+  commentId: N:NotebookAutomation.Core.Models
+  id: NotebookAutomation.Core.Models
+  children:
+  - NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  - NotebookAutomation.Core.Models.DocumentProcessingStatus
+  - NotebookAutomation.Core.Models.ProcessingStage
+  - NotebookAutomation.Core.Models.QueueChangedEventArgs
+  - NotebookAutomation.Core.Models.QueueItem
+  - NotebookAutomation.Core.Models.VaultFileInfo
+  - NotebookAutomation.Core.Models.VaultIndexOptions
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Models
+  nameWithType: NotebookAutomation.Core.Models
+  fullName: NotebookAutomation.Core.Models
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  commentId: T:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html
+  name: DocumentProcessingProgressEventArgs
+  nameWithType: DocumentProcessingProgressEventArgs
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+- uid: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  commentId: T:NotebookAutomation.Core.Models.DocumentProcessingStatus
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.DocumentProcessingStatus.html
+  name: DocumentProcessingStatus
+  nameWithType: DocumentProcessingStatus
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingStatus
+- uid: NotebookAutomation.Core.Models.ProcessingStage
+  commentId: T:NotebookAutomation.Core.Models.ProcessingStage
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.ProcessingStage.html
+  name: ProcessingStage
+  nameWithType: ProcessingStage
+  fullName: NotebookAutomation.Core.Models.ProcessingStage
+- uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+  commentId: T:NotebookAutomation.Core.Models.QueueChangedEventArgs
+  href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html
+  name: QueueChangedEventArgs
+  nameWithType: QueueChangedEventArgs
+  fullName: NotebookAutomation.Core.Models.QueueChangedEventArgs
+- uid: NotebookAutomation.Core.Models.QueueItem
+  commentId: T:NotebookAutomation.Core.Models.QueueItem
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.QueueItem.html
+  name: QueueItem
+  nameWithType: QueueItem
+  fullName: NotebookAutomation.Core.Models.QueueItem
+- uid: NotebookAutomation.Core.Models.VaultFileInfo
+  commentId: T:NotebookAutomation.Core.Models.VaultFileInfo
+  href: NotebookAutomation.Core.Models.VaultFileInfo.html
+  name: VaultFileInfo
+  nameWithType: VaultFileInfo
+  fullName: NotebookAutomation.Core.Models.VaultFileInfo
+- uid: NotebookAutomation.Core.Models.VaultIndexOptions
+  commentId: T:NotebookAutomation.Core.Models.VaultIndexOptions
+  href: NotebookAutomation.Core.Models.VaultIndexOptions.html
+  name: VaultIndexOptions
+  nameWithType: VaultIndexOptions
+  fullName: NotebookAutomation.Core.Models.VaultIndexOptions
+- uid: NotebookAutomation.Core.Models
+  commentId: N:NotebookAutomation.Core.Models
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Models
+  nameWithType: NotebookAutomation.Core.Models
+  fullName: NotebookAutomation.Core.Models
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html

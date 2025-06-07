@@ -1,0 +1,242 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Models.ProcessingStage
+  commentId: T:NotebookAutomation.Core.Models.ProcessingStage
+  id: ProcessingStage
+  parent: NotebookAutomation.Core.Models
+  children:
+  - NotebookAutomation.Core.Models.ProcessingStage.AISummaryGeneration
+  - NotebookAutomation.Core.Models.ProcessingStage.Completed
+  - NotebookAutomation.Core.Models.ProcessingStage.ContentExtraction
+  - NotebookAutomation.Core.Models.ProcessingStage.MarkdownCreation
+  - NotebookAutomation.Core.Models.ProcessingStage.NotStarted
+  - NotebookAutomation.Core.Models.ProcessingStage.ShareLinkGeneration
+  langs:
+  - csharp
+  - vb
+  name: ProcessingStage
+  nameWithType: ProcessingStage
+  fullName: NotebookAutomation.Core.Models.ProcessingStage
+  type: Enum
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessingStage
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+    startLine: 14
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Represents the current processing stage of a document.
+  example: []
+  syntax:
+    content: public enum ProcessingStage
+    content.vb: Public Enum ProcessingStage
+- uid: NotebookAutomation.Core.Models.ProcessingStage.NotStarted
+  commentId: F:NotebookAutomation.Core.Models.ProcessingStage.NotStarted
+  id: NotStarted
+  parent: NotebookAutomation.Core.Models.ProcessingStage
+  langs:
+  - csharp
+  - vb
+  name: NotStarted
+  nameWithType: ProcessingStage.NotStarted
+  fullName: NotebookAutomation.Core.Models.ProcessingStage.NotStarted
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: NotStarted
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+    startLine: 19
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Processing has not yet started.
+  example: []
+  syntax:
+    content: NotStarted = 0
+    return:
+      type: NotebookAutomation.Core.Models.ProcessingStage
+- uid: NotebookAutomation.Core.Models.ProcessingStage.ContentExtraction
+  commentId: F:NotebookAutomation.Core.Models.ProcessingStage.ContentExtraction
+  id: ContentExtraction
+  parent: NotebookAutomation.Core.Models.ProcessingStage
+  langs:
+  - csharp
+  - vb
+  name: ContentExtraction
+  nameWithType: ProcessingStage.ContentExtraction
+  fullName: NotebookAutomation.Core.Models.ProcessingStage.ContentExtraction
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ContentExtraction
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+    startLine: 24
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Extracting content from the document (PDF text or video transcription).
+  example: []
+  syntax:
+    content: ContentExtraction = 1
+    return:
+      type: NotebookAutomation.Core.Models.ProcessingStage
+- uid: NotebookAutomation.Core.Models.ProcessingStage.AISummaryGeneration
+  commentId: F:NotebookAutomation.Core.Models.ProcessingStage.AISummaryGeneration
+  id: AISummaryGeneration
+  parent: NotebookAutomation.Core.Models.ProcessingStage
+  langs:
+  - csharp
+  - vb
+  name: AISummaryGeneration
+  nameWithType: ProcessingStage.AISummaryGeneration
+  fullName: NotebookAutomation.Core.Models.ProcessingStage.AISummaryGeneration
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AISummaryGeneration
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+    startLine: 29
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Generating an AI summary of the document.
+  example: []
+  syntax:
+    content: AISummaryGeneration = 2
+    return:
+      type: NotebookAutomation.Core.Models.ProcessingStage
+- uid: NotebookAutomation.Core.Models.ProcessingStage.MarkdownCreation
+  commentId: F:NotebookAutomation.Core.Models.ProcessingStage.MarkdownCreation
+  id: MarkdownCreation
+  parent: NotebookAutomation.Core.Models.ProcessingStage
+  langs:
+  - csharp
+  - vb
+  name: MarkdownCreation
+  nameWithType: ProcessingStage.MarkdownCreation
+  fullName: NotebookAutomation.Core.Models.ProcessingStage.MarkdownCreation
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: MarkdownCreation
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+    startLine: 34
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Creating a markdown note from the document.
+  example: []
+  syntax:
+    content: MarkdownCreation = 3
+    return:
+      type: NotebookAutomation.Core.Models.ProcessingStage
+- uid: NotebookAutomation.Core.Models.ProcessingStage.ShareLinkGeneration
+  commentId: F:NotebookAutomation.Core.Models.ProcessingStage.ShareLinkGeneration
+  id: ShareLinkGeneration
+  parent: NotebookAutomation.Core.Models.ProcessingStage
+  langs:
+  - csharp
+  - vb
+  name: ShareLinkGeneration
+  nameWithType: ProcessingStage.ShareLinkGeneration
+  fullName: NotebookAutomation.Core.Models.ProcessingStage.ShareLinkGeneration
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ShareLinkGeneration
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+    startLine: 39
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Generating OneDrive share links.
+  example: []
+  syntax:
+    content: ShareLinkGeneration = 4
+    return:
+      type: NotebookAutomation.Core.Models.ProcessingStage
+- uid: NotebookAutomation.Core.Models.ProcessingStage.Completed
+  commentId: F:NotebookAutomation.Core.Models.ProcessingStage.Completed
+  id: Completed
+  parent: NotebookAutomation.Core.Models.ProcessingStage
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: ProcessingStage.Completed
+  fullName: NotebookAutomation.Core.Models.ProcessingStage.Completed
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Completed
+    path: ../src/c-sharp/NotebookAutomation.Core/Models/ProcessingStage.cs
+    startLine: 44
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Processing is complete.
+  example: []
+  syntax:
+    content: Completed = 5
+    return:
+      type: NotebookAutomation.Core.Models.ProcessingStage
+references:
+- uid: NotebookAutomation.Core.Models
+  commentId: N:NotebookAutomation.Core.Models
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Models
+  nameWithType: NotebookAutomation.Core.Models
+  fullName: NotebookAutomation.Core.Models
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+- uid: NotebookAutomation.Core.Models.ProcessingStage
+  commentId: T:NotebookAutomation.Core.Models.ProcessingStage
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.ProcessingStage.html
+  name: ProcessingStage
+  nameWithType: ProcessingStage
+  fullName: NotebookAutomation.Core.Models.ProcessingStage

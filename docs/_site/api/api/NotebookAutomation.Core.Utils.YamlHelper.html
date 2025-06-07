@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class YamlHelper | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class YamlHelper | Obsidian Notebook Automation for Coursera ">
+      
+      <meta name="description" content="Helper class for working with YAML content in markdown files.">
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Utils.YamlHelper">
+
+
+
+  <h1 id="NotebookAutomation_Core_Utils_YamlHelper" data-uid="NotebookAutomation.Core.Utils.YamlHelper" class="text-break">
+Class YamlHelper  
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Utils.html">Utils</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Helper class for working with YAML content in markdown files.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class YamlHelper : IYamlHelper</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">YamlHelper</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="NotebookAutomation.Core.Utils.IYamlHelper.html">IYamlHelper</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="NotebookAutomation_Core_Utils_YamlHelper_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+Provides functionality for parsing, modifying, and serializing YAML frontmatter found in markdown documents, with special consideration for preserving formatting and handling Obsidian-specific conventions.
+</p>
+<example>
+<pre><code class="lang-csharp">var helper = new YamlHelper(logger);
+var frontmatter = helper.ExtractFrontmatter(markdown);
+var dict = helper.ParseYamlToDictionary(frontmatter);</code></pre>
+</example>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper__ctor_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.#ctor*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper__ctor_Microsoft_Extensions_Logging_ILogger_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.#ctor(Microsoft.Extensions.Logging.ILogger)">
+  YamlHelper(ILogger)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L39"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="NotebookAutomation.Core.Utils.YamlHelper.html">YamlHelper</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public YamlHelper(ILogger logger)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger">ILogger</a></dt>
+    <dd><p>The logger to use for diagnostic and error reporting.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_CreateMarkdownWithFrontmatter_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.CreateMarkdownWithFrontmatter*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_CreateMarkdownWithFrontmatter_System_Collections_Generic_Dictionary_System_String_System_Object__" data-uid="NotebookAutomation.Core.Utils.YamlHelper.CreateMarkdownWithFrontmatter(System.Collections.Generic.Dictionary{System.String,System.Object})">
+  CreateMarkdownWithFrontmatter(Dictionary&lt;string, object&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L297"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates new markdown content with the specified frontmatter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string CreateMarkdownWithFrontmatter(Dictionary&lt;string, object&gt; frontmatter)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frontmatter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The frontmatter as a dictionary.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The created markdown content.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_YamlHelper_CreateMarkdownWithFrontmatter_System_Collections_Generic_Dictionary_System_String_System_Object___remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Produces a markdown string with only the YAML frontmatter block.</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_DiagnoseYamlFrontmatter_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.DiagnoseYamlFrontmatter*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_DiagnoseYamlFrontmatter_System_String_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.DiagnoseYamlFrontmatter(System.String)">
+  DiagnoseYamlFrontmatter(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L556"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Diagnoses YAML parsing issues and returns detailed information about any problems found.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public (bool Success, string Message, Dictionary&lt;string, object&gt;? Data) DiagnoseYamlFrontmatter(string markdown)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>markdown</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The markdown content to diagnose.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt>(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string,system.collections.generic.dictionary-system.string,system.object--.success">Success</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string,system.collections.generic.dictionary-system.string,system.object--.message">Message</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string,system.collections.generic.dictionary-system.string,system.object--.data">Data</a>)</dt>
+    <dd><p>A diagnostic result containing information about YAML parsing issues.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_YamlHelper_DiagnoseYamlFrontmatter_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Returns a tuple indicating success, a message, and the parsed data (if successful).</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_ExtractFrontmatter_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ExtractFrontmatter*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_ExtractFrontmatter_System_String_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ExtractFrontmatter(System.String)">
+  ExtractFrontmatter(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Extracts the YAML frontmatter from markdown content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? ExtractFrontmatter(string markdown)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>markdown</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The markdown content to parse.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The YAML frontmatter as a string, or null if not found.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_YamlHelper_ExtractFrontmatter_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">var yaml = helper.ExtractFrontmatter(markdown);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_YamlHelper_ExtractFrontmatter_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Returns only the YAML block delimited by <code>---</code> at the start and end of the file.</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_ExtractTags_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ExtractTags*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_ExtractTags_System_Collections_Generic_Dictionary_System_String_System_Object__" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ExtractTags(System.Collections.Generic.Dictionary{System.String,System.Object})">
+  ExtractTags(Dictionary&lt;string, object&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L340"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses and extracts tags from frontmatter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static HashSet&lt;string&gt; ExtractTags(Dictionary&lt;string, object&gt; frontmatter)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frontmatter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The frontmatter as a dictionary.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1">HashSet</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>A set of tags found in the frontmatter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_YamlHelper_ExtractTags_System_Collections_Generic_Dictionary_System_String_System_Object___remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Handles both string and array formats for tags.</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_IsAutoGeneratedStateReadOnly_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.IsAutoGeneratedStateReadOnly*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_IsAutoGeneratedStateReadOnly_System_Collections_Generic_Dictionary_System_String_System_Object__" data-uid="NotebookAutomation.Core.Utils.YamlHelper.IsAutoGeneratedStateReadOnly(System.Collections.Generic.Dictionary{System.String,System.Object})">
+  IsAutoGeneratedStateReadOnly(Dictionary&lt;string, object&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L393"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Checks if the auto-generated-state in frontmatter indicates the content is read-only.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsAutoGeneratedStateReadOnly(Dictionary&lt;string, object&gt; frontmatter)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frontmatter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The frontmatter dictionary to check.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if the auto-generated-state is &quot;read-only&quot; or &quot;readonly&quot;, false otherwise.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_IsFileReadOnly_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.IsFileReadOnly*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_IsFileReadOnly_System_String_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.IsFileReadOnly(System.String)">
+  IsFileReadOnly(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L409"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Checks if a markdown file has readonly auto-generated-state in its frontmatter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool IsFileReadOnly(string filePath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the markdown file to check.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if the file has readonly auto-generated-state, false otherwise.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_LoadFrontmatterFromFile_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.LoadFrontmatterFromFile*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_LoadFrontmatterFromFile_System_String_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.LoadFrontmatterFromFile(System.String)">
+  LoadFrontmatterFromFile(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L433"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads frontmatter from a markdown file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Dictionary&lt;string, object&gt; LoadFrontmatterFromFile(string filePath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the markdown file.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The parsed frontmatter as a dictionary, or an empty dictionary on error.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_ParseYaml_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ParseYaml*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_ParseYaml_System_String_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ParseYaml(System.String)">
+  ParseYaml(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L112"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses YAML frontmatter to a dynamic object.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public object? ParseYaml(string yaml)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>yaml</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The YAML content to parse.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></dt>
+    <dd><p>The parsed object, or null if parsing failed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_YamlHelper_ParseYaml_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Uses YamlDotNet for deserialization.</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_ParseYamlToDictionary_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ParseYamlToDictionary*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_ParseYamlToDictionary_System_String_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ParseYamlToDictionary(System.String)">
+  ParseYamlToDictionary(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L143"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Parses YAML frontmatter to a dictionary.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Dictionary&lt;string, object&gt; ParseYamlToDictionary(string yaml)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>yaml</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The YAML content to parse.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The parsed dictionary, or an empty dictionary if parsing failed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_YamlHelper_ParseYamlToDictionary_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Handles common formatting issues and code block wrappers.</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_RemoveFrontmatter_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.RemoveFrontmatter*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_RemoveFrontmatter_System_String_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.RemoveFrontmatter(System.String)">
+  RemoveFrontmatter(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L315"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Removes YAML frontmatter from markdown content if present.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string RemoveFrontmatter(string markdown)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>markdown</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The markdown content to clean.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The content without frontmatter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_ReplaceFrontmatter_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ReplaceFrontmatter*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_ReplaceFrontmatter_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__" data-uid="NotebookAutomation.Core.Utils.YamlHelper.ReplaceFrontmatter(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+  ReplaceFrontmatter(string, Dictionary&lt;string, object&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L518"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Replaces the frontmatter in a markdown document with new frontmatter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string ReplaceFrontmatter(string markdown, Dictionary&lt;string, object&gt; newFrontmatter)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>markdown</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The markdown content.</p>
+</dd>
+    <dt><code>newFrontmatter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The new frontmatter as a dictionary.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The updated markdown content.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_SaveMarkdownWithFrontmatter_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.SaveMarkdownWithFrontmatter*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_SaveMarkdownWithFrontmatter_System_String_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__" data-uid="NotebookAutomation.Core.Utils.YamlHelper.SaveMarkdownWithFrontmatter(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+  SaveMarkdownWithFrontmatter(string, string, Dictionary&lt;string, object&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L467"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Saves markdown with updated frontmatter to a file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool SaveMarkdownWithFrontmatter(string filePath, string markdown, Dictionary&lt;string, object&gt; frontmatter)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to save the file.</p>
+</dd>
+    <dt><code>markdown</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The markdown content.</p>
+</dd>
+    <dt><code>frontmatter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The frontmatter to update or add.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>True if successful, false otherwise.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_SerializeToYaml_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.SerializeToYaml*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_SerializeToYaml_System_Collections_Generic_Dictionary_System_String_System_Object__" data-uid="NotebookAutomation.Core.Utils.YamlHelper.SerializeToYaml(System.Collections.Generic.Dictionary{System.String,System.Object})">
+  SerializeToYaml(Dictionary&lt;string, object&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L503"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Serializes a dictionary to YAML format.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string SerializeToYaml(Dictionary&lt;string, object&gt; data)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The dictionary to serialize.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The serialized YAML string.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_SerializeYaml_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.SerializeYaml*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_SerializeYaml_System_Collections_Generic_Dictionary_System_String_System_Object__" data-uid="NotebookAutomation.Core.Utils.YamlHelper.SerializeYaml(System.Collections.Generic.Dictionary{System.String,System.Object})">
+  SerializeYaml(Dictionary&lt;string, object&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L487"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Serializes a dictionary to YAML.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string SerializeYaml(Dictionary&lt;string, object&gt; data)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>data</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The dictionary to serialize.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The serialized YAML string.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_UpdateFrontmatter_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.UpdateFrontmatter*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_UpdateFrontmatter_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__" data-uid="NotebookAutomation.Core.Utils.YamlHelper.UpdateFrontmatter(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
+  UpdateFrontmatter(string, Dictionary&lt;string, object&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L262"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Updates existing markdown content with new frontmatter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string UpdateFrontmatter(string markdown, Dictionary&lt;string, object&gt; frontmatter)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>markdown</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The original markdown content.</p>
+</dd>
+    <dt><code>frontmatter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The new frontmatter as a dictionary.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The updated markdown content.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_YamlHelper_UpdateFrontmatter_System_String_System_Collections_Generic_Dictionary_System_String_System_Object___remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>Replaces or inserts the YAML frontmatter block at the top of the markdown file.</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_YamlHelper_UpdateTags_" data-uid="NotebookAutomation.Core.Utils.YamlHelper.UpdateTags*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_YamlHelper_UpdateTags_System_Collections_Generic_Dictionary_System_String_System_Object__System_Collections_Generic_HashSet_System_String__" data-uid="NotebookAutomation.Core.Utils.YamlHelper.UpdateTags(System.Collections.Generic.Dictionary{System.String,System.Object},System.Collections.Generic.HashSet{System.String})">
+  UpdateTags(Dictionary&lt;string, object&gt;, HashSet&lt;string&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs/#L373"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Updates frontmatter with new tags.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static Dictionary&lt;string, object&gt; UpdateTags(Dictionary&lt;string, object&gt; frontmatter, HashSet&lt;string&gt; tags)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frontmatter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The frontmatter dictionary to update.</p>
+</dd>
+    <dt><code>tags</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1">HashSet</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>The set of tags to set.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>The updated frontmatter.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

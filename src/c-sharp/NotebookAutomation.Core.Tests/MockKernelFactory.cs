@@ -1,4 +1,13 @@
-﻿#nullable enable
+﻿// <copyright file="MockKernelFactory.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/MockKernelFactory.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
 
@@ -7,18 +16,18 @@ namespace NotebookAutomation.Core.Tests;
 /// <summary>
 /// Helper class to create a Kernel with a mock ITextGenerationService for testing.
 /// </summary>
-public static class MockKernelFactory
-{        /// <summary>
-         /// Creates a minimal kernel with a mock text generation service that returns a predefined response.
-         /// </summary>
-         /// <param name="response">The response text that the mock should return.</param>
-         /// <returns>A kernel instance with the mock service.</returns>
+internal static class MockKernelFactory
+{ /// <summary>
+  /// Creates a minimal kernel with a mock text generation service that returns a predefined response.
+  /// </summary>
+  /// <param name="response">The response text that the mock should return.</param>
+  /// <returns>A kernel instance with the mock service.</returns>
     public static Kernel CreateKernelWithMockService(string response = "Mock AI response")
     {
         // Create our mock text generation service
         SimpleTextGenerationService mockService = new()
         {
-            Response = response
+            Response = response,
         };
 
         // Create a real kernel with our mock service

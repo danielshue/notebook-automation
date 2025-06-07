@@ -1,4 +1,14 @@
-﻿namespace NotebookAutomation.Core.Configuration;
+﻿// <copyright file="FailedOperations.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/FailedOperations.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Configuration;
+
 /// <summary>
 /// Contains methods and constants for managing and recording failed operations.
 /// </summary>

@@ -1,0 +1,1419 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Services.AISummarizer
+  commentId: T:NotebookAutomation.Core.Services.AISummarizer
+  id: AISummarizer
+  parent: NotebookAutomation.Core.Services
+  children:
+  - NotebookAutomation.Core.Services.AISummarizer.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Services.AISummarizer},NotebookAutomation.Core.Services.IPromptService,Microsoft.SemanticKernel.Kernel,NotebookAutomation.Core.Services.ITextChunkingService)
+  - NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync
+  - NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync
+  - NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync(System.String,System.String,System.String)
+  - NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  - NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync(System.String,System.String,System.Threading.CancellationToken)
+  - NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: AISummarizer
+  nameWithType: AISummarizer
+  fullName: NotebookAutomation.Core.Services.AISummarizer
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AISummarizer
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+    startLine: 72
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: >-
+    Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.
+
+    Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content
+
+    including video transcripts, PDF documents, and academic materials. Supports variable substitution
+
+    for metadata augmentation and configurable prompt templates.
+  remarks: >-
+    <p>
+
+    This class provides two main summarization strategies:
+
+    </p>
+
+    <ul><li>Direct summarization for smaller texts (under ~12,000 characters)</li><li>Chunked summarization with aggregation for larger texts</li></ul>
+
+    <p>
+
+    The chunking strategy splits large texts into overlapping segments, processes each chunk independently,
+
+    then aggregates the results into a cohesive final summary. This approach ensures comprehensive coverage
+
+    while respecting token limits of the underlying AI models.
+
+    </p>
+
+    <p>
+
+    Supports fallback to ITextGenerationService for testing scenarios when SemanticKernel is unavailable.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">// Basic usage
+
+    var summarizer = new AISummarizer(logger, promptService, kernel);
+
+    var summary = await summarizer.SummarizeWithVariablesAsync(longText);
+
+
+    // With metadata variables and custom prompt
+
+    var variables = new Dictionary&lt;string, string&gt;
+
+    {
+        ["course"] = "MBA Strategy",
+        ["type"] = "video_transcript",
+        ["onedrivePath"] = "/courses/strategy/week1"
+    };
+
+    var summary = await summarizer.SummarizeWithVariablesAsync(
+        inputText,
+        variables,
+        "chunk_summary_prompt"
+    );</code></pre>
+  syntax:
+    content: 'public class AISummarizer : IAISummarizer'
+    content.vb: Public Class AISummarizer Implements IAISummarizer
+  exceptions:
+  - type: System.ArgumentNullException
+    commentId: T:System.ArgumentNullException
+    description: Thrown when logger is null.
+  inheritance:
+  - System.Object
+  implements:
+  - NotebookAutomation.Core.Services.IAISummarizer
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Services.AISummarizer.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Services.AISummarizer},NotebookAutomation.Core.Services.IPromptService,Microsoft.SemanticKernel.Kernel,NotebookAutomation.Core.Services.ITextChunkingService)
+  commentId: M:NotebookAutomation.Core.Services.AISummarizer.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Services.AISummarizer},NotebookAutomation.Core.Services.IPromptService,Microsoft.SemanticKernel.Kernel,NotebookAutomation.Core.Services.ITextChunkingService)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Services.AISummarizer},NotebookAutomation.Core.Services.IPromptService,Microsoft.SemanticKernel.Kernel,NotebookAutomation.Core.Services.ITextChunkingService)'
+  parent: NotebookAutomation.Core.Services.AISummarizer
+  langs:
+  - csharp
+  - vb
+  name: AISummarizer(ILogger<AISummarizer>, IPromptService?, Kernel?, ITextChunkingService?)
+  nameWithType: AISummarizer.AISummarizer(ILogger<AISummarizer>, IPromptService?, Kernel?, ITextChunkingService?)
+  fullName: NotebookAutomation.Core.Services.AISummarizer.AISummarizer(Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Services.AISummarizer>, NotebookAutomation.Core.Services.IPromptService?, Microsoft.SemanticKernel.Kernel?, NotebookAutomation.Core.Services.ITextChunkingService?)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+    startLine: 72
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: >-
+    Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.
+
+    Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content
+
+    including video transcripts, PDF documents, and academic materials. Supports variable substitution
+
+    for metadata augmentation and configurable prompt templates.
+  remarks: >-
+    <p>
+
+    This class provides two main summarization strategies:
+
+    </p>
+
+    <ul><li>Direct summarization for smaller texts (under ~12,000 characters)</li><li>Chunked summarization with aggregation for larger texts</li></ul>
+
+    <p>
+
+    The chunking strategy splits large texts into overlapping segments, processes each chunk independently,
+
+    then aggregates the results into a cohesive final summary. This approach ensures comprehensive coverage
+
+    while respecting token limits of the underlying AI models.
+
+    </p>
+
+    <p>
+
+    Supports fallback to ITextGenerationService for testing scenarios when SemanticKernel is unavailable.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">// Basic usage
+
+    var summarizer = new AISummarizer(logger, promptService, kernel);
+
+    var summary = await summarizer.SummarizeWithVariablesAsync(longText);
+
+
+    // With metadata variables and custom prompt
+
+    var variables = new Dictionary&lt;string, string&gt;
+
+    {
+        ["course"] = "MBA Strategy",
+        ["type"] = "video_transcript",
+        ["onedrivePath"] = "/courses/strategy/week1"
+    };
+
+    var summary = await summarizer.SummarizeWithVariablesAsync(
+        inputText,
+        variables,
+        "chunk_summary_prompt"
+    );</code></pre>
+  syntax:
+    content: public AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptService, Kernel? semanticKernel, ITextChunkingService? chunkingService = null)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Services.AISummarizer}
+      description: The logger instance for tracking operations and debugging.
+    - id: promptService
+      type: NotebookAutomation.Core.Services.IPromptService
+      description: Service for loading and processing prompt templates from the file system.
+    - id: semanticKernel
+      type: Microsoft.SemanticKernel.Kernel
+      description: Microsoft.SemanticKernel instance configured with Azure OpenAI.
+    - id: chunkingService
+      type: NotebookAutomation.Core.Services.ITextChunkingService
+      description: Optional text chunking service for splitting large texts. If null, creates a default instance.
+    content.vb: Public Sub New(logger As ILogger(Of AISummarizer), promptService As IPromptService, semanticKernel As Kernel, chunkingService As ITextChunkingService = Nothing)
+  overload: NotebookAutomation.Core.Services.AISummarizer.#ctor*
+  exceptions:
+  - type: System.ArgumentNullException
+    commentId: T:System.ArgumentNullException
+    description: Thrown when logger is null.
+  nameWithType.vb: AISummarizer.New(ILogger(Of AISummarizer), IPromptService, Kernel, ITextChunkingService)
+  fullName.vb: NotebookAutomation.Core.Services.AISummarizer.New(Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Services.AISummarizer), NotebookAutomation.Core.Services.IPromptService, Microsoft.SemanticKernel.Kernel, NotebookAutomation.Core.Services.ITextChunkingService)
+  name.vb: New(ILogger(Of AISummarizer), IPromptService, Kernel, ITextChunkingService)
+- uid: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)
+  id: SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.AISummarizer
+  langs:
+  - csharp
+  - vb
+  name: SummarizeWithVariablesAsync(string, Dictionary<string, string>?, string?, CancellationToken)
+  nameWithType: AISummarizer.SummarizeWithVariablesAsync(string, Dictionary<string, string>?, string?, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync(string, System.Collections.Generic.Dictionary<string, string>?, string?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SummarizeWithVariablesAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+    startLine: 153
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  syntax:
+    content: public virtual Task<string?> SummarizeWithVariablesAsync(string inputText, Dictionary<string, string>? variables = null, string? promptFileName = null, CancellationToken cancellationToken = default)
+    parameters:
+    - id: inputText
+      type: System.String
+    - id: variables
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    - id: promptFileName
+      type: System.String
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Public Overridable Function SummarizeWithVariablesAsync(inputText As String, variables As Dictionary(Of String, String) = Nothing, promptFileName As String = Nothing, cancellationToken As CancellationToken = Nothing) As Task(Of String)
+  overload: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync*
+  implements:
+  - NotebookAutomation.Core.Services.IAISummarizer.SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)
+  nameWithType.vb: AISummarizer.SummarizeWithVariablesAsync(String, Dictionary(Of String, String), String, CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync(String, System.Collections.Generic.Dictionary(Of String, String), String, System.Threading.CancellationToken)
+  name.vb: SummarizeWithVariablesAsync(String, Dictionary(Of String, String), String, CancellationToken)
+- uid: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  id: SummarizeWithChunkingAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.AISummarizer
+  langs:
+  - csharp
+  - vb
+  name: SummarizeWithChunkingAsync(string, string?, Dictionary<string, string>?, CancellationToken)
+  nameWithType: AISummarizer.SummarizeWithChunkingAsync(string, string?, Dictionary<string, string>?, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync(string, string?, System.Collections.Generic.Dictionary<string, string>?, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SummarizeWithChunkingAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+    startLine: 270
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  syntax:
+    content: protected virtual Task<string?> SummarizeWithChunkingAsync(string inputText, string? prompt, Dictionary<string, string>? variables, CancellationToken cancellationToken)
+    parameters:
+    - id: inputText
+      type: System.String
+    - id: prompt
+      type: System.String
+    - id: variables
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+    content.vb: Protected Overridable Function SummarizeWithChunkingAsync(inputText As String, prompt As String, variables As Dictionary(Of String, String), cancellationToken As CancellationToken) As Task(Of String)
+  overload: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync*
+  nameWithType.vb: AISummarizer.SummarizeWithChunkingAsync(String, String, Dictionary(Of String, String), CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync(String, String, System.Collections.Generic.Dictionary(Of String, String), System.Threading.CancellationToken)
+  name.vb: SummarizeWithChunkingAsync(String, String, Dictionary(Of String, String), CancellationToken)
+- uid: NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync
+  commentId: M:NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync
+  id: LoadChunkPromptAsync
+  parent: NotebookAutomation.Core.Services.AISummarizer
+  langs:
+  - csharp
+  - vb
+  name: LoadChunkPromptAsync()
+  nameWithType: AISummarizer.LoadChunkPromptAsync()
+  fullName: NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync()
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LoadChunkPromptAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+    startLine: 455
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Loads the chunk prompt template from the prompt service for individual chunk processing.
+  remarks: >-
+    This method attempts to load the "chunk_summary_prompt.md" template file from the prompts directory.
+
+    The chunk prompt is specifically designed for processing individual text segments before aggregation.
+
+    Failures are logged as warnings but do not throw exceptions, allowing the system to fall back to default prompts.
+  example: []
+  syntax:
+    content: protected virtual Task<string?> LoadChunkPromptAsync()
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+      description: >-
+        A task that represents the asynchronous load operation. The task result contains:
+
+        - The chunk prompt template content if successfully loaded
+
+        - null if the prompt service is unavailable or loading fails.
+    content.vb: Protected Overridable Function LoadChunkPromptAsync() As Task(Of String)
+  overload: NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync*
+- uid: NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync
+  commentId: M:NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync
+  id: LoadFinalPromptAsync
+  parent: NotebookAutomation.Core.Services.AISummarizer
+  langs:
+  - csharp
+  - vb
+  name: LoadFinalPromptAsync()
+  nameWithType: AISummarizer.LoadFinalPromptAsync()
+  fullName: NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync()
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LoadFinalPromptAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+    startLine: 490
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Loads the final prompt template from the prompt service for summary aggregation.
+  remarks: >-
+    This method attempts to load the "final_summary_prompt.md" template file from the prompts directory.
+
+    The final prompt is specifically designed for aggregating multiple chunk summaries into a cohesive result.
+
+    Failures are logged as warnings but do not throw exceptions, allowing the system to fall back to default prompts.
+  example: []
+  syntax:
+    content: protected virtual Task<string?> LoadFinalPromptAsync()
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+      description: >-
+        A task that represents the asynchronous load operation. The task result contains:
+
+        - The final summary prompt template content if successfully loaded
+
+        - null if the prompt service is unavailable or loading fails.
+    content.vb: Protected Overridable Function LoadFinalPromptAsync() As Task(Of String)
+  overload: NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync*
+- uid: NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync(System.String,System.String,System.String)
+  commentId: M:NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync(System.String,System.String,System.String)
+  id: ProcessPromptTemplateAsync(System.String,System.String,System.String)
+  parent: NotebookAutomation.Core.Services.AISummarizer
+  langs:
+  - csharp
+  - vb
+  name: ProcessPromptTemplateAsync(string, string, string)
+  nameWithType: AISummarizer.ProcessPromptTemplateAsync(string, string, string)
+  fullName: NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync(string, string, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessPromptTemplateAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+    startLine: 529
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: >-
+    Processes and prepares the prompt template for use in summarization operations.
+
+    Handles loading of prompt templates when not already provided and validates input text.
+  remarks: >-
+    This method serves as a preparation step for both direct and chunked summarization.
+
+    It attempts to load the specified prompt template file when no prompt is provided directly.
+
+    Loading failures are logged as warnings but do not prevent the operation from continuing.
+  example: []
+  syntax:
+    content: protected virtual Task<(string? processedPrompt, string processedInputText)> ProcessPromptTemplateAsync(string inputText, string prompt, string promptFileName)
+    parameters:
+    - id: inputText
+      type: System.String
+      description: The input text to be summarized.
+    - id: prompt
+      type: System.String
+      description: The prompt string that may need processing or loading.
+    - id: promptFileName
+      type: System.String
+      description: The prompt template filename to load if prompt is empty.
+    return:
+      type: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.String}}
+      description: >-
+        A task that represents the asynchronous processing operation. The task result contains:
+
+        - A tuple with the processed prompt (or null if loading failed) and the input text
+
+        - The processed prompt will be loaded from promptFileName if the prompt parameter is empty.
+    content.vb: Protected Overridable Function ProcessPromptTemplateAsync(inputText As String, prompt As String, promptFileName As String) As Task(Of (processedPrompt As String, processedInputText As String))
+  overload: NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync*
+  nameWithType.vb: AISummarizer.ProcessPromptTemplateAsync(String, String, String)
+  fullName.vb: NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync(String, String, String)
+  name.vb: ProcessPromptTemplateAsync(String, String, String)
+- uid: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: SummarizeWithSemanticKernelAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.AISummarizer
+  langs:
+  - csharp
+  - vb
+  name: SummarizeWithSemanticKernelAsync(string, string, CancellationToken)
+  nameWithType: AISummarizer.SummarizeWithSemanticKernelAsync(string, string, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SummarizeWithSemanticKernelAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
+    startLine: 605
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Summarizes text using Microsoft SemanticKernel with the specified prompt for smaller texts that don't require chunking.
+  remarks: >-
+    <p>
+
+    This method is used for direct summarization of smaller texts (typically under 12,000 characters).
+
+    It creates a semantic function from the provided prompt and processes the entire text in a single operation.
+
+    </p>
+
+    <p>
+
+    The method uses OpenAI prompt execution settings configured for balanced performance:
+
+    </p>
+
+    <ul><li>MaxTokens: 4000 (allowing comprehensive summaries)</li><li>Temperature: 1.0 (balanced creativity and consistency)</li><li>TopP: 1.0 (full vocabulary consideration)</li></ul>
+
+    <p>
+
+    Falls back to a default summarization prompt if none is provided.
+
+    All errors are logged and handled gracefully by returning null.
+
+    </p>
+  example: []
+  syntax:
+    content: protected virtual Task<string?> SummarizeWithSemanticKernelAsync(string inputText, string prompt, CancellationToken cancellationToken)
+    parameters:
+    - id: inputText
+      type: System.String
+      description: The text content to summarize.
+    - id: prompt
+      type: System.String
+      description: The prompt to guide the summarization process.
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+      description: Cancellation token for async operations.
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+      description: >-
+        A task that represents the asynchronous summarization operation. The task result contains:
+
+        - The generated summary text if successful
+
+        - null if the operation fails or SemanticKernel is unavailable
+
+        - A simulated summary string for testing scenarios.
+    content.vb: Protected Overridable Function SummarizeWithSemanticKernelAsync(inputText As String, prompt As String, cancellationToken As CancellationToken) As Task(Of String)
+  overload: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync*
+  exceptions:
+  - type: System.Exception
+    commentId: T:System.Exception
+    description: >-
+      Various exceptions may be thrown by the underlying SemanticKernel operations,
+
+      all of which are caught, logged, and result in a null return value.
+  nameWithType.vb: AISummarizer.SummarizeWithSemanticKernelAsync(String, String, CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync(String, String, System.Threading.CancellationToken)
+  name.vb: SummarizeWithSemanticKernelAsync(String, String, CancellationToken)
+references:
+- uid: System.ArgumentNullException
+  commentId: T:System.ArgumentNullException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.argumentnullexception
+  name: ArgumentNullException
+  nameWithType: ArgumentNullException
+  fullName: System.ArgumentNullException
+- uid: NotebookAutomation.Core.Services
+  commentId: N:NotebookAutomation.Core.Services
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Services
+  nameWithType: NotebookAutomation.Core.Services
+  fullName: NotebookAutomation.Core.Services
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: NotebookAutomation.Core.Services.IAISummarizer
+  commentId: T:NotebookAutomation.Core.Services.IAISummarizer
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.IAISummarizer.html
+  name: IAISummarizer
+  nameWithType: IAISummarizer
+  fullName: NotebookAutomation.Core.Services.IAISummarizer
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Services.AISummarizer.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Services.AISummarizer.#ctor
+  href: NotebookAutomation.Core.Services.AISummarizer.html#NotebookAutomation_Core_Services_AISummarizer__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Services_AISummarizer__NotebookAutomation_Core_Services_IPromptService_Microsoft_SemanticKernel_Kernel_NotebookAutomation_Core_Services_ITextChunkingService_
+  name: AISummarizer
+  nameWithType: AISummarizer.AISummarizer
+  fullName: NotebookAutomation.Core.Services.AISummarizer.AISummarizer
+  nameWithType.vb: AISummarizer.New
+  fullName.vb: NotebookAutomation.Core.Services.AISummarizer.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Services.AISummarizer}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Services.AISummarizer}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<AISummarizer>
+  nameWithType: ILogger<AISummarizer>
+  fullName: Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Services.AISummarizer>
+  nameWithType.vb: ILogger(Of AISummarizer)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Services.AISummarizer)
+  name.vb: ILogger(Of AISummarizer)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: NotebookAutomation.Core.Services.AISummarizer
+    name: AISummarizer
+    href: NotebookAutomation.Core.Services.AISummarizer.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Services.AISummarizer
+    name: AISummarizer
+    href: NotebookAutomation.Core.Services.AISummarizer.html
+  - name: )
+- uid: NotebookAutomation.Core.Services.IPromptService
+  commentId: T:NotebookAutomation.Core.Services.IPromptService
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.IPromptService.html
+  name: IPromptService
+  nameWithType: IPromptService
+  fullName: NotebookAutomation.Core.Services.IPromptService
+- uid: Microsoft.SemanticKernel.Kernel
+  commentId: T:Microsoft.SemanticKernel.Kernel
+  parent: Microsoft.SemanticKernel
+  isExternal: true
+  name: Kernel
+  nameWithType: Kernel
+  fullName: Microsoft.SemanticKernel.Kernel
+- uid: NotebookAutomation.Core.Services.ITextChunkingService
+  commentId: T:NotebookAutomation.Core.Services.ITextChunkingService
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.ITextChunkingService.html
+  name: ITextChunkingService
+  nameWithType: ITextChunkingService
+  fullName: NotebookAutomation.Core.Services.ITextChunkingService
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: Microsoft.SemanticKernel
+  commentId: N:Microsoft.SemanticKernel
+  isExternal: true
+  name: Microsoft.SemanticKernel
+  nameWithType: Microsoft.SemanticKernel
+  fullName: Microsoft.SemanticKernel
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+  - name: .
+  - uid: Microsoft.SemanticKernel
+    name: SemanticKernel
+    isExternal: true
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+  - name: .
+  - uid: Microsoft.SemanticKernel
+    name: SemanticKernel
+    isExternal: true
+- uid: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync
+  href: NotebookAutomation.Core.Services.AISummarizer.html#NotebookAutomation_Core_Services_AISummarizer_SummarizeWithVariablesAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_String_System_Threading_CancellationToken_
+  name: SummarizeWithVariablesAsync
+  nameWithType: AISummarizer.SummarizeWithVariablesAsync
+  fullName: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync
+- uid: NotebookAutomation.Core.Services.IAISummarizer.SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.IAISummarizer.SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.IAISummarizer
+  isExternal: true
+  href: NotebookAutomation.Core.Services.IAISummarizer.html#NotebookAutomation_Core_Services_IAISummarizer_SummarizeWithVariablesAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_String_System_Threading_CancellationToken_
+  name: SummarizeWithVariablesAsync(string, Dictionary<string, string>, string, CancellationToken)
+  nameWithType: IAISummarizer.SummarizeWithVariablesAsync(string, Dictionary<string, string>, string, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.IAISummarizer.SummarizeWithVariablesAsync(string, System.Collections.Generic.Dictionary<string, string>, string, System.Threading.CancellationToken)
+  nameWithType.vb: IAISummarizer.SummarizeWithVariablesAsync(String, Dictionary(Of String, String), String, CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.IAISummarizer.SummarizeWithVariablesAsync(String, System.Collections.Generic.Dictionary(Of String, String), String, System.Threading.CancellationToken)
+  name.vb: SummarizeWithVariablesAsync(String, Dictionary(Of String, String), String, CancellationToken)
+  spec.csharp:
+  - uid: NotebookAutomation.Core.Services.IAISummarizer.SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)
+    name: SummarizeWithVariablesAsync
+    href: NotebookAutomation.Core.Services.IAISummarizer.html#NotebookAutomation_Core_Services_IAISummarizer_SummarizeWithVariablesAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+  spec.vb:
+  - uid: NotebookAutomation.Core.Services.IAISummarizer.SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)
+    name: SummarizeWithVariablesAsync
+    href: NotebookAutomation.Core.Services.IAISummarizer.html#NotebookAutomation_Core_Services_IAISummarizer_SummarizeWithVariablesAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_String_System_Threading_CancellationToken_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Threading.CancellationToken
+    name: CancellationToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  - name: )
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync
+  href: NotebookAutomation.Core.Services.AISummarizer.html#NotebookAutomation_Core_Services_AISummarizer_SummarizeWithChunkingAsync_System_String_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_Threading_CancellationToken_
+  name: SummarizeWithChunkingAsync
+  nameWithType: AISummarizer.SummarizeWithChunkingAsync
+  fullName: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync
+- uid: NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync
+  href: NotebookAutomation.Core.Services.AISummarizer.html#NotebookAutomation_Core_Services_AISummarizer_LoadChunkPromptAsync
+  name: LoadChunkPromptAsync
+  nameWithType: AISummarizer.LoadChunkPromptAsync
+  fullName: NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync
+- uid: NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync
+  href: NotebookAutomation.Core.Services.AISummarizer.html#NotebookAutomation_Core_Services_AISummarizer_LoadFinalPromptAsync
+  name: LoadFinalPromptAsync
+  nameWithType: AISummarizer.LoadFinalPromptAsync
+  fullName: NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync
+- uid: NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync
+  href: NotebookAutomation.Core.Services.AISummarizer.html#NotebookAutomation_Core_Services_AISummarizer_ProcessPromptTemplateAsync_System_String_System_String_System_String_
+  name: ProcessPromptTemplateAsync
+  nameWithType: AISummarizer.ProcessPromptTemplateAsync
+  fullName: NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync
+- uid: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.ValueTuple{System.String,System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<(string processedPrompt, string processedInputText)>
+  nameWithType: Task<(string processedPrompt, string processedInputText)>
+  fullName: System.Threading.Tasks.Task<(string processedPrompt, string processedInputText)>
+  nameWithType.vb: Task(Of (processedPrompt As String, processedInputText As String))
+  fullName.vb: System.Threading.Tasks.Task(Of (processedPrompt As String, processedInputText As String))
+  name.vb: Task(Of (processedPrompt As String, processedInputText As String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.processedPrompt
+    name: processedPrompt
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.processedprompt
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.processedInputText
+    name: processedInputText
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.processedinputtext
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.processedPrompt
+    name: processedPrompt
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.processedprompt
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.processedInputText
+    name: processedInputText
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.processedinputtext
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync
+  href: NotebookAutomation.Core.Services.AISummarizer.html#NotebookAutomation_Core_Services_AISummarizer_SummarizeWithSemanticKernelAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: SummarizeWithSemanticKernelAsync
+  nameWithType: AISummarizer.SummarizeWithSemanticKernelAsync
+  fullName: NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync

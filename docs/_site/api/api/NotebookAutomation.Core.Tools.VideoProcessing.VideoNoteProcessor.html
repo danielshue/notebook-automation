@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class VideoNoteProcessor | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class VideoNoteProcessor | Obsidian Notebook Automation for Coursera ">
+      
+      <meta name="description" content="Represents a processor for handling video files to extract metadata, generate AI-powered summaries, and create markdown notes for knowledge management systems.">
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/danielshue/notebook-automation/new/master/apiSpec/new?filename=NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor.md&amp;value=---%0Auid%3A%20NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor">
+
+
+
+  <h1 id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor" class="text-break">
+Class VideoNoteProcessor  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs/#L36"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Tools.html">Tools</a>.<a class="xref" href="NotebookAutomation.Core.Tools.VideoProcessing.html">VideoProcessing</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Represents a processor for handling video files to extract metadata, generate AI-powered summaries,
+and create markdown notes for knowledge management systems.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class VideoNoteProcessor : DocumentNoteProcessorBase</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><a class="xref" href="NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html">DocumentNoteProcessorBase</a></div>
+      <div><span class="xref">VideoNoteProcessor</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_Logger">DocumentNoteProcessorBase.Logger</a>
+    </div>
+    <div>
+      <a class="xref" href="NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_Summarizer">DocumentNoteProcessorBase.Summarizer</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>The <code>VideoNoteProcessor</code> class provides functionality for processing video files, including:</p>
+<ul><li>Extracting metadata and transcripts from video files</li><li>Generating AI-powered summaries using external services</li><li>Creating markdown notes with YAML frontmatter for knowledge management</li><li>Integrating with OneDrive for share link generation</li><li>Supporting hierarchical metadata detection based on file paths</li></ul>
+This class is designed to work with various video formats and supports extensibility for additional
+metadata management and logging services.
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor__ctor_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.#ctor*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor__NotebookAutomation_Core_Services_AISummarizer_NotebookAutomation_Core_Utils_IYamlHelper_NotebookAutomation_Core_Utils_MetadataHierarchyDetector_NotebookAutomation_Core_Services_IOneDriveService_NotebookAutomation_Core_Configuration_AppConfig_NotebookAutomation_Core_Configuration_ILoggingService_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor},NotebookAutomation.Core.Services.AISummarizer,NotebookAutomation.Core.Utils.IYamlHelper,NotebookAutomation.Core.Utils.MetadataHierarchyDetector,NotebookAutomation.Core.Services.IOneDriveService,NotebookAutomation.Core.Configuration.AppConfig,NotebookAutomation.Core.Configuration.ILoggingService)">
+  VideoNoteProcessor(ILogger&lt;VideoNoteProcessor&gt;, AISummarizer, IYamlHelper, MetadataHierarchyDetector, IOneDriveService?, AppConfig?, ILoggingService?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs/#L57"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.html">VideoNoteProcessor</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public VideoNoteProcessor(ILogger&lt;VideoNoteProcessor&gt; logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector, IOneDriveService? oneDriveService = null, AppConfig? appConfig = null, ILoggingService? loggingService = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1">ILogger</a>&lt;<a class="xref" href="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.html">VideoNoteProcessor</a>&gt;</dt>
+    <dd><p>The logger instance for logging diagnostic and error information.</p>
+</dd>
+    <dt><code>aiSummarizer</code> <a class="xref" href="NotebookAutomation.Core.Services.AISummarizer.html">AISummarizer</a></dt>
+    <dd><p>The AI summarizer service for generating summaries.</p>
+</dd>
+    <dt><code>yamlHelper</code> <a class="xref" href="NotebookAutomation.Core.Utils.IYamlHelper.html">IYamlHelper</a></dt>
+    <dd><p>The YAML helper for processing YAML frontmatter in markdown documents.</p>
+</dd>
+    <dt><code>hierarchyDetector</code> <a class="xref" href="NotebookAutomation.Core.Utils.MetadataHierarchyDetector.html">MetadataHierarchyDetector</a></dt>
+    <dd><p>The metadata hierarchy detector for extracting metadata from directory structure.</p>
+</dd>
+    <dt><code>oneDriveService</code> <a class="xref" href="NotebookAutomation.Core.Services.IOneDriveService.html">IOneDriveService</a></dt>
+    <dd><p>Optional service for generating OneDrive share links.</p>
+</dd>
+    <dt><code>appConfig</code> <a class="xref" href="NotebookAutomation.Core.Configuration.AppConfig.html">AppConfig</a></dt>
+    <dd><p>Optional application configuration for metadata management.</p>
+</dd>
+    <dt><code>loggingService</code> <a class="xref" href="NotebookAutomation.Core.Configuration.ILoggingService.html">ILoggingService</a></dt>
+    <dd><p>Optional logging service for creating typed loggers.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor__NotebookAutomation_Core_Services_AISummarizer_NotebookAutomation_Core_Utils_IYamlHelper_NotebookAutomation_Core_Utils_MetadataHierarchyDetector_NotebookAutomation_Core_Services_IOneDriveService_NotebookAutomation_Core_Configuration_AppConfig_NotebookAutomation_Core_Configuration_ILoggingService__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>This constructor initializes the video note processor with optional services for metadata management
+and hierarchical detection.</p>
+</div>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_ExtractMetadataAsync_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.ExtractMetadataAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_ExtractMetadataAsync_System_String_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.ExtractMetadataAsync(System.String)">
+  ExtractMetadataAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs/#L117"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Extracts comprehensive metadata from a video file.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;Dictionary&lt;string, object&gt;&gt; ExtractMetadataAsync(string videoPath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>videoPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The path to the video file.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;&gt;</dt>
+    <dd><p>A task that represents the asynchronous operation. The task result contains a dictionary
+with extracted video metadata, including properties such as title, type, status, author,
+file size, resolution, codec, duration, and upload date.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_ExtractMetadataAsync_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">var processor = new VideoNoteProcessor(logger, aiSummarizer);
+var metadata = await processor.ExtractMetadataAsync("path/to/video.mp4");
+Console.WriteLine($"Video title: {metadata["title"]}");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_ExtractMetadataAsync_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method uses Xabe.FFmpeg to extract detailed video metadata, such as resolution,
+codec, and duration. It also retrieves basic file properties like size and creation date.
+</p>
+<p>
+If metadata extraction fails, the method logs warnings and provides simulated values
+for certain fields to ensure the operation does not fail completely.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_ExtractTextAndMetadataAsync_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.ExtractTextAndMetadataAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_ExtractTextAndMetadataAsync_System_String_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.ExtractTextAndMetadataAsync(System.String)">
+  ExtractTextAndMetadataAsync(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs/#L1123"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Extracts the main text/content and metadata from the document.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override Task&lt;(string Text, Dictionary&lt;string, object&gt; Metadata)&gt; ExtractTextAndMetadataAsync(string filePath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the document file.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.text">Text</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.metadata">Metadata</a>)&gt;</dt>
+    <dd><p>Tuple of extracted text/content and metadata dictionary.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateAiSummaryAsync_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.GenerateAiSummaryAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateAiSummaryAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_String_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.GenerateAiSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String)">
+  GenerateAiSummaryAsync(string?, Dictionary&lt;string, string&gt;?, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs/#L239"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override Task&lt;string&gt; GenerateAiSummaryAsync(string? text, Dictionary&lt;string, string&gt;? variables = null, string? promptFileName = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>variables</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>promptFileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateMarkdownNote_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.GenerateMarkdownNote*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateMarkdownNote_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_System_Boolean_System_Boolean_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.Boolean,System.Boolean)">
+  GenerateMarkdownNote(string, Dictionary&lt;string, object&gt;?, string, bool, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs/#L467"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Generates a markdown note from video metadata and summary.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public override string GenerateMarkdownNote(string bodyText, Dictionary&lt;string, object&gt;? metadata = null, string noteType = &quot;Document Note&quot;, bool suppressBody = false, bool includeNoteTypeTitle = false)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>bodyText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The main content of the note, typically an AI-generated summary.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>Dictionary of metadata to include in the note's frontmatter.</p>
+</dd>
+    <dt><code>noteType</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The type of note being generated, such as &quot;Document Note&quot; or &quot;Video Note&quot;.</p>
+</dd>
+    <dt><code>suppressBody</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, suppresses the body content of the note.</p>
+</dd>
+    <dt><code>includeNoteTypeTitle</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, includes the note type as the title in the markdown note.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A complete markdown note with frontmatter and content.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateMarkdownNote_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_System_Boolean_System_Boolean__examples">Examples</h4>
+  <pre><code class="lang-csharp">var processor = new VideoNoteProcessor(logger, aiSummarizer);
+var markdownNote = processor.GenerateMarkdownNote("Summary text", metadata, "Video Note");
+Console.WriteLine(markdownNote);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateMarkdownNote_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_System_Boolean_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method creates a properly formatted markdown note that combines the AI-generated
+summary with the video's metadata. The resulting note includes:
+</p>
+<ul><li>YAML frontmatter with all extracted metadata</li><li>The summary as the main content body</li><li>A consistent structure with appropriate headers</li></ul>        ///. <p>
+The note is generated using the <a class="xref" href="NotebookAutomation.Core.Utils.MarkdownNoteBuilder.html">MarkdownNoteBuilder</a> utility and follows
+the structure expected by Obsidian or similar markdown-based knowledge management systems.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateVideoNoteAsync_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.GenerateVideoNoteAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateVideoNoteAsync_System_String_System_String_System_String_System_Boolean_System_Nullable_System_Int32__System_String_System_Boolean_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.GenerateVideoNoteAsync(System.String,System.String,System.String,System.Boolean,System.Nullable{System.Int32},System.String,System.Boolean)">
+  GenerateVideoNoteAsync(string, string?, string?, bool, int?, string?, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs/#L1009"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Generates a video note, using transcript if available, otherwise metadata summary.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;string&gt; GenerateVideoNoteAsync(string videoPath, string? openAiApiKey, string? promptFileName = null, bool noSummary = false, int? timeoutSeconds = null, string? resourcesRoot = null, bool noShareLinks = false)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>videoPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the video file to process.</p>
+</dd>
+    <dt><code>openAiApiKey</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>OpenAI API key for generating summaries.</p>
+</dd>
+    <dt><code>promptFileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Optional prompt file name to use for AI summarization.</p>
+</dd>
+    <dt><code>noSummary</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, disables OpenAI summary generation.</p>
+</dd>
+    <dt><code>timeoutSeconds</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd><p>Optional API request timeout in seconds.</p>
+</dd>
+    <dt><code>resourcesRoot</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Optional override for OneDrive fullpath root directory.</p>
+</dd>
+    <dt><code>noShareLinks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, skips OneDrive share link creation.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>A complete markdown note as a string.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateVideoNoteAsync_System_String_System_String_System_String_System_Boolean_System_Nullable_System_Int32__System_String_System_Boolean__examples">Examples</h4>
+  <pre><code class="lang-csharp">var processor = new VideoNoteProcessor(logger);
+string markdownNote = await processor.GenerateVideoNoteAsync(
+    "path/to/lecture.mp4",
+    "sk-yourapikeyhere",
+    "video_summary_prompt.md");
+
+// Save the generated note
+File.WriteAllText("lecture_notes.md", markdownNote);</code></pre>
+
+  <pre><code class="lang-csharp">var processor = new VideoNoteProcessor(logger, aiSummarizer);
+string markdownNote = await processor.GenerateVideoNoteAsync(
+    "path/to/lecture.mp4",
+    "sk-yourapikeyhere",
+    "video_summary_prompt.md");
+
+// Save the generated note
+File.WriteAllText("lecture_notes.md", markdownNote);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_GenerateVideoNoteAsync_System_String_System_String_System_String_System_Boolean_System_Nullable_System_Int32__System_String_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method coordinates the entire video note generation process by:
+</p>
+<ol><li>Extracting comprehensive metadata from the video file</li><li>Attempting to load an associated transcript file</li><li>Generating an AI summary from either the transcript or metadata</li><li>Combining everything into a well-formatted markdown note</li></ol>
+<p>
+The method prefers using a transcript when available for more accurate summaries,
+but will fall back to using just the metadata information when no transcript exists.
+</p>
+<p>
+This is the primary entry point for generating a complete video note from a single video file.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_TryLoadTranscript_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.TryLoadTranscript*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_TryLoadTranscript_System_String_" data-uid="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.TryLoadTranscript(System.String)">
+  TryLoadTranscript(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs/#L624"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Attempts to load a transcript file for the given video.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string? TryLoadTranscript(string videoPath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>videoPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The path to the video file.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The transcript text if found; otherwise, null.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_TryLoadTranscript_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">var processor = new VideoNoteProcessor(logger, aiSummarizer);
+string? transcript = processor.TryLoadTranscript("path/to/video.mp4");
+if (transcript != null)
+{
+    Console.WriteLine("Transcript loaded successfully.");
+}
+else
+{
+    Console.WriteLine("No transcript found.");
+}</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor_TryLoadTranscript_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method searches for transcript files that match the video filename using a prioritized search strategy.
+It looks for transcript files in multiple locations and formats, including language-specific and generic transcripts.
+</p>
+<p>
+The search follows this priority order:
+</p>
+<ol><li>Language-specific transcripts in the same directory (e.g., video.en.txt, video.zh-cn.txt).</li><li>Generic transcript in the same directory (video.txt, video.md).</li><li>Language-specific transcripts in the "Transcripts" subdirectory.</li><li>Generic transcript in the "Transcripts" subdirectory.</li></ol>
+<p>
+The method also handles name normalization by checking alternative spellings with hyphens replaced by underscores and vice versa.
+</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs/#L36" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

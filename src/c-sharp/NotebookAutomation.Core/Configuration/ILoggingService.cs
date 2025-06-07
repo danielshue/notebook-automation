@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Configuration;
+﻿// <copyright file="ILoggingService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/ILoggingService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Configuration;
 
 /// <summary>
 /// Defines the contract for a centralized logging service for the notebook automation system.
@@ -39,5 +48,4 @@ public interface ILoggingService
     /// </summary>
     /// <returns>The absolute path to the current log file, or null if logging is not configured to a file.</returns>
     string? CurrentLogFilePath { get; }
-
 }

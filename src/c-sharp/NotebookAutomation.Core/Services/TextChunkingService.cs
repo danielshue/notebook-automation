@@ -1,6 +1,16 @@
-﻿#nullable enable
+﻿// <copyright file="TextChunkingService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Services/TextChunkingService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 
 namespace NotebookAutomation.Core.Services;
+
 /// <summary>
 /// Defines the contract for text chunking operations used in AI summarization.
 /// Provides methods for splitting large texts into manageable chunks with intelligent overlap.
@@ -11,18 +21,18 @@ public interface ITextChunkingService
     /// Splits text into chunks with overlap for optimal processing.
     /// Uses character-based chunking with intelligent boundary detection.
     /// </summary>
-    /// <param name="text">The text to split</param>
-    /// <param name="chunkSize">Maximum size of each chunk in characters</param>
-    /// <param name="overlap">Number of characters to overlap between chunks</param>
-    /// <returns>List of text chunks</returns>
+    /// <param name="text">The text to split.</param>
+    /// <param name="chunkSize">Maximum size of each chunk in characters.</param>
+    /// <param name="overlap">Number of characters to overlap between chunks.</param>
+    /// <returns>List of text chunks.</returns>
     List<string> SplitTextIntoChunks(string text, int chunkSize, int overlap);
 
     /// <summary>
     /// Estimates the token count for the given text using a character-based heuristic.
     /// Uses approximately 4 characters per token as a rough estimate for English text.
     /// </summary>
-    /// <param name="text">The text to estimate tokens for</param>
-    /// <returns>The estimated token count based on character length</returns>
+    /// <param name="text">The text to estimate tokens for.</param>
+    /// <returns>The estimated token count based on character length.</returns>
     int EstimateTokenCount(string text);
 }
 
@@ -31,32 +41,40 @@ public interface ITextChunkingService
 /// Implements intelligent text splitting with overlap to maintain context continuity.
 /// </summary>
 public class TextChunkingService : ITextChunkingService
-{        /// <summary>
-         /// Splits text into chunks with overlap for optimal processing.
-         /// Uses character-based chunking with intelligent boundary detection.
-         /// </summary>
-         /// <param name="text">The text to split</param>
-         /// <param name="chunkSize">Maximum size of each chunk in characters</param>
-         /// <param name="overlap">Number of characters to overlap between chunks</param>
-         /// <returns>List of text chunks</returns>
-         /// <exception cref="ArgumentNullException">Thrown when text is null</exception>
-         /// <exception cref="ArgumentOutOfRangeException">Thrown when chunkSize or overlap are invalid</exception>
-         /// <exception cref="ArgumentException">Thrown when overlap is greater than or equal to chunkSize</exception>
+{ /// <summary>
+  /// Splits text into chunks with overlap for optimal processing.
+  /// Uses character-based chunking with intelligent boundary detection.
+  /// </summary>
+  /// <param name="text">The text to split.</param>
+  /// <param name="chunkSize">Maximum size of each chunk in characters.</param>
+  /// <param name="overlap">Number of characters to overlap between chunks.</param>
+  /// <returns>List of text chunks.</returns>
+  /// <exception cref="ArgumentNullException">Thrown when text is null.</exception>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown when chunkSize or overlap are invalid.</exception>
+  /// <exception cref="ArgumentException">Thrown when overlap is greater than or equal to chunkSize.</exception>
     public List<string> SplitTextIntoChunks(string text, int chunkSize, int overlap)
     {
         ArgumentNullException.ThrowIfNull(text);
 
         if (string.IsNullOrEmpty(text))
+        {
             return [];
+        }
 
         if (chunkSize <= 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(chunkSize), "Chunk size must be positive");
+        }
 
         if (overlap < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(overlap), "Overlap cannot be negative");
+        }
 
         if (overlap >= chunkSize)
+        {
             throw new ArgumentException("Overlap must be less than chunk size", nameof(overlap));
+        }
 
         var chunks = new List<string>();
         int textLength = text.Length;
@@ -79,7 +97,7 @@ public class TextChunkingService : ITextChunkingService
     /// Estimates the token count for the given text using a character-based heuristic.
     /// Uses approximately 4 characters per token as a rough estimate for English text.
     /// </summary>
-    /// <param name="text">The text to estimate tokens for</param>
+    /// <param name="text">The text to estimate tokens for.</param>
     /// <returns>
     /// The estimated token count based on character length, or 0 if the text is null or whitespace.
     /// </returns>
@@ -91,7 +109,7 @@ public class TextChunkingService : ITextChunkingService
     /// <item><description>English academic text (typical in MBA coursework)</description></item>
     /// <item><description>Mixed alphanumeric content</description></item>
     /// <item><description>Standard punctuation and formatting</description></item>
-    /// </list>        /// <para>
+    /// </list>        ///. <para>
     /// The 4:1 character-to-token ratio is a conservative estimate that works well for OpenAI models.
     /// Actual token counts may vary based on text complexity, language, and specific tokenizer implementation.
     /// </para>
@@ -99,7 +117,9 @@ public class TextChunkingService : ITextChunkingService
     public int EstimateTokenCount(string text)
     {
         if (string.IsNullOrWhiteSpace(text))
+        {
             return 0;
+        }
 
         // Rough estimate: 1 token per 4 characters for English text (using ceiling to match original behavior)
         return (int)Math.Ceiling(text.Length / 4.0);

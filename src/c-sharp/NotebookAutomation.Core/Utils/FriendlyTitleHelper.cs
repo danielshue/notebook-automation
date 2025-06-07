@@ -1,4 +1,13 @@
-﻿using System.Globalization;
+﻿// <copyright file="FriendlyTitleHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/FriendlyTitleHelper.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Globalization;
 
 namespace NotebookAutomation.Core.Utils;
 
@@ -19,11 +28,15 @@ public static partial class FriendlyTitleHelper
     /// <returns>A cleaned, human-friendly title string.</returns>
     public static string GetFriendlyTitleFromFileName(string fileName)
     {
-        if (string.IsNullOrWhiteSpace(fileName)) return "Title";            // Remove leading numbers and separators (handle multiple consecutive patterns)
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return "Title";            // Remove leading numbers and separators (handle multiple consecutive patterns)
+        }
+
         string name = fileName;
         while (LeadingNumberPattern().IsMatch(name))
         {
-            name = LeadingNumberPattern().Replace(name, "");
+            name = LeadingNumberPattern().Replace(name, string.Empty);
         }
 
         // Replace dashes/underscores with spaces
@@ -43,7 +56,9 @@ public static partial class FriendlyTitleHelper
 
         // Use fallback for short titles
         if (name.Length < 3)
+        {
             return "Content";
+        }
 
         // Title case and fix special cases
         string titleCased = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(name);

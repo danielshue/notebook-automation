@@ -1,0 +1,47 @@
+- name: Home
+  href: index.md
+- name: Getting Started
+  href: getting-started/
+  items:
+  - name: Overview
+    href: getting-started/index.md
+  - name: Installation
+    href: getting-started/installation.md
+  - name: Basic Commands
+    href: getting-started/basic-commands.md
+  - name: FAQ
+    href: getting-started/faq.md
+- name: User Guide
+  href: user-guide/
+  items:
+  - name: Overview
+    href: user-guide/index.md
+  - name: File Processing
+    href: user-guide/file-processing.md
+- name: Configuration
+  href: configuration/
+  items:
+  - name: Overview
+    href: configuration/index.md
+  - name: User Secrets
+    href: UserSecrets.md
+- name: Tutorials
+  href: tutorials/
+  items:
+  - name: Overview
+    href: tutorials/index.md
+- name: Developer Guide
+  href: developer-guide/
+  items:
+  - name: Overview
+    href: developer-guide/index.md
+- name: Troubleshooting
+  href: troubleshooting/
+  items:
+  - name: Overview
+    href: troubleshooting/index.md
+- name: API Reference
+  href: api/
+  items:
+  - name: Overview
+    href: api/index.md

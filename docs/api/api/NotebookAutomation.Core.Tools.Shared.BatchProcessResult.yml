@@ -1,0 +1,743 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  commentId: T:NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  id: BatchProcessResult
+  parent: NotebookAutomation.Core.Tools.Shared
+  children:
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageFileTimeMs
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageSummaryTimeMs
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageTokens
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Failed
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Processed
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Summary
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalBatchTime
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalSummaryTime
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalTokens
+  langs:
+  - csharp
+  - vb
+  name: BatchProcessResult
+  nameWithType: BatchProcessResult
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: BatchProcessResult
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 47
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Represents the result and statistics of a batch document processing operation.
+  remarks: >-
+    <p>
+
+    This class provides detailed statistics about the batch processing operation, including:
+
+    <ul><li>Number of files successfully processed</li><li>Number of files that failed to process</li><li>Total processing time and summary generation time</li><li>Token usage statistics for AI summaries</li><li>Average processing times and token counts</li></ul>
+
+    </p>
+
+    <p>
+
+    The class is designed for use in CLI or UI applications to provide user-friendly summaries
+
+    of batch processing results.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var result = new BatchProcessResult
+
+    {
+        Processed = 10,
+        Failed = 2,
+        TotalBatchTime = TimeSpan.FromMinutes(15),
+        TotalSummaryTime = TimeSpan.FromMinutes(5),
+        TotalTokens = 5000,
+        AverageFileTimeMs = 900,
+        AverageSummaryTimeMs = 300,
+        AverageTokens = 500,
+        Summary = "Processed 10 files with 2 failures."
+    };
+
+    Console.WriteLine(result.Summary);</code></pre>
+  syntax:
+    content: public class BatchProcessResult
+    content.vb: Public Class BatchProcessResult
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Processed
+  commentId: P:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Processed
+  id: Processed
+  parent: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  langs:
+  - csharp
+  - vb
+  name: Processed
+  nameWithType: BatchProcessResult.Processed
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Processed
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Processed
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 55
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets or sets number of files successfully processed.
+  remarks: This property represents the count of files that were processed successfully during the batch operation.
+  example: []
+  syntax:
+    content: public int Processed { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Processed As Integer
+  overload: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Processed*
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Failed
+  commentId: P:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Failed
+  id: Failed
+  parent: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: BatchProcessResult.Failed
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Failed
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Failed
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 63
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets or sets number of files that failed to process.
+  remarks: This property represents the count of files that encountered errors and could not be processed.
+  example: []
+  syntax:
+    content: public int Failed { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property Failed As Integer
+  overload: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Failed*
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Summary
+  commentId: P:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Summary
+  id: Summary
+  parent: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  langs:
+  - csharp
+  - vb
+  name: Summary
+  nameWithType: BatchProcessResult.Summary
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Summary
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Summary
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 72
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets or sets user-friendly summary string for CLI or UI output.
+  remarks: >-
+    This property provides a concise summary of the batch processing results, suitable for display in
+
+    command-line interfaces or user interfaces.
+  example: []
+  syntax:
+    content: public string Summary { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property Summary As String
+  overload: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Summary*
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalBatchTime
+  commentId: P:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalBatchTime
+  id: TotalBatchTime
+  parent: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  langs:
+  - csharp
+  - vb
+  name: TotalBatchTime
+  nameWithType: BatchProcessResult.TotalBatchTime
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalBatchTime
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: TotalBatchTime
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 80
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets or sets total batch processing time.
+  remarks: This property represents the total time taken to process all files in the batch operation.
+  example: []
+  syntax:
+    content: public TimeSpan TotalBatchTime { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property TotalBatchTime As TimeSpan
+  overload: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalBatchTime*
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalSummaryTime
+  commentId: P:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalSummaryTime
+  id: TotalSummaryTime
+  parent: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  langs:
+  - csharp
+  - vb
+  name: TotalSummaryTime
+  nameWithType: BatchProcessResult.TotalSummaryTime
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalSummaryTime
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: TotalSummaryTime
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 88
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets or sets total time spent generating summaries.
+  remarks: This property represents the cumulative time spent generating AI summaries for all files in the batch.
+  example: []
+  syntax:
+    content: public TimeSpan TotalSummaryTime { get; set; }
+    parameters: []
+    return:
+      type: System.TimeSpan
+    content.vb: Public Property TotalSummaryTime As TimeSpan
+  overload: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalSummaryTime*
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalTokens
+  commentId: P:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalTokens
+  id: TotalTokens
+  parent: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  langs:
+  - csharp
+  - vb
+  name: TotalTokens
+  nameWithType: BatchProcessResult.TotalTokens
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalTokens
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: TotalTokens
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 96
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets or sets total tokens used for all summaries.
+  remarks: This property represents the total number of tokens consumed by the AI summarizer during the batch operation.
+  example: []
+  syntax:
+    content: public int TotalTokens { get; set; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public Property TotalTokens As Integer
+  overload: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalTokens*
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageFileTimeMs
+  commentId: P:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageFileTimeMs
+  id: AverageFileTimeMs
+  parent: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  langs:
+  - csharp
+  - vb
+  name: AverageFileTimeMs
+  nameWithType: BatchProcessResult.AverageFileTimeMs
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageFileTimeMs
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AverageFileTimeMs
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 104
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets or sets average time per file in milliseconds.
+  remarks: This property represents the average time taken to process each file in the batch operation.
+  example: []
+  syntax:
+    content: public double AverageFileTimeMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageFileTimeMs As Double
+  overload: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageFileTimeMs*
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageSummaryTimeMs
+  commentId: P:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageSummaryTimeMs
+  id: AverageSummaryTimeMs
+  parent: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  langs:
+  - csharp
+  - vb
+  name: AverageSummaryTimeMs
+  nameWithType: BatchProcessResult.AverageSummaryTimeMs
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageSummaryTimeMs
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AverageSummaryTimeMs
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 112
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets or sets average summary time per file in milliseconds.
+  remarks: This property represents the average time spent generating summaries for each file in the batch.
+  example: []
+  syntax:
+    content: public double AverageSummaryTimeMs { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageSummaryTimeMs As Double
+  overload: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageSummaryTimeMs*
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageTokens
+  commentId: P:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageTokens
+  id: AverageTokens
+  parent: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  langs:
+  - csharp
+  - vb
+  name: AverageTokens
+  nameWithType: BatchProcessResult.AverageTokens
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageTokens
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AverageTokens
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+    startLine: 120
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets or sets average tokens per summary.
+  remarks: This property represents the average number of tokens consumed by the AI summarizer for each file in the batch.
+  example: []
+  syntax:
+    content: public double AverageTokens { get; set; }
+    parameters: []
+    return:
+      type: System.Double
+    content.vb: Public Property AverageTokens As Double
+  overload: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageTokens*
+references:
+- uid: NotebookAutomation.Core.Tools.Shared
+  commentId: N:NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.Shared
+  nameWithType: NotebookAutomation.Core.Tools.Shared
+  fullName: NotebookAutomation.Core.Tools.Shared
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Processed*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Processed
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html#NotebookAutomation_Core_Tools_Shared_BatchProcessResult_Processed
+  name: Processed
+  nameWithType: BatchProcessResult.Processed
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Processed
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Failed*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Failed
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html#NotebookAutomation_Core_Tools_Shared_BatchProcessResult_Failed
+  name: Failed
+  nameWithType: BatchProcessResult.Failed
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Failed
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Summary*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Summary
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html#NotebookAutomation_Core_Tools_Shared_BatchProcessResult_Summary
+  name: Summary
+  nameWithType: BatchProcessResult.Summary
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.Summary
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalBatchTime*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalBatchTime
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html#NotebookAutomation_Core_Tools_Shared_BatchProcessResult_TotalBatchTime
+  name: TotalBatchTime
+  nameWithType: BatchProcessResult.TotalBatchTime
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalBatchTime
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalSummaryTime*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalSummaryTime
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html#NotebookAutomation_Core_Tools_Shared_BatchProcessResult_TotalSummaryTime
+  name: TotalSummaryTime
+  nameWithType: BatchProcessResult.TotalSummaryTime
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalSummaryTime
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalTokens*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalTokens
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html#NotebookAutomation_Core_Tools_Shared_BatchProcessResult_TotalTokens
+  name: TotalTokens
+  nameWithType: BatchProcessResult.TotalTokens
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.TotalTokens
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageFileTimeMs*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageFileTimeMs
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html#NotebookAutomation_Core_Tools_Shared_BatchProcessResult_AverageFileTimeMs
+  name: AverageFileTimeMs
+  nameWithType: BatchProcessResult.AverageFileTimeMs
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageFileTimeMs
+- uid: System.Double
+  commentId: T:System.Double
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.double
+  name: double
+  nameWithType: double
+  fullName: double
+  nameWithType.vb: Double
+  fullName.vb: Double
+  name.vb: Double
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageSummaryTimeMs*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageSummaryTimeMs
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html#NotebookAutomation_Core_Tools_Shared_BatchProcessResult_AverageSummaryTimeMs
+  name: AverageSummaryTimeMs
+  nameWithType: BatchProcessResult.AverageSummaryTimeMs
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageSummaryTimeMs
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageTokens*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageTokens
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html#NotebookAutomation_Core_Tools_Shared_BatchProcessResult_AverageTokens
+  name: AverageTokens
+  nameWithType: BatchProcessResult.AverageTokens
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.AverageTokens

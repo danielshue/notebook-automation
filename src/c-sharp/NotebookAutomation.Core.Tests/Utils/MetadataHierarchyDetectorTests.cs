@@ -1,11 +1,12 @@
-﻿using System.IO;
-using System.Linq;
-
-using Moq;
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="MetadataHierarchyDetectorTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Utils/MetadataHierarchyDetectorTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Utils;
 
 /// <summary>
@@ -26,7 +27,7 @@ namespace NotebookAutomation.Core.Tests.Utils;
 /// - Metadata enrichment based on content type and index file types
 /// - Edge cases with minimal vault structures and missing hierarchy levels
 /// - Multiple content types including videos, transcripts, notes, case studies, and resources
-/// - Vault structure creation and validation for test infrastructure
+/// - Vault structure creation and validation for test infrastructure.
 /// </para>
 /// <para>
 /// The test infrastructure creates temporary vault structures that mirror real-world educational
@@ -35,12 +36,11 @@ namespace NotebookAutomation.Core.Tests.Utils;
 /// </para>
 /// </remarks>
 [TestClass]
-public class MetadataHierarchyDetectorTests
+internal class MetadataHierarchyDetectorTests
 {
-    private Mock<ILogger<MetadataHierarchyDetector>> _loggerMock;
-    private Mock<AppConfig> _appConfigMock;
-    private AppConfig _testAppConfig;
-
+    private Mock<ILogger<MetadataHierarchyDetector>> loggerMock;
+    private Mock<AppConfig> appConfigMock;
+    private AppConfig testAppConfig;
 
     /// <summary>
     /// Initializes test dependencies and configuration before each test method execution.
@@ -52,22 +52,21 @@ public class MetadataHierarchyDetectorTests
     [TestInitialize]
     public void Setup()
     {
-        _loggerMock = new Mock<ILogger<MetadataHierarchyDetector>>();
+        this.loggerMock = new Mock<ILogger<MetadataHierarchyDetector>>();
 
         // Create a real AppConfig instance instead of mocking it
-        _appConfigMock = new Mock<AppConfig>();
+        this.appConfigMock = new Mock<AppConfig>();
 
         // Create the real config and set it up
         AppConfig realConfig = new()
         {
             Paths = new PathsConfig
             {
-                NotebookVaultFullpathRoot = Path.Combine(Path.GetTempPath(), "TestVault")
-            }
+                NotebookVaultFullpathRoot = Path.Combine(Path.GetTempPath(), "TestVault"),
+            },
         };        // Store the real config in a field for test usage
-        _testAppConfig = realConfig;
+        this.testAppConfig = realConfig;
     }
-
 
     /// <summary>
     /// Verifies that the MetadataHierarchyDetector correctly identifies hierarchy levels
@@ -82,14 +81,14 @@ public class MetadataHierarchyDetectorTests
     public void FindHierarchyInfo_ValueChainManagementPath_DetectsCorrectHierarchy()
     {
         // Arrange
-        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        string vaultRoot = this.testAppConfig.Paths.NotebookVaultFullpathRoot;
         string filePath = Path.Combine(vaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "video.mp4");
 
         // Ensure directory exists for testing
         Directory.CreateDirectory(Path.GetDirectoryName(filePath));
         File.WriteAllText(filePath, "test file content");
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = new(this.loggerMock.Object, this.testAppConfig);
 
         // Act
         Dictionary<string, string> result = detector.FindHierarchyInfo(filePath);
@@ -104,7 +103,6 @@ public class MetadataHierarchyDetectorTests
         }
     }
 
-
     /// <summary>
     /// Validates hierarchy detection for project-based content structure without special handling
     /// for legacy "01_Projects" folders.
@@ -118,7 +116,8 @@ public class MetadataHierarchyDetectorTests
     public void FindHierarchyInfo_ProjectsStructurePath_DetectsCorrectHierarchy()
     {
         // Arrange
-        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        string vaultRoot = this.testAppConfig.Paths.NotebookVaultFullpathRoot;
+
         // We've updated our hierarchy detector to use pure path-based detection
         // so we need to create a path that corresponds to our new structure
         // without '01_Projects' since we no longer have special case handling
@@ -128,7 +127,7 @@ public class MetadataHierarchyDetectorTests
         Directory.CreateDirectory(Path.GetDirectoryName(filePath));
         File.WriteAllText(filePath, "test file content");
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = new(this.loggerMock.Object, this.testAppConfig);
 
         // Act
         Dictionary<string, string> result = detector.FindHierarchyInfo(filePath);
@@ -145,7 +144,6 @@ public class MetadataHierarchyDetectorTests
         }
     }
 
-
     /// <summary>
     /// Verifies that the UpdateMetadataWithHierarchy method correctly adds hierarchy information
     /// to existing metadata without overwriting other properties.
@@ -159,19 +157,19 @@ public class MetadataHierarchyDetectorTests
     public void UpdateMetadataWithHierarchy_AddsHierarchyInfo()
     {
         // Arrange
-        _ = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        _ = new MetadataHierarchyDetector(this.loggerMock.Object, this.testAppConfig);
 
         Dictionary<string, object> metadata = new()
         {
             { "title", "Test Video" },
-            { "source_file", "c:/path/to/video.mp4" }
+            { "source_file", "c:/path/to/video.mp4" },
         };
 
         Dictionary<string, string> hierarchyInfo = new()
         {
             { "program", "MBA Program" },
             { "course", "Finance" },
-            { "class", "Accounting 101" }
+            { "class", "Accounting 101" },
         };        // Act - Use module to include all hierarchy levels
         Dictionary<string, object> result = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(
             metadata,
@@ -183,7 +181,6 @@ public class MetadataHierarchyDetectorTests
         Assert.AreEqual("Finance", result["course"]);
         Assert.AreEqual("Accounting 101", result["class"]);
     }
-
 
     /// <summary>
     /// Ensures that UpdateMetadataWithHierarchy respects existing hierarchy values in metadata
@@ -198,21 +195,21 @@ public class MetadataHierarchyDetectorTests
     public void UpdateMetadataWithHierarchy_DoesNotOverrideExistingValues()
     {
         // Arrange
-        _ = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        _ = new MetadataHierarchyDetector(this.loggerMock.Object, this.testAppConfig);
 
         Dictionary<string, object> metadata = new()
         {
             { "title", "Test Video" },
             { "source_file", "c:/path/to/video.mp4" },
             { "program", "Existing Program" },
-            { "course", "Existing Course" }
+            { "course", "Existing Course" },
         };
 
         Dictionary<string, string> hierarchyInfo = new()
         {
             { "program", "MBA Program" },
             { "course", "Finance" },
-            { "class", "Accounting 101" }
+            { "class", "Accounting 101" },
         };        // Act - Use module to include all hierarchy levels
         Dictionary<string, object> result = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(
             metadata,
@@ -224,7 +221,6 @@ public class MetadataHierarchyDetectorTests
         Assert.AreEqual("Existing Course", result["course"]);
         Assert.AreEqual("Accounting 101", result["class"]);
     }
-
 
     /// <summary>
     /// Comprehensive test that validates hierarchy detection across all levels of a complete
@@ -239,9 +235,9 @@ public class MetadataHierarchyDetectorTests
     public void FindHierarchyInfo_CompleteVaultStructure_DetectsCorrectHierarchy()
     {
         // Arrange
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig, verbose: true);
+        MetadataHierarchyDetector detector = new(this.loggerMock.Object, this.testAppConfig, verbose: true);
 
         // Test hierarchy detection at various levels
 
@@ -300,9 +296,9 @@ public class MetadataHierarchyDetectorTests
         Assert.AreEqual(string.Empty, mbaResult["course"]);
         Assert.AreEqual(string.Empty, mbaResult["class"]);        // Assert - Minimal vault (class-only) - SingleClass is at depth 1, so only program is set
         Assert.AreEqual("SingleClass", singleClassResult["program"]);
-        Assert.AreEqual(string.Empty, singleClassResult["course"]); Assert.AreEqual(string.Empty, singleClassResult["class"]);
+        Assert.AreEqual(string.Empty, singleClassResult["course"]);
+        Assert.AreEqual(string.Empty, singleClassResult["class"]);
     }
-
 
     /// <summary>
     /// Cleans up temporary test files and directories after each test method execution.
@@ -315,13 +311,12 @@ public class MetadataHierarchyDetectorTests
     public void Cleanup()
     {
         // Clean up the test vault if it exists
-        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        string vaultRoot = this.testAppConfig.Paths.NotebookVaultFullpathRoot;
         if (Directory.Exists(vaultRoot))
         {
             Directory.Delete(vaultRoot, true);
         }
     }
-
 
     /// <summary>
     /// Creates a complete temporary vault structure for testing hierarchy detection.
@@ -342,7 +337,7 @@ public class MetadataHierarchyDetectorTests
     ///               - Content Files (data, instructions, results)
     ///     - Resources
     ///       - Templates (Resource Materials)
-    ///   - SingleClass (Minimal Vault Example)
+    ///   - SingleClass (Minimal Vault Example).
     /// </para>
     /// <para>
     /// In this structure, the vault root is the folder specified in the configuration (e.g. "myvault"),
@@ -357,7 +352,7 @@ public class MetadataHierarchyDetectorTests
     /// <returns>A dictionary containing paths to key files in the vault for testing.</returns>
     private Dictionary<string, string> CreateTemporaryVaultStructure()
     {
-        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        string vaultRoot = this.testAppConfig.Paths.NotebookVaultFullpathRoot;
 
         // Create the root directory if it doesn't exist
         Directory.CreateDirectory(vaultRoot);
@@ -394,7 +389,8 @@ program: MBA
         paths["Program"] = programPath;
 
         // Create program index file
-        string programMdPath = Path.Combine(programPath, "Program.md"); File.WriteAllText(programMdPath, @"---
+        string programMdPath = Path.Combine(programPath, "Program.md");
+        File.WriteAllText(programMdPath, @"---
 template-type: program
 auto-generated-state: writable
 banner: gies-banner.png
@@ -441,7 +437,8 @@ course: Finance
         paths["Investment"] = classPath;
 
         // Create class index file
-        string classMdPath = Path.Combine(classPath, "Investment.md"); File.WriteAllText(classMdPath, @"---
+        string classMdPath = Path.Combine(classPath, "Investment.md");
+        File.WriteAllText(classMdPath, @"---
 template-type: class
 auto-generated-state: writable
 banner: gies-banner.png
@@ -724,9 +721,9 @@ class: SingleClass
 
 ## Content
 ");
-        paths["SingleClass.md"] = singleClassMdPath; return paths;
+        paths["SingleClass.md"] = singleClassMdPath;
+        return paths;
     }
-
 
     /// <summary>
     /// Validates that UpdateMetadataWithHierarchy includes only appropriate hierarchy levels
@@ -746,7 +743,7 @@ class: SingleClass
             { "program", "MBA" },
             { "course", "Finance" },
             { "class", "Investment" },
-            { "module", "Fundamentals" }
+            { "module", "Fundamentals" },
         };
 
         Dictionary<string, object> emptyMetadata = new();
@@ -800,9 +797,9 @@ class: SingleClass
         // Assert - module-index should have all levels
         Assert.AreEqual("MBA", moduleResult["program"]);
         Assert.AreEqual("Finance", moduleResult["course"]);
-        Assert.AreEqual("Investment", moduleResult["class"]); Assert.AreEqual("Fundamentals", moduleResult["module"]);
+        Assert.AreEqual("Investment", moduleResult["class"]);
+        Assert.AreEqual("Fundamentals", moduleResult["module"]);
     }
-
 
     /// <summary>
     /// Tests hierarchy detection for newly supported content types including case studies,
@@ -817,9 +814,9 @@ class: SingleClass
     public void FindHierarchyInfo_NewContentTypes_DetectsCorrectHierarchy()
     {
         // Arrange
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = new(this.loggerMock.Object, this.testAppConfig);
 
         // Test hierarchy detection for various content types
 
@@ -862,9 +859,9 @@ class: SingleClass
         Assert.IsTrue(dataResult.ContainsKey("module") && dataResult["module"] == "Investment");        // Assert - Resource template file (MBA/Resources/essay-template.md is at depth 3)
         Assert.AreEqual("MBA", templateResult["program"]);
         Assert.AreEqual("Resources", templateResult["course"], "Resource file path MBA/Resources/essay-template.md should have Resources as course");
-        Assert.AreEqual("essay-template.md", templateResult["class"], "Resource file path should have filename as class at depth 3"); Assert.IsFalse(templateResult.ContainsKey("module"), "Resource files at depth 3 should not have module info");
+        Assert.AreEqual("essay-template.md", templateResult["class"], "Resource file path should have filename as class at depth 3");
+        Assert.IsFalse(templateResult.ContainsKey("module"), "Resource files at depth 3 should not have module info");
     }
-
 
     /// <summary>
     /// Debug utility test that outputs detailed information about the created vault
@@ -879,9 +876,9 @@ class: SingleClass
     public void DebugPathStructure()
     {
         // Arrange
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
-        Console.WriteLine("Vault Root: " + _testAppConfig.Paths.NotebookVaultFullpathRoot);
+        Console.WriteLine("Vault Root: " + this.testAppConfig.Paths.NotebookVaultFullpathRoot);
 
         // Print out all paths
         foreach (var path in paths)
@@ -889,7 +886,7 @@ class: SingleClass
             Console.WriteLine($"Key: {path.Key}, Path: {path.Value}");
         }
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig, verbose: true);
+        MetadataHierarchyDetector detector = new(this.loggerMock.Object, this.testAppConfig, verbose: true);
 
         // Test a few key paths to find the issue
         var transcriptResult = detector.FindHierarchyInfo(paths["video-transcript.md"]);
@@ -901,28 +898,28 @@ class: SingleClass
 
         // Print out what's detected
         Console.WriteLine("\nTranscript Result:");
-        PrintHierarchyResult(transcriptResult);
+        this.PrintHierarchyResult(transcriptResult);
 
         Console.WriteLine("\nLecture Result:");
-        PrintHierarchyResult(lectureResult);
+        this.PrintHierarchyResult(lectureResult);
 
         Console.WriteLine("\nFundamentals Module Result:");
-        PrintHierarchyResult(moduleFundamentalsResult);
+        this.PrintHierarchyResult(moduleFundamentalsResult);
 
         Console.WriteLine("\nInvestment Class Result:");
-        PrintHierarchyResult(investmentResult);
+        this.PrintHierarchyResult(investmentResult);
 
         Console.WriteLine("\nFinance Course Result:");
-        PrintHierarchyResult(financeResult);
+        this.PrintHierarchyResult(financeResult);
 
         Console.WriteLine("\nProgram Result:");
-        PrintHierarchyResult(programResult);
+        this.PrintHierarchyResult(programResult);
 
         // Examine all file paths
-        ExamineRelativePath(_testAppConfig.Paths.NotebookVaultFullpathRoot, paths["video-transcript.md"]);
-        ExamineRelativePath(_testAppConfig.Paths.NotebookVaultFullpathRoot, paths["lecture.mp4"]);
-        ExamineRelativePath(_testAppConfig.Paths.NotebookVaultFullpathRoot, paths["Finance"]);
-        ExamineRelativePath(_testAppConfig.Paths.NotebookVaultFullpathRoot, paths["Program"]);
+        this.ExamineRelativePath(this.testAppConfig.Paths.NotebookVaultFullpathRoot, paths["video-transcript.md"]);
+        this.ExamineRelativePath(this.testAppConfig.Paths.NotebookVaultFullpathRoot, paths["lecture.mp4"]);
+        this.ExamineRelativePath(this.testAppConfig.Paths.NotebookVaultFullpathRoot, paths["Finance"]);
+        this.ExamineRelativePath(this.testAppConfig.Paths.NotebookVaultFullpathRoot, paths["Program"]);
 
         // Verify all assertions pass
         Assert.IsTrue(true);
@@ -948,7 +945,6 @@ class: SingleClass
     /// Property to expose the vault root path for testing purposes.
     /// </summary>    public string VaultRoot => _testAppConfig.Paths.NotebookVaultFullpathRoot;
 
-
     /// <summary>
     /// Validates that the CreateTemporaryVaultStructure helper method creates the expected
     /// directory structure for comprehensive testing.
@@ -962,7 +958,7 @@ class: SingleClass
     public void CreateTemporaryVaultStructure_CreatesCorrectDirectoryHierarchy()
     {
         // Act
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
         // Assert - Verify all expected directories exist
         Assert.IsTrue(Directory.Exists(paths["MBA"]), "MBA directory should exist");
@@ -973,7 +969,7 @@ class: SingleClass
         Assert.IsTrue(Directory.Exists(paths["Intro"]), "Intro directory should exist");
 
         // Assert - Verify directory hierarchy structure
-        string expectedMbaPath = Path.Combine(_testAppConfig.Paths.NotebookVaultFullpathRoot, "MBA");
+        string expectedMbaPath = Path.Combine(this.testAppConfig.Paths.NotebookVaultFullpathRoot, "MBA");
         Assert.AreEqual(expectedMbaPath, paths["MBA"]);
 
         string expectedProgramPath = Path.Combine(expectedMbaPath, "Program");
@@ -991,6 +987,7 @@ class: SingleClass
         string expectedIntroPath = Path.Combine(expectedFundamentalsPath, "Intro");
         Assert.AreEqual(expectedIntroPath, paths["Intro"]);
     }
+
     /// <summary>
     /// Validates that the CreateTemporaryVaultStructure helper method creates the expected
     /// index files (.md files) at each level of the hierarchy with correct naming conventions.
@@ -1004,7 +1001,7 @@ class: SingleClass
     public void CreateTemporaryVaultStructure_CreatesCorrectIndexFiles()
     {
         // Act
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
         // Assert - Verify all index files exist and are named correctly
         Assert.IsTrue(File.Exists(paths["MBA.md"]), "MBA.md index file should exist");
@@ -1022,6 +1019,7 @@ class: SingleClass
         Assert.AreEqual("Fundamentals.md", Path.GetFileName(paths["Fundamentals.md"]));
         Assert.AreEqual("Intro.md", Path.GetFileName(paths["Intro.md"]));
     }
+
     /// <summary>
     /// Validates that the CreateTemporaryVaultStructure helper method creates the expected
     /// content files (videos, transcripts, notes) at the appropriate levels in the vault hierarchy.
@@ -1035,7 +1033,7 @@ class: SingleClass
     public void CreateTemporaryVaultStructure_CreatesCorrectContentFiles()
     {
         // Act
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
         // Assert - Verify content files exist
         Assert.IsTrue(File.Exists(paths["video-transcript.md"]), "Video transcript file should exist");
@@ -1050,6 +1048,7 @@ class: SingleClass
         Assert.AreEqual(expectedIntroPath, Path.GetDirectoryName(paths["lecture-notes.md"]));
         Assert.AreEqual(expectedIntroPath, Path.GetDirectoryName(paths["required-reading.md"]));
     }
+
     /// <summary>
     /// Verifies that the CreateTemporaryVaultStructure helper method creates a minimal
     /// vault structure for testing simple hierarchy scenarios with minimal complexity.
@@ -1063,14 +1062,14 @@ class: SingleClass
     public void CreateTemporaryVaultStructure_CreatesMinimalVaultStructure()
     {
         // Act
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
         // Assert - Verify minimal vault (SingleClass) structure exists
         Assert.IsTrue(Directory.Exists(paths["SingleClass"]), "SingleClass directory should exist");
         Assert.IsTrue(File.Exists(paths["SingleClass.md"]), "SingleClass.md index file should exist");
 
         // Assert - Verify SingleClass is directly under vault root
-        string expectedSingleClassPath = Path.Combine(_testAppConfig.Paths.NotebookVaultFullpathRoot, "SingleClass");
+        string expectedSingleClassPath = Path.Combine(this.testAppConfig.Paths.NotebookVaultFullpathRoot, "SingleClass");
         Assert.AreEqual(expectedSingleClassPath, paths["SingleClass"]);
 
         // Assert - Verify SingleClass.md is named correctly
@@ -1090,7 +1089,7 @@ class: SingleClass
     public void CreateTemporaryVaultStructure_CreatesAdditionalContentTypes()
     {
         // Act
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
         // Assert - Verify additional content types exist
         Assert.IsTrue(File.Exists(paths["case-instructions.md"]), "Case instructions file should exist");
@@ -1123,7 +1122,7 @@ class: SingleClass
     public void CreateTemporaryVaultStructure_ReturnsAllExpectedPathKeys()
     {
         // Act
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
         // Assert - Verify all expected keys are present in the returned dictionary
         string[] expectedKeys = [
@@ -1150,6 +1149,7 @@ class: SingleClass
         // Assert - Verify we have at least the expected number of paths
         Assert.IsTrue(paths.Count >= expectedKeys.Length, $"Should have at least {expectedKeys.Length} paths, but found {paths.Count}");
     }
+
     /// <summary>
     /// Validates that the vault root path is properly accessible and that all created
     /// paths are correctly positioned within the vault root directory structure.
@@ -1163,19 +1163,19 @@ class: SingleClass
     public void CreateTemporaryVaultStructure_VaultRootAccessible()
     {
         // Act
-        var paths = CreateTemporaryVaultStructure();
+        var paths = this.CreateTemporaryVaultStructure();
 
         // Assert - Verify vault root is accessible through public property        Assert.IsFalse(string.IsNullOrEmpty(_testAppConfig.Paths.NotebookVaultFullpathRoot), "VaultRoot property should not be null or empty");
-        Assert.IsTrue(Directory.Exists(_testAppConfig.Paths.NotebookVaultFullpathRoot), "VaultRoot directory should exist");        // Assert - Verify all created paths are under the vault root
+        Assert.IsTrue(Directory.Exists(this.testAppConfig.Paths.NotebookVaultFullpathRoot), "VaultRoot directory should exist");        // Assert - Verify all created paths are under the vault root
         foreach (var pathEntry in paths)
         {
-            string relativePath = Path.GetRelativePath(_testAppConfig.Paths.NotebookVaultFullpathRoot, pathEntry.Value);
-            Assert.IsFalse(relativePath.StartsWith(".."),
+            string relativePath = Path.GetRelativePath(this.testAppConfig.Paths.NotebookVaultFullpathRoot, pathEntry.Value);
+            Assert.IsFalse(
+                relativePath.StartsWith(".."),
                 $"Path '{pathEntry.Key}' should be under vault root. " +
-                $"VaultRoot: {_testAppConfig.Paths.NotebookVaultFullpathRoot}, Path: {pathEntry.Value}, Relative: {relativePath}");
+                $"VaultRoot: {this.testAppConfig.Paths.NotebookVaultFullpathRoot}, Path: {pathEntry.Value}, Relative: {relativePath}");
         }
     }
-
 
     /// <summary>
     /// Verifies that the test configuration correctly exposes the vault root path
@@ -1190,17 +1190,18 @@ class: SingleClass
     public void VaultRoot_ExposesCorrectPath()
     {
         // Act
-        var paths = CreateTemporaryVaultStructure();        // Assert - Verify VaultRoot property returns the correct path
-        Assert.AreEqual(_testAppConfig.Paths.NotebookVaultFullpathRoot, _testAppConfig.Paths.NotebookVaultFullpathRoot);
+        var paths = this.CreateTemporaryVaultStructure();        // Assert - Verify VaultRoot property returns the correct path
+        Assert.AreEqual(this.testAppConfig.Paths.NotebookVaultFullpathRoot, this.testAppConfig.Paths.NotebookVaultFullpathRoot);
 
         // Assert - Verify VaultRoot is a valid directory path
-        Assert.IsTrue(Path.IsPathRooted(_testAppConfig.Paths.NotebookVaultFullpathRoot), "VaultRoot should be an absolute path");
-        Assert.IsTrue(Directory.Exists(_testAppConfig.Paths.NotebookVaultFullpathRoot), "VaultRoot directory should exist after creating vault structure");
+        Assert.IsTrue(Path.IsPathRooted(this.testAppConfig.Paths.NotebookVaultFullpathRoot), "VaultRoot should be an absolute path");
+        Assert.IsTrue(Directory.Exists(this.testAppConfig.Paths.NotebookVaultFullpathRoot), "VaultRoot directory should exist after creating vault structure");
 
         // Assert - Verify all top-level directories are under VaultRoot
-        Assert.IsTrue(paths["MBA"].StartsWith(_testAppConfig.Paths.NotebookVaultFullpathRoot), "MBA path should start with VaultRoot");
-        Assert.IsTrue(paths["SingleClass"].StartsWith(_testAppConfig.Paths.NotebookVaultFullpathRoot), "SingleClass path should start with VaultRoot");
+        Assert.IsTrue(paths["MBA"].StartsWith(this.testAppConfig.Paths.NotebookVaultFullpathRoot), "MBA path should start with VaultRoot");
+        Assert.IsTrue(paths["SingleClass"].StartsWith(this.testAppConfig.Paths.NotebookVaultFullpathRoot), "SingleClass path should start with VaultRoot");
     }
+
     /// <summary>
     /// Validates that the CreateTemporaryVaultStructure helper method creates a complete
     /// hierarchical structure from vault root to the deepest content level with correct nesting.
@@ -1214,9 +1215,9 @@ class: SingleClass
     public void CreateTemporaryVaultStructure_CreatesCompleteHierarchy()
     {
         // Act
-        var paths = CreateTemporaryVaultStructure();        // Assert - Verify complete hierarchy from vault root to deepest level
+        var paths = this.CreateTemporaryVaultStructure();        // Assert - Verify complete hierarchy from vault root to deepest level
         string deepestPath = paths["video-transcript.md"];
-        string[] segments = Path.GetRelativePath(_testAppConfig.Paths.NotebookVaultFullpathRoot, deepestPath).Split(Path.DirectorySeparatorChar);
+        string[] segments = Path.GetRelativePath(this.testAppConfig.Paths.NotebookVaultFullpathRoot, deepestPath).Split(Path.DirectorySeparatorChar);
 
         // Expected path: VaultRoot/MBA/Program/Finance/Investment/Fundamentals/Intro/video-transcript.md
         string[] expectedSegments = ["MBA", "Program", "Finance", "Investment", "Fundamentals", "Intro", "video-transcript.md"];
@@ -1227,7 +1228,6 @@ class: SingleClass
             Assert.AreEqual(expectedSegments[i], segments[i], $"Segment {i} should match expected hierarchy");
         }
     }
-
 
     /// <summary>
     /// Validates that multiple calls to CreateTemporaryVaultStructure work correctly
@@ -1242,8 +1242,8 @@ class: SingleClass
     public void CreateTemporaryVaultStructure_HandlesMultipleInvocations()
     {
         // Act - Call CreateTemporaryVaultStructure multiple times
-        var paths1 = CreateTemporaryVaultStructure();
-        var paths2 = CreateTemporaryVaultStructure();
+        var paths1 = this.CreateTemporaryVaultStructure();
+        var paths2 = this.CreateTemporaryVaultStructure();
 
         // Assert - Both calls should return the same paths (idempotent)
         Assert.AreEqual(paths1.Count, paths2.Count, "Multiple invocations should return same number of paths");
@@ -1274,8 +1274,8 @@ class: SingleClass
     public void FindHierarchyInfo_LessonLevelHierarchy_DetectsCorrectHierarchy()
     {
         // Arrange
-        var paths = CreateTemporaryVaultStructure();
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        var paths = this.CreateTemporaryVaultStructure();
+        MetadataHierarchyDetector detector = new(this.loggerMock.Object, this.testAppConfig);
 
         // Test hierarchy detection at lesson level (deepest level with content)
         string lessonPath = paths["Intro"];
@@ -1299,6 +1299,7 @@ class: SingleClass
         Assert.AreEqual("Finance", transcriptResult["class"], "Content file should detect class correctly");
         Assert.AreEqual("Investment", transcriptResult["module"], "Content file should detect module correctly");
     }
+
     /// <summary>
     /// Tests hierarchy detection specifically at the module level to validate proper
     /// identification of program, course, class, and module levels in the educational structure.
@@ -1312,8 +1313,8 @@ class: SingleClass
     public void FindHierarchyInfo_ModuleLevelHierarchy_DetectsCorrectHierarchy()
     {
         // Arrange
-        var paths = CreateTemporaryVaultStructure();
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        var paths = this.CreateTemporaryVaultStructure();
+        MetadataHierarchyDetector detector = new(this.loggerMock.Object, this.testAppConfig);
 
         // Test hierarchy detection at module level (fourth level)
         string modulePath = paths["Fundamentals"];
@@ -1333,6 +1334,7 @@ class: SingleClass
         Assert.AreEqual("Finance", caseStudiesResult["class"], "Case Studies module should detect class correctly");
         Assert.AreEqual("Investment", caseStudiesResult["module"], "Case Studies should detect parent class as module");
     }
+
     /// <summary>
     /// Tests hierarchy detection for case study content to ensure proper identification
     /// of hierarchy levels for case study lessons and their associated files.
@@ -1346,8 +1348,8 @@ class: SingleClass
     public void FindHierarchyInfo_CaseStudyContent_DetectsCorrectHierarchy()
     {
         // Arrange
-        var paths = CreateTemporaryVaultStructure();
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        var paths = this.CreateTemporaryVaultStructure();
+        MetadataHierarchyDetector detector = new(this.loggerMock.Object, this.testAppConfig);
 
         // Test case study lesson level (Market Analysis)
         string marketAnalysisPath = paths["Market Analysis"];
@@ -1371,6 +1373,7 @@ class: SingleClass
         Assert.AreEqual("Finance", instructionsResult["class"], "Case study content should detect class correctly");
         Assert.AreEqual("Investment", instructionsResult["module"], "Case study content should detect module correctly");
     }
+
     /// <summary>
     /// Comprehensive validation of hierarchy detection across multiple content types
     /// and file formats to ensure consistent behavior regardless of content type.
@@ -1384,8 +1387,8 @@ class: SingleClass
     public void FindHierarchyInfo_DeepContentHierarchy_ValidatesAllLevels()
     {
         // Arrange
-        var paths = CreateTemporaryVaultStructure();
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        var paths = this.CreateTemporaryVaultStructure();
+        MetadataHierarchyDetector detector = new(this.loggerMock.Object, this.testAppConfig);
 
         // Test various content types at different depths
         var testCases = new[]
@@ -1393,7 +1396,7 @@ class: SingleClass
             new { Path = paths["lecture.mp4"], Expected = new { Program = "MBA", Course = "Program", Class = "Finance", Module = "Investment" } },
             new { Path = paths["lecture-notes.md"], Expected = new { Program = "MBA", Course = "Program", Class = "Finance", Module = "Investment" } },
             new { Path = paths["required-reading.md"], Expected = new { Program = "MBA", Course = "Program", Class = "Finance", Module = "Investment" } },
-            new { Path = paths["market-data.xlsx"], Expected = new { Program = "MBA", Course = "Program", Class = "Finance", Module = "Investment" } }
+            new { Path = paths["market-data.xlsx"], Expected = new { Program = "MBA", Course = "Program", Class = "Finance", Module = "Investment" } },
         };
 
         foreach (var testCase in testCases)
@@ -1412,6 +1415,7 @@ class: SingleClass
                 $"Module mismatch for {Path.GetFileName(testCase.Path)}");
         }
     }
+
     /// <summary>
     /// Tests metadata update functionality for lesson-level index files to ensure
     /// all appropriate hierarchy levels are included in lesson index metadata.
@@ -1430,13 +1434,13 @@ class: SingleClass
             { "program", "MBA" },
             { "course", "Finance" },
             { "class", "Investment" },
-            { "module", "Fundamentals" }
+            { "module", "Fundamentals" },
         };
 
         Dictionary<string, object> metadata = new()
         {
             { "title", "Introduction to Investments" },
-            { "type", "index" }
+            { "type", "index" },
         };
 
         // Act
@@ -1453,6 +1457,7 @@ class: SingleClass
         Assert.AreEqual("Introduction to Investments", result["title"]);
         Assert.AreEqual("index", result["type"]);
     }
+
     /// <summary>
     /// Tests metadata update functionality for module-level index files to validate
     /// proper inclusion of all hierarchy levels appropriate for module-level content.
@@ -1471,13 +1476,13 @@ class: SingleClass
             { "program", "MBA" },
             { "course", "Finance" },
             { "class", "Investment" },
-            { "module", "Fundamentals" }
+            { "module", "Fundamentals" },
         };
 
         Dictionary<string, object> metadata = new()
         {
             { "title", "Investment Fundamentals" },
-            { "type", "index" }
+            { "type", "index" },
         };
 
         // Act

@@ -1,0 +1,545 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions
+  commentId: T:NotebookAutomation.Core.Services.OneDriveCliOptions
+  id: OneDriveCliOptions
+  parent: NotebookAutomation.Core.Services
+  children:
+  - NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun
+  - NotebookAutomation.Core.Services.OneDriveCliOptions.Force
+  - NotebookAutomation.Core.Services.OneDriveCliOptions.Retry
+  - NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose
+  langs:
+  - csharp
+  - vb
+  name: OneDriveCliOptions
+  nameWithType: OneDriveCliOptions
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: OneDriveCliOptions
+    path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+    startLine: 43
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Options for configuring the behavior of OneDrive operations via the command-line interface.
+  remarks: >-
+    <p>
+
+    The OneDriveCliOptions class provides a structured way to configure how OneDrive operations
+
+    behave when invoked through the command-line interface. These options control behaviors such as:
+
+    <ul><li>Whether operations should run in dry-run mode (simulating changes without actually making them)</li><li>Whether to display verbose output during operations</li><li>Whether to force operations even if they might overwrite existing content</li><li>Whether to retry operations on failure</li></ul>
+
+    </p>
+
+    <p>
+
+    These options are typically set based on command-line arguments provided by the user,
+
+    and then passed to the OneDriveService for use during operations.
+
+    </p>
+  example:
+  - >-
+    Example of setting up options based on command-line arguments:
+
+    <pre><code class="lang-csharp">var options = new OneDriveCliOptions
+
+    {
+        DryRun = context.ParseResult.GetValueForOption(dryRunOption),
+        Verbose = context.ParseResult.GetValueForOption(verboseOption),
+        Force = context.ParseResult.GetValueForOption(forceOption),
+        Retry = true  // Always retry by default
+    };
+
+    oneDriveService.SetCliOptions(options);</code></pre>
+  syntax:
+    content: public class OneDriveCliOptions
+    content.vb: Public Class OneDriveCliOptions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun
+  commentId: P:NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun
+  id: DryRun
+  parent: NotebookAutomation.Core.Services.OneDriveCliOptions
+  langs:
+  - csharp
+  - vb
+  name: DryRun
+  nameWithType: OneDriveCliOptions.DryRun
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: DryRun
+    path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+    startLine: 57
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Gets or sets a value indicating whether gets or sets whether to simulate operations without making actual changes.
+  remarks: >-
+    When DryRun is enabled, the OneDriveService will log what would have happened
+
+    but won't actually modify, upload, or download any files. This is useful for
+
+    verifying what operations would be performed without risking any data changes.
+  example: []
+  syntax:
+    content: public bool DryRun { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+      description: >-
+        <code>true</code> to run in dry-run mode (simulating but not performing operations);
+
+        <code>false</code> to perform actual operations.
+    content.vb: Public Property DryRun As Boolean
+  overload: NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun*
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose
+  commentId: P:NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose
+  id: Verbose
+  parent: NotebookAutomation.Core.Services.OneDriveCliOptions
+  langs:
+  - csharp
+  - vb
+  name: Verbose
+  nameWithType: OneDriveCliOptions.Verbose
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Verbose
+    path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+    startLine: 70
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Gets or sets a value indicating whether gets or sets whether to display detailed, verbose output during operations.
+  remarks: >-
+    When Verbose is enabled, the OneDriveService will log additional details about
+
+    each operation, including file sizes, paths, timestamps, and more. This is useful
+
+    for debugging or for understanding exactly what the service is doing.
+  example: []
+  syntax:
+    content: public bool Verbose { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+      description: <code>true</code> to display verbose output; <code>false</code> for standard output.
+    content.vb: Public Property Verbose As Boolean
+  overload: NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose*
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions.Force
+  commentId: P:NotebookAutomation.Core.Services.OneDriveCliOptions.Force
+  id: Force
+  parent: NotebookAutomation.Core.Services.OneDriveCliOptions
+  langs:
+  - csharp
+  - vb
+  name: Force
+  nameWithType: OneDriveCliOptions.Force
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions.Force
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Force
+    path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+    startLine: 83
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Gets or sets a value indicating whether gets or sets whether to force operations even if they would overwrite existing content.
+  remarks: >-
+    When Force is enabled, the OneDriveService will overwrite existing files without
+
+    prompting for confirmation. If Force is disabled, the service might skip conflicting
+
+    operations or prompt for confirmation, depending on the specific implementation.
+  example: []
+  syntax:
+    content: public bool Force { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+      description: <code>true</code> to force operations; <code>false</code> to prompt or skip when conflicts occur.
+    content.vb: Public Property Force As Boolean
+  overload: NotebookAutomation.Core.Services.OneDriveCliOptions.Force*
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions.Retry
+  commentId: P:NotebookAutomation.Core.Services.OneDriveCliOptions.Retry
+  id: Retry
+  parent: NotebookAutomation.Core.Services.OneDriveCliOptions
+  langs:
+  - csharp
+  - vb
+  name: Retry
+  nameWithType: OneDriveCliOptions.Retry
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions.Retry
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Retry
+    path: src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+    startLine: 102
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Gets or sets a value indicating whether gets or sets whether to retry failed operations.
+  remarks: >-
+    <p>
+
+    When Retry is enabled, the OneDriveService will attempt to retry operations that
+
+    fail due to transient errors, like network issues or rate limiting. The specific
+
+    retry strategy (number of retries, delays) is determined by the service implementation.
+
+    </p>
+
+    <p>
+
+    This is particularly useful for operations that are likely to succeed on retry,
+
+    such as uploads or downloads that might fail due to temporary network issues.
+
+    </p>
+  example: []
+  syntax:
+    content: public bool Retry { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+      description: <code>true</code> to retry failed operations; <code>false</code> to fail immediately.
+    content.vb: Public Property Retry As Boolean
+  overload: NotebookAutomation.Core.Services.OneDriveCliOptions.Retry*
+references:
+- uid: NotebookAutomation.Core.Services
+  commentId: N:NotebookAutomation.Core.Services
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Services
+  nameWithType: NotebookAutomation.Core.Services
+  fullName: NotebookAutomation.Core.Services
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun*
+  commentId: Overload:NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun
+  href: NotebookAutomation.Core.Services.OneDriveCliOptions.html#NotebookAutomation_Core_Services_OneDriveCliOptions_DryRun
+  name: DryRun
+  nameWithType: OneDriveCliOptions.DryRun
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose*
+  commentId: Overload:NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose
+  href: NotebookAutomation.Core.Services.OneDriveCliOptions.html#NotebookAutomation_Core_Services_OneDriveCliOptions_Verbose
+  name: Verbose
+  nameWithType: OneDriveCliOptions.Verbose
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions.Force*
+  commentId: Overload:NotebookAutomation.Core.Services.OneDriveCliOptions.Force
+  href: NotebookAutomation.Core.Services.OneDriveCliOptions.html#NotebookAutomation_Core_Services_OneDriveCliOptions_Force
+  name: Force
+  nameWithType: OneDriveCliOptions.Force
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions.Force
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions.Retry*
+  commentId: Overload:NotebookAutomation.Core.Services.OneDriveCliOptions.Retry
+  href: NotebookAutomation.Core.Services.OneDriveCliOptions.html#NotebookAutomation_Core_Services_OneDriveCliOptions_Retry
+  name: Retry
+  nameWithType: OneDriveCliOptions.Retry
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions.Retry

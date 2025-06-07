@@ -1,9 +1,17 @@
-﻿using NotebookAutomation.Core.Configuration;
+// <copyright file="MarkdownNoteProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownNoteProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.MarkdownGeneration;
-
 
 /// <summary>
 /// Provides functionality for converting HTML, TXT, or EPUB files to markdown notes, with optional AI-generated summaries.
@@ -32,11 +40,11 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration;
 /// </example>
 public partial class MarkdownNoteProcessor
 {
-    private readonly ILogger<MarkdownNoteProcessor> _logger;
-    private readonly MarkdownNoteBuilder _noteBuilder;
-    private readonly AISummarizer _aiSummarizer;
-    private readonly MetadataHierarchyDetector _hierarchyDetector;
-    private readonly AppConfig? _appConfig;
+    private readonly ILogger<MarkdownNoteProcessor> logger;
+    private readonly MarkdownNoteBuilder noteBuilder;
+    private readonly AISummarizer aiSummarizer;
+    private readonly MetadataHierarchyDetector hierarchyDetector;
+    private readonly AppConfig? appConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MarkdownNoteProcessor"/> class.
@@ -58,12 +66,12 @@ public partial class MarkdownNoteProcessor
     {
         if (logger is ILogger<MarkdownNoteProcessor> genericLogger)
         {
-            _logger = genericLogger;
+            this.logger = genericLogger;
         }
         else
         {
             // Allow any ILogger for testing/mocking, but warn if not the expected type
-            _logger = logger as ILogger<MarkdownNoteProcessor> ?? throw new ArgumentException("Logger must be ILogger<MarkdownNoteProcessor> or compatible mock");
+            this.logger = logger as ILogger<MarkdownNoteProcessor> ?? throw new ArgumentException("Logger must be ILogger<MarkdownNoteProcessor> or compatible mock");
             if (logger.GetType().Name.Contains("Mock") || logger.GetType().Name.Contains("Proxy"))
             {
                 // Allow for test mocks
@@ -73,10 +81,11 @@ public partial class MarkdownNoteProcessor
                 throw new ArgumentException("Logger must be ILogger<MarkdownNoteProcessor>");
             }
         }
-        _noteBuilder = new MarkdownNoteBuilder(logger);
-        _aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
-        _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
-        _appConfig = appConfig;
+
+        this.noteBuilder = new MarkdownNoteBuilder(logger);
+        this.aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
+        this.hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
+        this.appConfig = appConfig;
     }
 
     /// <summary>
@@ -109,18 +118,20 @@ public partial class MarkdownNoteProcessor
     {
         if (!File.Exists(inputPath))
         {
-            _logger.LogError("Input file not found: {InputPath}", inputPath);
+            this.logger.LogError("Input file not found: {InputPath}", inputPath);
             return string.Empty;
         }
+
         string ext = Path.GetExtension(inputPath).ToLowerInvariant();
         string rawText;
         if (ext == ".txt")
         {
-            rawText = await File.ReadAllTextAsync(inputPath);
+            rawText = await File.ReadAllTextAsync(inputPath).ConfigureAwait(false);
         }
         else if (ext == ".html" || ext == ".htm")
         {
-            rawText = await File.ReadAllTextAsync(inputPath);
+            rawText = await File.ReadAllTextAsync(inputPath).ConfigureAwait(false);
+
             // TODO: Use a real HTML-to-markdown converter (e.g., ReverseMarkdown)
             rawText = StripHtmlTags(rawText);
         }
@@ -131,7 +142,7 @@ public partial class MarkdownNoteProcessor
                 // Use VersOne.Epub for EPUB parsing
                 // Install-Package VersOne.Epub
                 var epubText = new StringBuilder();
-                var book = await VersOne.Epub.EpubReader.ReadBookAsync(inputPath);
+                var book = await VersOne.Epub.EpubReader.ReadBookAsync(inputPath).ConfigureAwait(false);
                 if (book != null && book.ReadingOrder != null)
                 {
                     foreach (var htmlContentFile in book.ReadingOrder)
@@ -143,40 +154,42 @@ public partial class MarkdownNoteProcessor
                         }
                     }
                 }
+
                 rawText = epubText.ToString();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to parse EPUB file: {InputPath}", inputPath);
+                this.logger.LogError(ex, "Failed to parse EPUB file: {InputPath}", inputPath);
                 return string.Empty;
             }
         }
         else
         {
-            _logger.LogError("Unsupported file type: {Ext}", ext);
+            this.logger.LogError("Unsupported file type: {Ext}", ext);
             return string.Empty;
         }
+
         string aiSummary = rawText;
         if (!string.IsNullOrWhiteSpace(openAiApiKey))
         {
-
             // Use the new method name to avoid ambiguity
             Dictionary<string, string>? noVariables = null;
-            aiSummary = await _aiSummarizer.SummarizeWithVariablesAsync(rawText, noVariables, promptFileName) ?? rawText;
+            aiSummary = await this.aiSummarizer.SummarizeWithVariablesAsync(rawText, noVariables, promptFileName).ConfigureAwait(false) ?? rawText;
         }
+
         var metadata = new Dictionary<string, object>
         {
             { "title", Path.GetFileNameWithoutExtension(inputPath) },
             { "source_file", inputPath },
-            { "generated", DateTime.UtcNow.ToString("u") }
+            { "generated", DateTime.UtcNow.ToString("u") },
         };
 
         // Extract hierarchy information using injected MetadataHierarchyDetector
-        _logger.LogDebug("Extracting hierarchy information from file path: {FilePath}", inputPath);
-        var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(inputPath);
+        this.logger.LogDebug("Extracting hierarchy information from file path: {FilePath}", inputPath);
+        var hierarchyInfo = this.hierarchyDetector.FindHierarchyInfo(inputPath);
         MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "module");
 
-        return _noteBuilder.BuildNote(metadata, aiSummary);
+        return this.noteBuilder.BuildNote(metadata, aiSummary);
     }
 
     /// <summary>
@@ -204,7 +217,7 @@ public partial class MarkdownNoteProcessor
     }
 
     /// <summary>
-    /// Matches HTML tags (e.g., "<div>", "<span>") for stripping them from text.
+    /// Matches HTML tags (e.g., ".<div>", "<span>") for stripping them from text.
     /// </summary>
     /// <remarks>
     /// <para>

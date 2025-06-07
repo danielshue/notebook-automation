@@ -1,4 +1,13 @@
-﻿using NotebookAutomation.Core.Configuration;
+// <copyright file="VideoNoteBatchProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Tools.Shared;
 
@@ -18,15 +27,15 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
     /// <summary>
     /// The generic batch processor that handles the actual batch processing logic.
     /// </summary>
-    private readonly DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor = batchProcessor;
+    private readonly DocumentNoteBatchProcessor<VideoNoteProcessor> batchProcessor = batchProcessor;
 
     /// <summary>
     /// Event triggered when processing progress changes.
     /// </summary>
     public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
     {
-        add => _batchProcessor.ProcessingProgressChanged += value;
-        remove => _batchProcessor.ProcessingProgressChanged -= value;
+        add => this.batchProcessor.ProcessingProgressChanged += value;
+        remove => this.batchProcessor.ProcessingProgressChanged -= value;
     }
 
     /// <summary>
@@ -34,8 +43,8 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
     /// </summary>
     public event EventHandler<QueueChangedEventArgs>? QueueChanged
     {
-        add => _batchProcessor.QueueChanged += value;
-        remove => _batchProcessor.QueueChanged -= value;
+        add => this.batchProcessor.QueueChanged += value;
+        remove => this.batchProcessor.QueueChanged -= value;
     }
 
     /// <summary>
@@ -100,7 +109,7 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
         AppConfig? appConfig = null,
         bool noShareLinks = false)
     {
-        return await _batchProcessor.ProcessDocumentsAsync(
+        return await this.batchProcessor.ProcessDocumentsAsync(
             input,
             output,
             videoExtensions,
@@ -114,6 +123,6 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
             appConfig,
             "Video Note",
             "failed_videos.txt",
-            noShareLinks);
+            noShareLinks).ConfigureAwait(false);
     }
 }

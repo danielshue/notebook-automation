@@ -1,0 +1,1275 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions
+  commentId: T:NotebookAutomation.Core.Utils.LoggerExtensions
+  id: LoggerExtensions
+  parent: NotebookAutomation.Core.Utils
+  children:
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath``1(Microsoft.Extensions.Logging.ILogger{``0},System.Exception,System.String,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogFormatted(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,System.Exception,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  - NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,System.Exception,System.String,System.String,System.Object[])
+  langs:
+  - csharp
+  - vb
+  name: LoggerExtensions
+  nameWithType: LoggerExtensions
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LoggerExtensions
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 36
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: >-
+    Provides extension methods for <xref href="Microsoft.Extensions.Logging.ILogger" data-throw-if-not-resolved="false"></xref> and <xref href="Microsoft.Extensions.Logging.ILogger%601" data-throw-if-not-resolved="false"></xref> to simplify and standardize
+
+    logging of messages with file path formatting, exception handling, and flexible message templates.
+  remarks: >-
+    <p>
+
+    These extensions enable consistent logging patterns for file-related operations, supporting both full and shortened
+
+    file paths depending on log level, and provide overloads for common log levels (Information, Debug, Warning, Error).
+
+    </p>
+
+    <p>
+
+    Use <code>LogWithFormattedPath</code> and its overloads to automatically format file paths in log messages, and use
+
+    <code>LogFormatted</code> for general-purpose message formatting. All methods support structured logging and exception details.
+
+    </p>
+
+    <example>
+
+
+    <pre><code class="lang-csharp">logger.LogInformationWithPath("Processed file: {FilePath}", filePath);
+
+    logger.LogErrorWithPath(ex, "Failed to process: {FilePath}", filePath);
+
+    logger.LogDebugFormatted("Processing {Count} items", count);</code></pre>
+
+    </example>
+  example: []
+  syntax:
+    content: public static class LoggerExtensions
+    content.vb: Public Module LoggerExtensions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,System.Exception,System.String,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,System.Exception,System.String,System.String,System.Object[])
+  id: LogWithFormattedPath(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,System.Exception,System.String,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogWithFormattedPath(ILogger, LogLevel, EventId, Exception?, string, string, params object[])
+  nameWithType: LoggerExtensions.LogWithFormattedPath(ILogger, LogLevel, EventId, Exception?, string, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(Microsoft.Extensions.Logging.ILogger, Microsoft.Extensions.Logging.LogLevel, Microsoft.Extensions.Logging.EventId, System.Exception?, string, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogWithFormattedPath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 56
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs a message with a formatted file path, automatically shortening or expanding the path based on log level.
+  remarks: For <xref href="Microsoft.Extensions.Logging.LogLevel.Debug" data-throw-if-not-resolved="false"></xref> or <xref href="Microsoft.Extensions.Logging.LogLevel.Trace" data-throw-if-not-resolved="false"></xref>, the full file path is used. For other levels, a shortened path is used.
+  example:
+  - '<pre><code class="lang-csharp">logger.LogWithFormattedPath(LogLevel.Information, 0, null, "Processed file: {FilePath}", filePath);</code></pre>'
+  syntax:
+    content: public static void LogWithFormattedPath(this ILogger logger, LogLevel logLevel, EventId eventId, Exception? exception, string message, string filePath, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger instance to use for logging.
+    - id: logLevel
+      type: Microsoft.Extensions.Logging.LogLevel
+      description: The severity level of the log message.
+    - id: eventId
+      type: Microsoft.Extensions.Logging.EventId
+      description: The event ID for structured logging (optional).
+    - id: exception
+      type: System.Exception
+      description: An optional exception to include in the log entry.
+    - id: message
+      type: System.String
+      description: A message template that should include a <code>{FilePath}</code> placeholder for the formatted path.
+    - id: filePath
+      type: System.String
+      description: The file path to be formatted and injected into the log message.
+    - id: args
+      type: System.Object[]
+      description: Additional arguments to be formatted into the message template.
+    content.vb: Public Shared Sub LogWithFormattedPath(logger As ILogger, logLevel As LogLevel, eventId As EventId, exception As Exception, message As String, filePath As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath*
+  nameWithType.vb: LoggerExtensions.LogWithFormattedPath(ILogger, LogLevel, EventId, Exception, String, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(Microsoft.Extensions.Logging.ILogger, Microsoft.Extensions.Logging.LogLevel, Microsoft.Extensions.Logging.EventId, System.Exception, String, String, ParamArray Object())
+  name.vb: LogWithFormattedPath(ILogger, LogLevel, EventId, Exception, String, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogFormatted(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,System.Exception,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogFormatted(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,System.Exception,System.String,System.Object[])
+  id: LogFormatted(Microsoft.Extensions.Logging.ILogger,Microsoft.Extensions.Logging.LogLevel,Microsoft.Extensions.Logging.EventId,System.Exception,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogFormatted(ILogger, LogLevel, EventId, Exception?, string, params object[])
+  nameWithType: LoggerExtensions.LogFormatted(ILogger, LogLevel, EventId, Exception?, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogFormatted(Microsoft.Extensions.Logging.ILogger, Microsoft.Extensions.Logging.LogLevel, Microsoft.Extensions.Logging.EventId, System.Exception?, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogFormatted
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 91
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs a message with general string formatting support, without any special file path formatting.
+  example:
+  - '<pre><code class="lang-csharp">logger.LogFormatted(LogLevel.Warning, 0, null, "Warning: {Detail}", detail);</code></pre>'
+  syntax:
+    content: public static void LogFormatted(this ILogger logger, LogLevel logLevel, EventId eventId, Exception? exception, string message, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger instance to use for logging.
+    - id: logLevel
+      type: Microsoft.Extensions.Logging.LogLevel
+      description: The severity level of the log message.
+    - id: eventId
+      type: Microsoft.Extensions.Logging.EventId
+      description: The event ID for structured logging (optional).
+    - id: exception
+      type: System.Exception
+      description: An optional exception to include in the log entry.
+    - id: message
+      type: System.String
+      description: A message template with any number of placeholders.
+    - id: args
+      type: System.Object[]
+      description: Arguments to be formatted into the message template placeholders.
+    content.vb: Public Shared Sub LogFormatted(logger As ILogger, logLevel As LogLevel, eventId As EventId, exception As Exception, message As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogFormatted*
+  nameWithType.vb: LoggerExtensions.LogFormatted(ILogger, LogLevel, EventId, Exception, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogFormatted(Microsoft.Extensions.Logging.ILogger, Microsoft.Extensions.Logging.LogLevel, Microsoft.Extensions.Logging.EventId, System.Exception, String, ParamArray Object())
+  name.vb: LogFormatted(ILogger, LogLevel, EventId, Exception, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  id: LogInformationWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogInformationWithPath(ILogger, string, string, params object[])
+  nameWithType: LoggerExtensions.LogInformationWithPath(ILogger, string, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationWithPath(Microsoft.Extensions.Logging.ILogger, string, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogInformationWithPath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 114
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs an information-level message with a formatted file path.
+  example:
+  - '<pre><code class="lang-csharp">logger.LogInformationWithPath("Imported file: {FilePath}", filePath);</code></pre>'
+  syntax:
+    content: public static void LogInformationWithPath(this ILogger logger, string message, string filePath, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger instance to use for logging.
+    - id: message
+      type: System.String
+      description: A message template that should include a <code>{FilePath}</code> placeholder for the formatted path.
+    - id: filePath
+      type: System.String
+      description: The file path to be formatted and injected into the log message.
+    - id: args
+      type: System.Object[]
+      description: Additional arguments to be formatted into the message template.
+    content.vb: Public Shared Sub LogInformationWithPath(logger As ILogger, message As String, filePath As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationWithPath*
+  nameWithType.vb: LoggerExtensions.LogInformationWithPath(ILogger, String, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationWithPath(Microsoft.Extensions.Logging.ILogger, String, String, ParamArray Object())
+  name.vb: LogInformationWithPath(ILogger, String, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  id: LogInformationFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogInformationFormatted(ILogger, string, params object[])
+  nameWithType: LoggerExtensions.LogInformationFormatted(ILogger, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationFormatted(Microsoft.Extensions.Logging.ILogger, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogInformationFormatted
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 134
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs an information-level message with general string formatting support.
+  example:
+  - <pre><code class="lang-csharp">logger.LogInformationFormatted("Processed {Count} items", count);</code></pre>
+  syntax:
+    content: public static void LogInformationFormatted(this ILogger logger, string message, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger instance to use for logging.
+    - id: message
+      type: System.String
+      description: A message template with any number of placeholders.
+    - id: args
+      type: System.Object[]
+      description: Arguments to be formatted into the message template placeholders.
+    content.vb: Public Shared Sub LogInformationFormatted(logger As ILogger, message As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationFormatted*
+  nameWithType.vb: LoggerExtensions.LogInformationFormatted(ILogger, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationFormatted(Microsoft.Extensions.Logging.ILogger, String, ParamArray Object())
+  name.vb: LogInformationFormatted(ILogger, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  id: LogDebugFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogDebugFormatted(ILogger, string, params object[])
+  nameWithType: LoggerExtensions.LogDebugFormatted(ILogger, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugFormatted(Microsoft.Extensions.Logging.ILogger, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogDebugFormatted
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 153
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs a debug-level message with general string formatting support.
+  example:
+  - '<pre><code class="lang-csharp">logger.LogDebugFormatted("Debug info: {Detail}", detail);</code></pre>'
+  syntax:
+    content: public static void LogDebugFormatted(this ILogger logger, string message, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger instance to use for logging.
+    - id: message
+      type: System.String
+      description: A message template with any number of placeholders.
+    - id: args
+      type: System.Object[]
+      description: Arguments to be formatted into the message template placeholders.
+    content.vb: Public Shared Sub LogDebugFormatted(logger As ILogger, message As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugFormatted*
+  nameWithType.vb: LoggerExtensions.LogDebugFormatted(ILogger, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugFormatted(Microsoft.Extensions.Logging.ILogger, String, ParamArray Object())
+  name.vb: LogDebugFormatted(ILogger, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  id: LogWarningFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogWarningFormatted(ILogger, string, params object[])
+  nameWithType: LoggerExtensions.LogWarningFormatted(ILogger, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningFormatted(Microsoft.Extensions.Logging.ILogger, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogWarningFormatted
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 172
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs a warning-level message with general string formatting support.
+  example:
+  - '<pre><code class="lang-csharp">logger.LogWarningFormatted("Warning: {Detail}", detail);</code></pre>'
+  syntax:
+    content: public static void LogWarningFormatted(this ILogger logger, string message, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger instance to use for logging.
+    - id: message
+      type: System.String
+      description: A message template with any number of placeholders.
+    - id: args
+      type: System.Object[]
+      description: Arguments to be formatted into the message template placeholders.
+    content.vb: Public Shared Sub LogWarningFormatted(logger As ILogger, message As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningFormatted*
+  nameWithType.vb: LoggerExtensions.LogWarningFormatted(ILogger, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningFormatted(Microsoft.Extensions.Logging.ILogger, String, ParamArray Object())
+  name.vb: LogWarningFormatted(ILogger, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  id: LogErrorFormatted(Microsoft.Extensions.Logging.ILogger,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogErrorFormatted(ILogger, string, params object[])
+  nameWithType: LoggerExtensions.LogErrorFormatted(ILogger, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogErrorFormatted
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 191
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs an error-level message with general string formatting support.
+  example:
+  - '<pre><code class="lang-csharp">logger.LogErrorFormatted("Error: {Detail}", detail);</code></pre>'
+  syntax:
+    content: public static void LogErrorFormatted(this ILogger logger, string message, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger instance to use for logging.
+    - id: message
+      type: System.String
+      description: A message template with any number of placeholders.
+    - id: args
+      type: System.Object[]
+      description: Arguments to be formatted into the message template placeholders.
+    content.vb: Public Shared Sub LogErrorFormatted(logger As ILogger, message As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted*
+  nameWithType.vb: LoggerExtensions.LogErrorFormatted(ILogger, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger, String, ParamArray Object())
+  name.vb: LogErrorFormatted(ILogger, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.Object[])
+  id: LogErrorFormatted(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogErrorFormatted(ILogger, Exception, string, params object[])
+  nameWithType: LoggerExtensions.LogErrorFormatted(ILogger, Exception, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger, System.Exception, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogErrorFormatted
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 211
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs an error-level message with general string formatting support and an exception.
+  example:
+  - '<pre><code class="lang-csharp">logger.LogErrorFormatted(ex, "Failed: {Detail}", detail);</code></pre>'
+  syntax:
+    content: public static void LogErrorFormatted(this ILogger logger, Exception exception, string message, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger instance to use for logging.
+    - id: exception
+      type: System.Exception
+      description: The exception to include in the log entry.
+    - id: message
+      type: System.String
+      description: A message template with any number of placeholders.
+    - id: args
+      type: System.Object[]
+      description: Arguments to be formatted into the message template placeholders.
+    content.vb: Public Shared Sub LogErrorFormatted(logger As ILogger, exception As Exception, message As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted*
+  nameWithType.vb: LoggerExtensions.LogErrorFormatted(ILogger, Exception, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted(Microsoft.Extensions.Logging.ILogger, System.Exception, String, ParamArray Object())
+  name.vb: LogErrorFormatted(ILogger, Exception, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  id: LogWarningWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogWarningWithPath(ILogger, string, string, params object[])
+  nameWithType: LoggerExtensions.LogWarningWithPath(ILogger, string, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger, string, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogWarningWithPath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 227
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs a warning message with a formatted file path.
+  example: []
+  syntax:
+    content: public static void LogWarningWithPath(this ILogger logger, string message, string filePath, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger.
+    - id: message
+      type: System.String
+      description: The message template with {FilePath} placeholder.
+    - id: filePath
+      type: System.String
+      description: The file path to format and log.
+    - id: args
+      type: System.Object[]
+      description: Additional arguments for the message template.
+    content.vb: Public Shared Sub LogWarningWithPath(logger As ILogger, message As String, filePath As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath*
+  nameWithType.vb: LoggerExtensions.LogWarningWithPath(ILogger, String, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger, String, String, ParamArray Object())
+  name.vb: LogWarningWithPath(ILogger, String, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  id: LogErrorWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogErrorWithPath(ILogger, Exception, string, string, params object[])
+  nameWithType: LoggerExtensions.LogErrorWithPath(ILogger, Exception, string, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger, System.Exception, string, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogErrorWithPath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 244
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs an error message with a formatted file path.
+  example: []
+  syntax:
+    content: public static void LogErrorWithPath(this ILogger logger, Exception exception, string message, string filePath, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger.
+    - id: exception
+      type: System.Exception
+      description: The exception to log.
+    - id: message
+      type: System.String
+      description: The message template with {FilePath} placeholder.
+    - id: filePath
+      type: System.String
+      description: The file path to format and log.
+    - id: args
+      type: System.Object[]
+      description: Additional arguments for the message template.
+    content.vb: Public Shared Sub LogErrorWithPath(logger As ILogger, exception As Exception, message As String, filePath As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath*
+  nameWithType.vb: LoggerExtensions.LogErrorWithPath(ILogger, Exception, String, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger, System.Exception, String, String, ParamArray Object())
+  name.vb: LogErrorWithPath(ILogger, Exception, String, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  id: LogErrorWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogErrorWithPath(ILogger, string, string, params object[])
+  nameWithType: LoggerExtensions.LogErrorWithPath(ILogger, string, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger, string, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogErrorWithPath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 261
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs an error message with a formatted file path.
+  example: []
+  syntax:
+    content: public static void LogErrorWithPath(this ILogger logger, string message, string filePath, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger.
+    - id: message
+      type: System.String
+      description: The message template with {FilePath} placeholder.
+    - id: filePath
+      type: System.String
+      description: The file path to format and log.
+    - id: args
+      type: System.Object[]
+      description: Additional arguments for the message template.
+    content.vb: Public Shared Sub LogErrorWithPath(logger As ILogger, message As String, filePath As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath*
+  nameWithType.vb: LoggerExtensions.LogErrorWithPath(ILogger, String, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Microsoft.Extensions.Logging.ILogger, String, String, ParamArray Object())
+  name.vb: LogErrorWithPath(ILogger, String, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  id: LogWarningWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogWarningWithPath(ILogger, Exception, string, string, params object[])
+  nameWithType: LoggerExtensions.LogWarningWithPath(ILogger, Exception, string, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger, System.Exception, string, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogWarningWithPath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 278
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs a warning message with a formatted file path and exception.
+  example: []
+  syntax:
+    content: public static void LogWarningWithPath(this ILogger logger, Exception exception, string message, string filePath, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger.
+    - id: exception
+      type: System.Exception
+      description: The exception to log.
+    - id: message
+      type: System.String
+      description: The message template with {FilePath} placeholder.
+    - id: filePath
+      type: System.String
+      description: The file path to format and log.
+    - id: args
+      type: System.Object[]
+      description: Additional arguments for the message template.
+    content.vb: Public Shared Sub LogWarningWithPath(logger As ILogger, exception As Exception, message As String, filePath As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath*
+  nameWithType.vb: LoggerExtensions.LogWarningWithPath(ILogger, Exception, String, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath(Microsoft.Extensions.Logging.ILogger, System.Exception, String, String, ParamArray Object())
+  name.vb: LogWarningWithPath(ILogger, Exception, String, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  id: LogDebugWithPath(Microsoft.Extensions.Logging.ILogger,System.Exception,System.String,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogDebugWithPath(ILogger, Exception?, string, string, params object[])
+  nameWithType: LoggerExtensions.LogDebugWithPath(ILogger, Exception?, string, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger, System.Exception?, string, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogDebugWithPath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 296
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Logs a debug message with a formatted file path and exception.
+  example: []
+  syntax:
+    content: public static void LogDebugWithPath(this ILogger logger, Exception? exception, string message, string filePath, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger.
+    - id: exception
+      type: System.Exception
+      description: The exception to log.
+    - id: message
+      type: System.String
+      description: The message template with {FilePath} placeholder.
+    - id: filePath
+      type: System.String
+      description: The file path to format and log.
+    - id: args
+      type: System.Object[]
+      description: Additional arguments for the message template.
+    content.vb: Public Shared Sub LogDebugWithPath(logger As ILogger, exception As Exception, message As String, filePath As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath*
+  nameWithType.vb: LoggerExtensions.LogDebugWithPath(ILogger, Exception, String, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger, System.Exception, String, String, ParamArray Object())
+  name.vb: LogDebugWithPath(ILogger, Exception, String, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  id: LogDebugWithPath(Microsoft.Extensions.Logging.ILogger,System.String,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogDebugWithPath(ILogger, string, string, params object[])
+  nameWithType: LoggerExtensions.LogDebugWithPath(ILogger, string, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger, string, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogDebugWithPath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 306
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  syntax:
+    content: public static void LogDebugWithPath(this ILogger logger, string message, string filePath, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+    - id: message
+      type: System.String
+    - id: filePath
+      type: System.String
+    - id: args
+      type: System.Object[]
+    content.vb: Public Shared Sub LogDebugWithPath(logger As ILogger, message As String, filePath As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath*
+  nameWithType.vb: LoggerExtensions.LogDebugWithPath(ILogger, String, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath(Microsoft.Extensions.Logging.ILogger, String, String, ParamArray Object())
+  name.vb: LogDebugWithPath(ILogger, String, String, ParamArray Object())
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath``1(Microsoft.Extensions.Logging.ILogger{``0},System.Exception,System.String,System.String,System.Object[])
+  commentId: M:NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath``1(Microsoft.Extensions.Logging.ILogger{``0},System.Exception,System.String,System.String,System.Object[])
+  id: LogErrorWithPath``1(Microsoft.Extensions.Logging.ILogger{``0},System.Exception,System.String,System.String,System.Object[])
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Utils.LoggerExtensions
+  langs:
+  - csharp
+  - vb
+  name: LogErrorWithPath<T>(ILogger<T>, Exception, string, string, params object[])
+  nameWithType: LoggerExtensions.LogErrorWithPath<T>(ILogger<T>, Exception, string, string, params object[])
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath<T>(Microsoft.Extensions.Logging.ILogger<T>, System.Exception, string, string, params object[])
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LogErrorWithPath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
+    startLine: 315
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  syntax:
+    content: public static void LogErrorWithPath<T>(this ILogger<T> logger, Exception exception, string message, string filePath, params object[] args)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{{T}}
+    - id: exception
+      type: System.Exception
+    - id: message
+      type: System.String
+    - id: filePath
+      type: System.String
+    - id: args
+      type: System.Object[]
+    typeParameters:
+    - id: T
+    content.vb: Public Shared Sub LogErrorWithPath(Of T)(logger As ILogger(Of T), exception As Exception, message As String, filePath As String, ParamArray args As Object())
+  overload: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath*
+  nameWithType.vb: LoggerExtensions.LogErrorWithPath(Of T)(ILogger(Of T), Exception, String, String, ParamArray Object())
+  fullName.vb: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath(Of T)(Microsoft.Extensions.Logging.ILogger(Of T), System.Exception, String, String, ParamArray Object())
+  name.vb: LogErrorWithPath(Of T)(ILogger(Of T), Exception, String, String, ParamArray Object())
+references:
+- uid: Microsoft.Extensions.Logging.ILogger
+  commentId: T:Microsoft.Extensions.Logging.ILogger
+  parent: Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Microsoft.Extensions.Logging.ILogger
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: NotebookAutomation.Core.Utils
+  commentId: N:NotebookAutomation.Core.Utils
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Utils
+  nameWithType: NotebookAutomation.Core.Utils
+  fullName: NotebookAutomation.Core.Utils
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Microsoft.Extensions.Logging.LogLevel.Debug
+  commentId: F:Microsoft.Extensions.Logging.LogLevel.Debug
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.loglevel#microsoft-extensions-logging-loglevel-debug
+  name: Debug
+  nameWithType: LogLevel.Debug
+  fullName: Microsoft.Extensions.Logging.LogLevel.Debug
+- uid: Microsoft.Extensions.Logging.LogLevel.Trace
+  commentId: F:Microsoft.Extensions.Logging.LogLevel.Trace
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.loglevel#microsoft-extensions-logging-loglevel-trace
+  name: Trace
+  nameWithType: LogLevel.Trace
+  fullName: Microsoft.Extensions.Logging.LogLevel.Trace
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogWithFormattedPath_Microsoft_Extensions_Logging_ILogger_Microsoft_Extensions_Logging_LogLevel_Microsoft_Extensions_Logging_EventId_System_Exception_System_String_System_String_System_Object___
+  name: LogWithFormattedPath
+  nameWithType: LoggerExtensions.LogWithFormattedPath
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath
+- uid: Microsoft.Extensions.Logging.LogLevel
+  commentId: T:Microsoft.Extensions.Logging.LogLevel
+  parent: Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.loglevel
+  name: LogLevel
+  nameWithType: LogLevel
+  fullName: Microsoft.Extensions.Logging.LogLevel
+- uid: Microsoft.Extensions.Logging.EventId
+  commentId: T:Microsoft.Extensions.Logging.EventId
+  parent: Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.eventid
+  name: EventId
+  nameWithType: EventId
+  fullName: Microsoft.Extensions.Logging.EventId
+- uid: System.Exception
+  commentId: T:System.Exception
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.exception
+  name: Exception
+  nameWithType: Exception
+  fullName: System.Exception
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Object[]
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object[]
+  nameWithType: object[]
+  fullName: object[]
+  nameWithType.vb: Object()
+  fullName.vb: Object()
+  name.vb: Object()
+  spec.csharp:
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '['
+  - name: ']'
+  spec.vb:
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: (
+  - name: )
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogFormatted*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogFormatted
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogFormatted_Microsoft_Extensions_Logging_ILogger_Microsoft_Extensions_Logging_LogLevel_Microsoft_Extensions_Logging_EventId_System_Exception_System_String_System_Object___
+  name: LogFormatted
+  nameWithType: LoggerExtensions.LogFormatted
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogFormatted
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationWithPath*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationWithPath
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogInformationWithPath_Microsoft_Extensions_Logging_ILogger_System_String_System_String_System_Object___
+  name: LogInformationWithPath
+  nameWithType: LoggerExtensions.LogInformationWithPath
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationWithPath
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationFormatted*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationFormatted
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogInformationFormatted_Microsoft_Extensions_Logging_ILogger_System_String_System_Object___
+  name: LogInformationFormatted
+  nameWithType: LoggerExtensions.LogInformationFormatted
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogInformationFormatted
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugFormatted*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugFormatted
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogDebugFormatted_Microsoft_Extensions_Logging_ILogger_System_String_System_Object___
+  name: LogDebugFormatted
+  nameWithType: LoggerExtensions.LogDebugFormatted
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugFormatted
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningFormatted*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningFormatted
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogWarningFormatted_Microsoft_Extensions_Logging_ILogger_System_String_System_Object___
+  name: LogWarningFormatted
+  nameWithType: LoggerExtensions.LogWarningFormatted
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningFormatted
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogErrorFormatted_Microsoft_Extensions_Logging_ILogger_System_String_System_Object___
+  name: LogErrorFormatted
+  nameWithType: LoggerExtensions.LogErrorFormatted
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorFormatted
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogWarningWithPath_Microsoft_Extensions_Logging_ILogger_System_String_System_String_System_Object___
+  name: LogWarningWithPath
+  nameWithType: LoggerExtensions.LogWarningWithPath
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogWarningWithPath
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogErrorWithPath_Microsoft_Extensions_Logging_ILogger_System_Exception_System_String_System_String_System_Object___
+  name: LogErrorWithPath
+  nameWithType: LoggerExtensions.LogErrorWithPath
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogErrorWithPath
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath*
+  commentId: Overload:NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html#NotebookAutomation_Core_Utils_LoggerExtensions_LogDebugWithPath_Microsoft_Extensions_Logging_ILogger_System_Exception_System_String_System_String_System_Object___
+  name: LogDebugWithPath
+  nameWithType: LoggerExtensions.LogDebugWithPath
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions.LogDebugWithPath
+- uid: Microsoft.Extensions.Logging.ILogger{{T}}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{``0}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<T>
+  nameWithType: ILogger<T>
+  fullName: Microsoft.Extensions.Logging.ILogger<T>
+  nameWithType.vb: ILogger(Of T)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of T)
+  name.vb: ILogger(Of T)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Metadata Extraction System Documentation | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Metadata Extraction System Documentation | Obsidian Notebook Automation for Coursera ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/danielshue/notebook-automation/blob/master/docs/Metadata-Extraction-System.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="metadata-extraction-system-documentation">Metadata Extraction System Documentation</h1>
+
+<h2 id="overview">Overview</h2>
+<p>The NotebookAutomation system employs a sophisticated multi-layered approach to automatically extract and assign metadata to files in your notebook vault. This documentation provides a comprehensive breakdown of how the system determines course, lesson, program, and module metadata.</p>
+<h2 id="architecture">Architecture</h2>
+<p>The metadata extraction system consists of several specialized components:</p>
+<ul>
+<li><strong><code>MetadataHierarchyDetector</code></strong> - Extracts program, course, and class information from directory hierarchy</li>
+<li><strong><code>CourseStructureExtractor</code></strong> - Extracts module and lesson information from filenames and directory patterns</li>
+<li><strong><code>TagProcessor</code></strong> - Applies extracted metadata to files</li>
+<li><strong><code>MetadataEnsureProcessor</code></strong> - Orchestrates the entire metadata extraction process</li>
+</ul>
+<h2 id="metadata-field-extraction">Metadata Field Extraction</h2>
+<h3 id="1-program-detection">1. Program Detection</h3>
+<p>The <code>MetadataHierarchyDetector</code> determines program information using the following priority order:</p>
+<h4 id="priority-1-explicit-override">Priority 1: Explicit Override</h4>
+<ul>
+<li>CLI parameter: <code>--program &quot;Program Name&quot;</code></li>
+<li>Takes highest precedence when specified</li>
+</ul>
+<h4 id="priority-2-special-cases">Priority 2: Special Cases</h4>
+<ul>
+<li><strong>Value Chain Management</strong>: Hardcoded detection for &quot;Value Chain Management&quot; in path</li>
+<li>Handles special sub-project structure with <code>01_Projects</code> level</li>
+</ul>
+<h4 id="priority-3-yaml-index-scanning">Priority 3: YAML Index Scanning</h4>
+<ul>
+<li>Searches for <code>main-index.md</code> and <code>program-index.md</code> files</li>
+<li>Extracts <code>title</code> field from YAML frontmatter</li>
+<li>Scans up directory tree from file location</li>
+</ul>
+<h4 id="priority-4-path-based-fallback">Priority 4: Path-based Fallback</h4>
+<ul>
+<li>Uses directory names as program identifiers</li>
+<li>Analyzes directory structure relative to vault root</li>
+</ul>
+<h4 id="priority-5-default-fallback">Priority 5: Default Fallback</h4>
+<ul>
+<li>Assigns &quot;MBA Program&quot; if no other method succeeds</li>
+</ul>
+<h3 id="2-course-detection">2. Course Detection</h3>
+<p>Course information is extracted using:</p>
+<h4 id="yaml-frontmatter-primary">YAML Frontmatter (Primary)</h4>
+<pre><code class="lang-yaml">---
+title: &quot;Strategic Management&quot;
+type: course-index
+---
+</code></pre>
+<h4 id="directory-structure-secondary">Directory Structure (Secondary)</h4>
+<ul>
+<li>Course folders positioned after program folders in hierarchy</li>
+<li>For Value Chain Management: Course appears after program (or after <code>01_Projects</code>)</li>
+</ul>
+<h4 id="path-analysis-fallback">Path Analysis (Fallback)</h4>
+<ul>
+<li>Second level directory after program in hierarchy</li>
+<li>Directory name cleaning and formatting applied</li>
+</ul>
+<h3 id="3-class-detection">3. Class Detection</h3>
+<p>Similar to course detection but looks for:</p>
+<h4 id="yaml-frontmatter">YAML Frontmatter</h4>
+<pre><code class="lang-yaml">---
+title: &quot;Operations Strategy&quot;
+type: class-index
+---
+</code></pre>
+<h4 id="directory-positioning">Directory Positioning</h4>
+<ul>
+<li>Third level in hierarchy: Program → Course → Class</li>
+<li>Scans for <code>class-index.md</code> files in directory tree</li>
+</ul>
+<h3 id="4-module-detection">4. Module Detection</h3>
+<p>The <code>CourseStructureExtractor</code> uses multiple strategies for module extraction:</p>
+<h4 id="strategy-1-filename-pattern-recognition">Strategy 1: Filename Pattern Recognition</h4>
+<p><strong>Supported Patterns:</strong></p>
+<pre><code class="lang-text">Module-1-Introduction.pdf        → &quot;Module 1 Introduction&quot;
+Module1BasicConcepts.mp4        → &quot;Module 1 Basic Concepts&quot;
+Week1-Introduction.pdf          → &quot;Week1 Introduction&quot;
+Unit-2-Advanced.pdf             → &quot;Unit 2 Advanced&quot;
+01_course-overview.pdf          → &quot;Course Overview Introduction&quot;
+02_session-planning-details.md  → &quot;Session Planning Details&quot;
+</code></pre>
+<p><strong>Regex Patterns Used:</strong></p>
+<ul>
+<li>Module filename: <code>(?i)module\s*[_-]?\s*(\d+)[_-]?\s*(.+?)(?:\.\w+)?$</code></li>
+<li>Lesson filename: <code>(?i)lesson\s*[_-]?\s*(\d+)[_-]?\s*(.+?)(?:\.\w+)?$</code></li>
+<li>Week/Unit filename: <code>(?i)(week|unit|session|class)\s*[_-]?\s*(\d+)[_-]?\s*(.+?)(?:\.\w+)?$</code></li>
+<li>Compact module: <code>(?i)module(\d+)([a-zA-Z]+.*)</code></li>
+<li>Numbered content: <code>^(\d+)[_-](.+)</code></li>
+</ul>
+<h4 id="strategy-2-directory-keyword-search">Strategy 2: Directory Keyword Search</h4>
+<p><strong>Keywords Detected:</strong></p>
+<ul>
+<li>&quot;module&quot; (case-insensitive)</li>
+<li>&quot;course&quot;</li>
+<li>&quot;week&quot;</li>
+<li>&quot;unit&quot;</li>
+</ul>
+<p><strong>Process:</strong></p>
+<ol>
+<li>Scans current directory name</li>
+<li>Checks parent directories</li>
+<li>Prioritizes explicit module keywords</li>
+</ol>
+<h4 id="strategy-3-numbered-directory-pattern-analysis">Strategy 3: Numbered Directory Pattern Analysis</h4>
+<p><strong>Pattern Recognition:</strong></p>
+<ul>
+<li>Numbered prefixes: <code>01_</code>, <code>02-</code>, <code>03_</code>, etc.</li>
+<li>Enhanced patterns: &quot;Week 1&quot;, &quot;Unit 2&quot;, &quot;Module 1&quot;, &quot;Session 3&quot;</li>
+</ul>
+<p><strong>Directory Hierarchy Logic:</strong></p>
+<pre><code class="lang-text">01_advanced-module/              ← Module (parent directory)
+  02_detailed-lesson/            ← Lesson (child directory)
+    video.mp4                    ← File gets both module + lesson
+</code></pre>
+<h4 id="strategy-4-text-processing--cleaning">Strategy 4: Text Processing &amp; Cleaning</h4>
+<p><strong>Cleaning Operations:</strong></p>
+<ol>
+<li>Remove numbering prefixes (<code>01_</code>, <code>02-</code>)</li>
+<li>Convert camelCase to spaced words (&quot;BasicConcepts&quot; → &quot;Basic Concepts&quot;)</li>
+<li>Replace hyphens and underscores with spaces</li>
+<li>Apply title case formatting</li>
+<li>Remove extra whitespace</li>
+</ol>
+<p><strong>Regex Patterns for Cleaning:</strong></p>
+<ul>
+<li>Number prefix removal: <code>^(\d+)[_-]</code></li>
+<li>CamelCase splitting: <code>(?&lt;=[a-z])(?=[A-Z])</code></li>
+<li>Whitespace normalization: <code>\s+</code></li>
+</ul>
+<h3 id="5-lesson-detection">5. Lesson Detection</h3>
+<p>Lesson extraction follows similar strategies as module detection:</p>
+<h4 id="filename-based-extraction">Filename-Based Extraction</h4>
+<pre><code class="lang-text">Lesson-2-Details.md             → &quot;Lesson 2 Details&quot;
+Lesson3AdvancedTopics.docx      → &quot;Lesson 3 Advanced Topics&quot;
+Session-1-Introduction.pdf      → &quot;Session 1 Introduction&quot;
+</code></pre>
+<h4 id="directory-keyword-detection">Directory Keyword Detection</h4>
+<p><strong>Keywords:</strong></p>
+<ul>
+<li>&quot;lesson&quot; (case-insensitive)</li>
+<li>&quot;session&quot;</li>
+<li>&quot;lecture&quot;</li>
+<li>&quot;class&quot;</li>
+</ul>
+<h4 id="hierarchical-directory-analysis">Hierarchical Directory Analysis</h4>
+<p><strong>Logic Rules:</strong></p>
+<ol>
+<li>If parent directory contains module indicators AND current directory is numbered → current = lesson</li>
+<li>Module indicators: &quot;module&quot;, &quot;course&quot;, &quot;week&quot;, &quot;unit&quot;</li>
+<li>Uses numbered directory patterns to establish parent-child relationships</li>
+</ol>
+<h2 id="decision-flow--logic">Decision Flow &amp; Logic</h2>
+<h3 id="overall-processing-order">Overall Processing Order</h3>
+<ol>
+<li><strong>Filename Analysis</strong>: First attempts extraction from filename patterns</li>
+<li><strong>Keyword Search</strong>: Looks for explicit module/lesson keywords in directories</li>
+<li><strong>Pattern Analysis</strong>: Analyzes numbered directory structures</li>
+<li><strong>Hierarchical Inference</strong>: Uses directory relationships to determine module vs lesson</li>
+<li><strong>Single-level Handling</strong>: Treats standalone numbered directories as modules</li>
+</ol>
+<h3 id="single-vs-multi-level-course-handling">Single vs Multi-Level Course Handling</h3>
+<h4 id="single-level-courses">Single-Level Courses</h4>
+<pre><code class="lang-text">Course/
+  01_introduction-to-strategy/
+    video.mp4                    ← Gets module: &quot;Introduction To Strategy&quot;
+</code></pre>
+<h4 id="multi-level-courses">Multi-Level Courses</h4>
+<pre><code class="lang-text">Course/
+  01_strategy-fundamentals/      ← Module: &quot;Strategy Fundamentals&quot;
+    02_competitive-analysis/     ← Lesson: &quot;Competitive Analysis&quot;
+      video.mp4                  ← Gets both module + lesson
+</code></pre>
+<h3 id="special-cases">Special Cases</h3>
+<h4 id="case-studies">Case Studies</h4>
+<ul>
+<li>Typically generate module metadata only</li>
+<li>Lesson metadata usually not assigned for case study content</li>
+<li>Depends on directory structure and naming</li>
+</ul>
+<h4 id="live-sessions">Live Sessions</h4>
+<ul>
+<li>May be handled as lessons depending on directory structure</li>
+<li>&quot;Live Session&quot; directories often treated as lesson containers</li>
+</ul>
+<h4 id="mixed-content">Mixed Content</h4>
+<ul>
+<li>System prioritizes most specific pattern match</li>
+<li>Filename patterns take precedence over directory patterns</li>
+</ul>
+<h2 id="integration-points">Integration Points</h2>
+<h3 id="metadataensureprocessor-flow">MetadataEnsureProcessor Flow</h3>
+<ol>
+<li>Creates <code>MetadataHierarchyDetector</code> instance</li>
+<li>Creates <code>CourseStructureExtractor</code> instance</li>
+<li>Calls <code>FindHierarchyInfo()</code> for program/course/class</li>
+<li>Calls <code>ExtractModuleAndLesson()</code> for module/lesson</li>
+<li>Passes extracted metadata to <code>TagProcessor</code></li>
+</ol>
+<h3 id="metadata-field-updates">Metadata Field Updates</h3>
+<ul>
+<li><strong>ADD operations</strong>: When metadata field doesn't exist</li>
+<li><strong>MODIFY operations</strong>: When improving existing metadata (generic → specific)</li>
+<li><strong>PRESERVE operations</strong>: Good existing metadata is not overwritten</li>
+</ul>
+<h3 id="logging-and-debugging">Logging and Debugging</h3>
+<h4 id="verbose-mode">Verbose Mode</h4>
+<p>Enable with CLI flag for detailed extraction logging:</p>
+<pre><code class="lang-bash">dotnet run -- vault ensure-metadata --verbose
+</code></pre>
+<h4 id="log-analysis">Log Analysis</h4>
+<p>Common log patterns:</p>
+<pre><code class="lang-text">[INFO] Found 'Value Chain Management' in path, using it as program name
+[DEBUG] Filename extraction result - Module: Module 1 Introduction, Lesson: null
+[DEBUG] Successfully extracted - Module: 'Strategy Fundamentals', Lesson: 'Competitive Analysis'
+</code></pre>
+<h2 id="configuration">Configuration</h2>
+<h3 id="configurable-elements">Configurable Elements</h3>
+<h4 id="cli-parameters">CLI Parameters</h4>
+<ul>
+<li><code>--program &quot;Program Name&quot;</code> - Override program detection</li>
+<li><code>--verbose</code> - Enable detailed logging</li>
+<li><code>--config path/to/config.json</code> - Custom configuration file</li>
+</ul>
+<h4 id="configuration-file">Configuration File</h4>
+<pre><code class="lang-json">{
+  &quot;Paths&quot;: {
+    &quot;NotebookVaultFullpathRoot&quot;: &quot;C:/path/to/vault&quot;
+  },
+  &quot;Logging&quot;: {
+    &quot;LogLevel&quot;: &quot;Information&quot;
+  }
+}
+</code></pre>
+<h3 id="customization-options">Customization Options</h3>
+<h4 id="regex-pattern-modification">Regex Pattern Modification</h4>
+<p>The system uses compiled regex patterns that can be modified in:</p>
+<ul>
+<li><code>CourseStructureExtractor.cs</code> - Module/lesson filename patterns</li>
+<li><code>MetadataHierarchyDetector.cs</code> - Hierarchy detection patterns</li>
+</ul>
+<h4 id="keyword-lists">Keyword Lists</h4>
+<p>Add new keywords for module/lesson detection by modifying the keyword detection logic in <code>CourseStructureExtractor</code>.</p>
+<h2 id="testing">Testing</h2>
+<h3 id="unit-tests">Unit Tests</h3>
+<p>Comprehensive test coverage in:</p>
+<ul>
+<li><code>CourseStructureExtractorTests.cs</code> - Tests all extraction strategies</li>
+<li><code>MetadataHierarchyDetectorTests.cs</code> - Tests hierarchy detection</li>
+</ul>
+<h3 id="test-categories">Test Categories</h3>
+<ul>
+<li>Filename pattern recognition</li>
+<li>Directory structure analysis</li>
+<li>Hierarchical relationship detection</li>
+<li>Text cleaning and formatting</li>
+<li>Special case handling</li>
+</ul>
+<h3 id="running-tests">Running Tests</h3>
+<pre><code class="lang-bash">dotnet test src/c-sharp/NotebookAutomation.Core.Tests/
+</code></pre>
+<h2 id="performance-considerations">Performance Considerations</h2>
+<h3 id="efficiency-optimizations">Efficiency Optimizations</h3>
+<ul>
+<li>Regex patterns are compiled for better performance</li>
+<li>Directory scanning limited to necessary levels</li>
+<li>Caching of frequently accessed configuration values</li>
+</ul>
+<h3 id="memory-management">Memory Management</h3>
+<ul>
+<li>Uses readonly and static members where appropriate</li>
+<li>Disposes of file system resources properly</li>
+<li>Minimal object allocation in hot paths</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<h3 id="common-issues">Common Issues</h3>
+<h4 id="missing-metadata">Missing Metadata</h4>
+<ol>
+<li>Check file path structure matches expected hierarchy</li>
+<li>Verify filename patterns match supported formats</li>
+<li>Enable verbose logging to see extraction attempts</li>
+</ol>
+<h4 id="incorrect-modulelesson-assignment">Incorrect Module/Lesson Assignment</h4>
+<ol>
+<li>Review directory naming conventions</li>
+<li>Check for conflicting patterns in path</li>
+<li>Verify numbered prefixes are correctly formatted</li>
+</ol>
+<h4 id="programcourse-detection-failures">Program/Course Detection Failures</h4>
+<ol>
+<li>Ensure index files have proper YAML frontmatter</li>
+<li>Check vault root path configuration</li>
+<li>Verify directory structure follows expected hierarchy</li>
+</ol>
+<h3 id="debug-commands">Debug Commands</h3>
+<pre><code class="lang-bash"># Test specific file
+dotnet run -- vault ensure-metadata --file &quot;path/to/file.md&quot; --verbose
+
+# Test directory
+dotnet run -- vault ensure-metadata --directory &quot;path/to/dir&quot; --verbose
+
+# Dry run to see what would change
+dotnet run -- vault ensure-metadata --dry-run --verbose
+</code></pre>
+<h2 id="best-practices">Best Practices</h2>
+<h3 id="directory-organization">Directory Organization</h3>
+<ul>
+<li>Use consistent numbering schemes (<code>01_</code>, <code>02_</code>, etc.)</li>
+<li>Include descriptive names after numbers</li>
+<li>Maintain clear hierarchy: Program → Course → Class → Module → Lesson</li>
+</ul>
+<h3 id="filename-conventions">Filename Conventions</h3>
+<ul>
+<li>Include module/lesson indicators in filenames when possible</li>
+<li>Use consistent separators (hyphens or underscores)</li>
+<li>Avoid special characters that might interfere with pattern matching</li>
+</ul>
+<h3 id="index-file-management">Index File Management</h3>
+<ul>
+<li>Create index files with proper YAML frontmatter</li>
+<li>Use descriptive titles in frontmatter</li>
+<li>Maintain index files at appropriate hierarchy levels</li>
+</ul>
+<p>This documentation should be updated as the system evolves and new patterns or features are added.</p>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/danielshue/notebook-automation/blob/master/docs/Metadata-Extraction-System.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

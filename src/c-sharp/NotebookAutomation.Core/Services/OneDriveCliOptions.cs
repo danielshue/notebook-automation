@@ -1,4 +1,14 @@
-﻿namespace NotebookAutomation.Core.Services;
+﻿// <copyright file="OneDriveCliOptions.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Services;
+
 /// <summary>
 /// Options for configuring the behavior of OneDrive operations via the command-line interface.
 /// </summary>
@@ -34,7 +44,7 @@
 public class OneDriveCliOptions
 {
     /// <summary>
-    /// Gets or sets whether to simulate operations without making actual changes.
+    /// Gets or sets a value indicating whether gets or sets whether to simulate operations without making actual changes.
     /// </summary>
     /// <value>
     /// <c>true</c> to run in dry-run mode (simulating but not performing operations);
@@ -48,7 +58,7 @@ public class OneDriveCliOptions
     public bool DryRun { get; set; }
 
     /// <summary>
-    /// Gets or sets whether to display detailed, verbose output during operations.
+    /// Gets or sets a value indicating whether gets or sets whether to display detailed, verbose output during operations.
     /// </summary>
     /// <value>
     /// <c>true</c> to display verbose output; <c>false</c> for standard output.
@@ -61,7 +71,7 @@ public class OneDriveCliOptions
     public bool Verbose { get; set; }
 
     /// <summary>
-    /// Gets or sets whether to force operations even if they would overwrite existing content.
+    /// Gets or sets a value indicating whether gets or sets whether to force operations even if they would overwrite existing content.
     /// </summary>
     /// <value>
     /// <c>true</c> to force operations; <c>false</c> to prompt or skip when conflicts occur.
@@ -74,7 +84,7 @@ public class OneDriveCliOptions
     public bool Force { get; set; }
 
     /// <summary>
-    /// Gets or sets whether to retry failed operations.
+    /// Gets or sets a value indicating whether gets or sets whether to retry failed operations.
     /// </summary>
     /// <value>
     /// <c>true</c> to retry failed operations; <c>false</c> to fail immediately.

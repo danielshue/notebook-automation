@@ -1,0 +1,752 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  commentId: T:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  id: RecursiveCharacterTextSplitter
+  parent: NotebookAutomation.Core.Services.Text
+  children:
+  - NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.#ctor(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Boolean)
+  - NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)
+  - NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)
+  - NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText(System.String)
+  langs:
+  - csharp
+  - vb
+  name: RecursiveCharacterTextSplitter
+  nameWithType: RecursiveCharacterTextSplitter
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  type: Class
+  source:
+    id: RecursiveCharacterTextSplitter
+    path: System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs
+    startLine: 98
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services.Text
+  summary: >-
+    A sophisticated text splitter that recursively splits text based on a hierarchy of separators,
+
+    preserving semantic boundaries and ensuring better context maintenance between chunks.
+  remarks: >-
+    <p>
+
+    This implementation is inspired by the RecursiveCharacterTextSplitter concept from LangChain
+
+    but adapted specifically for C# and the NotebookAutomation project. The splitter works by:
+
+    <ul><li>Splitting on the strongest separators first (e.g., triple newlines, headers)</li><li>Progressively moving to weaker separators (e.g., single spaces) if necessary</li><li>Preserving special patterns like markdown headers, code blocks, and lists</li></ul>
+
+    </p>
+
+    <p>
+
+    The splitter is optimized for handling markdown and code content, ensuring semantic boundaries
+
+    are maintained while splitting text into manageable chunks.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var splitter = new RecursiveCharacterTextSplitter(logger);
+
+    var chunks = splitter.SplitText("This is a sample text with multiple paragraphs.");
+
+    foreach (var chunk in chunks)
+
+    {
+        Console.WriteLine(chunk);
+    }</code></pre>
+  syntax:
+    content: public class RecursiveCharacterTextSplitter
+    content.vb: Public Class RecursiveCharacterTextSplitter
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.#ctor(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Boolean)
+  commentId: M:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.#ctor(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Boolean)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Boolean)'
+  parent: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  langs:
+  - csharp
+  - vb
+  name: RecursiveCharacterTextSplitter(ILogger, int, int, List<string>?, bool)
+  nameWithType: RecursiveCharacterTextSplitter.RecursiveCharacterTextSplitter(ILogger, int, int, List<string>?, bool)
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.RecursiveCharacterTextSplitter(Microsoft.Extensions.Logging.ILogger, int, int, System.Collections.Generic.List<string>?, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs
+    startLine: 69
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services.Text
+  summary: Initializes a new instance of the <xref href="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter" data-throw-if-not-resolved="false"></xref> class.
+  remarks: >-
+    <p>
+
+    This constructor initializes the splitter with default or custom settings for chunk size,
+
+    overlap, and separator hierarchy. It validates input parameters and ensures the chunk overlap
+
+    is smaller than the chunk size.
+
+    </p>
+  example:
+  - '<pre><code class="lang-csharp">var splitter = new RecursiveCharacterTextSplitter(logger, chunkSize: 3000, chunkOverlap: 500);</code></pre>'
+  syntax:
+    content: public RecursiveCharacterTextSplitter(ILogger logger, int chunkSize = 3000, int chunkOverlap = 500, List<string>? separators = null, bool keepSeparator = true)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: Logger for diagnostic information.
+    - id: chunkSize
+      type: System.Int32
+      description: Maximum size of each chunk in estimated tokens.
+    - id: chunkOverlap
+      type: System.Int32
+      description: Number of tokens to overlap between chunks.
+    - id: separators
+      type: System.Collections.Generic.List{System.String}
+      description: Optional list of separators to use for splitting, in order of priority.
+    - id: keepSeparator
+      type: System.Boolean
+      description: Whether to keep the separator with the chunk.
+    content.vb: Public Sub New(logger As ILogger, chunkSize As Integer = 3000, chunkOverlap As Integer = 500, separators As List(Of String) = Nothing, keepSeparator As Boolean = True)
+  overload: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.#ctor*
+  nameWithType.vb: RecursiveCharacterTextSplitter.New(ILogger, Integer, Integer, List(Of String), Boolean)
+  fullName.vb: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.New(Microsoft.Extensions.Logging.ILogger, Integer, Integer, System.Collections.Generic.List(Of String), Boolean)
+  name.vb: New(ILogger, Integer, Integer, List(Of String), Boolean)
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)
+  commentId: M:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)
+  id: CreateForMarkdown(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)
+  parent: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  langs:
+  - csharp
+  - vb
+  name: CreateForMarkdown(ILogger, int, int)
+  nameWithType: RecursiveCharacterTextSplitter.CreateForMarkdown(ILogger, int, int)
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown(Microsoft.Extensions.Logging.ILogger, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: CreateForMarkdown
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs
+    startLine: 138
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services.Text
+  summary: Creates a recursive text splitter optimized for markdown content.
+  remarks: >-
+    <p>
+
+    This factory method creates a splitter with a separator hierarchy optimized for markdown content,
+
+    including headers, paragraph breaks, and other markdown-specific patterns.
+
+    </p>
+  example:
+  - <pre><code class="lang-csharp">var markdownSplitter = RecursiveCharacterTextSplitter.CreateForMarkdown(logger);</code></pre>
+  syntax:
+    content: public static RecursiveCharacterTextSplitter CreateForMarkdown(ILogger logger, int chunkSize = 3000, int chunkOverlap = 500)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: Logger for diagnostic information.
+    - id: chunkSize
+      type: System.Int32
+      description: Maximum size of each chunk in estimated tokens.
+    - id: chunkOverlap
+      type: System.Int32
+      description: Number of tokens to overlap between chunks.
+    return:
+      type: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+      description: A RecursiveCharacterTextSplitter configured for markdown content.
+    content.vb: Public Shared Function CreateForMarkdown(logger As ILogger, chunkSize As Integer = 3000, chunkOverlap As Integer = 500) As RecursiveCharacterTextSplitter
+  overload: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown*
+  nameWithType.vb: RecursiveCharacterTextSplitter.CreateForMarkdown(ILogger, Integer, Integer)
+  fullName.vb: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown(Microsoft.Extensions.Logging.ILogger, Integer, Integer)
+  name.vb: CreateForMarkdown(ILogger, Integer, Integer)
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)
+  commentId: M:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)
+  id: CreateForCode(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)
+  parent: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  langs:
+  - csharp
+  - vb
+  name: CreateForCode(ILogger, int, int)
+  nameWithType: RecursiveCharacterTextSplitter.CreateForCode(ILogger, int, int)
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode(Microsoft.Extensions.Logging.ILogger, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: CreateForCode
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs
+    startLine: 166
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services.Text
+  summary: Creates a recursive text splitter optimized for code content.
+  example: []
+  syntax:
+    content: public static RecursiveCharacterTextSplitter CreateForCode(ILogger logger, int chunkSize = 3000, int chunkOverlap = 500)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: Logger for diagnostic information.
+    - id: chunkSize
+      type: System.Int32
+      description: Maximum size of each chunk in estimated tokens.
+    - id: chunkOverlap
+      type: System.Int32
+      description: Number of tokens to overlap between chunks.
+    return:
+      type: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+      description: A RecursiveCharacterTextSplitter configured for code content.
+    content.vb: Public Shared Function CreateForCode(logger As ILogger, chunkSize As Integer = 3000, chunkOverlap As Integer = 500) As RecursiveCharacterTextSplitter
+  overload: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode*
+  nameWithType.vb: RecursiveCharacterTextSplitter.CreateForCode(ILogger, Integer, Integer)
+  fullName.vb: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode(Microsoft.Extensions.Logging.ILogger, Integer, Integer)
+  name.vb: CreateForCode(ILogger, Integer, Integer)
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText(System.String)
+  commentId: M:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText(System.String)
+  id: SplitText(System.String)
+  parent: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  langs:
+  - csharp
+  - vb
+  name: SplitText(string)
+  nameWithType: RecursiveCharacterTextSplitter.SplitText(string)
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SplitText
+    path: ../src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs
+    startLine: 192
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services.Text
+  summary: Splits the text into chunks recursively respecting the defined separators.
+  example: []
+  syntax:
+    content: public List<string> SplitText(string text)
+    parameters:
+    - id: text
+      type: System.String
+      description: The text to split.
+    return:
+      type: System.Collections.Generic.List{System.String}
+      description: A list of text chunks that respect the configured size constraints.
+    content.vb: Public Function SplitText(text As String) As List(Of String)
+  overload: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText*
+  nameWithType.vb: RecursiveCharacterTextSplitter.SplitText(String)
+  fullName.vb: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText(String)
+  name.vb: SplitText(String)
+references:
+- uid: NotebookAutomation.Core.Services.Text
+  commentId: N:NotebookAutomation.Core.Services.Text
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Services.Text
+  nameWithType: NotebookAutomation.Core.Services.Text
+  fullName: NotebookAutomation.Core.Services.Text
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services.Text
+    name: Text
+    href: NotebookAutomation.Core.Services.Text.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services.Text
+    name: Text
+    href: NotebookAutomation.Core.Services.Text.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  commentId: T:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  parent: NotebookAutomation.Core.Services.Text
+  href: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html
+  name: RecursiveCharacterTextSplitter
+  nameWithType: RecursiveCharacterTextSplitter
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.#ctor
+  href: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html#NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter__ctor_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32_System_Collections_Generic_List_System_String__System_Boolean_
+  name: RecursiveCharacterTextSplitter
+  nameWithType: RecursiveCharacterTextSplitter.RecursiveCharacterTextSplitter
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.RecursiveCharacterTextSplitter
+  nameWithType.vb: RecursiveCharacterTextSplitter.New
+  fullName.vb: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger
+  commentId: T:Microsoft.Extensions.Logging.ILogger
+  parent: Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Microsoft.Extensions.Logging.ILogger
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown*
+  commentId: Overload:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown
+  href: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html#NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_CreateForMarkdown_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32_
+  name: CreateForMarkdown
+  nameWithType: RecursiveCharacterTextSplitter.CreateForMarkdown
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode*
+  commentId: Overload:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode
+  href: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html#NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_CreateForCode_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32_
+  name: CreateForCode
+  nameWithType: RecursiveCharacterTextSplitter.CreateForCode
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText*
+  commentId: Overload:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText
+  href: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html#NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_SplitText_System_String_
+  name: SplitText
+  nameWithType: RecursiveCharacterTextSplitter.SplitText
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String

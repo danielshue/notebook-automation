@@ -1,26 +1,26 @@
-﻿using System.IO;
-
-using Moq;
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tools.Shared;
-using NotebookAutomation.Core.Tools.VideoProcessing;
-using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="VideoNoteBatchProcessorResourcesRootTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/VideoNoteBatchProcessorResourcesRootTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
-public class VideoNoteBatchProcessorResourcesRootTests
+internal class VideoNoteBatchProcessorResourcesRootTests
 {
-    private string _testDir;
-    private string _outputDir;
-    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock;
+    private string testDir;
+    private string outputDir;
+    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> loggerMock;
+
     // Removed unused field:
     // private Mock<AISummarizer> _aiSummarizerMock;
-    private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
-    private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-    private VideoNoteBatchProcessor _processor;
+    private Mock<VideoNoteProcessor> videoNoteProcessorMock;
+    private DocumentNoteBatchProcessor<VideoNoteProcessor> batchProcessor;
+    private VideoNoteBatchProcessor processor;
 
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
@@ -32,32 +32,33 @@ public class VideoNoteBatchProcessorResourcesRootTests
     [TestInitialize]
     public void Setup()
     {
-        _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(_testDir);
-        _outputDir = Path.Combine(_testDir, "output");
-        Directory.CreateDirectory(_outputDir);
+        this.testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(this.testDir);
+        this.outputDir = Path.Combine(this.testDir, "output");
+        Directory.CreateDirectory(this.outputDir);
 
-        _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();        // Create a TestableAISummarizer that can be used in tests
+        this.loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();        // Create a TestableAISummarizer that can be used in tests
         TestableAISummarizer testAISummarizer = new(Mock.Of<ILogger<AISummarizer>>());
+
         // Create a mock for IOneDriveService
         IOneDriveService mockOneDriveService = Mock.Of<IOneDriveService>();
+
         // Create mock YamlHelper
         var mockYamlHelper = Mock.Of<IYamlHelper>();        // Set up mock with test dependencies and updated constructor signature
-        _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
+        this.videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             testAISummarizer,
             mockYamlHelper, // Required YamlHelper parameter
             CreateMetadataHierarchyDetector(), // Required MetadataHierarchyDetector parameter
             mockOneDriveService, // Optional OneDriveService
             null as AppConfig, // Optional AppConfig
-            null // Optional LoggingService
-        );
+            null); // Optional LoggingService
 
         // Create a custom batch processor that will directly create a file with the resourcesRoot
         // so we can test that the parameter is being passed correctly
         Mock<DocumentNoteBatchProcessor<VideoNoteProcessor>> mockBatchProcessor = new(
-            _loggerMock.Object,
-            _videoNoteProcessorMock.Object,
+            this.loggerMock.Object,
+            this.videoNoteProcessorMock.Object,
             testAISummarizer);
 
         mockBatchProcessor
@@ -100,16 +101,16 @@ public class VideoNoteBatchProcessorResourcesRootTests
                 return new BatchProcessResult { Processed = 1, Failed = 0 };
             });
 
-        _batchProcessor = mockBatchProcessor.Object;
-        _processor = new VideoNoteBatchProcessor(_batchProcessor);
+        this.batchProcessor = mockBatchProcessor.Object;
+        this.processor = new VideoNoteBatchProcessor(this.batchProcessor);
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        if (Directory.Exists(_testDir))
+        if (Directory.Exists(this.testDir))
         {
-            Directory.Delete(_testDir, true);
+            Directory.Delete(this.testDir, true);
         }
     }
 
@@ -117,15 +118,15 @@ public class VideoNoteBatchProcessorResourcesRootTests
     public async Task ProcessVideosAsync_ResourcesRoot_OverridesConfigValue()
     {
         // Arrange
-        string videoPath = Path.Combine(_testDir, "test.mp4");
+        string videoPath = Path.Combine(this.testDir, "test.mp4");
         File.WriteAllText(videoPath, "fake video content");
         List<string> extensions = [".mp4"];
-        string customResourcesRoot = Path.Combine(_testDir, "custom_resources");
+        string customResourcesRoot = Path.Combine(this.testDir, "custom_resources");
 
         // Act
-        BatchProcessResult result = await _processor.ProcessVideosAsync(
+        BatchProcessResult result = await this.processor.ProcessVideosAsync(
             videoPath,
-            _outputDir,
+            this.outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: false,
@@ -133,13 +134,13 @@ public class VideoNoteBatchProcessorResourcesRootTests
             forceOverwrite: true,
             retryFailed: false,
             timeoutSeconds: null,
-            resourcesRoot: customResourcesRoot
-        );
+            resourcesRoot: customResourcesRoot)
+        .ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(1, result.Processed);
         Assert.AreEqual(0, result.Failed);
-        string notePath = Path.Combine(_outputDir, "test.md");
+        string notePath = Path.Combine(this.outputDir, "test.md");
         Assert.IsTrue(File.Exists(notePath));
         string noteContent = File.ReadAllText(notePath);
         StringAssert.Contains(noteContent, customResourcesRoot);

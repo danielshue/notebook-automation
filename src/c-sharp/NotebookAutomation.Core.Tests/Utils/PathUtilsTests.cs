@@ -1,14 +1,19 @@
-﻿using System.IO;
-
-using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="PathUtilsTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Utils/PathUtilsTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Utils;
 
 /// <summary>
 /// Unit tests for the <see cref="PathUtils"/> class.
 /// </summary>
 [TestClass]
-public class PathUtilsTests
+internal class PathUtilsTests
 {
     [TestMethod]
     public void NormalizePath_ReturnsEmptyString_WhenInputIsNullOrWhitespace()

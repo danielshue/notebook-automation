@@ -1,4 +1,13 @@
-﻿using System.Runtime.CompilerServices;
+// <copyright file="TagCommands.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli/Commands/TagCommands.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Runtime.CompilerServices;
 
 using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
@@ -18,11 +27,11 @@ namespace NotebookAutomation.Cli.Commands;
 /// consolidating tags, restructuring tags for consistency, adding example tags, and
 /// checking/enforcing metadata consistency.
 /// </remarks>
-public class TagCommands
+internal class TagCommands
 {
-    private readonly ILogger<TagCommands> _logger;
-    private readonly IServiceProvider _serviceProvider;
-    private readonly AppConfig _appConfig;
+    private readonly ILogger<TagCommands> logger;
+    private readonly IServiceProvider serviceProvider;
+    private readonly AppConfig appConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TagCommands"/> class.
@@ -31,10 +40,10 @@ public class TagCommands
     /// <param name="serviceProvider">The service provider for dependency injection.</param>
     public TagCommands(ILogger<TagCommands> logger, IServiceProvider serviceProvider)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        _appConfig = serviceProvider.GetRequiredService<AppConfig>();
-        _logger.LogDebug("Tag command initialized");
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        this.appConfig = serviceProvider.GetRequiredService<AppConfig>();
+        this.logger.LogDebug("Tag command initialized");
     }
 
     /// <summary>
@@ -56,7 +65,8 @@ public class TagCommands
         ArgumentNullException.ThrowIfNull(configOption);
         ArgumentNullException.ThrowIfNull(debugOption);
         ArgumentNullException.ThrowIfNull(verboseOption);
-        ArgumentNullException.ThrowIfNull(dryRunOption); var pathArg = new Argument<string>("path", "Path to the directory or file to process");
+        ArgumentNullException.ThrowIfNull(dryRunOption);
+        var pathArg = new Argument<string>("path", "Path to the directory or file to process");
 
         // Add override-vault-root option to specify the explicit vault root path when different from the starting path
         var vaultRootOverrideOption = new Option<string?>("--override-vault-root", "Specify the explicit vault root path (overrides the config)");
@@ -75,17 +85,17 @@ public class TagCommands
                     "Usage: notebookautomation tag add-nested <path> [options]",
                     addNestedCommand.Description ?? string.Empty,
                     string.Join("\n", addNestedCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", addNestedCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", addNestedCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string path = pathValue;
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await ProcessTagsAsync(path, "add-nested", config, debug, verbose, dryRun, vaultRoot);
+            await this.ProcessTagsAsync(path, "add-nested", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // clean-index command
         var cleanIndexCommand = new Command("clean-index", "Clean tags from index files");
         cleanIndexCommand.AddArgument(pathArg);
@@ -99,16 +109,17 @@ public class TagCommands
                     "Usage: notebookautomation tag clean-index <path> [options]",
                     cleanIndexCommand.Description ?? string.Empty,
                     string.Join("\n", cleanIndexCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", cleanIndexCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", cleanIndexCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string path = pathValue;
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
-            bool verbose = context.ParseResult.GetValueForOption(verboseOption); bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await ProcessTagsAsync(path, "clean-index", config, debug, verbose, dryRun, vaultRoot);
+            await this.ProcessTagsAsync(path, "clean-index", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // consolidate command
         var consolidateCommand = new Command("consolidate", "Consolidate tags in markdown files");
         consolidateCommand.AddArgument(pathArg);
@@ -122,16 +133,17 @@ public class TagCommands
                     "Usage: notebookautomation tag consolidate <path> [options]",
                     consolidateCommand.Description ?? string.Empty,
                     string.Join("\n", consolidateCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", consolidateCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", consolidateCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string path = pathValue;
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
-            bool verbose = context.ParseResult.GetValueForOption(verboseOption); bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await ProcessTagsAsync(path, "consolidate", config, debug, verbose, dryRun, vaultRoot);
+            await this.ProcessTagsAsync(path, "consolidate", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // restructure-tags command
         var restructureCommand = new Command("restructure", "Restructure tags for consistency");
         restructureCommand.AddArgument(pathArg);
@@ -145,16 +157,17 @@ public class TagCommands
                     "Usage: notebookautomation tag restructure <path> [options]",
                     restructureCommand.Description ?? string.Empty,
                     string.Join("\n", restructureCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", restructureCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", restructureCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string path = pathValue;
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
-            bool verbose = context.ParseResult.GetValueForOption(verboseOption); bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await ProcessTagsAsync(path, "restructure-tags", config, debug, verbose, dryRun, vaultRoot);
+            await this.ProcessTagsAsync(path, "restructure-tags", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // add-example-tags command
         var addExampleCommand = new Command("add-example", "Add example tags to a file");
         addExampleCommand.AddArgument(pathArg);
@@ -168,16 +181,17 @@ public class TagCommands
                     "Usage: notebookautomation tag add-example <path> [options]",
                     addExampleCommand.Description ?? string.Empty,
                     string.Join("\n", addExampleCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", addExampleCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", addExampleCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string path = pathValue;
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
-            bool verbose = context.ParseResult.GetValueForOption(verboseOption); bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await ProcessTagsAsync(path, "add-example-tags", config, debug, verbose, dryRun, vaultRoot);
+            await this.ProcessTagsAsync(path, "add-example-tags", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // metadata-check command
         var metadataCommand = new Command("metadata-check", "Check and enforce metadata consistency");
         metadataCommand.AddArgument(pathArg);
@@ -191,16 +205,17 @@ public class TagCommands
                     "Usage: notebookautomation tag metadata-check <path> [options]",
                     metadataCommand.Description ?? string.Empty,
                     string.Join("\n", metadataCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", metadataCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", metadataCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string path = pathValue;
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
-            bool verbose = context.ParseResult.GetValueForOption(verboseOption); bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await ProcessTagsAsync(path, "metadata-check", config, debug, verbose, dryRun, vaultRoot);
+            await this.ProcessTagsAsync(path, "metadata-check", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // update-frontmatter command
         var updateFrontmatterCommand = new Command("update-frontmatter", "Update or add a specific key-value pair in frontmatter");
         updateFrontmatterCommand.AddArgument(pathArg);
@@ -220,18 +235,19 @@ public class TagCommands
                     "Usage: notebookautomation tag update-frontmatter <path> <key> <value> [options]",
                     updateFrontmatterCommand.Description ?? string.Empty,
                     string.Join("\n", updateFrontmatterCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", updateFrontmatterCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", updateFrontmatterCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string path = pathValue;
             string key = keyValue;
             string value = valueValue;
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
-            bool verbose = context.ParseResult.GetValueForOption(verboseOption); bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await ProcessUpdateFrontmatterAsync(path, key, value, config, debug, verbose, dryRun, vaultRoot);
+            await this.ProcessUpdateFrontmatterAsync(path, key, value, config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // diagnose-yaml command
         var diagnoseYamlCommand = new Command("diagnose-yaml", "Diagnose YAML frontmatter issues in markdown files");
         diagnoseYamlCommand.AddArgument(pathArg);
@@ -245,16 +261,17 @@ public class TagCommands
                     "Usage: notebookautomation tag diagnose-yaml <path> [options]",
                     diagnoseYamlCommand.Description ?? string.Empty,
                     string.Join("\n", diagnoseYamlCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", diagnoseYamlCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", diagnoseYamlCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string path = pathValue;
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
-            bool verbose = context.ParseResult.GetValueForOption(verboseOption); bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption);
+            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await DiagnoseYamlAsync(path, config, debug, verbose, vaultRoot);
+            await this.DiagnoseYamlAsync(path, config, debug, verbose, vaultRoot).ConfigureAwait(false);
         });
 
         // Create a parent command for all tag-related operations
@@ -276,8 +293,7 @@ public class TagCommands
                 "Usage: notebookautomation tag <subcommand> [options]",
                 "Please specify a tag subcommand to execute. Available tag commands:",
                 string.Join("\n", tagCommand.Subcommands.Select(cmd => $"  {cmd.Name,-15} {cmd.Description}")) +
-                "\n\nRun 'notebookautomation tag [command] --help' for more information on a specific command."
-            );
+                "\n\nRun 'notebookautomation tag [command] --help' for more information on a specific command.");
         });
 
         rootCommand.AddCommand(tagCommand);
@@ -297,25 +313,26 @@ public class TagCommands
     {
         if (string.IsNullOrEmpty(configPath))
         {
-            _logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "TagCommands.cs");
+            this.logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "TagCommands.cs");
             return;
         }
+
         if (string.IsNullOrEmpty(path))
         {
-            _logger.LogErrorWithPath("Path is required: {FilePath}", "TagCommands.cs", path ?? "unknown");
+            this.logger.LogErrorWithPath("Path is required: {FilePath}", "TagCommands.cs", path ?? "unknown");
             return;
         }
 
         if (!Directory.Exists(path) && !File.Exists(path))
         {
-            _logger.LogErrorWithPath("Path does not exist: {FilePath}", "TagCommands.cs", path);
+            this.logger.LogErrorWithPath("Path does not exist: {FilePath}", "TagCommands.cs", path);
             return;
         }
 
         // Validate that the path is within the configured vault root or that vault root override is provided
         if (string.IsNullOrEmpty(vaultRoot))
         {
-            string? configuredVaultRoot = _appConfig.Paths?.NotebookVaultFullpathRoot;
+            string? configuredVaultRoot = this.appConfig.Paths?.NotebookVaultFullpathRoot;
             if (!string.IsNullOrEmpty(configuredVaultRoot))
             {
                 string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
@@ -328,14 +345,15 @@ public class TagCommands
                                          $"  tag {command} \"{path}\" --override-vault-root \"{path}\"";
 
                     AnsiConsoleHelper.WriteError(errorMessage);
-                    _logger.LogErrorWithPath("Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
+                    this.logger.LogErrorWithPath(
+                        "Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
                         "TagCommands.cs", path, configuredVaultRoot);
                     return;
                 }
             }
         }
 
-        _logger.LogInformationWithPath("Executing tag command: {Command} on path: {FilePath}", command, path, "TagCommands.cs");
+        this.logger.LogInformationWithPath("Executing tag command: {Command} on path: {FilePath}", command, path, "TagCommands.cs");
 
         try
         {
@@ -347,6 +365,7 @@ public class TagCommands
                     AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
                     return;
                 }
+
                 Program.SetupDependencyInjection(configPath, debug);
             }
 
@@ -359,6 +378,7 @@ public class TagCommands
             // Always show the active config file being used
             string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
             AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");                // Create a new TagProcessor with command-specific options
+
             // For TagProcessor we need to get the IYamlHelper from DI
             var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
             var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
@@ -372,13 +392,13 @@ public class TagCommands
             switch (command.ToLowerInvariant())
             {
                 case "add-nested":
-                    var stats = await tagProcessor.ProcessDirectoryAsync(path);
+                    var stats = await tagProcessor.ProcessDirectoryAsync(path).ConfigureAwait(false);
                     LogStats(logger, stats);
                     break;
 
                 case "clean-index":
                     logger.LogInformationWithPath("Clean index functionality uses the same processor", "TagCommands.cs");
-                    stats = await tagProcessor.ProcessDirectoryAsync(path);
+                    stats = await tagProcessor.ProcessDirectoryAsync(path).ConfigureAwait(false);
                     LogStats(logger, stats);
                     break;
 
@@ -387,17 +407,17 @@ public class TagCommands
                     break;
 
                 case "restructure-tags":
-                    stats = await tagProcessor.RestructureTagsInDirectoryAsync(path);
+                    stats = await tagProcessor.RestructureTagsInDirectoryAsync(path).ConfigureAwait(false);
                     LogStats(logger, stats);
                     break;
 
                 case "add-example-tags":
-                    var success = await tagProcessor.AddExampleTagsToFileAsync(path);
+                    var success = await tagProcessor.AddExampleTagsToFileAsync(path).ConfigureAwait(false);
                     logger.LogInformationWithPath(success ? "Example tags added." : "Failed to add example tags.", "TagCommands.cs");
                     break;
 
                 case "metadata-check":
-                    stats = await tagProcessor.CheckAndEnforceMetadataConsistencyAsync(path);
+                    stats = await tagProcessor.CheckAndEnforceMetadataConsistencyAsync(path).ConfigureAwait(false);
                     LogStats(logger, stats);
                     break;
 
@@ -439,13 +459,15 @@ public class TagCommands
                     AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
                     return;
                 }
+
                 Program.SetupDependencyInjection(configPath, debug);
             }
 
             var serviceProvider = Program.ServiceProvider;
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("TagCommands");
-            var loggingService = serviceProvider.GetRequiredService<LoggingService>(); var failedLogger = loggingService.FailedLogger;
+            var loggingService = serviceProvider.GetRequiredService<LoggingService>();
+            var failedLogger = loggingService.FailedLogger;
 
             // Always show the active config file being used
             string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
@@ -470,14 +492,15 @@ public class TagCommands
                                              $"  tag update-frontmatter \"{path}\" --override-vault-root \"{path}\"";
 
                         AnsiConsoleHelper.WriteError(errorMessage);
-                        logger.LogError("Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
+                        logger.LogError(
+                            "Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
                             path, configuredVaultRoot);
                         return;
                     }
                 }
             }
 
-            logger.LogInformation("Executing update-frontmatter command on path: {Path}, key: {Key}, value: {Value}", path, key, value);// Create a new TagProcessor with command-specific options
+            logger.LogInformation("Executing update-frontmatter command on path: {Path}, key: {Key}, value: {Value}", path, key, value); // Create a new TagProcessor with command-specific options
             var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
             var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
             var tagProcessor = new TagProcessor(
@@ -493,7 +516,7 @@ public class TagCommands
                 AnsiConsoleHelper.WriteInfo("[DRY RUN] No files will be modified");
             }
 
-            var stats = await tagProcessor.UpdateFrontmatterKeyAsync(path, key, value);
+            var stats = await tagProcessor.UpdateFrontmatterKeyAsync(path, key, value).ConfigureAwait(false);
             LogStats(logger, stats);
 
             if (stats["FilesModified"] > 0)
@@ -518,14 +541,16 @@ public class TagCommands
         {
             AnsiConsoleHelper.WriteError($"Error processing command: {ex.Message}");
         }
-    }        /// <summary>
-             /// Diagnoses YAML frontmatter issues in markdown files.
-             /// </summary>
-             /// <param name="path">Path to the directory to process.</param>
-             /// <param name="configPath">Optional path to configuration file.</param>
-             /// <param name="debug">Whether to output debug information.</param>             /// <param name="verbose">Whether to output verbose information.</param>
-             /// <param name="vaultRoot">Override vault root path.</param>
-             /// <returns>A task representing the asynchronous operation.</returns>
+    }
+
+    /// <summary>
+    /// Diagnoses YAML frontmatter issues in markdown files.
+    /// </summary>
+    /// <param name="path">Path to the directory to process.</param>
+    /// <param name="configPath">Optional path to configuration file.</param>
+    /// <param name="debug">Whether to output debug information.</param>             /// <param name="verbose">Whether to output verbose information.</param>
+    /// <param name="vaultRoot">Override vault root path.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task DiagnoseYamlAsync(string path, string? configPath, bool debug, bool verbose, string? vaultRoot = null)
     {
         try
@@ -538,6 +563,7 @@ public class TagCommands
                     AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
                     return;
                 }
+
                 Program.SetupDependencyInjection(configPath, debug);
             }
 
@@ -568,7 +594,8 @@ public class TagCommands
                                              $"  tag diagnose-yaml \"{path}\" --override-vault-root \"{path}\"";
 
                         AnsiConsoleHelper.WriteError(errorMessage);
-                        logger.LogError("Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
+                        logger.LogError(
+                            "Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
                             path, configuredVaultRoot);
                         return;
                     }
@@ -584,7 +611,7 @@ public class TagCommands
             var processor = new TagProcessor(tagProcessorLogger, failedLogger, yamlHelper, false, verbose);
 
             // Run diagnosis
-            var results = await processor.DiagnoseFrontmatterIssuesAsync(path);
+            var results = await processor.DiagnoseFrontmatterIssuesAsync(path).ConfigureAwait(false);
 
             // Display results
             if (results.Count > 0)

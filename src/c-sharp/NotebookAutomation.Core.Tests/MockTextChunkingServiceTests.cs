@@ -1,15 +1,24 @@
-﻿namespace NotebookAutomation.Core.Tests;
+﻿// <copyright file="MockTextChunkingServiceTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/MockTextChunkingServiceTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Tests;
 
 /// <summary>
 /// Tests for the MockTextChunkingService class to ensure it works correctly for testing purposes.
 /// </summary>
 [TestClass]
-public class MockTextChunkingServiceTests
+internal class MockTextChunkingServiceTests
 {
-    private MockTextChunkingService _mockChunkingService;
+    private MockTextChunkingService mockChunkingService;
 
     [TestInitialize]
-    public void SetUp() => _mockChunkingService = new MockTextChunkingService();
+    public void SetUp() => this.mockChunkingService = new MockTextChunkingService();
 
     /// <summary>
     /// Tests that SplitTextIntoChunks returns predefined chunks when specified.
@@ -19,20 +28,20 @@ public class MockTextChunkingServiceTests
     {
         // Arrange
         List<string> predefinedChunks = ["Chunk 1", "Chunk 2", "Chunk 3"];
-        _mockChunkingService.PredefinedChunks = predefinedChunks;
+        this.mockChunkingService.PredefinedChunks = predefinedChunks;
 
         string inputText = "This is some test text that should be ignored.";
 
         // Act
-        List<string> result = _mockChunkingService.SplitTextIntoChunks(inputText, 100, 10);
+        List<string> result = this.mockChunkingService.SplitTextIntoChunks(inputText, 100, 10);
 
         // Assert
         Assert.IsNotNull(result);
         CollectionAssert.AreEqual(predefinedChunks, result);
-        Assert.IsTrue(_mockChunkingService.SplitTextWasCalled);
-        Assert.AreEqual(inputText, _mockChunkingService.LastInputText);
-        Assert.AreEqual(100, _mockChunkingService.LastChunkSize);
-        Assert.AreEqual(10, _mockChunkingService.LastOverlap);
+        Assert.IsTrue(this.mockChunkingService.SplitTextWasCalled);
+        Assert.AreEqual(inputText, this.mockChunkingService.LastInputText);
+        Assert.AreEqual(100, this.mockChunkingService.LastChunkSize);
+        Assert.AreEqual(10, this.mockChunkingService.LastOverlap);
     }
 
     /// <summary>
@@ -47,13 +56,13 @@ public class MockTextChunkingServiceTests
         int overlap = 3;
 
         // Act
-        List<string> result = _mockChunkingService.SplitTextIntoChunks(inputText, chunkSize, overlap);
+        List<string> result = this.mockChunkingService.SplitTextIntoChunks(inputText, chunkSize, overlap);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.IsTrue(result.Count > 0);
-        Assert.IsTrue(_mockChunkingService.SplitTextWasCalled);
-        Assert.AreEqual(inputText, _mockChunkingService.LastInputText);
+        Assert.IsTrue(this.mockChunkingService.SplitTextWasCalled);
+        Assert.AreEqual(inputText, this.mockChunkingService.LastInputText);
 
         // Check that the chunks cover the whole input text
         string reconstructed = result[0];
@@ -74,15 +83,15 @@ public class MockTextChunkingServiceTests
     public void EstimateTokenCount_WithConfiguredTokenCount_ReturnsConfiguredValue()
     {
         // Arrange
-        _mockChunkingService.TokenCountToReturn = 42;
+        this.mockChunkingService.TokenCountToReturn = 42;
         string text = "Some text for token estimation";
 
         // Act
-        int result = _mockChunkingService.EstimateTokenCount(text);
+        int result = this.mockChunkingService.EstimateTokenCount(text);
 
         // Assert
         Assert.AreEqual(42, result);
-        Assert.IsTrue(_mockChunkingService.EstimateTokenWasCalled);
+        Assert.IsTrue(this.mockChunkingService.EstimateTokenWasCalled);
     }
 
     /// <summary>
@@ -95,11 +104,11 @@ public class MockTextChunkingServiceTests
         string text = "ABCDEFGHIJKLMNOP"; // 16 characters = 4 tokens at 4:1 ratio
 
         // Act
-        int result = _mockChunkingService.EstimateTokenCount(text);
+        int result = this.mockChunkingService.EstimateTokenCount(text);
 
         // Assert
         Assert.AreEqual(4, result);
-        Assert.IsTrue(_mockChunkingService.EstimateTokenWasCalled);
+        Assert.IsTrue(this.mockChunkingService.EstimateTokenWasCalled);
     }
 
     /// <summary>
@@ -107,30 +116,34 @@ public class MockTextChunkingServiceTests
     /// </summary>
     [TestMethod]
     public void SplitTextIntoChunks_NullText_ThrowsArgumentNullException() =>
+
         // Act
-        Assert.ThrowsExactly<ArgumentNullException>(() => _mockChunkingService.SplitTextIntoChunks(null, 100, 10));
+        Assert.ThrowsExactly<ArgumentNullException>(() => this.mockChunkingService.SplitTextIntoChunks(null, 100, 10));
 
     /// <summary>
     /// Tests that invalid chunk size throws ArgumentOutOfRangeException.
     /// </summary>
     [TestMethod]
     public void SplitTextIntoChunks_ZeroChunkSize_ThrowsArgumentOutOfRangeException() =>
+
         // Act
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _mockChunkingService.SplitTextIntoChunks("Test text", 0, 10));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => this.mockChunkingService.SplitTextIntoChunks("Test text", 0, 10));
 
     /// <summary>
     /// Tests that negative overlap throws ArgumentOutOfRangeException.
     /// </summary>
     [TestMethod]
     public void SplitTextIntoChunks_NegativeOverlap_ThrowsArgumentOutOfRangeException() =>
+
         // Act
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _mockChunkingService.SplitTextIntoChunks("Test text", 100, -5));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => this.mockChunkingService.SplitTextIntoChunks("Test text", 100, -5));
 
     /// <summary>
     /// Tests that overlap greater than chunk size throws ArgumentException.
     /// </summary>
     [TestMethod]
     public void SplitTextIntoChunks_OverlapGreaterThanChunkSize_ThrowsArgumentException() =>
+
         // Act
-        Assert.ThrowsExactly<ArgumentException>(() => _mockChunkingService.SplitTextIntoChunks("Test text", 10, 20));
+        Assert.ThrowsExactly<ArgumentException>(() => this.mockChunkingService.SplitTextIntoChunks("Test text", 10, 20));
 }

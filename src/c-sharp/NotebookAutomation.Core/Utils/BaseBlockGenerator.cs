@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Utils;
+﻿// <copyright file="BaseBlockGenerator.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/BaseBlockGenerator.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
 /// Provides functionality to generate Obsidian Base blocks from a YAML template with dynamic parameters.
@@ -18,7 +27,9 @@ public static class BaseBlockGenerator
     public static string GenerateBaseBlock(string templatePath, string course, string className, string module, string type)
     {
         if (!File.Exists(templatePath))
+        {
             throw new FileNotFoundException($"Base block template not found: {templatePath}");
+        }
 
         string template = File.ReadAllText(templatePath);
         return template

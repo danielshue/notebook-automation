@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class PathUtils | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class PathUtils | Obsidian Notebook Automation for Coursera ">
+      
+      <meta name="description" content="Provides utility methods for working with file and directory paths.">
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/danielshue/notebook-automation/new/master/apiSpec/new?filename=NotebookAutomation_Core_Utils_PathUtils.md&amp;value=---%0Auid%3A%20NotebookAutomation.Core.Utils.PathUtils%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Utils.PathUtils">
+
+
+
+  <h1 id="NotebookAutomation_Core_Utils_PathUtils" data-uid="NotebookAutomation.Core.Utils.PathUtils" class="text-break">
+Class PathUtils  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Utils.html">Utils</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Provides utility methods for working with file and directory paths.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static class PathUtils</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">PathUtils</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="NotebookAutomation_Core_Utils_PathUtils_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+The PathUtils class contains static methods for common path-related operations
+needed throughout the notebook automation system, such as:
+<ul><li>Finding paths relative to the application or directory</li><li>Ensuring directories exist</li><li>Normalizing paths across platforms</li><li>Generating safe file paths for new files</li></ul>
+
+<p>
+This class is designed to centralize path handling logic and ensure consistent behavior
+across different parts of the application, especially for operations that need to handle
+cross-platform path differences.
+</p>
+</div>
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Utils_PathUtils_EnsureDirectoryExists_" data-uid="NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_PathUtils_EnsureDirectoryExists_System_String_" data-uid="NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists(System.String)">
+  EnsureDirectoryExists(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs/#L107"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Ensures a directory exists, creating it if necessary.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string EnsureDirectoryExists(string directoryPath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>directoryPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The directory path to ensure exists.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The normalized directory path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_EnsureDirectoryExists_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">string outputDir = PathUtils.EnsureDirectoryExists("output/reports/monthly");
+string filePath = Path.Combine(outputDir, "report.pdf");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_EnsureDirectoryExists_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method checks if the specified directory exists, and creates it (including any
+necessary parent directories) if it doesn't. It returns the normalized path to the
+directory, which is useful for chaining operations.
+</p>
+<p>
+The method normalizes the path to ensure it works correctly on all platforms.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_PathUtils_GenerateUniqueFilePath_" data-uid="NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_PathUtils_GenerateUniqueFilePath_System_String_" data-uid="NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath(System.String)">
+  GenerateUniqueFilePath(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs/#L180"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Generates a unique file path by appending a number if the file already exists.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string GenerateUniqueFilePath(string baseFilePath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>baseFilePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The base file path (including extension).</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A unique file path that doesn't exist yet.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_GenerateUniqueFilePath_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">string safePath = PathUtils.GenerateUniqueFilePath("output/report.pdf");
+File.WriteAllText(safePath, content);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_GenerateUniqueFilePath_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method checks if a file already exists at the specified path, and if so,
+generates a new path by appending a number before the extension. For example,
+if "report.pdf" exists, it will try "report (1).pdf", then "report (2).pdf", and so on.
+</p>
+<p>
+This is useful for generating output file paths that won't overwrite existing files.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_PathUtils_GetCommonBasePath_" data-uid="NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_PathUtils_GetCommonBasePath_System_Collections_Generic_IEnumerable_System_String__" data-uid="NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath(System.Collections.Generic.IEnumerable{System.String})">
+  GetCommonBasePath(IEnumerable&lt;string&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs/#L277"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets the common base directory shared by a collection of paths.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string GetCommonBasePath(IEnumerable&lt;string&gt; paths)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>paths</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1">IEnumerable</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>The collection of paths.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The common base directory, or an empty string if there is no common base.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_GetCommonBasePath_System_Collections_Generic_IEnumerable_System_String___examples">Examples</h4>
+  <pre><code class="lang-csharp">string[] paths = new[] {
+    "C:/Projects/MyProject/src/file1.cs",
+    "C:/Projects/MyProject/src/Models/model.cs",
+    "C:/Projects/MyProject/tests/test1.cs"
+};
+string common = PathUtils.GetCommonBasePath(paths);
+// Result: "C:/Projects/MyProject/"</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_GetCommonBasePath_System_Collections_Generic_IEnumerable_System_String___remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method finds the longest common path prefix shared by all paths in the collection.
+This is useful for identifying a common working directory or for organizing files that
+are related but might be scattered across different subdirectories.
+</p>
+<p>
+The method returns a directory path (ending with a directory separator), or an empty
+string if there is no common base directory (for example, if the paths are on different drives).
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToApp_" data-uid="NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToApp_System_String_" data-uid="NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp(System.String)">
+  GetPathRelativeToApp(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs/#L56"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a path for a file relative to the application's base directory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string GetPathRelativeToApp(string relativePath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>relativePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The relative path from the application directory.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The full path to the file.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToApp_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">string configPath = PathUtils.GetPathRelativeToApp("config/settings.json");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToApp_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method constructs a path relative to the application's base directory, which is
+the directory containing the executing assembly. This is useful for finding configuration
+files and other resources that ship alongside the application.
+</p>
+<p>
+The method handles normalization to ensure paths work correctly on all platforms.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToDirectory_" data-uid="NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToDirectory_System_String_System_String_" data-uid="NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory(System.String,System.String)">
+  GetPathRelativeToDirectory(string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs/#L81"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a path for a file relative to a specified directory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string GetPathRelativeToDirectory(string basePath, string relativePath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>basePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The base directory path.</p>
+</dd>
+    <dt><code>relativePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The relative path from the base directory.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The full path to the file.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToDirectory_System_String_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">string outputPath = PathUtils.GetPathRelativeToDirectory(projectDir, "output/results.json");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToDirectory_System_String_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method constructs a path relative to the specified base directory. It normalizes
+both paths to ensure they work correctly on all platforms, and combines them using
+platform-appropriate path separators.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_PathUtils_MakeRelative_" data-uid="NotebookAutomation.Core.Utils.PathUtils.MakeRelative*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_PathUtils_MakeRelative_System_String_System_String_" data-uid="NotebookAutomation.Core.Utils.PathUtils.MakeRelative(System.String,System.String)">
+  MakeRelative(string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs/#L229"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Makes a path relative to a base directory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string MakeRelative(string basePath, string fullPath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>basePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The base directory path.</p>
+</dd>
+    <dt><code>fullPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The full path to make relative.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The relative path, or the full path if it can't be made relative.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_MakeRelative_System_String_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">string projectDir = "C:/Projects/MyProject";
+string fullPath = "C:/Projects/MyProject/src/file.cs";
+string relativePath = PathUtils.MakeRelative(projectDir, fullPath);
+// Result: "src/file.cs"</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_MakeRelative_System_String_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method attempts to make a path relative to a specified base directory. This is useful
+for storing and displaying shorter, more readable paths that are relative to a known
+location like a project directory.
+</p>
+<p>
+If the full path doesn't start with the base path (meaning it's not actually within the
+base directory), the method returns the original full path.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_PathUtils_NormalizePath_" data-uid="NotebookAutomation.Core.Utils.PathUtils.NormalizePath*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_PathUtils_NormalizePath_System_String_" data-uid="NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.String)">
+  NormalizePath(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Normalizes a path by converting slashes to the platform-specific path separator.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static string NormalizePath(string path)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>path</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The path to normalize.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The normalized path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_NormalizePath_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Works on both Windows and Unix:
+string normalizedPath = PathUtils.NormalizePath("reports\\monthly/current");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_PathUtils_NormalizePath_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method normalizes a path by replacing all forward and backward slashes with the
+platform-specific path separator character. This ensures that paths work correctly
+on all platforms, regardless of how they were originally specified.
+</p>
+<p>
+The method also trims any leading or trailing whitespace to prevent common errors.
+</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs/#L34" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

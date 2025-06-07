@@ -1,4 +1,13 @@
-﻿using NotebookAutomation.Core.Utils;
+// <copyright file="MarkdownParser.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.MarkdownGeneration;
 
@@ -30,8 +39,8 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration;
 /// </example>
 public partial class MarkdownParser(ILogger logger)
 {
-    private readonly ILogger _logger = logger;
-    private readonly YamlHelper _yamlHelper = new(logger);
+    private readonly ILogger logger = logger;
+    private readonly YamlHelper yamlHelper = new(logger);
 
     /// <summary>
     /// Regular expression for detecting YAML frontmatter.
@@ -51,35 +60,34 @@ public partial class MarkdownParser(ILogger logger)
     /// <returns>A tuple containing the frontmatter dictionary and the content body.</returns>
     /// <remarks>
     /// <para>
-    /// This method reads the markdown file, extracts the YAML frontmatter using the <see cref="FrontmatterRegex"/>,
-
-    /// and separates the remaining content body. If the file does not exist or an error occurs, it logs the issue
-    /// and returns empty results.
-    /// </para>
-    /// </remarks>
-    /// <example>
-    /// <code>
-    /// var (frontmatter, content) = await parser.ParseFileAsync("example.md");
-    /// Console.WriteLine(frontmatter);
-    /// Console.WriteLine(content);
-    /// </code>
-    /// </example>
+    /// This method reads the markdown file, extracts the YAML frontmatter using the <see cref="FrontmatterRegex"/>.
+    // and separates the remaining content body. If the file does not exist or an error occurs, it logs the issue
+    // and returns empty results.
+    // </para>
+    // </remarks>
+    // <example>
+    // <code>
+    // var (frontmatter, content) = await parser.ParseFileAsync("example.md");
+    // Console.WriteLine(frontmatter);
+    // Console.WriteLine(content);
+    // </code>
+    // </example>
     public async Task<(Dictionary<string, object> Frontmatter, string Content)> ParseFileAsync(string filePath)
     {
         if (!File.Exists(filePath))
         {
-            _logger.LogError("File not found: {FilePath}", filePath);
+            this.logger.LogError("File not found: {FilePath}", filePath);
             return (new Dictionary<string, object>(), string.Empty);
         }
 
         try
         {
-            string text = await File.ReadAllTextAsync(filePath);
-            return ParseMarkdown(text);
+            string text = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+            return this.ParseMarkdown(text);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error parsing markdown file: {FilePath}", filePath);
+            this.logger.LogError(ex, "Error parsing markdown file: {FilePath}", filePath);
             return (new Dictionary<string, object>(), string.Empty);
         }
     }
@@ -104,7 +112,7 @@ public partial class MarkdownParser(ILogger logger)
 
         var frontmatterYaml = match.Groups[1].Value;
         var content = markdownText[match.Length..];
-        var frontmatter = _yamlHelper.ParseYamlToDictionary(frontmatterYaml);
+        var frontmatter = this.yamlHelper.ParseYamlToDictionary(frontmatterYaml);
 
         return (frontmatter, content);
     }
@@ -117,7 +125,7 @@ public partial class MarkdownParser(ILogger logger)
     /// <returns>The complete markdown document.</returns>
     public string CombineMarkdown(Dictionary<string, object> frontmatter, string content)
     {
-        return _yamlHelper.UpdateFrontmatter(content, frontmatter);
+        return this.yamlHelper.UpdateFrontmatter(content, frontmatter);
     }
 
     /// <summary>
@@ -133,14 +141,14 @@ public partial class MarkdownParser(ILogger logger)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath) ?? string.Empty);
 
-            var fullContent = CombineMarkdown(frontmatter, content);
-            await File.WriteAllTextAsync(filePath, fullContent, Encoding.UTF8);
+            var fullContent = this.CombineMarkdown(frontmatter, content);
+            await File.WriteAllTextAsync(filePath, fullContent, Encoding.UTF8).ConfigureAwait(false);
 
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error writing markdown file: {FilePath}", filePath);
+            this.logger.LogError(ex, "Error writing markdown file: {FilePath}", filePath);
             return false;
         }
     }

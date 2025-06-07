@@ -1,12 +1,19 @@
-﻿using NotebookAutomation.Core.Configuration;
-
+﻿// <copyright file="ServiceRegistrationTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Configuration/ServiceRegistrationTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Configuration;
 
 /// <summary>
 /// Unit tests for the ServiceRegistration class.
 /// </summary>
 [TestClass]
-public class ServiceRegistrationTests
+internal class ServiceRegistrationTests
 {
     [TestMethod]
     public void AddNotebookAutomationServices_RegistersCoreServices()
@@ -22,8 +29,8 @@ public class ServiceRegistrationTests
         // Assert: Key services should be resolvable
         Assert.IsNotNull(provider.GetService<AppConfig>());
         Assert.IsNotNull(provider.GetService<LoggingService>());
-        Assert.IsNotNull(provider.GetService<Core.Services.PromptTemplateService>());
-        Assert.IsNotNull(provider.GetService<Core.Services.AISummarizer>());
+        Assert.IsNotNull(provider.GetService<PromptTemplateService>());
+        Assert.IsNotNull(provider.GetService<AISummarizer>());
     }
 
     [TestMethod]

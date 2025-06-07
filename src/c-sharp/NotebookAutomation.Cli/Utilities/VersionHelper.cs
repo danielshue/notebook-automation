@@ -1,4 +1,13 @@
-﻿using System.Reflection;
+﻿// <copyright file="VersionHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli/Utilities/VersionHelper.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace NotebookAutomation.Cli.Utilities;
@@ -10,7 +19,7 @@ namespace NotebookAutomation.Cli.Utilities;
 /// This class includes methods for retrieving detailed version information, assembly paths,
 /// build dates, and linker timestamps.
 /// </remarks>
-public static class VersionHelper
+internal static class VersionHelper
 {
     /// <summary>
     /// Gets detailed version information about the application.
@@ -74,11 +83,13 @@ public static class VersionHelper
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetExecutingAssembly();
         var attr = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
         return attr?.InformationalVersion ?? "Unknown";
-    }        /// <summary>
-             /// Gets the assembly path, handling single-file applications correctly.
-             /// </summary>
-             /// <param name="assembly">The assembly to get the path for.</param>
-             /// <returns>The path to the assembly or the application executable.</returns>
+    }
+
+    /// <summary>
+    /// Gets the assembly path, handling single-file applications correctly.
+    /// </summary>
+    /// <param name="assembly">The assembly to get the path for.</param>
+    /// <returns>The path to the assembly or the application executable.</returns>
     private static string GetAssemblyPath(Assembly assembly)
     {
         // With single-file apps, Assembly.Location will be empty

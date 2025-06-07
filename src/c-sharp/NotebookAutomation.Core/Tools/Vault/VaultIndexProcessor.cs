@@ -1,4 +1,13 @@
-﻿using NotebookAutomation.Core.Configuration;
+// <copyright file="VaultIndexProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Utils;
 
@@ -22,23 +31,24 @@ public class VaultIndexProcessor(
     AppConfig appConfig,
     string vaultRootPath = "")
 {
-    private readonly ILogger<VaultIndexProcessor> _logger = logger;
-    private readonly MetadataTemplateManager _templateManager = templateManager;
-    private readonly MetadataHierarchyDetector _hierarchyDetector = hierarchyDetector;
-    private readonly CourseStructureExtractor _structureExtractor = structureExtractor;
-    private readonly IYamlHelper _yamlHelper = yamlHelper;
-    private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder;
-    private readonly AppConfig _appConfig = appConfig;
-    private readonly string _defaultVaultRootPath = !string.IsNullOrEmpty(vaultRootPath)
+    private readonly ILogger<VaultIndexProcessor> logger = logger;
+    private readonly MetadataTemplateManager templateManager = templateManager;
+    private readonly MetadataHierarchyDetector hierarchyDetector = hierarchyDetector;
+    private readonly CourseStructureExtractor structureExtractor = structureExtractor;
+    private readonly IYamlHelper yamlHelper = yamlHelper;
+    private readonly MarkdownNoteBuilder noteBuilder = noteBuilder;
+    private readonly string defaultVaultRootPath = !string.IsNullOrEmpty(vaultRootPath)
         ? vaultRootPath
-        : appConfig.Paths.NotebookVaultFullpathRoot;    /// <summary>
-                                                        /// Generates an index file for the specified folder.
-                                                        /// </summary>
-                                                        /// <param name="folderPath">Path to the folder to generate an index for.</param>
-                                                        /// <param name="vaultPath">Path to the vault root directory.</param>
-                                                        /// <param name="forceOverwrite">If true, regenerates the index even if it already exists.</param>
-                                                        /// <param name="dryRun">If true, simulates the operation without making actual changes.</param>
-                                                        /// <returns>True if an index was generated or would be generated, false otherwise.</returns>
+        : appConfig.Paths.NotebookVaultFullpathRoot;
+
+    /// <summary>
+    /// Generates an index file for the specified folder.
+    /// </summary>
+    /// <param name="folderPath">Path to the folder to generate an index for.</param>
+    /// <param name="vaultPath">Path to the vault root directory.</param>
+    /// <param name="forceOverwrite">If true, regenerates the index even if it already exists.</param>
+    /// <param name="dryRun">If true, simulates the operation without making actual changes.</param>
+    /// <returns>True if an index was generated or would be generated, false otherwise.</returns>
     public async Task<bool> GenerateIndexAsync(
         string folderPath,
         string vaultPath,
@@ -47,101 +57,114 @@ public class VaultIndexProcessor(
     {
         try
         {
-            _logger.LogDebug("Generating index for folder: {FolderPath}", folderPath);
-            _logger.LogInformation("=== GENERATING INDEX ===");
-            _logger.LogInformation("Folder Path: {FolderPath}", folderPath);
-            _logger.LogInformation("Vault Path: {VaultPath}", vaultPath);
+            this.logger.LogDebug("Generating index for folder: {FolderPath}", folderPath);
+            this.logger.LogInformation("=== GENERATING INDEX ===");
+            this.logger.LogInformation("Folder Path: {FolderPath}", folderPath);
+            this.logger.LogInformation("Vault Path: {VaultPath}", vaultPath);
             Console.WriteLine($"DEBUG: Starting GenerateIndexAsync - FolderPath: {folderPath}, VaultPath: {vaultPath}");
 
             // Validate vault path - use _defaultVaultRootPath if not provided
             if (string.IsNullOrEmpty(vaultPath))
             {
-                if (string.IsNullOrEmpty(_defaultVaultRootPath))
+                if (string.IsNullOrEmpty(this.defaultVaultRootPath))
                 {
-                    _logger.LogError("Cannot determine vault root path. Neither vaultPath parameter nor AppConfig.Paths.NotebookVaultFullpathRoot is provided.");
+                    this.logger.LogError("Cannot determine vault root path. Neither vaultPath parameter nor AppConfig.Paths.NotebookVaultFullpathRoot is provided.");
                     return false;
                 }
 
-                _logger.LogDebug("No vault path provided, using default from configuration: {DefaultPath}", _defaultVaultRootPath);
-                vaultPath = _defaultVaultRootPath;
+                this.logger.LogDebug("No vault path provided, using default from configuration: {DefaultPath}", this.defaultVaultRootPath);
+                vaultPath = this.defaultVaultRootPath;
             }
 
             // Calculate hierarchy level based on depth from vault root
-            int hierarchyLevel = CalculateHierarchyLevel(folderPath, vaultPath);
-            _logger.LogInformation("Calculated hierarchy level: {Level} for folder: {Folder}", hierarchyLevel, folderPath);
+            int hierarchyLevel = this.CalculateHierarchyLevel(folderPath, vaultPath);
+            this.logger.LogInformation("Calculated hierarchy level: {Level} for folder: {Folder}", hierarchyLevel, folderPath);
             Console.WriteLine($"DEBUG: Hierarchy level {hierarchyLevel} calculated for {folderPath}");
 
             // Create index file name based on folder name
             string folderName = Path.GetFileName(folderPath) ?? "Index";            // Determine template type based on hierarchy level and folder name
-            string templateType = DetermineTemplateType(hierarchyLevel, folderName);
-            _logger.LogInformation("Determined template type: {TemplateType} for folder: {Folder} at level: {Level}", templateType, folderName, hierarchyLevel);
-            Console.WriteLine($"DEBUG: Template type '{templateType}' determined for '{folderName}' at level {hierarchyLevel}");// Get template using the actual available method
-            var template = _templateManager.GetTemplate(templateType);
+            string templateType = this.DetermineTemplateType(hierarchyLevel, folderName);
+            this.logger.LogInformation("Determined template type: {TemplateType} for folder: {Folder} at level: {Level}", templateType, folderName, hierarchyLevel);
+            Console.WriteLine($"DEBUG: Template type '{templateType}' determined for '{folderName}' at level {hierarchyLevel}"); // Get template using the actual available method
+            var template = this.templateManager.GetTemplate(templateType);
             if (template == null)
             {
-                _logger.LogWarning("Template not found for type: {TemplateType}", templateType);
+                this.logger.LogWarning("Template not found for type: {TemplateType}", templateType);
                 return false;
             }
 
             Console.WriteLine($"DEBUG: Template keys: {string.Join(", ", template.Keys)}");
             if (template.ContainsKey("program"))
+            {
                 Console.WriteLine($"DEBUG: Template contains program: {template["program"]}");
+            }
+
             if (template.ContainsKey("course"))
+            {
                 Console.WriteLine($"DEBUG: Template contains course: {template["course"]}");
+            }
+
             if (template.ContainsKey("class"))
+            {
                 Console.WriteLine($"DEBUG: Template contains class: {template["class"]}");
+            }
+
             string indexFileName = $"{folderName}.md";
             string indexFilePath = Path.Combine(folderPath, indexFileName);            // Check if index already exists and force is not set
             if (File.Exists(indexFilePath) && !forceOverwrite)
             {
-                _logger.LogInformation("Skipping index file (already exists, use --force to overwrite): {IndexPath}", indexFilePath);
+                this.logger.LogInformation("Skipping index file (already exists, use --force to overwrite): {IndexPath}", indexFilePath);
                 return false;
             }
 
             if (dryRun)
             {
-                _logger.LogInformation("DRY RUN: Would generate index file: {IndexPath}", indexFilePath);
+                this.logger.LogInformation("DRY RUN: Would generate index file: {IndexPath}", indexFilePath);
                 return true;
-            }            // Scan folder for content
-            var files = await ScanFolderContentAsync(folderPath, vaultPath);
+            } // Scan folder for content
+
+            var files = await this.ScanFolderContentAsync(folderPath, vaultPath).ConfigureAwait(false);
 
             // Get hierarchy info
-            var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(folderPath);            // Generate index content
-            string indexContent = await GenerateIndexContentAsync(
+            var hierarchyInfo = this.hierarchyDetector.FindHierarchyInfo(folderPath);            // Generate index content
+            string indexContent = await this.GenerateIndexContentAsync(
                 folderPath,
                 vaultPath,
                 template,
                 files,
                 hierarchyInfo,
-                hierarchyLevel);
+                hierarchyLevel).ConfigureAwait(false);
 
             // Write index file
-            await File.WriteAllTextAsync(indexFilePath, indexContent);
+            await File.WriteAllTextAsync(indexFilePath, indexContent).ConfigureAwait(false);
 
-            _logger.LogInformation("Generated index file: {IndexPath}", indexFilePath);
+            this.logger.LogInformation("Generated index file: {IndexPath}", indexFilePath);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error generating index for folder: {FolderPath}", folderPath);
+            this.logger.LogError(ex, "Error generating index for folder: {FolderPath}", folderPath);
             return false;
         }
-    }    /// <summary>
-         /// Calculates the hierarchy level based on folder depth from vault root.
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Calculates the hierarchy level based on folder depth from vault root.
+    /// </summary>
     private int CalculateHierarchyLevel(string folderPath, string vaultPath)
     {
         // Prefer the explicitly provided vault path over the default vault path
         // This allows for temporary overrides like test vaults
         string effectiveVaultPath = !string.IsNullOrEmpty(vaultPath)
             ? vaultPath
-            : _defaultVaultRootPath;
+            : this.defaultVaultRootPath;
 
         // Ensure the path has consistent formatting (normalize separators and trim trailing separator)
-        effectiveVaultPath = Path.TrimEndingDirectorySeparator(effectiveVaultPath.Replace('/', Path.DirectorySeparatorChar)); _logger.LogDebug("Using vault root path: {VaultPath} for hierarchy calculation", effectiveVaultPath);
+        effectiveVaultPath = Path.TrimEndingDirectorySeparator(effectiveVaultPath.Replace('/', Path.DirectorySeparatorChar));
+        this.logger.LogDebug("Using vault root path: {VaultPath} for hierarchy calculation", effectiveVaultPath);
 
         var relativePath = Path.GetRelativePath(effectiveVaultPath, folderPath);
-        _logger.LogInformation("CalculateHierarchyLevel: VaultPath='{VaultPath}', FolderPath='{FolderPath}', RelativePath='{RelativePath}'", effectiveVaultPath, folderPath, relativePath);
+        this.logger.LogInformation("CalculateHierarchyLevel: VaultPath='{VaultPath}', FolderPath='{FolderPath}', RelativePath='{RelativePath}'", effectiveVaultPath, folderPath, relativePath);
         Console.WriteLine($"DEBUG: CalculateHierarchyLevel - VaultPath: '{effectiveVaultPath}', FolderPath: '{folderPath}', RelativePath: '{relativePath}'");
 
         if (relativePath == ".")
@@ -158,14 +181,14 @@ public class VaultIndexProcessor(
     /// <summary>
     /// Determines the template type based on hierarchy level and folder name.
     /// </summary>
-    /// <param name="hierarchyLevel">The hierarchy level of the folder</param>
-    /// <param name="folderName">Optional folder name to check for special cases</param>
+    /// <param name="hierarchyLevel">The hierarchy level of the folder.</param>
+    /// <param name="folderName">Optional folder name to check for special cases.</param>
     private string DetermineTemplateType(int hierarchyLevel, string? folderName = null)
     {
         // Main program folders (level 1) that are identified as such get main template type
         if (hierarchyLevel == 1 && folderName != null)
         {
-            _logger.LogDebug("Main program folder detected, using main template type");
+            this.logger.LogDebug("Main program folder detected, using main template type");
             return "main";
         }
 
@@ -173,6 +196,7 @@ public class VaultIndexProcessor(
         if (!string.IsNullOrEmpty(folderName))
         {
             string lowerFolderName = folderName.ToLowerInvariant();              // Special folder types that can appear at any level beyond course level (4+)
+
             // Treat content folders like Case-Studies, Lessons, etc. as modules
             if (hierarchyLevel >= 4)
             {
@@ -185,18 +209,19 @@ public class VaultIndexProcessor(
                     lowerFolderName.Contains("project") || lowerFolderName.Contains("projects") ||
                     lowerFolderName.Contains("live class") || lowerFolderName.Contains("live-class"))
                 {
-                    _logger.LogDebug("Special content folder '{FolderName}' detected at level {Level}, treating as module", folderName, hierarchyLevel);
+                    this.logger.LogDebug("Special content folder '{FolderName}' detected at level {Level}, treating as module", folderName, hierarchyLevel);
                     return "module";
                 }
             }
-        }        // Standard hierarchy mapping starting from vault root (level 0)
+        } // Standard hierarchy mapping starting from vault root (level 0)
+
         return hierarchyLevel switch
         {
             1 => "main",            // Vault root (e.g., MBA when passed as vault root)
             2 => "program",         // Program subdivision (e.g., Digital Program)
             3 => "course",          // Course (e.g., Finance)
             4 => "class",           // Class (e.g., Corporate-Finance)
-            _ => "module"           // Deep subdirectories use module template
+            _ => "module",           // Deep subdirectories use module template
         };
     }
 
@@ -208,14 +233,16 @@ public class VaultIndexProcessor(
         var files = new List<VaultFileInfo>();
 
         if (!Directory.Exists(folderPath))
+        {
             return files;
+        }
 
         var markdownFiles = Directory.GetFiles(folderPath, "*.md", SearchOption.TopDirectoryOnly)
             .Where(f => !Path.GetFileName(f).Equals(Path.GetFileName(folderPath) + ".md", StringComparison.OrdinalIgnoreCase));
 
         foreach (var filePath in markdownFiles)
         {
-            var fileInfo = await AnalyzeFileAsync(filePath, vaultPath);
+            var fileInfo = await this.AnalyzeFileAsync(filePath, vaultPath).ConfigureAwait(false);
             files.Add(fileInfo);
         }
 
@@ -232,18 +259,18 @@ public class VaultIndexProcessor(
             FileName = Path.GetFileNameWithoutExtension(filePath),
             RelativePath = Path.GetRelativePath(vaultPath, filePath),
             FullPath = filePath,
-            Title = FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileName(filePath))
+            Title = FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileName(filePath)),
         };
 
         try
         {
             // Read file content and extract frontmatter
-            var content = await File.ReadAllTextAsync(filePath);
-            var frontmatter = _yamlHelper.ExtractFrontmatter(content);
+            var content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+            var frontmatter = this.yamlHelper.ExtractFrontmatter(content);
 
             if (!string.IsNullOrEmpty(frontmatter))
             {
-                var yamlData = _yamlHelper.ParseYamlToDictionary(frontmatter);
+                var yamlData = this.yamlHelper.ParseYamlToDictionary(frontmatter);
 
                 // Extract content type from template-type field
                 if (yamlData.TryGetValue("template-type", out var templateType))
@@ -276,7 +303,7 @@ public class VaultIndexProcessor(
 
             // Extract module/lesson using CourseStructureExtractor
             var metadata = new Dictionary<string, object>();
-            _structureExtractor.ExtractModuleAndLesson(filePath, metadata);
+            this.structureExtractor.ExtractModuleAndLesson(filePath, metadata);
 
             if (metadata.TryGetValue("module", out var extractedModule))
             {
@@ -285,7 +312,7 @@ public class VaultIndexProcessor(
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Error analyzing file: {FilePath}", filePath);
+            this.logger.LogWarning(ex, "Error analyzing file: {FilePath}", filePath);
         }
 
         return fileInfo;
@@ -299,20 +326,36 @@ public class VaultIndexProcessor(
         var lowerName = fileName.ToLowerInvariant();
 
         if (lowerName.Contains("reading") || lowerName.Contains("article"))
+        {
             return "reading";
+        }
+
         if (lowerName.Contains("video") || lowerName.Contains("lecture"))
+        {
             return "video";
+        }
+
         if (lowerName.Contains("transcript"))
+        {
             return "transcript";
+        }
+
         if (lowerName.Contains("assignment") || lowerName.Contains("homework"))
+        {
             return "assignment";
+        }
+
         if (lowerName.Contains("discussion") || lowerName.Contains("forum"))
+        {
             return "discussion";
+        }
 
         return "note";
-    }    /// <summary>
-         /// Generates the index content for a folder.
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Generates the index content for a folder.
+    /// </summary>
     private Task<string> GenerateIndexContentAsync(
         string folderPath,
         string vaultPath,
@@ -329,35 +372,62 @@ public class VaultIndexProcessor(
         Console.WriteLine($"DEBUG: Before UpdateMetadataWithHierarchy - frontmatter keys: {string.Join(", ", frontmatter.Keys)}");
         Console.WriteLine($"DEBUG: hierarchyInfo keys: {string.Join(", ", hierarchyInfo.Keys)}");
         foreach (var kvp in hierarchyInfo)
+        {
             Console.WriteLine($"DEBUG: hierarchyInfo[{kvp.Key}] = '{kvp.Value}'");
+        }
+
         if (frontmatter.ContainsKey("program"))
+        {
             Console.WriteLine($"DEBUG: Before - frontmatter contains program: {frontmatter["program"]}");
+        }
+
         if (frontmatter.ContainsKey("course"))
+        {
             Console.WriteLine($"DEBUG: Before - frontmatter contains course: {frontmatter["course"]}");
+        }
+
         if (frontmatter.ContainsKey("class"))
+        {
             Console.WriteLine($"DEBUG: Before - frontmatter contains class: {frontmatter["class"]}");
+        }
 
         frontmatter = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(frontmatter, hierarchyInfo, templateType);
 
         Console.WriteLine($"DEBUG: After UpdateMetadataWithHierarchy - frontmatter keys: {string.Join(", ", frontmatter.Keys)}");
         if (frontmatter.ContainsKey("program"))
+        {
             Console.WriteLine($"DEBUG: After - frontmatter contains program: {frontmatter["program"]}");
+        }
+
         if (frontmatter.ContainsKey("course"))
+        {
             Console.WriteLine($"DEBUG: After - frontmatter contains course: {frontmatter["course"]}");
+        }
+
         if (frontmatter.ContainsKey("class"))
+        {
             Console.WriteLine($"DEBUG: After - frontmatter contains class: {frontmatter["class"]}");
-        frontmatter["type"] = "index"; frontmatter["date-created"] = DateTime.UtcNow.ToString("yyyy-MM-dd");        // Ensure banner is present (should be from template, but just in case)
+        }
+
+        frontmatter["type"] = "index";
+        frontmatter["date-created"] = DateTime.UtcNow.ToString("yyyy-MM-dd");        // Ensure banner is present (should be from template, but just in case)
         if (!frontmatter.ContainsKey("banner"))
+        {
             frontmatter["banner"] = "gies-banner.png";
+        }
         else if (frontmatter["banner"] is string bannerValue)
         {
             // Remove quotes if present
             if (bannerValue.StartsWith("\"") && bannerValue.EndsWith("\""))
+            {
                 bannerValue = bannerValue.Substring(1, bannerValue.Length - 2);
+            }
 
             // Remove wiki link brackets if present
             if (bannerValue.StartsWith("[[") && bannerValue.EndsWith("]]"))
+            {
                 bannerValue = bannerValue.Substring(2, bannerValue.Length - 4);
+            }
 
             frontmatter["banner"] = bannerValue;
         }
@@ -369,7 +439,7 @@ public class VaultIndexProcessor(
         // Add the title as an H1 heading
         string headerTitle = frontmatter["title"]?.ToString() ?? "Index";
         contentSections.Add($"# {headerTitle}");
-        contentSections.Add("");
+        contentSections.Add(string.Empty);
 
         // Special handling for main (check template-type in frontmatter)
         bool isMain = frontmatter.ContainsKey("template-type") && frontmatter["template-type"]?.ToString() == "main";
@@ -378,7 +448,7 @@ public class VaultIndexProcessor(
         {
             // Add just Dashboard and Classes Assignments links for the main index
             contentSections.Add("📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
-            contentSections.Add("");            // Get all subfolders (courses/programs)
+            contentSections.Add(string.Empty);            // Get all subfolders (courses/programs)
             var subFolders = Directory.GetDirectories(folderPath)
                 .Select(Path.GetFileName)
                 .Where(name => !string.IsNullOrEmpty(name) && !name.StartsWith(".")) // Exclude folders starting with a period
@@ -388,7 +458,7 @@ public class VaultIndexProcessor(
             if (subFolders.Any())
             {
                 contentSections.Add("## Programs");
-                contentSections.Add("");
+                contentSections.Add(string.Empty);
 
                 foreach (var subFolder in subFolders)
                 {
@@ -408,33 +478,33 @@ public class VaultIndexProcessor(
 
             if (hierarchyLevel == 1) // Program index
             {
-                backLinkTarget = GetRootIndexFilename(vaultPath);
+                backLinkTarget = this.GetRootIndexFilename(vaultPath);
             }
             else if (hierarchyLevel == 2) // Course index
             {
                 // Get program folder name (parent folder)
-                backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? "");
+                backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty);
             }
             else if (hierarchyLevel == 3) // Class index
             {
                 // Get course folder name (parent folder)
-                backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? "");
+                backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty);
             }
             else // Module or other indices
             {
                 // Get class folder name (parent folder)
-                backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? "");
+                backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty);
             }
 
             // Generate friendly back link text from the target name
             string backLinkText = FriendlyTitleHelper.GetFriendlyTitleFromFileName(backLinkTarget);
 
             // Get the root index filename for the Home link
-            string rootIndex = GetRootIndexFilename(vaultPath);
+            string rootIndex = this.GetRootIndexFilename(vaultPath);
 
             // Add top navigation links
             contentSections.Add($"🔙 [[{backLinkTarget}|{backLinkText}]] | 🏠 [[{rootIndex}|Home]] | 📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
-            contentSections.Add("");            // Add content based on hierarchy level
+            contentSections.Add(string.Empty);            // Add content based on hierarchy level
             var subFolders = Directory.GetDirectories(folderPath)
                 .Select(Path.GetFileName)
                 .Where(name => !string.IsNullOrEmpty(name) && !name.StartsWith(".")) // Exclude folders starting with a period
@@ -446,7 +516,7 @@ public class VaultIndexProcessor(
                 if (subFolders.Any())
                 {
                     contentSections.Add("## Programs");
-                    contentSections.Add("");
+                    contentSections.Add(string.Empty);
 
                     foreach (var subFolder in subFolders)
                     {
@@ -463,7 +533,7 @@ public class VaultIndexProcessor(
                 if (subFolders.Any())
                 {
                     contentSections.Add("## Courses");
-                    contentSections.Add("");
+                    contentSections.Add(string.Empty);
 
                     foreach (var subFolder in subFolders)
                     {
@@ -481,7 +551,7 @@ public class VaultIndexProcessor(
                 if (subFolders.Any())
                 {
                     contentSections.Add("## Courses");
-                    contentSections.Add("");
+                    contentSections.Add(string.Empty);
 
                     foreach (var subFolder in subFolders)
                     {
@@ -491,7 +561,8 @@ public class VaultIndexProcessor(
                             contentSections.Add($"- 📁 [[{subFolder}|{friendlyName}]]");
                         }
                     }
-                    contentSections.Add("");
+
+                    contentSections.Add(string.Empty);
                 }
 
                 // Add content by type - focus on readings for course level
@@ -502,7 +573,8 @@ public class VaultIndexProcessor(
                     {
                         contentSections.Add($"- 📄 [[{file.Title}]]");
                     }
-                    contentSections.Add("");
+
+                    contentSections.Add(string.Empty);
                 }
 
                 // Add case studies for course level
@@ -516,7 +588,8 @@ public class VaultIndexProcessor(
                         {
                             contentSections.Add($"- [[{file.Title}]]");
                         }
-                        contentSections.Add("");
+
+                        contentSections.Add(string.Empty);
                     }
                 }
             }
@@ -525,7 +598,7 @@ public class VaultIndexProcessor(
                 if (subFolders.Any())
                 {
                     contentSections.Add("## Classes");
-                    contentSections.Add("");
+                    contentSections.Add(string.Empty);
 
                     foreach (var subFolder in subFolders)
                     {
@@ -535,7 +608,8 @@ public class VaultIndexProcessor(
                             contentSections.Add($"- 📁 [[{subFolder}|{friendlyName}]]");
                         }
                     }
-                    contentSections.Add("");
+
+                    contentSections.Add(string.Empty);
                 }
             }
             else if (hierarchyLevel == 4) // Class level - only show Bases blocks (no modules or files)
@@ -556,7 +630,8 @@ public class VaultIndexProcessor(
                             contentSections.Add($"- [[{subFolder}|{friendlyName}]]");
                         }
                     }
-                    contentSections.Add("");
+
+                    contentSections.Add(string.Empty);
                 }
 
                 // Add content by type for module level and below
@@ -572,7 +647,8 @@ public class VaultIndexProcessor(
                         {
                             contentSections.Add($"- [[{file.Title}]]");
                         }
-                        contentSections.Add("");
+
+                        contentSections.Add(string.Empty);
                     }
                 }
             }
@@ -585,13 +661,13 @@ public class VaultIndexProcessor(
             List<string> possiblePaths = new()
             {
                 // 1. Check relative to the vault root path
-                Path.Combine(!string.IsNullOrEmpty(vaultPath) ? vaultPath : _defaultVaultRootPath, "..", "config", "BaseBlockTemplate.yaml"),
+                Path.Combine(!string.IsNullOrEmpty(vaultPath) ? vaultPath : this.defaultVaultRootPath, "..", "config", "BaseBlockTemplate.yaml"),
 
                 // 2. Check in the current directory's config folder
                 Path.Combine(Directory.GetCurrentDirectory(), "config", "BaseBlockTemplate.yaml"),
 
                 // 3. Check relative to the executable
-                Path.Combine(AppContext.BaseDirectory, "config", "BaseBlockTemplate.yaml")
+                Path.Combine(AppContext.BaseDirectory, "config", "BaseBlockTemplate.yaml"),
             };
 
             // Walk up until we find the config folder
@@ -603,7 +679,7 @@ public class VaultIndexProcessor(
                 if (File.Exists(path))
                 {
                     configPath = path;
-                    _logger.LogDebug("Found BaseBlockTemplate.yaml at: {Path}", path);
+                    this.logger.LogDebug("Found BaseBlockTemplate.yaml at: {Path}", path);
                     break;
                 }
             }
@@ -618,13 +694,16 @@ public class VaultIndexProcessor(
                     if (File.Exists(candidate))
                     {
                         configPath = candidate;
-                        _logger.LogDebug("Found BaseBlockTemplate.yaml by walking up from executable: {Path}", candidate);
+                        this.logger.LogDebug("Found BaseBlockTemplate.yaml by walking up from executable: {Path}", candidate);
                         break;
                     }
                 }
             }
+
             if (configPath == null)
+            {
                 throw new FileNotFoundException("Base block template not found in any parent config folder.");
+            }
 
             var course = hierarchyInfo.GetValueOrDefault("course") ?? string.Empty;
             var className = hierarchyInfo.GetValueOrDefault("class") ?? string.Empty;
@@ -632,10 +711,13 @@ public class VaultIndexProcessor(
 
             // Instructions block
             string instructionsBlock = BaseBlockGenerator.GenerateBaseBlock(configPath, course, className, module, "instructions");
+
             // Case Studies block
             string caseStudiesBlock = BaseBlockGenerator.GenerateBaseBlock(configPath, course, className, module, "note/case-study");
+
             // Videos block
             string videosBlock = BaseBlockGenerator.GenerateBaseBlock(configPath, course, className, module, "video-reference");
+
             // Readings block
             string readingsBlock = BaseBlockGenerator.GenerateBaseBlock(configPath, course, className, module, "reading");
 
@@ -643,17 +725,18 @@ public class VaultIndexProcessor(
             instructionsBlock = $"```base\n{instructionsBlock}\n```";
             caseStudiesBlock = $"```base\n{caseStudiesBlock}\n```";
             videosBlock = $"```base\n{videosBlock}\n```";
-            readingsBlock = $"```base\n{readingsBlock}\n```"; contentSections.Add("## 📚 Readings");
+            readingsBlock = $"```base\n{readingsBlock}\n```";
+            contentSections.Add("## 📚 Readings");
             contentSections.Add(readingsBlock);
-            contentSections.Add("");
+            contentSections.Add(string.Empty);
 
             contentSections.Add("## 📝 Instructions");
             contentSections.Add(instructionsBlock);
-            contentSections.Add("");
+            contentSections.Add(string.Empty);
 
             contentSections.Add("## 📊 Case Studies");
             contentSections.Add(caseStudiesBlock);
-            contentSections.Add("");
+            contentSections.Add(string.Empty);
 
             contentSections.Add("## 📽️ Videos");
             contentSections.Add(videosBlock);
@@ -662,7 +745,7 @@ public class VaultIndexProcessor(
         // Generate the body content
         string bodyContent = string.Join("\n\n", contentSections);
 
-        return Task.FromResult(_noteBuilder.BuildNote(frontmatter, bodyContent));
+        return Task.FromResult(this.noteBuilder.BuildNote(frontmatter, bodyContent));
     }
 
     /// <summary>
@@ -677,7 +760,7 @@ public class VaultIndexProcessor(
             "transcript" => "📝",
             "assignment" => "📋",
             "discussion" => "💬",
-            _ => "📄"
+            _ => "📄",
         };
     }
 
@@ -693,83 +776,87 @@ public class VaultIndexProcessor(
             "transcript" => "Transcripts",
             "assignment" => "Assignments",
             "discussion" => "Discussions",
-            _ => "Notes"
+            _ => "Notes",
         };
-    }    /// <summary>
-         /// Gets the root index filename by finding the first main index in the vault.
-         /// </summary>
-         /// <param name="vaultPath">Path to the vault root.</param>
-         /// <returns>The filename for the root index without extension.</returns>
+    }
+
+    /// <summary>
+    /// Gets the root index filename by finding the first main index in the vault.
+    /// </summary>
+    /// <param name="vaultPath">Path to the vault root.</param>
+    /// <returns>The filename for the root index without extension.</returns>
     private string GetRootIndexFilename(string vaultPath)
     {
         // Prefer the explicitly provided vault path over the default vault path
         // This allows for temporary overrides like test vaults
         string effectiveVaultPath = !string.IsNullOrEmpty(vaultPath)
             ? vaultPath
-            : _defaultVaultRootPath;
+            : this.defaultVaultRootPath;
 
         // Ensure the path has consistent formatting
         effectiveVaultPath = effectiveVaultPath.Replace('/', Path.DirectorySeparatorChar)
                                               .TrimEnd(Path.DirectorySeparatorChar);        // Look for the first main index file in the vault structure
         try
         {
-            _logger.LogDebug("Searching for main index files in vault: {VaultPath}", effectiveVaultPath);
+            this.logger.LogDebug("Searching for main index files in vault: {VaultPath}", effectiveVaultPath);
 
             // Search for markdown files with main index type in the vault
             var allMarkdownFiles = Directory.GetFiles(effectiveVaultPath, "*.md", SearchOption.AllDirectories);
-            _logger.LogDebug("Found {Count} markdown files in vault", allMarkdownFiles.Length);
+            this.logger.LogDebug("Found {Count} markdown files in vault", allMarkdownFiles.Length);
 
             var mainIndexFiles = allMarkdownFiles
-                .Where(file => IsMainIndexFile(file))
+                .Where(file => this.IsMainIndexFile(file))
                 .OrderBy(file => file.Length) // Prefer files closer to root (shorter paths)
                 .ToList();
 
-            _logger.LogDebug("Found {Count} main index files", mainIndexFiles.Count);
+            this.logger.LogDebug("Found {Count} main index files", mainIndexFiles.Count);
             foreach (var file in mainIndexFiles)
             {
-                _logger.LogDebug("Main index file found: {FilePath}", file);
+                this.logger.LogDebug("Main index file found: {FilePath}", file);
             }
 
             if (mainIndexFiles.Any())
             {
                 string mainIndexFile = mainIndexFiles.First();
                 string fileName = Path.GetFileNameWithoutExtension(mainIndexFile);
-                _logger.LogDebug("Using main index file: {FileName} at {FilePath}", fileName, mainIndexFile);
+                this.logger.LogDebug("Using main index file: {FileName} at {FilePath}", fileName, mainIndexFile);
                 return fileName;
             }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Error searching for main index file in vault");
+            this.logger.LogWarning(ex, "Error searching for main index file in vault");
         }
 
         // Fallback: use the vault root folder name
         string vaultRootFolder = Path.GetFileName(effectiveVaultPath);
         if (string.IsNullOrEmpty(vaultRootFolder))
         {
-            _logger.LogWarning("Unable to determine vault root folder name, using 'main-index' as default");
+            this.logger.LogWarning("Unable to determine vault root folder name, using 'main-index' as default");
             vaultRootFolder = "main-index";
         }
         else
         {
-            _logger.LogDebug("Using vault root folder name: {FolderName} for index filename", vaultRootFolder);
+            this.logger.LogDebug("Using vault root folder name: {FolderName} for index filename", vaultRootFolder);
         }
 
         return vaultRootFolder;
-    }    /// <summary>
-         /// Checks if a markdown file is a main index file by examining its frontmatter.
-         /// </summary>
-         /// <param name="filePath">Path to the markdown file.</param>         /// <returns>True if the file has template-type: main in its frontmatter.</returns>
+    }
+
+    /// <summary>
+    /// Checks if a markdown file is a main index file by examining its frontmatter.
+    /// </summary>
+    /// <param name="filePath">Path to the markdown file.</param>         /// <returns>True if the file has template-type: main in its frontmatter.</returns>
     private bool IsMainIndexFile(string filePath)
     {
         try
         {
             string content = File.ReadAllText(filePath);
-            string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+            string? frontmatter = this.yamlHelper.ExtractFrontmatter(content);
 
             if (!string.IsNullOrEmpty(frontmatter))
             {
-                var yamlData = _yamlHelper.ParseYamlToDictionary(frontmatter);
+                var yamlData = this.yamlHelper.ParseYamlToDictionary(frontmatter);
                 if (yamlData.TryGetValue("template-type", out var templateType))
                 {
                     return templateType?.ToString() == "main";
@@ -778,11 +865,9 @@ public class VaultIndexProcessor(
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "Error checking if file is main index: {FilePath}", filePath);
+            this.logger.LogDebug(ex, "Error checking if file is main index: {FilePath}", filePath);
         }
 
         return false;
     }
-
-
 }

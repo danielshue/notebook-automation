@@ -1,6 +1,16 @@
-﻿using NotebookAutomation.Core.Utils;
+// <copyright file="TagProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.TagManagement;
+
 /// <summary>
 /// Processes tags in markdown files and handles tag management operations.
 /// </summary>
@@ -12,15 +22,15 @@ namespace NotebookAutomation.Core.Tools.TagManagement;
 /// </remarks>
 public class TagProcessor
 {
-    private readonly ILogger<TagProcessor> _logger;
-    private readonly ILogger _failedLogger;
-    private readonly IYamlHelper _yamlHelper;
-    private readonly bool _dryRun;
-    private readonly bool _verbose;
-    private readonly HashSet<string> _fieldsToProcess;
+    private readonly ILogger<TagProcessor> logger;
+    private readonly ILogger failedLogger;
+    private readonly IYamlHelper yamlHelper;
+    private readonly bool dryRun;
+    private readonly bool verbose;
+    private readonly HashSet<string> fieldsToProcess;
 
     /// <summary>
-    /// Statistics about the processing performed.
+    /// Gets statistics about the processing performed.
     /// </summary>
     public Dictionary<string, int> Stats { get; private set; } = new Dictionary<string, int>
     {
@@ -28,10 +38,11 @@ public class TagProcessor
         { "FilesModified", 0 },
         { "TagsAdded", 0 },
         { "IndexFilesCleared", 0 },
-        { "FilesWithErrors", 0 }
+        { "FilesWithErrors", 0 },
     };
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="TagProcessor"/> class.
     /// Initializes a new instance of the TagProcessor.
     /// </summary>
     /// <param name="logger">Logger for general diagnostics.</param>
@@ -46,14 +57,14 @@ public class TagProcessor
         bool dryRun = false,
         bool verbose = false)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _failedLogger = failedLogger ?? throw new ArgumentNullException(nameof(failedLogger));
-        _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
-        _dryRun = dryRun;
-        _verbose = verbose;
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.failedLogger = failedLogger ?? throw new ArgumentNullException(nameof(failedLogger));
+        this.yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
+        this.dryRun = dryRun;
+        this.verbose = verbose;
 
         // Fields to process for tags (generalized)
-        _fieldsToProcess =
+        this.fieldsToProcess =
         [
             "course", "lecture", "topic", "subjects", "professor",
             "university", "program", "assignment", "type", "author"
@@ -61,6 +72,7 @@ public class TagProcessor
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="TagProcessor"/> class.
     /// Initializes a new instance of the TagProcessor with specified fields to process.
     /// </summary>
     /// <param name="logger">Logger for general diagnostics.</param>
@@ -77,14 +89,14 @@ public class TagProcessor
         bool verbose = false,
         HashSet<string>? fieldsToProcess = null)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _failedLogger = failedLogger ?? throw new ArgumentNullException(nameof(failedLogger));
-        _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
-        _dryRun = dryRun;
-        _verbose = verbose;
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.failedLogger = failedLogger ?? throw new ArgumentNullException(nameof(failedLogger));
+        this.yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
+        this.dryRun = dryRun;
+        this.verbose = verbose;
 
         // Use provided fields if any, otherwise use defaults
-        _fieldsToProcess = fieldsToProcess ??
+        this.fieldsToProcess = fieldsToProcess ??
         [
             "course", "lecture", "topic", "subjects", "professor",
             "university", "program", "assignment", "type", "author"
@@ -100,40 +112,40 @@ public class TagProcessor
     {
         if (!Directory.Exists(directory))
         {
-            _logger.LogError("Directory not found: {Directory}", directory);
-            return Stats;
+            this.logger.LogError("Directory not found: {Directory}", directory);
+            return this.Stats;
         }
 
-        _logger.LogInformation("Processing directory: {Directory}", directory);
+        this.logger.LogInformation("Processing directory: {Directory}", directory);
 
         try
         {
             var markdownFiles = Directory.GetFiles(directory, "*.md", SearchOption.AllDirectories);
 
-            if (_verbose)
+            if (this.verbose)
             {
-                _logger.LogInformation("Found {Count} markdown files to process", markdownFiles.Length);
+                this.logger.LogInformation("Found {Count} markdown files to process", markdownFiles.Length);
             }
 
             foreach (var file in markdownFiles)
             {
-                await ProcessFileAsync(file);
+                await this.ProcessFileAsync(file).ConfigureAwait(false);
             }
 
-            _logger.LogInformation(
+            this.logger.LogInformation(
                 "Processing complete: {FilesProcessed} files processed, {FilesModified} files modified, " +
                 "{TagsAdded} tags added, {IndexFilesCleared} index files cleared, {FilesWithErrors} files with errors",
-                Stats["FilesProcessed"], Stats["FilesModified"], Stats["TagsAdded"],
-                Stats["IndexFilesCleared"], Stats["FilesWithErrors"]);
+                this.Stats["FilesProcessed"], this.Stats["FilesModified"], this.Stats["TagsAdded"],
+                this.Stats["IndexFilesCleared"], this.Stats["FilesWithErrors"]);
 
-            return Stats;
+            return this.Stats;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error processing directory: {Directory}", directory);
-            _failedLogger.LogError("Failed to process directory {Directory}: {Error}", directory, ex.Message);
-            Stats["FilesWithErrors"]++;
-            return Stats;
+            this.logger.LogError(ex, "Error processing directory: {Directory}", directory);
+            this.failedLogger.LogError("Failed to process directory {Directory}: {Error}", directory, ex.Message);
+            this.Stats["FilesWithErrors"]++;
+            return this.Stats;
         }
     }
 
@@ -146,66 +158,72 @@ public class TagProcessor
     {
         if (!File.Exists(filePath))
         {
-            _failedLogger.LogError("File not found: {FilePath}", filePath);
-            Stats["FilesWithErrors"]++;
+            this.failedLogger.LogError("File not found: {FilePath}", filePath);
+            this.Stats["FilesWithErrors"]++;
             return false;
         }
 
         try
         {
-            Stats["FilesProcessed"]++;
+            this.Stats["FilesProcessed"]++;
 
-            if (_verbose)
+            if (this.verbose)
             {
-                _logger.LogInformation("Processing file: {FilePath}", filePath);
+                this.logger.LogInformation("Processing file: {FilePath}", filePath);
             }
 
             // Skip index files if configured to do so
             if (Path.GetFileName(filePath).StartsWith("_index") || Path.GetFileName(filePath).Equals("index.md"))
             {
-                if (_verbose)
+                if (this.verbose)
                 {
-                    _logger.LogInformation("Skipping index file: {FilePath}", filePath);
+                    this.logger.LogInformation("Skipping index file: {FilePath}", filePath);
                 }
+
                 return false;
-            }                // Read the file content
-            string content = await File.ReadAllTextAsync(filePath);
+            } // Read the file content
+
+            string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
             // Extract frontmatter and parse YAML with better error handling
-            string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+            string? frontmatter = this.yamlHelper.ExtractFrontmatter(content);
             if (string.IsNullOrEmpty(frontmatter))
             {
-                if (_verbose)
+                if (this.verbose)
                 {
-                    _logger.LogInformation("No frontmatter found in file: {FilePath}", filePath);
+                    this.logger.LogInformation("No frontmatter found in file: {FilePath}", filePath);
 
                     // Additional debug info if the file appears to have frontmatter but extraction failed
                     if (content.TrimStart().StartsWith("---"))
                     {
-                        _logger.LogDebug("Content appears to have frontmatter but extraction failed. First 50 chars: {Content}",
+                        this.logger.LogDebug(
+                            "Content appears to have frontmatter but extraction failed. First 50 chars: {Content}",
                             content.Length > 50 ? content[..50] + "..." : content);
                     }
                 }
+
                 return false;
             }
 
             // Parse the frontmatter into a dictionary with enhanced error handling
-            var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+            var frontmatterDict = this.yamlHelper.ParseYamlToDictionary(frontmatter);
             if (frontmatterDict.Count == 0)
             {
-                if (_verbose)
+                if (this.verbose)
                 {
-                    _logger.LogInformation("Empty or invalid frontmatter in file: {FilePath}", filePath);
-                    _logger.LogDebug("Frontmatter content that failed parsing: {Frontmatter}",
+                    this.logger.LogInformation("Empty or invalid frontmatter in file: {FilePath}", filePath);
+                    this.logger.LogDebug(
+                        "Frontmatter content that failed parsing: {Frontmatter}",
                         frontmatter.Length > 100 ? frontmatter[..100] + "..." : frontmatter);
                 }
+
                 return false;
             }
 
             // Process tags
             bool modified = false;
             var existingTags = GetExistingTags(frontmatterDict);
-            var newTags = GenerateNestedTags(frontmatterDict, existingTags);
+            var newTags = this.GenerateNestedTags(frontmatterDict, existingTags);
 
             if (newTags.Count > 0)
             {
@@ -215,49 +233,49 @@ public class TagProcessor
 
                 // Update the content with the new frontmatter
                 string updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
-                var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
-                string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
+                var updatedFrontmatterDict = this.yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
+                string updatedContent = this.yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
 
-                if (_dryRun)
+                if (this.dryRun)
                 {
-                    if (_verbose)
+                    if (this.verbose)
                     {
-                        _logger.LogInformation("[DRY RUN] Would add {Count} tags to {FilePath}", newTags.Count, filePath);
+                        this.logger.LogInformation("[DRY RUN] Would add {Count} tags to {FilePath}", newTags.Count, filePath);
                         foreach (var tag in newTags)
                         {
-                            _logger.LogInformation("[DRY RUN] New tag: {Tag}", tag);
+                            this.logger.LogInformation("[DRY RUN] New tag: {Tag}", tag);
                         }
                     }
                 }
                 else
                 {
                     // Write the updated content back to the file
-                    await File.WriteAllTextAsync(filePath, updatedContent);
-                    Stats["FilesModified"]++;
-                    Stats["TagsAdded"] += newTags.Count;
+                    await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
+                    this.Stats["FilesModified"]++;
+                    this.Stats["TagsAdded"] += newTags.Count;
                     modified = true;
 
-                    if (_verbose)
+                    if (this.verbose)
                     {
-                        _logger.LogInformation("Added {Count} tags to {FilePath}", newTags.Count, filePath);
+                        this.logger.LogInformation("Added {Count} tags to {FilePath}", newTags.Count, filePath);
                         foreach (var tag in newTags)
                         {
-                            _logger.LogInformation("Added tag: {Tag}", tag);
+                            this.logger.LogInformation("Added tag: {Tag}", tag);
                         }
                     }
                 }
             }
-            else if (_verbose)
+            else if (this.verbose)
             {
-                _logger.LogInformation("No new tags to add for {FilePath}", filePath);
+                this.logger.LogInformation("No new tags to add for {FilePath}", filePath);
             }
 
             return modified;
         }
         catch (Exception ex)
         {
-            _failedLogger.LogError(ex, "Error processing file: {FilePath}", filePath);
-            Stats["FilesWithErrors"]++;
+            this.failedLogger.LogError(ex, "Error processing file: {FilePath}", filePath);
+            this.Stats["FilesWithErrors"]++;
             return false;
         }
     }
@@ -293,19 +311,19 @@ public class TagProcessor
             frontmatter.Remove(tagsKey);
         }
 
-        if (_dryRun)
+        if (this.dryRun)
         {
-            _logger.LogInformation("[DRY RUN] Would clear tags from index file: {FilePath}", filePath);
-            Stats["IndexFilesCleared"]++;
+            this.logger.LogInformation("[DRY RUN] Would clear tags from index file: {FilePath}", filePath);
+            this.Stats["IndexFilesCleared"]++;
             return true;
         }
 
-        var updatedContent = _yamlHelper.UpdateFrontmatter(content, frontmatter);
-        await File.WriteAllTextAsync(filePath, updatedContent, Encoding.UTF8);
+        var updatedContent = this.yamlHelper.UpdateFrontmatter(content, frontmatter);
+        await File.WriteAllTextAsync(filePath, updatedContent, Encoding.UTF8).ConfigureAwait(false);
 
-        _logger.LogInformation("Cleared tags from index file: {FilePath}", filePath);
-        Stats["IndexFilesCleared"]++;
-        Stats["FilesModified"]++;
+        this.logger.LogInformation("Cleared tags from index file: {FilePath}", filePath);
+        this.Stats["IndexFilesCleared"]++;
+        this.Stats["FilesModified"]++;
 
         return true;
     }
@@ -327,7 +345,7 @@ public class TagProcessor
         var initialTagCount = existingTags.Count;
 
         // Add new nested tags based on frontmatter fields
-        foreach (var field in _fieldsToProcess)
+        foreach (var field in this.fieldsToProcess)
         {
             if (frontmatter.TryGetValue(field, out object? value) && value != null)
             {
@@ -338,11 +356,12 @@ public class TagProcessor
                     if (!existingTags.Contains(nestedTag))
                     {
                         existingTags.Add(nestedTag);
-                        if (_verbose)
+                        if (this.verbose)
                         {
-                            _logger.LogInformation("Adding tag: {Tag} to {FilePath}", nestedTag, filePath);
+                            this.logger.LogInformation("Adding tag: {Tag} to {FilePath}", nestedTag, filePath);
                         }
-                        Stats["TagsAdded"]++;
+
+                        this.Stats["TagsAdded"]++;
                     }
                 }
             }
@@ -357,17 +376,17 @@ public class TagProcessor
         // Update frontmatter with new tags
         frontmatter = YamlHelper.UpdateTags(frontmatter, existingTags);
 
-        if (_dryRun)
+        if (this.dryRun)
         {
-            _logger.LogInformation("[DRY RUN] Would update tags in file: {FilePath}", filePath);
+            this.logger.LogInformation("[DRY RUN] Would update tags in file: {FilePath}", filePath);
             return true;
         }
 
-        var updatedContent = _yamlHelper.UpdateFrontmatter(content, frontmatter);
-        await File.WriteAllTextAsync(filePath, updatedContent, Encoding.UTF8);
+        var updatedContent = this.yamlHelper.UpdateFrontmatter(content, frontmatter);
+        await File.WriteAllTextAsync(filePath, updatedContent, Encoding.UTF8).ConfigureAwait(false);
 
-        _logger.LogInformation("Updated tags in file: {FilePath}", filePath);
-        Stats["FilesModified"]++;
+        this.logger.LogInformation("Updated tags in file: {FilePath}", filePath);
+        this.Stats["FilesModified"]++;
 
         return true;
     }
@@ -424,7 +443,7 @@ public class TagProcessor
         var existingTagsSet = new HashSet<string>(existingTags);
 
         // Process each field we're interested in
-        foreach (var fieldName in _fieldsToProcess)
+        foreach (var fieldName in this.fieldsToProcess)
         {
             if (frontmatter.TryGetValue(fieldName, out var fieldValue) && fieldValue != null)
             {
@@ -484,7 +503,7 @@ public class TagProcessor
             "assignment" => "assignment",
             "type" => "content-type",
             "author" => "author",
-            _ => fieldName  // Default to using the field name itself
+            _ => fieldName,  // Default to using the field name itself
         };
     }
 
@@ -505,11 +524,11 @@ public class TagProcessor
             .Replace(" ", "-")
             .Replace(".", "-")
             .Replace("_", "-")
-            .Replace(",", "")
-            .Replace(":", "")
-            .Replace(";", "")
-            .Replace("\"", "")
-            .Replace("'", "")
+            .Replace(",", string.Empty)
+            .Replace(":", string.Empty)
+            .Replace(";", string.Empty)
+            .Replace("\"", string.Empty)
+            .Replace("'", string.Empty)
             .Trim()
             .ToLowerInvariant();
     }
@@ -517,110 +536,143 @@ public class TagProcessor
     /// <summary>
     /// Restructures tags in all markdown files in a directory for consistency (lowercase, dashes, etc.).
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<Dictionary<string, int>> RestructureTagsInDirectoryAsync(string directory)
     {
         if (!Directory.Exists(directory))
         {
-            _logger.LogError("Directory not found: {Directory}", directory);
-            return Stats;
+            this.logger.LogError("Directory not found: {Directory}", directory);
+            return this.Stats;
         }
+
         var markdownFiles = Directory.GetFiles(directory, "*.md", SearchOption.AllDirectories);
         foreach (var file in markdownFiles)
         {
-            await RestructureTagsInFileAsync(file);
+            await this.RestructureTagsInFileAsync(file).ConfigureAwait(false);
         }
-        return Stats;
+
+        return this.Stats;
     }
 
     /// <summary>
     /// Normalizes and restructures tags in a single markdown file.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<bool> RestructureTagsInFileAsync(string filePath)
     {
-        if (!File.Exists(filePath)) return false;
-        string content = await File.ReadAllTextAsync(filePath);
-        string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
-        if (string.IsNullOrEmpty(frontmatter)) return false;
-        var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
-        if (!frontmatterDict.ContainsKey("tags")) return false;
+        if (!File.Exists(filePath))
+        {
+            return false;
+        }
+
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+        string? frontmatter = this.yamlHelper.ExtractFrontmatter(content);
+        if (string.IsNullOrEmpty(frontmatter))
+        {
+            return false;
+        }
+
+        var frontmatterDict = this.yamlHelper.ParseYamlToDictionary(frontmatter);
+        if (!frontmatterDict.ContainsKey("tags"))
+        {
+            return false;
+        }
+
         var tags = GetExistingTags(frontmatterDict);
         var normalizedTags = tags.Select(NormalizeTagValue).Distinct().OrderBy(t => t).ToList();
         frontmatterDict["tags"] = normalizedTags;
-        if (_dryRun)
+        if (this.dryRun)
         {
-            _logger.LogInformation("[DRY RUN] Would restructure tags in {FilePath}", filePath);
+            this.logger.LogInformation("[DRY RUN] Would restructure tags in {FilePath}", filePath);
             return true;
         }
+
         var updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
-        var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
-        string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
-        await File.WriteAllTextAsync(filePath, updatedContent);
-        _logger.LogInformation("Restructured tags in {FilePath}", filePath);
-        Stats["FilesModified"]++;
+        var updatedFrontmatterDict = this.yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
+        string updatedContent = this.yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
+        await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
+        this.logger.LogInformation("Restructured tags in {FilePath}", filePath);
+        this.Stats["FilesModified"]++;
         return true;
     }
 
     /// <summary>
     /// Adds example nested tags to a markdown file for demonstration/testing.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<bool> AddExampleTagsToFileAsync(string filePath)
     {
-        if (!File.Exists(filePath)) return false;
-        string content = await File.ReadAllTextAsync(filePath);
-        string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+        if (!File.Exists(filePath))
+        {
+            return false;
+        }
+
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+        string? frontmatter = this.yamlHelper.ExtractFrontmatter(content);
         var frontmatterDict = string.IsNullOrEmpty(frontmatter)
             ? []
-            : _yamlHelper.ParseYamlToDictionary(frontmatter);
+            : this.yamlHelper.ParseYamlToDictionary(frontmatter);
         var exampleTags = new List<string> { "mba/course/finance", "type/note/case-study", "subject/leadership" };
         if (frontmatterDict.ContainsKey("tags"))
         {
             var tags = GetExistingTags(frontmatterDict);
             exampleTags.AddRange(tags);
         }
+
         frontmatterDict["tags"] = exampleTags.Distinct().OrderBy(t => t).ToList();
-        if (_dryRun)
+        if (this.dryRun)
         {
-            _logger.LogInformation("[DRY RUN] Would add example tags to {FilePath}", filePath);
+            this.logger.LogInformation("[DRY RUN] Would add example tags to {FilePath}", filePath);
             return true;
         }
+
         var updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
-        var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
-        string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
-        await File.WriteAllTextAsync(filePath, updatedContent);
-        _logger.LogInformation("Added example tags to {FilePath}", filePath);
-        Stats["FilesModified"]++;
+        var updatedFrontmatterDict = this.yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
+        string updatedContent = this.yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
+        await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
+        this.logger.LogInformation("Added example tags to {FilePath}", filePath);
+        this.Stats["FilesModified"]++;
         return true;
     }
 
     /// <summary>
     /// Checks and enforces metadata consistency in all markdown files in a directory.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<Dictionary<string, int>> CheckAndEnforceMetadataConsistencyAsync(string directory)
     {
         if (!Directory.Exists(directory))
         {
-            _logger.LogError("Directory not found: {Directory}", directory);
-            return Stats;
+            this.logger.LogError("Directory not found: {Directory}", directory);
+            return this.Stats;
         }
+
         var markdownFiles = Directory.GetFiles(directory, "*.md", SearchOption.AllDirectories);
         foreach (var file in markdownFiles)
         {
-            await CheckAndEnforceMetadataConsistencyInFileAsync(file);
+            await this.CheckAndEnforceMetadataConsistencyInFileAsync(file).ConfigureAwait(false);
         }
-        return Stats;
+
+        return this.Stats;
     }
 
     /// <summary>
     /// Checks and enforces metadata consistency in a single markdown file.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<bool> CheckAndEnforceMetadataConsistencyInFileAsync(string filePath)
     {
-        if (!File.Exists(filePath)) return false;
-        string content = await File.ReadAllTextAsync(filePath);
-        string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+        if (!File.Exists(filePath))
+        {
+            return false;
+        }
+
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+        string? frontmatter = this.yamlHelper.ExtractFrontmatter(content);
         var frontmatterDict = string.IsNullOrEmpty(frontmatter)
             ? []
-            : _yamlHelper.ParseYamlToDictionary(frontmatter);
+            : this.yamlHelper.ParseYamlToDictionary(frontmatter);
+
         // Example: Ensure required fields exist
         var requiredFields = new[] { "title", "type", "tags" };
         bool modified = false;
@@ -630,23 +682,26 @@ public class TagProcessor
             {
                 frontmatterDict[field] = "[MISSING]";
                 modified = true;
-                _logger.LogWarning("Added missing metadata field '{Field}' to {FilePath}", field, filePath);
+                this.logger.LogWarning("Added missing metadata field '{Field}' to {FilePath}", field, filePath);
             }
         }
-        if (_dryRun)
+
+        if (this.dryRun)
         {
-            _logger.LogInformation("[DRY RUN] Would enforce metadata consistency in {FilePath}", filePath);
+            this.logger.LogInformation("[DRY RUN] Would enforce metadata consistency in {FilePath}", filePath);
             return true;
         }
+
         if (modified)
         {
             var updatedFrontmatter = YamlHelper.SerializeYaml(frontmatterDict);
-            var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
-            var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
-            await File.WriteAllTextAsync(filePath, updatedContent);
-            _logger.LogInformation("Enforced metadata consistency in {FilePath}", filePath);
-            Stats["FilesModified"]++;
+            var updatedFrontmatterDict = this.yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
+            var updatedContent = this.yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
+            await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
+            this.logger.LogInformation("Enforced metadata consistency in {FilePath}", filePath);
+            this.Stats["FilesModified"]++;
         }
+
         return modified;
     }
 
@@ -660,18 +715,18 @@ public class TagProcessor
     public async Task<Dictionary<string, int>> UpdateFrontmatterKeyAsync(string path, string key, object value)
     {
         // Reset stats for this operation
-        Stats = new Dictionary<string, int>
+        this.Stats = new Dictionary<string, int>
         {
             { "FilesProcessed", 0 },
             { "FilesModified", 0 },
-            { "FilesWithErrors", 0 }
+            { "FilesWithErrors", 0 },
         };
 
         if (File.Exists(path) && Path.GetExtension(path).Equals(".md", StringComparison.InvariantCultureIgnoreCase))
         {
             // Process a single file
-            _ = await UpdateFrontmatterKeyInFileAsync(path, key, value);
-            return Stats;
+            _ = await this.UpdateFrontmatterKeyInFileAsync(path, key, value).ConfigureAwait(false);
+            return this.Stats;
         }
         else if (Directory.Exists(path))
         {
@@ -680,16 +735,16 @@ public class TagProcessor
 
             foreach (var file in markdownFiles)
             {
-                await UpdateFrontmatterKeyInFileAsync(file, key, value);
+                await this.UpdateFrontmatterKeyInFileAsync(file, key, value).ConfigureAwait(false);
             }
 
-            return Stats;
+            return this.Stats;
         }
         else
         {
-            _failedLogger.LogError("Path not found or not a markdown file: {Path}", path);
-            Stats["FilesWithErrors"]++;
-            return Stats;
+            this.failedLogger.LogError("Path not found or not a markdown file: {Path}", path);
+            this.Stats["FilesWithErrors"]++;
+            return this.Stats;
         }
     }
 
@@ -704,40 +759,41 @@ public class TagProcessor
     {
         if (!File.Exists(filePath))
         {
-            _failedLogger.LogError("File not found: {FilePath}", filePath);
-            Stats["FilesWithErrors"]++;
+            this.failedLogger.LogError("File not found: {FilePath}", filePath);
+            this.Stats["FilesWithErrors"]++;
             return false;
         }
 
         try
         {
-            Stats["FilesProcessed"]++;
+            this.Stats["FilesProcessed"]++;
 
-            if (_verbose)
+            if (this.verbose)
             {
-                _logger.LogInformation("Processing file: {FilePath}", filePath);
+                this.logger.LogInformation("Processing file: {FilePath}", filePath);
             }
 
             // Read the file content
-            string content = await File.ReadAllTextAsync(filePath);
+            string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
             // Extract frontmatter and parse YAML
-            string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+            string? frontmatter = this.yamlHelper.ExtractFrontmatter(content);
             Dictionary<string, object> frontmatterDict;
 
             if (string.IsNullOrEmpty(frontmatter))
             {
-                if (_verbose)
+                if (this.verbose)
                 {
-                    _logger.LogInformation("No frontmatter found in file, creating new frontmatter: {FilePath}", filePath);
+                    this.logger.LogInformation("No frontmatter found in file, creating new frontmatter: {FilePath}", filePath);
                 }
+
                 // Create new frontmatter
                 frontmatterDict = [];
             }
             else
             {
                 // Parse the existing frontmatter into a dictionary
-                frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+                frontmatterDict = this.yamlHelper.ParseYamlToDictionary(frontmatter);
             }
 
             // Check if the key already exists with the same value
@@ -749,40 +805,40 @@ public class TagProcessor
                 frontmatterDict[key] = value;
 
                 // Update the content with the new frontmatter
-                var updatedContent = _yamlHelper.UpdateFrontmatter(content, frontmatterDict);
+                var updatedContent = this.yamlHelper.UpdateFrontmatter(content, frontmatterDict);
 
-                if (_dryRun)
+                if (this.dryRun)
                 {
-                    if (_verbose)
+                    if (this.verbose)
                     {
-                        _logger.LogInformation("[DRY RUN] Would update '{Key}: {Value}' in {FilePath}", key, value, filePath);
+                        this.logger.LogInformation("[DRY RUN] Would update '{Key}: {Value}' in {FilePath}", key, value, filePath);
                     }
                 }
                 else
                 {
                     // Write the updated content back to the file
-                    await File.WriteAllTextAsync(filePath, updatedContent);
-                    Stats["FilesModified"]++;
+                    await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
+                    this.Stats["FilesModified"]++;
 
-                    if (_verbose)
+                    if (this.verbose)
                     {
-                        _logger.LogInformation("Updated '{Key}: {Value}' in {FilePath}", key, value, filePath);
+                        this.logger.LogInformation("Updated '{Key}: {Value}' in {FilePath}", key, value, filePath);
                     }
                 }
 
                 return true;
             }
-            else if (_verbose)
+            else if (this.verbose)
             {
-                _logger.LogInformation("Key '{Key}' already has value '{Value}' in {FilePath}", key, value, filePath);
+                this.logger.LogInformation("Key '{Key}' already has value '{Value}' in {FilePath}", key, value, filePath);
             }
 
             return false;
         }
         catch (Exception ex)
         {
-            _failedLogger.LogError(ex, "Error processing file: {FilePath}", filePath);
-            Stats["FilesWithErrors"]++;
+            this.failedLogger.LogError(ex, "Error processing file: {FilePath}", filePath);
+            this.Stats["FilesWithErrors"]++;
             return false;
         }
     }
@@ -798,7 +854,7 @@ public class TagProcessor
 
         if (!Directory.Exists(directory))
         {
-            _logger.LogError("Directory not found: {Directory}", directory);
+            this.logger.LogError("Directory not found: {Directory}", directory);
             results.Add((directory, "Directory not found"));
             return results;
         }
@@ -807,35 +863,36 @@ public class TagProcessor
         {
             var markdownFiles = Directory.GetFiles(directory, "*.md", SearchOption.AllDirectories);
 
-            _logger.LogInformation("Analyzing {Count} markdown files for YAML frontmatter issues", markdownFiles.Length);
+            this.logger.LogInformation("Analyzing {Count} markdown files for YAML frontmatter issues", markdownFiles.Length);
 
             int filesWithIssues = 0;
 
             foreach (var file in markdownFiles)
             {
-                string content = await File.ReadAllTextAsync(file);
-                var (Success, Message, Data) = _yamlHelper.DiagnoseYamlFrontmatter(content);
+                string content = await File.ReadAllTextAsync(file).ConfigureAwait(false);
+                var (success, message, data) = this.yamlHelper.DiagnoseYamlFrontmatter(content);
 
-                if (!Success)
+                if (!success)
                 {
                     filesWithIssues++;
-                    results.Add((file, Message));
+                    results.Add((file, message));
 
-                    if (_verbose)
+                    if (this.verbose)
                     {
-                        _logger.LogWarning("YAML issue in {FilePath}: {Message}", file, Message);
+                        this.logger.LogWarning("YAML issue in {FilePath}: {Message}", file, message);
                     }
                 }
             }
 
-            _logger.LogInformation("Found {Count} files with YAML frontmatter issues out of {Total} files",
+            this.logger.LogInformation(
+                "Found {Count} files with YAML frontmatter issues out of {Total} files",
                 filesWithIssues, markdownFiles.Length);
 
             return results;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error diagnosing directory: {Directory}", directory);
+            this.logger.LogError(ex, "Error diagnosing directory: {Directory}", directory);
             results.Add((directory, $"Error during diagnosis: {ex.Message}"));
             return results;
         }

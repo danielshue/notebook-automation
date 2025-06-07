@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Utils;
+// <copyright file="CourseStructureExtractor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/CourseStructureExtractor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
 /// Utility class for extracting course structure information (modules, lessons) from file paths.
@@ -37,8 +46,8 @@
 /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> is null.</exception>
 public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> logger)
 {
-    private readonly ILogger<CourseStructureExtractor> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private static readonly Regex _numberPrefixRegex = MyRegex();
+    private readonly ILogger<CourseStructureExtractor> logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private static readonly Regex NumberPrefixRegex = MyRegex();
 
     /// <summary>
     /// Extracts module and lesson information from a file path and adds it to the provided metadata dictionary.
@@ -74,7 +83,7 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     {
         if (string.IsNullOrEmpty(filePath))
         {
-            _logger.LogWarning("Cannot extract module/lesson from empty file path");
+            this.logger.LogWarning("Cannot extract module/lesson from empty file path");
             return;
         }
 
@@ -87,7 +96,8 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
 
             // First attempt: Extract from filename itself
             (module, lesson) = ExtractFromFilename(fileInfo.Name);
-            _logger.LogDebugWithPath("Filename extraction result - Module: {Module}, Lesson: {Lesson}",
+            this.logger.LogDebugWithPath(
+                "Filename extraction result - Module: {Module}, Lesson: {Lesson}",
                 nameof(CourseStructureExtractor), module ?? "null", lesson ?? "null", filePath);
 
             if (dir != null)
@@ -98,7 +108,8 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
                     var (dirModule, dirLesson) = ExtractByKeywords(dir);
                     module ??= dirModule;
                     lesson ??= dirLesson;
-                    _logger.LogDebugWithPath("Keyword extraction result - Module: {Module}, Lesson: {Lesson}",
+                    this.logger.LogDebugWithPath(
+                        "Keyword extraction result - Module: {Module}, Lesson: {Lesson}",
                         nameof(CourseStructureExtractor), module ?? "null", lesson ?? "null", filePath);
                 }
 
@@ -108,7 +119,8 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
                     var (numModule, numLesson) = ExtractByNumberedPattern(dir);
                     module ??= numModule;
                     lesson ??= numLesson;
-                    _logger.LogDebugWithPath("Numbered pattern extraction result - Module: {Module}, Lesson: {Lesson}",
+                    this.logger.LogDebugWithPath(
+                        "Numbered pattern extraction result - Module: {Module}, Lesson: {Lesson}",
                         nameof(CourseStructureExtractor), module ?? "null", lesson ?? "null", filePath);
                 }
             }
@@ -117,28 +129,30 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
             if (!string.IsNullOrEmpty(module))
             {
                 metadata["module"] = module;
-                _logger.LogDebugWithPath("Set module metadata: {Module}", nameof(CourseStructureExtractor), module, filePath);
+                this.logger.LogDebugWithPath("Set module metadata: {Module}", nameof(CourseStructureExtractor), module, filePath);
             }
+
             if (!string.IsNullOrEmpty(lesson))
             {
                 metadata["lesson"] = lesson;
-                _logger.LogDebugWithPath("Set lesson metadata: {Lesson}", nameof(CourseStructureExtractor), lesson, filePath);
+                this.logger.LogDebugWithPath("Set lesson metadata: {Lesson}", nameof(CourseStructureExtractor), lesson, filePath);
             }
 
             // Log summary if we found any information
             if (!string.IsNullOrEmpty(module) || !string.IsNullOrEmpty(lesson))
             {
-                _logger.LogDebugWithPath("Successfully extracted - Module: '{Module}', Lesson: '{Lesson}'",
+                this.logger.LogDebugWithPath(
+                    "Successfully extracted - Module: '{Module}', Lesson: '{Lesson}'",
                     nameof(CourseStructureExtractor), module ?? "not found", lesson ?? "not found", filePath);
             }
             else
             {
-                _logger.LogDebugWithPath("No module or lesson information could be extracted", nameof(CourseStructureExtractor), filePath);
+                this.logger.LogDebugWithPath("No module or lesson information could be extracted", nameof(CourseStructureExtractor), filePath);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogWarningWithPath(ex, "Failed to extract module/lesson from directory structure for file: {filePath}", filePath);
+            this.logger.LogWarningWithPath(ex, "Failed to extract module/lesson from directory structure for file: {filePath}", filePath);
         }
     }
 
@@ -183,6 +197,7 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
             // If current dir is module, set module only
             module = CleanModuleOrLessonName(dir.Name);
         }
+
         return (module, lesson);
     }
 
@@ -267,7 +282,8 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
                     lesson = CleanModuleOrLessonName(directory.Name);
                 }
             }
-        }            // Second pass: Hierarchical fallback - use directory structure to infer relationships
+        } // Second pass: Hierarchical fallback - use directory structure to infer relationships
+
         if (currentDir != null && parentDir != null)
         {
             // Only treat current directory as lesson if parent looks like a module container
@@ -336,26 +352,36 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     private static bool HasNumberPrefix(string dirName)
     {
         if (string.IsNullOrEmpty(dirName))
+        {
             return false;
+        }
 
         // Original numbered prefix pattern (01_, 02-, etc.)
-        if (_numberPrefixRegex.IsMatch(dirName))
+        if (NumberPrefixRegex.IsMatch(dirName))
+        {
             return true;
+        }
 
         // Additional patterns for course structures
         string lowerName = dirName.ToLowerInvariant();
 
         // Week/Unit patterns: "Week 1", "Week-1", "Unit 2", etc.
         if (WeekUnitRegex().IsMatch(lowerName))
+        {
             return true;
+        }
 
         // Module/Lesson patterns: "Module 1", "Lesson 2", etc.
         if (ModuleLessonNumberRegex().IsMatch(lowerName))
+        {
             return true;
+        }
 
         // Session/Class patterns: "Session 1", "Class 3", etc.
         if (SessionClassNumberRegex().IsMatch(lowerName))
+        {
             return true;
+        }
 
         return false;
     }
@@ -392,7 +418,7 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     public static string CleanModuleOrLessonName(string folderName)
     {
         // Remove numbering prefix (e.g., 01_, 02-, etc.), replace hyphens/underscores, title case
-        string clean = MyRegex1().Replace(folderName, "");
+        string clean = MyRegex1().Replace(folderName, string.Empty);
 
         // Convert camelCase to spaced words before other processing
         clean = CamelCaseRegex().Replace(clean, " ");
@@ -455,7 +481,8 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
             var number = lessonMatch.Groups[1].Value;
             var title = lessonMatch.Groups[2].Value;
             lesson = CleanModuleOrLessonName($"Lesson {number} {title}");
-        }            // Pattern 3: "Week-X-Name", "Unit-X-Name", "Session-X-Name", or "Class-X-Name" format
+        } // Pattern 3: "Week-X-Name", "Unit-X-Name", "Session-X-Name", or "Class-X-Name" format
+
         if (module == null)
         {
             var weekUnitMatch = WeekUnitFilenameRegex().Match(nameWithoutExt);
@@ -517,33 +544,47 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
 
         return (module, lesson);
     }
+
     [GeneratedRegex(@"^(\d+)[_-]", RegexOptions.Compiled)]
     private static partial Regex MyRegex();
+
     [GeneratedRegex(@"^\d+[_-]?")]
     private static partial Regex MyRegex1();
+
     [GeneratedRegex(@"\s+")]
     private static partial Regex MyRegex2();        // Filename-based extraction patterns
+
     [GeneratedRegex(@"(?i)module\s*[_-]?\s*(\d+)[_-]?\s*(.+?)(?:\.\w+)?$", RegexOptions.IgnoreCase)]
     private static partial Regex ModuleFilenameRegex();
+
     [GeneratedRegex(@"(?i)lesson\s*[_-]?\s*(\d+)[_-]?\s*(.+?)(?:\.\w+)?$", RegexOptions.IgnoreCase)]
     private static partial Regex LessonFilenameRegex();
+
     [GeneratedRegex(@"(?i)(week|unit|session|class)\s*[_-]?\s*(\d+)[_-]?\s*(.+?)(?:\.\w+)?$", RegexOptions.IgnoreCase)]
     private static partial Regex WeekUnitFilenameRegex();
+
     [GeneratedRegex(@"(?i)module(\d+)([a-zA-Z]+.*)", RegexOptions.IgnoreCase)]
     private static partial Regex CompactModuleRegex();
+
     [GeneratedRegex(@"(?i)lesson(\d+)([a-zA-Z]+.*)", RegexOptions.IgnoreCase)]
     private static partial Regex CompactLessonRegex();
+
     [GeneratedRegex(@"(?i)module(\d+)", RegexOptions.IgnoreCase)]
     private static partial Regex ModuleNumberSeparatorRegex();
+
     [GeneratedRegex(@"(?i)lesson(\d+)", RegexOptions.IgnoreCase)]
     private static partial Regex LessonNumberSeparatorRegex();
+
     [GeneratedRegex(@"^(\d+)[_-](.+)", RegexOptions.IgnoreCase)]
     private static partial Regex NumberedContentRegex();
+
     // Enhanced directory pattern recognition
     [GeneratedRegex(@"(week|unit)[_\s-]*\d+", RegexOptions.IgnoreCase)]
     private static partial Regex WeekUnitRegex();
+
     [GeneratedRegex(@"(module|lesson)[_\s-]*\d+", RegexOptions.IgnoreCase)]
     private static partial Regex ModuleLessonNumberRegex();
+
     [GeneratedRegex(@"(session|class)[_\s-]*\d+", RegexOptions.IgnoreCase)]
     private static partial Regex SessionClassNumberRegex();
 

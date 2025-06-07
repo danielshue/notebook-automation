@@ -1,4 +1,13 @@
-﻿using YamlDotNet.Core;
+﻿// <copyright file="NoQuotesForBannerVisitor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/NoQuotesForBannerVisitor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using YamlDotNet.Core;
 using YamlDotNet.Core.Events;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.ObjectGraphVisitors;
@@ -10,9 +19,15 @@ namespace NotebookAutomation.Core.Utils;
 /// </summary>
 public class NoQuotesForBannerVisitor : ChainedObjectGraphVisitor
 {
-    public NoQuotesForBannerVisitor(IObjectGraphVisitor<IEmitter> nextVisitor) : base(nextVisitor) { }    /// <summary>
-                                                                                                          /// Overrides the standard serialization behavior for the "banner" property to emit it without quotes.
-                                                                                                          /// </summary>
+    public NoQuotesForBannerVisitor(IObjectGraphVisitor<IEmitter> nextVisitor)
+        : base(nextVisitor)
+    {
+    }
+
+    /// <summary>
+    /// Overrides the standard serialization behavior for the "banner" property to emit it without quotes.
+    /// </summary>
+    /// <returns></returns>
     public override bool EnterMapping(IPropertyDescriptor key, IObjectDescriptor value, IEmitter context)
     {
         // Special handling for banner fields to output without quotes, especially important for Obsidian wikilinks

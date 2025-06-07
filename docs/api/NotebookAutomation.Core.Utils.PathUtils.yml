@@ -1,0 +1,902 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Utils.PathUtils
+  commentId: T:NotebookAutomation.Core.Utils.PathUtils
+  id: PathUtils
+  parent: NotebookAutomation.Core.Utils
+  children:
+  - NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists(System.String)
+  - NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath(System.String)
+  - NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath(System.Collections.Generic.IEnumerable{System.String})
+  - NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp(System.String)
+  - NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory(System.String,System.String)
+  - NotebookAutomation.Core.Utils.PathUtils.MakeRelative(System.String,System.String)
+  - NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.String)
+  langs:
+  - csharp
+  - vb
+  name: PathUtils
+  nameWithType: PathUtils
+  fullName: NotebookAutomation.Core.Utils.PathUtils
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: PathUtils
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+    startLine: 33
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Provides utility methods for working with file and directory paths.
+  remarks: >-
+    <p>
+
+    The PathUtils class contains static methods for common path-related operations
+
+    needed throughout the notebook automation system, such as:
+
+    <ul><li>Finding paths relative to the application or directory</li><li>Ensuring directories exist</li><li>Normalizing paths across platforms</li><li>Generating safe file paths for new files</li></ul>
+
+    </p>
+
+    <p>
+
+    This class is designed to centralize path handling logic and ensure consistent behavior
+
+    across different parts of the application, especially for operations that need to handle
+
+    cross-platform path differences.
+
+    </p>
+  example: []
+  syntax:
+    content: public static class PathUtils
+    content.vb: Public Module PathUtils
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp(System.String)
+  commentId: M:NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp(System.String)
+  id: GetPathRelativeToApp(System.String)
+  parent: NotebookAutomation.Core.Utils.PathUtils
+  langs:
+  - csharp
+  - vb
+  name: GetPathRelativeToApp(string)
+  nameWithType: PathUtils.GetPathRelativeToApp(string)
+  fullName: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetPathRelativeToApp
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+    startLine: 55
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Gets a path for a file relative to the application's base directory.
+  remarks: >-
+    <p>
+
+    This method constructs a path relative to the application's base directory, which is
+
+    the directory containing the executing assembly. This is useful for finding configuration
+
+    files and other resources that ship alongside the application.
+
+    </p>
+
+    <p>
+
+    The method handles normalization to ensure paths work correctly on all platforms.
+
+    </p>
+  example:
+  - <pre><code class="lang-csharp">string configPath = PathUtils.GetPathRelativeToApp("config/settings.json");</code></pre>
+  syntax:
+    content: public static string GetPathRelativeToApp(string relativePath)
+    parameters:
+    - id: relativePath
+      type: System.String
+      description: The relative path from the application directory.
+    return:
+      type: System.String
+      description: The full path to the file.
+    content.vb: Public Shared Function GetPathRelativeToApp(relativePath As String) As String
+  overload: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp*
+  nameWithType.vb: PathUtils.GetPathRelativeToApp(String)
+  fullName.vb: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp(String)
+  name.vb: GetPathRelativeToApp(String)
+- uid: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory(System.String,System.String)
+  commentId: M:NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory(System.String,System.String)
+  id: GetPathRelativeToDirectory(System.String,System.String)
+  parent: NotebookAutomation.Core.Utils.PathUtils
+  langs:
+  - csharp
+  - vb
+  name: GetPathRelativeToDirectory(string, string)
+  nameWithType: PathUtils.GetPathRelativeToDirectory(string, string)
+  fullName: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetPathRelativeToDirectory
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+    startLine: 80
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Gets a path for a file relative to a specified directory.
+  remarks: >-
+    <p>
+
+    This method constructs a path relative to the specified base directory. It normalizes
+
+    both paths to ensure they work correctly on all platforms, and combines them using
+
+    platform-appropriate path separators.
+
+    </p>
+  example:
+  - <pre><code class="lang-csharp">string outputPath = PathUtils.GetPathRelativeToDirectory(projectDir, "output/results.json");</code></pre>
+  syntax:
+    content: public static string GetPathRelativeToDirectory(string basePath, string relativePath)
+    parameters:
+    - id: basePath
+      type: System.String
+      description: The base directory path.
+    - id: relativePath
+      type: System.String
+      description: The relative path from the base directory.
+    return:
+      type: System.String
+      description: The full path to the file.
+    content.vb: Public Shared Function GetPathRelativeToDirectory(basePath As String, relativePath As String) As String
+  overload: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory*
+  nameWithType.vb: PathUtils.GetPathRelativeToDirectory(String, String)
+  fullName.vb: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory(String, String)
+  name.vb: GetPathRelativeToDirectory(String, String)
+- uid: NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists(System.String)
+  commentId: M:NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists(System.String)
+  id: EnsureDirectoryExists(System.String)
+  parent: NotebookAutomation.Core.Utils.PathUtils
+  langs:
+  - csharp
+  - vb
+  name: EnsureDirectoryExists(string)
+  nameWithType: PathUtils.EnsureDirectoryExists(string)
+  fullName: NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: EnsureDirectoryExists
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+    startLine: 106
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Ensures a directory exists, creating it if necessary.
+  remarks: >-
+    <p>
+
+    This method checks if the specified directory exists, and creates it (including any
+
+    necessary parent directories) if it doesn't. It returns the normalized path to the
+
+    directory, which is useful for chaining operations.
+
+    </p>
+
+    <p>
+
+    The method normalizes the path to ensure it works correctly on all platforms.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">string outputDir = PathUtils.EnsureDirectoryExists("output/reports/monthly");
+
+    string filePath = Path.Combine(outputDir, "report.pdf");</code></pre>
+  syntax:
+    content: public static string EnsureDirectoryExists(string directoryPath)
+    parameters:
+    - id: directoryPath
+      type: System.String
+      description: The directory path to ensure exists.
+    return:
+      type: System.String
+      description: The normalized directory path.
+    content.vb: Public Shared Function EnsureDirectoryExists(directoryPath As String) As String
+  overload: NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists*
+  nameWithType.vb: PathUtils.EnsureDirectoryExists(String)
+  fullName.vb: NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists(String)
+  name.vb: EnsureDirectoryExists(String)
+- uid: NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.String)
+  commentId: M:NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.String)
+  id: NormalizePath(System.String)
+  parent: NotebookAutomation.Core.Utils.PathUtils
+  langs:
+  - csharp
+  - vb
+  name: NormalizePath(string)
+  nameWithType: PathUtils.NormalizePath(string)
+  fullName: NotebookAutomation.Core.Utils.PathUtils.NormalizePath(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: NormalizePath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+    startLine: 138
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Normalizes a path by converting slashes to the platform-specific path separator.
+  remarks: >-
+    <p>
+
+    This method normalizes a path by replacing all forward and backward slashes with the
+
+    platform-specific path separator character. This ensures that paths work correctly
+
+    on all platforms, regardless of how they were originally specified.
+
+    </p>
+
+    <p>
+
+    The method also trims any leading or trailing whitespace to prevent common errors.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">// Works on both Windows and Unix:
+
+    string normalizedPath = PathUtils.NormalizePath("reports\\monthly/current");</code></pre>
+  syntax:
+    content: public static string NormalizePath(string path)
+    parameters:
+    - id: path
+      type: System.String
+      description: The path to normalize.
+    return:
+      type: System.String
+      description: The normalized path.
+    content.vb: Public Shared Function NormalizePath(path As String) As String
+  overload: NotebookAutomation.Core.Utils.PathUtils.NormalizePath*
+  nameWithType.vb: PathUtils.NormalizePath(String)
+  fullName.vb: NotebookAutomation.Core.Utils.PathUtils.NormalizePath(String)
+  name.vb: NormalizePath(String)
+- uid: NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath(System.String)
+  commentId: M:NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath(System.String)
+  id: GenerateUniqueFilePath(System.String)
+  parent: NotebookAutomation.Core.Utils.PathUtils
+  langs:
+  - csharp
+  - vb
+  name: GenerateUniqueFilePath(string)
+  nameWithType: PathUtils.GenerateUniqueFilePath(string)
+  fullName: NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GenerateUniqueFilePath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+    startLine: 179
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Generates a unique file path by appending a number if the file already exists.
+  remarks: >-
+    <p>
+
+    This method checks if a file already exists at the specified path, and if so,
+
+    generates a new path by appending a number before the extension. For example,
+
+    if "report.pdf" exists, it will try "report (1).pdf", then "report (2).pdf", and so on.
+
+    </p>
+
+    <p>
+
+    This is useful for generating output file paths that won't overwrite existing files.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">string safePath = PathUtils.GenerateUniqueFilePath("output/report.pdf");
+
+    File.WriteAllText(safePath, content);</code></pre>
+  syntax:
+    content: public static string GenerateUniqueFilePath(string baseFilePath)
+    parameters:
+    - id: baseFilePath
+      type: System.String
+      description: The base file path (including extension).
+    return:
+      type: System.String
+      description: A unique file path that doesn't exist yet.
+    content.vb: Public Shared Function GenerateUniqueFilePath(baseFilePath As String) As String
+  overload: NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath*
+  nameWithType.vb: PathUtils.GenerateUniqueFilePath(String)
+  fullName.vb: NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath(String)
+  name.vb: GenerateUniqueFilePath(String)
+- uid: NotebookAutomation.Core.Utils.PathUtils.MakeRelative(System.String,System.String)
+  commentId: M:NotebookAutomation.Core.Utils.PathUtils.MakeRelative(System.String,System.String)
+  id: MakeRelative(System.String,System.String)
+  parent: NotebookAutomation.Core.Utils.PathUtils
+  langs:
+  - csharp
+  - vb
+  name: MakeRelative(string, string)
+  nameWithType: PathUtils.MakeRelative(string, string)
+  fullName: NotebookAutomation.Core.Utils.PathUtils.MakeRelative(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: MakeRelative
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+    startLine: 228
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Makes a path relative to a base directory.
+  remarks: >-
+    <p>
+
+    This method attempts to make a path relative to a specified base directory. This is useful
+
+    for storing and displaying shorter, more readable paths that are relative to a known
+
+    location like a project directory.
+
+    </p>
+
+    <p>
+
+    If the full path doesn't start with the base path (meaning it's not actually within the
+
+    base directory), the method returns the original full path.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">string projectDir = "C:/Projects/MyProject";
+
+    string fullPath = "C:/Projects/MyProject/src/file.cs";
+
+    string relativePath = PathUtils.MakeRelative(projectDir, fullPath);
+
+    // Result: "src/file.cs"</code></pre>
+  syntax:
+    content: public static string MakeRelative(string basePath, string fullPath)
+    parameters:
+    - id: basePath
+      type: System.String
+      description: The base directory path.
+    - id: fullPath
+      type: System.String
+      description: The full path to make relative.
+    return:
+      type: System.String
+      description: The relative path, or the full path if it can't be made relative.
+    content.vb: Public Shared Function MakeRelative(basePath As String, fullPath As String) As String
+  overload: NotebookAutomation.Core.Utils.PathUtils.MakeRelative*
+  nameWithType.vb: PathUtils.MakeRelative(String, String)
+  fullName.vb: NotebookAutomation.Core.Utils.PathUtils.MakeRelative(String, String)
+  name.vb: MakeRelative(String, String)
+- uid: NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath(System.Collections.Generic.IEnumerable{System.String})
+  commentId: M:NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath(System.Collections.Generic.IEnumerable{System.String})
+  id: GetCommonBasePath(System.Collections.Generic.IEnumerable{System.String})
+  parent: NotebookAutomation.Core.Utils.PathUtils
+  langs:
+  - csharp
+  - vb
+  name: GetCommonBasePath(IEnumerable<string>)
+  nameWithType: PathUtils.GetCommonBasePath(IEnumerable<string>)
+  fullName: NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath(System.Collections.Generic.IEnumerable<string>)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetCommonBasePath
+    path: ../src/c-sharp/NotebookAutomation.Core/Utils/PathUtils.cs
+    startLine: 276
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Gets the common base directory shared by a collection of paths.
+  remarks: >-
+    <p>
+
+    This method finds the longest common path prefix shared by all paths in the collection.
+
+    This is useful for identifying a common working directory or for organizing files that
+
+    are related but might be scattered across different subdirectories.
+
+    </p>
+
+    <p>
+
+    The method returns a directory path (ending with a directory separator), or an empty
+
+    string if there is no common base directory (for example, if the paths are on different drives).
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">string[] paths = new[] {
+        "C:/Projects/MyProject/src/file1.cs",
+        "C:/Projects/MyProject/src/Models/model.cs",
+        "C:/Projects/MyProject/tests/test1.cs"
+    };
+
+    string common = PathUtils.GetCommonBasePath(paths);
+
+    // Result: "C:/Projects/MyProject/"</code></pre>
+  syntax:
+    content: public static string GetCommonBasePath(IEnumerable<string> paths)
+    parameters:
+    - id: paths
+      type: System.Collections.Generic.IEnumerable{System.String}
+      description: The collection of paths.
+    return:
+      type: System.String
+      description: The common base directory, or an empty string if there is no common base.
+    content.vb: Public Shared Function GetCommonBasePath(paths As IEnumerable(Of String)) As String
+  overload: NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath*
+  nameWithType.vb: PathUtils.GetCommonBasePath(IEnumerable(Of String))
+  fullName.vb: NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath(System.Collections.Generic.IEnumerable(Of String))
+  name.vb: GetCommonBasePath(IEnumerable(Of String))
+references:
+- uid: NotebookAutomation.Core.Utils
+  commentId: N:NotebookAutomation.Core.Utils
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Utils
+  nameWithType: NotebookAutomation.Core.Utils
+  fullName: NotebookAutomation.Core.Utils
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp*
+  commentId: Overload:NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp
+  href: NotebookAutomation.Core.Utils.PathUtils.html#NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToApp_System_String_
+  name: GetPathRelativeToApp
+  nameWithType: PathUtils.GetPathRelativeToApp
+  fullName: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToApp
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory*
+  commentId: Overload:NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory
+  href: NotebookAutomation.Core.Utils.PathUtils.html#NotebookAutomation_Core_Utils_PathUtils_GetPathRelativeToDirectory_System_String_System_String_
+  name: GetPathRelativeToDirectory
+  nameWithType: PathUtils.GetPathRelativeToDirectory
+  fullName: NotebookAutomation.Core.Utils.PathUtils.GetPathRelativeToDirectory
+- uid: NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists*
+  commentId: Overload:NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists
+  href: NotebookAutomation.Core.Utils.PathUtils.html#NotebookAutomation_Core_Utils_PathUtils_EnsureDirectoryExists_System_String_
+  name: EnsureDirectoryExists
+  nameWithType: PathUtils.EnsureDirectoryExists
+  fullName: NotebookAutomation.Core.Utils.PathUtils.EnsureDirectoryExists
+- uid: NotebookAutomation.Core.Utils.PathUtils.NormalizePath*
+  commentId: Overload:NotebookAutomation.Core.Utils.PathUtils.NormalizePath
+  href: NotebookAutomation.Core.Utils.PathUtils.html#NotebookAutomation_Core_Utils_PathUtils_NormalizePath_System_String_
+  name: NormalizePath
+  nameWithType: PathUtils.NormalizePath
+  fullName: NotebookAutomation.Core.Utils.PathUtils.NormalizePath
+- uid: NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath*
+  commentId: Overload:NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath
+  href: NotebookAutomation.Core.Utils.PathUtils.html#NotebookAutomation_Core_Utils_PathUtils_GenerateUniqueFilePath_System_String_
+  name: GenerateUniqueFilePath
+  nameWithType: PathUtils.GenerateUniqueFilePath
+  fullName: NotebookAutomation.Core.Utils.PathUtils.GenerateUniqueFilePath
+- uid: NotebookAutomation.Core.Utils.PathUtils.MakeRelative*
+  commentId: Overload:NotebookAutomation.Core.Utils.PathUtils.MakeRelative
+  href: NotebookAutomation.Core.Utils.PathUtils.html#NotebookAutomation_Core_Utils_PathUtils_MakeRelative_System_String_System_String_
+  name: MakeRelative
+  nameWithType: PathUtils.MakeRelative
+  fullName: NotebookAutomation.Core.Utils.PathUtils.MakeRelative
+- uid: NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath*
+  commentId: Overload:NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath
+  href: NotebookAutomation.Core.Utils.PathUtils.html#NotebookAutomation_Core_Utils_PathUtils_GetCommonBasePath_System_Collections_Generic_IEnumerable_System_String__
+  name: GetCommonBasePath
+  nameWithType: PathUtils.GetCommonBasePath
+  fullName: NotebookAutomation.Core.Utils.PathUtils.GetCommonBasePath
+- uid: System.Collections.Generic.IEnumerable{System.String}
+  commentId: T:System.Collections.Generic.IEnumerable{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<string>
+  nameWithType: IEnumerable<string>
+  fullName: System.Collections.Generic.IEnumerable<string>
+  nameWithType.vb: IEnumerable(Of String)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of String)
+  name.vb: IEnumerable(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic

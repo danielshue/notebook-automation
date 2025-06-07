@@ -1,4 +1,13 @@
-﻿using NotebookAutomation.Core.Configuration;
+// <copyright file="VideoNoteProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Utils;
@@ -26,12 +35,12 @@ namespace NotebookAutomation.Core.Tools.VideoProcessing;
 /// </remarks>
 public class VideoNoteProcessor : DocumentNoteProcessorBase
 {
-    private readonly IOneDriveService? _oneDriveService;
-    private readonly AppConfig? _appConfig;
-    private readonly MetadataTemplateManager? _templateManager;
-    private readonly MetadataHierarchyDetector _hierarchyDetector;
-    private readonly IYamlHelper _yamlHelper;
-    private readonly ILoggingService? _loggingService;
+    private readonly IOneDriveService? oneDriveService;
+    private readonly AppConfig? appConfig;
+    private readonly MetadataTemplateManager? templateManager;
+    private readonly MetadataHierarchyDetector hierarchyDetector;
+    private readonly IYamlHelper yamlHelper;
+    private readonly ILoggingService? loggingService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VideoNoteProcessor"/> class.
@@ -45,28 +54,30 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// This constructor initializes the video note processor with optional services for metadata management
     /// and hierarchical detection.
     /// </remarks>
-    public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector, IOneDriveService? oneDriveService = null, AppConfig? appConfig = null, ILoggingService? loggingService = null) : base(logger, aiSummarizer)
+    public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector, IOneDriveService? oneDriveService = null, AppConfig? appConfig = null, ILoggingService? loggingService = null)
+        : base(logger, aiSummarizer)
     {
-        _oneDriveService = oneDriveService;
-        _appConfig = appConfig;
-        _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
-        _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
-        _loggingService = loggingService;
+        this.oneDriveService = oneDriveService;
+        this.appConfig = appConfig;
+        this.yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
+        this.hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
+        this.loggingService = loggingService;
 
         // Initialize template manager if appConfig is provided
-        if (_appConfig != null)
+        if (this.appConfig != null)
         {
             try
             {
-                if (!string.IsNullOrEmpty(_appConfig.Paths.MetadataFile))
+                if (!string.IsNullOrEmpty(this.appConfig.Paths.MetadataFile))
                 {
-                    if (_loggingService != null)
+                    if (this.loggingService != null)
                     {
-                        var templateLogger = _loggingService.GetLogger<MetadataTemplateManager>(); _templateManager = new MetadataTemplateManager(templateLogger, _appConfig, _yamlHelper);
+                        var templateLogger = this.loggingService.GetLogger<MetadataTemplateManager>();
+                        this.templateManager = new MetadataTemplateManager(templateLogger, this.appConfig, this.yamlHelper);
                     }
                     else
                     {
-                        _templateManager = new MetadataTemplateManager(logger, _appConfig, _yamlHelper);
+                        this.templateManager = new MetadataTemplateManager(logger, this.appConfig, this.yamlHelper);
                     }
                 }
             }
@@ -105,7 +116,8 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// </example>
     public async Task<Dictionary<string, object>> ExtractMetadataAsync(string videoPath)
     {
-        var metadata = new Dictionary<string, object>                {
+        var metadata = new Dictionary<string, object>
+        {
                 // Friendly title: remove numbers, underscores, file extension, and trim
                 { "title", FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileNameWithoutExtension(videoPath)) },
                 { "type", "note/video-note" },
@@ -113,8 +125,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 { "author", Array.Empty<string>() }, // Empty string array with correct field name
                 { "onedrive-shared-link", string.Empty }, // Will be populated by OneDrive service if available
                 { "onedrive_fullpath_file_reference", Path.GetFullPath(videoPath) }, // Full path to the video
-                { "transcript", string.Empty } // Will be populated if transcript file is found
-            };
+                { "transcript", string.Empty }, // Will be populated if transcript file is found
+        };
+
         // Extract module and lesson from directory structure
         var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
         var courseLogger = loggerFactory.CreateLogger<CourseStructureExtractor>();
@@ -132,17 +145,17 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 // Add the file size in a human-readable format
                 long fileSizeBytes = fileInfo.Length;
                 metadata["video-size"] = FileSizeFormatter.FormatFileSizeToString(fileSizeBytes);
-                Logger.LogDebug("Added video size to metadata: {VideoSize}", metadata["video-size"]);
+                this.Logger.LogDebug("Added video size to metadata: {VideoSize}", metadata["video-size"]);
             }
         }
         catch (Exception ex)
         {
-            Logger.LogWarningWithPath(ex, "Failed to extract file system metadata for video: {filePath}", videoPath);
+            this.Logger.LogWarningWithPath(ex, "Failed to extract file system metadata for video: {filePath}", videoPath);
         }
 
         try
         {
-            var mediaInfo = await Xabe.FFmpeg.FFmpeg.GetMediaInfo(videoPath);
+            var mediaInfo = await Xabe.FFmpeg.FFmpeg.GetMediaInfo(videoPath).ConfigureAwait(false);
             var videoStream = mediaInfo.VideoStreams?.FirstOrDefault();
             if (videoStream != null)
             {
@@ -177,14 +190,14 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex, "Failed to extract video upload date, using current date");
+                this.Logger.LogWarning(ex, "Failed to extract video upload date, using current date");
             }
 
             metadata["video-uploaded"] = videoUploadDate.ToString("yyyy-MM-dd");
         }
         catch (Exception ex)
         {
-            Logger.LogWarning(ex, "Failed to extract real video metadata, using simulated values.");
+            this.Logger.LogWarning(ex, "Failed to extract real video metadata, using simulated values.");
             metadata["video-duration"] = "[Simulated duration]";
             metadata["video-resolution"] = "[Unknown]";
             metadata["video-codec"] = "[Unknown]";
@@ -227,7 +240,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     {
         if (string.IsNullOrEmpty(text))
         {
-            Logger.LogWarning("Empty text provided for AI summary generation. Returning placeholder.");
+            this.Logger.LogWarning("Empty text provided for AI summary generation. Returning placeholder.");
             return "[No content available for summarization]";
         }
 
@@ -252,8 +265,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 }
 
                 variables["title"] = title;
-                Logger.LogDebug("Added title '{Title}' to prompt variables", title);
-            }                // Add YAML frontmatter as a variable if not already present
+                this.Logger.LogDebug("Added title '{Title}' to prompt variables", title);
+            } // Add YAML frontmatter as a variable if not already present
+
             if (!variables.ContainsKey("yamlfrontmatter"))
             {
                 // Build basic YAML frontmatter for video notes
@@ -262,20 +276,20 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                     ["title"] = variables.GetValueOrDefault("title", "Untitled Video"),
                     ["template-type"] = "video-reference",
                     ["auto-generated-state"] = "writable",
-                    ["type"] = "note/video"
+                    ["type"] = "note/video",
                 };
 
-                string yamlContent = BuildYamlFrontmatter(basicMetadata);
+                string yamlContent = this.BuildYamlFrontmatter(basicMetadata);
                 variables["yamlfrontmatter"] = yamlContent;
-                Logger.LogDebug("Built and added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer", yamlContent.Length);
+                this.Logger.LogDebug("Built and added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer", yamlContent.Length);
             }
 
             // Call base implementation with our enriched variables
-            return await base.GenerateAiSummaryAsync(text, variables, promptFileName);
+            return await base.GenerateAiSummaryAsync(text, variables, promptFileName).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Error generating AI summary");
+            this.Logger.LogError(ex, "Error generating AI summary");
             return "[Error during summarization]";
         }
     }
@@ -294,7 +308,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             {
                 ["template-type"] = "video-reference",
                 ["auto-generated-state"] = "writable",
-                ["type"] = "note/video"
+                ["type"] = "note/video",
             };
 
             // Add title if available
@@ -394,12 +408,12 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
 
             int yamlLength = yamlString.Length;
             int fields = yamlData.Count;
-            Logger.LogDebug("Generated YAML frontmatter for video: {Length} chars, {FieldCount} fields", yamlLength, fields);
+            this.Logger.LogDebug("Generated YAML frontmatter for video: {Length} chars, {FieldCount} fields", yamlLength, fields);
             return yamlString;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to build YAML frontmatter for video");
+            this.Logger.LogError(ex, "Failed to build YAML frontmatter for video");
             return string.Empty;
         }
     }
@@ -418,7 +432,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// <list type="bullet">
     /// <item><description>YAML frontmatter with all extracted metadata</description></item>
     /// <item><description>The summary as the main content body</description></item>
-    /// <item><description>A consistent structure with appropriate headers</description></item>        /// </list>        /// <para>
+    /// <item><description>A consistent structure with appropriate headers</description></item>        /// </list>        ///. <para>
     /// The note is generated using the <see cref="MarkdownNoteBuilder"/> utility and follows
     /// the structure expected by Obsidian or similar markdown-based knowledge management systems.
     /// </para>
@@ -451,34 +465,36 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// </code>
     /// </example>
     public override string GenerateMarkdownNote(string bodyText, Dictionary<string, object>? metadata = null, string noteType = "Document Note", bool suppressBody = false, bool includeNoteTypeTitle = false)
-    {            // For video notes, we need special handling to extract and merge frontmatter using the injected helper
+    { // For video notes, we need special handling to extract and merge frontmatter using the injected helper
         // Use the injected YAML helper
 
         // Use default metadata if none provided
         metadata ??= [];
 
         // Debug: Log the original summary
-        Logger.LogInformation("VideoNoteProcessor.GenerateMarkdownNote called - Original AI summary (first 200 chars): {Summary}",
+        this.Logger.LogInformation(
+            "VideoNoteProcessor.GenerateMarkdownNote called - Original AI summary (first 200 chars): {Summary}",
             bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText);            // Extract any existing frontmatter from the AI summary
-        string? summaryFrontmatter = _yamlHelper.ExtractFrontmatter(bodyText);
+        string? summaryFrontmatter = this.yamlHelper.ExtractFrontmatter(bodyText);
 
         Dictionary<string, object> summaryMetadata = [];
 
         if (!string.IsNullOrWhiteSpace(summaryFrontmatter))
         {
-            summaryMetadata = _yamlHelper.ParseYamlToDictionary(summaryFrontmatter);
-            Logger.LogInformation("Extracted frontmatter from AI summary with {Count} fields", summaryMetadata.Count);
+            summaryMetadata = this.yamlHelper.ParseYamlToDictionary(summaryFrontmatter);
+            this.Logger.LogInformation("Extracted frontmatter from AI summary with {Count} fields", summaryMetadata.Count);
         }
         else
         {
-            Logger.LogInformation("No frontmatter found in AI summary");
+            this.Logger.LogInformation("No frontmatter found in AI summary");
         }
 
         // Remove frontmatter from the summary content using YamlHelper
-        string cleanSummary = _yamlHelper.RemoveFrontmatter(bodyText);
+        string cleanSummary = this.yamlHelper.RemoveFrontmatter(bodyText);
 
         // Debug: Log the cleaned summary
-        Logger.LogInformation("Cleaned summary (first 200 chars): {CleanSummary}",
+        this.Logger.LogInformation(
+            "Cleaned summary (first 200 chars): {CleanSummary}",
             cleanSummary.Length > 200 ? cleanSummary[..200] + "..." : cleanSummary);
 
         // Merge metadata: video metadata takes precedence, but preserve AI tags if they exist
@@ -497,21 +513,23 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             {
                 mergedMetadata[kvp.Key] = kvp.Value;
             }
-        }            // Apply path-based hierarchy detection if file path is available
+        } // Apply path-based hierarchy detection if file path is available
+
         // Note: We temporarily add the path to metadata just for hierarchy detection
-        var pathForHierarchy = metadata.TryGetValue("_internal_path", out object? pathValue) ? pathValue.ToString() : null; if (!string.IsNullOrEmpty(pathForHierarchy))
+        var pathForHierarchy = metadata.TryGetValue("_internal_path", out object? pathValue) ? pathValue.ToString() : null;
+        if (!string.IsNullOrEmpty(pathForHierarchy))
         {
             try
             {
-                Logger.LogDebugWithPath("Detecting hierarchy information from path: {FilePath}", pathForHierarchy);
-                var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(pathForHierarchy);                // For videos, we want all hierarchy information regardless of level
+                this.Logger.LogDebugWithPath("Detecting hierarchy information from path: {FilePath}", pathForHierarchy);
+                var hierarchyInfo = this.hierarchyDetector.FindHierarchyInfo(pathForHierarchy);                // For videos, we want all hierarchy information regardless of level
+
                 // since videos are content files, not index files
                 mergedMetadata = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(
                     mergedMetadata,
                     hierarchyInfo,
-                    "module" // Use module to include all hierarchy levels
-                );
-                Logger.LogInformationWithPath(
+                    "module"); // Use module to include all hierarchy levels
+                this.Logger.LogInformationWithPath(
                     "Added hierarchy metadata - Program: {Program}, Course: {Course}, Class: {Class}",
                     pathForHierarchy!,
                     hierarchyInfo["program"],
@@ -520,7 +538,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             }
             catch (Exception ex)
             {
-                Logger.LogWarningWithPath(ex, "Error detecting hierarchy information from path: {FilePath}", pathForHierarchy);
+                this.Logger.LogWarningWithPath(ex, "Error detecting hierarchy information from path: {FilePath}", pathForHierarchy);
             }
         }
 
@@ -528,17 +546,17 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         mergedMetadata.Remove("_internal_path");
 
         // Apply template enhancements if template manager is available
-        if (_templateManager != null)
+        if (this.templateManager != null)
         {
             try
             {
                 // Add template metadata (template-type, etc.)
-                mergedMetadata = _templateManager!.EnhanceMetadataWithTemplate(mergedMetadata, noteType);
-                Logger.LogDebug("Enhanced metadata with template fields for note type: {NoteType}", noteType);
+                mergedMetadata = this.templateManager!.EnhanceMetadataWithTemplate(mergedMetadata, noteType);
+                this.Logger.LogDebug("Enhanced metadata with template fields for note type: {NoteType}", noteType);
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex, "Error applying template metadata");
+                this.Logger.LogWarning(ex, "Error applying template metadata");
             }
         }
 
@@ -550,15 +568,16 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         foreach (var dateField in dateFieldsToRemove)
         {
             mergedMetadata.Remove(dateField);
-            Logger.LogDebug("Removed date field {DateField} from metadata", dateField);
+            this.Logger.LogDebug("Removed date field {DateField} from metadata", dateField);
         }
 
         // Log mergedMetadata keys and values once before serialization (for debug)
-        Logger.LogDebug("Final mergedMetadata before serialization:");
+        this.Logger.LogDebug("Final mergedMetadata before serialization:");
         foreach (var kvp in mergedMetadata)
         {
-            Logger.LogDebug("{Key}: {Value}", kvp.Key, kvp.Value);
-        }            // Use base implementation with cleaned summary and merged metadata
+            this.Logger.LogDebug("{Key}: {Value}", kvp.Key, kvp.Value);
+        } // Use base implementation with cleaned summary and merged metadata
+
         // Include a title but use the friendly title from frontmatter instead of the note type
         return base.GenerateMarkdownNote(cleanSummary, mergedMetadata, noteType, suppressBody, includeNoteTypeTitle: true);
     }
@@ -606,20 +625,20 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     {
         if (string.IsNullOrEmpty(videoPath))
         {
-            Logger.LogWarning("Empty video path provided to TryLoadTranscript");
+            this.Logger.LogWarning("Empty video path provided to TryLoadTranscript");
             return null;
         }
 
         string directory = Path.GetDirectoryName(videoPath) ?? string.Empty;
         string fileNameWithoutExt = Path.GetFileNameWithoutExtension(videoPath);
 
-        Logger.LogDebugWithPath("Looking for transcript for video: {FilePath}", videoPath);
+        this.Logger.LogDebugWithPath("Looking for transcript for video: {FilePath}", videoPath);
 
         // Define search paths in priority order
         var searchPaths = new List<string>
         {
             directory, // Same directory as video
-            Path.Combine(directory, "Transcripts") // Transcripts subdirectory
+            Path.Combine(directory, "Transcripts"), // Transcripts subdirectory
         };
 
         // Search through directories in priority order
@@ -627,7 +646,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         {
             if (!Directory.Exists(searchPath))
             {
-                Logger.LogDebug("Directory does not exist: {Path}", searchPath);
+                this.Logger.LogDebug("Directory does not exist: {Path}", searchPath);
                 continue;
             }
 
@@ -639,7 +658,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
 
             if (candidates.Count == 0)
             {
-                Logger.LogDebug("No transcript candidates found in: {Path}", searchPath);
+                this.Logger.LogDebug("No transcript candidates found in: {Path}", searchPath);
                 continue;
             }
 
@@ -656,7 +675,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                     IsLikelyLanguageCode(nameWithoutExt[(fileNameWithoutExt.Length + 1)..]))
                 {
                     string langCode = nameWithoutExt[(fileNameWithoutExt.Length + 1)..];
-                    Logger.LogInformation("Found language-specific transcript ({LangCode}): {Path}", langCode, candidate.FullName);
+                    this.Logger.LogInformation("Found language-specific transcript ({LangCode}): {Path}", langCode, candidate.FullName);
                     return File.ReadAllText(candidate.FullName);
                 }
             }
@@ -668,7 +687,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 if (nameWithoutExt.StartsWith(altBaseName + ".") && IsLikelyLanguageCode(nameWithoutExt[(altBaseName.Length + 1)..]))
                 {
                     string langCode = nameWithoutExt[(altBaseName.Length + 1)..];
-                    Logger.LogInformation("Found language-specific transcript with normalized name ({LangCode}): {Path}", langCode, candidate.FullName);
+                    this.Logger.LogInformation("Found language-specific transcript with normalized name ({LangCode}): {Path}", langCode, candidate.FullName);
                     return File.ReadAllText(candidate.FullName);
                 }
             }
@@ -677,13 +696,14 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             var exactTxtPath = Path.Combine(searchPath, fileNameWithoutExt + ".txt");
             if (File.Exists(exactTxtPath))
             {
-                Logger.LogInformationWithPath("Found generic transcript: {FilePath}", exactTxtPath);
+                this.Logger.LogInformationWithPath("Found generic transcript: {FilePath}", exactTxtPath);
                 return File.ReadAllText(exactTxtPath);
             }
+
             var exactMdPath = Path.Combine(searchPath, fileNameWithoutExt + ".md");
             if (File.Exists(exactMdPath))
             {
-                Logger.LogInformationWithPath("Found generic transcript: {FilePath}", exactMdPath);
+                this.Logger.LogInformationWithPath("Found generic transcript: {FilePath}", exactMdPath);
                 return File.ReadAllText(exactMdPath);
             }
 
@@ -691,18 +711,19 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             var altTxtPath = Path.Combine(searchPath, altBaseName + ".txt");
             if (File.Exists(altTxtPath))
             {
-                Logger.LogInformationWithPath("Found generic transcript with normalized name: {FilePath}", altTxtPath);
+                this.Logger.LogInformationWithPath("Found generic transcript with normalized name: {FilePath}", altTxtPath);
                 return File.ReadAllText(altTxtPath);
             }
+
             var altMdPath = Path.Combine(searchPath, altBaseName + ".md");
             if (File.Exists(altMdPath))
             {
-                Logger.LogInformationWithPath("Found generic transcript with normalized name: {FilePath}", altMdPath);
+                this.Logger.LogInformationWithPath("Found generic transcript with normalized name: {FilePath}", altMdPath);
                 return File.ReadAllText(altMdPath);
             }
         }
 
-        Logger.LogInformationWithPath("No transcript found for video: {FilePath}", videoPath);
+        this.Logger.LogInformationWithPath("No transcript found for video: {FilePath}", videoPath);
         return null;
     }
 
@@ -749,20 +770,20 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     {
         if (string.IsNullOrEmpty(videoPath))
         {
-            Logger.LogWarning("Empty video path provided to FindTranscriptPath");
+            this.Logger.LogWarning("Empty video path provided to FindTranscriptPath");
             return null;
         }
 
         string directory = Path.GetDirectoryName(videoPath) ?? string.Empty;
         string fileNameWithoutExt = Path.GetFileNameWithoutExtension(videoPath);
 
-        Logger.LogDebug("Looking for transcript file for video: {VideoPath}", videoPath);
+        this.Logger.LogDebug("Looking for transcript file for video: {VideoPath}", videoPath);
 
         // Define search paths in priority order
         var searchPaths = new List<string>
         {
             directory, // Same directory as video
-            Path.Combine(directory, "Transcripts") // Transcripts subdirectory
+            Path.Combine(directory, "Transcripts"), // Transcripts subdirectory
         };
 
         // Search through directories in priority order
@@ -770,7 +791,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         {
             if (!Directory.Exists(searchPath))
             {
-                Logger.LogDebugWithPath("Directory does not exist: {FilePath}", searchPath);
+                this.Logger.LogDebugWithPath("Directory does not exist: {FilePath}", searchPath);
                 continue;
             }
 
@@ -782,7 +803,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
 
             if (candidates.Count == 0)
             {
-                Logger.LogDebugWithPath("No transcript candidates found in: {FilePath}", searchPath);
+                this.Logger.LogDebugWithPath("No transcript candidates found in: {FilePath}", searchPath);
                 continue;
             }
 
@@ -799,7 +820,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                     IsLikelyLanguageCode(nameWithoutExt[(fileNameWithoutExt.Length + 1)..]))
                 {
                     string langCode = nameWithoutExt[(fileNameWithoutExt.Length + 1)..];
-                    Logger.LogDebugWithPath($"Found language-specific transcript ({langCode}): {{FilePath}}", candidate.FullName);
+                    this.Logger.LogDebugWithPath($"Found language-specific transcript ({langCode}): {{FilePath}}", candidate.FullName);
                     return candidate.FullName;
                 }
             }
@@ -811,7 +832,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 if (nameWithoutExt.StartsWith(altBaseName + ".") && IsLikelyLanguageCode(nameWithoutExt[(altBaseName.Length + 1)..]))
                 {
                     string langCode = nameWithoutExt[(altBaseName.Length + 1)..];
-                    Logger.LogInformation("Found language-specific transcript with normalized name ({LangCode}): {Path}", langCode, candidate.FullName);
+                    this.Logger.LogInformation("Found language-specific transcript with normalized name ({LangCode}): {Path}", langCode, candidate.FullName);
                     return candidate.FullName;
                 }
             }
@@ -820,14 +841,14 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             var exactTxtPath = Path.Combine(searchPath, fileNameWithoutExt + ".txt");
             if (File.Exists(exactTxtPath))
             {
-                Logger.LogInformation("Found generic transcript: {Path}", exactTxtPath);
+                this.Logger.LogInformation("Found generic transcript: {Path}", exactTxtPath);
                 return exactTxtPath;
             }
 
             var exactMdPath = Path.Combine(searchPath, fileNameWithoutExt + ".md");
             if (File.Exists(exactMdPath))
             {
-                Logger.LogInformation("Found generic transcript: {Path}", exactMdPath);
+                this.Logger.LogInformation("Found generic transcript: {Path}", exactMdPath);
                 return exactMdPath;
             }
 
@@ -835,19 +856,19 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             var altTxtPath = Path.Combine(searchPath, altBaseName + ".txt");
             if (File.Exists(altTxtPath))
             {
-                Logger.LogInformation("Found generic transcript with normalized name: {Path}", altTxtPath);
+                this.Logger.LogInformation("Found generic transcript with normalized name: {Path}", altTxtPath);
                 return altTxtPath;
             }
 
             var altMdPath = Path.Combine(searchPath, altBaseName + ".md");
             if (File.Exists(altMdPath))
             {
-                Logger.LogInformation("Found generic transcript with normalized name: {Path}", altMdPath);
+                this.Logger.LogInformation("Found generic transcript with normalized name: {Path}", altMdPath);
                 return altMdPath;
             }
         }
 
-        Logger.LogInformation("No transcript file found for video: {VideoPath}", videoPath);
+        this.Logger.LogInformation("No transcript file found for video: {VideoPath}", videoPath);
         return null;
     }
 
@@ -880,15 +901,21 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     private static bool IsLikelyLanguageCode(string code)
     {
         if (string.IsNullOrWhiteSpace(code))
+        {
             return false;
+        }
 
         // Match patterns like: en, fr, de (2 chars)
         if (code.Length == 2 && code.All(char.IsLetter))
+        {
             return true;
+        }
 
         // Match patterns like: eng, fra, deu (3 chars)
         if (code.Length == 3 && code.All(char.IsLetter))
+        {
             return true;
+        }
 
         // Match patterns like: en-us, zh-cn (with hyphen)
         if (code.Length >= 5 && code.Length <= 7 && code.Contains('-'))
@@ -987,81 +1014,86 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         int? timeoutSeconds = null,
         string? resourcesRoot = null,
         bool noShareLinks = false)
-    {            // Extract metadata and transcript
-        var metadata = await ExtractMetadataAsync(videoPath);
+    { // Extract metadata and transcript
+        var metadata = await this.ExtractMetadataAsync(videoPath).ConfigureAwait(false);
 
         // Find transcript file and store its path in metadata
-        string? transcriptPath = FindTranscriptPath(videoPath);
+        string? transcriptPath = this.FindTranscriptPath(videoPath);
         if (!string.IsNullOrEmpty(transcriptPath))
         {
             metadata["transcript"] = transcriptPath;
-            Logger.LogInformationWithPath("Found transcript file and added path to metadata: {FilePath}", transcriptPath);
+            this.Logger.LogInformationWithPath("Found transcript file and added path to metadata: {FilePath}", transcriptPath);
         }
+
         string? shareLink = null;
-        if (!noShareLinks && _oneDriveService != null)
+        if (!noShareLinks && this.oneDriveService != null)
         {
             try
             {
-                Logger.LogInformationWithPath("Generating OneDrive share link for: {FilePath}", videoPath);
-                shareLink = await _oneDriveService.CreateShareLinkAsync(videoPath);
+                this.Logger.LogInformationWithPath("Generating OneDrive share link for: {FilePath}", videoPath);
+                shareLink = await this.oneDriveService.CreateShareLinkAsync(videoPath).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(shareLink))
                 {
-                    Logger.LogInformation("OneDrive share link generated successfully");
+                    this.Logger.LogInformation("OneDrive share link generated successfully");
+
                     // Store in metadata in the onedrive-shared-link field
                     metadata["onedrive-shared-link"] = shareLink;
-                    Logger.LogDebug("Added OneDrive share link to metadata");
+                    this.Logger.LogDebug("Added OneDrive share link to metadata");
                 }
                 else
                 {
-                    Logger.LogWarning("Failed to generate OneDrive share link for: {VideoPath}", videoPath);
+                    this.Logger.LogWarning("Failed to generate OneDrive share link for: {VideoPath}", videoPath);
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError(ex, "Error generating OneDrive share link for: {VideoPath}", videoPath);
+                this.Logger.LogError(ex, "Error generating OneDrive share link for: {VideoPath}", videoPath);
             }
         }
-        string? transcript = TryLoadTranscript(videoPath);
+
+        string? transcript = this.TryLoadTranscript(videoPath);
 
         // Choose input for summary based on transcript availability
         string summaryInput;
         if (transcript != null && !string.IsNullOrWhiteSpace(transcript))
         {
             summaryInput = transcript;
-            Logger.LogInformation("Using transcript for AI summary for video: {VideoPath}", videoPath);
+            this.Logger.LogInformation("Using transcript for AI summary for video: {VideoPath}", videoPath);
         }
         else
         {
             summaryInput = $"Video file: {Path.GetFileName(videoPath)}\n(No transcript available. Using metadata only.)";
-            Logger.LogInformation("No transcript found. Using metadata for AI summary for video: {VideoPath}", videoPath);
+            this.Logger.LogInformation("No transcript found. Using metadata for AI summary for video: {VideoPath}", videoPath);
         }
+
         string aiSummary;
         if (noSummary)
         {
             // When no summary is requested, create minimal content with Note section                // Skip AI summarizer entirely to avoid API calls
             aiSummary = "## Note\n\n";
 
-            Logger.LogInformation("Skipping AI summary generation for video (noSummary=true): {VideoPath}", videoPath);
+            this.Logger.LogInformation("Skipping AI summary generation for video (noSummary=true): {VideoPath}", videoPath);
         }
         else
         {
             // Only call AI summarizer when summary is actually requested
-            Logger.LogInformation("Generating AI summary for video: {VideoPath}", videoPath);                // Pass title and metadata for prompt variables
+            this.Logger.LogInformation("Generating AI summary for video: {VideoPath}", videoPath);                // Pass title and metadata for prompt variables
             var promptVariables = new Dictionary<string, string>();
             if (metadata.TryGetValue("title", out var titleObj) && titleObj != null)
             {
                 promptVariables["title"] = titleObj.ToString() ?? "Untitled Video";
-            }                // Add YAML frontmatter as a variable
-            string yamlContent = BuildYamlFrontmatter(metadata);
-            promptVariables["yamlfrontmatter"] = yamlContent;
-            Logger.LogDebug("Added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer", yamlContent.Length);
+            } // Add YAML frontmatter as a variable
 
-            aiSummary = await GenerateAiSummaryAsync(summaryInput, promptVariables, "final_summary_prompt");
+            string yamlContent = this.BuildYamlFrontmatter(metadata);
+            promptVariables["yamlfrontmatter"] = yamlContent;
+            this.Logger.LogDebug("Added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer", yamlContent.Length);
+
+            aiSummary = await this.GenerateAiSummaryAsync(summaryInput, promptVariables, "final_summary_prompt").ConfigureAwait(false);
         }
 
         // Add internal path for hierarchy detection (will be removed in GenerateMarkdownNote)
         metadata["_internal_path"] = videoPath;            // Generate the basic markdown note - include title heading using friendly title from metadata
-        string markdownNote = GenerateMarkdownNote(aiSummary, metadata, "Video Note", includeNoteTypeTitle: true);
+        string markdownNote = this.GenerateMarkdownNote(aiSummary, metadata, "Video Note", includeNoteTypeTitle: true);
 
         // Add OneDrive share link section to markdown content if share link was generated
         if (!string.IsNullOrEmpty(shareLink))
@@ -1090,9 +1122,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// <inheritdoc/>
     public override async Task<(string Text, Dictionary<string, object> Metadata)> ExtractTextAndMetadataAsync(string filePath)
     {
-        var metadata = await ExtractMetadataAsync(filePath);
-        string? transcript = TryLoadTranscript(filePath);
-        string text = transcript ?? "";
+        var metadata = await this.ExtractMetadataAsync(filePath).ConfigureAwait(false);
+        string? transcript = this.TryLoadTranscript(filePath);
+        string text = transcript ?? string.Empty;
         return (text, metadata);
     }
 }

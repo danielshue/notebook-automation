@@ -1,12 +1,19 @@
-﻿using NotebookAutomation.Core.Services;
-
+﻿// <copyright file="OneDriveCliOptionsTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Services/OneDriveCliOptionsTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Services;
 
 /// <summary>
 /// Unit tests for the <see cref="OneDriveCliOptions"/> class.
 /// </summary>
 [TestClass]
-public class OneDriveCliOptionsTests
+internal class OneDriveCliOptionsTests
 {
     [TestMethod]
     public void Properties_DefaultValues_AreFalse()
@@ -26,7 +33,7 @@ public class OneDriveCliOptionsTests
             DryRun = true,
             Verbose = true,
             Force = true,
-            Retry = true
+            Retry = true,
         };
         Assert.IsTrue(options.DryRun);
         Assert.IsTrue(options.Verbose);
@@ -39,7 +46,7 @@ public class OneDriveCliOptionsTests
     {
         OneDriveCliOptions options = new()
         {
-            DryRun = true
+            DryRun = true,
         };
         Assert.IsTrue(options.DryRun);
         options.Verbose = true;

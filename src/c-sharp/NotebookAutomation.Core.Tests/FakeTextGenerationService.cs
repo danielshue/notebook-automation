@@ -1,4 +1,13 @@
-﻿// Enable nullable reference types for this file
+// <copyright file="FakeTextGenerationService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/FakeTextGenerationService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+// Enable nullable reference types for this file
 #nullable enable
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -8,7 +17,7 @@ namespace NotebookAutomation.Core.Tests;
 /// <summary>
 /// A fake implementation of ITextGenerationService for testing AISummarizer.
 /// </summary>
-public class FakeTextGenerationService : ITextGenerationService
+internal class FakeTextGenerationService : ITextGenerationService
 {
     // Implement IAIService.Attributes
     public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
@@ -19,6 +28,7 @@ public class FakeTextGenerationService : ITextGenerationService
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default) =>
+
         // For testing, just return an empty async enumerable
         GetEmptyAsyncEnumerable();
 
@@ -27,6 +37,7 @@ public class FakeTextGenerationService : ITextGenerationService
         await Task.Yield();
         yield break;
     }
+
     /// <summary>
     /// Gets or sets the expected prompt text that the service expects to receive.
     /// </summary>
@@ -50,25 +61,26 @@ public class FakeTextGenerationService : ITextGenerationService
     /// <summary>
     /// Returns the configured response text or throws the configured exception.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (ExceptionToThrow != null)
+        if (this.ExceptionToThrow != null)
         {
-            throw ExceptionToThrow;
+            throw this.ExceptionToThrow;
         }
 
         string responseText;
-        if (Responses != null && Responses.Count > 0)
+        if (this.Responses != null && this.Responses.Count > 0)
         {
-            responseText = Responses.Dequeue();
+            responseText = this.Responses.Dequeue();
         }
         else
         {
-            responseText = Response ?? "";
+            responseText = this.Response ?? string.Empty;
         }
 
         List<TextContent> result = [new(responseText)];
@@ -78,25 +90,26 @@ public class FakeTextGenerationService : ITextGenerationService
     /// <summary>
     /// Returns a single TextContent containing the configured response.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public Task<TextContent> GetTextContentAsync(
         string prompt,
         PromptExecutionSettings? executionSettings = null,
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (ExceptionToThrow != null)
+        if (this.ExceptionToThrow != null)
         {
-            throw ExceptionToThrow;
+            throw this.ExceptionToThrow;
         }
 
         string responseText;
-        if (Responses != null && Responses.Count > 0)
+        if (this.Responses != null && this.Responses.Count > 0)
         {
-            responseText = Responses.Dequeue();
+            responseText = this.Responses.Dequeue();
         }
         else
         {
-            responseText = Response ?? "";
+            responseText = this.Response ?? string.Empty;
         }
 
         return Task.FromResult(new TextContent(responseText));

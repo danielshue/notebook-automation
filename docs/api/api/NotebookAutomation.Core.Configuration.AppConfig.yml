@@ -1,0 +1,1699 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Configuration.AppConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AppConfig
+  id: AppConfig
+  parent: NotebookAutomation.Core.Configuration
+  children:
+  - NotebookAutomation.Core.Configuration.AppConfig.#ctor
+  - NotebookAutomation.Core.Configuration.AppConfig.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Configuration.AppConfig},System.String,System.Boolean)
+  - NotebookAutomation.Core.Configuration.AppConfig.AiService
+  - NotebookAutomation.Core.Configuration.AppConfig.ConfigFilePath
+  - NotebookAutomation.Core.Configuration.AppConfig.DebugEnabled
+  - NotebookAutomation.Core.Configuration.AppConfig.Exists(System.String)
+  - NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile(System.String)
+  - NotebookAutomation.Core.Configuration.AppConfig.GetChildren
+  - NotebookAutomation.Core.Configuration.AppConfig.GetReloadToken
+  - NotebookAutomation.Core.Configuration.AppConfig.GetSection(System.String)
+  - NotebookAutomation.Core.Configuration.AppConfig.Item(System.String)
+  - NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile(System.String)
+  - NotebookAutomation.Core.Configuration.AppConfig.MicrosoftGraph
+  - NotebookAutomation.Core.Configuration.AppConfig.Paths
+  - NotebookAutomation.Core.Configuration.AppConfig.PdfExtensions
+  - NotebookAutomation.Core.Configuration.AppConfig.SaveToJsonFile(System.String)
+  - NotebookAutomation.Core.Configuration.AppConfig.SetPdfExtensions(System.Collections.Generic.List{System.String})
+  - NotebookAutomation.Core.Configuration.AppConfig.SetVideoExtensions(System.Collections.Generic.List{System.String})
+  - NotebookAutomation.Core.Configuration.AppConfig.VideoExtensions
+  langs:
+  - csharp
+  - vb
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AppConfig
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 23
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Represents the application configuration for Notebook Automation.
+  remarks: >-
+    This class handles loading and providing access to centralized configuration
+
+    settings for the Notebook Automation system, including paths, API settings,
+
+    and application defaults.
+  example: []
+  syntax:
+    content: 'public class AppConfig : IConfiguration'
+    content.vb: Public Class AppConfig Implements IConfiguration
+  inheritance:
+  - System.Object
+  implements:
+  - Microsoft.Extensions.Configuration.IConfiguration
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Configuration.AppConfig.ConfigFilePath
+  commentId: P:NotebookAutomation.Core.Configuration.AppConfig.ConfigFilePath
+  id: ConfigFilePath
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: ConfigFilePath
+  nameWithType: AppConfig.ConfigFilePath
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.ConfigFilePath
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ConfigFilePath
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 38
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets the path to the configuration file used to load this AppConfig.
+  example: []
+  syntax:
+    content: public string? ConfigFilePath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property ConfigFilePath As String
+  overload: NotebookAutomation.Core.Configuration.AppConfig.ConfigFilePath*
+- uid: NotebookAutomation.Core.Configuration.AppConfig.DebugEnabled
+  commentId: P:NotebookAutomation.Core.Configuration.AppConfig.DebugEnabled
+  id: DebugEnabled
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: DebugEnabled
+  nameWithType: AppConfig.DebugEnabled
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.DebugEnabled
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: DebugEnabled
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 43
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets a value indicating whether debug mode is enabled for this configuration.
+  example: []
+  syntax:
+    content: public bool DebugEnabled { get; set; }
+    parameters: []
+    return:
+      type: System.Boolean
+    content.vb: Public Property DebugEnabled As Boolean
+  overload: NotebookAutomation.Core.Configuration.AppConfig.DebugEnabled*
+- uid: NotebookAutomation.Core.Configuration.AppConfig.Paths
+  commentId: P:NotebookAutomation.Core.Configuration.AppConfig.Paths
+  id: Paths
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Paths
+  nameWithType: AppConfig.Paths
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.Paths
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Paths
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 48
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets the paths configuration section.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("paths")]
+
+      public PathsConfig Paths { get; set; }
+    parameters: []
+    return:
+      type: NotebookAutomation.Core.Configuration.PathsConfig
+    content.vb: >-
+      <JsonPropertyName("paths")>
+
+      Public Property Paths As PathsConfig
+  overload: NotebookAutomation.Core.Configuration.AppConfig.Paths*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: paths
+- uid: NotebookAutomation.Core.Configuration.AppConfig.MicrosoftGraph
+  commentId: P:NotebookAutomation.Core.Configuration.AppConfig.MicrosoftGraph
+  id: MicrosoftGraph
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: MicrosoftGraph
+  nameWithType: AppConfig.MicrosoftGraph
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.MicrosoftGraph
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: MicrosoftGraph
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 54
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets the Microsoft Graph API configuration section.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("microsoft_graph")]
+
+      public MicrosoftGraphConfig MicrosoftGraph { get; set; }
+    parameters: []
+    return:
+      type: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+    content.vb: >-
+      <JsonPropertyName("microsoft_graph")>
+
+      Public Property MicrosoftGraph As MicrosoftGraphConfig
+  overload: NotebookAutomation.Core.Configuration.AppConfig.MicrosoftGraph*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: microsoft_graph
+- uid: NotebookAutomation.Core.Configuration.AppConfig.AiService
+  commentId: P:NotebookAutomation.Core.Configuration.AppConfig.AiService
+  id: AiService
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: AiService
+  nameWithType: AppConfig.AiService
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.AiService
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AiService
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 60
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets the AI Service configuration section.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("aiservice")]
+
+      public AIServiceConfig AiService { get; set; }
+    parameters: []
+    return:
+      type: NotebookAutomation.Core.Configuration.AIServiceConfig
+    content.vb: >-
+      <JsonPropertyName("aiservice")>
+
+      Public Property AiService As AIServiceConfig
+  overload: NotebookAutomation.Core.Configuration.AppConfig.AiService*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: aiservice
+- uid: NotebookAutomation.Core.Configuration.AppConfig.VideoExtensions
+  commentId: P:NotebookAutomation.Core.Configuration.AppConfig.VideoExtensions
+  id: VideoExtensions
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: VideoExtensions
+  nameWithType: AppConfig.VideoExtensions
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.VideoExtensions
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: VideoExtensions
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 66
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets the list of video file extensions to process.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("video_extensions")]
+
+      public List<string> VideoExtensions { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: >-
+      <JsonPropertyName("video_extensions")>
+
+      Public Property VideoExtensions As List(Of String)
+  overload: NotebookAutomation.Core.Configuration.AppConfig.VideoExtensions*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: video_extensions
+- uid: NotebookAutomation.Core.Configuration.AppConfig.PdfExtensions
+  commentId: P:NotebookAutomation.Core.Configuration.AppConfig.PdfExtensions
+  id: PdfExtensions
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: PdfExtensions
+  nameWithType: AppConfig.PdfExtensions
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.PdfExtensions
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: PdfExtensions
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 72
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets the list of PDF file extensions to process.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("pdf_extensions")]
+
+      public List<string> PdfExtensions { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: >-
+      <JsonPropertyName("pdf_extensions")>
+
+      Public Property PdfExtensions As List(Of String)
+  overload: NotebookAutomation.Core.Configuration.AppConfig.PdfExtensions*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: pdf_extensions
+- uid: NotebookAutomation.Core.Configuration.AppConfig.#ctor
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.#ctor
+  id: '#ctor'
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: AppConfig()
+  nameWithType: AppConfig.AppConfig()
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.AppConfig()
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 79
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: >-
+    Initializes a new instance of the <xref href="NotebookAutomation.Core.Configuration.AppConfig" data-throw-if-not-resolved="false"></xref> class.
+
+    Default constructor for manual initialization.
+  example: []
+  syntax:
+    content: public AppConfig()
+    content.vb: Public Sub New()
+  overload: NotebookAutomation.Core.Configuration.AppConfig.#ctor*
+  nameWithType.vb: AppConfig.New()
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.New()
+  name.vb: New()
+- uid: NotebookAutomation.Core.Configuration.AppConfig.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Configuration.AppConfig},System.String,System.Boolean)
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Configuration.AppConfig},System.String,System.Boolean)
+  id: '#ctor(Microsoft.Extensions.Configuration.IConfiguration,Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Configuration.AppConfig},System.String,System.Boolean)'
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: AppConfig(IConfiguration, ILogger<AppConfig>, string?, bool)
+  nameWithType: AppConfig.AppConfig(IConfiguration, ILogger<AppConfig>, string?, bool)
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.AppConfig(Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Configuration.AppConfig>, string?, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 92
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: >-
+    Initializes a new instance of the <xref href="NotebookAutomation.Core.Configuration.AppConfig" data-throw-if-not-resolved="false"></xref> class.
+
+    Constructor with dependency injection for configuration and logging.
+  example: []
+  syntax:
+    content: public AppConfig(IConfiguration configuration, ILogger<AppConfig> logger, string? configFilePath = null, bool debugEnabled = false)
+    parameters:
+    - id: configuration
+      type: Microsoft.Extensions.Configuration.IConfiguration
+      description: The configuration to use.
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Configuration.AppConfig}
+      description: The logger to use.
+    - id: configFilePath
+      type: System.String
+      description: The path to the configuration file.
+    - id: debugEnabled
+      type: System.Boolean
+      description: Whether debug mode is enabled.
+    content.vb: Public Sub New(configuration As IConfiguration, logger As ILogger(Of AppConfig), configFilePath As String = Nothing, debugEnabled As Boolean = False)
+  overload: NotebookAutomation.Core.Configuration.AppConfig.#ctor*
+  nameWithType.vb: AppConfig.New(IConfiguration, ILogger(Of AppConfig), String, Boolean)
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.New(Microsoft.Extensions.Configuration.IConfiguration, Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Configuration.AppConfig), String, Boolean)
+  name.vb: New(IConfiguration, ILogger(Of AppConfig), String, Boolean)
+- uid: NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile(System.String)
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile(System.String)
+  id: LoadFromJsonFile(System.String)
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: LoadFromJsonFile(string)
+  nameWithType: AppConfig.LoadFromJsonFile(string)
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LoadFromJsonFile
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 280
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Loads configuration from the specified JSON file.
+  example: []
+  syntax:
+    content: public static AppConfig LoadFromJsonFile(string configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+      description: Path to the configuration JSON file.
+    return:
+      type: NotebookAutomation.Core.Configuration.AppConfig
+      description: The loaded AppConfig instance.
+    content.vb: Public Shared Function LoadFromJsonFile(configPath As String) As AppConfig
+  overload: NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile*
+  nameWithType.vb: AppConfig.LoadFromJsonFile(String)
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile(String)
+  name.vb: LoadFromJsonFile(String)
+- uid: NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile(System.String)
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile(System.String)
+  id: FindConfigFile(System.String)
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: FindConfigFile(string)
+  nameWithType: AppConfig.FindConfigFile(string)
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: FindConfigFile
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 309
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Attempts to find the configuration file in standard locations.
+  example: []
+  syntax:
+    content: public static string FindConfigFile(string configFileName = "config.json")
+    parameters:
+    - id: configFileName
+      type: System.String
+      description: Name of the configuration file to find.
+    return:
+      type: System.String
+      description: Path to the configuration file if found, otherwise null.
+    content.vb: Public Shared Function FindConfigFile(configFileName As String = "config.json") As String
+  overload: NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile*
+  nameWithType.vb: AppConfig.FindConfigFile(String)
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile(String)
+  name.vb: FindConfigFile(String)
+- uid: NotebookAutomation.Core.Configuration.AppConfig.SaveToJsonFile(System.String)
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.SaveToJsonFile(System.String)
+  id: SaveToJsonFile(System.String)
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: SaveToJsonFile(string)
+  nameWithType: AppConfig.SaveToJsonFile(string)
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.SaveToJsonFile(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SaveToJsonFile
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 355
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Saves the current configuration to the specified JSON file.
+  example: []
+  syntax:
+    content: public void SaveToJsonFile(string configPath)
+    parameters:
+    - id: configPath
+      type: System.String
+      description: Path where the configuration should be saved.
+    content.vb: Public Sub SaveToJsonFile(configPath As String)
+  overload: NotebookAutomation.Core.Configuration.AppConfig.SaveToJsonFile*
+  exceptions:
+  - type: System.IO.IOException
+    commentId: T:System.IO.IOException
+    description: Thrown when the file cannot be written to.
+  nameWithType.vb: AppConfig.SaveToJsonFile(String)
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.SaveToJsonFile(String)
+  name.vb: SaveToJsonFile(String)
+- uid: NotebookAutomation.Core.Configuration.AppConfig.SetVideoExtensions(System.Collections.Generic.List{System.String})
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.SetVideoExtensions(System.Collections.Generic.List{System.String})
+  id: SetVideoExtensions(System.Collections.Generic.List{System.String})
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: SetVideoExtensions(List<string>)
+  nameWithType: AppConfig.SetVideoExtensions(List<string>)
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.SetVideoExtensions(System.Collections.Generic.List<string>)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SetVideoExtensions
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 398
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Sets the video file extensions to process.
+  example: []
+  syntax:
+    content: public void SetVideoExtensions(List<string> list)
+    parameters:
+    - id: list
+      type: System.Collections.Generic.List{System.String}
+      description: List of video file extensions.
+    content.vb: Public Sub SetVideoExtensions(list As List(Of String))
+  overload: NotebookAutomation.Core.Configuration.AppConfig.SetVideoExtensions*
+  nameWithType.vb: AppConfig.SetVideoExtensions(List(Of String))
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.SetVideoExtensions(System.Collections.Generic.List(Of String))
+  name.vb: SetVideoExtensions(List(Of String))
+- uid: NotebookAutomation.Core.Configuration.AppConfig.SetPdfExtensions(System.Collections.Generic.List{System.String})
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.SetPdfExtensions(System.Collections.Generic.List{System.String})
+  id: SetPdfExtensions(System.Collections.Generic.List{System.String})
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: SetPdfExtensions(List<string>)
+  nameWithType: AppConfig.SetPdfExtensions(List<string>)
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.SetPdfExtensions(System.Collections.Generic.List<string>)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SetPdfExtensions
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 408
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Sets the PDF file extensions to process.
+  example: []
+  syntax:
+    content: public void SetPdfExtensions(List<string> list)
+    parameters:
+    - id: list
+      type: System.Collections.Generic.List{System.String}
+      description: List of PDF file extensions.
+    content.vb: Public Sub SetPdfExtensions(list As List(Of String))
+  overload: NotebookAutomation.Core.Configuration.AppConfig.SetPdfExtensions*
+  nameWithType.vb: AppConfig.SetPdfExtensions(List(Of String))
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.SetPdfExtensions(System.Collections.Generic.List(Of String))
+  name.vb: SetPdfExtensions(List(Of String))
+- uid: NotebookAutomation.Core.Configuration.AppConfig.Exists(System.String)
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.Exists(System.String)
+  id: Exists(System.String)
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: Exists(string)
+  nameWithType: AppConfig.Exists(string)
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.Exists(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Exists
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 419
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets a value indicating if this configuration contains the specified key.
+  example: []
+  syntax:
+    content: public bool Exists(string key)
+    parameters:
+    - id: key
+      type: System.String
+      description: The key to check.
+    return:
+      type: System.Boolean
+      description: True if the configuration contains the specified key, otherwise false.
+    content.vb: Public Function Exists(key As String) As Boolean
+  overload: NotebookAutomation.Core.Configuration.AppConfig.Exists*
+  nameWithType.vb: AppConfig.Exists(String)
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.Exists(String)
+  name.vb: Exists(String)
+- uid: NotebookAutomation.Core.Configuration.AppConfig.GetSection(System.String)
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.GetSection(System.String)
+  id: GetSection(System.String)
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: GetSection(string)
+  nameWithType: AppConfig.GetSection(string)
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.GetSection(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetSection
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 490
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets a configuration sub-section with the specified key.
+  example: []
+  syntax:
+    content: public IConfigurationSection GetSection(string key)
+    parameters:
+    - id: key
+      type: System.String
+      description: The key of the configuration section.
+    return:
+      type: Microsoft.Extensions.Configuration.IConfigurationSection
+      description: The configuration sub-section.
+    content.vb: Public Function GetSection(key As String) As IConfigurationSection
+  overload: NotebookAutomation.Core.Configuration.AppConfig.GetSection*
+  implements:
+  - Microsoft.Extensions.Configuration.IConfiguration.GetSection(System.String)
+  nameWithType.vb: AppConfig.GetSection(String)
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.GetSection(String)
+  name.vb: GetSection(String)
+- uid: NotebookAutomation.Core.Configuration.AppConfig.GetChildren
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.GetChildren
+  id: GetChildren
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: GetChildren()
+  nameWithType: AppConfig.GetChildren()
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.GetChildren()
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetChildren
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 506
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets the immediate descendant configuration sub-sections.
+  example: []
+  syntax:
+    content: public IEnumerable<IConfigurationSection> GetChildren()
+    return:
+      type: System.Collections.Generic.IEnumerable{Microsoft.Extensions.Configuration.IConfigurationSection}
+      description: The configuration sub-sections.
+    content.vb: Public Function GetChildren() As IEnumerable(Of IConfigurationSection)
+  overload: NotebookAutomation.Core.Configuration.AppConfig.GetChildren*
+  implements:
+  - Microsoft.Extensions.Configuration.IConfiguration.GetChildren
+- uid: NotebookAutomation.Core.Configuration.AppConfig.GetReloadToken
+  commentId: M:NotebookAutomation.Core.Configuration.AppConfig.GetReloadToken
+  id: GetReloadToken
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: GetReloadToken()
+  nameWithType: AppConfig.GetReloadToken()
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.GetReloadToken()
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetReloadToken
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 529
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets a change token that can be used to observe when this configuration is reloaded.
+  example: []
+  syntax:
+    content: public IChangeToken GetReloadToken()
+    return:
+      type: Microsoft.Extensions.Primitives.IChangeToken
+      description: A change token.
+    content.vb: Public Function GetReloadToken() As IChangeToken
+  overload: NotebookAutomation.Core.Configuration.AppConfig.GetReloadToken*
+  implements:
+  - Microsoft.Extensions.Configuration.IConfiguration.GetReloadToken
+- uid: NotebookAutomation.Core.Configuration.AppConfig.Item(System.String)
+  commentId: P:NotebookAutomation.Core.Configuration.AppConfig.Item(System.String)
+  id: Item(System.String)
+  parent: NotebookAutomation.Core.Configuration.AppConfig
+  langs:
+  - csharp
+  - vb
+  name: this[string]
+  nameWithType: AppConfig.this[string]
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.this[string]
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: this[]
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/AppConfig.cs
+    startLine: 546
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets a configuration value for the specified key.
+  example: []
+  syntax:
+    content: public string? this[string key] { get; set; }
+    parameters:
+    - id: key
+      type: System.String
+      description: The key of the configuration value to get or set.
+    return:
+      type: System.String
+      description: The configuration value.
+    content.vb: Public Default Property this[](key As String) As String
+  overload: NotebookAutomation.Core.Configuration.AppConfig.Item*
+  implements:
+  - Microsoft.Extensions.Configuration.IConfiguration.Item(System.String)
+  nameWithType.vb: AppConfig.this[](String)
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.this[](String)
+  name.vb: this[](String)
+references:
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: Microsoft.Extensions.Configuration.IConfiguration
+  commentId: T:Microsoft.Extensions.Configuration.IConfiguration
+  parent: Microsoft.Extensions.Configuration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration
+  name: IConfiguration
+  nameWithType: IConfiguration
+  fullName: Microsoft.Extensions.Configuration.IConfiguration
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: Microsoft.Extensions.Configuration
+  commentId: N:Microsoft.Extensions.Configuration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Configuration
+  nameWithType: Microsoft.Extensions.Configuration
+  fullName: Microsoft.Extensions.Configuration
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Configuration
+    name: Configuration
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Configuration
+    name: Configuration
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration
+- uid: NotebookAutomation.Core.Configuration.AppConfig.ConfigFilePath*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.ConfigFilePath
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_ConfigFilePath
+  name: ConfigFilePath
+  nameWithType: AppConfig.ConfigFilePath
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.ConfigFilePath
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: NotebookAutomation.Core.Configuration.AppConfig.DebugEnabled*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.DebugEnabled
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_DebugEnabled
+  name: DebugEnabled
+  nameWithType: AppConfig.DebugEnabled
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.DebugEnabled
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: NotebookAutomation.Core.Configuration.AppConfig.Paths*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.Paths
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_Paths
+  name: Paths
+  nameWithType: AppConfig.Paths
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.Paths
+- uid: NotebookAutomation.Core.Configuration.PathsConfig
+  commentId: T:NotebookAutomation.Core.Configuration.PathsConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.PathsConfig.html
+  name: PathsConfig
+  nameWithType: PathsConfig
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig
+- uid: NotebookAutomation.Core.Configuration.AppConfig.MicrosoftGraph*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.MicrosoftGraph
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_MicrosoftGraph
+  name: MicrosoftGraph
+  nameWithType: AppConfig.MicrosoftGraph
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.MicrosoftGraph
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  commentId: T:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.html
+  name: MicrosoftGraphConfig
+  nameWithType: MicrosoftGraphConfig
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+- uid: NotebookAutomation.Core.Configuration.AppConfig.AiService*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.AiService
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_AiService
+  name: AiService
+  nameWithType: AppConfig.AiService
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.AiService
+- uid: NotebookAutomation.Core.Configuration.AIServiceConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AIServiceConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AIServiceConfig.html
+  name: AIServiceConfig
+  nameWithType: AIServiceConfig
+  fullName: NotebookAutomation.Core.Configuration.AIServiceConfig
+- uid: NotebookAutomation.Core.Configuration.AppConfig.VideoExtensions*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.VideoExtensions
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_VideoExtensions
+  name: VideoExtensions
+  nameWithType: AppConfig.VideoExtensions
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.VideoExtensions
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Configuration.AppConfig.PdfExtensions*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.PdfExtensions
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_PdfExtensions
+  name: PdfExtensions
+  nameWithType: AppConfig.PdfExtensions
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.PdfExtensions
+- uid: NotebookAutomation.Core.Configuration.AppConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AppConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig
+- uid: NotebookAutomation.Core.Configuration.AppConfig.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.#ctor
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig__ctor
+  name: AppConfig
+  nameWithType: AppConfig.AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.AppConfig
+  nameWithType.vb: AppConfig.New
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Configuration.AppConfig}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Configuration.AppConfig}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<AppConfig>
+  nameWithType: ILogger<AppConfig>
+  fullName: Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Configuration.AppConfig>
+  nameWithType.vb: ILogger(Of AppConfig)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Configuration.AppConfig)
+  name.vb: ILogger(Of AppConfig)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: NotebookAutomation.Core.Configuration.AppConfig
+    name: AppConfig
+    href: NotebookAutomation.Core.Configuration.AppConfig.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Configuration.AppConfig
+    name: AppConfig
+    href: NotebookAutomation.Core.Configuration.AppConfig.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_LoadFromJsonFile_System_String_
+  name: LoadFromJsonFile
+  nameWithType: AppConfig.LoadFromJsonFile
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.LoadFromJsonFile
+- uid: NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_FindConfigFile_System_String_
+  name: FindConfigFile
+  nameWithType: AppConfig.FindConfigFile
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.FindConfigFile
+- uid: System.IO.IOException
+  commentId: T:System.IO.IOException
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.io.ioexception
+  name: IOException
+  nameWithType: IOException
+  fullName: System.IO.IOException
+- uid: NotebookAutomation.Core.Configuration.AppConfig.SaveToJsonFile*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.SaveToJsonFile
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_SaveToJsonFile_System_String_
+  name: SaveToJsonFile
+  nameWithType: AppConfig.SaveToJsonFile
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.SaveToJsonFile
+- uid: NotebookAutomation.Core.Configuration.AppConfig.SetVideoExtensions*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.SetVideoExtensions
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_SetVideoExtensions_System_Collections_Generic_List_System_String__
+  name: SetVideoExtensions
+  nameWithType: AppConfig.SetVideoExtensions
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.SetVideoExtensions
+- uid: NotebookAutomation.Core.Configuration.AppConfig.SetPdfExtensions*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.SetPdfExtensions
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_SetPdfExtensions_System_Collections_Generic_List_System_String__
+  name: SetPdfExtensions
+  nameWithType: AppConfig.SetPdfExtensions
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.SetPdfExtensions
+- uid: NotebookAutomation.Core.Configuration.AppConfig.Exists*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.Exists
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_Exists_System_String_
+  name: Exists
+  nameWithType: AppConfig.Exists
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.Exists
+- uid: NotebookAutomation.Core.Configuration.AppConfig.GetSection*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.GetSection
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_GetSection_System_String_
+  name: GetSection
+  nameWithType: AppConfig.GetSection
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.GetSection
+- uid: Microsoft.Extensions.Configuration.IConfiguration.GetSection(System.String)
+  commentId: M:Microsoft.Extensions.Configuration.IConfiguration.GetSection(System.String)
+  parent: Microsoft.Extensions.Configuration.IConfiguration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.getsection
+  name: GetSection(string)
+  nameWithType: IConfiguration.GetSection(string)
+  fullName: Microsoft.Extensions.Configuration.IConfiguration.GetSection(string)
+  nameWithType.vb: IConfiguration.GetSection(String)
+  fullName.vb: Microsoft.Extensions.Configuration.IConfiguration.GetSection(String)
+  name.vb: GetSection(String)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Configuration.IConfiguration.GetSection(System.String)
+    name: GetSection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.getsection
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Configuration.IConfiguration.GetSection(System.String)
+    name: GetSection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.getsection
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: Microsoft.Extensions.Configuration.IConfigurationSection
+  commentId: T:Microsoft.Extensions.Configuration.IConfigurationSection
+  parent: Microsoft.Extensions.Configuration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfigurationsection
+  name: IConfigurationSection
+  nameWithType: IConfigurationSection
+  fullName: Microsoft.Extensions.Configuration.IConfigurationSection
+- uid: NotebookAutomation.Core.Configuration.AppConfig.GetChildren*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.GetChildren
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_GetChildren
+  name: GetChildren
+  nameWithType: AppConfig.GetChildren
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.GetChildren
+- uid: Microsoft.Extensions.Configuration.IConfiguration.GetChildren
+  commentId: M:Microsoft.Extensions.Configuration.IConfiguration.GetChildren
+  parent: Microsoft.Extensions.Configuration.IConfiguration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.getchildren
+  name: GetChildren()
+  nameWithType: IConfiguration.GetChildren()
+  fullName: Microsoft.Extensions.Configuration.IConfiguration.GetChildren()
+  spec.csharp:
+  - uid: Microsoft.Extensions.Configuration.IConfiguration.GetChildren
+    name: GetChildren
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.getchildren
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Configuration.IConfiguration.GetChildren
+    name: GetChildren
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.getchildren
+  - name: (
+  - name: )
+- uid: System.Collections.Generic.IEnumerable{Microsoft.Extensions.Configuration.IConfigurationSection}
+  commentId: T:System.Collections.Generic.IEnumerable{Microsoft.Extensions.Configuration.IConfigurationSection}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IEnumerable`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<IConfigurationSection>
+  nameWithType: IEnumerable<IConfigurationSection>
+  fullName: System.Collections.Generic.IEnumerable<Microsoft.Extensions.Configuration.IConfigurationSection>
+  nameWithType.vb: IEnumerable(Of IConfigurationSection)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of Microsoft.Extensions.Configuration.IConfigurationSection)
+  name.vb: IEnumerable(Of IConfigurationSection)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - uid: Microsoft.Extensions.Configuration.IConfigurationSection
+    name: IConfigurationSection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfigurationsection
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: Microsoft.Extensions.Configuration.IConfigurationSection
+    name: IConfigurationSection
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfigurationsection
+  - name: )
+- uid: System.Collections.Generic.IEnumerable`1
+  commentId: T:System.Collections.Generic.IEnumerable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  name: IEnumerable<T>
+  nameWithType: IEnumerable<T>
+  fullName: System.Collections.Generic.IEnumerable<T>
+  nameWithType.vb: IEnumerable(Of T)
+  fullName.vb: System.Collections.Generic.IEnumerable(Of T)
+  name.vb: IEnumerable(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IEnumerable`1
+    name: IEnumerable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ienumerable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: NotebookAutomation.Core.Configuration.AppConfig.GetReloadToken*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.GetReloadToken
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_GetReloadToken
+  name: GetReloadToken
+  nameWithType: AppConfig.GetReloadToken
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.GetReloadToken
+- uid: Microsoft.Extensions.Configuration.IConfiguration.GetReloadToken
+  commentId: M:Microsoft.Extensions.Configuration.IConfiguration.GetReloadToken
+  parent: Microsoft.Extensions.Configuration.IConfiguration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.getreloadtoken
+  name: GetReloadToken()
+  nameWithType: IConfiguration.GetReloadToken()
+  fullName: Microsoft.Extensions.Configuration.IConfiguration.GetReloadToken()
+  spec.csharp:
+  - uid: Microsoft.Extensions.Configuration.IConfiguration.GetReloadToken
+    name: GetReloadToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.getreloadtoken
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: Microsoft.Extensions.Configuration.IConfiguration.GetReloadToken
+    name: GetReloadToken
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.getreloadtoken
+  - name: (
+  - name: )
+- uid: Microsoft.Extensions.Primitives.IChangeToken
+  commentId: T:Microsoft.Extensions.Primitives.IChangeToken
+  parent: Microsoft.Extensions.Primitives
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.primitives.ichangetoken
+  name: IChangeToken
+  nameWithType: IChangeToken
+  fullName: Microsoft.Extensions.Primitives.IChangeToken
+- uid: Microsoft.Extensions.Primitives
+  commentId: N:Microsoft.Extensions.Primitives
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Primitives
+  nameWithType: Microsoft.Extensions.Primitives
+  fullName: Microsoft.Extensions.Primitives
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Primitives
+    name: Primitives
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.primitives
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Primitives
+    name: Primitives
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.primitives
+- uid: NotebookAutomation.Core.Configuration.AppConfig.Item*
+  commentId: Overload:NotebookAutomation.Core.Configuration.AppConfig.Item
+  href: NotebookAutomation.Core.Configuration.AppConfig.html#NotebookAutomation_Core_Configuration_AppConfig_Item_System_String_
+  name: this
+  nameWithType: AppConfig.this
+  fullName: NotebookAutomation.Core.Configuration.AppConfig.this
+  nameWithType.vb: AppConfig.this[]
+  fullName.vb: NotebookAutomation.Core.Configuration.AppConfig.this[]
+  name.vb: this[]
+- uid: Microsoft.Extensions.Configuration.IConfiguration.Item(System.String)
+  commentId: P:Microsoft.Extensions.Configuration.IConfiguration.Item(System.String)
+  parent: Microsoft.Extensions.Configuration.IConfiguration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: this[string]
+  nameWithType: IConfiguration.this[string]
+  fullName: Microsoft.Extensions.Configuration.IConfiguration.this[string]
+  nameWithType.vb: IConfiguration.this[](String)
+  fullName.vb: Microsoft.Extensions.Configuration.IConfiguration.this[](String)
+  name.vb: this[](String)
+  spec.csharp:
+  - name: this
+  - name: '['
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ']'
+  spec.vb:
+  - uid: Microsoft.Extensions.Configuration.IConfiguration.Item(System.String)
+    name: this[]
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfiguration.item
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )

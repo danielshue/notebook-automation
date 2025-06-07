@@ -1,0 +1,62 @@
+{
+    "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+    "metadata": [
+        {
+            "src": [
+                {
+                    "src": "../src/c-sharp",
+                    "files": [
+                        "NotebookAutomation.Core/NotebookAutomation.Core.csproj",
+                        "NotebookAutomation.Cli/NotebookAutomation.Cli.csproj"
+                    ]
+                }
+            ],
+            "dest": "api",
+            "filter": "apiFilter.yml",
+            "properties": {
+                "TargetFramework": "net9.0"
+            }
+        }
+    ],
+    "build": {
+        "content": [
+            {
+                "files": [
+                    "api/**.yml",
+                    "api/index.md",
+                    "api/toc.yml"
+                ]
+            },
+            {
+                "files": [
+                    "docs/**.md",
+                    "docs/**/toc.yml",
+                    "toc.yml",
+                    "*.md"
+                ],
+                "exclude": [
+                    "obj/**",
+                    "_site/**"
+                ]
+            }
+        ],
+        "resource": [
+            {
+                "files": [
+                    "images/**"
+                ]
+            }
+        ],
+        "output": "_site",
+        "template": [
+            "default",
+            "modern"
+        ],
+        "globalMetadata": {
+            "_appName": "notebook-automation",
+            "_appTitle": "Obsidian Notebook Automation for Coursera",
+            "_enableSearch": true,
+            "pdf": true
+        }
+    }
+}

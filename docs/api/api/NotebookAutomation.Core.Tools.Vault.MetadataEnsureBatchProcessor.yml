@@ -1,0 +1,1240 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  commentId: T:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  id: MetadataEnsureBatchProcessor
+  parent: NotebookAutomation.Core.Tools.Vault
+  children:
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor},NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor,NotebookAutomation.Core.Configuration.AppConfig)
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.EnsureMetadataAsync(System.String,System.Boolean,System.Boolean,System.Boolean)
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.InitializeProcessingQueue(System.String)
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.ProcessingProgressChanged
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.Queue
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.QueueChanged
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.UpdateQueueItemStatus(System.String,NotebookAutomation.Core.Models.DocumentProcessingStatus,NotebookAutomation.Core.Models.ProcessingStage,System.String,System.Int32,System.Int32)
+  langs:
+  - csharp
+  - vb
+  name: MetadataEnsureBatchProcessor
+  nameWithType: MetadataEnsureBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: MetadataEnsureBatchProcessor
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 25
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Batch processor for ensuring metadata in multiple markdown files.
+  remarks: >-
+    The <code>MetadataEnsureBatchProcessor</code> class provides functionality for processing
+
+    metadata in markdown files within a vault directory. It supports queue management,
+
+    progress tracking, and error handling, with eventing capabilities for real-time
+
+    monitoring and UI integration.
+  example: []
+  syntax:
+    content: public class MetadataEnsureBatchProcessor
+    content.vb: Public Class MetadataEnsureBatchProcessor
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor},NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor,NotebookAutomation.Core.Configuration.AppConfig)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor},NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor,NotebookAutomation.Core.Configuration.AppConfig)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor},NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor,NotebookAutomation.Core.Configuration.AppConfig)'
+  parent: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: MetadataEnsureBatchProcessor(ILogger<MetadataEnsureBatchProcessor>, MetadataEnsureProcessor, AppConfig)
+  nameWithType: MetadataEnsureBatchProcessor.MetadataEnsureBatchProcessor(ILogger<MetadataEnsureBatchProcessor>, MetadataEnsureProcessor, AppConfig)
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.MetadataEnsureBatchProcessor(Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor>, NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor, NotebookAutomation.Core.Configuration.AppConfig)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 25
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Batch processor for ensuring metadata in multiple markdown files.
+  remarks: >-
+    The <code>MetadataEnsureBatchProcessor</code> class provides functionality for processing
+
+    metadata in markdown files within a vault directory. It supports queue management,
+
+    progress tracking, and error handling, with eventing capabilities for real-time
+
+    monitoring and UI integration.
+  example: []
+  syntax:
+    content: public MetadataEnsureBatchProcessor(ILogger<MetadataEnsureBatchProcessor> logger, MetadataEnsureProcessor processor, AppConfig appConfig)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor}
+    - id: processor
+      type: NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor
+    - id: appConfig
+      type: NotebookAutomation.Core.Configuration.AppConfig
+    content.vb: Public Sub New(logger As ILogger(Of MetadataEnsureBatchProcessor), processor As MetadataEnsureProcessor, appConfig As AppConfig)
+  overload: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.#ctor*
+  nameWithType.vb: MetadataEnsureBatchProcessor.New(ILogger(Of MetadataEnsureBatchProcessor), MetadataEnsureProcessor, AppConfig)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.New(Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor), NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor, NotebookAutomation.Core.Configuration.AppConfig)
+  name.vb: New(ILogger(Of MetadataEnsureBatchProcessor), MetadataEnsureProcessor, AppConfig)
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.ProcessingProgressChanged
+  commentId: E:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.ProcessingProgressChanged
+  id: ProcessingProgressChanged
+  parent: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: ProcessingProgressChanged
+  nameWithType: MetadataEnsureBatchProcessor.ProcessingProgressChanged
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.ProcessingProgressChanged
+  type: Event
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessingProgressChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 40
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Event triggered when processing progress changes.
+  example: []
+  syntax:
+    content: public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
+    return:
+      type: System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+    content.vb: Public Event ProcessingProgressChanged As EventHandler(Of DocumentProcessingProgressEventArgs)
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.QueueChanged
+  commentId: E:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.QueueChanged
+  id: QueueChanged
+  parent: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: QueueChanged
+  nameWithType: MetadataEnsureBatchProcessor.QueueChanged
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.QueueChanged
+  type: Event
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: QueueChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 45
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Event triggered when the processing queue changes.
+  example: []
+  syntax:
+    content: public event EventHandler<QueueChangedEventArgs>? QueueChanged
+    return:
+      type: System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+    content.vb: Public Event QueueChanged As EventHandler(Of QueueChangedEventArgs)
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.Queue
+  commentId: P:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.Queue
+  id: Queue
+  parent: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: Queue
+  nameWithType: MetadataEnsureBatchProcessor.Queue
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.Queue
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Queue
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 50
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Gets a read-only view of the current processing queue.
+  example: []
+  syntax:
+    content: public IReadOnlyList<QueueItem> Queue { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+    content.vb: Public ReadOnly Property Queue As IReadOnlyList(Of QueueItem)
+  overload: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.Queue*
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  id: OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  parent: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: OnProcessingProgressChanged(string, string, int, int)
+  nameWithType: MetadataEnsureBatchProcessor.OnProcessingProgressChanged(string, string, int, int)
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnProcessingProgressChanged(string, string, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: OnProcessingProgressChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 68
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Raises the ProcessingProgressChanged event.
+  example: []
+  syntax:
+    content: protected virtual void OnProcessingProgressChanged(string filePath, string status, int currentFile, int totalFiles)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: The path of the file being processed.
+    - id: status
+      type: System.String
+      description: The current processing status message.
+    - id: currentFile
+      type: System.Int32
+      description: The current file index being processed.
+    - id: totalFiles
+      type: System.Int32
+      description: The total number of files to process.
+    content.vb: Protected Overridable Sub OnProcessingProgressChanged(filePath As String, status As String, currentFile As Integer, totalFiles As Integer)
+  overload: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnProcessingProgressChanged*
+  nameWithType.vb: MetadataEnsureBatchProcessor.OnProcessingProgressChanged(String, String, Integer, Integer)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnProcessingProgressChanged(String, String, Integer, Integer)
+  name.vb: OnProcessingProgressChanged(String, String, Integer, Integer)
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  id: OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  parent: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: OnQueueChanged(QueueItem?)
+  nameWithType: MetadataEnsureBatchProcessor.OnQueueChanged(QueueItem?)
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem?)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: OnQueueChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 77
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Raises the QueueChanged event.
+  example: []
+  syntax:
+    content: protected virtual void OnQueueChanged(QueueItem? changedItem = null)
+    parameters:
+    - id: changedItem
+      type: NotebookAutomation.Core.Models.QueueItem
+      description: The specific item that changed, or null if the entire queue changed.
+    content.vb: Protected Overridable Sub OnQueueChanged(changedItem As QueueItem = Nothing)
+  overload: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnQueueChanged*
+  nameWithType.vb: MetadataEnsureBatchProcessor.OnQueueChanged(QueueItem)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  name.vb: OnQueueChanged(QueueItem)
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.InitializeProcessingQueue(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.InitializeProcessingQueue(System.String)
+  id: InitializeProcessingQueue(System.String)
+  parent: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: InitializeProcessingQueue(string)
+  nameWithType: MetadataEnsureBatchProcessor.InitializeProcessingQueue(string)
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.InitializeProcessingQueue(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: InitializeProcessingQueue
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 89
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Initializes the processing queue with markdown files from the specified directory.
+  example: []
+  syntax:
+    content: protected virtual void InitializeProcessingQueue(string vaultPath)
+    parameters:
+    - id: vaultPath
+      type: System.String
+      description: Path to the vault directory containing markdown files.
+    content.vb: Protected Overridable Sub InitializeProcessingQueue(vaultPath As String)
+  overload: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.InitializeProcessingQueue*
+  nameWithType.vb: MetadataEnsureBatchProcessor.InitializeProcessingQueue(String)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.InitializeProcessingQueue(String)
+  name.vb: InitializeProcessingQueue(String)
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.UpdateQueueItemStatus(System.String,NotebookAutomation.Core.Models.DocumentProcessingStatus,NotebookAutomation.Core.Models.ProcessingStage,System.String,System.Int32,System.Int32)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.UpdateQueueItemStatus(System.String,NotebookAutomation.Core.Models.DocumentProcessingStatus,NotebookAutomation.Core.Models.ProcessingStage,System.String,System.Int32,System.Int32)
+  id: UpdateQueueItemStatus(System.String,NotebookAutomation.Core.Models.DocumentProcessingStatus,NotebookAutomation.Core.Models.ProcessingStage,System.String,System.Int32,System.Int32)
+  parent: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: UpdateQueueItemStatus(string, DocumentProcessingStatus, ProcessingStage, string, int, int)
+  nameWithType: MetadataEnsureBatchProcessor.UpdateQueueItemStatus(string, DocumentProcessingStatus, ProcessingStage, string, int, int)
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.UpdateQueueItemStatus(string, NotebookAutomation.Core.Models.DocumentProcessingStatus, NotebookAutomation.Core.Models.ProcessingStage, string, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: UpdateQueueItemStatus
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 123
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Updates the status of a specific queue item and fires events.
+  example: []
+  syntax:
+    content: protected virtual void UpdateQueueItemStatus(string filePath, DocumentProcessingStatus status, ProcessingStage stage, string statusMessage, int currentFile, int totalFiles)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: The file path to update.
+    - id: status
+      type: NotebookAutomation.Core.Models.DocumentProcessingStatus
+      description: The new processing status.
+    - id: stage
+      type: NotebookAutomation.Core.Models.ProcessingStage
+      description: The new processing stage.
+    - id: statusMessage
+      type: System.String
+      description: The new status message.
+    - id: currentFile
+      type: System.Int32
+      description: Current file index for progress tracking.
+    - id: totalFiles
+      type: System.Int32
+      description: Total files for progress tracking.
+    content.vb: Protected Overridable Sub UpdateQueueItemStatus(filePath As String, status As DocumentProcessingStatus, stage As ProcessingStage, statusMessage As String, currentFile As Integer, totalFiles As Integer)
+  overload: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.UpdateQueueItemStatus*
+  nameWithType.vb: MetadataEnsureBatchProcessor.UpdateQueueItemStatus(String, DocumentProcessingStatus, ProcessingStage, String, Integer, Integer)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.UpdateQueueItemStatus(String, NotebookAutomation.Core.Models.DocumentProcessingStatus, NotebookAutomation.Core.Models.ProcessingStage, String, Integer, Integer)
+  name.vb: UpdateQueueItemStatus(String, DocumentProcessingStatus, ProcessingStage, String, Integer, Integer)
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.EnsureMetadataAsync(System.String,System.Boolean,System.Boolean,System.Boolean)
+  commentId: M:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.EnsureMetadataAsync(System.String,System.Boolean,System.Boolean,System.Boolean)
+  id: EnsureMetadataAsync(System.String,System.Boolean,System.Boolean,System.Boolean)
+  parent: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: EnsureMetadataAsync(string, bool, bool, bool)
+  nameWithType: MetadataEnsureBatchProcessor.EnsureMetadataAsync(string, bool, bool, bool)
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.EnsureMetadataAsync(string, bool, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: EnsureMetadataAsync
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureBatchProcessor.cs
+    startLine: 162
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Vault
+  summary: Processes markdown files in the specified directory to ensure metadata consistency.
+  example: []
+  syntax:
+    content: public Task<MetadataBatchResult> EnsureMetadataAsync(string vaultPath, bool dryRun = false, bool forceOverwrite = false, bool retryFailed = false)
+    parameters:
+    - id: vaultPath
+      type: System.String
+      description: Path to the vault directory containing markdown files.
+    - id: dryRun
+      type: System.Boolean
+      description: If true, simulates processing without making actual changes.
+    - id: forceOverwrite
+      type: System.Boolean
+      description: If true, updates metadata even if it already exists.
+    - id: retryFailed
+      type: System.Boolean
+      description: If true, retries only files that failed in previous runs.
+    return:
+      type: System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Vault.MetadataBatchResult}
+      description: A summary of processing results.
+    content.vb: Public Function EnsureMetadataAsync(vaultPath As String, dryRun As Boolean = False, forceOverwrite As Boolean = False, retryFailed As Boolean = False) As Task(Of MetadataBatchResult)
+  overload: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.EnsureMetadataAsync*
+  nameWithType.vb: MetadataEnsureBatchProcessor.EnsureMetadataAsync(String, Boolean, Boolean, Boolean)
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.EnsureMetadataAsync(String, Boolean, Boolean, Boolean)
+  name.vb: EnsureMetadataAsync(String, Boolean, Boolean, Boolean)
+references:
+- uid: NotebookAutomation.Core.Tools.Vault
+  commentId: N:NotebookAutomation.Core.Tools.Vault
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.Vault
+  nameWithType: NotebookAutomation.Core.Tools.Vault
+  fullName: NotebookAutomation.Core.Tools.Vault
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Vault
+    name: Vault
+    href: NotebookAutomation.Core.Tools.Vault.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Vault
+    name: Vault
+    href: NotebookAutomation.Core.Tools.Vault.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.#ctor
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_MetadataEnsureBatchProcessor__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Tools_Vault_MetadataEnsureBatchProcessor__NotebookAutomation_Core_Tools_Vault_MetadataEnsureProcessor_NotebookAutomation_Core_Configuration_AppConfig_
+  name: MetadataEnsureBatchProcessor
+  nameWithType: MetadataEnsureBatchProcessor.MetadataEnsureBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.MetadataEnsureBatchProcessor
+  nameWithType.vb: MetadataEnsureBatchProcessor.New
+  fullName.vb: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<MetadataEnsureBatchProcessor>
+  nameWithType: ILogger<MetadataEnsureBatchProcessor>
+  fullName: Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor>
+  nameWithType.vb: ILogger(Of MetadataEnsureBatchProcessor)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor)
+  name.vb: ILogger(Of MetadataEnsureBatchProcessor)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+    name: MetadataEnsureBatchProcessor
+    href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+    name: MetadataEnsureBatchProcessor
+    href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor
+  commentId: T:NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor
+  parent: NotebookAutomation.Core.Tools.Vault
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor.html
+  name: MetadataEnsureProcessor
+  nameWithType: MetadataEnsureProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor
+- uid: NotebookAutomation.Core.Configuration.AppConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AppConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+  commentId: T:System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<DocumentProcessingProgressEventArgs>
+  nameWithType: EventHandler<DocumentProcessingProgressEventArgs>
+  fullName: System.EventHandler<NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs>
+  nameWithType.vb: EventHandler(Of DocumentProcessingProgressEventArgs)
+  fullName.vb: System.EventHandler(Of NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs)
+  name.vb: EventHandler(Of DocumentProcessingProgressEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+    name: DocumentProcessingProgressEventArgs
+    href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+    name: DocumentProcessingProgressEventArgs
+    href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+  commentId: T:System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<QueueChangedEventArgs>
+  nameWithType: EventHandler<QueueChangedEventArgs>
+  fullName: System.EventHandler<NotebookAutomation.Core.Models.QueueChangedEventArgs>
+  nameWithType.vb: EventHandler(Of QueueChangedEventArgs)
+  fullName.vb: System.EventHandler(Of NotebookAutomation.Core.Models.QueueChangedEventArgs)
+  name.vb: EventHandler(Of QueueChangedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+    name: QueueChangedEventArgs
+    href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+    name: QueueChangedEventArgs
+    href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.Queue*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.Queue
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_MetadataEnsureBatchProcessor_Queue
+  name: Queue
+  nameWithType: MetadataEnsureBatchProcessor.Queue
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.Queue
+- uid: System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+  commentId: T:System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<QueueItem>
+  nameWithType: IReadOnlyList<QueueItem>
+  fullName: System.Collections.Generic.IReadOnlyList<NotebookAutomation.Core.Models.QueueItem>
+  nameWithType.vb: IReadOnlyList(Of QueueItem)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of NotebookAutomation.Core.Models.QueueItem)
+  name.vb: IReadOnlyList(Of QueueItem)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.QueueItem
+    name: QueueItem
+    href: NotebookAutomation.Core.Models.QueueItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.QueueItem
+    name: QueueItem
+    href: NotebookAutomation.Core.Models.QueueItem.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnProcessingProgressChanged*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnProcessingProgressChanged
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_MetadataEnsureBatchProcessor_OnProcessingProgressChanged_System_String_System_String_System_Int32_System_Int32_
+  name: OnProcessingProgressChanged
+  nameWithType: MetadataEnsureBatchProcessor.OnProcessingProgressChanged
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnProcessingProgressChanged
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnQueueChanged*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnQueueChanged
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_MetadataEnsureBatchProcessor_OnQueueChanged_NotebookAutomation_Core_Models_QueueItem_
+  name: OnQueueChanged
+  nameWithType: MetadataEnsureBatchProcessor.OnQueueChanged
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.OnQueueChanged
+- uid: NotebookAutomation.Core.Models.QueueItem
+  commentId: T:NotebookAutomation.Core.Models.QueueItem
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.QueueItem.html
+  name: QueueItem
+  nameWithType: QueueItem
+  fullName: NotebookAutomation.Core.Models.QueueItem
+- uid: NotebookAutomation.Core.Models
+  commentId: N:NotebookAutomation.Core.Models
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Models
+  nameWithType: NotebookAutomation.Core.Models
+  fullName: NotebookAutomation.Core.Models
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.InitializeProcessingQueue*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.InitializeProcessingQueue
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_MetadataEnsureBatchProcessor_InitializeProcessingQueue_System_String_
+  name: InitializeProcessingQueue
+  nameWithType: MetadataEnsureBatchProcessor.InitializeProcessingQueue
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.InitializeProcessingQueue
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.UpdateQueueItemStatus*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.UpdateQueueItemStatus
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_MetadataEnsureBatchProcessor_UpdateQueueItemStatus_System_String_NotebookAutomation_Core_Models_DocumentProcessingStatus_NotebookAutomation_Core_Models_ProcessingStage_System_String_System_Int32_System_Int32_
+  name: UpdateQueueItemStatus
+  nameWithType: MetadataEnsureBatchProcessor.UpdateQueueItemStatus
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.UpdateQueueItemStatus
+- uid: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  commentId: T:NotebookAutomation.Core.Models.DocumentProcessingStatus
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.DocumentProcessingStatus.html
+  name: DocumentProcessingStatus
+  nameWithType: DocumentProcessingStatus
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingStatus
+- uid: NotebookAutomation.Core.Models.ProcessingStage
+  commentId: T:NotebookAutomation.Core.Models.ProcessingStage
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.ProcessingStage.html
+  name: ProcessingStage
+  nameWithType: ProcessingStage
+  fullName: NotebookAutomation.Core.Models.ProcessingStage
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.EnsureMetadataAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.EnsureMetadataAsync
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html#NotebookAutomation_Core_Tools_Vault_MetadataEnsureBatchProcessor_EnsureMetadataAsync_System_String_System_Boolean_System_Boolean_System_Boolean_
+  name: EnsureMetadataAsync
+  nameWithType: MetadataEnsureBatchProcessor.EnsureMetadataAsync
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.EnsureMetadataAsync
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Vault.MetadataBatchResult}
+  commentId: T:System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Vault.MetadataBatchResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<MetadataBatchResult>
+  nameWithType: Task<MetadataBatchResult>
+  fullName: System.Threading.Tasks.Task<NotebookAutomation.Core.Tools.Vault.MetadataBatchResult>
+  nameWithType.vb: Task(Of MetadataBatchResult)
+  fullName.vb: System.Threading.Tasks.Task(Of NotebookAutomation.Core.Tools.Vault.MetadataBatchResult)
+  name.vb: Task(Of MetadataBatchResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: NotebookAutomation.Core.Tools.Vault.MetadataBatchResult
+    name: MetadataBatchResult
+    href: NotebookAutomation.Core.Tools.Vault.MetadataBatchResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Tools.Vault.MetadataBatchResult
+    name: MetadataBatchResult
+    href: NotebookAutomation.Core.Tools.Vault.MetadataBatchResult.html
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

@@ -1,4 +1,13 @@
-﻿using NotebookAutomation.Cli.Commands;
+﻿// <copyright file="Program.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli/Program.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Cli.Commands;
 using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Utils;
@@ -13,9 +22,9 @@ namespace NotebookAutomation.Cli;
 /// all the notebook automation tools, including commands for managing
 /// course-related content between OneDrive and Obsidian notebooks.
 /// </remarks>
-public class Program
+internal class Program
 {
-    private static IServiceProvider? _serviceProvider;
+    private static IServiceProvider? serviceProvider;
 
     /// <summary>
     /// Gets the service provider for dependency injection.
@@ -23,7 +32,7 @@ public class Program
     /// <exception cref="InvalidOperationException">Thrown if the service provider is not initialized.</exception>
     public static IServiceProvider ServiceProvider
     {
-        get => _serviceProvider ?? throw new InvalidOperationException("Service provider not initialized. Call SetupDependencyInjection first.");
+        get => serviceProvider ?? throw new InvalidOperationException("Service provider not initialized. Call SetupDependencyInjection first.");
     }
 
     /// <summary>
@@ -36,7 +45,6 @@ public class Program
         // Create the root command with description
         var rootCommand = new RootCommand(
             description: "Comprehensive toolkit for managing course-related content between OneDrive and Obsidian notebooks.");
-
 
         // Global options
         var configOption = new Option<string>(
@@ -54,10 +62,12 @@ public class Program
         rootCommand.AddGlobalOption(configOption);
         rootCommand.AddGlobalOption(debugOption);
         rootCommand.AddGlobalOption(verboseOption);
-        rootCommand.AddGlobalOption(dryRunOption); if (args.Contains("--debug") || args.Contains("-d"))
+        rootCommand.AddGlobalOption(dryRunOption);
+        if (args.Contains("--debug") || args.Contains("-d"))
         {
             AnsiConsoleHelper.WriteInfo($"Debug mode enabled");
-        }            // Parse config option early to use it in dependency injection setup
+        } // Parse config option early to use it in dependency injection setup
+
         string? configPath = null;
         for (int i = 0; i < args.Length - 1; i++)
         {
@@ -81,12 +91,15 @@ public class Program
         var serviceProvider = SetupDependencyInjection(configPath, args.Contains("--debug"));
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger<Program>();
-        logger.LogInformationWithPath("Application started", "Program.cs"); var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>(), serviceProvider);
-        tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption); var vaultCommands = new VaultCommands(loggerFactory.CreateLogger<VaultCommands>(), serviceProvider);
+        logger.LogInformationWithPath("Application started", "Program.cs");
+        var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>(), serviceProvider);
+        tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var vaultCommands = new VaultCommands(loggerFactory.CreateLogger<VaultCommands>(), serviceProvider);
         vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());
-        VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption); var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
+        VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
         PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var markdownCommands = new MarkdownCommands(
@@ -107,7 +120,7 @@ public class Program
         // Print help if no subcommand or arguments are provided
         if (args.Length == 0)
         {
-            await rootCommand.InvokeAsync("--help");
+            await rootCommand.InvokeAsync("--help").ConfigureAwait(false);
             return 0;
         }
 
@@ -151,7 +164,7 @@ public class Program
         }
 
         // Execute the command
-        return await rootCommand.InvokeAsync(args);
+        return await rootCommand.InvokeAsync(args).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -180,7 +193,7 @@ public class Program
         services.AddNotebookAutomationServices(configuration, debug, configPath);
 
         // Build service provider
-        _serviceProvider = services.BuildServiceProvider();
-        return _serviceProvider;
+        serviceProvider = services.BuildServiceProvider();
+        return serviceProvider;
     }
 }

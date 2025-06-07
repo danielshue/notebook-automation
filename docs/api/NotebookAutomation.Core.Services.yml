@@ -1,0 +1,122 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Services
+  commentId: N:NotebookAutomation.Core.Services
+  id: NotebookAutomation.Core.Services
+  children:
+  - NotebookAutomation.Core.Services.AISummarizer
+  - NotebookAutomation.Core.Services.IAISummarizer
+  - NotebookAutomation.Core.Services.IOneDriveService
+  - NotebookAutomation.Core.Services.IPromptService
+  - NotebookAutomation.Core.Services.ITextChunkingService
+  - NotebookAutomation.Core.Services.OneDriveCliOptions
+  - NotebookAutomation.Core.Services.OneDriveService
+  - NotebookAutomation.Core.Services.PromptTemplateService
+  - NotebookAutomation.Core.Services.TextChunkingService
+  - NotebookAutomation.Core.Services.VaultRootContextService
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Services
+  nameWithType: NotebookAutomation.Core.Services
+  fullName: NotebookAutomation.Core.Services
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Services.AISummarizer
+  commentId: T:NotebookAutomation.Core.Services.AISummarizer
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.AISummarizer.html
+  name: AISummarizer
+  nameWithType: AISummarizer
+  fullName: NotebookAutomation.Core.Services.AISummarizer
+- uid: NotebookAutomation.Core.Services.IAISummarizer
+  commentId: T:NotebookAutomation.Core.Services.IAISummarizer
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.IAISummarizer.html
+  name: IAISummarizer
+  nameWithType: IAISummarizer
+  fullName: NotebookAutomation.Core.Services.IAISummarizer
+- uid: NotebookAutomation.Core.Services.IOneDriveService
+  commentId: T:NotebookAutomation.Core.Services.IOneDriveService
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.IOneDriveService.html
+  name: IOneDriveService
+  nameWithType: IOneDriveService
+  fullName: NotebookAutomation.Core.Services.IOneDriveService
+- uid: NotebookAutomation.Core.Services.IPromptService
+  commentId: T:NotebookAutomation.Core.Services.IPromptService
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.IPromptService.html
+  name: IPromptService
+  nameWithType: IPromptService
+  fullName: NotebookAutomation.Core.Services.IPromptService
+- uid: NotebookAutomation.Core.Services.OneDriveCliOptions
+  commentId: T:NotebookAutomation.Core.Services.OneDriveCliOptions
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.OneDriveCliOptions.html
+  name: OneDriveCliOptions
+  nameWithType: OneDriveCliOptions
+  fullName: NotebookAutomation.Core.Services.OneDriveCliOptions
+- uid: NotebookAutomation.Core.Services.OneDriveService
+  commentId: T:NotebookAutomation.Core.Services.OneDriveService
+  href: NotebookAutomation.Core.Services.OneDriveService.html
+  name: OneDriveService
+  nameWithType: OneDriveService
+  fullName: NotebookAutomation.Core.Services.OneDriveService
+- uid: NotebookAutomation.Core.Services.PromptTemplateService
+  commentId: T:NotebookAutomation.Core.Services.PromptTemplateService
+  href: NotebookAutomation.Core.Services.PromptTemplateService.html
+  name: PromptTemplateService
+  nameWithType: PromptTemplateService
+  fullName: NotebookAutomation.Core.Services.PromptTemplateService
+- uid: NotebookAutomation.Core.Services.ITextChunkingService
+  commentId: T:NotebookAutomation.Core.Services.ITextChunkingService
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.ITextChunkingService.html
+  name: ITextChunkingService
+  nameWithType: ITextChunkingService
+  fullName: NotebookAutomation.Core.Services.ITextChunkingService
+- uid: NotebookAutomation.Core.Services.TextChunkingService
+  commentId: T:NotebookAutomation.Core.Services.TextChunkingService
+  href: NotebookAutomation.Core.Services.TextChunkingService.html
+  name: TextChunkingService
+  nameWithType: TextChunkingService
+  fullName: NotebookAutomation.Core.Services.TextChunkingService
+- uid: NotebookAutomation.Core.Services.VaultRootContextService
+  commentId: T:NotebookAutomation.Core.Services.VaultRootContextService
+  href: NotebookAutomation.Core.Services.VaultRootContextService.html
+  name: VaultRootContextService
+  nameWithType: VaultRootContextService
+  fullName: NotebookAutomation.Core.Services.VaultRootContextService
+- uid: NotebookAutomation.Core.Services
+  commentId: N:NotebookAutomation.Core.Services
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Services
+  nameWithType: NotebookAutomation.Core.Services
+  fullName: NotebookAutomation.Core.Services
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html

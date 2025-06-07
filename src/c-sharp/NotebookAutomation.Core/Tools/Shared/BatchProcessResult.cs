@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Tools.Shared;
+﻿// <copyright file="BatchProcessResult.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/Shared/BatchProcessResult.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Tools.Shared;
 
 /// <summary>
 /// Represents the result and statistics of a batch document processing operation.
@@ -39,7 +48,7 @@
 public class BatchProcessResult
 {
     /// <summary>
-    /// Number of files successfully processed.
+    /// Gets or sets number of files successfully processed.
     /// </summary>
     /// <remarks>
     /// This property represents the count of files that were processed successfully during the batch operation.
@@ -47,7 +56,7 @@ public class BatchProcessResult
     public int Processed { get; set; }
 
     /// <summary>
-    /// Number of files that failed to process.
+    /// Gets or sets number of files that failed to process.
     /// </summary>
     /// <remarks>
     /// This property represents the count of files that encountered errors and could not be processed.
@@ -55,7 +64,7 @@ public class BatchProcessResult
     public int Failed { get; set; }
 
     /// <summary>
-    /// User-friendly summary string for CLI or UI output.
+    /// Gets or sets user-friendly summary string for CLI or UI output.
     /// </summary>
     /// <remarks>
     /// This property provides a concise summary of the batch processing results, suitable for display in
@@ -64,7 +73,7 @@ public class BatchProcessResult
     public string Summary { get; set; } = string.Empty;
 
     /// <summary>
-    /// Total batch processing time.
+    /// Gets or sets total batch processing time.
     /// </summary>
     /// <remarks>
     /// This property represents the total time taken to process all files in the batch operation.
@@ -72,7 +81,7 @@ public class BatchProcessResult
     public TimeSpan TotalBatchTime { get; set; }
 
     /// <summary>
-    /// Total time spent generating summaries.
+    /// Gets or sets total time spent generating summaries.
     /// </summary>
     /// <remarks>
     /// This property represents the cumulative time spent generating AI summaries for all files in the batch.
@@ -80,7 +89,7 @@ public class BatchProcessResult
     public TimeSpan TotalSummaryTime { get; set; }
 
     /// <summary>
-    /// Total tokens used for all summaries.
+    /// Gets or sets total tokens used for all summaries.
     /// </summary>
     /// <remarks>
     /// This property represents the total number of tokens consumed by the AI summarizer during the batch operation.
@@ -88,7 +97,7 @@ public class BatchProcessResult
     public int TotalTokens { get; set; }
 
     /// <summary>
-    /// Average time per file in milliseconds.
+    /// Gets or sets average time per file in milliseconds.
     /// </summary>
     /// <remarks>
     /// This property represents the average time taken to process each file in the batch operation.
@@ -96,7 +105,7 @@ public class BatchProcessResult
     public double AverageFileTimeMs { get; set; }
 
     /// <summary>
-    /// Average summary time per file in milliseconds.
+    /// Gets or sets average summary time per file in milliseconds.
     /// </summary>
     /// <remarks>
     /// This property represents the average time spent generating summaries for each file in the batch.
@@ -104,7 +113,7 @@ public class BatchProcessResult
     public double AverageSummaryTimeMs { get; set; }
 
     /// <summary>
-    /// Average tokens per summary.
+    /// Gets or sets average tokens per summary.
     /// </summary>
     /// <remarks>
     /// This property represents the average number of tokens consumed by the AI summarizer for each file in the batch.

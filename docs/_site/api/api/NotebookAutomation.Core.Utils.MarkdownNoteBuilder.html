@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class MarkdownNoteBuilder | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class MarkdownNoteBuilder | Obsidian Notebook Automation for Coursera ">
+      
+      <meta name="description" content="Provides a reusable, strongly-typed builder for generating markdown notes with YAML frontmatter.">
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/danielshue/notebook-automation/new/master/apiSpec/new?filename=NotebookAutomation_Core_Utils_MarkdownNoteBuilder.md&amp;value=---%0Auid%3A%20NotebookAutomation.Core.Utils.MarkdownNoteBuilder%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Utils.MarkdownNoteBuilder">
+
+
+
+  <h1 id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder" data-uid="NotebookAutomation.Core.Utils.MarkdownNoteBuilder" class="text-break">
+Class MarkdownNoteBuilder  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/MarkdownNoteBuilder.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Utils.html">Utils</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Provides a reusable, strongly-typed builder for generating markdown notes with YAML frontmatter.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class MarkdownNoteBuilder</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">MarkdownNoteBuilder</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+This class simplifies the creation of markdown notes that require YAML frontmatter for metadata, supporting both
+frontmatter-only and full note (frontmatter + body) scenarios. It uses <a class="xref" href="NotebookAutomation.Core.Utils.YamlHelper.html">YamlHelper</a> for serialization.
+</p>
+<example>
+<pre><code class="lang-csharp">var builder = new MarkdownNoteBuilder();
+var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };
+string note = builder.BuildNote(frontmatter, "# Heading\nContent");</code></pre>
+</example>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder__ctor_" data-uid="NotebookAutomation.Core.Utils.MarkdownNoteBuilder.#ctor*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder__ctor_Microsoft_Extensions_Logging_ILogger_" data-uid="NotebookAutomation.Core.Utils.MarkdownNoteBuilder.#ctor(Microsoft.Extensions.Logging.ILogger)">
+  MarkdownNoteBuilder(ILogger?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/MarkdownNoteBuilder.cs/#L30"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Provides a reusable, strongly-typed builder for generating markdown notes with YAML frontmatter.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public MarkdownNoteBuilder(ILogger? logger = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger">ILogger</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder__ctor_Microsoft_Extensions_Logging_ILogger__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This class simplifies the creation of markdown notes that require YAML frontmatter for metadata, supporting both
+frontmatter-only and full note (frontmatter + body) scenarios. It uses <a class="xref" href="NotebookAutomation.Core.Utils.YamlHelper.html">YamlHelper</a> for serialization.
+</p>
+<example>
+<pre><code class="lang-csharp">var builder = new MarkdownNoteBuilder();
+var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };
+string note = builder.BuildNote(frontmatter, "# Heading\nContent");</code></pre>
+</example>
+</div>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder_BuildNote_" data-uid="NotebookAutomation.Core.Utils.MarkdownNoteBuilder.BuildNote*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder_BuildNote_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_" data-uid="NotebookAutomation.Core.Utils.MarkdownNoteBuilder.BuildNote(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)">
+  BuildNote(Dictionary&lt;string, object&gt;, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/MarkdownNoteBuilder.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Builds a markdown note with both YAML frontmatter and a markdown content body.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string BuildNote(Dictionary&lt;string, object&gt; frontmatter, string body)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frontmatter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>A dictionary of frontmatter keys and values to serialize as YAML.</p>
+</dd>
+    <dt><code>body</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The markdown content body to append after the frontmatter.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A markdown string containing the YAML frontmatter block followed by the content body.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder_BuildNote_System_Collections_Generic_Dictionary_System_String_System_Object__System_String__examples">Examples</h4>
+  <p>///. <pre><code class="lang-csharp">var frontmatter = new Dictionary&lt;string, object&gt; { [&quot;title&quot;] = &quot;Sample&quot; };
+string note = builder.BuildNote(frontmatter, &quot;# Heading\nContent&quot;);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder_BuildNote_System_Collections_Generic_Dictionary_System_String_System_Object__System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The frontmatter is always placed at the top of the note, followed by the markdown body.</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder_CreateMarkdownWithFrontmatter_" data-uid="NotebookAutomation.Core.Utils.MarkdownNoteBuilder.CreateMarkdownWithFrontmatter*"></a>
+
+  <h3 id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder_CreateMarkdownWithFrontmatter_System_Collections_Generic_Dictionary_System_String_System_Object__" data-uid="NotebookAutomation.Core.Utils.MarkdownNoteBuilder.CreateMarkdownWithFrontmatter(System.Collections.Generic.Dictionary{System.String,System.Object})">
+  CreateMarkdownWithFrontmatter(Dictionary&lt;string, object&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/MarkdownNoteBuilder.cs/#L48"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Builds a markdown note containing only YAML frontmatter (no content body).</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public string CreateMarkdownWithFrontmatter(Dictionary&lt;string, object&gt; frontmatter)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>frontmatter</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>A dictionary of frontmatter keys and values to serialize as YAML.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>A markdown string containing only the YAML frontmatter block.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder_CreateMarkdownWithFrontmatter_System_Collections_Generic_Dictionary_System_String_System_Object___examples">Examples</h4>
+  <pre><code class="lang-csharp">var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };
+string note = builder.CreateMarkdownWithFrontmatter(frontmatter);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Utils_MarkdownNoteBuilder_CreateMarkdownWithFrontmatter_System_Collections_Generic_Dictionary_System_String_System_Object___remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The resulting string will have a YAML frontmatter block delimited by <code>---</code> and two trailing newlines.</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Utils/MarkdownNoteBuilder.cs/#L30" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

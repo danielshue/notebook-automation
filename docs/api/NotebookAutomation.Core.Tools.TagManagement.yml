@@ -1,0 +1,23 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.TagManagement
+  commentId: N:NotebookAutomation.Core.Tools.TagManagement
+  id: NotebookAutomation.Core.Tools.TagManagement
+  children:
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Tools.TagManagement
+  nameWithType: NotebookAutomation.Core.Tools.TagManagement
+  fullName: NotebookAutomation.Core.Tools.TagManagement
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  commentId: T:NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html
+  name: TagProcessor
+  nameWithType: TagProcessor
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor

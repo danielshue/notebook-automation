@@ -1,0 +1,1462 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  commentId: T:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  id: MarkdownParser
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration
+  children:
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.#ctor(Microsoft.Extensions.Logging.ILogger)
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.CombineMarkdown(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ExtractHeaders(System.String)
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.FrontmatterRegex
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseFileAsync(System.String)
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseHeader(System.String)
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseMarkdown(System.String)
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.SanitizeForFilename(System.String)
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.WriteFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  langs:
+  - csharp
+  - vb
+  name: MarkdownParser
+  nameWithType: MarkdownParser
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  type: Class
+  source:
+    id: MarkdownParser
+    path: System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs
+    startLine: 150
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  summary: Parser for markdown content with frontmatter handling.
+  remarks: >-
+    <p>
+
+    This class provides functionality for parsing and manipulating markdown content,
+
+    including:
+
+    <ul><li>Frontmatter extraction</li><li>Content formatting</li><li>Structure analysis</li></ul>
+
+    </p>
+
+    <p>
+
+    The parser integrates with the YAML helper for frontmatter processing and provides
+
+    detailed logging for diagnostics.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var parser = new MarkdownParser(logger);
+
+    var (frontmatter, content) = await parser.ParseFileAsync("example.md");
+
+    Console.WriteLine(frontmatter);
+
+    Console.WriteLine(content);</code></pre>
+  syntax:
+    content: public class MarkdownParser
+    content.vb: Public Class MarkdownParser
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.#ctor(Microsoft.Extensions.Logging.ILogger)
+  commentId: M:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.#ctor(Microsoft.Extensions.Logging.ILogger)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger)'
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: MarkdownParser(ILogger)
+  nameWithType: MarkdownParser.MarkdownParser(ILogger)
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.MarkdownParser(Microsoft.Extensions.Logging.ILogger)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+    startLine: 39
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  summary: Parser for markdown content with frontmatter handling.
+  remarks: >-
+    <p>
+
+    This class provides functionality for parsing and manipulating markdown content,
+
+    including:
+
+    <ul><li>Frontmatter extraction</li><li>Content formatting</li><li>Structure analysis</li></ul>
+
+    </p>
+
+    <p>
+
+    The parser integrates with the YAML helper for frontmatter processing and provides
+
+    detailed logging for diagnostics.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var parser = new MarkdownParser(logger);
+
+    var (frontmatter, content) = await parser.ParseFileAsync("example.md");
+
+    Console.WriteLine(frontmatter);
+
+    Console.WriteLine(content);</code></pre>
+  syntax:
+    content: public MarkdownParser(ILogger logger)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+    content.vb: Public Sub New(logger As ILogger)
+  overload: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.#ctor*
+  nameWithType.vb: MarkdownParser.New(ILogger)
+  fullName.vb: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.New(Microsoft.Extensions.Logging.ILogger)
+  name.vb: New(ILogger)
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.FrontmatterRegex
+  commentId: F:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.FrontmatterRegex
+  id: FrontmatterRegex
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: FrontmatterRegex
+  nameWithType: MarkdownParser.FrontmatterRegex
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.FrontmatterRegex
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: FrontmatterRegex
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+    startLine: 53
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  summary: Regular expression for detecting YAML frontmatter.
+  remarks: >-
+    <p>
+
+    This regex is used to identify and extract YAML frontmatter blocks from markdown files.
+
+    It matches blocks enclosed within triple dashes ("---") and captures the content between them.
+
+    </p>
+  example: []
+  syntax:
+    content: public static readonly Regex FrontmatterRegex
+    return:
+      type: System.Text.RegularExpressions.Regex
+    content.vb: Public Shared ReadOnly FrontmatterRegex As Regex
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseFileAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseFileAsync(System.String)
+  id: ParseFileAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: ParseFileAsync(string)
+  nameWithType: MarkdownParser.ParseFileAsync(string)
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseFileAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ParseFileAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+    startLine: 74
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  syntax:
+    content: public Task<(Dictionary<string, object> Frontmatter, string Content)> ParseFileAsync(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task{System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}}
+    content.vb: Public Function ParseFileAsync(filePath As String) As Task(Of (Frontmatter As Dictionary(Of String, Object), Content As String))
+  overload: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseFileAsync*
+  nameWithType.vb: MarkdownParser.ParseFileAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseFileAsync(String)
+  name.vb: ParseFileAsync(String)
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseMarkdown(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseMarkdown(System.String)
+  id: ParseMarkdown(System.String)
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: ParseMarkdown(string)
+  nameWithType: MarkdownParser.ParseMarkdown(string)
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseMarkdown(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ParseMarkdown
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+    startLine: 99
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  summary: Parses markdown text into frontmatter and content.
+  example: []
+  syntax:
+    content: public (Dictionary<string, object> Frontmatter, string Content) ParseMarkdown(string markdownText)
+    parameters:
+    - id: markdownText
+      type: System.String
+      description: The full markdown text.
+    return:
+      type: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}
+      description: A tuple containing the frontmatter dictionary and the content body.
+    content.vb: Public Function ParseMarkdown(markdownText As String) As (Frontmatter As Dictionary(Of String, Object), Content As String)
+  overload: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseMarkdown*
+  nameWithType.vb: MarkdownParser.ParseMarkdown(String)
+  fullName.vb: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseMarkdown(String)
+  name.vb: ParseMarkdown(String)
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.CombineMarkdown(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  commentId: M:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.CombineMarkdown(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  id: CombineMarkdown(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: CombineMarkdown(Dictionary<string, object>, string)
+  nameWithType: MarkdownParser.CombineMarkdown(Dictionary<string, object>, string)
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.CombineMarkdown(System.Collections.Generic.Dictionary<string, object>, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: CombineMarkdown
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+    startLine: 125
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  summary: Combines frontmatter and content into a complete markdown document.
+  example: []
+  syntax:
+    content: public string CombineMarkdown(Dictionary<string, object> frontmatter, string content)
+    parameters:
+    - id: frontmatter
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: The frontmatter dictionary.
+    - id: content
+      type: System.String
+      description: The content body.
+    return:
+      type: System.String
+      description: The complete markdown document.
+    content.vb: Public Function CombineMarkdown(frontmatter As Dictionary(Of String, Object), content As String) As String
+  overload: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.CombineMarkdown*
+  nameWithType.vb: MarkdownParser.CombineMarkdown(Dictionary(Of String, Object), String)
+  fullName.vb: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.CombineMarkdown(System.Collections.Generic.Dictionary(Of String, Object), String)
+  name.vb: CombineMarkdown(Dictionary(Of String, Object), String)
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.WriteFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  commentId: M:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.WriteFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  id: WriteFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: WriteFileAsync(string, Dictionary<string, object>, string)
+  nameWithType: MarkdownParser.WriteFileAsync(string, Dictionary<string, object>, string)
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.WriteFileAsync(string, System.Collections.Generic.Dictionary<string, object>, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: WriteFileAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+    startLine: 137
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  summary: Writes a markdown document to a file.
+  example: []
+  syntax:
+    content: public Task<bool> WriteFileAsync(string filePath, Dictionary<string, object> frontmatter, string content)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: The target file path.
+    - id: frontmatter
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: The frontmatter dictionary.
+    - id: content
+      type: System.String
+      description: The content body.
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: True if successful, false otherwise.
+    content.vb: Public Function WriteFileAsync(filePath As String, frontmatter As Dictionary(Of String, Object), content As String) As Task(Of Boolean)
+  overload: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.WriteFileAsync*
+  nameWithType.vb: MarkdownParser.WriteFileAsync(String, Dictionary(Of String, Object), String)
+  fullName.vb: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.WriteFileAsync(String, System.Collections.Generic.Dictionary(Of String, Object), String)
+  name.vb: WriteFileAsync(String, Dictionary(Of String, Object), String)
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseHeader(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseHeader(System.String)
+  id: ParseHeader(System.String)
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: ParseHeader(string)
+  nameWithType: MarkdownParser.ParseHeader(string)
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseHeader(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ParseHeader
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+    startLine: 160
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  summary: Extracts the header level and title from a markdown header line.
+  example: []
+  syntax:
+    content: public static (int Level, string Title) ParseHeader(string headerLine)
+    parameters:
+    - id: headerLine
+      type: System.String
+      description: The header line to parse.
+    return:
+      type: System.ValueTuple{System.Int32,System.String}
+      description: A tuple containing the header level and title.
+    content.vb: Public Shared Function ParseHeader(headerLine As String) As (Level As Integer, Title As String)
+  overload: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseHeader*
+  nameWithType.vb: MarkdownParser.ParseHeader(String)
+  fullName.vb: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseHeader(String)
+  name.vb: ParseHeader(String)
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ExtractHeaders(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ExtractHeaders(System.String)
+  id: ExtractHeaders(System.String)
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: ExtractHeaders(string)
+  nameWithType: MarkdownParser.ExtractHeaders(string)
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ExtractHeaders(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ExtractHeaders
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+    startLine: 184
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  summary: Extracts all headers from markdown content.
+  example: []
+  syntax:
+    content: public static List<(int Level, string Title, int LineNumber)> ExtractHeaders(string content)
+    parameters:
+    - id: content
+      type: System.String
+      description: The markdown content to parse.
+    return:
+      type: System.Collections.Generic.List{System.ValueTuple{System.Int32,System.String,System.Int32}}
+      description: A list of header level and title tuples.
+    content.vb: Public Shared Function ExtractHeaders(content As String) As List(Of (Level As Integer, Title As String, LineNumber As Integer))
+  overload: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ExtractHeaders*
+  nameWithType.vb: MarkdownParser.ExtractHeaders(String)
+  fullName.vb: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ExtractHeaders(String)
+  name.vb: ExtractHeaders(String)
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.SanitizeForFilename(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.SanitizeForFilename(System.String)
+  id: SanitizeForFilename(System.String)
+  parent: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: SanitizeForFilename(string)
+  nameWithType: MarkdownParser.SanitizeForFilename(string)
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.SanitizeForFilename(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SanitizeForFilename
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownParser.cs
+    startLine: 210
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.MarkdownGeneration
+  summary: Sanitizes a string for use in a filename.
+  example: []
+  syntax:
+    content: public static string SanitizeForFilename(string input)
+    parameters:
+    - id: input
+      type: System.String
+      description: The input string to sanitize.
+    return:
+      type: System.String
+      description: A sanitized filename-safe string.
+    content.vb: Public Shared Function SanitizeForFilename(input As String) As String
+  overload: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.SanitizeForFilename*
+  nameWithType.vb: MarkdownParser.SanitizeForFilename(String)
+  fullName.vb: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.SanitizeForFilename(String)
+  name.vb: SanitizeForFilename(String)
+references:
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration
+  commentId: N:NotebookAutomation.Core.Tools.MarkdownGeneration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.MarkdownGeneration
+  nameWithType: NotebookAutomation.Core.Tools.MarkdownGeneration
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.MarkdownGeneration
+    name: MarkdownGeneration
+    href: NotebookAutomation.Core.Tools.MarkdownGeneration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.MarkdownGeneration
+    name: MarkdownGeneration
+    href: NotebookAutomation.Core.Tools.MarkdownGeneration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.#ctor
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html#NotebookAutomation_Core_Tools_MarkdownGeneration_MarkdownParser__ctor_Microsoft_Extensions_Logging_ILogger_
+  name: MarkdownParser
+  nameWithType: MarkdownParser.MarkdownParser
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.MarkdownParser
+  nameWithType.vb: MarkdownParser.New
+  fullName.vb: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger
+  commentId: T:Microsoft.Extensions.Logging.ILogger
+  parent: Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Microsoft.Extensions.Logging.ILogger
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: System.Text.RegularExpressions.Regex
+  commentId: T:System.Text.RegularExpressions.Regex
+  parent: System.Text.RegularExpressions
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.text.regularexpressions.regex
+  name: Regex
+  nameWithType: Regex
+  fullName: System.Text.RegularExpressions.Regex
+- uid: System.Text.RegularExpressions
+  commentId: N:System.Text.RegularExpressions
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Text.RegularExpressions
+  nameWithType: System.Text.RegularExpressions
+  fullName: System.Text.RegularExpressions
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.RegularExpressions
+    name: RegularExpressions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.regularexpressions
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Text
+    name: Text
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text
+  - name: .
+  - uid: System.Text.RegularExpressions
+    name: RegularExpressions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.text.regularexpressions
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseFileAsync
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html#NotebookAutomation_Core_Tools_MarkdownGeneration_MarkdownParser_ParseFileAsync_System_String_
+  name: ParseFileAsync
+  nameWithType: MarkdownParser.ParseFileAsync
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseFileAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<(Dictionary<string, object> Frontmatter, string Content)>
+  nameWithType: Task<(Dictionary<string, object> Frontmatter, string Content)>
+  fullName: System.Threading.Tasks.Task<(System.Collections.Generic.Dictionary<string, object> Frontmatter, string Content)>
+  nameWithType.vb: Task(Of (Frontmatter As Dictionary(Of String, Object), Content As String))
+  fullName.vb: System.Threading.Tasks.Task(Of (Frontmatter As System.Collections.Generic.Dictionary(Of String, Object), Content As String))
+  name.vb: Task(Of (Frontmatter As Dictionary(Of String, Object), Content As String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: (
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  - name: " "
+  - uid: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}.Frontmatter
+    name: Frontmatter
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.dictionary-system.string,system.object-,system.string-.frontmatter
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}.Content
+    name: Content
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.dictionary-system.string,system.object-,system.string-.content
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}.Frontmatter
+    name: Frontmatter
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.dictionary-system.string,system.object-,system.string-.frontmatter
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}.Content
+    name: Content
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.dictionary-system.string,system.object-,system.string-.content
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseMarkdown*
+  commentId: Overload:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseMarkdown
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html#NotebookAutomation_Core_Tools_MarkdownGeneration_MarkdownParser_ParseMarkdown_System_String_
+  name: ParseMarkdown
+  nameWithType: MarkdownParser.ParseMarkdown
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseMarkdown
+- uid: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}
+  commentId: T:System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}
+  parent: System
+  definition: System.ValueTuple`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: (Dictionary<string, object> Frontmatter, string Content)
+  nameWithType: (Dictionary<string, object> Frontmatter, string Content)
+  fullName: (System.Collections.Generic.Dictionary<string, object> Frontmatter, string Content)
+  nameWithType.vb: (Frontmatter As Dictionary(Of String, Object), Content As String)
+  fullName.vb: (Frontmatter As System.Collections.Generic.Dictionary(Of String, Object), Content As String)
+  name.vb: (Frontmatter As Dictionary(Of String, Object), Content As String)
+  spec.csharp:
+  - name: (
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  - name: " "
+  - uid: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}.Frontmatter
+    name: Frontmatter
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.dictionary-system.string,system.object-,system.string-.frontmatter
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}.Content
+    name: Content
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.dictionary-system.string,system.object-,system.string-.content
+  - name: )
+  spec.vb:
+  - name: (
+  - uid: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}.Frontmatter
+    name: Frontmatter
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.dictionary-system.string,system.object-,system.string-.frontmatter
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.Collections.Generic.Dictionary{System.String,System.Object},System.String}.Content
+    name: Content
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.collections.generic.dictionary-system.string,system.object-,system.string-.content
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.ValueTuple`2
+  commentId: T:System.ValueTuple`2
+  name: (T1, T2)
+  nameWithType: (T1, T2)
+  fullName: (T1, T2)
+  spec.csharp:
+  - name: (
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: )
+  spec.vb:
+  - name: (
+  - name: T1
+  - name: ','
+  - name: " "
+  - name: T2
+  - name: )
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.CombineMarkdown*
+  commentId: Overload:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.CombineMarkdown
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html#NotebookAutomation_Core_Tools_MarkdownGeneration_MarkdownParser_CombineMarkdown_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_
+  name: CombineMarkdown
+  nameWithType: MarkdownParser.CombineMarkdown
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.CombineMarkdown
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.WriteFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.WriteFileAsync
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html#NotebookAutomation_Core_Tools_MarkdownGeneration_MarkdownParser_WriteFileAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_
+  name: WriteFileAsync
+  nameWithType: MarkdownParser.WriteFileAsync
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.WriteFileAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseHeader*
+  commentId: Overload:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseHeader
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html#NotebookAutomation_Core_Tools_MarkdownGeneration_MarkdownParser_ParseHeader_System_String_
+  name: ParseHeader
+  nameWithType: MarkdownParser.ParseHeader
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ParseHeader
+- uid: System.ValueTuple{System.Int32,System.String}
+  commentId: T:System.ValueTuple{System.Int32,System.String}
+  parent: System
+  definition: System.ValueTuple`2
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: (int Level, string Title)
+  nameWithType: (int Level, string Title)
+  fullName: (int Level, string Title)
+  nameWithType.vb: (Level As Integer, Title As String)
+  fullName.vb: (Level As Integer, Title As String)
+  name.vb: (Level As Integer, Title As String)
+  spec.csharp:
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.String}.Level
+    name: Level
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string-.level
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.String}.Title
+    name: Title
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string-.title
+  - name: )
+  spec.vb:
+  - name: (
+  - uid: System.ValueTuple{System.Int32,System.String}.Level
+    name: Level
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string-.level
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.String}.Title
+    name: Title
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string-.title
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ExtractHeaders*
+  commentId: Overload:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ExtractHeaders
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html#NotebookAutomation_Core_Tools_MarkdownGeneration_MarkdownParser_ExtractHeaders_System_String_
+  name: ExtractHeaders
+  nameWithType: MarkdownParser.ExtractHeaders
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.ExtractHeaders
+- uid: System.Collections.Generic.List{System.ValueTuple{System.Int32,System.String,System.Int32}}
+  commentId: T:System.Collections.Generic.List{System.ValueTuple{System.Int32,System.String,System.Int32}}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<(int Level, string Title, int LineNumber)>
+  nameWithType: List<(int Level, string Title, int LineNumber)>
+  fullName: System.Collections.Generic.List<(int Level, string Title, int LineNumber)>
+  nameWithType.vb: List(Of (Level As Integer, Title As String, LineNumber As Integer))
+  fullName.vb: System.Collections.Generic.List(Of (Level As Integer, Title As String, LineNumber As Integer))
+  name.vb: List(Of (Level As Integer, Title As String, LineNumber As Integer))
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: (
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.String,System.Int32}.Level
+    name: Level
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string,system.int32-.level
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.String,System.Int32}.Title
+    name: Title
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string,system.int32-.title
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.String,System.Int32}.LineNumber
+    name: LineNumber
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string,system.int32-.linenumber
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.Int32,System.String,System.Int32}.Level
+    name: Level
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string,system.int32-.level
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.String,System.Int32}.Title
+    name: Title
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string,system.int32-.title
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.Int32,System.String,System.Int32}.LineNumber
+    name: LineNumber
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.int32,system.string,system.int32-.linenumber
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.SanitizeForFilename*
+  commentId: Overload:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.SanitizeForFilename
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html#NotebookAutomation_Core_Tools_MarkdownGeneration_MarkdownParser_SanitizeForFilename_System_String_
+  name: SanitizeForFilename
+  nameWithType: MarkdownParser.SanitizeForFilename
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.SanitizeForFilename

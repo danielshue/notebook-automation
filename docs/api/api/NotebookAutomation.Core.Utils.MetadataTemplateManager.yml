@@ -1,0 +1,931 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  commentId: T:NotebookAutomation.Core.Utils.MetadataTemplateManager
+  id: MetadataTemplateManager
+  parent: NotebookAutomation.Core.Utils
+  children:
+  - NotebookAutomation.Core.Utils.MetadataTemplateManager.#ctor(Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Configuration.AppConfig,NotebookAutomation.Core.Utils.IYamlHelper)
+  - NotebookAutomation.Core.Utils.MetadataTemplateManager.EnhanceMetadataWithTemplate(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  - NotebookAutomation.Core.Utils.MetadataTemplateManager.GetFilledTemplate(System.String,System.Collections.Generic.Dictionary{System.String,System.String})
+  - NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplate(System.String)
+  - NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplateTypes
+  - NotebookAutomation.Core.Utils.MetadataTemplateManager.LoadTemplates
+  langs:
+  - csharp
+  - vb
+  name: MetadataTemplateManager
+  nameWithType: MetadataTemplateManager
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  type: Class
+  source:
+    id: MetadataTemplateManager
+    path: System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs
+    startLine: 713
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Manages loading, parsing, and application of metadata templates from the <code>metadata.yaml</code> file.
+  remarks: >-
+    <p>
+
+    Responsible for loading and parsing the <code>metadata.yaml</code> file, which contains template definitions for various document types used in the notebook vault.
+
+    Provides methods to retrieve, fill, and apply templates to document metadata.
+
+    </p>
+
+    <example>
+
+
+    <pre><code class="lang-csharp">var manager = new MetadataTemplateManager(logger, appConfig, yamlHelper);
+
+    var template = manager.GetTemplate("video-reference");
+
+    var filled = manager.GetFilledTemplate("video-reference", new Dictionary&lt;string, string&gt; { ["title"] = "Sample" });</code></pre>
+
+    </example>
+  example: []
+  syntax:
+    content: public class MetadataTemplateManager
+    content.vb: Public Class MetadataTemplateManager
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.#ctor(Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Configuration.AppConfig,NotebookAutomation.Core.Utils.IYamlHelper)
+  commentId: M:NotebookAutomation.Core.Utils.MetadataTemplateManager.#ctor(Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Configuration.AppConfig,NotebookAutomation.Core.Utils.IYamlHelper)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Configuration.AppConfig,NotebookAutomation.Core.Utils.IYamlHelper)'
+  parent: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  langs:
+  - csharp
+  - vb
+  name: MetadataTemplateManager(ILogger, AppConfig, IYamlHelper)
+  nameWithType: MetadataTemplateManager.MetadataTemplateManager(ILogger, AppConfig, IYamlHelper)
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.MetadataTemplateManager(Microsoft.Extensions.Logging.ILogger, NotebookAutomation.Core.Configuration.AppConfig, NotebookAutomation.Core.Utils.IYamlHelper)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+    startLine: 42
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Initializes a new instance of the <xref href="NotebookAutomation.Core.Utils.MetadataTemplateManager" data-throw-if-not-resolved="false"></xref> class.
+  example: []
+  syntax:
+    content: public MetadataTemplateManager(ILogger logger, AppConfig appConfig, IYamlHelper yamlHelper)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger to use for diagnostic and error reporting.
+    - id: appConfig
+      type: NotebookAutomation.Core.Configuration.AppConfig
+      description: The application configuration.
+    - id: yamlHelper
+      type: NotebookAutomation.Core.Utils.IYamlHelper
+      description: The YAML helper service for parsing metadata.
+    content.vb: Public Sub New(logger As ILogger, appConfig As AppConfig, yamlHelper As IYamlHelper)
+  overload: NotebookAutomation.Core.Utils.MetadataTemplateManager.#ctor*
+  nameWithType.vb: MetadataTemplateManager.New(ILogger, AppConfig, IYamlHelper)
+  fullName.vb: NotebookAutomation.Core.Utils.MetadataTemplateManager.New(Microsoft.Extensions.Logging.ILogger, NotebookAutomation.Core.Configuration.AppConfig, NotebookAutomation.Core.Utils.IYamlHelper)
+  name.vb: New(ILogger, AppConfig, IYamlHelper)
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.LoadTemplates
+  commentId: M:NotebookAutomation.Core.Utils.MetadataTemplateManager.LoadTemplates
+  id: LoadTemplates
+  parent: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  langs:
+  - csharp
+  - vb
+  name: LoadTemplates()
+  nameWithType: MetadataTemplateManager.LoadTemplates()
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.LoadTemplates()
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LoadTemplates
+    path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+    startLine: 71
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Loads all templates from the <code>metadata.yaml</code> file into memory.
+  remarks: >-
+    Parses each YAML document in the file and stores templates by their <code>template-type</code> key.
+
+    Logs errors and warnings for missing files or parse failures.
+  example: []
+  syntax:
+    content: public void LoadTemplates()
+    content.vb: Public Sub LoadTemplates()
+  overload: NotebookAutomation.Core.Utils.MetadataTemplateManager.LoadTemplates*
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplate(System.String)
+  commentId: M:NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplate(System.String)
+  id: GetTemplate(System.String)
+  parent: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  langs:
+  - csharp
+  - vb
+  name: GetTemplate(string)
+  nameWithType: MetadataTemplateManager.GetTemplate(string)
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplate(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetTemplate
+    path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+    startLine: 140
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Gets a template by its type.
+  example:
+  - <pre><code class="lang-csharp">var template = manager.GetTemplate("pdf-reference");</code></pre>
+  syntax:
+    content: public Dictionary<string, object>? GetTemplate(string templateType)
+    parameters:
+    - id: templateType
+      type: System.String
+      description: The type of template to retrieve (e.g., <code>video-reference</code>).
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: A copy of the template dictionary, or <code>null</code> if not found.
+    content.vb: Public Function GetTemplate(templateType As String) As Dictionary(Of String, Object)
+  overload: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplate*
+  nameWithType.vb: MetadataTemplateManager.GetTemplate(String)
+  fullName.vb: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplate(String)
+  name.vb: GetTemplate(String)
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplateTypes
+  commentId: M:NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplateTypes
+  id: GetTemplateTypes
+  parent: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  langs:
+  - csharp
+  - vb
+  name: GetTemplateTypes()
+  nameWithType: MetadataTemplateManager.GetTemplateTypes()
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplateTypes()
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetTemplateTypes
+    path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+    startLine: 155
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Gets all available template types loaded from <code>metadata.yaml</code>.
+  example: []
+  syntax:
+    content: public List<string> GetTemplateTypes()
+    return:
+      type: System.Collections.Generic.List{System.String}
+      description: A list of template type names.
+    content.vb: Public Function GetTemplateTypes() As List(Of String)
+  overload: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplateTypes*
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetFilledTemplate(System.String,System.Collections.Generic.Dictionary{System.String,System.String})
+  commentId: M:NotebookAutomation.Core.Utils.MetadataTemplateManager.GetFilledTemplate(System.String,System.Collections.Generic.Dictionary{System.String,System.String})
+  id: GetFilledTemplate(System.String,System.Collections.Generic.Dictionary{System.String,System.String})
+  parent: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  langs:
+  - csharp
+  - vb
+  name: GetFilledTemplate(string, Dictionary<string, string>)
+  nameWithType: MetadataTemplateManager.GetFilledTemplate(string, Dictionary<string, string>)
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetFilledTemplate(string, System.Collections.Generic.Dictionary<string, string>)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetFilledTemplate
+    path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+    startLine: 171
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Gets a template by type and fills in provided values for placeholders.
+  example:
+  - <pre><code class="lang-csharp">var filled = manager.GetFilledTemplate("video-reference", new Dictionary&lt;string, string&gt; { ["title"] = "Sample" });</code></pre>
+  syntax:
+    content: public Dictionary<string, object>? GetFilledTemplate(string templateType, Dictionary<string, string> values)
+    parameters:
+    - id: templateType
+      type: System.String
+      description: The type of template to retrieve (e.g., <code>video-reference</code>).
+    - id: values
+      type: System.Collections.Generic.Dictionary{System.String,System.String}
+      description: A dictionary of values to fill in for template placeholders.
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: A filled template dictionary, or <code>null</code> if the template is not found.
+    content.vb: Public Function GetFilledTemplate(templateType As String, values As Dictionary(Of String, String)) As Dictionary(Of String, Object)
+  overload: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetFilledTemplate*
+  nameWithType.vb: MetadataTemplateManager.GetFilledTemplate(String, Dictionary(Of String, String))
+  fullName.vb: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetFilledTemplate(String, System.Collections.Generic.Dictionary(Of String, String))
+  name.vb: GetFilledTemplate(String, Dictionary(Of String, String))
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.EnhanceMetadataWithTemplate(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  commentId: M:NotebookAutomation.Core.Utils.MetadataTemplateManager.EnhanceMetadataWithTemplate(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  id: EnhanceMetadataWithTemplate(System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  parent: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  langs:
+  - csharp
+  - vb
+  name: EnhanceMetadataWithTemplate(Dictionary<string, object>, string)
+  nameWithType: MetadataTemplateManager.EnhanceMetadataWithTemplate(Dictionary<string, object>, string)
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.EnhanceMetadataWithTemplate(System.Collections.Generic.Dictionary<string, object>, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: EnhanceMetadataWithTemplate
+    path: src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+    startLine: 205
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Utils
+  summary: Enhances document metadata with appropriate template fields based on the note type.
+  remarks: Fields from the template are added if missing or empty in the original metadata. Special handling is applied for certain fields.
+  example:
+  - <pre><code class="lang-csharp">var enhanced = manager.EnhanceMetadataWithTemplate(metadata, "Video Note");</code></pre>
+  syntax:
+    content: public Dictionary<string, object> EnhanceMetadataWithTemplate(Dictionary<string, object> metadata, string noteType)
+    parameters:
+    - id: metadata
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: The current document metadata to enhance.
+    - id: noteType
+      type: System.String
+      description: The type of document being processed (e.g., <code>Video Note</code>, <code>PDF Note</code>).
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: Enhanced metadata with template fields added and defaults filled in.
+    content.vb: Public Function EnhanceMetadataWithTemplate(metadata As Dictionary(Of String, Object), noteType As String) As Dictionary(Of String, Object)
+  overload: NotebookAutomation.Core.Utils.MetadataTemplateManager.EnhanceMetadataWithTemplate*
+  nameWithType.vb: MetadataTemplateManager.EnhanceMetadataWithTemplate(Dictionary(Of String, Object), String)
+  fullName.vb: NotebookAutomation.Core.Utils.MetadataTemplateManager.EnhanceMetadataWithTemplate(System.Collections.Generic.Dictionary(Of String, Object), String)
+  name.vb: EnhanceMetadataWithTemplate(Dictionary(Of String, Object), String)
+references:
+- uid: NotebookAutomation.Core.Utils
+  commentId: N:NotebookAutomation.Core.Utils
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Utils
+  nameWithType: NotebookAutomation.Core.Utils
+  fullName: NotebookAutomation.Core.Utils
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  commentId: T:NotebookAutomation.Core.Utils.MetadataTemplateManager
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.MetadataTemplateManager.html
+  name: MetadataTemplateManager
+  nameWithType: MetadataTemplateManager
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Utils.MetadataTemplateManager.#ctor
+  href: NotebookAutomation.Core.Utils.MetadataTemplateManager.html#NotebookAutomation_Core_Utils_MetadataTemplateManager__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Configuration_AppConfig_NotebookAutomation_Core_Utils_IYamlHelper_
+  name: MetadataTemplateManager
+  nameWithType: MetadataTemplateManager.MetadataTemplateManager
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.MetadataTemplateManager
+  nameWithType.vb: MetadataTemplateManager.New
+  fullName.vb: NotebookAutomation.Core.Utils.MetadataTemplateManager.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger
+  commentId: T:Microsoft.Extensions.Logging.ILogger
+  parent: Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Microsoft.Extensions.Logging.ILogger
+- uid: NotebookAutomation.Core.Configuration.AppConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AppConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig
+- uid: NotebookAutomation.Core.Utils.IYamlHelper
+  commentId: T:NotebookAutomation.Core.Utils.IYamlHelper
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.IYamlHelper.html
+  name: IYamlHelper
+  nameWithType: IYamlHelper
+  fullName: NotebookAutomation.Core.Utils.IYamlHelper
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.LoadTemplates*
+  commentId: Overload:NotebookAutomation.Core.Utils.MetadataTemplateManager.LoadTemplates
+  href: NotebookAutomation.Core.Utils.MetadataTemplateManager.html#NotebookAutomation_Core_Utils_MetadataTemplateManager_LoadTemplates
+  name: LoadTemplates
+  nameWithType: MetadataTemplateManager.LoadTemplates
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.LoadTemplates
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplate*
+  commentId: Overload:NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplate
+  href: NotebookAutomation.Core.Utils.MetadataTemplateManager.html#NotebookAutomation_Core_Utils_MetadataTemplateManager_GetTemplate_System_String_
+  name: GetTemplate
+  nameWithType: MetadataTemplateManager.GetTemplate
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplate
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplateTypes*
+  commentId: Overload:NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplateTypes
+  href: NotebookAutomation.Core.Utils.MetadataTemplateManager.html#NotebookAutomation_Core_Utils_MetadataTemplateManager_GetTemplateTypes
+  name: GetTemplateTypes
+  nameWithType: MetadataTemplateManager.GetTemplateTypes
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetTemplateTypes
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetFilledTemplate*
+  commentId: Overload:NotebookAutomation.Core.Utils.MetadataTemplateManager.GetFilledTemplate
+  href: NotebookAutomation.Core.Utils.MetadataTemplateManager.html#NotebookAutomation_Core_Utils_MetadataTemplateManager_GetFilledTemplate_System_String_System_Collections_Generic_Dictionary_System_String_System_String__
+  name: GetFilledTemplate
+  nameWithType: MetadataTemplateManager.GetFilledTemplate
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.GetFilledTemplate
+- uid: System.Collections.Generic.Dictionary{System.String,System.String}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, string>
+  nameWithType: Dictionary<string, string>
+  fullName: System.Collections.Generic.Dictionary<string, string>
+  nameWithType.vb: Dictionary(Of String, String)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, String)
+  name.vb: Dictionary(Of String, String)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager.EnhanceMetadataWithTemplate*
+  commentId: Overload:NotebookAutomation.Core.Utils.MetadataTemplateManager.EnhanceMetadataWithTemplate
+  href: NotebookAutomation.Core.Utils.MetadataTemplateManager.html#NotebookAutomation_Core_Utils_MetadataTemplateManager_EnhanceMetadataWithTemplate_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_
+  name: EnhanceMetadataWithTemplate
+  nameWithType: MetadataTemplateManager.EnhanceMetadataWithTemplate
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager.EnhanceMetadataWithTemplate

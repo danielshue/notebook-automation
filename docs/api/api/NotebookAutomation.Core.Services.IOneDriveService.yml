@@ -1,0 +1,1078 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Services.IOneDriveService
+  commentId: T:NotebookAutomation.Core.Services.IOneDriveService
+  id: IOneDriveService
+  parent: NotebookAutomation.Core.Services
+  children:
+  - NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync
+  - NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots(System.String,System.String)
+  - NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  - NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync(System.String,System.String,System.Threading.CancellationToken)
+  - NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  - NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync(System.String,System.Threading.CancellationToken)
+  - NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath(System.String)
+  - NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath(System.String)
+  - NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync
+  - NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync(System.String,System.Threading.CancellationToken)
+  - NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh(System.Boolean)
+  - NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync(System.String,System.String,System.Threading.CancellationToken)
+  langs:
+  - csharp
+  - vb
+  name: IOneDriveService
+  nameWithType: IOneDriveService
+  fullName: NotebookAutomation.Core.Services.IOneDriveService
+  type: Interface
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: IOneDriveService
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 40
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Interface for OneDrive service operations including authentication, file operations, sharing, and path mapping.
+  remarks: >-
+    <p>
+
+    This interface provides methods for interacting with OneDrive, including:
+
+    <ul><li>Authentication and token management</li><li>File operations: upload, download, list, and search</li><li>Sharing: create and retrieve shareable links</li><li>Path mapping between local and OneDrive directories</li></ul>
+
+    </p>
+
+    <p>
+
+    Implementations should handle Microsoft Graph API integration and provide robust error handling for network operations.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var oneDriveService = serviceProvider.GetService&lt;IOneDriveService&gt;();
+
+    await oneDriveService.AuthenticateAsync();
+
+
+    var files = await oneDriveService.ListFilesAsync("/Documents", CancellationToken.None);
+
+    foreach (var file in files)
+
+    {
+        Console.WriteLine(file);
+    }</code></pre>
+  syntax:
+    content: public interface IOneDriveService
+    content.vb: Public Interface IOneDriveService
+- uid: NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync
+  id: AuthenticateAsync
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: AuthenticateAsync()
+  nameWithType: IOneDriveService.AuthenticateAsync()
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync()
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AuthenticateAsync
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 61
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Authenticates with Microsoft Graph using device code flow.
+  remarks: >-
+    <p>
+
+    This method initiates the device code flow for authentication, allowing users to authenticate
+
+    by entering a code on a Microsoft login page. It retrieves and caches tokens for subsequent API calls.
+
+    </p>
+
+    <p>
+
+    If the authentication fails, an exception is thrown with details about the failure.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">await oneDriveService.AuthenticateAsync();
+
+    Console.WriteLine("Authentication successful.");</code></pre>
+  syntax:
+    content: Task AuthenticateAsync()
+    return:
+      type: System.Threading.Tasks.Task
+      description: A <xref href="System.Threading.Tasks.Task" data-throw-if-not-resolved="false"></xref> representing the asynchronous operation.
+    content.vb: Function AuthenticateAsync() As Task
+  overload: NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync*
+- uid: NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh(System.Boolean)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh(System.Boolean)
+  id: SetForceRefresh(System.Boolean)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: SetForceRefresh(bool)
+  nameWithType: IOneDriveService.SetForceRefresh(bool)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh(bool)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SetForceRefresh
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 77
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Sets the force refresh flag to bypass cached tokens on next authentication.
+  remarks: >-
+    <p>
+
+    Use this method to ensure fresh tokens are retrieved during the next authentication attempt.
+
+    </p>
+  example:
+  - <pre><code class="lang-csharp">oneDriveService.SetForceRefresh(true);</code></pre>
+  syntax:
+    content: void SetForceRefresh(bool forceRefresh)
+    parameters:
+    - id: forceRefresh
+      type: System.Boolean
+      description: If true, will force refresh authentication tokens ignoring cache.
+    content.vb: Sub SetForceRefresh(forceRefresh As Boolean)
+  overload: NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh*
+  nameWithType.vb: IOneDriveService.SetForceRefresh(Boolean)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh(Boolean)
+  name.vb: SetForceRefresh(Boolean)
+- uid: NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync
+  id: RefreshAuthenticationAsync
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: RefreshAuthenticationAsync()
+  nameWithType: IOneDriveService.RefreshAuthenticationAsync()
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync()
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: RefreshAuthenticationAsync
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 94
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Forces a refresh of the authentication tokens by clearing cache and re-authenticating.
+  remarks: >-
+    <p>
+
+    This method clears cached tokens and initiates a new authentication flow to retrieve fresh tokens.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">await oneDriveService.RefreshAuthenticationAsync();
+
+    Console.WriteLine("Tokens refreshed.");</code></pre>
+  syntax:
+    content: Task RefreshAuthenticationAsync()
+    return:
+      type: System.Threading.Tasks.Task
+      description: Task representing the async refresh operation.
+    content.vb: Function RefreshAuthenticationAsync() As Task
+  overload: NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync*
+- uid: NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: DownloadFileAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: DownloadFileAsync(string, string, CancellationToken)
+  nameWithType: IOneDriveService.DownloadFileAsync(string, string, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: DownloadFileAsync
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 115
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Downloads a file from OneDrive to a local path.
+  remarks: >-
+    <p>
+
+    This method downloads a file from OneDrive to the specified local path. If the operation is canceled,
+
+    the task is marked as canceled.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">await oneDriveService.DownloadFileAsync("/Documents/file.txt", "C:\Downloads\file.txt", CancellationToken.None);
+
+    Console.WriteLine("File downloaded.");</code></pre>
+  syntax:
+    content: Task DownloadFileAsync(string oneDrivePath, string localPath, CancellationToken cancellationToken = default)
+    parameters:
+    - id: oneDrivePath
+      type: System.String
+      description: The OneDrive file path.
+    - id: localPath
+      type: System.String
+      description: The local destination path.
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+      description: Optional cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+      description: Task representing the async download operation.
+    content.vb: Function DownloadFileAsync(oneDrivePath As String, localPath As String, cancellationToken As CancellationToken = Nothing) As Task
+  overload: NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync*
+  nameWithType.vb: IOneDriveService.DownloadFileAsync(String, String, CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync(String, String, System.Threading.CancellationToken)
+  name.vb: DownloadFileAsync(String, String, CancellationToken)
+- uid: NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync(System.String,System.Threading.CancellationToken)
+  id: ListFilesAsync(System.String,System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: ListFilesAsync(string, CancellationToken)
+  nameWithType: IOneDriveService.ListFilesAsync(string, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ListFilesAsync
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 138
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Lists files in a OneDrive folder.
+  remarks: >-
+    <p>
+
+    This method retrieves a list of file names in the specified OneDrive folder. If the folder does not exist,
+
+    an empty list is returned.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var files = await oneDriveService.ListFilesAsync("/Documents", CancellationToken.None);
+
+    foreach (var file in files)
+
+    {
+        Console.WriteLine(file);
+    }</code></pre>
+  syntax:
+    content: Task<List<string>> ListFilesAsync(string oneDriveFolder, CancellationToken cancellationToken = default)
+    parameters:
+    - id: oneDriveFolder
+      type: System.String
+      description: The OneDrive folder path.
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+      description: Optional cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{System.String}}
+      description: List of file names.
+    content.vb: Function ListFilesAsync(oneDriveFolder As String, cancellationToken As CancellationToken = Nothing) As Task(Of List(Of String))
+  overload: NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync*
+  nameWithType.vb: IOneDriveService.ListFilesAsync(String, CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync(String, System.Threading.CancellationToken)
+  name.vb: ListFilesAsync(String, CancellationToken)
+- uid: NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync(System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync(System.String,System.String,System.Threading.CancellationToken)
+  id: UploadFileAsync(System.String,System.String,System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: UploadFileAsync(string, string, CancellationToken)
+  nameWithType: IOneDriveService.UploadFileAsync(string, string, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync(string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: UploadFileAsync
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 159
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Uploads a local file to OneDrive at the specified path.
+  remarks: >-
+    <p>
+
+    This method uploads a local file to the specified OneDrive path. If the operation is canceled,
+
+    the task is marked as canceled.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">await oneDriveService.UploadFileAsync("C:\Documents\file.txt", "/Documents/file.txt", CancellationToken.None);
+
+    Console.WriteLine("File uploaded.");</code></pre>
+  syntax:
+    content: Task UploadFileAsync(string localPath, string oneDrivePath, CancellationToken cancellationToken = default)
+    parameters:
+    - id: localPath
+      type: System.String
+      description: The local file path.
+    - id: oneDrivePath
+      type: System.String
+      description: The OneDrive destination path (including filename).
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+      description: Optional cancellation token.
+    return:
+      type: System.Threading.Tasks.Task
+      description: Task representing the async upload operation.
+    content.vb: Function UploadFileAsync(localPath As String, oneDrivePath As String, cancellationToken As CancellationToken = Nothing) As Task
+  overload: NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync*
+  nameWithType.vb: IOneDriveService.UploadFileAsync(String, String, CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync(String, String, System.Threading.CancellationToken)
+  name.vb: UploadFileAsync(String, String, CancellationToken)
+- uid: NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  id: CreateShareLinkAsync(System.String,System.String,System.String,System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: CreateShareLinkAsync(string, string, string, CancellationToken)
+  nameWithType: IOneDriveService.CreateShareLinkAsync(string, string, string, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync(string, string, string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: CreateShareLinkAsync
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 180
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Creates a shareable link for a file in OneDrive.
+  remarks: >-
+    <p>
+
+    This method creates a shareable link for the specified file in OneDrive. The link type and scope can be customized.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var link = await oneDriveService.CreateShareLinkAsync("/Documents/file.txt", "edit", "organization", CancellationToken.None);
+
+    Console.WriteLine(link);</code></pre>
+  syntax:
+    content: Task<string?> CreateShareLinkAsync(string filePath, string linkType = "view", string scope = "anonymous", CancellationToken cancellationToken = default)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: The local file path or OneDrive file path. If it's a local path, it will be converted to a OneDrive-relative path.
+    - id: linkType
+      type: System.String
+      description: The type of sharing link to create. Default is "view".
+    - id: scope
+      type: System.String
+      description: The scope of the sharing link. Default is "anonymous".
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+      description: Cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+      description: The shareable link URL if successful, null otherwise.
+    content.vb: Function CreateShareLinkAsync(filePath As String, linkType As String = "view", scope As String = "anonymous", cancellationToken As CancellationToken = Nothing) As Task(Of String)
+  overload: NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync*
+  nameWithType.vb: IOneDriveService.CreateShareLinkAsync(String, String, String, CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync(String, String, String, System.Threading.CancellationToken)
+  name.vb: CreateShareLinkAsync(String, String, String, CancellationToken)
+- uid: NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync(System.String,System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync(System.String,System.Threading.CancellationToken)
+  id: SearchFilesAsync(System.String,System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: SearchFilesAsync(string, CancellationToken)
+  nameWithType: IOneDriveService.SearchFilesAsync(string, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync(string, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: SearchFilesAsync
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 202
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Searches for files or folders in OneDrive by name or pattern.
+  remarks: >-
+    <p>
+
+    This method searches for files or folders in OneDrive that match the specified query string.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var results = await oneDriveService.SearchFilesAsync("report", CancellationToken.None);
+
+    foreach (var result in results)
+
+    {
+        Console.WriteLine(result);
+    }</code></pre>
+  syntax:
+    content: Task<List<Dictionary<string, object>>> SearchFilesAsync(string query, CancellationToken cancellationToken = default)
+    parameters:
+    - id: query
+      type: System.String
+      description: The search query string.
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+      description: Optional cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{System.Collections.Generic.Dictionary{System.String,System.Object}}}
+      description: List of file/folder metadata matching the query.
+    content.vb: Function SearchFilesAsync(query As String, cancellationToken As CancellationToken = Nothing) As Task(Of List(Of Dictionary(Of String, Object)))
+  overload: NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync*
+  nameWithType.vb: IOneDriveService.SearchFilesAsync(String, CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync(String, System.Threading.CancellationToken)
+  name.vb: SearchFilesAsync(String, CancellationToken)
+- uid: NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots(System.String,System.String)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots(System.String,System.String)
+  id: ConfigureVaultRoots(System.String,System.String)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: ConfigureVaultRoots(string, string)
+  nameWithType: IOneDriveService.ConfigureVaultRoots(string, string)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ConfigureVaultRoots
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 219
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Configures the local and OneDrive vault root directories for path mapping.
+  remarks: >-
+    <p>
+
+    This method sets up the root directories for mapping between local and OneDrive paths.
+
+    </p>
+  example:
+  - <pre><code class="lang-csharp">oneDriveService.ConfigureVaultRoots("C:\Vault", "/Vault");</code></pre>
+  syntax:
+    content: void ConfigureVaultRoots(string localVaultRoot, string oneDriveVaultRoot)
+    parameters:
+    - id: localVaultRoot
+      type: System.String
+      description: The local vault root directory path.
+    - id: oneDriveVaultRoot
+      type: System.String
+      description: The OneDrive vault root directory path.
+    content.vb: Sub ConfigureVaultRoots(localVaultRoot As String, oneDriveVaultRoot As String)
+  overload: NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots*
+  nameWithType.vb: IOneDriveService.ConfigureVaultRoots(String, String)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots(String, String)
+  name.vb: ConfigureVaultRoots(String, String)
+- uid: NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath(System.String)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath(System.String)
+  id: MapLocalToOneDrivePath(System.String)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: MapLocalToOneDrivePath(string)
+  nameWithType: IOneDriveService.MapLocalToOneDrivePath(string)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: MapLocalToOneDrivePath
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 237
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Maps a local file path to its corresponding OneDrive path.
+  remarks: >-
+    <p>
+
+    This method converts a local file path to its corresponding OneDrive path based on the configured vault roots.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var oneDrivePath = oneDriveService.MapLocalToOneDrivePath("C:\Vault\file.txt");
+
+    Console.WriteLine(oneDrivePath);</code></pre>
+  syntax:
+    content: string MapLocalToOneDrivePath(string localPath)
+    parameters:
+    - id: localPath
+      type: System.String
+      description: The local file path to map.
+    return:
+      type: System.String
+      description: The corresponding OneDrive path.
+    content.vb: Function MapLocalToOneDrivePath(localPath As String) As String
+  overload: NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath*
+  nameWithType.vb: IOneDriveService.MapLocalToOneDrivePath(String)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath(String)
+  name.vb: MapLocalToOneDrivePath(String)
+- uid: NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath(System.String)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath(System.String)
+  id: MapOneDriveToLocalPath(System.String)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: MapOneDriveToLocalPath(string)
+  nameWithType: IOneDriveService.MapOneDriveToLocalPath(string)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: MapOneDriveToLocalPath
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 255
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Maps an OneDrive file path to its corresponding local path.
+  remarks: >-
+    <p>
+
+    This method converts a OneDrive file path to its corresponding local path based on the configured vault roots.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var localPath = oneDriveService.MapOneDriveToLocalPath("/Vault/file.txt");
+
+    Console.WriteLine(localPath);</code></pre>
+  syntax:
+    content: string MapOneDriveToLocalPath(string oneDrivePath)
+    parameters:
+    - id: oneDrivePath
+      type: System.String
+      description: The OneDrive file path to map.
+    return:
+      type: System.String
+      description: The corresponding local path.
+    content.vb: Function MapOneDriveToLocalPath(oneDrivePath As String) As String
+  overload: NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath*
+  nameWithType.vb: IOneDriveService.MapOneDriveToLocalPath(String)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath(String)
+  name.vb: MapOneDriveToLocalPath(String)
+- uid: NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  commentId: M:NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  id: GetShareLinkAsync(System.String,System.Boolean,System.Threading.CancellationToken)
+  parent: NotebookAutomation.Core.Services.IOneDriveService
+  langs:
+  - csharp
+  - vb
+  name: GetShareLinkAsync(string, bool, CancellationToken)
+  nameWithType: IOneDriveService.GetShareLinkAsync(string, bool, CancellationToken)
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync(string, bool, System.Threading.CancellationToken)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetShareLinkAsync
+    path: src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs
+    startLine: 276
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Services
+  summary: Gets a share link for a file in OneDrive.
+  remarks: >-
+    <p>
+
+    This method retrieves a share link for the specified file in OneDrive. If <code class="paramref">forceRefresh</code> is true,
+
+    a new link is generated.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var shareLink = await oneDriveService.GetShareLinkAsync("/Documents/file.txt", true, CancellationToken.None);
+
+    Console.WriteLine(shareLink);</code></pre>
+  syntax:
+    content: Task<string> GetShareLinkAsync(string filePath, bool forceRefresh = false, CancellationToken cancellationToken = default)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: The path of the file to get a share link for.
+    - id: forceRefresh
+      type: System.Boolean
+      description: Whether to force refresh the share link.
+    - id: cancellationToken
+      type: System.Threading.CancellationToken
+      description: Optional cancellation token.
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+      description: The share link information as a JSON string.
+    content.vb: Function GetShareLinkAsync(filePath As String, forceRefresh As Boolean = False, cancellationToken As CancellationToken = Nothing) As Task(Of String)
+  overload: NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync*
+  nameWithType.vb: IOneDriveService.GetShareLinkAsync(String, Boolean, CancellationToken)
+  fullName.vb: NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync(String, Boolean, System.Threading.CancellationToken)
+  name.vb: GetShareLinkAsync(String, Boolean, CancellationToken)
+references:
+- uid: NotebookAutomation.Core.Services
+  commentId: N:NotebookAutomation.Core.Services
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Services
+  nameWithType: NotebookAutomation.Core.Services
+  fullName: NotebookAutomation.Core.Services
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_AuthenticateAsync
+  name: AuthenticateAsync
+  nameWithType: IOneDriveService.AuthenticateAsync
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_SetForceRefresh_System_Boolean_
+  name: SetForceRefresh
+  nameWithType: IOneDriveService.SetForceRefresh
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_RefreshAuthenticationAsync
+  name: RefreshAuthenticationAsync
+  nameWithType: IOneDriveService.RefreshAuthenticationAsync
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync
+- uid: NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_DownloadFileAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: DownloadFileAsync
+  nameWithType: IOneDriveService.DownloadFileAsync
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.CancellationToken
+  commentId: T:System.Threading.CancellationToken
+  parent: System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken
+  name: CancellationToken
+  nameWithType: CancellationToken
+  fullName: System.Threading.CancellationToken
+- uid: System.Threading
+  commentId: N:System.Threading
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading
+  nameWithType: System.Threading
+  fullName: System.Threading
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+- uid: NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_ListFilesAsync_System_String_System_Threading_CancellationToken_
+  name: ListFilesAsync
+  nameWithType: IOneDriveService.ListFilesAsync
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<string>>
+  nameWithType: Task<List<string>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<string>>
+  nameWithType.vb: Task(Of List(Of String))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of String))
+  name.vb: Task(Of List(Of String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_UploadFileAsync_System_String_System_String_System_Threading_CancellationToken_
+  name: UploadFileAsync
+  nameWithType: IOneDriveService.UploadFileAsync
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync
+- uid: NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_CreateShareLinkAsync_System_String_System_String_System_String_System_Threading_CancellationToken_
+  name: CreateShareLinkAsync
+  nameWithType: IOneDriveService.CreateShareLinkAsync
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_SearchFilesAsync_System_String_System_Threading_CancellationToken_
+  name: SearchFilesAsync
+  nameWithType: IOneDriveService.SearchFilesAsync
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{System.Collections.Generic.Dictionary{System.String,System.Object}}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{System.Collections.Generic.Dictionary{System.String,System.Object}}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<Dictionary<string, object>>>
+  nameWithType: Task<List<Dictionary<string, object>>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>>
+  nameWithType.vb: Task(Of List(Of Dictionary(Of String, Object)))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of System.Collections.Generic.Dictionary(Of String, Object)))
+  name.vb: Task(Of List(Of Dictionary(Of String, Object)))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  - name: )
+  - name: )
+- uid: NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_ConfigureVaultRoots_System_String_System_String_
+  name: ConfigureVaultRoots
+  nameWithType: IOneDriveService.ConfigureVaultRoots
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots
+- uid: NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_MapLocalToOneDrivePath_System_String_
+  name: MapLocalToOneDrivePath
+  nameWithType: IOneDriveService.MapLocalToOneDrivePath
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath
+- uid: NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_MapOneDriveToLocalPath_System_String_
+  name: MapOneDriveToLocalPath
+  nameWithType: IOneDriveService.MapOneDriveToLocalPath
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath
+- uid: NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync*
+  commentId: Overload:NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync
+  href: NotebookAutomation.Core.Services.IOneDriveService.html#NotebookAutomation_Core_Services_IOneDriveService_GetShareLinkAsync_System_String_System_Boolean_System_Threading_CancellationToken_
+  name: GetShareLinkAsync
+  nameWithType: IOneDriveService.GetShareLinkAsync
+  fullName: NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync

@@ -1,0 +1,10 @@
+- name: Developer Guide
+  href: index.md
+- name: Architecture
+  href: architecture.md
+- name: Contributing
+  href: contributing.md
+- name: Building from Source
+  href: building.md
+- name: Testing
+  href: testing.md

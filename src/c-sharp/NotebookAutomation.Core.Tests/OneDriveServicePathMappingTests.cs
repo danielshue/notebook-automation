@@ -1,14 +1,16 @@
-﻿using System.IO;
-
-using Moq;
-
-using NotebookAutomation.Core.Services;
-
+﻿// <copyright file="OneDriveServicePathMappingTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/OneDriveServicePathMappingTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests;
 
-
 [TestClass]
-public class OneDriveServicePathMappingTests
+internal class OneDriveServicePathMappingTests
 {
     [TestMethod]
     public void MapLocalToOneDrivePath_MapsCorrectly()
@@ -21,7 +23,6 @@ public class OneDriveServicePathMappingTests
         string expected = "Vault/folder/file.txt";
         string result = service.MapLocalToOneDrivePath(localPath);
         Assert.AreEqual(expected, result);
-
     }
 
     [TestMethod]

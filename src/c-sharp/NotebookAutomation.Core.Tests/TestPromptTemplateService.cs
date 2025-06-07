@@ -1,9 +1,12 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Utils;
-
+// <copyright file="TestPromptTemplateService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/TestPromptTemplateService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 // Enable nullable reference types for this file
 #nullable enable
 
@@ -12,7 +15,7 @@ namespace NotebookAutomation.Core.Tests;
 /// <summary>
 /// A test implementation of PromptTemplateService that provides controlled templates for testing.
 /// </summary>
-public class TestPromptTemplateService : PromptTemplateService
+internal class TestPromptTemplateService : PromptTemplateService
 {
     /// <summary>
     /// Gets or sets the template text that will be returned by LoadTemplateAsync.
@@ -30,31 +33,34 @@ public class TestPromptTemplateService : PromptTemplateService
     public string? LastTemplateName { get; private set; }
 
     /// <summary>
-    /// Initializes a new instance of the TestPromptTemplateService class.    /// </summary>
+    /// Initializes a new instance of the <see cref="TestPromptTemplateService"/> class.    ///.</summary>
     public TestPromptTemplateService()
-        : base(Microsoft.Extensions.Logging.Abstractions.NullLogger<PromptTemplateService>.Instance,
-               new YamlHelper(Microsoft.Extensions.Logging.Abstractions.NullLogger<YamlHelper>.Instance),
-               new AppConfig())
+        : base(
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<PromptTemplateService>.Instance,
+            new YamlHelper(Microsoft.Extensions.Logging.Abstractions.NullLogger<YamlHelper>.Instance),
+            new AppConfig())
     {
     }
 
     /// <summary>
     /// Returns the configured template.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public override Task<string> LoadTemplateAsync(string templateName)
     {
-        LastTemplateName = templateName;
-        return Task.FromResult(Template ?? $"Default test template for {templateName}");
+        this.LastTemplateName = templateName;
+        return Task.FromResult(this.Template ?? $"Default test template for {templateName}");
     }
 
     /// <summary>
     /// Returns the configured substitution result or applies the default substitution.
     /// </summary>
+    /// <returns></returns>
     public new string SubstituteVariables(string template, Dictionary<string, string>? variables)
     {
-        if (ExpectedSubstitution != null)
+        if (this.ExpectedSubstitution != null)
         {
-            return ExpectedSubstitution;
+            return this.ExpectedSubstitution;
         }
 
         // Simple implementation for tests
@@ -66,6 +72,7 @@ public class TestPromptTemplateService : PromptTemplateService
                 result = result.Replace("{{" + kvp.Key + "}}", kvp.Value);
             }
         }
+
         return result;
     }
 
@@ -75,5 +82,5 @@ public class TestPromptTemplateService : PromptTemplateService
     /// <param name="template">The template string with placeholders.</param>
     /// <param name="variables">Dictionary of variable names and values.</param>
     /// <returns>The template with variables substituted.</returns>
-    public new Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(SubstituteVariables(template, variables ?? []));
+    public new Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(this.SubstituteVariables(template, variables ?? []));
 }

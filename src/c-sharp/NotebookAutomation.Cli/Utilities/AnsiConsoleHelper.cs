@@ -1,4 +1,13 @@
-﻿using NotebookAutomation.Core.Models;
+// <copyright file="AnsiConsoleHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli/Utilities/AnsiConsoleHelper.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Models;
 
 using Spectre.Console;
 
@@ -11,14 +20,14 @@ namespace NotebookAutomation.Cli.Utilities;
 /// This class includes methods for writing colored messages, managing spinner animations,
 /// and integrating Spectre.Console progress displays for batch operations.
 /// </remarks>
-public static class AnsiConsoleHelper
+internal static class AnsiConsoleHelper
 {
-    private static readonly char[] _spinnerChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
-    private static int _spinnerIndex = 0;
-    private static bool _spinnerActive = false;
-    private static CancellationTokenSource? _spinnerCancellation;
-    private static readonly Lock _spinnerLock = new();
-    private static string _currentSpinnerMessage = string.Empty;
+    private static readonly char[] SpinnerChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+    private static int spinnerIndex = 0;
+    private static bool spinnerActive = false;
+    private static CancellationTokenSource? spinnerCancellation;
+    private static readonly Lock SpinnerLock = new();
+    private static string currentSpinnerMessage = string.Empty;
 
     /// <summary>
     /// Writes a usage/help message to the console with a consistent color scheme.
@@ -29,11 +38,11 @@ public static class AnsiConsoleHelper
     public static void WriteUsage(string usage, string description, string? options = null)
     {
         Console.WriteLine($"{AnsiColors.OKCYAN}{usage}{AnsiColors.ENDC}");
-        Console.WriteLine("");
+        Console.WriteLine(string.Empty);
         Console.WriteLine($"{AnsiColors.BOLD}{description}{AnsiColors.ENDC}");
         if (!string.IsNullOrWhiteSpace(options))
         {
-            Console.WriteLine("");
+            Console.WriteLine(string.Empty);
             Console.WriteLine($"{AnsiColors.OKBLUE}Options:{AnsiColors.ENDC}");
             Console.WriteLine(options);
         }
@@ -100,44 +109,50 @@ public static class AnsiConsoleHelper
     /// <param name="message">The message to display alongside the spinner.</param>
     public static void StartSpinner(string message)
     {
-        lock (_spinnerLock)
+        lock (SpinnerLock)
         {
-            if (_spinnerActive)
+            if (spinnerActive)
             {
                 StopSpinner();
             }
 
-            _spinnerActive = true;
-            _currentSpinnerMessage = message;
-            _spinnerCancellation = new CancellationTokenSource();
-            var token = _spinnerCancellation.Token;
+            spinnerActive = true;
+            currentSpinnerMessage = message;
+            spinnerCancellation = new CancellationTokenSource();
+            var token = spinnerCancellation.Token;
 
             // Write the initial message without a newline
-            Console.Write($"{AnsiColors.OKBLUE}{_spinnerChars[_spinnerIndex]} {_currentSpinnerMessage}{AnsiColors.ENDC}");
+            Console.Write($"{AnsiColors.OKBLUE}{SpinnerChars[spinnerIndex]} {currentSpinnerMessage}{AnsiColors.ENDC}");
 
             // Ensure stdout is flushed immediately so the spinner is visible
-            Console.Out.Flush(); Task.Run(() =>
+            Console.Out.Flush();
+            Task.Run(
+                () =>
             {
                 while (!token.IsCancellationRequested)
                 {
                     Thread.Sleep(100);
 
-                    lock (_spinnerLock)
+                    lock (SpinnerLock)
                     {
                         if (token.IsCancellationRequested)
+                        {
                             break;
+                        }
 
                         try
                         {
                             // Use ANSI escape code to clear the current line and return to beginning
                             Console.Write("\r");
+
                             // Clear the entire line with spaces
                             Console.Write(new string(' ', Console.WindowWidth > 1 ? Console.WindowWidth - 1 : 80));                                // Return to start of line again
                             Console.Write("\r");
-                            // Print updated spinner and message
-                            Console.Write($"{AnsiColors.OKBLUE}{_spinnerChars[_spinnerIndex]} {_currentSpinnerMessage}{AnsiColors.ENDC}");
 
-                            _spinnerIndex = (_spinnerIndex + 1) % _spinnerChars.Length;
+                            // Print updated spinner and message
+                            Console.Write($"{AnsiColors.OKBLUE}{SpinnerChars[spinnerIndex]} {currentSpinnerMessage}{AnsiColors.ENDC}");
+
+                            spinnerIndex = (spinnerIndex + 1) % SpinnerChars.Length;
                         }
                         catch (Exception)
                         {
@@ -156,12 +171,12 @@ public static class AnsiConsoleHelper
     /// </summary>
     public static void StopSpinner()
     {
-        lock (_spinnerLock)
+        lock (SpinnerLock)
         {
-            if (_spinnerActive)
+            if (spinnerActive)
             {
-                _spinnerCancellation?.Cancel();
-                _spinnerActive = false;
+                spinnerCancellation?.Cancel();
+                spinnerActive = false;
 
                 try
                 {
@@ -187,11 +202,11 @@ public static class AnsiConsoleHelper
     /// <param name="message">The new message to display.</param>
     public static void UpdateSpinnerMessage(string message)
     {
-        lock (_spinnerLock)
+        lock (SpinnerLock)
         {
-            if (_spinnerActive)
+            if (spinnerActive)
             {
-                _currentSpinnerMessage = message;
+                currentSpinnerMessage = message;
 
                 try
                 {
@@ -199,7 +214,7 @@ public static class AnsiConsoleHelper
                     Console.Write("\r");
                     Console.Write(new string(' ', Console.WindowWidth > 1 ? Console.WindowWidth - 1 : 80));
                     Console.Write("\r");
-                    Console.Write($"{AnsiColors.OKBLUE}{_spinnerChars[_spinnerIndex]} {_currentSpinnerMessage}{AnsiColors.ENDC}");
+                    Console.Write($"{AnsiColors.OKBLUE}{SpinnerChars[spinnerIndex]} {currentSpinnerMessage}{AnsiColors.ENDC}");
                 }
                 catch
                 {
@@ -208,8 +223,6 @@ public static class AnsiConsoleHelper
             }
         }
     }
-
-    #region Spectre.Console Async Progress Support
 
     /// <summary>
     /// Executes a task with a Spectre.Console async progress display for batch processing operations.
@@ -224,7 +237,7 @@ public static class AnsiConsoleHelper
         string description,
         Action<ProgressTask>? progressUpdater = null)
     {
-        return await Spectre.Console.AnsiConsole.Progress()
+        return await AnsiConsole.Progress()
             .AutoRefresh(true)
             .AutoClear(false)
             .HideCompleted(false)
@@ -251,8 +264,8 @@ public static class AnsiConsoleHelper
                     }
                 });
 
-                return await task(progress);
-            });
+                return await task(progress).ConfigureAwait(false);
+            }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -270,14 +283,14 @@ public static class AnsiConsoleHelper
         Spinner? spinnerType = null,
         Style? style = null)
     {
-        return await Spectre.Console.AnsiConsole.Status()
+        return await AnsiConsole.Status()
             .AutoRefresh(true)
             .Spinner(spinnerType ?? Spinner.Known.Dots)
             .SpinnerStyle(style ?? new Style(foreground: Color.Blue))
             .StartAsync(statusMessage, async ctx =>
             {
-                return await taskFunc();
-            });
+                return await taskFunc().ConfigureAwait(false);
+            }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -287,20 +300,21 @@ public static class AnsiConsoleHelper
     /// <param name="statusMessage">The status message to display.</param>
     /// <param name="spinnerType">The type of spinner animation to use.</param>
     /// <param name="style">The style to apply to the spinner.</param>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public static async Task WithSpinnerAsync(
         Func<Task> taskFunc,
         string statusMessage,
         Spinner? spinnerType = null,
         Style? style = null)
     {
-        await Spectre.Console.AnsiConsole.Status()
+        await AnsiConsole.Status()
             .AutoRefresh(true)
             .Spinner(spinnerType ?? Spinner.Known.Dots)
             .SpinnerStyle(style ?? new Style(foreground: Color.Blue))
             .StartAsync(statusMessage, async ctx =>
             {
-                await taskFunc();
-            });
+                await taskFunc().ConfigureAwait(false);
+            }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -319,15 +333,15 @@ public static class AnsiConsoleHelper
         Spinner? spinnerType = null,
         Style? style = null)
     {
-        return await Spectre.Console.AnsiConsole.Status()
+        return await AnsiConsole.Status()
             .AutoRefresh(true)
             .Spinner(spinnerType ?? Spinner.Known.Dots)
             .SpinnerStyle(style ?? new Style(foreground: Color.Blue))
             .StartAsync(initialStatus, async ctx =>
             {
                 void UpdateStatus(string newStatus) => ctx.Status(newStatus);
-                return await task(UpdateStatus);
-            });
+                return await task(UpdateStatus).ConfigureAwait(false);
+            }).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -343,18 +357,15 @@ public static class AnsiConsoleHelper
         return new SpectreConsoleBatchProgressReporter(description, onProgressStarted);
     }
 
-    #endregion
-
-    #region Internal Progress Reporter Implementation
-
     /// <summary>
     /// Interface for batch progress reporting that integrates with our eventing system.
     /// </summary>
-    public interface IBatchProgressReporter : IDisposable
+    internal interface IBatchProgressReporter : IDisposable
     {
         /// <summary>
         /// Starts the progress display.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task StartAsync();
 
         /// <summary>
@@ -372,6 +383,7 @@ public static class AnsiConsoleHelper
         /// <summary>
         /// Stops the progress display.
         /// </summary>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         Task StopAsync();
     }
 
@@ -380,20 +392,21 @@ public static class AnsiConsoleHelper
     /// </summary>
     private class SpectreConsoleBatchProgressReporter : IBatchProgressReporter
     {
-        private readonly string _description;
-        private readonly Action<ProgressTask>? _onProgressStarted;
-        private ProgressContext? _context;
-        private ProgressTask? _task;
-        private readonly CancellationTokenSource _cancellationTokenSource = new();
+        private readonly string description;
+        private readonly Action<ProgressTask>? onProgressStarted;
+        private ProgressContext? context;
+        private ProgressTask? task;
+        private readonly CancellationTokenSource cancellationTokenSource = new();
 
         public SpectreConsoleBatchProgressReporter(string description, Action<ProgressTask>? onProgressStarted)
         {
-            _description = description;
-            _onProgressStarted = onProgressStarted;
+            this.description = description;
+            this.onProgressStarted = onProgressStarted;
         }
+
         public async Task StartAsync()
         {
-            await Spectre.Console.AnsiConsole.Progress()
+            await AnsiConsole.Progress()
                 .AutoRefresh(true)
                 .AutoClear(false)
                 .HideCompleted(false)
@@ -407,65 +420,64 @@ public static class AnsiConsoleHelper
                 })
                 .StartAsync(async ctx =>
                 {
-                    _context = ctx;
-                    _task = ctx.AddTask(_description);
-                    _onProgressStarted?.Invoke(_task);
+                    this.context = ctx;
+                    this.task = ctx.AddTask(this.description);
+                    this.onProgressStarted?.Invoke(this.task);
 
                     try
                     {
                         // Wait until cancelled (progress will be updated via events)
-                        while (!_cancellationTokenSource.Token.IsCancellationRequested)
+                        while (!this.cancellationTokenSource.Token.IsCancellationRequested)
                         {
-                            await Task.Delay(100, _cancellationTokenSource.Token);
+                            await Task.Delay(100, this.cancellationTokenSource.Token).ConfigureAwait(false);
                         }
                     }
                     catch (TaskCanceledException)
                     {
                         // Expected when StopAsync() is called, just exit gracefully
                     }
-                });
+                }).ConfigureAwait(false);
         }
+
         public void UpdateProgress(DocumentProcessingProgressEventArgs args)
         {
-            if (_task != null)
+            if (this.task != null)
             {
                 // Escape the status text to prevent Spectre.Console from interpreting it as markup
                 var safeStatus = args.Status.Replace("[", "[[").Replace("]", "]]");
-                _task.Description = $"{_description}: {safeStatus}";
+                this.task.Description = $"{this.description}: {safeStatus}";
                 if (args.TotalFiles > 0)
                 {
-                    _task.MaxValue = args.TotalFiles;
-                    _task.Value = args.CurrentFile;
+                    this.task.MaxValue = args.TotalFiles;
+                    this.task.Value = args.CurrentFile;
                 }
             }
         }
 
         public void UpdateQueue(QueueChangedEventArgs args)
         {
-            if (_task != null && args.Queue.Count > 0)
+            if (this.task != null && args.Queue.Count > 0)
             {
                 var completed = args.Queue.Count(q => q.Status == DocumentProcessingStatus.Completed);
                 var failed = args.Queue.Count(q => q.Status == DocumentProcessingStatus.Failed);
                 var processing = args.Queue.Count(q => q.Status == DocumentProcessingStatus.Processing);
 
-                _task.Description = $"{_description}: {completed} completed, {failed} failed, {processing} processing";
-                _task.MaxValue = args.Queue.Count;
-                _task.Value = completed + failed;
+                this.task.Description = $"{this.description}: {completed} completed, {failed} failed, {processing} processing";
+                this.task.MaxValue = args.Queue.Count;
+                this.task.Value = completed + failed;
             }
         }
 
         public async Task StopAsync()
         {
-            _cancellationTokenSource.Cancel();
-            await Task.Delay(100); // Give time for the progress to clean up
+            this.cancellationTokenSource.Cancel();
+            await Task.Delay(100).ConfigureAwait(false); // Give time for the progress to clean up
         }
 
         public void Dispose()
         {
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
+            this.cancellationTokenSource.Cancel();
+            this.cancellationTokenSource.Dispose();
         }
     }
-
-    #endregion
 }

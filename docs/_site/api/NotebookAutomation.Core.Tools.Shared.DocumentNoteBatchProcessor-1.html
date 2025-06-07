@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class DocumentNoteBatchProcessor&lt;TProcessor&gt; | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class DocumentNoteBatchProcessor&lt;TProcessor&gt; | Obsidian Notebook Automation for Coursera ">
+      
+      
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1">
+
+
+
+  <h1 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1" class="text-break">
+Class DocumentNoteBatchProcessor&lt;TProcessor&gt;  
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Tools.html">Tools</a>.<a class="xref" href="NotebookAutomation.Core.Tools.Shared.html">Shared</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"></div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class DocumentNoteBatchProcessor&lt;TProcessor&gt; where TProcessor : DocumentNoteProcessorBase</code></pre>
+  </div>
+
+
+
+  <h4 class="section">Type Parameters</h4>
+  <dl class="parameters">
+    <dt><code>TProcessor</code></dt>
+    <dd></dd>
+  </dl>
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">DocumentNoteBatchProcessor&lt;TProcessor&gt;</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1__ctor_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.#ctor*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1__ctor_Microsoft_Extensions_Logging_ILogger__0_NotebookAutomation_Core_Services_AISummarizer_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.#ctor(Microsoft.Extensions.Logging.ILogger,`0,NotebookAutomation.Core.Services.AISummarizer)">
+  DocumentNoteBatchProcessor(ILogger, TProcessor, AISummarizer)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L210"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="api/NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html">DocumentNoteBatchProcessor&lt;TProcessor&gt;</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public DocumentNoteBatchProcessor(ILogger logger, TProcessor processor, AISummarizer aiSummarizer)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger">ILogger</a></dt>
+    <dd><p>The logger instance.</p>
+</dd>
+    <dt><code>processor</code> <span class="xref">TProcessor</span></dt>
+    <dd><p>The document note processor instance.</p>
+</dd>
+    <dt><code>aiSummarizer</code> <a class="xref" href="api/NotebookAutomation.Core.Services.AISummarizer.html">AISummarizer</a></dt>
+    <dd><p>The AI summarizer instance.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_Queue_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.Queue*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_Queue" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.Queue">
+  Queue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L138"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a read-only view of the current processing queue.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;QueueItem&gt; Queue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="NotebookAutomation.Core.Models.QueueItem.html">QueueItem</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_Queue_examples">Examples</h4>
+  <pre><code class="lang-csharp">var queue = processor.Queue;
+foreach (var item in queue)
+{
+    Console.WriteLine(item.FilePath);
+}</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_Queue_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This property provides a snapshot of the current processing queue, allowing external
+components to inspect the queue without modifying it.
+</p>
+</div>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_CompileProcessingResults_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.CompileProcessingResults*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_CompileProcessingResults_System_Int32_System_Int32_System_TimeSpan_System_TimeSpan_System_Int32_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.CompileProcessingResults(System.Int32,System.Int32,System.TimeSpan,System.TimeSpan,System.Int32)">
+  CompileProcessingResults(int, int, TimeSpan, TimeSpan, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L655"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Compiles processing results and statistics into a BatchProcessResult.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual BatchProcessResult CompileProcessingResults(int processed, int failed, TimeSpan batchTime, TimeSpan totalSummaryTime, int totalTokens)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>processed</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Number of successfully processed files.</p>
+</dd>
+    <dt><code>failed</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Number of failed files.</p>
+</dd>
+    <dt><code>batchTime</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.timespan">TimeSpan</a></dt>
+    <dd><p>Total batch processing time.</p>
+</dd>
+    <dt><code>totalSummaryTime</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.timespan">TimeSpan</a></dt>
+    <dd><p>Total AI summary time.</p>
+</dd>
+    <dt><code>totalTokens</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Total tokens used.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="api/NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html">BatchProcessResult</a></dt>
+    <dd><p>Compiled batch processing result.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_DiscoverAndFilterFiles_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.DiscoverAndFilterFiles*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_DiscoverAndFilterFiles_System_String_System_Collections_Generic_List_System_String__System_Boolean_System_String_System_String_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.DiscoverAndFilterFiles(System.String,System.Collections.Generic.List{System.String},System.Boolean,System.String,System.String)">
+  DiscoverAndFilterFiles(string, List&lt;string&gt;, bool, string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L1151"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Discovers files to process based on input path and file extensions.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual List&lt;string&gt;? DiscoverAndFilterFiles(string effectiveInput, List&lt;string&gt; fileExtensions, bool retryFailed, string effectiveOutput, string failedFilesListName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>effectiveInput</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Effective input path.</p>
+</dd>
+    <dt><code>fileExtensions</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>List of file extensions to process.</p>
+</dd>
+    <dt><code>retryFailed</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to retry only failed files.</p>
+</dd>
+    <dt><code>effectiveOutput</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Output directory for failed files list.</p>
+</dd>
+    <dt><code>failedFilesListName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Name of failed files list.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>List of files to process, or null if discovery failed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ExtractContentAsync_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ExtractContentAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ExtractContentAsync_System_String_NotebookAutomation_Core_Models_QueueItem_System_Int32_System_Int32_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ExtractContentAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32)">
+  ExtractContentAsync(string, QueueItem?, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L943"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Extracts content and metadata from a file with progress tracking.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Task&lt;(string text, Dictionary&lt;string, object&gt; metadata)&gt; ExtractContentAsync(string filePath, QueueItem? queueItem, int fileIndex, int totalFiles)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the file to extract from.</p>
+</dd>
+    <dt><code>queueItem</code> <a class="xref" href="api/NotebookAutomation.Core.Models.QueueItem.html">QueueItem</a></dt>
+    <dd><p>Queue item to update with progress.</p>
+</dd>
+    <dt><code>fileIndex</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Current file index.</p>
+</dd>
+    <dt><code>totalFiles</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Total number of files.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.text">Text</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt; <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.metadata">Metadata</a>)&gt;</dt>
+    <dd><p>Tuple containing extracted text and metadata.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GenerateAISummaryAsync_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAISummaryAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GenerateAISummaryAsync_System_String_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__NotebookAutomation_Core_Models_QueueItem_System_Int32_System_Int32_System_String_System_Boolean_System_Nullable_System_Int32__System_String_System_Boolean_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAISummaryAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.Boolean,System.Nullable{System.Int32},System.String,System.Boolean)">
+  GenerateAISummaryAsync(string, string, Dictionary&lt;string, object&gt;, QueueItem?, int, int, string?, bool, int?, string?, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L999"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Generates AI summary using processor-specific methods.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Task&lt;(string summaryText, int summaryTokens, TimeSpan summaryTime)&gt; GenerateAISummaryAsync(string filePath, string text, Dictionary&lt;string, object&gt; metadata, QueueItem? queueItem, int fileIndex, int totalFiles, string? openAiApiKey, bool noSummary, int? timeoutSeconds, string? resourcesRoot, bool noShareLinks)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the file being processed.</p>
+</dd>
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Extracted text content.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>File metadata.</p>
+</dd>
+    <dt><code>queueItem</code> <a class="xref" href="api/NotebookAutomation.Core.Models.QueueItem.html">QueueItem</a></dt>
+    <dd><p>Queue item to update with progress.</p>
+</dd>
+    <dt><code>fileIndex</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Current file index.</p>
+</dd>
+    <dt><code>totalFiles</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Total number of files.</p>
+</dd>
+    <dt><code>openAiApiKey</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>OpenAI API key.</p>
+</dd>
+    <dt><code>noSummary</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to skip summary generation.</p>
+</dd>
+    <dt><code>timeoutSeconds</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd><p>API timeout in seconds.</p>
+</dd>
+    <dt><code>resourcesRoot</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Resources root directory.</p>
+</dd>
+    <dt><code>noShareLinks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to skip share link generation.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32,system.timespan-.summarytext">summaryText</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32,system.timespan-.summarytokens">summaryTokens</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.timespan">TimeSpan</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32,system.timespan-.summarytime">summaryTime</a>)&gt;</dt>
+    <dd><p>Tuple containing summary text, token count, and summary time.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GenerateAndSaveMarkdownAsync_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAndSaveMarkdownAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GenerateAndSaveMarkdownAsync_System_String_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_System_String_NotebookAutomation_Core_Models_QueueItem_System_Int32_System_Int32_System_Boolean_System_Boolean_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAndSaveMarkdownAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.Boolean,System.Boolean)">
+  GenerateAndSaveMarkdownAsync(string, string, Dictionary&lt;string, object&gt;, string, string, QueueItem?, int, int, bool, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L525"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Generates markdown content and saves it to file with progress tracking.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Task GenerateAndSaveMarkdownAsync(string filePath, string summaryText, Dictionary&lt;string, object&gt; metadata, string noteType, string outputPath, QueueItem? queueItem, int fileIndex, int totalFiles, bool forceOverwrite, bool dryRun)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Source file path.</p>
+</dd>
+    <dt><code>summaryText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Generated summary text.</p>
+</dd>
+    <dt><code>metadata</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;</dt>
+    <dd><p>File metadata.</p>
+</dd>
+    <dt><code>noteType</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Type of note to generate.</p>
+</dd>
+    <dt><code>outputPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Output file path.</p>
+</dd>
+    <dt><code>queueItem</code> <a class="xref" href="api/NotebookAutomation.Core.Models.QueueItem.html">QueueItem</a></dt>
+    <dd><p>Queue item for progress tracking.</p>
+</dd>
+    <dt><code>fileIndex</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Current file index.</p>
+</dd>
+    <dt><code>totalFiles</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Total number of files.</p>
+</dd>
+    <dt><code>forceOverwrite</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to overwrite existing files.</p>
+</dd>
+    <dt><code>dryRun</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether this is a dry run.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>A <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a> representing the asynchronous operation.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GenerateOutputPath_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateOutputPath*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GenerateOutputPath_System_String_System_String_System_String_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateOutputPath(System.String,System.String,System.String)">
+  GenerateOutputPath(string, string, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L791"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Generates the output path for a processed file, handling video-specific naming and directory structure.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual string GenerateOutputPath(string inputFilePath, string outputDir, string? resourcesRoot)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputFilePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The input file path.</p>
+</dd>
+    <dt><code>outputDir</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The base output directory.</p>
+</dd>
+    <dt><code>resourcesRoot</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The resources root directory for calculating relative paths.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The output file path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GetDocumentType_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GetDocumentType*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GetDocumentType_System_String_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GetDocumentType(System.String)">
+  GetDocumentType(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L178"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Determines the document type based on file extension.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual string GetDocumentType(string filePath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>File path to check.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Document type (e.g., &quot;PDF&quot;, &quot;VIDEO&quot;).</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_InitializeProcessingQueue_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.InitializeProcessingQueue*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_InitializeProcessingQueue_System_Collections_Generic_List_System_String__" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.InitializeProcessingQueue(System.Collections.Generic.List{System.String})">
+  InitializeProcessingQueue(List&lt;string&gt;)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L1202"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes the processing queue with discovered files.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void InitializeProcessingQueue(List&lt;string&gt; files)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>files</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>List of files to add to queue.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_OnProcessingProgressChanged_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnProcessingProgressChanged*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_OnProcessingProgressChanged_System_String_System_String_System_Int32_System_Int32_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)">
+  OnProcessingProgressChanged(string, string, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L156"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Raises the ProcessingProgressChanged event.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void OnProcessingProgressChanged(string filePath, string status, int currentFile, int totalFiles)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The path of the file being processed.</p>
+</dd>
+    <dt><code>status</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The current processing status message.</p>
+</dd>
+    <dt><code>currentFile</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The current file index being processed.</p>
+</dd>
+    <dt><code>totalFiles</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The total number of files to process.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_OnQueueChanged_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnQueueChanged*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_OnQueueChanged_NotebookAutomation_Core_Models_QueueItem_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)">
+  OnQueueChanged(QueueItem?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L165"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Raises the QueueChanged event.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void OnQueueChanged(QueueItem? changedItem = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>changedItem</code> <a class="xref" href="api/NotebookAutomation.Core.Models.QueueItem.html">QueueItem</a></dt>
+    <dd><p>The specific item that changed, or null if the entire queue changed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_PreserveUserContentAfterNotes_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.PreserveUserContentAfterNotes*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_PreserveUserContentAfterNotes_System_String_System_String_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.PreserveUserContentAfterNotes(System.String,System.String)">
+  PreserveUserContentAfterNotes(string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L861"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Preserves user content that appears after the &quot;## Notes&quot; section in existing video markdown files.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual string PreserveUserContentAfterNotes(string existingFilePath, string newMarkdown)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>existingFilePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the existing markdown file.</p>
+</dd>
+    <dt><code>newMarkdown</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The newly generated markdown content.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The new markdown with preserved user content appended.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ProcessDocumentsAsync_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessDocumentsAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ProcessDocumentsAsync_System_String_System_String_System_Collections_Generic_List_System_String__System_String_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Nullable_System_Int32__System_String_NotebookAutomation_Core_Configuration_AppConfig_System_String_System_String_System_Boolean_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessDocumentsAsync(System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,NotebookAutomation.Core.Configuration.AppConfig,System.String,System.String,System.Boolean)">
+  ProcessDocumentsAsync(string, string?, List&lt;string&gt;, string?, bool, bool, bool, bool, int?, string?, AppConfig?, string, string, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L253"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Processes one or more document files, generating markdown notes for each, with extended options.
+Returns a BatchProcessResult with summary and statistics for CLI/UI output.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual Task&lt;BatchProcessResult&gt; ProcessDocumentsAsync(string input, string? output, List&lt;string&gt; fileExtensions, string? openAiApiKey, bool dryRun = false, bool noSummary = false, bool forceOverwrite = false, bool retryFailed = false, int? timeoutSeconds = null, string? resourcesRoot = null, AppConfig? appConfig = null, string noteType = &quot;Document Note&quot;, string failedFilesListName = &quot;failed_files.txt&quot;, bool noShareLinks = false)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Input file path or directory containing files.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Output directory where markdown notes will be saved.</p>
+</dd>
+    <dt><code>fileExtensions</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>List of file extensions to recognize as valid files.</p>
+</dd>
+    <dt><code>openAiApiKey</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Optional OpenAI API key for generating summaries.</p>
+</dd>
+    <dt><code>dryRun</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, simulates processing without writing output files.</p>
+</dd>
+    <dt><code>noSummary</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, disables OpenAI summary generation.</p>
+</dd>
+    <dt><code>forceOverwrite</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, overwrites existing notes.</p>
+</dd>
+    <dt><code>retryFailed</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, retries only failed files from previous run.</p>
+</dd>
+    <dt><code>timeoutSeconds</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd><p>Optional API request timeout in seconds.</p>
+</dd>
+    <dt><code>resourcesRoot</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Optional override for OneDrive fullpath root directory.</p>
+</dd>
+    <dt><code>appConfig</code> <a class="xref" href="api/NotebookAutomation.Core.Configuration.AppConfig.html">AppConfig</a></dt>
+    <dd><p>The application configuration object.</p>
+</dd>
+    <dt><code>noteType</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Type of note (e.g., &quot;PDF Note&quot;, &quot;Video Note&quot;).</p>
+</dd>
+    <dt><code>failedFilesListName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Name of the failed files list file (defaults to &quot;failed_files.txt&quot;).</p>
+</dd>
+    <dt><code>noShareLinks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, skips OneDrive share link creation.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html">BatchProcessResult</a>&gt;</dt>
+    <dd><p>A BatchProcessResult containing processing statistics and summary information.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ProcessSingleFileAsync_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessSingleFileAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ProcessSingleFileAsync_System_String_NotebookAutomation_Core_Models_QueueItem_System_Int32_System_Int32_System_String_System_String_System_Boolean_System_Boolean_System_String_System_Boolean_System_Nullable_System_Int32__System_Boolean_System_String_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessSingleFileAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.String,System.Boolean,System.Boolean,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.String)">
+  ProcessSingleFileAsync(string, QueueItem?, int, int, string, string?, bool, bool, string?, bool, int?, bool, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L441"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Processes a single file with complete error handling and progress tracking.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Task&lt;(bool success, string? errorMessage)&gt; ProcessSingleFileAsync(string filePath, QueueItem? queueItem, int fileIndex, int totalFiles, string effectiveOutput, string? resourcesRoot, bool forceOverwrite, bool dryRun, string? openAiApiKey, bool noSummary, int? timeoutSeconds, bool noShareLinks, string noteType)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the file to process.</p>
+</dd>
+    <dt><code>queueItem</code> <a class="xref" href="api/NotebookAutomation.Core.Models.QueueItem.html">QueueItem</a></dt>
+    <dd><p>Queue item for progress tracking.</p>
+</dd>
+    <dt><code>fileIndex</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Current file index.</p>
+</dd>
+    <dt><code>totalFiles</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Total number of files.</p>
+</dd>
+    <dt><code>effectiveOutput</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Output directory.</p>
+</dd>
+    <dt><code>resourcesRoot</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Resources root directory.</p>
+</dd>
+    <dt><code>forceOverwrite</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to overwrite existing files.</p>
+</dd>
+    <dt><code>dryRun</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether this is a dry run.</p>
+</dd>
+    <dt><code>openAiApiKey</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>OpenAI API key.</p>
+</dd>
+    <dt><code>noSummary</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to skip summary generation.</p>
+</dd>
+    <dt><code>timeoutSeconds</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a>?</dt>
+    <dd><p>API timeout in seconds.</p>
+</dd>
+    <dt><code>noShareLinks</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to skip share link generation.</p>
+</dd>
+    <dt><code>noteType</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Type of note to generate.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string-.success">success</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string-.errormessage">errorMessage</a>)&gt;</dt>
+    <dd><p>Tuple indicating success and any error message.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ValidateAndSetupProcessing_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ValidateAndSetupProcessing*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ValidateAndSetupProcessing_System_String_System_String_NotebookAutomation_Core_Configuration_AppConfig_" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ValidateAndSetupProcessing(System.String,System.String,NotebookAutomation.Core.Configuration.AppConfig)">
+  ValidateAndSetupProcessing(string, string?, AppConfig?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L918"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Validates input parameters and sets up processing configuration.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual (string effectiveInput, string effectiveOutput)? ValidateAndSetupProcessing(string input, string? output, AppConfig? appConfig)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>input</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Input path.</p>
+</dd>
+    <dt><code>output</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Output path.</p>
+</dd>
+    <dt><code>appConfig</code> <a class="xref" href="api/NotebookAutomation.Core.Configuration.AppConfig.html">AppConfig</a></dt>
+    <dd><p>Application configuration.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt>(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.effectiveinput">effectiveInput</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.effectiveoutput">effectiveOutput</a>)?</dt>
+    <dd><p>Tuple containing effective input and output paths, or null if validation failed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="events">Events
+</h2>
+
+
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ProcessingProgressChanged" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessingProgressChanged">
+  ProcessingProgressChanged
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L102"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Event triggered when processing progress changes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event EventHandler&lt;DocumentProcessingProgressEventArgs&gt;? ProcessingProgressChanged</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.eventhandler-1">EventHandler</a>&lt;<a class="xref" href="NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html">DocumentProcessingProgressEventArgs</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ProcessingProgressChanged_examples">Examples</h4>
+  <pre><code class="lang-csharp">processor.ProcessingProgressChanged += (sender, args) =&gt; Console.WriteLine(args.Progress);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ProcessingProgressChanged_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This event is raised whenever the progress of the batch processing operation changes.
+Subscribers can use this event to update progress indicators or logs.
+</p>
+</div>
+
+
+
+
+
+  <h3 id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_QueueChanged" data-uid="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.QueueChanged">
+  QueueChanged
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs/#L118"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Event triggered when the processing queue changes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event EventHandler&lt;QueueChangedEventArgs&gt;? QueueChanged</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.eventhandler-1">EventHandler</a>&lt;<a class="xref" href="NotebookAutomation.Core.Models.QueueChangedEventArgs.html">QueueChangedEventArgs</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_QueueChanged_examples">Examples</h4>
+  <pre><code class="lang-csharp">processor.QueueChanged += (sender, args) =&gt; Console.WriteLine(args.Queue);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_QueueChanged_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This event is raised whenever the processing queue is updated (e.g., items added or removed).
+Subscribers can use this event to monitor the state of the queue.
+</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,14 +1,19 @@
-﻿using Moq;
-
-using NotebookAutomation.Core.Services;
-
+﻿// <copyright file="OneDriveServiceTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Services/OneDriveServiceTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Services;
 
 /// <summary>
 /// Unit tests for the OneDriveService class.
 /// </summary>
 [TestClass]
-public class OneDriveServiceTests
+internal class OneDriveServiceTests
 {
     [TestMethod]
     [Ignore("Requires MSAL browser interaction or deeper refactor; skip in CI.")]
@@ -19,6 +24,7 @@ public class OneDriveServiceTests
         Mock<Microsoft.Identity.Client.IPublicClientApplication> msalMock = new();
         Mock<Microsoft.Identity.Client.AcquireTokenSilentParameterBuilder> silentBuilderMock = new(null, null, null);
         Mock<Microsoft.Identity.Client.AcquireTokenInteractiveParameterBuilder> interactiveBuilderMock = new(null, null);
+
         // Setup chained builder methods
         interactiveBuilderMock.Setup(b => b.WithPrompt(It.IsAny<Microsoft.Identity.Client.Prompt>())).Returns(interactiveBuilderMock.Object);
         Mock<Microsoft.Identity.Client.IAccount> fakeAccount = new();
@@ -36,16 +42,18 @@ public class OneDriveServiceTests
         OneDriveService service = new(logger.Object, "clientId", "tenantId", ["scope"], msalMock.Object);
 
         // Act
-        await service.AuthenticateAsync();
+        await service.AuthenticateAsync().ConfigureAwait(false);
 
         // Assert: Should log token cache file path and not throw
-        logger.Verify(l => l.Log(
+        logger.Verify(
+            l => l.Log(
             LogLevel.Debug,
             It.IsAny<EventId>(),
             It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Token cache file path")),
             null,
             It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.AtLeastOnce);
     }
+
     [TestMethod]
     public void Constructor_ThrowsOnNullArguments()
     {
@@ -69,7 +77,8 @@ public class OneDriveServiceTests
         OneDriveService service = new(logger.Object, "clientId", "tenantId", ["scope"]);
         service.SetForceRefresh(true);
         service.SetForceRefresh(false);
-        logger.Verify(l => l.Log(
+        logger.Verify(
+            l => l.Log(
             LogLevel.Information,
             It.IsAny<EventId>(),
             It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("Force refresh set to: True") || v.ToString().Contains("Force refresh set to: False")),
@@ -83,6 +92,7 @@ public class OneDriveServiceTests
         ILogger<OneDriveService> logger = Mock.Of<ILogger<OneDriveService>>();
         OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         service.ConfigureVaultRoots("C:/vault/", "onedrive/root/");
+
         // No exception means success; further validation would require reflection or exposing properties for test
     }
 

@@ -1,4 +1,13 @@
-﻿// Enable nullable reference types for this file
+// <copyright file="MockTextGenerationService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/MockTextGenerationService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+// Enable nullable reference types for this file
 #nullable enable
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.TextGeneration;
@@ -12,7 +21,7 @@ namespace NotebookAutomation.Core.Tests;
 /// This class provides more extensive configuration options than previous test doubles
 /// and specifically tracks the calls made to the service.
 /// </remarks>
-public class MockTextGenerationService : ITextGenerationService
+internal class MockTextGenerationService : ITextGenerationService
 {
     /// <summary>
     /// Gets or sets the response that will be returned by the service.
@@ -35,7 +44,7 @@ public class MockTextGenerationService : ITextGenerationService
     public int CallCount { get; private set; } = 0;
 
     /// <summary>
-    /// Gets or sets a flag indicating if the service should track calls.
+    /// Gets or sets a value indicating whether gets or sets a flag indicating if the service should track calls.
     /// </summary>
     public bool TrackCalls { get; set; } = true;
 
@@ -63,15 +72,15 @@ public class MockTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (TrackCalls)
+        if (this.TrackCalls)
         {
-            CallCount++;
-            LastPrompt = prompt;
+            this.CallCount++;
+            this.LastPrompt = prompt;
         }
 
-        if (ExceptionToThrow != null)
+        if (this.ExceptionToThrow != null)
         {
-            throw ExceptionToThrow;
+            throw this.ExceptionToThrow;
         }
 
         return GetEmptyAsyncEnumerable();
@@ -97,27 +106,27 @@ public class MockTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (TrackCalls)
+        if (this.TrackCalls)
         {
-            CallCount++;
-            LastPrompt = prompt;
+            this.CallCount++;
+            this.LastPrompt = prompt;
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (ExceptionToThrow != null)
+        if (this.ExceptionToThrow != null)
         {
-            throw ExceptionToThrow;
+            throw this.ExceptionToThrow;
         }
 
         string responseText;
-        if (ResponseQueue != null && ResponseQueue.Count > 0)
+        if (this.ResponseQueue != null && this.ResponseQueue.Count > 0)
         {
-            responseText = ResponseQueue.Dequeue();
+            responseText = this.ResponseQueue.Dequeue();
         }
         else
         {
-            responseText = Response ?? string.Empty;
+            responseText = this.Response ?? string.Empty;
         }
 
         List<TextContent> result = [new(responseText)];
@@ -138,27 +147,27 @@ public class MockTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (TrackCalls)
+        if (this.TrackCalls)
         {
-            CallCount++;
-            LastPrompt = prompt;
+            this.CallCount++;
+            this.LastPrompt = prompt;
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (ExceptionToThrow != null)
+        if (this.ExceptionToThrow != null)
         {
-            throw ExceptionToThrow;
+            throw this.ExceptionToThrow;
         }
 
         string responseText;
-        if (ResponseQueue != null && ResponseQueue.Count > 0)
+        if (this.ResponseQueue != null && this.ResponseQueue.Count > 0)
         {
-            responseText = ResponseQueue.Dequeue();
+            responseText = this.ResponseQueue.Dequeue();
         }
         else
         {
-            responseText = Response ?? string.Empty;
+            responseText = this.Response ?? string.Empty;
         }
 
         return Task.FromResult(new TextContent(responseText));

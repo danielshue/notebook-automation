@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Standard Header Templates for Notebook Automation Project | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Standard Header Templates for Notebook Automation Project | Obsidian Notebook Automation for Coursera ">
+      
+      
+      <link rel="icon" href="favicon.ico">
+      <link rel="stylesheet" href="public/docfx.min.css">
+      <link rel="stylesheet" href="public/main.css">
+      <meta name="docfx:navrel" content="toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/danielshue/notebook-automation/blob/master/docs/File-Header-Templates.md/#L1">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="index.html">
+            <img id="logo" class="svg" src="logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+
+      <div class="content">
+        <div class="actionbar">
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="">
+<h1 id="standard-header-templates-for-notebook-automation-project">Standard Header Templates for Notebook Automation Project</h1>
+
+<p>This document provides standardized header templates for different types of files in the Notebook Automation project.</p>
+<h2 id="c-file-header-template">C# File Header Template</h2>
+<h3 id="standard-template">Standard Template</h3>
+<pre><code class="lang-csharp">// &lt;copyright file=&quot;{FILENAME}&quot; company=&quot;Notebook Automation Project&quot;&gt;
+// Copyright (c) {YEAR} Notebook Automation Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE file in the project root for license information.
+// &lt;/copyright&gt;
+// &lt;author&gt;{AUTHOR_NAME} &lt;{AUTHOR_EMAIL}&gt;&lt;/author&gt;
+// &lt;summary&gt;
+// File: {RELATIVE_PATH}
+// Purpose: {PURPOSE_DESCRIPTION}
+// Created: {CREATION_DATE}
+// &lt;/summary&gt;
+</code></pre>
+<h3 id="template-variables">Template Variables</h3>
+<ul>
+<li><code>{FILENAME}</code>: The name of the file (e.g., <code>ConfigValidation.cs</code>)</li>
+<li><code>{YEAR}</code>: Current year (e.g., <code>2025</code>)</li>
+<li><code>{AUTHOR_NAME}</code>: Author's full name (from git config or manual entry)</li>
+<li><code>{AUTHOR_EMAIL}</code>: Author's email (from git config or manual entry)</li>
+<li><code>{RELATIVE_PATH}</code>: Path relative to project root (e.g., <code>src/c-sharp/Project/File.cs</code>)</li>
+<li><code>{PURPOSE_DESCRIPTION}</code>: Brief description of the file's purpose and functionality</li>
+<li><code>{CREATION_DATE}</code>: Date file was created (YYYY-MM-DD format)</li>
+</ul>
+<h2 id="file-type-specific-templates">File Type Specific Templates</h2>
+<h3 id="1-service-classes">1. Service Classes</h3>
+<pre><code class="lang-csharp">// &lt;copyright file=&quot;{FILENAME}&quot; company=&quot;Notebook Automation Project&quot;&gt;
+// Copyright (c) {YEAR} Notebook Automation Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE file in the project root for license information.
+// &lt;/copyright&gt;
+// &lt;author&gt;{AUTHOR_NAME} &lt;{AUTHOR_EMAIL}&gt;&lt;/author&gt;
+// &lt;summary&gt;
+// File: {RELATIVE_PATH}
+// Purpose: Service class for {SERVICE_DESCRIPTION}. Provides {MAIN_FUNCTIONALITY}.
+// Dependencies: {KEY_DEPENDENCIES}
+// Created: {CREATION_DATE}
+// &lt;/summary&gt;
+</code></pre>
+<h3 id="2-test-classes">2. Test Classes</h3>
+<pre><code class="lang-csharp">// &lt;copyright file=&quot;{FILENAME}&quot; company=&quot;Notebook Automation Project&quot;&gt;
+// Copyright (c) {YEAR} Notebook Automation Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE file in the project root for license information.
+// &lt;/copyright&gt;
+// &lt;author&gt;{AUTHOR_NAME} &lt;{AUTHOR_EMAIL}&gt;&lt;/author&gt;
+// &lt;summary&gt;
+// File: {RELATIVE_PATH}
+// Purpose: Unit tests for {CLASS_UNDER_TEST}. Tests {TEST_SCENARIOS}.
+// Test Framework: MSTest
+// Created: {CREATION_DATE}
+// &lt;/summary&gt;
+</code></pre>
+<h3 id="3-modeldata-classes">3. Model/Data Classes</h3>
+<pre><code class="lang-csharp">// &lt;copyright file=&quot;{FILENAME}&quot; company=&quot;Notebook Automation Project&quot;&gt;
+// Copyright (c) {YEAR} Notebook Automation Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE file in the project root for license information.
+// &lt;/copyright&gt;
+// &lt;author&gt;{AUTHOR_NAME} &lt;{AUTHOR_EMAIL}&gt;&lt;/author&gt;
+// &lt;summary&gt;
+// File: {RELATIVE_PATH}
+// Purpose: Data model representing {ENTITY_DESCRIPTION}. Used for {PRIMARY_USE_CASE}.
+// Properties: {KEY_PROPERTIES}
+// Created: {CREATION_DATE}
+// &lt;/summary&gt;
+</code></pre>
+<h3 id="4-interface-definitions">4. Interface Definitions</h3>
+<pre><code class="lang-csharp">// &lt;copyright file=&quot;{FILENAME}&quot; company=&quot;Notebook Automation Project&quot;&gt;
+// Copyright (c) {YEAR} Notebook Automation Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE file in the project root for license information.
+// &lt;/copyright&gt;
+// &lt;author&gt;{AUTHOR_NAME} &lt;{AUTHOR_EMAIL}&gt;&lt;/author&gt;
+// &lt;summary&gt;
+// File: {RELATIVE_PATH}
+// Purpose: Interface contract for {INTERFACE_DESCRIPTION}. Defines {CONTRACT_DETAILS}.
+// Implementations: {KNOWN_IMPLEMENTATIONS}
+// Created: {CREATION_DATE}
+// &lt;/summary&gt;
+</code></pre>
+<h3 id="5-utility-classes">5. Utility Classes</h3>
+<pre><code class="lang-csharp">// &lt;copyright file=&quot;{FILENAME}&quot; company=&quot;Notebook Automation Project&quot;&gt;
+// Copyright (c) {YEAR} Notebook Automation Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE file in the project root for license information.
+// &lt;/copyright&gt;
+// &lt;author&gt;{AUTHOR_NAME} &lt;{AUTHOR_EMAIL}&gt;&lt;/author&gt;
+// &lt;summary&gt;
+// File: {RELATIVE_PATH}
+// Purpose: Utility class providing {UTILITY_FUNCTIONS}. Contains static helper methods for {DOMAIN}.
+// Usage: {COMMON_USAGE_PATTERN}
+// Created: {CREATION_DATE}
+// &lt;/summary&gt;
+</code></pre>
+<h3 id="6-configuration-classes">6. Configuration Classes</h3>
+<pre><code class="lang-csharp">// &lt;copyright file=&quot;{FILENAME}&quot; company=&quot;Notebook Automation Project&quot;&gt;
+// Copyright (c) {YEAR} Notebook Automation Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE file in the project root for license information.
+// &lt;/copyright&gt;
+// &lt;author&gt;{AUTHOR_NAME} &lt;{AUTHOR_EMAIL}&gt;&lt;/author&gt;
+// &lt;summary&gt;
+// File: {RELATIVE_PATH}
+// Purpose: Configuration class for {CONFIG_DOMAIN}. Manages settings for {FEATURE_AREA}.
+// Configuration Source: {CONFIG_SOURCE} (appsettings.json, user secrets, etc.)
+// Created: {CREATION_DATE}
+// &lt;/summary&gt;
+</code></pre>
+<h2 id="usage-guidelines">Usage Guidelines</h2>
+<h3 id="1-purpose-description-guidelines">1. Purpose Description Guidelines</h3>
+<ul>
+<li><strong>Be Specific</strong>: Describe what the class/file actually does, not just what it is</li>
+<li><strong>Include Context</strong>: Mention the domain or feature area it belongs to</li>
+<li><strong>Mention Key Responsibilities</strong>: List 2-3 main responsibilities</li>
+</ul>
+<h3 id="2-good-purpose-examples">2. Good Purpose Examples</h3>
+<ul>
+<li>✅ &quot;Handles PDF document processing and metadata extraction for course materials&quot;</li>
+<li>✅ &quot;Service for managing OneDrive file synchronization and mapping local vault paths&quot;</li>
+<li>✅ &quot;Configuration validation and setup for AI service integration with Azure OpenAI&quot;</li>
+</ul>
+<h3 id="3-poor-purpose-examples">3. Poor Purpose Examples</h3>
+<ul>
+<li>❌ &quot;Configuration class&quot; (too generic)</li>
+<li>❌ &quot;Handles files&quot; (too vague)</li>
+<li>❌ &quot;Main service&quot; (not descriptive)</li>
+</ul>
+<h2 id="vs-code-snippet-integration">VS Code Snippet Integration</h2>
+<p>Add this to your VS Code user snippets for C# (<code>csharp.json</code>):</p>
+<pre><code class="lang-json">{
+    &quot;File Header&quot;: {
+        &quot;prefix&quot;: &quot;fileheader&quot;,
+        &quot;body&quot;: [
+            &quot;// &lt;copyright file=\&quot;${TM_FILENAME}\&quot; company=\&quot;Notebook Automation Project\&quot;&gt;&quot;,
+            &quot;// Copyright (c) ${CURRENT_YEAR} Notebook Automation Project. All rights reserved.&quot;,
+            &quot;// Licensed under the MIT License. See LICENSE file in the project root for license information.&quot;,
+            &quot;// &lt;/copyright&gt;&quot;,
+            &quot;// &lt;author&gt;${1:Author Name} &lt;${2:email@domain.com}&gt;&lt;/author&gt;&quot;,
+            &quot;// &lt;summary&gt;&quot;,
+            &quot;// File: ${RELATIVE_FILEPATH}&quot;,
+            &quot;// Purpose: ${3:Describe the purpose of this file}&quot;,
+            &quot;// Created: ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}&quot;,
+            &quot;// &lt;/summary&gt;&quot;,
+            &quot;&quot;,
+            &quot;$0&quot;
+        ],
+        &quot;description&quot;: &quot;Insert standard file header for C# files&quot;
+    }
+}
+</code></pre>
+<h2 id="automated-template-application">Automated Template Application</h2>
+<p>Use the existing script with custom templates:</p>
+<pre><code class="lang-powershell"># Apply standard headers
+pwsh scripts/add-file-headers.ps1 -Path &quot;src/c-sharp&quot;
+
+# Apply with custom company/author
+pwsh scripts/add-file-headers.ps1 -Path &quot;src/c-sharp&quot; -Author &quot;Your Name&quot; -Company &quot;Your Company&quot;
+</code></pre>
+<h2 id="template-customization">Template Customization</h2>
+<p>To customize the default template, modify the <code>Get-FileHeader</code> function in <code>scripts/add-file-headers.ps1</code>:</p>
+<ol>
+<li>Update company name</li>
+<li>Change license information</li>
+<li>Modify purpose placeholder text</li>
+<li>Add additional metadata fields</li>
+<li>Customize date formats</li>
+</ol>
+<h2 id="integration-with-development-workflow">Integration with Development Workflow</h2>
+<ol>
+<li><strong>New Files</strong>: Use VS Code snippet (<code>fileheader</code>) when creating new files</li>
+<li><strong>Bulk Updates</strong>: Use PowerShell script for multiple files</li>
+<li><strong>CI/CD</strong>: Consider adding header validation to build pipeline</li>
+<li><strong>Code Reviews</strong>: Ensure purpose descriptions are meaningful and accurate</li>
+</ol>
+<h2 id="maintenance">Maintenance</h2>
+<ul>
+<li><strong>Regular Reviews</strong>: Periodically review purpose descriptions for accuracy</li>
+<li><strong>Template Updates</strong>: Update templates when project structure or standards change</li>
+<li><strong>Documentation</strong>: Keep this template guide updated with new patterns and examples</li>
+</ul>
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/danielshue/notebook-automation/blob/master/docs/File-Header-Templates.md/#L1" class="edit-link">Edit this page</a>
+        </div>
+
+        <div class="next-article d-print-none border-top" id="nextArticle"></div>
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

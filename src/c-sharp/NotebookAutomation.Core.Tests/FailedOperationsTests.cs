@@ -1,14 +1,19 @@
-﻿using Moq;
-
-using NotebookAutomation.Core.Configuration;
-
+﻿// <copyright file="FailedOperationsTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/FailedOperationsTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests;
 
 /// <summary>
 /// Unit tests for the FailedOperations static class.
 /// </summary>
 [TestClass]
-public class FailedOperationsTests
+internal class FailedOperationsTests
 {
     [TestMethod]
     public void RecordFailedFileOperation_WithException_LogsError()

@@ -1,0 +1,8 @@
+- name: Troubleshooting
+  href: index.md
+- name: Common Issues
+  href: common-issues.md
+- name: Performance Issues
+  href: performance-issues.md
+- name: Configuration Problems
+  href: configuration-problems.md

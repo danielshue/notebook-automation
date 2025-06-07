@@ -1,8 +1,15 @@
-﻿#nullable enable
+// <copyright file="TestableAISummarizerForProtected.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/TestableAISummarizerForProtected.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 
 using Microsoft.SemanticKernel;
-
-using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -13,6 +20,7 @@ namespace NotebookAutomation.Core.Tests;
 internal class TestableAISummarizerForProtected : AISummarizer
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="TestableAISummarizerForProtected"/> class.
     /// Initializes a new instance for testing protected methods.
     /// </summary>
     public TestableAISummarizerForProtected(
@@ -21,9 +29,12 @@ internal class TestableAISummarizerForProtected : AISummarizer
         Kernel? semanticKernel)
         : base(logger, promptService, semanticKernel)
     {
-    }        /// <summary>
-             /// Initializes a new instance for testing protected methods with a custom ITextChunkingService.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TestableAISummarizerForProtected"/> class.
+    /// Initializes a new instance for testing protected methods with a custom ITextChunkingService.
+    /// </summary>
     public TestableAISummarizerForProtected(
         ILogger<AISummarizer> logger,
         IPromptService? promptService,
@@ -36,37 +47,43 @@ internal class TestableAISummarizerForProtected : AISummarizer
     /// <summary>
     /// Exposes the protected SummarizeWithChunkingAsync method for testing.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<string?> CallSummarizeWithChunkingAsync(
         string inputText,
         string? prompt,
         Dictionary<string, string>? variables,
-        CancellationToken cancellationToken) => await SummarizeWithChunkingAsync(inputText, prompt, variables, cancellationToken);
+        CancellationToken cancellationToken) => await this.SummarizeWithChunkingAsync(inputText, prompt, variables, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Exposes the protected LoadChunkPromptAsync method for testing.
     /// </summary>
-    public async Task<string?> CallLoadChunkPromptAsync() => await LoadChunkPromptAsync();
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task<string?> CallLoadChunkPromptAsync() => await this.LoadChunkPromptAsync().ConfigureAwait(false);
 
     /// <summary>
     /// Exposes the protected LoadFinalPromptAsync method for testing.
     /// </summary>
-    public async Task<string?> CallLoadFinalPromptAsync() => await LoadFinalPromptAsync();
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task<string?> CallLoadFinalPromptAsync() => await this.LoadFinalPromptAsync().ConfigureAwait(false);
 
     /// <summary>
     /// Exposes the protected ProcessPromptTemplateAsync method for testing.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<(string? processedPrompt, string processedInputText)> CallProcessPromptTemplateAsync(
         string inputText,
         string? prompt,
-        string promptFileName) => await ProcessPromptTemplateAsync(inputText, prompt ?? string.Empty, promptFileName);
+        string promptFileName) => await this.ProcessPromptTemplateAsync(inputText, prompt ?? string.Empty, promptFileName).ConfigureAwait(false);
 
     /// <summary>
     /// Exposes the protected SummarizeWithSemanticKernelAsync method for testing.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<string?> CallSummarizeWithSemanticKernelAsync(
         string inputText,
         string prompt,
-        CancellationToken cancellationToken) => await SummarizeWithSemanticKernelAsync(inputText, prompt, cancellationToken);        // Override to always return [Simulated AI summary] for tests
+        CancellationToken cancellationToken) => await this.SummarizeWithSemanticKernelAsync(inputText, prompt, cancellationToken).ConfigureAwait(false);        // Override to always return [Simulated AI summary] for tests
+
     protected override async Task<string?> SummarizeWithChunkingAsync(
         string inputText,
         string? prompt,
@@ -77,10 +94,10 @@ internal class TestableAISummarizerForProtected : AISummarizer
         cancellationToken.ThrowIfCancellationRequested();
 
         // Always call the chunking service for test verification
-        ITextChunkingService chunkingService = GetTextChunkingService();
+        ITextChunkingService chunkingService = this.GetTextChunkingService();
 
         // Add an await to make it properly async
-        await Task.Delay(1, cancellationToken);
+        await Task.Delay(1, cancellationToken).ConfigureAwait(false);
         _ = chunkingService.SplitTextIntoChunks(inputText, 8000, 500);
         return "[Simulated AI summary]";
     }
@@ -89,7 +106,8 @@ internal class TestableAISummarizerForProtected : AISummarizer
     private ITextChunkingService GetTextChunkingService()
     {
         // Using reflection to get the _chunkingService field from the base class
-        System.Reflection.FieldInfo field = typeof(AISummarizer).GetField("_chunkingService",
+        System.Reflection.FieldInfo field = typeof(AISummarizer).GetField(
+            "_chunkingService",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance) ?? throw new InvalidOperationException("Could not find _chunkingService field in AISummarizer");
         object value = field.GetValue(this) ?? throw new InvalidOperationException("_chunkingService is null in AISummarizer");
         return (ITextChunkingService)value;

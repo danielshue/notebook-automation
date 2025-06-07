@@ -1,4 +1,13 @@
-﻿using YamlDotNet.Serialization;
+// <copyright file="YamlHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace NotebookAutomation.Core.Utils;
@@ -20,8 +29,8 @@ namespace NotebookAutomation.Core.Utils;
 /// </remarks>
 public partial class YamlHelper : IYamlHelper
 {
-    private readonly ILogger _logger;
-    private readonly Regex _frontmatterRegex = FrontmatterBlockRegex();
+    private readonly ILogger logger;
+    private readonly Regex frontmatterRegex = FrontmatterBlockRegex();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="YamlHelper"/> class.
@@ -29,7 +38,7 @@ public partial class YamlHelper : IYamlHelper
     /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
     public YamlHelper(ILogger logger)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     /// <summary>
@@ -49,33 +58,37 @@ public partial class YamlHelper : IYamlHelper
     {
         if (string.IsNullOrEmpty(markdown))
         {
-            _logger.LogDebug("Empty markdown content provided for frontmatter extraction");
+            this.logger.LogDebug("Empty markdown content provided for frontmatter extraction");
             return null;
         }
 
         // Check if the content seems to have frontmatter (starts with ---)
         if (!markdown.TrimStart().StartsWith("---"))
         {
-            if (_logger.IsEnabled(LogLevel.Debug))
+            if (this.logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.LogDebug("Content does not appear to have frontmatter. First 20 chars: {Content}",
+                this.logger.LogDebug(
+                    "Content does not appear to have frontmatter. First 20 chars: {Content}",
                     markdown.Length > 20 ? markdown[..20] + "..." : markdown);
             }
+
             return null;
         }
 
         try
         {
-            var match = _frontmatterRegex.Match(markdown);
+            var match = this.frontmatterRegex.Match(markdown);
 
             if (!match.Success)
             {
                 // If regex did not match but content starts with ---, we might have a malformed frontmatter
                 // Log more details for debugging                    if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug("Content appears to have frontmatter but didn't match regex pattern. First 50 chars: {Content}",
+                    this.logger.LogDebug(
+                        "Content appears to have frontmatter but didn't match regex pattern. First 50 chars: {Content}",
                         markdown.Length > 50 ? markdown[..50] + "..." : markdown);
                 }
+
                 return null;
             }
 
@@ -83,7 +96,7 @@ public partial class YamlHelper : IYamlHelper
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error extracting frontmatter from markdown");
+            this.logger.LogError(ex, "Error extracting frontmatter from markdown");
             return null;
         }
     }
@@ -106,6 +119,7 @@ public partial class YamlHelper : IYamlHelper
         try
         {
             var deserializer = new DeserializerBuilder()
+
                 // Use the default naming convention to preserve original key names
                 .Build();
 
@@ -113,7 +127,7 @@ public partial class YamlHelper : IYamlHelper
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to parse YAML content");
+            this.logger.LogError(ex, "Failed to parse YAML content");
             return null;
         }
     }
@@ -130,7 +144,7 @@ public partial class YamlHelper : IYamlHelper
     {
         if (string.IsNullOrWhiteSpace(yaml))
         {
-            _logger.LogDebug("Empty YAML content provided for parsing");
+            this.logger.LogDebug("Empty YAML content provided for parsing");
             return [];
         }
 
@@ -140,7 +154,7 @@ public partial class YamlHelper : IYamlHelper
             yaml = yaml.Trim();                // Handle markdown code blocks that the AI sometimes generates, with various patterns
             if (yaml.Contains("```yaml") || yaml.Contains("```yml"))
             {
-                _logger.LogWarning("Detected nested YAML code block in frontmatter - attempting to fix");
+                this.logger.LogWarning("Detected nested YAML code block in frontmatter - attempting to fix");
 
                 // Extract the actual YAML content from inside the code block
                 var startIndex = yaml.Contains("```yaml")
@@ -152,13 +166,14 @@ public partial class YamlHelper : IYamlHelper
                 {
                     // Extract the content between the code block markers
                     yaml = yaml[startIndex..endIndex].Trim();
-                    _logger.LogInformation("Extracted YAML content from nested code block");
+                    this.logger.LogInformation("Extracted YAML content from nested code block");
                 }
             }
+
             // Also handle plain markdown code blocks
             else if (yaml.Contains("```"))
             {
-                _logger.LogWarning("Detected generic code block in frontmatter - attempting to fix");
+                this.logger.LogWarning("Detected generic code block in frontmatter - attempting to fix");
                 var startIndex = yaml.IndexOf("```") + 3;
 
                 // Check if there's a newline after the opening ```
@@ -176,27 +191,28 @@ public partial class YamlHelper : IYamlHelper
                 if (startIndex > 3 && endIndex > startIndex)
                 {
                     yaml = yaml[startIndex..endIndex].Trim();
-                    _logger.LogInformation("Extracted content from generic code block");
+                    this.logger.LogInformation("Extracted content from generic code block");
                 }
             }
 
             // Fix common YAML formatting issues from AI responses
             // Remove trailing spaces at end of each line (common in markdown formatting)
-            yaml = string.Join("\n",
+            yaml = string.Join(
+                "\n",
                 yaml.Split('\n')
-                    .Select(line => line.TrimEnd())
-            );
+                    .Select(line => line.TrimEnd()));
 
             // Simple validation of YAML structure
             if (!yaml.Contains(':') && !yaml.Contains('-'))
             {
-                _logger.LogWarning("YAML content does not contain any key-value pairs or lists");
+                this.logger.LogWarning("YAML content does not contain any key-value pairs or lists");
                 return [];
             }
 
             var deserializer = new DeserializerBuilder()
+
                 // Use the default naming convention to preserve original key names
-                .IgnoreUnmatchedProperties()  // More forgiving parsing
+                .IgnoreUnmatchedProperties() // More forgiving parsing
                 .Build();
 
             var result = deserializer.Deserialize<Dictionary<string, object>>(yaml);
@@ -205,13 +221,14 @@ public partial class YamlHelper : IYamlHelper
         catch (YamlDotNet.Core.YamlException yamlEx)
         {
             // More specific logging for YAML syntax errors
-            _logger.LogError(yamlEx, "YAML syntax error: {ErrorMessage} at Line {Line}, Column {Column}",
+            this.logger.LogError(yamlEx, "YAML syntax error: {ErrorMessage} at Line {Line}, Column {Column}",
                 yamlEx.Message, yamlEx.Start.Line, yamlEx.Start.Column);
 
             // Log the problematic content for debugging
-            if (_logger.IsEnabled(LogLevel.Debug))
+            if (this.logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.LogDebug("Problematic YAML content (first 100 chars): {YamlContent}",
+                this.logger.LogDebug(
+                    "Problematic YAML content (first 100 chars): {YamlContent}",
                     yaml.Length > 100 ? yaml[..100] + "..." : yaml);
             }
 
@@ -219,12 +236,13 @@ public partial class YamlHelper : IYamlHelper
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to parse YAML content to dictionary");
+            this.logger.LogError(ex, "Failed to parse YAML content to dictionary");
 
             // Debug log the content for easier troubleshooting
-            if (_logger.IsEnabled(LogLevel.Debug))
+            if (this.logger.IsEnabled(LogLevel.Debug))
             {
-                _logger.LogDebug("Failed YAML content (first 100 chars): {YamlContent}",
+                this.logger.LogDebug(
+                    "Failed YAML content (first 100 chars): {YamlContent}",
                     yaml.Length > 100 ? yaml[..100] + "..." : yaml);
             }
 
@@ -249,16 +267,18 @@ public partial class YamlHelper : IYamlHelper
         }
 
         var serializer = new SerializerBuilder()
+
             // Use the default naming convention to preserve original key names
             .Build();
 
         var yamlString = serializer.Serialize(frontmatter);
+
         // Add just one set of --- separators with proper newlines
         var newFrontmatter = $"---\n{yamlString}---\n\n";
 
-        if (_frontmatterRegex.IsMatch(markdown))
+        if (this.frontmatterRegex.IsMatch(markdown))
         {
-            return _frontmatterRegex.Replace(markdown, newFrontmatter);
+            return this.frontmatterRegex.Replace(markdown, newFrontmatter);
         }
         else
         {
@@ -277,10 +297,12 @@ public partial class YamlHelper : IYamlHelper
     public static string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter)
     {
         var serializer = new SerializerBuilder()
+
             // Use the default naming convention to preserve original key names
             .Build();
 
         var yamlString = serializer.Serialize(frontmatter);
+
         // Add just one set of --- separators with proper newlines
         return $"---\n{yamlString}---\n\n";
     }
@@ -293,11 +315,15 @@ public partial class YamlHelper : IYamlHelper
     public string RemoveFrontmatter(string markdown)
     {
         if (string.IsNullOrWhiteSpace(markdown))
+        {
             return markdown ?? string.Empty;
+        }
 
-        var match = _frontmatterRegex.Match(markdown);
+        var match = this.frontmatterRegex.Match(markdown);
         if (!match.Success)
+        {
             return markdown;
+        }
 
         // Return the content after the frontmatter block
         return markdown[match.Length..].TrimStart();
@@ -317,7 +343,6 @@ public partial class YamlHelper : IYamlHelper
 
         if (frontmatter.TryGetValue("tags", out object? tags))
         {
-
             // Handle different formats of tags
             if (tags is List<object> tagList)
             {
@@ -352,7 +377,10 @@ public partial class YamlHelper : IYamlHelper
             // Store tags as string array for YAML format consistency
             frontmatter["tags"] = tags.ToArray();
         }
-        else frontmatter.Remove("tags");
+        else
+        {
+            frontmatter.Remove("tags");
+        }
 
         return frontmatter;
     }
@@ -369,6 +397,7 @@ public partial class YamlHelper : IYamlHelper
             var stateStr = state?.ToString()?.ToLowerInvariant();
             return stateStr == "read-only" || stateStr == "readonly";
         }
+
         return false;
     }
 
@@ -386,12 +415,12 @@ public partial class YamlHelper : IYamlHelper
                 return false;
             }
 
-            var frontmatter = LoadFrontmatterFromFile(filePath);
-            return IsAutoGeneratedStateReadOnly(frontmatter);
+            var frontmatter = this.LoadFrontmatterFromFile(filePath);
+            return this.IsAutoGeneratedStateReadOnly(frontmatter);
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "Failed to check if file is read-only: {filePath}", filePath);
+            this.logger.LogErrorWithPath(ex, "Failed to check if file is read-only: {filePath}", filePath);
             return false;
         }
     }
@@ -407,23 +436,23 @@ public partial class YamlHelper : IYamlHelper
         {
             if (!File.Exists(filePath))
             {
-                _logger.LogWarningWithPath("File not found: {filePath}", filePath);
+                this.logger.LogWarningWithPath("File not found: {filePath}", filePath);
                 return [];
             }
 
             var content = File.ReadAllText(filePath, Encoding.UTF8);
-            var frontmatter = ExtractFrontmatter(content);
+            var frontmatter = this.ExtractFrontmatter(content);
 
             if (frontmatter == null)
             {
                 return [];
             }
 
-            return ParseYamlToDictionary(frontmatter);
+            return this.ParseYamlToDictionary(frontmatter);
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "Failed to load frontmatter from file: {filePath}", filePath);
+            this.logger.LogErrorWithPath(ex, "Failed to load frontmatter from file: {filePath}", filePath);
             return [];
         }
     }
@@ -439,13 +468,13 @@ public partial class YamlHelper : IYamlHelper
     {
         try
         {
-            var updatedContent = UpdateFrontmatter(markdown, frontmatter);
+            var updatedContent = this.UpdateFrontmatter(markdown, frontmatter);
             File.WriteAllText(filePath, updatedContent, Encoding.UTF8);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "Failed to save markdown with updated frontmatter: {filePath}", filePath);
+            this.logger.LogErrorWithPath(ex, "Failed to save markdown with updated frontmatter: {filePath}", filePath);
             return false;
         }
     }
@@ -458,6 +487,7 @@ public partial class YamlHelper : IYamlHelper
     public static string SerializeYaml(Dictionary<string, object> data)
     {
         var serializer = new SerializerBuilder()
+
             // Use the default naming convention to preserve original key names
             .DisableAliases()
             .Build();
@@ -487,8 +517,8 @@ public partial class YamlHelper : IYamlHelper
     /// <returns>The updated markdown content.</returns>
     public string ReplaceFrontmatter(string markdown, Dictionary<string, object> newFrontmatter)
     {
-        var yamlContent = SerializeToYaml(newFrontmatter);
-        return ReplaceWithYamlContent(markdown, yamlContent);
+        var yamlContent = this.SerializeToYaml(newFrontmatter);
+        return this.ReplaceWithYamlContent(markdown, yamlContent);
     }
 
     /// <summary>
@@ -504,7 +534,7 @@ public partial class YamlHelper : IYamlHelper
             return content;
         }
 
-        var match = _frontmatterRegex.Match(content);
+        var match = this.frontmatterRegex.Match(content);
         if (!match.Success)
         {
             // If no frontmatter, add it to the beginning
@@ -512,7 +542,7 @@ public partial class YamlHelper : IYamlHelper
         }
 
         // Replace the existing frontmatter
-        return _frontmatterRegex.Replace(content, $"---\n{newFrontmatterYaml}\n---\n");
+        return this.frontmatterRegex.Replace(content, $"---\n{newFrontmatterYaml}\n---\n");
     }
 
     /// <summary>
@@ -534,7 +564,7 @@ public partial class YamlHelper : IYamlHelper
             }
 
             // Step 2: Extract frontmatter
-            string? frontmatter = ExtractFrontmatter(markdown);
+            string? frontmatter = this.ExtractFrontmatter(markdown);
             if (frontmatter == null)
             {
                 // Check if it might be malformed frontmatter

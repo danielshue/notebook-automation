@@ -1,4 +1,13 @@
-﻿using Microsoft.SemanticKernel;
+﻿// <copyright file="ServiceRegistration.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/ServiceRegistration.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using Microsoft.SemanticKernel;
 
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.MarkdownGeneration;
@@ -74,7 +83,8 @@ public static class ServiceRegistration
     /// <param name="configuration">The application configuration.</param>
     /// <param name="debug">Whether debug mode is enabled.</param>
     /// <returns>The configured service collection.</returns>
-    public static IServiceCollection AddNotebookAutomationServices(this IServiceCollection services,
+    public static IServiceCollection AddNotebookAutomationServices(
+        this IServiceCollection services,
         IConfiguration configuration,
         bool debug = false,
         string? configFilePath = null)
@@ -177,17 +187,19 @@ public static class ServiceRegistration
     /// <param name="services">The service collection to configure.</param>
     /// <returns>The configured service collection.</returns>
     private static IServiceCollection RegisterDocumentProcessors(IServiceCollection services)
-    {        // Register Video processor
+    { // Register Video processor
         services.AddScoped(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<VideoNoteProcessor>();
             var aiSummarizer = provider.GetRequiredService<AISummarizer>();
             var appConfig = provider.GetRequiredService<AppConfig>();
+
             // Use GetService instead of GetRequiredService since OneDriveService is optional
             var oneDriveService = provider.GetService<IOneDriveService>();
             var yamlHelper = provider.GetRequiredService<IYamlHelper>();
             var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+
             // Pass yamlHelper, hierarchyDetector, then the optional parameters, and lastly the loggingService
             return new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, oneDriveService, appConfig, loggingService);
         });
@@ -198,7 +210,8 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var batchLogger = loggingService.GetLogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>();
             var processorLogger = loggingService.GetLogger<VideoNoteProcessor>();
-            var aiSummarizer = provider.GetRequiredService<AISummarizer>(); var appConfig = provider.GetRequiredService<AppConfig>();
+            var aiSummarizer = provider.GetRequiredService<AISummarizer>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
             var oneDriveService = provider.GetService<IOneDriveService>();
             var yamlHelper = provider.GetRequiredService<IYamlHelper>();
             var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
@@ -303,8 +316,7 @@ public static class ServiceRegistration
                 logger,
                 microsoftGraph?.ClientId ?? string.Empty,
                 microsoftGraph?.TenantId ?? string.Empty,
-                microsoftGraph?.Scopes?.ToArray() ?? []
-            );
+                microsoftGraph?.Scopes?.ToArray() ?? []);
         });
 
         return services;
@@ -335,7 +347,6 @@ public static class ServiceRegistration
             var provider = services.BuildServiceProvider();
             var loggingService = provider.GetRequiredService<ILoggingService>();
             loggingService.ConfigureLogging(builder);
-
         });
 
         return services;

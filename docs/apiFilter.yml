@@ -1,0 +1,10 @@
+apiRules:
+- include:
+    uidRegex: ^NotebookAutomation
+    type: Namespace
+- exclude:
+    uidRegex: .*Tests$
+    type: Namespace
+- exclude:
+    uidRegex: .*Internal$
+    type: Type
