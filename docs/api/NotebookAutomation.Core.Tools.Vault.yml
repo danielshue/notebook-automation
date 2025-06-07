@@ -1,0 +1,105 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.Vault
+  commentId: N:NotebookAutomation.Core.Tools.Vault
+  id: NotebookAutomation.Core.Tools.Vault
+  children:
+  - NotebookAutomation.Core.Tools.Vault.DictionaryExtensions
+  - NotebookAutomation.Core.Tools.Vault.MetadataBatchResult
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  - NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult
+  - NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Tools.Vault
+  nameWithType: NotebookAutomation.Core.Tools.Vault
+  fullName: NotebookAutomation.Core.Tools.Vault
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  commentId: T:NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html
+  name: MetadataEnsureBatchProcessor
+  nameWithType: MetadataEnsureBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataBatchResult
+  commentId: T:NotebookAutomation.Core.Tools.Vault.MetadataBatchResult
+  href: NotebookAutomation.Core.Tools.Vault.MetadataBatchResult.html
+  name: MetadataBatchResult
+  nameWithType: MetadataBatchResult
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataBatchResult
+- uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor
+  commentId: T:NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor
+  parent: NotebookAutomation.Core.Tools.Vault
+  href: NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor.html
+  name: MetadataEnsureProcessor
+  nameWithType: MetadataEnsureProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor
+- uid: NotebookAutomation.Core.Tools.Vault.DictionaryExtensions
+  commentId: T:NotebookAutomation.Core.Tools.Vault.DictionaryExtensions
+  href: NotebookAutomation.Core.Tools.Vault.DictionaryExtensions.html
+  name: DictionaryExtensions
+  nameWithType: DictionaryExtensions
+  fullName: NotebookAutomation.Core.Tools.Vault.DictionaryExtensions
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  commentId: T:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html
+  name: VaultIndexBatchProcessor
+  nameWithType: VaultIndexBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult
+  commentId: T:NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.html
+  name: VaultIndexBatchResult
+  nameWithType: VaultIndexBatchResult
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult
+- uid: NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor
+  commentId: T:NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor
+  parent: NotebookAutomation.Core.Tools.Vault
+  href: NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor.html
+  name: VaultIndexProcessor
+  nameWithType: VaultIndexProcessor
+  fullName: NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor
+- uid: NotebookAutomation.Core.Tools.Vault
+  commentId: N:NotebookAutomation.Core.Tools.Vault
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.Vault
+  nameWithType: NotebookAutomation.Core.Tools.Vault
+  fullName: NotebookAutomation.Core.Tools.Vault
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Vault
+    name: Vault
+    href: NotebookAutomation.Core.Tools.Vault.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Vault
+    name: Vault
+    href: NotebookAutomation.Core.Tools.Vault.html

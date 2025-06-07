@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Interface IOneDriveService | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Interface IOneDriveService | Obsidian Notebook Automation for Coursera ">
+      
+      <meta name="description" content="Interface for OneDrive service operations including authentication, file operations, sharing, and path mapping.">
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/danielshue/notebook-automation/new/master/apiSpec/new?filename=NotebookAutomation_Core_Services_IOneDriveService.md&amp;value=---%0Auid%3A%20NotebookAutomation.Core.Services.IOneDriveService%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Services.IOneDriveService">
+
+
+
+  <h1 id="NotebookAutomation_Core_Services_IOneDriveService" data-uid="NotebookAutomation.Core.Services.IOneDriveService" class="text-break">
+Interface IOneDriveService  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L41"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Services.html">Services</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Interface for OneDrive service operations including authentication, file operations, sharing, and path mapping.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public interface IOneDriveService</code></pre>
+  </div>
+
+
+
+
+
+
+
+
+
+
+  <h2 id="NotebookAutomation_Core_Services_IOneDriveService_examples">Examples</h2>
+  <pre><code class="lang-csharp">var oneDriveService = serviceProvider.GetService&lt;IOneDriveService&gt;();
+await oneDriveService.AuthenticateAsync();
+
+var files = await oneDriveService.ListFilesAsync("/Documents", CancellationToken.None);
+foreach (var file in files)
+{
+    Console.WriteLine(file);
+}</code></pre>
+
+
+  <h2 id="NotebookAutomation_Core_Services_IOneDriveService_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+This interface provides methods for interacting with OneDrive, including:
+<ul><li>Authentication and token management</li><li>File operations: upload, download, list, and search</li><li>Sharing: create and retrieve shareable links</li><li>Path mapping between local and OneDrive directories</li></ul>
+
+<p>
+Implementations should handle Microsoft Graph API integration and provide robust error handling for network operations.
+</p>
+</div>
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_AuthenticateAsync_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_AuthenticateAsync" data-uid="NotebookAutomation.Core.Services.IOneDriveService.AuthenticateAsync">
+  AuthenticateAsync()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L62"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Authenticates with Microsoft Graph using device code flow.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task AuthenticateAsync()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>A <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a> representing the asynchronous operation.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_AuthenticateAsync_examples">Examples</h4>
+  <pre><code class="lang-csharp">await oneDriveService.AuthenticateAsync();
+Console.WriteLine("Authentication successful.");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_AuthenticateAsync_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method initiates the device code flow for authentication, allowing users to authenticate
+by entering a code on a Microsoft login page. It retrieves and caches tokens for subsequent API calls.
+</p>
+<p>
+If the authentication fails, an exception is thrown with details about the failure.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_ConfigureVaultRoots_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_ConfigureVaultRoots_System_String_System_String_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.ConfigureVaultRoots(System.String,System.String)">
+  ConfigureVaultRoots(string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L220"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Configures the local and OneDrive vault root directories for path mapping.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void ConfigureVaultRoots(string localVaultRoot, string oneDriveVaultRoot)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>localVaultRoot</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The local vault root directory path.</p>
+</dd>
+    <dt><code>oneDriveVaultRoot</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The OneDrive vault root directory path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_ConfigureVaultRoots_System_String_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">oneDriveService.ConfigureVaultRoots("C:\Vault", "/Vault");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_ConfigureVaultRoots_System_String_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method sets up the root directories for mapping between local and OneDrive paths.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_CreateShareLinkAsync_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_CreateShareLinkAsync_System_String_System_String_System_String_System_Threading_CancellationToken_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.CreateShareLinkAsync(System.String,System.String,System.String,System.Threading.CancellationToken)">
+  CreateShareLinkAsync(string, string, string, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L181"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a shareable link for a file in OneDrive.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task&lt;string?&gt; CreateShareLinkAsync(string filePath, string linkType = &quot;view&quot;, string scope = &quot;anonymous&quot;, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The local file path or OneDrive file path. If it's a local path, it will be converted to a OneDrive-relative path.</p>
+</dd>
+    <dt><code>linkType</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The type of sharing link to create. Default is &quot;view&quot;.</p>
+</dd>
+    <dt><code>scope</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The scope of the sharing link. Default is &quot;anonymous&quot;.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancellation token.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>The shareable link URL if successful, null otherwise.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_CreateShareLinkAsync_System_String_System_String_System_String_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">var link = await oneDriveService.CreateShareLinkAsync("/Documents/file.txt", "edit", "organization", CancellationToken.None);
+Console.WriteLine(link);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_CreateShareLinkAsync_System_String_System_String_System_String_System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method creates a shareable link for the specified file in OneDrive. The link type and scope can be customized.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_DownloadFileAsync_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_DownloadFileAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.DownloadFileAsync(System.String,System.String,System.Threading.CancellationToken)">
+  DownloadFileAsync(string, string, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L116"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Downloads a file from OneDrive to a local path.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task DownloadFileAsync(string oneDrivePath, string localPath, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>oneDrivePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The OneDrive file path.</p>
+</dd>
+    <dt><code>localPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The local destination path.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Optional cancellation token.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>Task representing the async download operation.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_DownloadFileAsync_System_String_System_String_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">await oneDriveService.DownloadFileAsync("/Documents/file.txt", "C:\Downloads\file.txt", CancellationToken.None);
+Console.WriteLine("File downloaded.");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_DownloadFileAsync_System_String_System_String_System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method downloads a file from OneDrive to the specified local path. If the operation is canceled,
+the task is marked as canceled.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_GetShareLinkAsync_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_GetShareLinkAsync_System_String_System_Boolean_System_Threading_CancellationToken_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.GetShareLinkAsync(System.String,System.Boolean,System.Threading.CancellationToken)">
+  GetShareLinkAsync(string, bool, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L277"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a share link for a file in OneDrive.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task&lt;string&gt; GetShareLinkAsync(string filePath, bool forceRefresh = false, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>filePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The path of the file to get a share link for.</p>
+</dd>
+    <dt><code>forceRefresh</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to force refresh the share link.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Optional cancellation token.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>The share link information as a JSON string.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_GetShareLinkAsync_System_String_System_Boolean_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">var shareLink = await oneDriveService.GetShareLinkAsync("/Documents/file.txt", true, CancellationToken.None);
+Console.WriteLine(shareLink);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_GetShareLinkAsync_System_String_System_Boolean_System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method retrieves a share link for the specified file in OneDrive. If <code class="paramref">forceRefresh</code> is true,
+a new link is generated.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_ListFilesAsync_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_ListFilesAsync_System_String_System_Threading_CancellationToken_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.ListFilesAsync(System.String,System.Threading.CancellationToken)">
+  ListFilesAsync(string, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Lists files in a OneDrive folder.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task&lt;List&lt;string&gt;&gt; ListFilesAsync(string oneDriveFolder, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>oneDriveFolder</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The OneDrive folder path.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Optional cancellation token.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;&gt;</dt>
+    <dd><p>List of file names.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_ListFilesAsync_System_String_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">var files = await oneDriveService.ListFilesAsync("/Documents", CancellationToken.None);
+foreach (var file in files)
+{
+    Console.WriteLine(file);
+}</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_ListFilesAsync_System_String_System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method retrieves a list of file names in the specified OneDrive folder. If the folder does not exist,
+an empty list is returned.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_MapLocalToOneDrivePath_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_MapLocalToOneDrivePath_System_String_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.MapLocalToOneDrivePath(System.String)">
+  MapLocalToOneDrivePath(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L238"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Maps a local file path to its corresponding OneDrive path.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string MapLocalToOneDrivePath(string localPath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>localPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The local file path to map.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The corresponding OneDrive path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_MapLocalToOneDrivePath_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">var oneDrivePath = oneDriveService.MapLocalToOneDrivePath("C:\Vault\file.txt");
+Console.WriteLine(oneDrivePath);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_MapLocalToOneDrivePath_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method converts a local file path to its corresponding OneDrive path based on the configured vault roots.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_MapOneDriveToLocalPath_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_MapOneDriveToLocalPath_System_String_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.MapOneDriveToLocalPath(System.String)">
+  MapOneDriveToLocalPath(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L256"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Maps an OneDrive file path to its corresponding local path.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">string MapOneDriveToLocalPath(string oneDrivePath)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>oneDrivePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The OneDrive file path to map.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The corresponding local path.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_MapOneDriveToLocalPath_System_String__examples">Examples</h4>
+  <pre><code class="lang-csharp">var localPath = oneDriveService.MapOneDriveToLocalPath("/Vault/file.txt");
+Console.WriteLine(localPath);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_MapOneDriveToLocalPath_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method converts a OneDrive file path to its corresponding local path based on the configured vault roots.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_RefreshAuthenticationAsync_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_RefreshAuthenticationAsync" data-uid="NotebookAutomation.Core.Services.IOneDriveService.RefreshAuthenticationAsync">
+  RefreshAuthenticationAsync()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L95"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Forces a refresh of the authentication tokens by clearing cache and re-authenticating.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task RefreshAuthenticationAsync()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>Task representing the async refresh operation.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_RefreshAuthenticationAsync_examples">Examples</h4>
+  <pre><code class="lang-csharp">await oneDriveService.RefreshAuthenticationAsync();
+Console.WriteLine("Tokens refreshed.");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_RefreshAuthenticationAsync_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method clears cached tokens and initiates a new authentication flow to retrieve fresh tokens.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_SearchFilesAsync_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_SearchFilesAsync_System_String_System_Threading_CancellationToken_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.SearchFilesAsync(System.String,System.Threading.CancellationToken)">
+  SearchFilesAsync(string, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L203"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Searches for files or folders in OneDrive by name or pattern.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task&lt;List&lt;Dictionary&lt;string, object&gt;&gt;&gt; SearchFilesAsync(string query, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>query</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The search query string.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Optional cancellation token.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a>&gt;&gt;&gt;</dt>
+    <dd><p>List of file/folder metadata matching the query.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_SearchFilesAsync_System_String_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">var results = await oneDriveService.SearchFilesAsync("report", CancellationToken.None);
+foreach (var result in results)
+{
+    Console.WriteLine(result);
+}</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_SearchFilesAsync_System_String_System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method searches for files or folders in OneDrive that match the specified query string.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_SetForceRefresh_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_SetForceRefresh_System_Boolean_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.SetForceRefresh(System.Boolean)">
+  SetForceRefresh(bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L78"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Sets the force refresh flag to bypass cached tokens on next authentication.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">void SetForceRefresh(bool forceRefresh)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>forceRefresh</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, will force refresh authentication tokens ignoring cache.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_SetForceRefresh_System_Boolean__examples">Examples</h4>
+  <pre><code class="lang-csharp">oneDriveService.SetForceRefresh(true);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_SetForceRefresh_System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+Use this method to ensure fresh tokens are retrieved during the next authentication attempt.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_IOneDriveService_UploadFileAsync_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_IOneDriveService_UploadFileAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="NotebookAutomation.Core.Services.IOneDriveService.UploadFileAsync(System.String,System.String,System.Threading.CancellationToken)">
+  UploadFileAsync(string, string, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L160"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Uploads a local file to OneDrive at the specified path.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">Task UploadFileAsync(string localPath, string oneDrivePath, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>localPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The local file path.</p>
+</dd>
+    <dt><code>oneDrivePath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The OneDrive destination path (including filename).</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Optional cancellation token.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task">Task</a></dt>
+    <dd><p>Task representing the async upload operation.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_UploadFileAsync_System_String_System_String_System_Threading_CancellationToken__examples">Examples</h4>
+  <pre><code class="lang-csharp">await oneDriveService.UploadFileAsync("C:\Documents\file.txt", "/Documents/file.txt", CancellationToken.None);
+Console.WriteLine("File uploaded.");</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_IOneDriveService_UploadFileAsync_System_String_System_String_System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method uploads a local file to the specified OneDrive path. If the operation is canceled,
+the task is marked as canceled.
+</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/IOneDriveService.cs/#L41" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

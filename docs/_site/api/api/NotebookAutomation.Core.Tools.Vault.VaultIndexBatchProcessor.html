@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class VaultIndexBatchProcessor | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class VaultIndexBatchProcessor | Obsidian Notebook Automation for Coursera ">
+      
+      <meta name="description" content="Batch processor for generating vault index files in an Obsidian vault.">
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/danielshue/notebook-automation/new/master/apiSpec/new?filename=NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor.md&amp;value=---%0Auid%3A%20NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor">
+
+
+
+  <h1 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor" class="text-break">
+Class VaultIndexBatchProcessor  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Tools.html">Tools</a>.<a class="xref" href="NotebookAutomation.Core.Tools.Vault.html">Vault</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Batch processor for generating vault index files in an Obsidian vault.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class VaultIndexBatchProcessor</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">VaultIndexBatchProcessor</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+
+  <h2 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>The <code>VaultIndexBatchProcessor</code> class provides functionality for generating
+index files for each folder in a vault directory. It supports queue management,
+progress tracking, hierarchy detection, and error handling, with eventing capabilities
+for real-time monitoring and UI integration.</p>
+<p>Features:</p>
+<ul>
+<li>Generates folder-named index files (e.g., &quot;Module 1.md&quot; for &quot;Module 1&quot; folder)</li>
+<li>Auto-detects hierarchy levels (MBA, Program, Course, Class, Module, Lesson)</li>
+<li>Applies appropriate templates based on detected hierarchy</li>
+<li>Organizes content by type using YAML frontmatter and filename patterns</li>
+<li>Optional Obsidian Bases integration for dynamic content views</li>
+<li>Supports dry-run mode for previewing changes.</li>
+</ul>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor__ctor_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.#ctor*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor__NotebookAutomation_Core_Tools_Vault_VaultIndexProcessor_NotebookAutomation_Core_Configuration_AppConfig_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor},NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor,NotebookAutomation.Core.Configuration.AppConfig)">
+  VaultIndexBatchProcessor(ILogger&lt;VaultIndexBatchProcessor&gt;, VaultIndexProcessor, AppConfig)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L34"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Batch processor for generating vault index files in an Obsidian vault.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public VaultIndexBatchProcessor(ILogger&lt;VaultIndexBatchProcessor&gt; logger, VaultIndexProcessor processor, AppConfig appConfig)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1">ILogger</a>&lt;<a class="xref" href="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html">VaultIndexBatchProcessor</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>processor</code> <a class="xref" href="NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor.html">VaultIndexProcessor</a></dt>
+    <dd></dd>
+    <dt><code>appConfig</code> <a class="xref" href="NotebookAutomation.Core.Configuration.AppConfig.html">AppConfig</a></dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor__NotebookAutomation_Core_Tools_Vault_VaultIndexProcessor_NotebookAutomation_Core_Configuration_AppConfig__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>The <code>VaultIndexBatchProcessor</code> class provides functionality for generating
+index files for each folder in a vault directory. It supports queue management,
+progress tracking, hierarchy detection, and error handling, with eventing capabilities
+for real-time monitoring and UI integration.</p>
+<p>Features:</p>
+<ul>
+<li>Generates folder-named index files (e.g., &quot;Module 1.md&quot; for &quot;Module 1&quot; folder)</li>
+<li>Auto-detects hierarchy levels (MBA, Program, Course, Class, Module, Lesson)</li>
+<li>Applies appropriate templates based on detected hierarchy</li>
+<li>Organizes content by type using YAML frontmatter and filename patterns</li>
+<li>Optional Obsidian Bases integration for dynamic content views</li>
+<li>Supports dry-run mode for previewing changes.</li>
+</ul>
+</div>
+
+
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_Queue_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_Queue" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.Queue">
+  Queue
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L59"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets a read-only view of the current processing queue.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public IReadOnlyList&lt;QueueItem&gt; Queue { get; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1">IReadOnlyList</a>&lt;<a class="xref" href="NotebookAutomation.Core.Models.QueueItem.html">QueueItem</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_GenerateIndexesAsync_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_GenerateIndexesAsync_System_String_System_Boolean_System_Collections_Generic_List_System_String__System_Boolean_System_String_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.GenerateIndexesAsync(System.String,System.Boolean,System.Collections.Generic.List{System.String},System.Boolean,System.String)">
+  GenerateIndexesAsync(string, bool, List&lt;string&gt;?, bool, string?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L223"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Generates vault index files for folders in the specified directory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public Task&lt;VaultIndexBatchResult&gt; GenerateIndexesAsync(string vaultPath, bool dryRun = false, List&lt;string&gt;? templateTypes = null, bool forceOverwrite = false, string? vaultRoot = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>vaultPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the vault directory.</p>
+</dd>
+    <dt><code>dryRun</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, simulates processing without making actual changes.</p>
+</dd>
+    <dt><code>templateTypes</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>Optional filter for specific template types to generate.</p>
+</dd>
+    <dt><code>forceOverwrite</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>If true, regenerates index files even if they already exist.</p>
+</dd>
+    <dt><code>vaultRoot</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.html">VaultIndexBatchResult</a>&gt;</dt>
+    <dd><p>A summary of processing results.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_InitializeProcessingQueue_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_InitializeProcessingQueue_System_String_System_Collections_Generic_List_System_String__" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.InitializeProcessingQueue(System.String,System.Collections.Generic.List{System.String})">
+  InitializeProcessingQueue(string, List&lt;string&gt;?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L99"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes the processing queue with folders from the specified vault directory.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void InitializeProcessingQueue(string vaultPath, List&lt;string&gt;? templateTypes = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>vaultPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>Path to the vault directory to scan for folders.</p>
+</dd>
+    <dt><code>templateTypes</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_OnProcessingProgressChanged_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_OnProcessingProgressChanged_System_String_System_String_System_Int32_System_Int32_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)">
+  OnProcessingProgressChanged(string, string, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L77"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Raises the ProcessingProgressChanged event.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void OnProcessingProgressChanged(string folderPath, string status, int currentFolder, int totalFolders)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>folderPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The path of the folder being processed.</p>
+</dd>
+    <dt><code>status</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The current processing status message.</p>
+</dd>
+    <dt><code>currentFolder</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The current folder index being processed.</p>
+</dd>
+    <dt><code>totalFolders</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>The total number of folders to process.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_OnQueueChanged_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_OnQueueChanged_NotebookAutomation_Core_Models_QueueItem_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)">
+  OnQueueChanged(QueueItem?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L86"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Raises the QueueChanged event.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void OnQueueChanged(QueueItem? changedItem = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>changedItem</code> <a class="xref" href="NotebookAutomation.Core.Models.QueueItem.html">QueueItem</a></dt>
+    <dd><p>The specific item that changed, or null if the entire queue changed.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_UpdateQueueItemStatus_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus*"></a>
+
+  <h3 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_UpdateQueueItemStatus_System_String_NotebookAutomation_Core_Models_DocumentProcessingStatus_NotebookAutomation_Core_Models_ProcessingStage_System_String_System_Int32_System_Int32_" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.UpdateQueueItemStatus(System.String,NotebookAutomation.Core.Models.DocumentProcessingStatus,NotebookAutomation.Core.Models.ProcessingStage,System.String,System.Int32,System.Int32)">
+  UpdateQueueItemStatus(string, DocumentProcessingStatus, ProcessingStage, string, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L184"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Updates the status of a specific queue item and fires events.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual void UpdateQueueItemStatus(string folderPath, DocumentProcessingStatus status, ProcessingStage stage, string statusMessage, int currentFolder, int totalFolders)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>folderPath</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The folder path to update.</p>
+</dd>
+    <dt><code>status</code> <a class="xref" href="NotebookAutomation.Core.Models.DocumentProcessingStatus.html">DocumentProcessingStatus</a></dt>
+    <dd><p>The new processing status.</p>
+</dd>
+    <dt><code>stage</code> <a class="xref" href="NotebookAutomation.Core.Models.ProcessingStage.html">ProcessingStage</a></dt>
+    <dd><p>The new processing stage.</p>
+</dd>
+    <dt><code>statusMessage</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The new status message.</p>
+</dd>
+    <dt><code>currentFolder</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Current folder index for progress tracking.</p>
+</dd>
+    <dt><code>totalFolders</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Total folders for progress tracking.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+  <h2 class="section" id="events">Events
+</h2>
+
+
+
+  <h3 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_ProcessingProgressChanged" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.ProcessingProgressChanged">
+  ProcessingProgressChanged
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L49"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Event triggered when processing progress changes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event EventHandler&lt;DocumentProcessingProgressEventArgs&gt;? ProcessingProgressChanged</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.eventhandler-1">EventHandler</a>&lt;<a class="xref" href="NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html">DocumentProcessingProgressEventArgs</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h3 id="NotebookAutomation_Core_Tools_Vault_VaultIndexBatchProcessor_QueueChanged" data-uid="NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.QueueChanged">
+  QueueChanged
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L54"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Event triggered when the processing queue changes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public event EventHandler&lt;QueueChangedEventArgs&gt;? QueueChanged</code></pre>
+  </div>
+
+
+
+
+
+
+  <h4 class="section">Event Type</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.eventhandler-1">EventHandler</a>&lt;<a class="xref" href="NotebookAutomation.Core.Models.QueueChangedEventArgs.html">QueueChangedEventArgs</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs/#L34" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

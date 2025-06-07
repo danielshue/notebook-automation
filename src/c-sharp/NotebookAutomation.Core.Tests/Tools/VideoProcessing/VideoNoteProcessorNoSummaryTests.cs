@@ -1,45 +1,50 @@
-﻿using System.IO;
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tools.VideoProcessing;
-using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="VideoNoteProcessorNoSummaryTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Tools/VideoProcessing/VideoNoteProcessorNoSummaryTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 
 /// <summary>
 /// Tests for VideoNoteProcessor noSummary functionality.
 /// </summary>
 [TestClass]
-public class VideoNoteProcessorNoSummaryTests
+internal class VideoNoteProcessorNoSummaryTests
 {
-    private ILogger<VideoNoteProcessor> _logger;
-    private AISummarizer _aiSummarizer;
-    private VideoNoteProcessor _processor;
-    private string _tempDir;
-    private string _testVideoPath;        /// <summary>
-                                          /// Initialize test resources before each test.
-                                          /// </summary>
+    private ILogger<VideoNoteProcessor> logger;
+    private AISummarizer aiSummarizer;
+    private VideoNoteProcessor processor;
+    private string tempDir;
+    private string testVideoPath;
+
+    /// <summary>
+    /// Initialize test resources before each test.
+    /// </summary>
     [TestInitialize]
     public void Setup()
     {
-        _logger = new LoggerFactory().CreateLogger<VideoNoteProcessor>();
+        this.logger = new LoggerFactory().CreateLogger<VideoNoteProcessor>();
 
         // Create a mock AI summarizer with required dependencies
         ILogger<AISummarizer> mockAiLogger = new LoggerFactory().CreateLogger<AISummarizer>();
         TestPromptTemplateService testPromptService = new();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
-        _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel); var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>());
+        this.aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
+        var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>());
         var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), new AppConfig());
-        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper, hierarchyDetector);
+        this.processor = new VideoNoteProcessor(this.logger, this.aiSummarizer, yamlHelper, hierarchyDetector);
 
         // Create temporary directory and mock video file
-        _tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        Directory.CreateDirectory(_tempDir);
-        _testVideoPath = Path.Combine(_tempDir, "test-video.mp4");
+        this.tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(this.tempDir);
+        this.testVideoPath = Path.Combine(this.tempDir, "test-video.mp4");
 
         // Create a dummy video file (just an empty file for testing)
-        File.WriteAllText(_testVideoPath, "dummy video content");
+        File.WriteAllText(this.testVideoPath, "dummy video content");
     }
 
     /// <summary>
@@ -48,15 +53,16 @@ public class VideoNoteProcessorNoSummaryTests
     [TestCleanup]
     public void Cleanup()
     {
-        if (_tempDir != null && Directory.Exists(_tempDir))
+        if (this.tempDir != null && Directory.Exists(this.tempDir))
         {
-            Directory.Delete(_tempDir, true);
+            Directory.Delete(this.tempDir, true);
         }
     }
 
     /// <summary>
     /// Test that GenerateVideoNoteAsync with noSummary=true creates minimal content.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithNoSummary_CreatesMinimalContent()
     {
@@ -64,14 +70,14 @@ public class VideoNoteProcessorNoSummaryTests
         // No OpenAI API key provided to ensure we're not making actual API calls
 
         // Act
-        string markdown = await _processor.GenerateVideoNoteAsync(
-            videoPath: _testVideoPath,
+        string markdown = await this.processor.GenerateVideoNoteAsync(
+            videoPath: this.testVideoPath,
             openAiApiKey: null,
             promptFileName: null,
             noSummary: true,
             timeoutSeconds: null,
             resourcesRoot: null,
-            noShareLinks: true);            // Assert
+            noShareLinks: true).ConfigureAwait(false);            // Assert
         Assert.IsNotNull(markdown);
         Assert.IsTrue(markdown.Contains("## Note")); // Should contain the minimal Note section
         Assert.IsTrue(markdown.Contains("title: Test Video")); // Should have frontmatter
@@ -83,6 +89,7 @@ public class VideoNoteProcessorNoSummaryTests
     /// <summary>
     /// Test that GenerateVideoNoteAsync with noSummary=false generates different content.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithSummaryEnabled_GeneratesDifferentContent()
     {
@@ -90,14 +97,14 @@ public class VideoNoteProcessorNoSummaryTests
         // No OpenAI API key provided, so it should attempt but fail gracefully
 
         // Act
-        string markdown = await _processor.GenerateVideoNoteAsync(
-            videoPath: _testVideoPath,
+        string markdown = await this.processor.GenerateVideoNoteAsync(
+            videoPath: this.testVideoPath,
             openAiApiKey: null, // This will cause the summarizer to return empty or error
             promptFileName: null,
             noSummary: false,
             timeoutSeconds: null,
             resourcesRoot: null,
-            noShareLinks: true);
+            noShareLinks: true).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(markdown);
@@ -108,4 +115,3 @@ public class VideoNoteProcessorNoSummaryTests
         // Even if the AI summary fails, it should still generate content
     }
 }
-

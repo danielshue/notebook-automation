@@ -24,6 +24,27 @@ dotnet_separate_import_directive_groups = true
 csharp_new_line_before_open_brace = all
 csharp_new_line_between_query_expression_clauses = true
 
+# Spacing preferences for XML documentation and methods
+csharp_space_around_binary_operators = before_and_after
+csharp_space_around_declaration_statements = false
+csharp_space_before_open_square_brackets = false
+csharp_space_between_empty_square_brackets = false
+csharp_space_between_method_call_empty_parameter_list_parentheses = false
+csharp_space_between_method_call_name_and_opening_parenthesis = false
+csharp_space_between_method_call_parameter_list_parentheses = false
+csharp_space_between_method_declaration_empty_parameter_list_parentheses = false
+csharp_space_between_method_declaration_name_and_open_parenthesis = false
+csharp_space_between_method_declaration_parameter_list_parentheses = false
+csharp_space_between_parentheses = false
+csharp_space_between_square_brackets = false
+
+# Blank line preferences (enforce consistent spacing)
+dotnet_style_allow_multiple_blank_lines_experimental = false:warning
+dotnet_style_allow_statement_immediately_after_block_experimental = false:warning
+csharp_style_allow_embedded_statements_on_same_line_experimental = false:warning
+csharp_style_allow_blank_lines_between_consecutive_braces_experimental = false:warning
+csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = false:warning
+
 # Organize usings - comprehensive settings
 dotnet_separate_import_directive_groups = true
 dotnet_sort_system_directives_first = true
@@ -101,6 +122,38 @@ csharp_prefer_braces = true:suggestion
 
 # XML documentation
 dotnet_style_require_documentation = true:suggestion
+
+# StyleCop Rules for XML Documentation and Spacing
+dotnet_diagnostic.SA1200.severity = none          # Using directive placement (handled by other rules)
+dotnet_diagnostic.SA1633.severity = none          # File header (we don't require file headers)
+dotnet_diagnostic.SA1652.severity = none          # Enable XML documentation output
+dotnet_diagnostic.SA0001.severity = none          # XML comment analysis disabled
+
+# Enforce proper spacing around XML documentation
+dotnet_diagnostic.SA1515.severity = warning       # Single-line comment should be preceded by blank line
+dotnet_diagnostic.SA1516.severity = warning       # Elements should be separated by blank line
+dotnet_diagnostic.SA1514.severity = warning       # Element documentation header should be preceded by blank line
+
+# XML Documentation content rules
+dotnet_diagnostic.SA1604.severity = warning       # Element documentation should have summary
+dotnet_diagnostic.SA1611.severity = warning       # Element parameters should be documented
+dotnet_diagnostic.SA1615.severity = warning       # Element return value should be documented
+dotnet_diagnostic.SA1618.severity = warning       # Generic type parameters should be documented
+
+# Spacing rules for methods and properties
+dotnet_diagnostic.SA1500.severity = warning       # Braces for multi-line statements should not share line
+dotnet_diagnostic.SA1501.severity = warning       # Statement should not be on single line
+dotnet_diagnostic.SA1502.severity = warning       # Element should not be on single line
+dotnet_diagnostic.SA1503.severity = warning       # Braces should not be omitted
+
+# Readability spacing rules
+dotnet_diagnostic.SA1013.severity = warning       # Closing braces should be spaced correctly
+dotnet_diagnostic.SA1025.severity = warning       # Code should not contain multiple whitespace in a row
+
+# Layout rules for consistent spacing
+dotnet_diagnostic.SA1508.severity = warning       # Closing braces should not be preceded by blank line
+dotnet_diagnostic.SA1509.severity = warning       # Opening braces should not be preceded by blank line
+dotnet_diagnostic.SA1512.severity = warning       # Single-line comments should not be followed by blank line
 
 # File-scoped namespaces
 csharp_style_namespace_declarations = file_scoped:suggestion

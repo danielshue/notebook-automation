@@ -1,0 +1,572 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  commentId: T:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  id: DocumentProcessingProgressEventArgs
+  parent: NotebookAutomation.Core.Models
+  children:
+  - NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.#ctor(System.String,System.String,System.Int32,System.Int32)
+  - NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.CurrentFile
+  - NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.FilePath
+  - NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.Status
+  - NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.TotalFiles
+  langs:
+  - csharp
+  - vb
+  name: DocumentProcessingProgressEventArgs
+  nameWithType: DocumentProcessingProgressEventArgs
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: DocumentProcessingProgressEventArgs
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+    startLine: 21
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Represents the progress of document processing, including the current file and status.
+  remarks: Initializes a new instance of the DocumentProcessingProgressEventArgs class.
+  example: []
+  syntax:
+    content: 'public class DocumentProcessingProgressEventArgs : EventArgs'
+    content.vb: Public Class DocumentProcessingProgressEventArgs Inherits EventArgs
+  inheritance:
+  - System.Object
+  - System.EventArgs
+  inheritedMembers:
+  - System.EventArgs.Empty
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.#ctor(System.String,System.String,System.Int32,System.Int32)
+  commentId: M:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.#ctor(System.String,System.String,System.Int32,System.Int32)
+  id: '#ctor(System.String,System.String,System.Int32,System.Int32)'
+  parent: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: DocumentProcessingProgressEventArgs(string, string, int, int)
+  nameWithType: DocumentProcessingProgressEventArgs.DocumentProcessingProgressEventArgs(string, string, int, int)
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.DocumentProcessingProgressEventArgs(string, string, int, int)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+    startLine: 21
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Represents the progress of document processing, including the current file and status.
+  remarks: Initializes a new instance of the DocumentProcessingProgressEventArgs class.
+  example: []
+  syntax:
+    content: public DocumentProcessingProgressEventArgs(string filePath, string status, int currentFile, int totalFiles)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: The path of the file being processed.
+    - id: status
+      type: System.String
+      description: The current processing status message.
+    - id: currentFile
+      type: System.Int32
+      description: The current file index being processed.
+    - id: totalFiles
+      type: System.Int32
+      description: The total number of files to process.
+    content.vb: Public Sub New(filePath As String, status As String, currentFile As Integer, totalFiles As Integer)
+  overload: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.#ctor*
+  nameWithType.vb: DocumentProcessingProgressEventArgs.New(String, String, Integer, Integer)
+  fullName.vb: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.New(String, String, Integer, Integer)
+  name.vb: New(String, String, Integer, Integer)
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.FilePath
+  commentId: P:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.FilePath
+  id: FilePath
+  parent: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: FilePath
+  nameWithType: DocumentProcessingProgressEventArgs.FilePath
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.FilePath
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: FilePath
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+    startLine: 30
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Gets the path of the file being processed.
+  remarks: >-
+    This property provides the full path to the file currently being processed.
+
+    It is useful for logging and tracking the progress of document processing tasks.
+  example: []
+  syntax:
+    content: public string FilePath { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property FilePath As String
+  overload: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.FilePath*
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.Status
+  commentId: P:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.Status
+  id: Status
+  parent: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: Status
+  nameWithType: DocumentProcessingProgressEventArgs.Status
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.Status
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Status
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+    startLine: 39
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Gets the current processing status message.
+  remarks: >-
+    This property contains a descriptive message about the current status of the
+
+    document processing operation, such as "Processing" or "Completed".
+  example: []
+  syntax:
+    content: public string Status { get; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public ReadOnly Property Status As String
+  overload: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.Status*
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.CurrentFile
+  commentId: P:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.CurrentFile
+  id: CurrentFile
+  parent: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: CurrentFile
+  nameWithType: DocumentProcessingProgressEventArgs.CurrentFile
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.CurrentFile
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: CurrentFile
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+    startLine: 48
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Gets the current file index being processed.
+  remarks: >-
+    This property indicates the index of the file currently being processed in the
+
+    batch, starting from 1. It is useful for displaying progress to the user.
+  example: []
+  syntax:
+    content: public int CurrentFile { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property CurrentFile As Integer
+  overload: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.CurrentFile*
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.TotalFiles
+  commentId: P:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.TotalFiles
+  id: TotalFiles
+  parent: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+  langs:
+  - csharp
+  - vb
+  name: TotalFiles
+  nameWithType: DocumentProcessingProgressEventArgs.TotalFiles
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.TotalFiles
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: TotalFiles
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingProgressEventArgs.cs
+    startLine: 57
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Gets the total number of files to process.
+  remarks: >-
+    This property specifies the total number of files in the batch that are being
+
+    processed. It is useful for calculating the overall progress percentage.
+  example: []
+  syntax:
+    content: public int TotalFiles { get; }
+    parameters: []
+    return:
+      type: System.Int32
+    content.vb: Public ReadOnly Property TotalFiles As Integer
+  overload: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.TotalFiles*
+references:
+- uid: NotebookAutomation.Core.Models
+  commentId: N:NotebookAutomation.Core.Models
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Models
+  nameWithType: NotebookAutomation.Core.Models
+  fullName: NotebookAutomation.Core.Models
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.EventArgs
+  commentId: T:System.EventArgs
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs
+  name: EventArgs
+  nameWithType: EventArgs
+  fullName: System.EventArgs
+- uid: System.EventArgs.Empty
+  commentId: F:System.EventArgs.Empty
+  parent: System.EventArgs
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventargs.empty
+  name: Empty
+  nameWithType: EventArgs.Empty
+  fullName: System.EventArgs.Empty
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.#ctor
+  href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html#NotebookAutomation_Core_Models_DocumentProcessingProgressEventArgs__ctor_System_String_System_String_System_Int32_System_Int32_
+  name: DocumentProcessingProgressEventArgs
+  nameWithType: DocumentProcessingProgressEventArgs.DocumentProcessingProgressEventArgs
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.DocumentProcessingProgressEventArgs
+  nameWithType.vb: DocumentProcessingProgressEventArgs.New
+  fullName.vb: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.New
+  name.vb: New
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.FilePath*
+  commentId: Overload:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.FilePath
+  href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html#NotebookAutomation_Core_Models_DocumentProcessingProgressEventArgs_FilePath
+  name: FilePath
+  nameWithType: DocumentProcessingProgressEventArgs.FilePath
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.FilePath
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.Status*
+  commentId: Overload:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.Status
+  href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html#NotebookAutomation_Core_Models_DocumentProcessingProgressEventArgs_Status
+  name: Status
+  nameWithType: DocumentProcessingProgressEventArgs.Status
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.Status
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.CurrentFile*
+  commentId: Overload:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.CurrentFile
+  href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html#NotebookAutomation_Core_Models_DocumentProcessingProgressEventArgs_CurrentFile
+  name: CurrentFile
+  nameWithType: DocumentProcessingProgressEventArgs.CurrentFile
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.CurrentFile
+- uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.TotalFiles*
+  commentId: Overload:NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.TotalFiles
+  href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html#NotebookAutomation_Core_Models_DocumentProcessingProgressEventArgs_TotalFiles
+  name: TotalFiles
+  nameWithType: DocumentProcessingProgressEventArgs.TotalFiles
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.TotalFiles

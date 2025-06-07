@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.VideoProcessing
+  commentId: N:NotebookAutomation.Core.Tools.VideoProcessing
+  id: NotebookAutomation.Core.Tools.VideoProcessing
+  children:
+  - NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  - NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Tools.VideoProcessing
+  nameWithType: NotebookAutomation.Core.Tools.VideoProcessing
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  commentId: T:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  href: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.html
+  name: VideoNoteBatchProcessor
+  nameWithType: VideoNoteBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor
+  commentId: T:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor
+  href: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.html
+  name: VideoNoteProcessor
+  nameWithType: VideoNoteProcessor
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class AISummarizer | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class AISummarizer | Obsidian Notebook Automation for Coursera ">
+      
+      <meta name="description" content="Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration. Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content including video transcripts, PDF documents, and academic materials. Supports variable substitution for metadata augmentation and configurable prompt templates.">
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/danielshue/notebook-automation/new/master/apiSpec/new?filename=NotebookAutomation_Core_Services_AISummarizer.md&amp;value=---%0Auid%3A%20NotebookAutomation.Core.Services.AISummarizer%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Services.AISummarizer">
+
+
+
+  <h1 id="NotebookAutomation_Core_Services_AISummarizer" data-uid="NotebookAutomation.Core.Services.AISummarizer" class="text-break">
+Class AISummarizer  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Services.html">Services</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.
+Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content
+including video transcripts, PDF documents, and academic materials. Supports variable substitution
+for metadata augmentation and configurable prompt templates.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class AISummarizer : IAISummarizer</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">AISummarizer</span></div>
+    </dd>
+  </dl>
+
+  <dl class="typelist implements">
+    <dt>Implements</dt>
+    <dd>
+      <div><a class="xref" href="NotebookAutomation.Core.Services.IAISummarizer.html">IAISummarizer</a></div>
+    </dd>
+  </dl>
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="NotebookAutomation_Core_Services_AISummarizer_examples">Examples</h2>
+  <pre><code class="lang-csharp">// Basic usage
+var summarizer = new AISummarizer(logger, promptService, kernel);
+var summary = await summarizer.SummarizeWithVariablesAsync(longText);
+
+// With metadata variables and custom prompt
+var variables = new Dictionary&lt;string, string&gt;
+{
+    ["course"] = "MBA Strategy",
+    ["type"] = "video_transcript",
+    ["onedrivePath"] = "/courses/strategy/week1"
+};
+var summary = await summarizer.SummarizeWithVariablesAsync(
+    inputText,
+    variables,
+    "chunk_summary_prompt"
+);</code></pre>
+
+
+  <h2 id="NotebookAutomation_Core_Services_AISummarizer_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+This class provides two main summarization strategies:
+</p>
+<ul><li>Direct summarization for smaller texts (under ~12,000 characters)</li><li>Chunked summarization with aggregation for larger texts</li></ul>
+<p>
+The chunking strategy splits large texts into overlapping segments, processes each chunk independently,
+then aggregates the results into a cohesive final summary. This approach ensures comprehensive coverage
+while respecting token limits of the underlying AI models.
+</p>
+<p>
+Supports fallback to ITextGenerationService for testing scenarios when SemanticKernel is unavailable.
+</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Services_AISummarizer__ctor_" data-uid="NotebookAutomation.Core.Services.AISummarizer.#ctor*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_AISummarizer__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Services_AISummarizer__NotebookAutomation_Core_Services_IPromptService_Microsoft_SemanticKernel_Kernel_NotebookAutomation_Core_Services_ITextChunkingService_" data-uid="NotebookAutomation.Core.Services.AISummarizer.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Services.AISummarizer},NotebookAutomation.Core.Services.IPromptService,Microsoft.SemanticKernel.Kernel,NotebookAutomation.Core.Services.ITextChunkingService)">
+  AISummarizer(ILogger&lt;AISummarizer&gt;, IPromptService?, Kernel?, ITextChunkingService?)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs/#L73"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.
+Implements intelligent chunking strategies for large text processing, optimized for MBA coursework content
+including video transcripts, PDF documents, and academic materials. Supports variable substitution
+for metadata augmentation and configurable prompt templates.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public AISummarizer(ILogger&lt;AISummarizer&gt; logger, IPromptService? promptService, Kernel? semanticKernel, ITextChunkingService? chunkingService = null)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1">ILogger</a>&lt;<a class="xref" href="NotebookAutomation.Core.Services.AISummarizer.html">AISummarizer</a>&gt;</dt>
+    <dd><p>The logger instance for tracking operations and debugging.</p>
+</dd>
+    <dt><code>promptService</code> <a class="xref" href="NotebookAutomation.Core.Services.IPromptService.html">IPromptService</a></dt>
+    <dd><p>Service for loading and processing prompt templates from the file system.</p>
+</dd>
+    <dt><code>semanticKernel</code> <span class="xref">Kernel</span></dt>
+    <dd><p>Microsoft.SemanticKernel instance configured with Azure OpenAI.</p>
+</dd>
+    <dt><code>chunkingService</code> <a class="xref" href="NotebookAutomation.Core.Services.ITextChunkingService.html">ITextChunkingService</a></dt>
+    <dd><p>Optional text chunking service for splitting large texts. If null, creates a default instance.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_AISummarizer__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Services_AISummarizer__NotebookAutomation_Core_Services_IPromptService_Microsoft_SemanticKernel_Kernel_NotebookAutomation_Core_Services_ITextChunkingService__examples">Examples</h4>
+  <pre><code class="lang-csharp">// Basic usage
+var summarizer = new AISummarizer(logger, promptService, kernel);
+var summary = await summarizer.SummarizeWithVariablesAsync(longText);
+
+// With metadata variables and custom prompt
+var variables = new Dictionary&lt;string, string&gt;
+{
+    ["course"] = "MBA Strategy",
+    ["type"] = "video_transcript",
+    ["onedrivePath"] = "/courses/strategy/week1"
+};
+var summary = await summarizer.SummarizeWithVariablesAsync(
+    inputText,
+    variables,
+    "chunk_summary_prompt"
+);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_AISummarizer__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Services_AISummarizer__NotebookAutomation_Core_Services_IPromptService_Microsoft_SemanticKernel_Kernel_NotebookAutomation_Core_Services_ITextChunkingService__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This class provides two main summarization strategies:
+</p>
+<ul><li>Direct summarization for smaller texts (under ~12,000 characters)</li><li>Chunked summarization with aggregation for larger texts</li></ul>
+<p>
+The chunking strategy splits large texts into overlapping segments, processes each chunk independently,
+then aggregates the results into a cohesive final summary. This approach ensures comprehensive coverage
+while respecting token limits of the underlying AI models.
+</p>
+<p>
+Supports fallback to ITextGenerationService for testing scenarios when SemanticKernel is unavailable.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>Thrown when logger is null.</p>
+</dd>
+  </dl>
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Services_AISummarizer_LoadChunkPromptAsync_" data-uid="NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_AISummarizer_LoadChunkPromptAsync" data-uid="NotebookAutomation.Core.Services.AISummarizer.LoadChunkPromptAsync">
+  LoadChunkPromptAsync()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs/#L456"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads the chunk prompt template from the prompt service for individual chunk processing.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Task&lt;string?&gt; LoadChunkPromptAsync()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>A task that represents the asynchronous load operation. The task result contains:</p>
+<ul>
+<li>The chunk prompt template content if successfully loaded</li>
+<li>null if the prompt service is unavailable or loading fails.</li>
+</ul>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_AISummarizer_LoadChunkPromptAsync_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>This method attempts to load the &quot;chunk_summary_prompt.md&quot; template file from the prompts directory.
+The chunk prompt is specifically designed for processing individual text segments before aggregation.
+Failures are logged as warnings but do not throw exceptions, allowing the system to fall back to default prompts.</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>Thrown when logger is null.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="NotebookAutomation_Core_Services_AISummarizer_LoadFinalPromptAsync_" data-uid="NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_AISummarizer_LoadFinalPromptAsync" data-uid="NotebookAutomation.Core.Services.AISummarizer.LoadFinalPromptAsync">
+  LoadFinalPromptAsync()
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs/#L491"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Loads the final prompt template from the prompt service for summary aggregation.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Task&lt;string?&gt; LoadFinalPromptAsync()</code></pre>
+  </div>
+
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>A task that represents the asynchronous load operation. The task result contains:</p>
+<ul>
+<li>The final summary prompt template content if successfully loaded</li>
+<li>null if the prompt service is unavailable or loading fails.</li>
+</ul>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_AISummarizer_LoadFinalPromptAsync_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>This method attempts to load the &quot;final_summary_prompt.md&quot; template file from the prompts directory.
+The final prompt is specifically designed for aggregating multiple chunk summaries into a cohesive result.
+Failures are logged as warnings but do not throw exceptions, allowing the system to fall back to default prompts.</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>Thrown when logger is null.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="NotebookAutomation_Core_Services_AISummarizer_ProcessPromptTemplateAsync_" data-uid="NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_AISummarizer_ProcessPromptTemplateAsync_System_String_System_String_System_String_" data-uid="NotebookAutomation.Core.Services.AISummarizer.ProcessPromptTemplateAsync(System.String,System.String,System.String)">
+  ProcessPromptTemplateAsync(string, string, string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs/#L530"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Processes and prepares the prompt template for use in summarization operations.
+Handles loading of prompt templates when not already provided and validates input text.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Task&lt;(string? processedPrompt, string processedInputText)&gt; ProcessPromptTemplateAsync(string inputText, string prompt, string promptFileName)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The input text to be summarized.</p>
+</dd>
+    <dt><code>prompt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The prompt string that may need processing or loading.</p>
+</dd>
+    <dt><code>promptFileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The prompt template filename to load if prompt is empty.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;(<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.processedprompt">processedPrompt</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.processedinputtext">processedInputText</a>)&gt;</dt>
+    <dd><p>A task that represents the asynchronous processing operation. The task result contains:</p>
+<ul>
+<li>A tuple with the processed prompt (or null if loading failed) and the input text</li>
+<li>The processed prompt will be loaded from promptFileName if the prompt parameter is empty.</li>
+</ul>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_AISummarizer_ProcessPromptTemplateAsync_System_String_System_String_System_String__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>This method serves as a preparation step for both direct and chunked summarization.
+It attempts to load the specified prompt template file when no prompt is provided directly.
+Loading failures are logged as warnings but do not prevent the operation from continuing.</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>Thrown when logger is null.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="NotebookAutomation_Core_Services_AISummarizer_SummarizeWithChunkingAsync_" data-uid="NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_AISummarizer_SummarizeWithChunkingAsync_System_String_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_Threading_CancellationToken_" data-uid="NotebookAutomation.Core.Services.AISummarizer.SummarizeWithChunkingAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.Threading.CancellationToken)">
+  SummarizeWithChunkingAsync(string, string?, Dictionary&lt;string, string&gt;?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs/#L271"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Task&lt;string?&gt; SummarizeWithChunkingAsync(string inputText, string? prompt, Dictionary&lt;string, string&gt;? variables, CancellationToken cancellationToken)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>prompt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>variables</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>Thrown when logger is null.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="NotebookAutomation_Core_Services_AISummarizer_SummarizeWithSemanticKernelAsync_" data-uid="NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_AISummarizer_SummarizeWithSemanticKernelAsync_System_String_System_String_System_Threading_CancellationToken_" data-uid="NotebookAutomation.Core.Services.AISummarizer.SummarizeWithSemanticKernelAsync(System.String,System.String,System.Threading.CancellationToken)">
+  SummarizeWithSemanticKernelAsync(string, string, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs/#L606"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Summarizes text using Microsoft SemanticKernel with the specified prompt for smaller texts that don't require chunking.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">protected virtual Task&lt;string?&gt; SummarizeWithSemanticKernelAsync(string inputText, string prompt, CancellationToken cancellationToken)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text content to summarize.</p>
+</dd>
+    <dt><code>prompt</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The prompt to guide the summarization process.</p>
+</dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd><p>Cancellation token for async operations.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>A task that represents the asynchronous summarization operation. The task result contains:</p>
+<ul>
+<li>The generated summary text if successful</li>
+<li>null if the operation fails or SemanticKernel is unavailable</li>
+<li>A simulated summary string for testing scenarios.</li>
+</ul>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_AISummarizer_SummarizeWithSemanticKernelAsync_System_String_System_String_System_Threading_CancellationToken__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This method is used for direct summarization of smaller texts (typically under 12,000 characters).
+It creates a semantic function from the provided prompt and processes the entire text in a single operation.
+</p>
+<p>
+The method uses OpenAI prompt execution settings configured for balanced performance:
+</p>
+<ul><li>MaxTokens: 4000 (allowing comprehensive summaries)</li><li>Temperature: 1.0 (balanced creativity and consistency)</li><li>TopP: 1.0 (full vocabulary consideration)</li></ul>
+<p>
+Falls back to a default summarization prompt if none is provided.
+All errors are logged and handled gracefully by returning null.
+</p>
+</div>
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.exception">Exception</a></dt>
+    <dd><p>Various exceptions may be thrown by the underlying SemanticKernel operations,
+all of which are caught, logged, and result in a null return value.</p>
+</dd>
+  </dl>
+
+
+
+  <a id="NotebookAutomation_Core_Services_AISummarizer_SummarizeWithVariablesAsync_" data-uid="NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_AISummarizer_SummarizeWithVariablesAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_String_System_Threading_CancellationToken_" data-uid="NotebookAutomation.Core.Services.AISummarizer.SummarizeWithVariablesAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String,System.Threading.CancellationToken)">
+  SummarizeWithVariablesAsync(string, Dictionary&lt;string, string&gt;?, string?, CancellationToken)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs/#L154"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"></div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public virtual Task&lt;string?&gt; SummarizeWithVariablesAsync(string inputText, Dictionary&lt;string, string&gt;? variables = null, string? promptFileName = null, CancellationToken cancellationToken = default)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>inputText</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>variables</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2">Dictionary</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>, <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+    <dt><code>promptFileName</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd></dd>
+    <dt><code>cancellationToken</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.cancellationtoken">CancellationToken</a></dt>
+    <dd></dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1">Task</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd></dd>
+  </dl>
+
+
+
+
+
+
+
+
+  <h4 class="section">Exceptions</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.argumentnullexception">ArgumentNullException</a></dt>
+    <dd><p>Thrown when logger is null.</p>
+</dd>
+  </dl>
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs/#L73" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

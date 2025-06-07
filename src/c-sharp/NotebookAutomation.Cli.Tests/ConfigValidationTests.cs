@@ -1,16 +1,19 @@
-﻿using System;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using NotebookAutomation.Cli.Commands;
-using NotebookAutomation.Core.Configuration;
-
+// <copyright file="ConfigValidationTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli.Tests/ConfigValidationTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Cli.Tests;
+
 /// <summary>
 /// Unit tests for ConfigValidation static helpers.
 /// </summary>
 [TestClass]
-public class ConfigValidationTests
+internal class ConfigValidationTests
 {
     [TestMethod]
     public void RequireOpenAi_ReturnsFalse_WhenApiKeyMissing()
@@ -22,8 +25,8 @@ public class ConfigValidationTests
         {
             AiService = new AIServiceConfig
             {
-                Provider = "openai"
-            }
+                Provider = "openai",
+            },
         };
 
         // Act
@@ -46,8 +49,8 @@ public class ConfigValidationTests
         {
             AiService = new AIServiceConfig
             {
-                Provider = "openai"
-            }
+                Provider = "openai",
+            },
         };
 
         // Act
@@ -78,10 +81,10 @@ public class ConfigValidationTests
             {
                 OnedriveFullpathRoot = " ",
                 NotebookVaultFullpathRoot = null,
-                MetadataFile = "",
+                MetadataFile = string.Empty,
                 OnedriveResourcesBasepath = null,
-                LoggingDir = ""
-            }
+                LoggingDir = string.Empty,
+            },
         };
         var result = ConfigValidation.RequireAllPaths(config, out var missing);
         Assert.IsFalse(result);
@@ -124,8 +127,8 @@ public class ConfigValidationTests
                 NotebookVaultFullpathRoot = "C:/vault",
                 MetadataFile = "C:/meta/metadata.json",
                 OnedriveResourcesBasepath = "C:/onedrive",
-                LoggingDir = "C:/logs"
-            }
+                LoggingDir = "C:/logs",
+            },
         };
         var result = ConfigValidation.RequireAllPaths(config, out var missing);
         Assert.IsTrue(result);
@@ -139,12 +142,12 @@ public class ConfigValidationTests
         {
             Paths = new PathsConfig
             {
-                OnedriveFullpathRoot = "",
+                OnedriveFullpathRoot = string.Empty,
                 NotebookVaultFullpathRoot = null,
                 MetadataFile = "meta.json",
                 OnedriveResourcesBasepath = "basepath",
-                LoggingDir = null
-            }
+                LoggingDir = null,
+            },
         };
         var result = ConfigValidation.RequireAllPaths(config, out var missing);
         Assert.IsFalse(result);
@@ -163,10 +166,10 @@ public class ConfigValidationTests
             MicrosoftGraph = new MicrosoftGraphConfig
             {
                 ClientId = null,
-                ApiEndpoint = "",
+                ApiEndpoint = string.Empty,
                 Authority = null,
-                Scopes = []
-            }
+                Scopes = [],
+            },
         };
         var result = ConfigValidation.RequireMicrosoftGraph(config);
         Assert.IsFalse(result);
@@ -182,8 +185,8 @@ public class ConfigValidationTests
                 ClientId = "id",
                 ApiEndpoint = "endpoint",
                 Authority = "authority",
-                Scopes = ["scope1"]
-            }
+                Scopes = ["scope1"],
+            },
         };
         var result = ConfigValidation.RequireMicrosoftGraph(config);
         Assert.IsTrue(result);

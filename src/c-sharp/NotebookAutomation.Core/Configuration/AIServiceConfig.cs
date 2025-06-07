@@ -1,4 +1,13 @@
-﻿using System.Text.Json.Serialization;
+// <copyright file="AIServiceConfig.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/AIServiceConfig.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Text.Json.Serialization;
 
 namespace NotebookAutomation.Core.Configuration;
 
@@ -45,13 +54,13 @@ public class AIServiceConfig
     /// <returns>The API key string, or null if not set.</returns>
     public string? GetApiKey()
     {
-        var providerType = Provider?.ToLowerInvariant() ?? "openai";
+        var providerType = this.Provider?.ToLowerInvariant() ?? "openai";
         return providerType switch
         {
             "openai" => Environment.GetEnvironmentVariable("OPENAI_API_KEY"),
             "azure" => Environment.GetEnvironmentVariable("AZURE_OPEN_AI_API_KEY"),
             "foundry" => Environment.GetEnvironmentVariable("FOUNDRY_API_KEY"),
-            _ => null
+            _ => null,
         };
     }
 
@@ -66,13 +75,13 @@ public class AIServiceConfig
     {
         get
         {
-            var providerType = Provider?.ToLowerInvariant() ?? "openai";
+            var providerType = this.Provider?.ToLowerInvariant() ?? "openai";
             return providerType switch
             {
-                "openai" => OpenAI?.Model,
-                "azure" => Azure?.Model,
-                "foundry" => Foundry?.Model,
-                _ => null
+                "openai" => this.OpenAI?.Model,
+                "azure" => this.Azure?.Model,
+                "foundry" => this.Foundry?.Model,
+                _ => null,
             };
         }
     }
@@ -85,7 +94,7 @@ public class AIServiceConfig
     /// </remarks>
     [JsonPropertyName("api_key")]
     [JsonIgnore]
-    public string? ApiKey => GetApiKey();
+    public string? ApiKey => this.GetApiKey();
 }
 
 /// <summary>

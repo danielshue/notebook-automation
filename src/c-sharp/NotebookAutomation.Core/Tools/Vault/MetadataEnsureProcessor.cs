@@ -1,7 +1,17 @@
-﻿using NotebookAutomation.Core.Configuration;
+// <copyright file="MetadataEnsureProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/Vault/MetadataEnsureProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.Vault;
+
 /// <summary>
 /// Processor for ensuring metadata in markdown files based on directory structure.
 /// Extracts program/course/class/module/lesson metadata and updates YAML frontmatter.
@@ -21,11 +31,10 @@ public class MetadataEnsureProcessor(
     MetadataHierarchyDetector metadataDetector,
     CourseStructureExtractor structureExtractor)
 {
-    private readonly ILogger<MetadataEnsureProcessor> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly AppConfig _appConfig = appConfig ?? throw new ArgumentNullException(nameof(appConfig));
-    private readonly IYamlHelper _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
-    private readonly MetadataHierarchyDetector _metadataDetector = metadataDetector ?? throw new ArgumentNullException(nameof(metadataDetector));
-    private readonly CourseStructureExtractor _structureExtractor = structureExtractor ?? throw new ArgumentNullException(nameof(structureExtractor));
+    private readonly ILogger<MetadataEnsureProcessor> logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly IYamlHelper yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
+    private readonly MetadataHierarchyDetector metadataDetector = metadataDetector ?? throw new ArgumentNullException(nameof(metadataDetector));
+    private readonly CourseStructureExtractor structureExtractor = structureExtractor ?? throw new ArgumentNullException(nameof(structureExtractor));
 
     /// <summary>
     /// Ensures metadata is properly set in a markdown file.
@@ -38,27 +47,27 @@ public class MetadataEnsureProcessor(
     {
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
-            _logger.LogWarningWithPath("File not found: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            this.logger.LogWarningWithPath("File not found: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
             return false;
         }
 
         if (!filePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
         {
-            _logger.LogDebugWithPath("Skipping non-markdown file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            this.logger.LogDebugWithPath("Skipping non-markdown file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
             return false;
         }
 
         try
         {
-            _logger.LogDebugWithPath("Processing metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            this.logger.LogDebugWithPath("Processing metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
 
             // Read the existing file content
-            string content = await File.ReadAllTextAsync(filePath);
+            string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
             // Extract existing frontmatter
-            string? existingYaml = _yamlHelper.ExtractFrontmatter(content);
+            string? existingYaml = this.yamlHelper.ExtractFrontmatter(content);
             var metadata = existingYaml != null
-                ? _yamlHelper.ParseYamlToDictionary(existingYaml)
+                ? this.yamlHelper.ParseYamlToDictionary(existingYaml)
                 : new Dictionary<string, object>();
 
             // Store original metadata for comparison
@@ -68,43 +77,44 @@ public class MetadataEnsureProcessor(
             EnsureTemplateType(metadata, filePath);
 
             // Extract hierarchy information (program, course, class)
-            var hierarchyInfo = _metadataDetector.FindHierarchyInfo(filePath);
+            var hierarchyInfo = this.metadataDetector.FindHierarchyInfo(filePath);
 
             // Extract course structure information (module, lesson) into metadata directly
-            _structureExtractor.ExtractModuleAndLesson(filePath, metadata);            // Determine the correct template-type based on existing metadata
-            string? templateType = metadata.GetValueOrDefault("template-type", "")?.ToString();
+            this.structureExtractor.ExtractModuleAndLesson(filePath, metadata);            // Determine the correct template-type based on existing metadata
+            string? templateType = metadata.GetValueOrDefault("template-type", string.Empty)?.ToString();
 
             // Update metadata with hierarchy information based on template-type
             MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, templateType);
 
             // Ensure required fields based on template type
-            EnsureRequiredFields(metadata);
+            this.EnsureRequiredFields(metadata);
 
             // Check if any changes were made
             bool hasChanges = HasMetadataChanged(originalMetadata, metadata, forceOverwrite);
 
             if (!hasChanges)
             {
-                _logger.LogDebugWithPath("No metadata changes needed for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+                this.logger.LogDebugWithPath("No metadata changes needed for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
                 return false;
             }
+
             if (dryRun)
             {
-                _logger.LogInformationWithPath("DRY RUN: Would update metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
-                LogMetadataChanges(originalMetadata, metadata, filePath);
+                this.logger.LogInformationWithPath("DRY RUN: Would update metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+                this.LogMetadataChanges(originalMetadata, metadata, filePath);
                 return true;
             }
 
             // Update the file with new frontmatter
-            string updatedContent = _yamlHelper.UpdateFrontmatter(content, metadata);
-            await File.WriteAllTextAsync(filePath, updatedContent);
+            string updatedContent = this.yamlHelper.UpdateFrontmatter(content, metadata);
+            await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
 
-            _logger.LogInformationWithPath("Updated metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            this.logger.LogInformationWithPath("Updated metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "Failed to process metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            this.logger.LogErrorWithPath(ex, "Failed to process metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
             return false;
         }
     }
@@ -123,7 +133,7 @@ public class MetadataEnsureProcessor(
         }
 
         string fileName = Path.GetFileName(filePath);
-        string directory = Path.GetDirectoryName(filePath) ?? "";
+        string directory = Path.GetDirectoryName(filePath) ?? string.Empty;
 
         // Determine template type based on filename patterns
         string templateType = DetermineTemplateType(fileName, directory);
@@ -169,11 +179,11 @@ public class MetadataEnsureProcessor(
         {
             // This would need more sophisticated logic to determine the index type
             // For now, return empty and let manual assignment handle it
-            return "";
+            return string.Empty;
         }
 
         // Default fallback - could be a general note
-        return "";
+        return string.Empty;
     }
 
     /// <summary>
@@ -182,7 +192,7 @@ public class MetadataEnsureProcessor(
     /// <param name="metadata">The metadata dictionary to update.</param>
     private void EnsureRequiredFields(Dictionary<string, object> metadata)
     {
-        string templateType = metadata.GetValueOrDefault("template-type", "")?.ToString() ?? "";
+        string templateType = metadata.GetValueOrDefault("template-type", string.Empty)?.ToString() ?? string.Empty;
 
         // Set auto-generated-state if not present
         if (!metadata.ContainsKey("auto-generated-state"))
@@ -230,17 +240,17 @@ public class MetadataEnsureProcessor(
             ["type"] = "note/case-study",
             ["comprehension"] = 0,
             ["status"] = "unread",
-            ["completion-date"] = "",
-            ["date-modified"] = "",
-            ["date-review"] = "",
-            ["onedrive-shared-link"] = "",
-            ["onedrive_fullpath_file_reference"] = "",
-            ["pdf-size"] = "",
-            ["pdf-uploaded"] = "",
-            ["page-count"] = "",
-            ["pages"] = "",
-            ["authors"] = "",
-            ["tags"] = ""
+            ["completion-date"] = string.Empty,
+            ["date-modified"] = string.Empty,
+            ["date-review"] = string.Empty,
+            ["onedrive-shared-link"] = string.Empty,
+            ["onedrive_fullpath_file_reference"] = string.Empty,
+            ["pdf-size"] = string.Empty,
+            ["pdf-uploaded"] = string.Empty,
+            ["page-count"] = string.Empty,
+            ["pages"] = string.Empty,
+            ["authors"] = string.Empty,
+            ["tags"] = string.Empty,
         };
 
         foreach (var field in requiredFields)
@@ -262,19 +272,19 @@ public class MetadataEnsureProcessor(
             ["type"] = "note/video-note",
             ["comprehension"] = 0,
             ["status"] = "unwatched",
-            ["completion-date"] = "",
-            ["date-modified"] = "",
-            ["date-review"] = "",
-            ["onedrive-shared-link"] = "",
-            ["onedrive_fullpath_file_reference"] = "",
-            ["publication-year"] = "",
-            ["video-codec"] = "",
+            ["completion-date"] = string.Empty,
+            ["date-modified"] = string.Empty,
+            ["date-review"] = string.Empty,
+            ["onedrive-shared-link"] = string.Empty,
+            ["onedrive_fullpath_file_reference"] = string.Empty,
+            ["publication-year"] = string.Empty,
+            ["video-codec"] = string.Empty,
             ["video-duration"] = "00:00:00",
-            ["video-resolution"] = "",
+            ["video-resolution"] = string.Empty,
             ["video-size"] = "0 MB",
-            ["video-uploaded"] = "",
-            ["author"] = "",
-            ["tags"] = ""
+            ["video-uploaded"] = string.Empty,
+            ["author"] = string.Empty,
+            ["tags"] = string.Empty,
         };
 
         foreach (var field in requiredFields)
@@ -296,15 +306,15 @@ public class MetadataEnsureProcessor(
             ["type"] = "note/reading",
             ["comprehension"] = 0,
             ["status"] = "unread",
-            ["completion-date"] = "",
-            ["date-modified"] = "",
-            ["date-review"] = "",
-            ["onedrive-shared-link"] = "",
-            ["onedrive_fullpath_file_reference"] = "",
-            ["page-count"] = "",
-            ["pages"] = "",
-            ["authors"] = "",
-            ["tags"] = ""
+            ["completion-date"] = string.Empty,
+            ["date-modified"] = string.Empty,
+            ["date-review"] = string.Empty,
+            ["onedrive-shared-link"] = string.Empty,
+            ["onedrive_fullpath_file_reference"] = string.Empty,
+            ["page-count"] = string.Empty,
+            ["pages"] = string.Empty,
+            ["authors"] = string.Empty,
+            ["tags"] = string.Empty,
         };
 
         foreach (var field in requiredFields)
@@ -323,7 +333,7 @@ public class MetadataEnsureProcessor(
     {
         var requiredFields = new Dictionary<string, object>
         {
-            ["tags"] = ""
+            ["tags"] = string.Empty,
         };
 
         foreach (var field in requiredFields)
@@ -366,8 +376,8 @@ public class MetadataEnsureProcessor(
                 return true; // New field added
             }
 
-            string originalValue = original[kvp.Key]?.ToString() ?? "";
-            string updatedValue = kvp.Value?.ToString() ?? "";
+            string originalValue = original[kvp.Key]?.ToString() ?? string.Empty;
+            string updatedValue = kvp.Value?.ToString() ?? string.Empty;
 
             // If original was empty and updated has value, that's a change
             if (string.IsNullOrWhiteSpace(originalValue) && !string.IsNullOrWhiteSpace(updatedValue))
@@ -390,16 +400,25 @@ public class MetadataEnsureProcessor(
     /// </summary>
     private static bool DictionariesEqual(Dictionary<string, object> dict1, Dictionary<string, object> dict2)
     {
-        if (dict1.Count != dict2.Count) return false;
+        if (dict1.Count != dict2.Count)
+        {
+            return false;
+        }
 
         foreach (var kvp in dict1)
         {
-            if (!dict2.ContainsKey(kvp.Key)) return false;
+            if (!dict2.ContainsKey(kvp.Key))
+            {
+                return false;
+            }
 
-            string value1 = kvp.Value?.ToString() ?? "";
-            string value2 = dict2[kvp.Key]?.ToString() ?? "";
+            string value1 = kvp.Value?.ToString() ?? string.Empty;
+            string value2 = dict2[kvp.Key]?.ToString() ?? string.Empty;
 
-            if (value1 != value2) return false;
+            if (value1 != value2)
+            {
+                return false;
+            }
         }
 
         return true;
@@ -429,8 +448,8 @@ public class MetadataEnsureProcessor(
             }
             else
             {
-                string origValue = originalValue?.ToString() ?? "";
-                string updatedValue = kvp.Value?.ToString() ?? "";
+                string origValue = originalValue?.ToString() ?? string.Empty;
+                string updatedValue = kvp.Value?.ToString() ?? string.Empty;
 
                 if (origValue != updatedValue)
                 {
@@ -454,7 +473,7 @@ public class MetadataEnsureProcessor(
 
         if (changes.Count > 0)
         {
-            string fileContext = filePath != null ? $" for file {Path.GetFileName(filePath)}" : "";
+            string fileContext = filePath != null ? $" for file {Path.GetFileName(filePath)}" : string.Empty;
             string filePath_full = filePath != null ? $"{filePath}" : "unknown file";
 
             // Create detailed summary of changes for this file
@@ -486,12 +505,15 @@ public class MetadataEnsureProcessor(
                 {
                     metadataSummary.AppendLine($"    - {deletion}");
                 }
-            }                // Log the detailed changes at debug level for the log file
-            _logger.LogDebugFormatted("Metadata changes for file:\n{DetailedChanges}",
+            } // Log the detailed changes at debug level for the log file
+
+            this.logger.LogDebugFormatted(
+                "Metadata changes for file:\n{DetailedChanges}",
                 metadataSummary.ToString());
 
             // Log a summary line at info level - elevated from debug so it appears in console with --verbose
-            _logger.LogInformationFormatted("Metadata change summary{FileContext}: +{Adds} ~{Modifies} -{Deletes}",
+            this.logger.LogInformationFormatted(
+                "Metadata change summary{FileContext}: +{Adds} ~{Modifies} -{Deletes}",
                 fileContext,
                 additions.Count,
                 modifications.Count,
@@ -500,37 +522,42 @@ public class MetadataEnsureProcessor(
             // Keep detailed key-value changes at debug level for log file
             if (additions.Count > 0)
             {
-                _logger.LogDebugFormatted("ADD operations{FileContext}: {AddedFields}",
+                this.logger.LogDebugFormatted(
+                    "ADD operations{FileContext}: {AddedFields}",
                     fileContext,
                     string.Join(", ", additions));
             }
 
             if (modifications.Count > 0)
             {
-                _logger.LogDebugFormatted("MODIFY operations{FileContext}: {ModifiedFields}",
+                this.logger.LogDebugFormatted(
+                    "MODIFY operations{FileContext}: {ModifiedFields}",
                     fileContext,
                     string.Join(", ", modifications));
             }
 
             if (deletions.Count > 0)
             {
-                _logger.LogDebugFormatted("DELETE operations{FileContext}: {DeletedFields}",
+                this.logger.LogDebugFormatted(
+                    "DELETE operations{FileContext}: {DeletedFields}",
                     fileContext,
                     string.Join(", ", deletions));
             }
         }
-    }    /// <summary>    /// <summary>
-         /// Determines the hierarchy level based on the file's template-type or position in the hierarchy.
-         /// </summary>
-         /// <param name="filePath">The path of the file.</param>
-         /// <param name="metadata">The metadata dictionary.</param>
-         /// <returns>The determined hierarchy level (e.g., "main", "program", "course"), or null if it cannot be determined.</returns>
+    }
+
+    /// <summary>    ///. <summary>
+    /// Determines the hierarchy level based on the file's template-type or position in the hierarchy.
+    /// </summary>
+    /// <param name="filePath">The path of the file.</param>
+    /// <param name="metadata">The metadata dictionary.</param>
+    /// <returns>The determined hierarchy level (e.g., "main", "program", "course"), or null if it cannot be determined.</returns>
     private string? DetermineHierarchyLevelFromPath(string filePath, Dictionary<string, object> metadata)
     {
         // First check if template-type is already set and extract hierarchy level from it
         if (metadata.TryGetValue("template-type", out var templateTypeObj) && templateTypeObj != null)
         {
-            string templateType = templateTypeObj.ToString() ?? "";
+            string templateType = templateTypeObj.ToString() ?? string.Empty;
             if (!string.IsNullOrEmpty(templateType))
             {
                 // Extract hierarchy level from template-type (e.g., "course-index" -> "course")
@@ -544,7 +571,7 @@ public class MetadataEnsureProcessor(
 
         // If no template-type or it doesn't indicate hierarchy, determine from file position
         string fileName = Path.GetFileName(filePath);
-        string folderName = Path.GetFileName(Path.GetDirectoryName(filePath) ?? "");
+        string folderName = Path.GetFileName(Path.GetDirectoryName(filePath) ?? string.Empty);
 
         // Check if this is likely an index file (filename matches folder name)
         string fileBaseName = Path.GetFileNameWithoutExtension(fileName);
@@ -558,7 +585,7 @@ public class MetadataEnsureProcessor(
         }
 
         // Get the vault root from the metadata detector
-        string vaultRoot = _metadataDetector.VaultRoot;
+        string vaultRoot = this.metadataDetector.VaultRoot;
 
         // Calculate the relative path from vault root
         string relativePath = Path.GetRelativePath(vaultRoot, filePath);
@@ -579,17 +606,21 @@ public class MetadataEnsureProcessor(
             1 => "program",   // Files in program folder
             2 => "course",    // Files in course folder
             3 => "class",     // Files in class folder
-            _ => "module"     // Files at module level or deeper
+            _ => "module",     // Files at module level or deeper
         };
-    }    /// <summary>
-         /// Extracts the hierarchy level from a template-type string.
-         /// </summary>
-         /// <param name="templateType">The template-type value (e.g., "course", "video-reference-note").</param>
-         /// <returns>The hierarchy level (e.g., "course") or null if not a hierarchy template.</returns>
+    }
+
+    /// <summary>
+    /// Extracts the hierarchy level from a template-type string.
+    /// </summary>
+    /// <param name="templateType">The template-type value (e.g., "course", "video-reference-note").</param>
+    /// <returns>The hierarchy level (e.g., "course") or null if not a hierarchy template.</returns>
     private static string? ExtractHierarchyLevelFromTemplateType(string templateType)
     {
         if (string.IsNullOrEmpty(templateType))
+        {
             return null;
+        }
 
         // Handle new naming convention - index templates use simple names
         return templateType switch
@@ -604,6 +635,7 @@ public class MetadataEnsureProcessor(
             "readings" => "readings",
             "resources" => "resources",
             "case-study" => "case-study",
+
             // Legacy support for old naming convention
             "main-index" => "main",
             "program-index" => "program",
@@ -615,11 +647,11 @@ public class MetadataEnsureProcessor(
             "readings-index" => "readings",
             "resources-index" => "resources",
             "case-study-index" => "case-study",
-            _ => null // Non-hierarchy templates like "video-reference-note", etc.
+            _ => null, // Non-hierarchy templates like "video-reference-note", etc.
         };
     }
-
 }
+
 /// <summary>
 /// Extension methods for Dictionary operations.
 /// </summary>
@@ -628,6 +660,7 @@ public static class DictionaryExtensions
     /// <summary>
     /// Gets a value from dictionary or returns default if key doesn't exist.
     /// </summary>
+    /// <returns></returns>
     public static TValue? GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue? defaultValue = default)
         where TKey : notnull
     {

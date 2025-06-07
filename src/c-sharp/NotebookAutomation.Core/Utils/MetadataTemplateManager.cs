@@ -1,6 +1,16 @@
-﻿using NotebookAutomation.Core.Configuration;
+// <copyright file="MetadataTemplateManager.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Utils;
+
 /// <summary>
 /// Manages loading, parsing, and application of metadata templates from the <c>metadata.yaml</c> file.
 /// </summary>
@@ -19,10 +29,10 @@ namespace NotebookAutomation.Core.Utils;
 /// </remarks>
 public partial class MetadataTemplateManager
 {
-    private readonly ILogger _logger;
-    private readonly string _metadataFilePath;
-    private readonly IYamlHelper _yamlHelper;
-    private readonly Dictionary<string, Dictionary<string, object>> _templates;
+    private readonly ILogger logger;
+    private readonly string metadataFilePath;
+    private readonly IYamlHelper yamlHelper;
+    private readonly Dictionary<string, Dictionary<string, object>> templates;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataTemplateManager"/> class.
@@ -32,20 +42,24 @@ public partial class MetadataTemplateManager
     /// <param name="yamlHelper">The YAML helper service for parsing metadata.</param>
     public MetadataTemplateManager(ILogger logger, AppConfig appConfig, IYamlHelper yamlHelper)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
 
         if (appConfig?.Paths == null)
+        {
             throw new ArgumentNullException(nameof(appConfig), "Application config paths must be provided");
+        }
 
-        _metadataFilePath = appConfig.Paths.MetadataFile;
+        this.metadataFilePath = appConfig.Paths.MetadataFile;
 
-        if (string.IsNullOrWhiteSpace(_metadataFilePath))
+        if (string.IsNullOrWhiteSpace(this.metadataFilePath))
+        {
             throw new ArgumentException("Metadata file path is not configured in appConfig");
+        }
 
-        _templates = [];
+        this.templates = [];
 
-        LoadTemplates();
+        this.LoadTemplates();
     }
 
     /// <summary>
@@ -59,25 +73,25 @@ public partial class MetadataTemplateManager
     {
         try
         {
-            if (!File.Exists(_metadataFilePath))
+            if (!File.Exists(this.metadataFilePath))
             {
-                _logger.LogErrorWithPath("Metadata file does not exist at path: {filePath}", _metadataFilePath);
+                this.logger.LogErrorWithPath("Metadata file does not exist at path: {filePath}", this.metadataFilePath);
                 return;
             }
 
-            _logger.LogInformationWithPath("Loading templates from metadata file: {filePath}", _metadataFilePath);
-            string content = File.ReadAllText(_metadataFilePath);
+            this.logger.LogInformationWithPath("Loading templates from metadata file: {filePath}", this.metadataFilePath);
+            string content = File.ReadAllText(this.metadataFilePath);
 
             // The metadata.yaml file has multiple YAML documents separated by ---
             var documents = SplitYamlDocuments(content);
 
-            _templates.Clear();
+            this.templates.Clear();
 
             foreach (var document in documents)
             {
                 try
                 {
-                    var template = _yamlHelper.ParseYamlToDictionary(document);
+                    var template = this.yamlHelper.ParseYamlToDictionary(document);
 
                     // Normalize tags to string arrays if present
                     if (template.TryGetValue("tags", out object? value) && value is System.Collections.IEnumerable enumerable && value is not string)
@@ -88,27 +102,28 @@ public partial class MetadataTemplateManager
                             .ToArray();
                         template["tags"] = tagArray;
                     }
+
                     if (template.Count > 0 && template.TryGetValue("template-type", out object? templateTypeValue))
                     {
                         string templateType = templateTypeValue.ToString() ?? string.Empty;
                         if (!string.IsNullOrEmpty(templateType))
                         {
-                            _templates[templateType] = template;
-                            _logger.LogDebug("Loaded template: {TemplateType}", templateType);
+                            this.templates[templateType] = template;
+                            this.logger.LogDebug("Loaded template: {TemplateType}", templateType);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning("Failed to parse template document: {Error}", ex.Message);
+                    this.logger.LogWarning("Failed to parse template document: {Error}", ex.Message);
                 }
             }
 
-            _logger.LogInformation("Loaded {Count} templates from metadata.yaml", _templates.Count);
+            this.logger.LogInformation("Loaded {Count} templates from metadata.yaml", this.templates.Count);
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "Failed to load templates from metadata file: {filePath}", _metadataFilePath);
+            this.logger.LogErrorWithPath(ex, "Failed to load templates from metadata file: {filePath}", this.metadataFilePath);
             throw;
         }
     }
@@ -125,12 +140,12 @@ public partial class MetadataTemplateManager
     /// </example>
     public Dictionary<string, object>? GetTemplate(string templateType)
     {
-        if (_templates.TryGetValue(templateType, out var template))
+        if (this.templates.TryGetValue(templateType, out var template))
         {
             return new Dictionary<string, object>(template);
         }
 
-        _logger.LogWarning("Template type not found: {TemplateType}", templateType);
+        this.logger.LogWarning("Template type not found: {TemplateType}", templateType);
         return null;
     }
 
@@ -140,7 +155,7 @@ public partial class MetadataTemplateManager
     /// <returns>A list of template type names.</returns>
     public List<string> GetTemplateTypes()
     {
-        return [.. _templates.Keys];
+        return [.. this.templates.Keys];
     }
 
     /// <summary>
@@ -156,9 +171,11 @@ public partial class MetadataTemplateManager
     /// </example>
     public Dictionary<string, object>? GetFilledTemplate(string templateType, Dictionary<string, string> values)
     {
-        var template = GetTemplate(templateType);
+        var template = this.GetTemplate(templateType);
         if (template == null)
+        {
             return null;
+        }
 
         // Apply values to the template
         foreach (var kvp in values)
@@ -192,10 +209,10 @@ public partial class MetadataTemplateManager
         string templateType = DetermineTemplateType(noteType);
 
         // Get the template if available
-        var template = GetTemplate(templateType);
+        var template = this.GetTemplate(templateType);
         if (template == null)
         {
-            _logger.LogInformation("No template found for {NoteType}, using default fields only", noteType);
+            this.logger.LogInformation("No template found for {NoteType}, using default fields only", noteType);
             return metadata;  // Return original metadata if no template found
         }
 
@@ -228,6 +245,7 @@ public partial class MetadataTemplateManager
                 {
                     shouldFillFromTemplate = true;
                 }
+
                 // For arrays, only fill if null or empty
                 else if (existingValue is System.Collections.ICollection collection && collection.Count == 0)
                 {
@@ -246,18 +264,30 @@ public partial class MetadataTemplateManager
                     case "status":
                         // Use template default, or set based on note type
                         if (noteType == "Video Note")
+                        {
                             enhancedMetadata["status"] = template[key]?.ToString() ?? "unwatched";
+                        }
                         else if (noteType == "PDF Note")
+                        {
                             enhancedMetadata["status"] = template[key]?.ToString() ?? "unread";
+                        }
                         else
+                        {
                             enhancedMetadata["status"] = template[key]?.ToString() ?? "in-progress";
+                        }
+
                         break;
                     case "date-created":
                         // Use file creation date if available
                         if (enhancedMetadata.TryGetValue("date-created", out var dateCreatedVal) && !string.IsNullOrWhiteSpace(Convert.ToString(dateCreatedVal)))
+                        {
                             enhancedMetadata["date-created"] = Convert.ToString(dateCreatedVal) ?? string.Empty;
+                        }
                         else
+                        {
                             enhancedMetadata["date-created"] = DateTime.Now.ToString("yyyy-MM-dd");
+                        }
+
                         break;
                     default:
                         // Preserve the original value for complex types (arrays, objects)
@@ -288,6 +318,7 @@ public partial class MetadataTemplateManager
                         {
                             enhancedMetadata[key] = string.Empty;
                         }
+
                         break;
                 }
             }
@@ -304,13 +335,14 @@ public partial class MetadataTemplateManager
         }
 
         // DEBUG: Log before returning to verify 'type' field
-        _logger.LogDebug("[DEBUG] Final enhancedMetadata before return in EnhanceMetadataWithTemplate:");
+        this.logger.LogDebug("[DEBUG] Final enhancedMetadata before return in EnhanceMetadataWithTemplate:");
         foreach (var kvp in enhancedMetadata)
         {
-            _logger.LogDebug("[DEBUG]   {Key}: {Value}", kvp.Key, kvp.Value);
+            this.logger.LogDebug("[DEBUG]   {Key}: {Value}", kvp.Key, kvp.Value);
         }
 
-        _logger.LogDebug("Enhanced metadata with template: {TemplateType}", templateType); return enhancedMetadata;
+        this.logger.LogDebug("Enhanced metadata with template: {TemplateType}", templateType);
+        return enhancedMetadata;
     }
 
     /// <summary>
@@ -326,7 +358,7 @@ public partial class MetadataTemplateManager
             "PDF Note" => "pdf-reference",
             "Live Session Note" => "live-session-note",
             "Transcript" => "transcript",
-            _ => "video-reference"  // Default to video-reference for unknown types
+            _ => "video-reference",  // Default to video-reference for unknown types
         };
     }
 

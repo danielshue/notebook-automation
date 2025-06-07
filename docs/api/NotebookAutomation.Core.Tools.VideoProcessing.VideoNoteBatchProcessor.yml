@@ -1,0 +1,1045 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  commentId: T:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  id: VideoNoteBatchProcessor
+  parent: NotebookAutomation.Core.Tools.VideoProcessing
+  children:
+  - NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.#ctor(NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor{NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor})
+  - NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessVideosAsync(System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,NotebookAutomation.Core.Configuration.AppConfig,System.Boolean)
+  - NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessingProgressChanged
+  - NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.QueueChanged
+  langs:
+  - csharp
+  - vb
+  name: VideoNoteBatchProcessor
+  nameWithType: VideoNoteBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: VideoNoteBatchProcessor
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+    startLine: 24
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.VideoProcessing
+  summary: Provides batch processing capabilities for converting multiple video files to markdown notes.
+  remarks: >-
+    The <code>VideoNoteBatchProcessor</code> class coordinates the processing of multiple video files,
+
+    leveraging the <xref href="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor" data-throw-if-not-resolved="false"></xref> for metadata extraction, transcript loading,
+
+    and note generation. It supports dry-run mode, output directory management, and eventing
+
+    for real-time progress tracking.
+  example: []
+  syntax:
+    content: public class VideoNoteBatchProcessor
+    content.vb: Public Class VideoNoteBatchProcessor
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.#ctor(NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor{NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor})
+  commentId: M:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.#ctor(NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor{NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor})
+  id: '#ctor(NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor{NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor})'
+  parent: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcessor>)
+  nameWithType: VideoNoteBatchProcessor.VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcessor>)
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.VideoNoteBatchProcessor(NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor>)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+    startLine: 24
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.VideoProcessing
+  summary: Provides batch processing capabilities for converting multiple video files to markdown notes.
+  remarks: >-
+    The <code>VideoNoteBatchProcessor</code> class coordinates the processing of multiple video files,
+
+    leveraging the <xref href="NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor" data-throw-if-not-resolved="false"></xref> for metadata extraction, transcript loading,
+
+    and note generation. It supports dry-run mode, output directory management, and eventing
+
+    for real-time progress tracking.
+  example: []
+  syntax:
+    content: public VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcessor> batchProcessor)
+    parameters:
+    - id: batchProcessor
+      type: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor{NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor}
+    content.vb: Public Sub New(batchProcessor As DocumentNoteBatchProcessor(Of VideoNoteProcessor))
+  overload: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.#ctor*
+  nameWithType.vb: VideoNoteBatchProcessor.New(DocumentNoteBatchProcessor(Of VideoNoteProcessor))
+  fullName.vb: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.New(NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor))
+  name.vb: New(DocumentNoteBatchProcessor(Of VideoNoteProcessor))
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessingProgressChanged
+  commentId: E:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessingProgressChanged
+  id: ProcessingProgressChanged
+  parent: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: ProcessingProgressChanged
+  nameWithType: VideoNoteBatchProcessor.ProcessingProgressChanged
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessingProgressChanged
+  type: Event
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessingProgressChanged
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+    startLine: 34
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.VideoProcessing
+  summary: Event triggered when processing progress changes.
+  example: []
+  syntax:
+    content: public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
+    return:
+      type: System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+    content.vb: Public Event ProcessingProgressChanged As EventHandler(Of DocumentProcessingProgressEventArgs)
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.QueueChanged
+  commentId: E:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.QueueChanged
+  id: QueueChanged
+  parent: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: QueueChanged
+  nameWithType: VideoNoteBatchProcessor.QueueChanged
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.QueueChanged
+  type: Event
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: QueueChanged
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+    startLine: 43
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.VideoProcessing
+  summary: Event triggered when the processing queue changes.
+  example: []
+  syntax:
+    content: public event EventHandler<QueueChangedEventArgs>? QueueChanged
+    return:
+      type: System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+    content.vb: Public Event QueueChanged As EventHandler(Of QueueChangedEventArgs)
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessVideosAsync(System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,NotebookAutomation.Core.Configuration.AppConfig,System.Boolean)
+  commentId: M:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessVideosAsync(System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,NotebookAutomation.Core.Configuration.AppConfig,System.Boolean)
+  id: ProcessVideosAsync(System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,NotebookAutomation.Core.Configuration.AppConfig,System.Boolean)
+  parent: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+  langs:
+  - csharp
+  - vb
+  name: ProcessVideosAsync(string, string?, List<string>, string?, bool, bool, bool, bool, int?, string?, AppConfig?, bool)
+  nameWithType: VideoNoteBatchProcessor.ProcessVideosAsync(string, string?, List<string>, string?, bool, bool, bool, bool, int?, string?, AppConfig?, bool)
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessVideosAsync(string, string?, System.Collections.Generic.List<string>, string?, bool, bool, bool, bool, int?, string?, NotebookAutomation.Core.Configuration.AppConfig?, bool)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessVideosAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteBatchProcessor.cs
+    startLine: 97
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.VideoProcessing
+  summary: Processes one or more video files, generating markdown notes for each.
+  remarks: >-
+    <p>
+
+    This method delegates to the generic <xref href="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor%601" data-throw-if-not-resolved="false"></xref>
+
+    for all batch processing operations while maintaining backward compatibility with
+
+    existing video-specific API.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">// Process all video files in a directory
+
+    var processor = new VideoNoteBatchProcessor(logger);
+
+    var result = await processor.ProcessVideosAsync(
+        "path/to/videos",
+        "path/to/notes",
+        new List&lt;string&gt; { ".mp4", ".mov", ".avi" },
+        "sk-yourapikeyhere");
+
+    Console.WriteLine($"Processed: {result.processed}, Failed: {result.failed}");</code></pre>
+  syntax:
+    content: public Task<BatchProcessResult> ProcessVideosAsync(string input, string? output, List<string> videoExtensions, string? openAiApiKey, bool dryRun = false, bool noSummary = false, bool forceOverwrite = false, bool retryFailed = false, int? timeoutSeconds = null, string? resourcesRoot = null, AppConfig? appConfig = null, bool noShareLinks = false)
+    parameters:
+    - id: input
+      type: System.String
+      description: Input file path or directory containing video files.
+    - id: output
+      type: System.String
+      description: Output directory where markdown notes will be saved.
+    - id: videoExtensions
+      type: System.Collections.Generic.List{System.String}
+      description: List of file extensions to recognize as video files.
+    - id: openAiApiKey
+      type: System.String
+      description: Optional OpenAI API key for generating summaries.
+    - id: dryRun
+      type: System.Boolean
+      description: If true, simulates processing without writing output files.
+    - id: noSummary
+      type: System.Boolean
+      description: If true, disables OpenAI summary generation.
+    - id: forceOverwrite
+      type: System.Boolean
+      description: If true, overwrites existing notes.
+    - id: retryFailed
+      type: System.Boolean
+      description: If true, retries only failed files from previous run.
+    - id: timeoutSeconds
+      type: System.Nullable{System.Int32}
+      description: Optional API request timeout in seconds.
+    - id: resourcesRoot
+      type: System.String
+      description: Optional override for OneDrive fullpath root directory.
+    - id: appConfig
+      type: NotebookAutomation.Core.Configuration.AppConfig
+      description: The application configuration object.
+    - id: noShareLinks
+      type: System.Boolean
+      description: If true, skips OneDrive share link creation.
+    return:
+      type: System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Shared.BatchProcessResult}
+      description: A tuple containing the count of successfully processed files and the count of failures.
+    content.vb: Public Function ProcessVideosAsync(input As String, output As String, videoExtensions As List(Of String), openAiApiKey As String, dryRun As Boolean = False, noSummary As Boolean = False, forceOverwrite As Boolean = False, retryFailed As Boolean = False, timeoutSeconds As Integer? = Nothing, resourcesRoot As String = Nothing, appConfig As AppConfig = Nothing, noShareLinks As Boolean = False) As Task(Of BatchProcessResult)
+  overload: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessVideosAsync*
+  nameWithType.vb: VideoNoteBatchProcessor.ProcessVideosAsync(String, String, List(Of String), String, Boolean, Boolean, Boolean, Boolean, Integer?, String, AppConfig, Boolean)
+  fullName.vb: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessVideosAsync(String, String, System.Collections.Generic.List(Of String), String, Boolean, Boolean, Boolean, Boolean, Integer?, String, NotebookAutomation.Core.Configuration.AppConfig, Boolean)
+  name.vb: ProcessVideosAsync(String, String, List(Of String), String, Boolean, Boolean, Boolean, Boolean, Integer?, String, AppConfig, Boolean)
+references:
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor
+  commentId: T:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor
+  href: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.html
+  name: VideoNoteProcessor
+  nameWithType: VideoNoteProcessor
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor
+- uid: NotebookAutomation.Core.Tools.VideoProcessing
+  commentId: N:NotebookAutomation.Core.Tools.VideoProcessing
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.VideoProcessing
+  nameWithType: NotebookAutomation.Core.Tools.VideoProcessing
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.VideoProcessing
+    name: VideoProcessing
+    href: NotebookAutomation.Core.Tools.VideoProcessing.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.VideoProcessing
+    name: VideoProcessing
+    href: NotebookAutomation.Core.Tools.VideoProcessing.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.#ctor
+  href: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.html#NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteBatchProcessor__ctor_NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteProcessor__
+  name: VideoNoteBatchProcessor
+  nameWithType: VideoNoteBatchProcessor.VideoNoteBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.VideoNoteBatchProcessor
+  nameWithType.vb: VideoNoteBatchProcessor.New
+  fullName.vb: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.New
+  name.vb: New
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor{NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor}
+  commentId: T:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor{NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor}
+  parent: NotebookAutomation.Core.Tools.Shared
+  definition: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  name: DocumentNoteBatchProcessor<VideoNoteProcessor>
+  nameWithType: DocumentNoteBatchProcessor<VideoNoteProcessor>
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor>
+  nameWithType.vb: DocumentNoteBatchProcessor(Of VideoNoteProcessor)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor)
+  name.vb: DocumentNoteBatchProcessor(Of VideoNoteProcessor)
+  spec.csharp:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+    name: DocumentNoteBatchProcessor
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  - name: <
+  - uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor
+    name: VideoNoteProcessor
+    href: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.html
+  - name: '>'
+  spec.vb:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+    name: DocumentNoteBatchProcessor
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor
+    name: VideoNoteProcessor
+    href: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.html
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  commentId: T:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  name: DocumentNoteBatchProcessor<TProcessor>
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor)
+  name.vb: DocumentNoteBatchProcessor(Of TProcessor)
+  spec.csharp:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+    name: DocumentNoteBatchProcessor
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  - name: <
+  - name: TProcessor
+  - name: '>'
+  spec.vb:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+    name: DocumentNoteBatchProcessor
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TProcessor
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared
+  commentId: N:NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.Shared
+  nameWithType: NotebookAutomation.Core.Tools.Shared
+  fullName: NotebookAutomation.Core.Tools.Shared
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html
+- uid: System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+  commentId: T:System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<DocumentProcessingProgressEventArgs>
+  nameWithType: EventHandler<DocumentProcessingProgressEventArgs>
+  fullName: System.EventHandler<NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs>
+  nameWithType.vb: EventHandler(Of DocumentProcessingProgressEventArgs)
+  fullName.vb: System.EventHandler(Of NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs)
+  name.vb: EventHandler(Of DocumentProcessingProgressEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+    name: DocumentProcessingProgressEventArgs
+    href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+    name: DocumentProcessingProgressEventArgs
+    href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+  commentId: T:System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<QueueChangedEventArgs>
+  nameWithType: EventHandler<QueueChangedEventArgs>
+  fullName: System.EventHandler<NotebookAutomation.Core.Models.QueueChangedEventArgs>
+  nameWithType.vb: EventHandler(Of QueueChangedEventArgs)
+  fullName.vb: System.EventHandler(Of NotebookAutomation.Core.Models.QueueChangedEventArgs)
+  name.vb: EventHandler(Of QueueChangedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+    name: QueueChangedEventArgs
+    href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+    name: QueueChangedEventArgs
+    href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  commentId: T:NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  parent: NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html
+  name: BatchProcessResult
+  nameWithType: BatchProcessResult
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+- uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessVideosAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessVideosAsync
+  href: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.html#NotebookAutomation_Core_Tools_VideoProcessing_VideoNoteBatchProcessor_ProcessVideosAsync_System_String_System_String_System_Collections_Generic_List_System_String__System_String_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Nullable_System_Int32__System_String_NotebookAutomation_Core_Configuration_AppConfig_System_Boolean_
+  name: ProcessVideosAsync
+  nameWithType: VideoNoteBatchProcessor.ProcessVideosAsync
+  fullName: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.ProcessVideosAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: NotebookAutomation.Core.Configuration.AppConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AppConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig
+- uid: System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Shared.BatchProcessResult}
+  commentId: T:System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Shared.BatchProcessResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BatchProcessResult>
+  nameWithType: Task<BatchProcessResult>
+  fullName: System.Threading.Tasks.Task<NotebookAutomation.Core.Tools.Shared.BatchProcessResult>
+  nameWithType.vb: Task(Of BatchProcessResult)
+  fullName.vb: System.Threading.Tasks.Task(Of NotebookAutomation.Core.Tools.Shared.BatchProcessResult)
+  name.vb: Task(Of BatchProcessResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+    name: BatchProcessResult
+    href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+    name: BatchProcessResult
+    href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks

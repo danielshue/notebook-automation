@@ -1,40 +1,42 @@
-﻿#nullable enable
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-
-using Moq;
-
-using NotebookAutomation.Core.Configuration;
+﻿// <copyright file="AppConfigTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/AppConfigTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
-public class AppConfigCoverageBoostTests
+internal class AppConfigCoverageBoostTests
 {
     [TestMethod]
     public void Constructor_WithUnderlyingConfiguration_LoadsSections()
     {
         Dictionary<string, string?> configDict = new()
         {
-            {"paths:notebook_vault_fullpath_root", "/vault"},
-            {"paths:onedrive_resources_basepath", "/base"},
-            {"paths:logging_dir", "/logs"},
-            {"paths:onedrive_fullpath_root", "/od"},
-            {"paths:metadata_file", "/meta.yaml"},
-            {"microsoft_graph:client_id", "cid"},
-            {"microsoft_graph:api_endpoint", "ep"},
-            {"microsoft_graph:authority", "https://login.microsoftonline.com/common"},
-            {"aiservice:provider", "openai"},
-            {"aiservice:openai:model", "gpt-4"},
-            {"aiservice:openai:endpoint", "https://api.openai.com"},
-            {"aiservice:azure:model", "az-gpt"},
-            {"aiservice:azure:deployment", "az-deploy"},
-            {"aiservice:azure:endpoint", "https://az.com"},
-            {"aiservice:foundry:model", "foundry-llm"},
-            {"aiservice:foundry:endpoint", "http://localhost:8000"},
-            {"video_extensions:0", ".mp4"},
-            {"video_extensions:1", ".avi"}
+            { "paths:notebook_vault_fullpath_root", "/vault" },
+            { "paths:onedrive_resources_basepath", "/base" },
+            { "paths:logging_dir", "/logs" },
+            { "paths:onedrive_fullpath_root", "/od" },
+            { "paths:metadata_file", "/meta.yaml" },
+            { "microsoft_graph:client_id", "cid" },
+            { "microsoft_graph:api_endpoint", "ep" },
+            { "microsoft_graph:authority", "https://login.microsoftonline.com/common" },
+            { "aiservice:provider", "openai" },
+            { "aiservice:openai:model", "gpt-4" },
+            { "aiservice:openai:endpoint", "https://api.openai.com" },
+            { "aiservice:azure:model", "az-gpt" },
+            { "aiservice:azure:deployment", "az-deploy" },
+            { "aiservice:azure:endpoint", "https://az.com" },
+            { "aiservice:foundry:model", "foundry-llm" },
+            { "aiservice:foundry:endpoint", "http://localhost:8000" },
+            { "video_extensions:0", ".mp4" },
+            { "video_extensions:1", ".avi" },
         };
         IConfigurationRoot configuration = new ConfigurationBuilder().AddInMemoryCollection(configDict).Build();
         Mock<ILogger<AppConfig>> logger = new();
@@ -56,7 +58,7 @@ public class AppConfigCoverageBoostTests
             Paths = new PathsConfig { LoggingDir = "/logs" },
             MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "cid" },
             AiService = new AIServiceConfig { Provider = "openai", OpenAI = new OpenAiProviderConfig { Model = "gpt-4" } },
-            VideoExtensions = [".mp4"]
+            VideoExtensions = [".mp4"],
         };
         File.WriteAllText(tempFile, JsonSerializer.Serialize(config));
         AppConfig appConfig = AppConfig.LoadFromJsonFile(tempFile);
@@ -76,6 +78,7 @@ public class AppConfigCoverageBoostTests
         appConfig.SaveToJsonFile(tempFile);
         Assert.IsTrue(File.Exists(tempFile));
         File.Delete(tempFile);
+
         // Error: directory does not exist and cannot be created
         Assert.ThrowsExactly<IOException>(() => appConfig.SaveToJsonFile(Path.Combine("?invalidpath", "bad.json")));
     }
@@ -103,7 +106,7 @@ public class AppConfigCoverageBoostTests
     {
         AppConfig appConfig = new()
         {
-            Paths = new PathsConfig { LoggingDir = "logs" }
+            Paths = new PathsConfig { LoggingDir = "logs" },
         };
         Assert.IsTrue(appConfig.Exists("paths:logging_dir"));
         Assert.IsNull(appConfig["paths:nonexistent"]);
@@ -116,20 +119,23 @@ public class AppConfigCoverageBoostTests
 /// Tests for the AppConfig class, especially focusing on its implementation of IConfiguration.
 /// </summary>
 [TestClass]
-public class AppConfigTests
+internal class AppConfigTests
 {
-    private Mock<ILogger<AppConfig>> _loggerMock = null!;
-    private Mock<IConfiguration> _configurationMock = null!;
+    private Mock<ILogger<AppConfig>> loggerMock = null!;
+    private Mock<IConfiguration> configurationMock = null!;
 
     [TestInitialize]
     public void Initialize()
     {
-        _loggerMock = new Mock<ILogger<AppConfig>>();
-        _configurationMock = new Mock<IConfiguration>();
-    }    /// <summary>
-         /// Helper method to set up API key configuration for testing
-         /// </summary>
+        this.loggerMock = new Mock<ILogger<AppConfig>>();
+        this.configurationMock = new Mock<IConfiguration>();
+    }
+
+    /// <summary>
+    /// Helper method to set up API key configuration for testing.
+    /// </summary>
     private static void SetupApiKeyConfigurationForTesting(AppConfig config, string apiKey) =>
+
         // Set the environment variable directly for the provider
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", apiKey);
 
@@ -145,19 +151,21 @@ public class AppConfigTests
             Paths = new PathsConfig
             {
                 LoggingDir = "logs",
-                OnedriveFullpathRoot = "/resources"
+                OnedriveFullpathRoot = "/resources",
             },
             AiService = new AIServiceConfig
             {
                 Provider = "openai",
-                OpenAI = new OpenAiProviderConfig { Model = "gpt-4" }
-            }
+                OpenAI = new OpenAiProviderConfig { Model = "gpt-4" },
+            },
         };
         SetupApiKeyConfigurationForTesting(appConfig, "test-api-key");
+
         // Act & Assert
         Assert.AreEqual("logs", appConfig["paths:LoggingDir"]);
         Assert.AreEqual("/resources", appConfig["paths:OnedriveFullpathRoot"]);
         Assert.AreEqual("gpt-4", appConfig["aiservice:Model"]);
+
         // Check using JsonPropertyName value
         Assert.AreEqual("test-api-key", appConfig["aiservice:api_key"]);
         Assert.AreEqual("logs", appConfig["paths:logging_dir"]);
@@ -186,7 +194,7 @@ public class AppConfigTests
         // Arrange
         AppConfig appConfig = new()
         {
-            Paths = new PathsConfig()
+            Paths = new PathsConfig(),
         };
 
         // Act
@@ -209,11 +217,13 @@ public class AppConfigTests
             Paths = new PathsConfig
             {
                 LoggingDir = "logs",
-                OnedriveFullpathRoot = "/resources"
-            }
+                OnedriveFullpathRoot = "/resources",
+            },
         };
+
         // Act
         IConfigurationSection pathsSection = appConfig.GetSection("paths");
+
         // Assert
         Assert.IsNotNull(pathsSection);
         Assert.AreEqual("paths", pathsSection.Key);
@@ -233,8 +243,8 @@ public class AppConfigTests
         {
             Paths = new PathsConfig
             {
-                LoggingDir = "logs"
-            }
+                LoggingDir = "logs",
+            },
         };
 
         // Act & Assert
@@ -272,27 +282,28 @@ public class AppConfigTests
     public void LoadFromJsonFile_ShouldLoadConfigurationCorrectly()
     {
         // Arrange - Create a temporary config file
-        string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json"); var config = new
+        string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
+        var config = new
         {
             paths = new
             {
                 onedrive_fullpath_root = "/resources",
-                logging_dir = "/logs"
+                logging_dir = "/logs",
             },
             aiservice = new
             {
                 provider = "openai",
                 openai = new
                 {
-                    model = "gpt-4"
-                }
-            }
+                    model = "gpt-4",
+                },
+            },
         };
 
         File.WriteAllText(tempFile, JsonSerializer.Serialize(config));
 
         try
-        {            // Act
+        { // Act
             AppConfig appConfig = AppConfig.LoadFromJsonFile(tempFile);
 
             // Assert
@@ -312,9 +323,11 @@ public class AppConfigTests
                 File.Delete(tempFile);
             }
         }
-    }    /// <summary>
-         /// Tests saving configuration to JSON file.
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Tests saving configuration to JSON file.
+    /// </summary>
     [TestMethod]
     public void SaveToJsonFile_ShouldSaveConfigurationCorrectly()
     {
@@ -335,13 +348,13 @@ public class AppConfigTests
                 Paths = new PathsConfig
                 {
                     LoggingDir = "/logs",
-                    OnedriveFullpathRoot = "/resources"
+                    OnedriveFullpathRoot = "/resources",
                 },
                 AiService = new AIServiceConfig
                 {
                     Provider = "openai",
-                    OpenAI = new OpenAiProviderConfig { Model = "gpt-4" } // API key is managed at AIServiceConfig level
-                }
+                    OpenAI = new OpenAiProviderConfig { Model = "gpt-4" }, // API key is managed at AIServiceConfig level
+                },
             };
 
             // Act
@@ -371,33 +384,35 @@ public class AppConfigTests
                 File.Delete(tempFile);
             }
         }
-    }        /// <summary>
-             /// Tests configuration with underlying IConfiguration.
-             /// </summary>    [TestMethod]
+    }
+
+    /// <summary>
+    /// Tests configuration with underlying IConfiguration.
+    /// </summary>    [TestMethod]
     public void WithUnderlyingConfiguration_ShouldUseUnderlyingValues()
     {
         // Arrange
         Dictionary<string, string?> configValues = new()
         {
-            {"paths:notebook_vault_fullpath_root", "/config-vault"},
-            {"paths:onedrive_resources_basepath", "/config-resources-base"},
-            {"paths:logging_dir", "/config-logs"},
-            {"paths:onedrive_fullpath_root", "/config-resources"},
-            {"paths:metadata_file", "/config-meta.yaml"},
-            {"microsoft_graph:client_id", "config-client-id"},
-            {"microsoft_graph:api_endpoint", "config-endpoint"},
-            {"microsoft_graph:authority", "https://login.microsoftonline.com/common"},
-            {"aiservice:provider", "openai"},
-            {"aiservice:openai:model", "gpt-4-turbo"},
-            {"aiservice:openai:endpoint", "https://api.openai.com"},
-            {"video_extensions:0", ".mp4"}
+            { "paths:notebook_vault_fullpath_root", "/config-vault" },
+            { "paths:onedrive_resources_basepath", "/config-resources-base" },
+            { "paths:logging_dir", "/config-logs" },
+            { "paths:onedrive_fullpath_root", "/config-resources" },
+            { "paths:metadata_file", "/config-meta.yaml" },
+            { "microsoft_graph:client_id", "config-client-id" },
+            { "microsoft_graph:api_endpoint", "config-endpoint" },
+            { "microsoft_graph:authority", "https://login.microsoftonline.com/common" },
+            { "aiservice:provider", "openai" },
+            { "aiservice:openai:model", "gpt-4-turbo" },
+            { "aiservice:openai:endpoint", "https://api.openai.com" },
+            { "video_extensions:0", ".mp4" },
         };
 
         // Create a real configuration implementation for testing
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(configValues)
             .Build();        // Create test configuration using constructor with the real configuration
-        AppConfig appConfig = new(configuration, _loggerMock.Object);// Act & Assert
+        AppConfig appConfig = new(configuration, this.loggerMock.Object); // Act & Assert
         Assert.AreEqual("/config-vault", appConfig.Paths.NotebookVaultFullpathRoot);
         Assert.AreEqual("/config-resources", appConfig.Paths.OnedriveFullpathRoot);
         Assert.AreEqual("/config-logs", appConfig.Paths.LoggingDir);
@@ -407,7 +422,7 @@ public class AppConfigTests
 }
 
 [TestClass]
-public class AppConfigAdditionalTests
+internal class AppConfigAdditionalTests
 {
     [TestMethod]
     public void SetVideoExtensions_ShouldUpdateList()
@@ -430,7 +445,7 @@ public class AppConfigAdditionalTests
     {
         AppConfig appConfig = new()
         {
-            Paths = new PathsConfig { LoggingDir = "logs" }
+            Paths = new PathsConfig { LoggingDir = "logs" },
         };
         Assert.IsTrue(appConfig.Exists("paths:logging_dir")); // JsonPropertyName in nested config
         Assert.IsTrue(appConfig.Exists("Paths")); // Direct property
@@ -465,6 +480,7 @@ public class AppConfigAdditionalTests
         Assert.AreEqual("logs", appConfig.Paths.LoggingDir);
         Assert.AreEqual("vault", appConfig.Paths.NotebookVaultFullpathRoot);
     }
+
     [TestMethod]
     public void ExtractTenantIdFromAuthority_ShouldReturnExpectedResults()
     {
@@ -472,6 +488,6 @@ public class AppConfigAdditionalTests
         Assert.IsNotNull(method);
         Assert.AreEqual("common", method.Invoke(null, ["https://login.microsoftonline.com/common"]));
         Assert.AreEqual("12345678-1234-1234-1234-123456789abc", method.Invoke(null, ["https://login.microsoftonline.com/12345678-1234-1234-1234-123456789abc"]));
-        Assert.AreEqual("common", method.Invoke(null, [""]));
+        Assert.AreEqual("common", method.Invoke(null, [string.Empty]));
     }
 }

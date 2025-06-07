@@ -1,0 +1,62 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Services.Text
+  commentId: N:NotebookAutomation.Core.Services.Text
+  id: NotebookAutomation.Core.Services.Text
+  children:
+  - NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Services.Text
+  nameWithType: NotebookAutomation.Core.Services.Text
+  fullName: NotebookAutomation.Core.Services.Text
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  commentId: T:NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+  parent: NotebookAutomation.Core.Services.Text
+  href: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html
+  name: RecursiveCharacterTextSplitter
+  nameWithType: RecursiveCharacterTextSplitter
+  fullName: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+- uid: NotebookAutomation.Core.Services.Text
+  commentId: N:NotebookAutomation.Core.Services.Text
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Services.Text
+  nameWithType: NotebookAutomation.Core.Services.Text
+  fullName: NotebookAutomation.Core.Services.Text
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services.Text
+    name: Text
+    href: NotebookAutomation.Core.Services.Text.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services.Text
+    name: Text
+    href: NotebookAutomation.Core.Services.Text.html

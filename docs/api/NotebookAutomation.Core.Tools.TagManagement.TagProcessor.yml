@@ -1,0 +1,1883 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  commentId: T:NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  id: TagProcessor
+  parent: NotebookAutomation.Core.Tools.TagManagement
+  children:
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor},Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Utils.IYamlHelper,System.Boolean,System.Boolean)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor},Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Utils.IYamlHelper,System.Boolean,System.Boolean,System.Collections.Generic.HashSet{System.String})
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddExampleTagsToFileAsync(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddNestedTagsToFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyAsync(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ClearTagsFromFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.DiagnoseFrontmatterIssuesAsync(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GenerateNestedTags(System.Collections.Generic.Dictionary{System.String,System.Object},System.Collections.Generic.List{System.String})
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetExistingTags(System.Collections.Generic.Dictionary{System.String,System.Object})
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetTagPrefixForField(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.NormalizeTagValue(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessDirectoryAsync(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessFileAsync(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInDirectoryAsync(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInFileAsync(System.String)
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.Stats
+  - NotebookAutomation.Core.Tools.TagManagement.TagProcessor.UpdateFrontmatterKeyAsync(System.String,System.String,System.Object)
+  langs:
+  - csharp
+  - vb
+  name: TagProcessor
+  nameWithType: TagProcessor
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: TagProcessor
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 22
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Processes tags in markdown files and handles tag management operations.
+  remarks: >-
+    The <code>TagProcessor</code> class provides functionality for managing tags in markdown files,
+
+    including adding nested tags, restructuring tag hierarchies, clearing tags from index files,
+
+    and enforcing metadata consistency. It supports dry-run mode for testing changes without
+
+    modifying files and verbose logging for detailed diagnostics.
+  example: []
+  syntax:
+    content: public class TagProcessor
+    content.vb: Public Class TagProcessor
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.Stats
+  commentId: P:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.Stats
+  id: Stats
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: Stats
+  nameWithType: TagProcessor.Stats
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.Stats
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Stats
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 34
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Gets statistics about the processing performed.
+  example: []
+  syntax:
+    content: public Dictionary<string, int> Stats { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.Dictionary{System.String,System.Int32}
+    content.vb: Public Property Stats As Dictionary(Of String, Integer)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.Stats*
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor},Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Utils.IYamlHelper,System.Boolean,System.Boolean)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor},Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Utils.IYamlHelper,System.Boolean,System.Boolean)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor},Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Utils.IYamlHelper,System.Boolean,System.Boolean)'
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: TagProcessor(ILogger<TagProcessor>, ILogger, IYamlHelper, bool, bool)
+  nameWithType: TagProcessor.TagProcessor(ILogger<TagProcessor>, ILogger, IYamlHelper, bool, bool)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.TagProcessor(Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Tools.TagManagement.TagProcessor>, Microsoft.Extensions.Logging.ILogger, NotebookAutomation.Core.Utils.IYamlHelper, bool, bool)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 52
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: >-
+    Initializes a new instance of the <xref href="NotebookAutomation.Core.Tools.TagManagement.TagProcessor" data-throw-if-not-resolved="false"></xref> class.
+
+    Initializes a new instance of the TagProcessor.
+  example: []
+  syntax:
+    content: public TagProcessor(ILogger<TagProcessor> logger, ILogger failedLogger, IYamlHelper yamlHelper, bool dryRun = false, bool verbose = false)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor}
+      description: Logger for general diagnostics.
+    - id: failedLogger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: Logger for recording failed operations.
+    - id: yamlHelper
+      type: NotebookAutomation.Core.Utils.IYamlHelper
+      description: Helper for YAML processing.
+    - id: dryRun
+      type: System.Boolean
+      description: Whether to perform a dry run without making changes.
+    - id: verbose
+      type: System.Boolean
+      description: Whether to provide verbose output.
+    content.vb: Public Sub New(logger As ILogger(Of TagProcessor), failedLogger As ILogger, yamlHelper As IYamlHelper, dryRun As Boolean = False, verbose As Boolean = False)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor*
+  nameWithType.vb: TagProcessor.New(ILogger(Of TagProcessor), ILogger, IYamlHelper, Boolean, Boolean)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.New(Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Tools.TagManagement.TagProcessor), Microsoft.Extensions.Logging.ILogger, NotebookAutomation.Core.Utils.IYamlHelper, Boolean, Boolean)
+  name.vb: New(ILogger(Of TagProcessor), ILogger, IYamlHelper, Boolean, Boolean)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor},Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Utils.IYamlHelper,System.Boolean,System.Boolean,System.Collections.Generic.HashSet{System.String})
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor},Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Utils.IYamlHelper,System.Boolean,System.Boolean,System.Collections.Generic.HashSet{System.String})
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor},Microsoft.Extensions.Logging.ILogger,NotebookAutomation.Core.Utils.IYamlHelper,System.Boolean,System.Boolean,System.Collections.Generic.HashSet{System.String})'
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: TagProcessor(ILogger<TagProcessor>, ILogger, IYamlHelper, bool, bool, HashSet<string>?)
+  nameWithType: TagProcessor.TagProcessor(ILogger<TagProcessor>, ILogger, IYamlHelper, bool, bool, HashSet<string>?)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.TagProcessor(Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Tools.TagManagement.TagProcessor>, Microsoft.Extensions.Logging.ILogger, NotebookAutomation.Core.Utils.IYamlHelper, bool, bool, System.Collections.Generic.HashSet<string>?)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 83
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: >-
+    Initializes a new instance of the <xref href="NotebookAutomation.Core.Tools.TagManagement.TagProcessor" data-throw-if-not-resolved="false"></xref> class.
+
+    Initializes a new instance of the TagProcessor with specified fields to process.
+  example: []
+  syntax:
+    content: public TagProcessor(ILogger<TagProcessor> logger, ILogger failedLogger, IYamlHelper yamlHelper, bool dryRun = false, bool verbose = false, HashSet<string>? fieldsToProcess = null)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor}
+      description: Logger for general diagnostics.
+    - id: failedLogger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: Logger for recording failed operations.
+    - id: yamlHelper
+      type: NotebookAutomation.Core.Utils.IYamlHelper
+      description: Helper for YAML processing.
+    - id: dryRun
+      type: System.Boolean
+      description: Whether to perform a dry run without making changes.
+    - id: verbose
+      type: System.Boolean
+      description: Whether to provide verbose output.
+    - id: fieldsToProcess
+      type: System.Collections.Generic.HashSet{System.String}
+      description: Specific frontmatter fields to process for tag generation.
+    content.vb: Public Sub New(logger As ILogger(Of TagProcessor), failedLogger As ILogger, yamlHelper As IYamlHelper, dryRun As Boolean = False, verbose As Boolean = False, fieldsToProcess As HashSet(Of String) = Nothing)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor*
+  nameWithType.vb: TagProcessor.New(ILogger(Of TagProcessor), ILogger, IYamlHelper, Boolean, Boolean, HashSet(Of String))
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.New(Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Tools.TagManagement.TagProcessor), Microsoft.Extensions.Logging.ILogger, NotebookAutomation.Core.Utils.IYamlHelper, Boolean, Boolean, System.Collections.Generic.HashSet(Of String))
+  name.vb: New(ILogger(Of TagProcessor), ILogger, IYamlHelper, Boolean, Boolean, HashSet(Of String))
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessDirectoryAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessDirectoryAsync(System.String)
+  id: ProcessDirectoryAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: ProcessDirectoryAsync(string)
+  nameWithType: TagProcessor.ProcessDirectoryAsync(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessDirectoryAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessDirectoryAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 110
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Processes a directory recursively to add or update nested tags.
+  example: []
+  syntax:
+    content: public Task<Dictionary<string, int>> ProcessDirectoryAsync(string directory)
+    parameters:
+    - id: directory
+      type: System.String
+      description: The directory path to process.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.Dictionary{System.String,System.Int32}}
+      description: Dictionary with processing statistics.
+    content.vb: Public Function ProcessDirectoryAsync(directory As String) As Task(Of Dictionary(Of String, Integer))
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessDirectoryAsync*
+  nameWithType.vb: TagProcessor.ProcessDirectoryAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessDirectoryAsync(String)
+  name.vb: ProcessDirectoryAsync(String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessFileAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessFileAsync(System.String)
+  id: ProcessFileAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: ProcessFileAsync(string)
+  nameWithType: TagProcessor.ProcessFileAsync(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessFileAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessFileAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 156
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Processes a single markdown file to add or update nested tags.
+  example: []
+  syntax:
+    content: public Task<bool> ProcessFileAsync(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: Path to the markdown file.
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: True if the file was modified, false otherwise.
+    content.vb: Public Function ProcessFileAsync(filePath As String) As Task(Of Boolean)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessFileAsync*
+  nameWithType.vb: TagProcessor.ProcessFileAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessFileAsync(String)
+  name.vb: ProcessFileAsync(String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ClearTagsFromFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ClearTagsFromFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  id: ClearTagsFromFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: ClearTagsFromFileAsync(string, Dictionary<string, object>, string)
+  nameWithType: TagProcessor.ClearTagsFromFileAsync(string, Dictionary<string, object>, string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ClearTagsFromFileAsync(string, System.Collections.Generic.Dictionary<string, object>, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ClearTagsFromFileAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 289
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Clears tags from an index file.
+  example: []
+  syntax:
+    content: public Task<bool> ClearTagsFromFileAsync(string filePath, Dictionary<string, object> frontmatter, string content)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: Path to the markdown file.
+    - id: frontmatter
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: The parsed frontmatter dictionary.
+    - id: content
+      type: System.String
+      description: The full content of the file.
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: True if the file was modified, false otherwise.
+    content.vb: Public Function ClearTagsFromFileAsync(filePath As String, frontmatter As Dictionary(Of String, Object), content As String) As Task(Of Boolean)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ClearTagsFromFileAsync*
+  nameWithType.vb: TagProcessor.ClearTagsFromFileAsync(String, Dictionary(Of String, Object), String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ClearTagsFromFileAsync(String, System.Collections.Generic.Dictionary(Of String, Object), String)
+  name.vb: ClearTagsFromFileAsync(String, Dictionary(Of String, Object), String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddNestedTagsToFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddNestedTagsToFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  id: AddNestedTagsToFileAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: AddNestedTagsToFileAsync(string, Dictionary<string, object>, string)
+  nameWithType: TagProcessor.AddNestedTagsToFileAsync(string, Dictionary<string, object>, string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddNestedTagsToFileAsync(string, System.Collections.Generic.Dictionary<string, object>, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AddNestedTagsToFileAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 337
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Adds nested tags based on frontmatter fields to a file.
+  example: []
+  syntax:
+    content: public Task<bool> AddNestedTagsToFileAsync(string filePath, Dictionary<string, object> frontmatter, string content)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: Path to the markdown file.
+    - id: frontmatter
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: The parsed frontmatter dictionary.
+    - id: content
+      type: System.String
+      description: The full content of the file.
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: True if the file was modified, false otherwise.
+    content.vb: Public Function AddNestedTagsToFileAsync(filePath As String, frontmatter As Dictionary(Of String, Object), content As String) As Task(Of Boolean)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddNestedTagsToFileAsync*
+  nameWithType.vb: TagProcessor.AddNestedTagsToFileAsync(String, Dictionary(Of String, Object), String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddNestedTagsToFileAsync(String, System.Collections.Generic.Dictionary(Of String, Object), String)
+  name.vb: AddNestedTagsToFileAsync(String, Dictionary(Of String, Object), String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetExistingTags(System.Collections.Generic.Dictionary{System.String,System.Object})
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetExistingTags(System.Collections.Generic.Dictionary{System.String,System.Object})
+  id: GetExistingTags(System.Collections.Generic.Dictionary{System.String,System.Object})
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: GetExistingTags(Dictionary<string, object>)
+  nameWithType: TagProcessor.GetExistingTags(Dictionary<string, object>)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetExistingTags(System.Collections.Generic.Dictionary<string, object>)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetExistingTags
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 398
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Extracts existing tags from the frontmatter.
+  example: []
+  syntax:
+    content: public static List<string> GetExistingTags(Dictionary<string, object> frontmatter)
+    parameters:
+    - id: frontmatter
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: The frontmatter dictionary.
+    return:
+      type: System.Collections.Generic.List{System.String}
+      description: A list of existing tags.
+    content.vb: Public Shared Function GetExistingTags(frontmatter As Dictionary(Of String, Object)) As List(Of String)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetExistingTags*
+  nameWithType.vb: TagProcessor.GetExistingTags(Dictionary(Of String, Object))
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetExistingTags(System.Collections.Generic.Dictionary(Of String, Object))
+  name.vb: GetExistingTags(Dictionary(Of String, Object))
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GenerateNestedTags(System.Collections.Generic.Dictionary{System.String,System.Object},System.Collections.Generic.List{System.String})
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GenerateNestedTags(System.Collections.Generic.Dictionary{System.String,System.Object},System.Collections.Generic.List{System.String})
+  id: GenerateNestedTags(System.Collections.Generic.Dictionary{System.String,System.Object},System.Collections.Generic.List{System.String})
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: GenerateNestedTags(Dictionary<string, object>, List<string>)
+  nameWithType: TagProcessor.GenerateNestedTags(Dictionary<string, object>, List<string>)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GenerateNestedTags(System.Collections.Generic.Dictionary<string, object>, System.Collections.Generic.List<string>)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GenerateNestedTags
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 437
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Generates nested tags based on frontmatter fields.
+  example: []
+  syntax:
+    content: public List<string> GenerateNestedTags(Dictionary<string, object> frontmatter, List<string> existingTags)
+    parameters:
+    - id: frontmatter
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: The frontmatter dictionary.
+    - id: existingTags
+      type: System.Collections.Generic.List{System.String}
+      description: List of existing tags.
+    return:
+      type: System.Collections.Generic.List{System.String}
+      description: A list of new tags to add.
+    content.vb: Public Function GenerateNestedTags(frontmatter As Dictionary(Of String, Object), existingTags As List(Of String)) As List(Of String)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GenerateNestedTags*
+  nameWithType.vb: TagProcessor.GenerateNestedTags(Dictionary(Of String, Object), List(Of String))
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GenerateNestedTags(System.Collections.Generic.Dictionary(Of String, Object), System.Collections.Generic.List(Of String))
+  name.vb: GenerateNestedTags(Dictionary(Of String, Object), List(Of String))
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetTagPrefixForField(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetTagPrefixForField(System.String)
+  id: GetTagPrefixForField(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: GetTagPrefixForField(string)
+  nameWithType: TagProcessor.GetTagPrefixForField(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetTagPrefixForField(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetTagPrefixForField
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 490
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Gets the appropriate tag prefix for a frontmatter field.
+  example: []
+  syntax:
+    content: public static string GetTagPrefixForField(string fieldName)
+    parameters:
+    - id: fieldName
+      type: System.String
+      description: The field name.
+    return:
+      type: System.String
+      description: The tag prefix.
+    content.vb: Public Shared Function GetTagPrefixForField(fieldName As String) As String
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetTagPrefixForField*
+  nameWithType.vb: TagProcessor.GetTagPrefixForField(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetTagPrefixForField(String)
+  name.vb: GetTagPrefixForField(String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.NormalizeTagValue(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.NormalizeTagValue(System.String)
+  id: NormalizeTagValue(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: NormalizeTagValue(string)
+  nameWithType: TagProcessor.NormalizeTagValue(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.NormalizeTagValue(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: NormalizeTagValue
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 514
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Normalizes a tag value for consistent formatting.
+  example: []
+  syntax:
+    content: public static string NormalizeTagValue(string value)
+    parameters:
+    - id: value
+      type: System.String
+      description: The raw tag value.
+    return:
+      type: System.String
+      description: Normalized tag value.
+    content.vb: Public Shared Function NormalizeTagValue(value As String) As String
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.NormalizeTagValue*
+  nameWithType.vb: TagProcessor.NormalizeTagValue(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.NormalizeTagValue(String)
+  name.vb: NormalizeTagValue(String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInDirectoryAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInDirectoryAsync(System.String)
+  id: RestructureTagsInDirectoryAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: RestructureTagsInDirectoryAsync(string)
+  nameWithType: TagProcessor.RestructureTagsInDirectoryAsync(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInDirectoryAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: RestructureTagsInDirectoryAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 539
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Restructures tags in all markdown files in a directory for consistency (lowercase, dashes, etc.).
+  example: []
+  syntax:
+    content: public Task<Dictionary<string, int>> RestructureTagsInDirectoryAsync(string directory)
+    parameters:
+    - id: directory
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.Dictionary{System.String,System.Int32}}
+      description: A <xref href="System.Threading.Tasks.Task" data-throw-if-not-resolved="false"></xref> representing the asynchronous operation.
+    content.vb: Public Function RestructureTagsInDirectoryAsync(directory As String) As Task(Of Dictionary(Of String, Integer))
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInDirectoryAsync*
+  nameWithType.vb: TagProcessor.RestructureTagsInDirectoryAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInDirectoryAsync(String)
+  name.vb: RestructureTagsInDirectoryAsync(String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInFileAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInFileAsync(System.String)
+  id: RestructureTagsInFileAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: RestructureTagsInFileAsync(string)
+  nameWithType: TagProcessor.RestructureTagsInFileAsync(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInFileAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: RestructureTagsInFileAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 560
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Normalizes and restructures tags in a single markdown file.
+  example: []
+  syntax:
+    content: public Task<bool> RestructureTagsInFileAsync(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: A <xref href="System.Threading.Tasks.Task" data-throw-if-not-resolved="false"></xref> representing the asynchronous operation.
+    content.vb: Public Function RestructureTagsInFileAsync(filePath As String) As Task(Of Boolean)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInFileAsync*
+  nameWithType.vb: TagProcessor.RestructureTagsInFileAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInFileAsync(String)
+  name.vb: RestructureTagsInFileAsync(String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddExampleTagsToFileAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddExampleTagsToFileAsync(System.String)
+  id: AddExampleTagsToFileAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: AddExampleTagsToFileAsync(string)
+  nameWithType: TagProcessor.AddExampleTagsToFileAsync(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddExampleTagsToFileAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AddExampleTagsToFileAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 602
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Adds example nested tags to a markdown file for demonstration/testing.
+  example: []
+  syntax:
+    content: public Task<bool> AddExampleTagsToFileAsync(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: A <xref href="System.Threading.Tasks.Task" data-throw-if-not-resolved="false"></xref> representing the asynchronous operation.
+    content.vb: Public Function AddExampleTagsToFileAsync(filePath As String) As Task(Of Boolean)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddExampleTagsToFileAsync*
+  nameWithType.vb: TagProcessor.AddExampleTagsToFileAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddExampleTagsToFileAsync(String)
+  name.vb: AddExampleTagsToFileAsync(String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyAsync(System.String)
+  id: CheckAndEnforceMetadataConsistencyAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: CheckAndEnforceMetadataConsistencyAsync(string)
+  nameWithType: TagProcessor.CheckAndEnforceMetadataConsistencyAsync(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: CheckAndEnforceMetadataConsistencyAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 641
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Checks and enforces metadata consistency in all markdown files in a directory.
+  example: []
+  syntax:
+    content: public Task<Dictionary<string, int>> CheckAndEnforceMetadataConsistencyAsync(string directory)
+    parameters:
+    - id: directory
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.Dictionary{System.String,System.Int32}}
+      description: A <xref href="System.Threading.Tasks.Task" data-throw-if-not-resolved="false"></xref> representing the asynchronous operation.
+    content.vb: Public Function CheckAndEnforceMetadataConsistencyAsync(directory As String) As Task(Of Dictionary(Of String, Integer))
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyAsync*
+  nameWithType.vb: TagProcessor.CheckAndEnforceMetadataConsistencyAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyAsync(String)
+  name.vb: CheckAndEnforceMetadataConsistencyAsync(String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync(System.String)
+  id: CheckAndEnforceMetadataConsistencyInFileAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: CheckAndEnforceMetadataConsistencyInFileAsync(string)
+  nameWithType: TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: CheckAndEnforceMetadataConsistencyInFileAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 662
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Checks and enforces metadata consistency in a single markdown file.
+  example: []
+  syntax:
+    content: public Task<bool> CheckAndEnforceMetadataConsistencyInFileAsync(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+    return:
+      type: System.Threading.Tasks.Task{System.Boolean}
+      description: A <xref href="System.Threading.Tasks.Task" data-throw-if-not-resolved="false"></xref> representing the asynchronous operation.
+    content.vb: Public Function CheckAndEnforceMetadataConsistencyInFileAsync(filePath As String) As Task(Of Boolean)
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync*
+  nameWithType.vb: TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync(String)
+  name.vb: CheckAndEnforceMetadataConsistencyInFileAsync(String)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.UpdateFrontmatterKeyAsync(System.String,System.String,System.Object)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.UpdateFrontmatterKeyAsync(System.String,System.String,System.Object)
+  id: UpdateFrontmatterKeyAsync(System.String,System.String,System.Object)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: UpdateFrontmatterKeyAsync(string, string, object)
+  nameWithType: TagProcessor.UpdateFrontmatterKeyAsync(string, string, object)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.UpdateFrontmatterKeyAsync(string, string, object)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: UpdateFrontmatterKeyAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 714
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Updates or adds a specific frontmatter key-value pair in all markdown files within a directory.
+  example: []
+  syntax:
+    content: public Task<Dictionary<string, int>> UpdateFrontmatterKeyAsync(string path, string key, object value)
+    parameters:
+    - id: path
+      type: System.String
+      description: Path to a directory or file to process.
+    - id: key
+      type: System.String
+      description: The frontmatter key to add or update.
+    - id: value
+      type: System.Object
+      description: The value to set for the key.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.Dictionary{System.String,System.Int32}}
+      description: Dictionary with processing statistics.
+    content.vb: Public Function UpdateFrontmatterKeyAsync(path As String, key As String, value As Object) As Task(Of Dictionary(Of String, Integer))
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.UpdateFrontmatterKeyAsync*
+  nameWithType.vb: TagProcessor.UpdateFrontmatterKeyAsync(String, String, Object)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.UpdateFrontmatterKeyAsync(String, String, Object)
+  name.vb: UpdateFrontmatterKeyAsync(String, String, Object)
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.DiagnoseFrontmatterIssuesAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.DiagnoseFrontmatterIssuesAsync(System.String)
+  id: DiagnoseFrontmatterIssuesAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  langs:
+  - csharp
+  - vb
+  name: DiagnoseFrontmatterIssuesAsync(string)
+  nameWithType: TagProcessor.DiagnoseFrontmatterIssuesAsync(string)
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.DiagnoseFrontmatterIssuesAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: DiagnoseFrontmatterIssuesAsync
+    path: ../src/c-sharp/NotebookAutomation.Core/Tools/TagManagement/TagProcessor.cs
+    startLine: 850
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.TagManagement
+  summary: Diagnoses YAML frontmatter issues in markdown files.
+  example: []
+  syntax:
+    content: public Task<List<(string FilePath, string DiagnosticMessage)>> DiagnoseFrontmatterIssuesAsync(string directory)
+    parameters:
+    - id: directory
+      type: System.String
+      description: The directory path to process.
+    return:
+      type: System.Threading.Tasks.Task{System.Collections.Generic.List{System.ValueTuple{System.String,System.String}}}
+      description: A list of problematic files with their diagnostic information.
+    content.vb: Public Function DiagnoseFrontmatterIssuesAsync(directory As String) As Task(Of List(Of (FilePath As String, DiagnosticMessage As String)))
+  overload: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.DiagnoseFrontmatterIssuesAsync*
+  nameWithType.vb: TagProcessor.DiagnoseFrontmatterIssuesAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.DiagnoseFrontmatterIssuesAsync(String)
+  name.vb: DiagnoseFrontmatterIssuesAsync(String)
+references:
+- uid: NotebookAutomation.Core.Tools.TagManagement
+  commentId: N:NotebookAutomation.Core.Tools.TagManagement
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.TagManagement
+  nameWithType: NotebookAutomation.Core.Tools.TagManagement
+  fullName: NotebookAutomation.Core.Tools.TagManagement
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.TagManagement
+    name: TagManagement
+    href: NotebookAutomation.Core.Tools.TagManagement.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.TagManagement
+    name: TagManagement
+    href: NotebookAutomation.Core.Tools.TagManagement.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.Stats*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.Stats
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_Stats
+  name: Stats
+  nameWithType: TagProcessor.Stats
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.Stats
+- uid: System.Collections.Generic.Dictionary{System.String,System.Int32}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Int32}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, int>
+  nameWithType: Dictionary<string, int>
+  fullName: System.Collections.Generic.Dictionary<string, int>
+  nameWithType.vb: Dictionary(Of String, Integer)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Integer)
+  name.vb: Dictionary(Of String, Integer)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  commentId: T:NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html
+  name: TagProcessor
+  nameWithType: TagProcessor
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.#ctor
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Tools_TagManagement_TagProcessor__Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Utils_IYamlHelper_System_Boolean_System_Boolean_
+  name: TagProcessor
+  nameWithType: TagProcessor.TagProcessor
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.TagProcessor
+  nameWithType.vb: TagProcessor.New
+  fullName.vb: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.TagManagement.TagProcessor}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TagProcessor>
+  nameWithType: ILogger<TagProcessor>
+  fullName: Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Tools.TagManagement.TagProcessor>
+  nameWithType.vb: ILogger(Of TagProcessor)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Tools.TagManagement.TagProcessor)
+  name.vb: ILogger(Of TagProcessor)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+    name: TagProcessor
+    href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+    name: TagProcessor
+    href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html
+  - name: )
+- uid: Microsoft.Extensions.Logging.ILogger
+  commentId: T:Microsoft.Extensions.Logging.ILogger
+  parent: Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Microsoft.Extensions.Logging.ILogger
+- uid: NotebookAutomation.Core.Utils.IYamlHelper
+  commentId: T:NotebookAutomation.Core.Utils.IYamlHelper
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.IYamlHelper.html
+  name: IYamlHelper
+  nameWithType: IYamlHelper
+  fullName: NotebookAutomation.Core.Utils.IYamlHelper
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: NotebookAutomation.Core.Utils
+  commentId: N:NotebookAutomation.Core.Utils
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Utils
+  nameWithType: NotebookAutomation.Core.Utils
+  fullName: NotebookAutomation.Core.Utils
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+- uid: System.Collections.Generic.HashSet{System.String}
+  commentId: T:System.Collections.Generic.HashSet{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.HashSet`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  name: HashSet<string>
+  nameWithType: HashSet<string>
+  fullName: System.Collections.Generic.HashSet<string>
+  nameWithType.vb: HashSet(Of String)
+  fullName.vb: System.Collections.Generic.HashSet(Of String)
+  name.vb: HashSet(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.HashSet`1
+  commentId: T:System.Collections.Generic.HashSet`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  name: HashSet<T>
+  nameWithType: HashSet<T>
+  fullName: System.Collections.Generic.HashSet<T>
+  nameWithType.vb: HashSet(Of T)
+  fullName.vb: System.Collections.Generic.HashSet(Of T)
+  name.vb: HashSet(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.HashSet`1
+    name: HashSet
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.hashset-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessDirectoryAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessDirectoryAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_ProcessDirectoryAsync_System_String_
+  name: ProcessDirectoryAsync
+  nameWithType: TagProcessor.ProcessDirectoryAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessDirectoryAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.Dictionary{System.String,System.Int32}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.Dictionary{System.String,System.Int32}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<Dictionary<string, int>>
+  nameWithType: Task<Dictionary<string, int>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.Dictionary<string, int>>
+  nameWithType.vb: Task(Of Dictionary(Of String, Integer))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.Dictionary(Of String, Integer))
+  name.vb: Task(Of Dictionary(Of String, Integer))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessFileAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_ProcessFileAsync_System_String_
+  name: ProcessFileAsync
+  nameWithType: TagProcessor.ProcessFileAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ProcessFileAsync
+- uid: System.Threading.Tasks.Task{System.Boolean}
+  commentId: T:System.Threading.Tasks.Task{System.Boolean}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<bool>
+  nameWithType: Task<bool>
+  fullName: System.Threading.Tasks.Task<bool>
+  nameWithType.vb: Task(Of Boolean)
+  fullName.vb: System.Threading.Tasks.Task(Of Boolean)
+  name.vb: Task(Of Boolean)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ClearTagsFromFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ClearTagsFromFileAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_ClearTagsFromFileAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_
+  name: ClearTagsFromFileAsync
+  nameWithType: TagProcessor.ClearTagsFromFileAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.ClearTagsFromFileAsync
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddNestedTagsToFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddNestedTagsToFileAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_AddNestedTagsToFileAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_
+  name: AddNestedTagsToFileAsync
+  nameWithType: TagProcessor.AddNestedTagsToFileAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddNestedTagsToFileAsync
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetExistingTags*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetExistingTags
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_GetExistingTags_System_Collections_Generic_Dictionary_System_String_System_Object__
+  name: GetExistingTags
+  nameWithType: TagProcessor.GetExistingTags
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetExistingTags
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GenerateNestedTags*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GenerateNestedTags
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_GenerateNestedTags_System_Collections_Generic_Dictionary_System_String_System_Object__System_Collections_Generic_List_System_String__
+  name: GenerateNestedTags
+  nameWithType: TagProcessor.GenerateNestedTags
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GenerateNestedTags
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetTagPrefixForField*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetTagPrefixForField
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_GetTagPrefixForField_System_String_
+  name: GetTagPrefixForField
+  nameWithType: TagProcessor.GetTagPrefixForField
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.GetTagPrefixForField
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.NormalizeTagValue*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.NormalizeTagValue
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_NormalizeTagValue_System_String_
+  name: NormalizeTagValue
+  nameWithType: TagProcessor.NormalizeTagValue
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.NormalizeTagValue
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInDirectoryAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInDirectoryAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_RestructureTagsInDirectoryAsync_System_String_
+  name: RestructureTagsInDirectoryAsync
+  nameWithType: TagProcessor.RestructureTagsInDirectoryAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInDirectoryAsync
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInFileAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_RestructureTagsInFileAsync_System_String_
+  name: RestructureTagsInFileAsync
+  nameWithType: TagProcessor.RestructureTagsInFileAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.RestructureTagsInFileAsync
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddExampleTagsToFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddExampleTagsToFileAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_AddExampleTagsToFileAsync_System_String_
+  name: AddExampleTagsToFileAsync
+  nameWithType: TagProcessor.AddExampleTagsToFileAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.AddExampleTagsToFileAsync
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_CheckAndEnforceMetadataConsistencyAsync_System_String_
+  name: CheckAndEnforceMetadataConsistencyAsync
+  nameWithType: TagProcessor.CheckAndEnforceMetadataConsistencyAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyAsync
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_CheckAndEnforceMetadataConsistencyInFileAsync_System_String_
+  name: CheckAndEnforceMetadataConsistencyInFileAsync
+  nameWithType: TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.CheckAndEnforceMetadataConsistencyInFileAsync
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.UpdateFrontmatterKeyAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.UpdateFrontmatterKeyAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_UpdateFrontmatterKeyAsync_System_String_System_String_System_Object_
+  name: UpdateFrontmatterKeyAsync
+  nameWithType: TagProcessor.UpdateFrontmatterKeyAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.UpdateFrontmatterKeyAsync
+- uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.DiagnoseFrontmatterIssuesAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.TagManagement.TagProcessor.DiagnoseFrontmatterIssuesAsync
+  href: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html#NotebookAutomation_Core_Tools_TagManagement_TagProcessor_DiagnoseFrontmatterIssuesAsync_System_String_
+  name: DiagnoseFrontmatterIssuesAsync
+  nameWithType: TagProcessor.DiagnoseFrontmatterIssuesAsync
+  fullName: NotebookAutomation.Core.Tools.TagManagement.TagProcessor.DiagnoseFrontmatterIssuesAsync
+- uid: System.Threading.Tasks.Task{System.Collections.Generic.List{System.ValueTuple{System.String,System.String}}}
+  commentId: T:System.Threading.Tasks.Task{System.Collections.Generic.List{System.ValueTuple{System.String,System.String}}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<List<(string FilePath, string DiagnosticMessage)>>
+  nameWithType: Task<List<(string FilePath, string DiagnosticMessage)>>
+  fullName: System.Threading.Tasks.Task<System.Collections.Generic.List<(string FilePath, string DiagnosticMessage)>>
+  nameWithType.vb: Task(Of List(Of (FilePath As String, DiagnosticMessage As String)))
+  fullName.vb: System.Threading.Tasks.Task(Of System.Collections.Generic.List(Of (FilePath As String, DiagnosticMessage As String)))
+  name.vb: Task(Of List(Of (FilePath As String, DiagnosticMessage As String)))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.FilePath
+    name: FilePath
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.filepath
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.DiagnosticMessage
+    name: DiagnosticMessage
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.diagnosticmessage
+  - name: )
+  - name: '>'
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.FilePath
+    name: FilePath
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.filepath
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.DiagnosticMessage
+    name: DiagnosticMessage
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.diagnosticmessage
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+  - name: )

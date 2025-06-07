@@ -1,4 +1,13 @@
-﻿using System.Text.Json.Serialization;
+﻿// <copyright file="PathsConfig.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Text.Json.Serialization;
 
 namespace NotebookAutomation.Core.Configuration;
 
@@ -13,7 +22,7 @@ namespace NotebookAutomation.Core.Configuration;
 public class PathsConfig
 {
     /// <summary>
-    /// Full path to the root directory where OneDrive files are stored locally.
+    /// Gets or sets full path to the root directory where OneDrive files are stored locally.
     /// </summary>
     /// <remarks>
     /// This path is used to locate the local storage directory for OneDrive files.
@@ -22,7 +31,7 @@ public class PathsConfig
     public string OnedriveFullpathRoot { get; set; } = string.Empty;
 
     /// <summary>
-    /// Full path to the root directory for the notebook vault.
+    /// Gets or sets full path to the root directory for the notebook vault.
     /// </summary>
     /// <remarks>
     /// This path is used to locate the directory where notebook vault files are stored.    /// This property specifies the name of the folder that should be treated as the main program folder
@@ -33,7 +42,7 @@ public class PathsConfig
     public string NotebookVaultFullpathRoot { get; set; } = string.Empty;
 
     /// <summary>
-    /// Path to the metadata file.
+    /// Gets or sets path to the metadata file.
     /// </summary>
     /// <remarks>
     /// The metadata file contains structured information about the application's resources.
@@ -42,7 +51,7 @@ public class PathsConfig
     public string MetadataFile { get; set; } = string.Empty;
 
     /// <summary>
-    /// Base path for OneDrive resources.
+    /// Gets or sets base path for OneDrive resources.
     /// </summary>
     /// <remarks>
     /// This path is used to locate the base directory for OneDrive-related resources.
@@ -51,7 +60,7 @@ public class PathsConfig
     public string OnedriveResourcesBasepath { get; set; } = string.Empty;
 
     /// <summary>
-    /// Directory for log files.
+    /// Gets or sets directory for log files.
     /// </summary>
     /// <remarks>
     /// This directory is used to store application log files for debugging and monitoring purposes.
@@ -60,7 +69,7 @@ public class PathsConfig
     public string LoggingDir { get; set; } = string.Empty;
 
     /// <summary>
-    /// Directory containing prompt template files.
+    /// Gets or sets directory containing prompt template files.
     /// </summary>
     /// <remarks>
     /// This directory is used to store template files for generating prompts in the application.

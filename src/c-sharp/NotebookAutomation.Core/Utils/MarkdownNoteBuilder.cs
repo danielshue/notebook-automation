@@ -1,4 +1,13 @@
-﻿using Microsoft.Extensions.Logging.Abstractions;
+// <copyright file="MarkdownNoteBuilder.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/MarkdownNoteBuilder.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace NotebookAutomation.Core.Utils;
 
@@ -20,8 +29,7 @@ namespace NotebookAutomation.Core.Utils;
 /// </remarks>
 public class MarkdownNoteBuilder(ILogger? logger = null)
 {
-    private readonly ILogger? _logger = logger;
-    private readonly YamlHelper _yamlHelper = new(logger ?? NullLogger.Instance);
+    private readonly YamlHelper yamlHelper = new(logger ?? NullLogger.Instance);
 
     /// <summary>
     /// Builds a markdown note containing only YAML frontmatter (no content body).
@@ -41,7 +49,7 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
     {
         frontmatter["banner"] = "gies-banner.png"; // Default banner if not specified
 
-        var yaml = _yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
+        var yaml = this.yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
 
         // Remove any trailing newlines or content after frontmatter
         int end = yaml.IndexOf("---", 3, StringComparison.Ordinal);
@@ -49,6 +57,7 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
         {
             return yaml[..(end + 3)] + "\n\n";
         }
+
         return yaml.TrimEnd() + "\n\n";
     }
 
@@ -61,7 +70,7 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
     /// <remarks>
     /// The frontmatter is always placed at the top of the note, followed by the markdown body.
     /// </remarks>
-    /// <example>    /// <code>
+    /// <example>    ///. <code>
     /// var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };
     /// string note = builder.BuildNote(frontmatter, "# Heading\nContent");
     /// </code>
@@ -72,11 +81,15 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
         {
             // Remove any quotes that might be around the banner value
             if (bannerValue.StartsWith("\"") && bannerValue.EndsWith("\""))
+            {
                 bannerValue = bannerValue.Substring(1, bannerValue.Length - 2);
+            }
 
             // Remove wiki link brackets if present
             if (bannerValue.StartsWith("[[") && bannerValue.EndsWith("]]"))
+            {
                 bannerValue = bannerValue.Substring(2, bannerValue.Length - 4);
+            }
 
             frontmatter["banner"] = bannerValue;
         }
@@ -91,7 +104,6 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
         var yaml = serializer.Serialize(frontmatter);
 
         // We no longer need to post-process [[]] in banner since we now use simple format
-
         var newFrontmatter = $"---\n{yaml}---\n\n";
         return newFrontmatter + body;
     }

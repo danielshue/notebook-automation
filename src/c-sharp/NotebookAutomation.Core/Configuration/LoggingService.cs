@@ -1,4 +1,14 @@
-﻿// -----------------------------------------------------------------------------
+// <copyright file="LoggingService.cs" company="Notebook Automation Project">
+// Copyright (c) 2025 Notebook Automation Project. All rights reserved.
+// Licensed under the MIT License. See LICENSE file in the project root for license information.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/LoggingService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+// -----------------------------------------------------------------------------
 // LoggingService.cs
 // Centralized logging service for the Notebook Automation system.
 //
@@ -47,54 +57,54 @@ namespace NotebookAutomation.Core.Configuration;
 /// <param name="loggingDir">The directory where log files should be stored.</param>
 /// <param name="debug">Whether debug mode is enabled.</param>
 public class LoggingService(string loggingDir, bool debug = false) : ILoggingService
-{        // Core properties for logging configuration
-    private readonly string _loggingDir = loggingDir ?? Path.Combine(AppContext.BaseDirectory, "logs");
-    private readonly bool _debug = debug;
+{ // Core properties for logging configuration
+    private readonly string loggingDir = loggingDir ?? Path.Combine(AppContext.BaseDirectory, "logs");
+    private readonly bool debug = debug;
 
     // Current log file path (set during initialization)
-    private string? _currentLogFilePath;
+    private string? currentLogFilePath;
 
     // The initialized loggers and factory (null until ConfigureLogging is called)
-    private SerilogILogger? _serilogLogger;
-    private SerilogILogger? _serilogFailedLogger;
-    private ILoggerFactory? _loggerFactory;
-    private ILogger? _logger;
-    private ILogger? _failedLogger;
+    private SerilogILogger? serilogLogger;
+    private SerilogILogger? serilogFailedLogger;
+    private ILoggerFactory? loggerFactory;
+    private ILogger? logger;
+    private ILogger? failedLogger;
 
     // Synchronization object for thread safety
-    private readonly Lock _initLock = new();
-    private volatile bool _isInitialized = false;
+    private readonly Lock initLock = new();
+    private volatile bool isInitialized = false;
 
     /// <summary>
     /// Gets the main Serilog logger instance used for general logging.
     /// </summary>
-    private SerilogILogger SerilogLogger => EnsureInitialized()._serilogLogger!;
+    private SerilogILogger SerilogLogger => this.EnsureInitialized().serilogLogger!;
 
     /// <summary>
     /// Gets the specialized Serilog logger instance used for recording failed operations.
     /// </summary>
-    private SerilogILogger SerilogFailedLogger => EnsureInitialized()._serilogFailedLogger!;
+    private SerilogILogger SerilogFailedLogger => this.EnsureInitialized().serilogFailedLogger!;
 
     /// <summary>
     /// Gets the logger factory used to create typed loggers.
     /// </summary>
-    private ILoggerFactory LoggerFactoryInternal => EnsureInitialized()._loggerFactory!;
+    private ILoggerFactory LoggerFactoryInternal => this.EnsureInitialized().loggerFactory!;
 
     /// <summary>
     /// Gets the main logger instance used for general application logging.
     /// </summary>
-    public ILogger Logger => EnsureInitialized()._logger!;
+    public ILogger Logger => this.EnsureInitialized().logger!;
 
     /// <summary>
     /// Gets the specialized logger instance used for recording failed operations.
     /// </summary>
-    public ILogger FailedLogger => EnsureInitialized()._failedLogger!;
+    public ILogger FailedLogger => this.EnsureInitialized().failedLogger!;
 
     /// <summary>
     /// Gets the full path to the current log file.
     /// </summary>
     /// <returns>The absolute path to the current log file, or null if logging is not configured to a file.</returns>
-    public string? CurrentLogFilePath => EnsureInitialized()._currentLogFilePath;
+    public string? CurrentLogFilePath => this.EnsureInitialized().currentLogFilePath;
 
     /// <summary>
     /// Ensures that the loggers are initialized and returns the current instance.
@@ -102,17 +112,17 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// <returns>The current LoggingService instance with initialized loggers.</returns>
     private LoggingService EnsureInitialized()
     {
-        if (_isInitialized)
+        if (this.isInitialized)
         {
             return this;
         }
 
-        lock (_initLock)
+        lock (this.initLock)
         {
-            if (!_isInitialized)
+            if (!this.isInitialized)
             {
-                InitializeLogging();
-                _isInitialized = true;
+                this.InitializeLogging();
+                this.isInitialized = true;
             }
         }
 
@@ -127,17 +137,17 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
         try
         {
             // Create Serilog loggers
-            _serilogLogger = CreateSerilogLogger(_loggingDir, _debug);
+            this.serilogLogger = this.CreateSerilogLogger(this.loggingDir, this.debug);
 
             // Create the failed logger with the same configuration but a different source context
             var failedLoggerName = typeof(FailedOperations).FullName ?? "FailedOperations";
-            _serilogFailedLogger = _serilogLogger.ForContext("SourceContext", failedLoggerName);
+            this.serilogFailedLogger = this.serilogLogger.ForContext("SourceContext", failedLoggerName);
 
             // Create Microsoft.Extensions.Logging factory and loggers
             var appAssemblyName = GetAssemblyName();
-            _loggerFactory = new LoggerFactory().AddSerilog(_serilogLogger, dispose: false);
-            _logger = _loggerFactory.CreateLogger(appAssemblyName);
-            _failedLogger = _loggerFactory.CreateLogger(failedLoggerName);
+            this.loggerFactory = new LoggerFactory().AddSerilog(this.serilogLogger, dispose: false);
+            this.logger = this.loggerFactory.CreateLogger(appAssemblyName);
+            this.failedLogger = this.loggerFactory.CreateLogger(failedLoggerName);
         }
         catch (Exception ex)
         {
@@ -153,15 +163,15 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
             fallbackLogger.LogError(ex, "Failed to initialize logging. Using fallback console logger.");
 
             // Create minimal working loggers
-            _serilogLogger = new LoggerConfiguration()
+            this.serilogLogger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
                 .CreateLogger();
 
-            _serilogFailedLogger = _serilogLogger;
-            _loggerFactory = fallbackFactory;
-            _logger = fallbackLogger;
-            _failedLogger = fallbackLogger;
+            this.serilogFailedLogger = this.serilogLogger;
+            this.loggerFactory = fallbackFactory;
+            this.logger = fallbackLogger;
+            this.failedLogger = fallbackLogger;
         }
     }
 
@@ -171,16 +181,16 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// <param name="builder">The logging builder to configure.</param>
     public void ConfigureLogging(ILoggingBuilder builder)
     {
-        if (!Directory.Exists(_loggingDir))
+        if (!Directory.Exists(this.loggingDir))
         {
-            Directory.CreateDirectory(_loggingDir);
+            Directory.CreateDirectory(this.loggingDir);
         }
 
         // Ensure loggers are initialized
-        EnsureInitialized();
+        this.EnsureInitialized();
 
         // Configure the builder with our Serilog logger
-        builder.AddSerilog(SerilogLogger, dispose: true);
+        builder.AddSerilog(this.SerilogLogger, dispose: true);
     }
 
     /// <summary>
@@ -201,16 +211,18 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
 
             var appAssemblyName = GetAssemblyName();
             var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;
+
             // Console should only show warnings and errors, regardless of debug mode
             // Debug information should only go to log files
             var consoleMinLevel = LogEventLevel.Warning;
             var date = DateTime.Now.ToString("yyyyMMdd");
             var time = DateTime.Now.ToString("HHmmss");
+
             // Use a consistent filename to avoid creating multiple log files per session
             var logFilePath = Path.Combine(loggingDir, $"{appAssemblyName.ToLower()}_{date}.log");
 
             // Store the log file path for external access
-            _currentLogFilePath = logFilePath;
+            this.currentLogFilePath = logFilePath;
 
             // Configure and create Serilog logger
             var loggerConfig = new LoggerConfiguration()
@@ -250,7 +262,7 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// </remarks>
     public virtual ILogger<T> GetLogger<T>()
     {
-        return LoggerFactoryInternal.CreateLogger<T>();
+        return this.LoggerFactoryInternal.CreateLogger<T>();
     }
 
     /// <summary>

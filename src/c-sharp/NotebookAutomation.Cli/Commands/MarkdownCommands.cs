@@ -1,4 +1,13 @@
-﻿using System.Runtime.CompilerServices;
+// <copyright file="MarkdownCommands.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli/Commands/MarkdownCommands.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Runtime.CompilerServices;
 
 using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
@@ -36,18 +45,18 @@ namespace NotebookAutomation.Cli.Commands;
 /// rootCommand.Invoke("generate-markdown --src-dirs input --dest-dir output");
 /// </code>
 /// </example>
-public class MarkdownCommands
+internal class MarkdownCommands
 {
-    private readonly ILogger<MarkdownCommands> _logger;
-    private readonly AppConfig _appConfig;
-    private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<MarkdownCommands> logger;
+    private readonly AppConfig appConfig;
+    private readonly IServiceProvider serviceProvider;
 
     public MarkdownCommands(ILogger<MarkdownCommands> logger, AppConfig appConfig, IServiceProvider serviceProvider)
     {
-        _logger = logger;
-        _appConfig = appConfig;
-        _serviceProvider = serviceProvider;
-        _logger.LogInformationWithPath("Markdown command initialized", "MarkdownCommands.cs");
+        this.logger = logger;
+        this.appConfig = appConfig;
+        this.serviceProvider = serviceProvider;
+        this.logger.LogInformationWithPath("Markdown command initialized", "MarkdownCommands.cs");
     }
 
     /// <summary>
@@ -78,7 +87,7 @@ public class MarkdownCommands
             aliases: ["--src-dirs", "-s"],
             description: "Source directories containing files to convert")
         {
-            AllowMultipleArgumentsPerToken = true
+            AllowMultipleArgumentsPerToken = true,
         };
         var destDirOption = new Option<string>(
             aliases: ["--dest-dir", "-d"],
@@ -95,7 +104,8 @@ public class MarkdownCommands
         markdownCommand.AddOption(configOption);
         markdownCommand.AddOption(debugOption);
         markdownCommand.AddOption(verboseOption);
-        markdownCommand.AddOption(dryRunOption); markdownCommand.SetHandler(async context =>
+        markdownCommand.AddOption(dryRunOption);
+        markdownCommand.SetHandler(async context =>
         {
             string[] srcDirs = context.ParseResult.GetValueForOption(srcDirsOption) ?? [];
             string? destDir = context.ParseResult.GetValueForOption(destDirOption);
@@ -111,8 +121,7 @@ public class MarkdownCommands
                 AnsiConsoleHelper.WriteUsage(
                     "Usage: notebookautomation generate-markdown --src-dirs <dir> [options]",
                     markdownCommand.Description ?? string.Empty,
-                    string.Join("\n", markdownCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    string.Join("\n", markdownCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
 
@@ -124,24 +133,27 @@ public class MarkdownCommands
                     AnsiConsoleHelper.WriteError($"Configuration file not found: {config}");
                     return;
                 }
+
                 Program.SetupDependencyInjection(config, debug);
             }
 
-            await ProcessMarkdownAsync(srcDirs, destDir, vaultRootOverride, config, debug, verbose, dryRun);
+            await this.ProcessMarkdownAsync(srcDirs, destDir, vaultRootOverride, config, debug, verbose, dryRun).ConfigureAwait(false);
         });
 
         rootCommand.AddCommand(markdownCommand);
-    }    /// <summary>
-         /// Processes source files in the specified directories and generates markdown notes.
-         /// </summary>
-         /// <param name="sourceDirs">Array of source directories to process.</param>
-         /// <param name="destDir">Destination directory for generated markdown files.</param>
-         /// <param name="vaultRootOverride">Explicit vault root path override.</param>
-         /// <param name="configPath">Path to the configuration file.</param>
-         /// <param name="debug">Enable debug output.</param>
-         /// <param name="verbose">Enable verbose output.</param>
-         /// <param name="dryRun">Simulate actions without making changes.</param>
-         /// <returns>A task representing the asynchronous operation.</returns>
+    }
+
+    /// <summary>
+    /// Processes source files in the specified directories and generates markdown notes.
+    /// </summary>
+    /// <param name="sourceDirs">Array of source directories to process.</param>
+    /// <param name="destDir">Destination directory for generated markdown files.</param>
+    /// <param name="vaultRootOverride">Explicit vault root path override.</param>
+    /// <param name="configPath">Path to the configuration file.</param>
+    /// <param name="debug">Enable debug output.</param>
+    /// <param name="verbose">Enable verbose output.</param>
+    /// <param name="dryRun">Simulate actions without making changes.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     private async Task ProcessMarkdownAsync(
         string[]? sourceDirs,
         string? destDir,
@@ -170,6 +182,7 @@ public class MarkdownCommands
                 logger.LogErrorWithPath("OpenAI configuration is missing or incomplete. Exiting.", "MarkdownCommands.cs");
                 return;
             }
+
             if (sourceDirs == null || sourceDirs.Length == 0)
             {
                 logger.LogErrorWithPath("Source directories are required", "MarkdownCommands.cs");
@@ -209,16 +222,19 @@ public class MarkdownCommands
                 {
                     var ext = Path.GetExtension(file).ToLowerInvariant();
                     if (ext != ".txt" && ext != ".html" && ext != ".htm" && ext != ".epub")
+                    {
                         continue;
+                    }
 
                     try
                     {
                         logger.LogInformationWithPath("Processing file: {File}", file);
-                        string markdown = await processor.ConvertToMarkdownAsync(file, openAiApiKey, "chunk_summary_prompt.md"); if (!dryRun)
+                        string markdown = await processor.ConvertToMarkdownAsync(file, openAiApiKey, "chunk_summary_prompt.md").ConfigureAwait(false);
+                        if (!dryRun)
                         {
                             Directory.CreateDirectory(effectiveOutputDir);
                             string outputPath = Path.Combine(effectiveOutputDir, Path.GetFileNameWithoutExtension(file) + ".md");
-                            await File.WriteAllTextAsync(outputPath, markdown);
+                            await File.WriteAllTextAsync(outputPath, markdown).ConfigureAwait(false);
                             logger.LogInformationWithPath("Markdown note saved to: {OutputPath}", outputPath);
                         }
                         else
@@ -238,7 +254,7 @@ public class MarkdownCommands
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath("Error in markdown command", "MarkdownCommands.cs", ex);
+            this.logger.LogErrorWithPath("Error in markdown command", "MarkdownCommands.cs", ex);
             AnsiConsoleHelper.WriteError($"Error generating markdown: {ex.Message}");
         }
     }

@@ -1,4 +1,13 @@
-﻿using System.Runtime.CompilerServices;
+// <copyright file="OneDriveCommands.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli/Commands/OneDriveCommands.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Runtime.CompilerServices;
 
 using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
@@ -8,6 +17,7 @@ using NotebookAutomation.Core.Utils;
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands;
+
 /// <summary>
 /// Provides CLI commands for interacting with OneDrive through Microsoft Graph API.
 /// </summary>
@@ -37,14 +47,14 @@ namespace NotebookAutomation.Cli.Commands;
 /// rootCommand.Invoke("onedrive list --path /Documents");
 /// </code>
 /// </example>
-public class OneDriveCommands
+internal class OneDriveCommands
 {
-    private readonly ILogger<OneDriveCommands> _logger;
+    private readonly ILogger<OneDriveCommands> logger;
 
     public OneDriveCommands(ILogger<OneDriveCommands> logger)
     {
-        _logger = logger;
-        _logger.LogInformationWithPath("OneDrive command initialized", "OneDriveCommands.cs");
+        this.logger = logger;
+        this.logger.LogInformationWithPath("OneDrive command initialized", "OneDriveCommands.cs");
     }
 
     /// <summary>
@@ -85,16 +95,16 @@ public class OneDriveCommands
                     "Usage: notebookautomation onedrive list [path] [options]",
                     listCommand.Description ?? string.Empty,
                     string.Join("\n", listCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", listCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", listCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
-            await ExecuteOneDriveCommandAsync("list", path, null, config, debug, verbose, dryRun);
+            await this.ExecuteOneDriveCommandAsync("list", path, null, config, debug, verbose, dryRun).ConfigureAwait(false);
         });
 
         // Download command
@@ -113,16 +123,16 @@ public class OneDriveCommands
                     "Usage: notebookautomation onedrive download <remote-path> <local-path> [options]",
                     downloadCommand.Description ?? string.Empty,
                     string.Join("\n", downloadCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", downloadCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", downloadCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
-            await ExecuteOneDriveCommandAsync("download", remotePath, localPath, config, debug, verbose, dryRun);
+            await this.ExecuteOneDriveCommandAsync("download", remotePath, localPath, config, debug, verbose, dryRun).ConfigureAwait(false);
         });            // Upload command
         var uploadCommand = new Command("upload", "TODO: Upload a file to OneDrive");
         var uploadLocalPath = new Argument<string>("local-path", "Local file to upload");
@@ -139,16 +149,16 @@ public class OneDriveCommands
                     "Usage: notebookautomation onedrive upload <local-path> <remote-path> [options]",
                     uploadCommand.Description ?? string.Empty,
                     string.Join("\n", uploadCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", uploadCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", uploadCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
-            await ExecuteOneDriveCommandAsync("upload", localPath, remotePath, config, debug, verbose, dryRun);
+            await this.ExecuteOneDriveCommandAsync("upload", localPath, remotePath, config, debug, verbose, dryRun).ConfigureAwait(false);
         });            // Search command
         var searchCommand = new Command("search", "TODO: Search for files in OneDrive");
         var queryArgument = new Argument<string>("query", "Search query");
@@ -162,16 +172,16 @@ public class OneDriveCommands
                     "Usage: notebookautomation onedrive search <query> [options]",
                     searchCommand.Description ?? string.Empty,
                     string.Join("\n", searchCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", searchCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", searchCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
-            await ExecuteOneDriveCommandAsync("search", query, null, config, debug, verbose, dryRun);
+            await this.ExecuteOneDriveCommandAsync("search", query, null, config, debug, verbose, dryRun).ConfigureAwait(false);
         });            // Sync command with options for direction, etc.
         var syncCommand = new Command("sync", "TODO: Sync files between local and OneDrive");
         var syncLocalPath = new Argument<string>("local-path", "Local folder to sync");
@@ -194,16 +204,16 @@ public class OneDriveCommands
                     "Usage: notebookautomation onedrive sync <local-path> [remote-path] [options]",
                     syncCommand.Description ?? string.Empty,
                     string.Join("\n", syncCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", syncCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}"))
-                );
+                    "\n" + string.Join("\n", syncCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
             }
+
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
 
-            await ExecuteOneDriveCommandAsync(
+            await this.ExecuteOneDriveCommandAsync(
                 "sync",
                 localPath,
                 remotePath,
@@ -211,8 +221,8 @@ public class OneDriveCommands
                 debug,
                 verbose,
                 dryRun,
-                [(Key: "direction", Value: direction ?? "both")]
-            );
+                [(Key: "direction", Value: direction ?? "both")])
+            .ConfigureAwait(false);
         });
 
         // Add commands to onedrive group
@@ -258,6 +268,7 @@ public class OneDriveCommands
                     AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
                     return;
                 }
+
                 Program.SetupDependencyInjection(configPath, debug);
             }
 
@@ -297,8 +308,9 @@ public class OneDriveCommands
             {
                 case "list":
                     logger.LogInformationWithPath("Listing files at path: {FilePath}", arg1 ?? "root");
+
                     // TODO: Implement with oneDriveService.ListFilesAsync(arg1);
-                    await Task.Delay(100); // Placeholder for actual implementation
+                    await Task.Delay(100).ConfigureAwait(false); // Placeholder for actual implementation
                     break;
 
                 case "download":
@@ -310,8 +322,9 @@ public class OneDriveCommands
                     {
                         logger.LogInformationWithPath("Downloading from {FilePath} to {FilePath}", arg1, arg2);
                     }
+
                     // TODO: Implement with oneDriveService.DownloadFileAsync(arg1, arg2);
-                    await Task.Delay(100); // Placeholder for actual implementation
+                    await Task.Delay(100).ConfigureAwait(false); // Placeholder for actual implementation
                     break;
 
                 case "upload":
@@ -323,21 +336,24 @@ public class OneDriveCommands
                     {
                         logger.LogInformationWithPath("Uploading from {FilePath} to {FilePath}", arg1, arg2);
                     }
+
                     // TODO: Implement with oneDriveService.UploadFileAsync(arg1, arg2);
-                    await Task.Delay(100); // Placeholder for actual implementation
+                    await Task.Delay(100).ConfigureAwait(false); // Placeholder for actual implementation
                     break;
 
                 case "search":
-                    logger.LogInformationWithPath("Searching for: {Query}", arg1 ?? "", "OneDriveCommands.cs");
+                    logger.LogInformationWithPath("Searching for: {Query}", arg1 ?? string.Empty, "OneDriveCommands.cs");
+
                     // TODO: Implement with oneDriveService.SearchFilesAsync(arg1);
-                    await Task.Delay(100); // Placeholder for actual implementation
+                    await Task.Delay(100).ConfigureAwait(false); // Placeholder for actual implementation
                     break;
 
                 case "sync":
                     var direction = extraOptions.FirstOrDefault(o => o.Key == "direction").Value ?? "both";
-                    logger.LogInformationWithPath("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})", arg1 ?? "", arg2 ?? "", direction);
+                    logger.LogInformationWithPath("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})", arg1 ?? string.Empty, arg2 ?? string.Empty, direction);
+
                     // TODO: Implement with oneDriveService.SyncFilesAsync(arg1, arg2, direction);
-                    await Task.Delay(100); // Placeholder for actual implementation
+                    await Task.Delay(100).ConfigureAwait(false); // Placeholder for actual implementation
                     break;
 
                 default:
@@ -354,7 +370,8 @@ public class OneDriveCommands
             {
                 AnsiConsoleHelper.WriteError(ex.ToString());
             }
-            _logger.LogErrorWithPath("Error in OneDrive command", "OneDriveCommands.cs", ex);
+
+            this.logger.LogErrorWithPath("Error in OneDrive command", "OneDriveCommands.cs", ex);
         }
     }
 
@@ -362,77 +379,83 @@ public class OneDriveCommands
     {
         if (string.IsNullOrEmpty(config))
         {
-            _logger.LogErrorWithPath("Microsoft Graph configuration is missing or incomplete. Exiting.", "OneDriveCommands.cs");
+            this.logger.LogErrorWithPath("Microsoft Graph configuration is missing or incomplete. Exiting.", "OneDriveCommands.cs");
             return;
         }
 
-        _logger.LogInformationWithPath("Executing OneDrive command: {Command}", "OneDriveCommands.cs", command);
+        this.logger.LogInformationWithPath("Executing OneDrive command: {Command}", "OneDriveCommands.cs", command);
 
         if (dryRun)
         {
-            _logger.LogInformationWithPath("[DRY RUN] No changes will be made", "OneDriveCommands.cs");
+            this.logger.LogInformationWithPath("[DRY RUN] No changes will be made", "OneDriveCommands.cs");
         }
 
         if (verbose)
         {
-            _logger.LogInformationWithPath("Verbose output enabled", "OneDriveCommands.cs");
+            this.logger.LogInformationWithPath("Verbose output enabled", "OneDriveCommands.cs");
         }
 
-        _logger.LogDebugWithPath("Debugging OneDrive command", "OneDriveCommands.cs");
+        this.logger.LogDebugWithPath("Debugging OneDrive command", "OneDriveCommands.cs");
 
         switch (command.ToLower())
         {
             case "list":
                 if (!string.IsNullOrEmpty(arg1))
                 {
-                    _logger.LogInformationWithPath("Listing files at path: {FilePath}", arg1);
+                    this.logger.LogInformationWithPath("Listing files at path: {FilePath}", arg1);
                 }
+
                 break;
 
             case "download":
                 if (arg1 == null || arg2 == null)
                 {
-                    _logger.LogWarningWithPath("One or more arguments are null. Skipping logging.", "OneDriveCommands.cs");
+                    this.logger.LogWarningWithPath("One or more arguments are null. Skipping logging.", "OneDriveCommands.cs");
                 }
                 else
                 {
-                    _logger.LogInformationWithPath("Downloading from {FilePath} to {FilePath}", arg1, arg2);
+                    this.logger.LogInformationWithPath("Downloading from {FilePath} to {FilePath}", arg1, arg2);
                 }
+
                 break;
 
             case "upload":
                 if (arg1 == null || arg2 == null)
                 {
-                    _logger.LogWarning("One or more arguments are null. Skipping logging.");
+                    this.logger.LogWarning("One or more arguments are null. Skipping logging.");
                 }
                 else
                 {
-                    _logger.LogInformationWithPath("Uploading from {FilePath} to {FilePath}", arg1, arg2);
+                    this.logger.LogInformationWithPath("Uploading from {FilePath} to {FilePath}", arg1, arg2);
                 }
+
                 break;
 
             case "search":
                 if (!string.IsNullOrEmpty(arg1))
                 {
-                    _logger.LogInformation("Searching for: {Query}", arg1);
+                    this.logger.LogInformation("Searching for: {Query}", arg1);
                 }
+
                 break;
 
             case "sync":
                 if (!string.IsNullOrEmpty(arg1) && !string.IsNullOrEmpty(arg2))
                 {
-                    _logger.LogInformation("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})",
+                    this.logger.LogInformation(
+                        "Syncing between {LocalPath} and {RemotePath} (direction: {Direction})",
                         arg1 ?? "unknown", arg2 ?? "unknown", "bidirectional");
                 }
+
                 break;
 
             default:
-                _logger.LogError("Unknown command: {Command}", command);
+                this.logger.LogError("Unknown command: {Command}", command);
                 break;
         }
 
-        await Task.CompletedTask;
+        await Task.CompletedTask.ConfigureAwait(false);
 
-        _logger.LogInformation("Command completed successfully");
+        this.logger.LogInformation("Command completed successfully");
     }
 }

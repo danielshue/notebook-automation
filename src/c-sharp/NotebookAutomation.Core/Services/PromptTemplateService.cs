@@ -1,6 +1,16 @@
-﻿using NotebookAutomation.Core.Utils;
+// <copyright file="PromptTemplateService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Services/PromptTemplateService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Services;
+
 /// <summary>
 /// Service for loading prompt templates and performing variable substitution.
 /// Handles different template types (e.g., chunk summary, final summary) and supports dynamic prompt file loading.
@@ -30,35 +40,37 @@ namespace NotebookAutomation.Core.Services;
 /// </example>
 public partial class PromptTemplateService : IPromptService
 {
-    private readonly ILogger<PromptTemplateService> _logger;
-    private readonly IYamlHelper _yamlHelper;
-    private string _promptsDirectory = string.Empty;
+    private readonly ILogger<PromptTemplateService> logger;
+    private readonly IYamlHelper yamlHelper;
+    private string promptsDirectory = string.Empty;
 
     // Default templates to use as fallbacks if files are not found
     public static string DefaultChunkPrompt { get; } =
         "You are an educational content summarizer for MBA course materials. Generate a clear and insightful summary of the following chunk from the content \"{{onedrive-path}}\", part of the course \"{{course}}\"\n\n{{content}}";
 
-    public static string DefaultFinalPrompt { get; } = "You are an educational content summarizer for MBA course materials. Your task is to synthesize multiple AI-generated summaries of content into a single, cohesive summary. You will receive YAML frontmatter below as placeholder that contains existing metadata - DO NOT modify this existing frontmatter structure except for tags.";    /// <summary>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// Initializes a new instance of the <see cref="PromptTemplateService"/> class.
-                                                                                                                                                                                                                                                                                                                                                                                                    /// </summary>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// <param name="logger">The logger to use for logging.</param>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// <param name="yamlHelper">The YAML helper for processing frontmatter.</param>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// <param name="config">The application configuration.</param>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// <remarks>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// <para>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// This constructor initializes the service and sets up the prompts directory using the provided configuration.
-                                                                                                                                                                                                                                                                                                                                                                                                    /// </para>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// </remarks>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// <example>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// <code>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// var promptService = new PromptTemplateService(logger, yamlHelper, config);
-                                                                                                                                                                                                                                                                                                                                                                                                    /// </code>
-                                                                                                                                                                                                                                                                                                                                                                                                    /// </example>
+    public static string DefaultFinalPrompt { get; } = "You are an educational content summarizer for MBA course materials. Your task is to synthesize multiple AI-generated summaries of content into a single, cohesive summary. You will receive YAML frontmatter below as placeholder that contains existing metadata - DO NOT modify this existing frontmatter structure except for tags.";
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PromptTemplateService"/> class.
+    /// </summary>
+    /// <param name="logger">The logger to use for logging.</param>
+    /// <param name="yamlHelper">The YAML helper for processing frontmatter.</param>
+    /// <param name="config">The application configuration.</param>
+    /// <remarks>
+    /// <para>
+    /// This constructor initializes the service and sets up the prompts directory using the provided configuration.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var promptService = new PromptTemplateService(logger, yamlHelper, config);
+    /// </code>
+    /// </example>
     public PromptTemplateService(ILogger<PromptTemplateService> logger, IYamlHelper yamlHelper, Configuration.AppConfig config)
     {
-        _logger = logger;
-        _yamlHelper = yamlHelper;
-        InitializePromptsDirectory(config);
+        this.logger = logger;
+        this.yamlHelper = yamlHelper;
+        this.InitializePromptsDirectory(config);
     }
 
     /// <summary>
@@ -94,26 +106,27 @@ public partial class PromptTemplateService : IPromptService
 
             if (Directory.Exists(configPromptsDir))
             {
-                _promptsDirectory = configPromptsDir;
-                _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from config");
+                this.promptsDirectory = configPromptsDir;
+                this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from config");
                 return;
             }
             else
             {
-                _logger.LogWarningWithPath(configPromptsDir, "Configured prompts directory not found");
+                this.logger.LogWarningWithPath(configPromptsDir, "Configured prompts directory not found");
             }
         }
 
         // Find the path to the prompts directory
         string baseDirectory = AppContext.BaseDirectory;        // Try to find the prompts in the project structure
+
         // First look in the output directory
         string projectPromptsDir = Path.Combine(baseDirectory, "Prompts");
 
         if (Directory.Exists(projectPromptsDir))
         {
-            _promptsDirectory = projectPromptsDir;
+            this.promptsDirectory = projectPromptsDir;
 
-            _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from output directory");
+            this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from output directory");
 
             return;
         }
@@ -124,8 +137,8 @@ public partial class PromptTemplateService : IPromptService
 
         if (Directory.Exists(corePromptsDir))
         {
-            _promptsDirectory = corePromptsDir;
-            _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from Core project");
+            this.promptsDirectory = corePromptsDir;
+            this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from Core project");
             return;
         }
 
@@ -135,8 +148,8 @@ public partial class PromptTemplateService : IPromptService
 
         if (Directory.Exists(rootPromptsDir))
         {
-            _promptsDirectory = rootPromptsDir;
-            _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from repository root");
+            this.promptsDirectory = rootPromptsDir;
+            this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from repository root");
             return;
         }
 
@@ -146,20 +159,20 @@ public partial class PromptTemplateService : IPromptService
 
         if (Directory.Exists(parentRootPromptsDir))
         {
-            _promptsDirectory = parentRootPromptsDir;
-            _logger.LogInformationWithPath(_promptsDirectory, "Using prompts directory from parent repository root");
+            this.promptsDirectory = parentRootPromptsDir;
+            this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from parent repository root");
             return;
         }
 
         // If all else fails, use the current directory
-        _promptsDirectory = baseDirectory;
-        _logger.LogWarningWithPath(baseDirectory, "Could not find prompts directory. Using base directory");
+        this.promptsDirectory = baseDirectory;
+        this.logger.LogWarningWithPath(baseDirectory, "Could not find prompts directory. Using base directory");
     }
 
     /// <summary>
     /// Gets the path to the prompts directory.
     /// </summary>
-    public string PromptsDirectory => _promptsDirectory;
+    public string PromptsDirectory => this.promptsDirectory;
 
     /// <summary>
     /// Loads a prompt template and substitutes variables.
@@ -171,12 +184,12 @@ public partial class PromptTemplateService : IPromptService
     {
         if (!File.Exists(templatePath))
         {
-            _logger.LogErrorWithPath(templatePath, "Prompt template not found");
+            this.logger.LogErrorWithPath(templatePath, "Prompt template not found");
             return string.Empty;
         }
 
-        string template = await File.ReadAllTextAsync(templatePath);
-        string result = SubstituteVariables(template, substitutionValues);
+        string template = await File.ReadAllTextAsync(templatePath).ConfigureAwait(false);
+        string result = this.SubstituteVariables(template, substitutionValues);
         return result;
     }
 
@@ -208,8 +221,8 @@ public partial class PromptTemplateService : IPromptService
     /// <returns>The prompt with variables substituted.</returns>
     public async Task<string> GetPromptAsync(string templateName, Dictionary<string, string>? substitutionValues)
     {
-        string template = await LoadTemplateAsync(templateName);
-        return SubstituteVariables(template, substitutionValues);
+        string template = await this.LoadTemplateAsync(templateName).ConfigureAwait(false);
+        return this.SubstituteVariables(template, substitutionValues);
     }
 
     /// <summary>
@@ -219,32 +232,36 @@ public partial class PromptTemplateService : IPromptService
     /// <returns>The template content, or a default template if not found.</returns>
     public virtual async Task<string> LoadTemplateAsync(string templateName)
     {
-        string templatePath = Path.Combine(_promptsDirectory, $"{templateName}.md"); try
+        string templatePath = Path.Combine(this.promptsDirectory, $"{templateName}.md");
+        try
         {
             if (File.Exists(templatePath))
             {
-                string content = await File.ReadAllTextAsync(templatePath);
+                string content = await File.ReadAllTextAsync(templatePath).ConfigureAwait(false);
+
                 // Strip frontmatter if present
-                content = _yamlHelper.RemoveFrontmatter(content);
-                _logger.LogInformationWithPath(templatePath, $"Loaded template: {templateName}");
+                content = this.yamlHelper.RemoveFrontmatter(content);
+                this.logger.LogInformationWithPath(templatePath, $"Loaded template: {templateName}");
                 return content;
-            }            // Look in project Prompts directory too
+            } // Look in project Prompts directory too
+
             string projectPromptPath = Path.Combine(AppContext.BaseDirectory, "Prompts", $"{templateName}.md");
             if (File.Exists(projectPromptPath))
             {
-                string content = await File.ReadAllTextAsync(projectPromptPath);
+                string content = await File.ReadAllTextAsync(projectPromptPath).ConfigureAwait(false);
+
                 // Strip frontmatter if present
-                content = _yamlHelper.RemoveFrontmatter(content);
-                _logger.LogInformationWithPath(projectPromptPath, $"Loaded template from project: {templateName}");
+                content = this.yamlHelper.RemoveFrontmatter(content);
+                this.logger.LogInformationWithPath(projectPromptPath, $"Loaded template from project: {templateName}");
                 return content;
             }
 
-            return GetDefaultTemplate(templateName);
+            return this.GetDefaultTemplate(templateName);
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(templateName, $"Error loading template: {templateName}. Exception: {ex.Message}");
-            return GetDefaultTemplate(templateName);
+            this.logger.LogErrorWithPath(templateName, $"Error loading template: {templateName}. Exception: {ex.Message}");
+            return this.GetDefaultTemplate(templateName);
         }
     }
 
@@ -255,13 +272,13 @@ public partial class PromptTemplateService : IPromptService
     /// <returns>The default template content.</returns>
     private string GetDefaultTemplate(string templateName)
     {
-        _logger.LogWarningWithPath(templateName, "Using default template for");
+        this.logger.LogWarningWithPath(templateName, "Using default template for");
 
         return templateName switch
         {
             "chunk_summary_prompt" => DefaultChunkPrompt,
             "final_summary_prompt" => DefaultFinalPrompt,
-            _ => DefaultFinalPrompt
+            _ => DefaultFinalPrompt,
         };
     }
 
@@ -273,7 +290,7 @@ public partial class PromptTemplateService : IPromptService
     /// <returns>The template with variables substituted.</returns>
     public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? substitutionValues)
     {
-        return Task.FromResult(SubstituteVariables(template, substitutionValues));
+        return Task.FromResult(this.SubstituteVariables(template, substitutionValues));
     }
 
     /// <summary>

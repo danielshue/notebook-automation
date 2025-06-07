@@ -1,39 +1,36 @@
-﻿using System;
-using System.CommandLine.Parsing;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Moq;
-
-using NotebookAutomation.Cli.Commands;
-using NotebookAutomation.Core.Configuration;
-
-
+// <copyright file="TagCommandsTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli.Tests/Commands/TagCommandsTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Cli.Tests.Commands;
+
 /// <summary>
 /// Unit tests for TagCommands.
 /// </summary>
 [TestClass]
-public class TagCommandsTests
+internal class TagCommandsTests
 {
-    private Mock<ILogger<TagCommands>> _mockLogger;
-    private Mock<IServiceProvider> _mockServiceProvider;
-    private Mock<AppConfig> _mockAppConfig;
+    private Mock<ILogger<TagCommands>> mockLogger;
+    private Mock<IServiceProvider> mockServiceProvider;
+    private Mock<AppConfig> mockAppConfig;
 
     [TestInitialize]
     public void Setup()
     {
-        _mockLogger = new Mock<ILogger<TagCommands>>(); _mockServiceProvider = new Mock<IServiceProvider>();
-        _mockAppConfig = new Mock<AppConfig>();
-        _mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig))).Returns(_mockAppConfig.Object);
+        this.mockLogger = new Mock<ILogger<TagCommands>>();
+        this.mockServiceProvider = new Mock<IServiceProvider>();
+        this.mockAppConfig = new Mock<AppConfig>();
+        this.mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig))).Returns(this.mockAppConfig.Object);
     }
 
     private TagCommands CreateTagCommands()
     {
-        return new TagCommands(_mockLogger.Object, _mockServiceProvider.Object);
+        return new TagCommands(this.mockLogger.Object, this.mockServiceProvider.Object);
     }
 
     /// <summary>
@@ -43,26 +40,27 @@ public class TagCommandsTests
     [TestMethod]
     public async Task CleanIndexCommand_PrintsUsage_WhenNoArgs()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = CreateTagCommands();
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var tagCommands = this.CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync("tag clean-index");
+            await parser.InvokeAsync("tag clean-index").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
     }
@@ -74,26 +72,27 @@ public class TagCommandsTests
     [TestMethod]
     public async Task ConsolidateCommand_PrintsUsage_WhenNoArgs()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = CreateTagCommands();
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var tagCommands = this.CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync("tag consolidate");
+            await parser.InvokeAsync("tag consolidate").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
     }
@@ -105,26 +104,27 @@ public class TagCommandsTests
     [TestMethod]
     public async Task RestructureCommand_PrintsUsage_WhenNoArgs()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = CreateTagCommands();
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var tagCommands = this.CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync("tag restructure");
+            await parser.InvokeAsync("tag restructure").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
     }
@@ -136,26 +136,27 @@ public class TagCommandsTests
     [TestMethod]
     public async Task AddExampleCommand_PrintsUsage_WhenNoArgs()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = CreateTagCommands();
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var tagCommands = this.CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync("tag add-example");
+            await parser.InvokeAsync("tag add-example").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
     }
@@ -167,26 +168,27 @@ public class TagCommandsTests
     [TestMethod]
     public async Task MetadataCheckCommand_PrintsUsage_WhenNoArgs()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = CreateTagCommands();
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var tagCommands = this.CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync("tag metadata-check");
+            await parser.InvokeAsync("tag metadata-check").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
     }
@@ -198,27 +200,29 @@ public class TagCommandsTests
     [TestMethod]
     public async Task UpdateFrontmatterCommand_PrintsUsage_WhenArgsMissing()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = CreateTagCommands();
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var tagCommands = this.CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
+
             // Only provide the subcommand, missing all required arguments
-            await parser.InvokeAsync("tag update-frontmatter");
+            await parser.InvokeAsync("tag update-frontmatter").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when required args are missing.");
     }
@@ -230,26 +234,27 @@ public class TagCommandsTests
     [TestMethod]
     public async Task DiagnoseYamlCommand_PrintsUsage_WhenNoArgs()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = CreateTagCommands();
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var tagCommands = this.CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync("tag diagnose-yaml");
+            await parser.InvokeAsync("tag diagnose-yaml").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
     }

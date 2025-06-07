@@ -1,28 +1,31 @@
-﻿#nullable enable
-using System;
-using System.IO;
-using System.Threading;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using NotebookAutomation.Cli.Utilities;
+// <copyright file="AnsiConsoleHelperTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli.Tests/Utilities/AnsiConsoleHelperTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 
 namespace NotebookAutomation.Cli.Tests.Utilities;
+
 /// <summary>
 /// Unit tests for <see cref="AnsiConsoleHelper"/>.
 /// </summary>
 [TestClass]
-public class AnsiConsoleHelperTests
+internal class AnsiConsoleHelperTests
 {
-    private StringWriter? _stringWriter;
-    private TextWriter? _originalOut;
+    private StringWriter? stringWriter;
+    private TextWriter? originalOut;
 
     [TestInitialize]
     public void Setup()
     {
-        _stringWriter = new StringWriter();
-        _originalOut = Console.Out;
-        Console.SetOut(_stringWriter);
+        this.stringWriter = new StringWriter();
+        this.originalOut = Console.Out;
+        Console.SetOut(this.stringWriter);
     }
 
     [TestCleanup]
@@ -30,12 +33,13 @@ public class AnsiConsoleHelperTests
     {
         // Give Spectre.Console time to finish writing before disposing
         Thread.Sleep(100);
-        Console.SetOut(_originalOut!);
+        Console.SetOut(this.originalOut!);
 
         // Don't dispose the StringWriter immediately - let GC handle it
         // This prevents ObjectDisposedException when Spectre.Console tries to write asynchronously
-        _stringWriter = null;
+        this.stringWriter = null;
     }
+
     [TestMethod]
     public void WriteUsage_PrintsUsageWithColors()
     {
@@ -44,7 +48,7 @@ public class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = _stringWriter!.ToString();
+        var output = this.stringWriter!.ToString();
         Assert.IsTrue(output.Contains("usage"));
         Assert.IsTrue(output.Contains("desc"));
         Assert.IsTrue(output.Contains("opts"));
@@ -58,9 +62,10 @@ public class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = _stringWriter!.ToString();
+        var output = this.stringWriter!.ToString();
         Assert.IsTrue(output.Contains("info message"));
     }
+
     [TestMethod]
     public void WriteWarning_PrintsWarningWithColors()
     {
@@ -69,7 +74,7 @@ public class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = _stringWriter!.ToString();
+        var output = this.stringWriter!.ToString();
         Assert.IsTrue(output.Contains("warn message"));
     }
 
@@ -81,7 +86,7 @@ public class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = _stringWriter!.ToString();
+        var output = this.stringWriter!.ToString();
         Assert.IsTrue(output.Contains("error message"));
     }
 
@@ -93,7 +98,7 @@ public class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = _stringWriter!.ToString();
+        var output = this.stringWriter!.ToString();
         Assert.IsTrue(output.Contains("success message"));
     }
 
@@ -105,7 +110,7 @@ public class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = _stringWriter!.ToString();
+        var output = this.stringWriter!.ToString();
         Assert.IsTrue(output.Contains("heading"));
     }
 
@@ -117,7 +122,7 @@ public class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = _stringWriter!.ToString();
+        var output = this.stringWriter!.ToString();
         Assert.IsTrue(output.Contains("key:"));
         Assert.IsTrue(output.Contains("value"));
     }

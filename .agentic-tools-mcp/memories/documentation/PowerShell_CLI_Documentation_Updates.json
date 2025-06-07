@@ -1,0 +1,8 @@
+{
+  "id": "ca805653-ccce-4148-9603-137cc35293c5",
+  "title": "PowerShell CLI Documentation Updates",
+  "details": "Updated all CLI examples in the documentation to use PowerShell syntax for Windows:\n\nKey changes made:\n1. Changed all `bash` code blocks to `powershell`\n2. Updated executable references from `na.exe` to `.\\na.exe` (relative path syntax)\n3. Updated shell commands from Unix-style to PowerShell equivalents\n4. Maintained all CLI flags and arguments unchanged\n\nFiles updated:\n- docs/index.md: Updated build commands and basic CLI example\n- docs/getting-started/index.md: Updated basic usage examples\n- docs/getting-started/installation.md: Updated verification and config examples  \n- docs/getting-started/basic-commands.md: Comprehensive update of all CLI examples\n- docs/getting-started/faq.md: Updated examples and troubleshooting commands\n- docs/user-guide/index.md: Updated use case examples\n- docs/user-guide/file-processing.md: Updated all processing examples and options\n\nPowerShell conventions used:\n- `.\\na.exe` for executable in current directory\n- PowerShell-style paths and commands\n- Retained all existing CLI flags and parameters\n- Updated date formatting example to use PowerShell Get-Date syntax\n\nAll CLI examples now assume Windows PowerShell environment as requested.",
+  "category": "documentation",
+  "dateCreated": "2025-06-07T17:11:12.983Z",
+  "dateUpdated": "2025-06-07T17:11:12.983Z"
+}

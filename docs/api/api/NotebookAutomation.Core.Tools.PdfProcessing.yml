@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.PdfProcessing
+  commentId: N:NotebookAutomation.Core.Tools.PdfProcessing
+  id: NotebookAutomation.Core.Tools.PdfProcessing
+  children:
+  - NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor
+  - NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Tools.PdfProcessing
+  nameWithType: NotebookAutomation.Core.Tools.PdfProcessing
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor
+  commentId: T:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor
+  href: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor.html
+  name: PdfNoteBatchProcessor
+  nameWithType: PdfNoteBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  commentId: T:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  href: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.html
+  name: PdfNoteProcessor
+  nameWithType: PdfNoteProcessor
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor

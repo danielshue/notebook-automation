@@ -1,4 +1,14 @@
-﻿namespace NotebookAutomation.Core.Configuration;
+// <copyright file="UserSecretsHelper.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/UserSecretsHelper.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Configuration;
+
 /// <summary>
 /// Provides convenient access to user secrets in the application.
 /// </summary>
@@ -10,7 +20,7 @@
 /// <param name="configuration">The configuration to use for accessing user secrets.</param>
 public class UserSecretsHelper(IConfiguration configuration)
 {
-    private readonly IConfiguration _configuration = configuration;
+    private readonly IConfiguration configuration = configuration;
 
     /// <summary>
     /// Gets an OpenAI API key from user secrets, if available.
@@ -18,7 +28,7 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>The API key if found in user secrets; otherwise, null.</returns>
     public string? GetOpenAIApiKey()
     {
-        return _configuration["UserSecrets:OpenAI:ApiKey"];
+        return this.configuration["UserSecrets:OpenAI:ApiKey"];
     }
 
     /// <summary>
@@ -27,7 +37,7 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>The client ID if found in user secrets; otherwise, null.</returns>
     public string? GetMicrosoftGraphClientId()
     {
-        return _configuration["UserSecrets:Microsoft:ClientId"];
+        return this.configuration["UserSecrets:Microsoft:ClientId"];
     }
 
     /// <summary>
@@ -36,7 +46,7 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>The tenant ID if found in user secrets; otherwise, null.</returns>
     public string? GetMicrosoftGraphTenantId()
     {
-        return _configuration["UserSecrets:Microsoft:TenantId"];
+        return this.configuration["UserSecrets:Microsoft:TenantId"];
     }
 
     /// <summary>
@@ -46,7 +56,7 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>The value if found; otherwise, null.</returns>
     public string? GetSecret(string key)
     {
-        return _configuration[$"UserSecrets:{key}"];
+        return this.configuration[$"UserSecrets:{key}"];
     }
 
     /// <summary>
@@ -56,6 +66,6 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>True if the user secret exists; otherwise, false.</returns>
     public bool HasSecret(string key)
     {
-        return !string.IsNullOrEmpty(_configuration[$"UserSecrets:{key}"]);
+        return !string.IsNullOrEmpty(this.configuration[$"UserSecrets:{key}"]);
     }
 }

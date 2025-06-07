@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Utils;
+﻿// <copyright file="FileSizeFormatter.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/FileSizeFormatter.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
 /// Provides utility methods for formatting file sizes into human-readable strings.
@@ -40,11 +49,20 @@ public static class FileSizeFormatter
         }
 
         if (suffixIndex == 0)
+        {
             return $"{size:0.00} {suffixes[suffixIndex]}";
-        else if (size < 10) return $"{size:0.00} {suffixes[suffixIndex]}";
+        }
+        else if (size < 10)
+        {
+            return $"{size:0.00} {suffixes[suffixIndex]}";
+        }
         else if (size < 100)
+        {
             return $"{size:0.0} {suffixes[suffixIndex]}";
+        }
         else
+        {
             return $"{Math.Round(size)} {suffixes[suffixIndex]}";
+        }
     }
 }

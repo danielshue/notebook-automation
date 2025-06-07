@@ -1,4 +1,13 @@
-﻿using System.Diagnostics;
+// <copyright file="VaultIndexBatchProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Diagnostics;
 
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Models;
@@ -20,20 +29,19 @@ namespace NotebookAutomation.Core.Tools.Vault;
 /// - Applies appropriate templates based on detected hierarchy
 /// - Organizes content by type using YAML frontmatter and filename patterns
 /// - Optional Obsidian Bases integration for dynamic content views
-/// - Supports dry-run mode for previewing changes
+/// - Supports dry-run mode for previewing changes.
 /// </remarks>
 public class VaultIndexBatchProcessor(
     ILogger<VaultIndexBatchProcessor> logger,
     VaultIndexProcessor processor,
     AppConfig appConfig)
 {
-    private readonly ILogger<VaultIndexBatchProcessor> _logger = logger;
-    private readonly VaultIndexProcessor _indexProcessor = processor;
-    private readonly AppConfig _appConfig = appConfig;
+    private readonly ILogger<VaultIndexBatchProcessor> logger = logger;
+    private readonly VaultIndexProcessor indexProcessor = processor;
 
     // Queue-related fields
-    private readonly List<QueueItem> _processingQueue = [];
-    private readonly Lock _queueLock = new();
+    private readonly List<QueueItem> processingQueue = [];
+    private readonly Lock queueLock = new();
 
     /// <summary>
     /// Event triggered when processing progress changes.
@@ -52,9 +60,9 @@ public class VaultIndexBatchProcessor(
     {
         get
         {
-            lock (_queueLock)
+            lock (this.queueLock)
             {
-                return _processingQueue.ToList().AsReadOnly();
+                return this.processingQueue.ToList().AsReadOnly();
             }
         }
     }
@@ -68,26 +76,28 @@ public class VaultIndexBatchProcessor(
     /// <param name="totalFolders">The total number of folders to process.</param>
     protected virtual void OnProcessingProgressChanged(string folderPath, string status, int currentFolder, int totalFolders)
     {
-        ProcessingProgressChanged?.Invoke(this, new DocumentProcessingProgressEventArgs(folderPath, status, currentFolder, totalFolders));
+        this.ProcessingProgressChanged?.Invoke(this, new DocumentProcessingProgressEventArgs(folderPath, status, currentFolder, totalFolders));
     }
 
     /// <summary>
     /// Raises the QueueChanged event.
     /// </summary>
-    /// <param name="changedItem">The specific item that changed, or null if the entire queue changed</param>
+    /// <param name="changedItem">The specific item that changed, or null if the entire queue changed.</param>
     protected virtual void OnQueueChanged(QueueItem? changedItem = null)
     {
-        lock (_queueLock)
+        lock (this.queueLock)
         {
-            QueueChanged?.Invoke(this, new QueueChangedEventArgs(_processingQueue.AsReadOnly(), changedItem));
+            this.QueueChanged?.Invoke(this, new QueueChangedEventArgs(this.processingQueue.AsReadOnly(), changedItem));
         }
-    }    /// <summary>
-         /// Initializes the processing queue with folders from the specified vault directory.
-         /// </summary>
-         /// <param name="vaultPath">Path to the vault directory to scan for folders.</param>
-         /// <param name="indexTypes">Optional filter for specific index types to generate.</param>
+    }
+
+    /// <summary>
+    /// Initializes the processing queue with folders from the specified vault directory.
+    /// </summary>
+    /// <param name="vaultPath">Path to the vault directory to scan for folders.</param>
+    /// <param name="indexTypes">Optional filter for specific index types to generate.</param>
     protected virtual void InitializeProcessingQueue(string vaultPath, List<string>? templateTypes = null)
-    {        // Get all directories in the vault, including the vault root itself
+    { // Get all directories in the vault, including the vault root itself
         var directories = new List<string> { vaultPath }; // Start with vault root
         directories.AddRange(Directory.GetDirectories(vaultPath, "*", SearchOption.AllDirectories)
             .Where(d => !IsIgnoredDirectory(d)));
@@ -97,13 +107,12 @@ public class VaultIndexBatchProcessor(
             .ToList();
 
         // Note: The vault root itself should get a main index file at level 1.
-
-        lock (_queueLock)
+        lock (this.queueLock)
         {
-            _processingQueue.Clear();
+            this.processingQueue.Clear();
 
             foreach (string folderPath in directories)
-            {                // Determine if this folder should be processed based on templateTypes filter
+            { // Determine if this folder should be processed based on templateTypes filter
                 if (templateTypes != null && templateTypes.Count > 0)
                 {
                     var hierarchyLevel = CalculateHierarchyLevel(folderPath, vaultPath);
@@ -119,13 +128,13 @@ public class VaultIndexBatchProcessor(
                 {
                     Status = DocumentProcessingStatus.Waiting,
                     Stage = ProcessingStage.NotStarted,
-                    StatusMessage = "Waiting to generate index"
+                    StatusMessage = "Waiting to generate index",
                 };
-                _processingQueue.Add(queueItem);
+                this.processingQueue.Add(queueItem);
             }
         }
 
-        OnQueueChanged();
+        this.OnQueueChanged();
     }
 
     /// <summary>
@@ -144,6 +153,7 @@ public class VaultIndexBatchProcessor(
                dirName.Equals("resources", StringComparison.OrdinalIgnoreCase) ||
                dirName.Equals("_templates", StringComparison.OrdinalIgnoreCase);
     }
+
     /// <summary>
     /// Maps hierarchy level to index type string.
     /// </summary>
@@ -158,7 +168,7 @@ public class VaultIndexBatchProcessor(
             4 => "class",     // Class (e.g., Corporate-Finance)
             5 => "module",    // Module (e.g., Week1)
             6 => "lesson",    // Lesson subdirectory
-            _ => "unknown"
+            _ => "unknown",
         };
     }
 
@@ -175,9 +185,9 @@ public class VaultIndexBatchProcessor(
     {
         QueueItem? queueItem = null;
 
-        lock (_queueLock)
+        lock (this.queueLock)
         {
-            queueItem = _processingQueue.FirstOrDefault(q => q.FilePath == folderPath);
+            queueItem = this.processingQueue.FirstOrDefault(q => q.FilePath == folderPath);
             if (queueItem != null)
             {
                 queueItem.Status = status;
@@ -197,17 +207,19 @@ public class VaultIndexBatchProcessor(
 
         if (queueItem != null)
         {
-            OnQueueChanged(queueItem);
-            OnProcessingProgressChanged(folderPath, statusMessage, currentFolder, totalFolders);
+            this.OnQueueChanged(queueItem);
+            this.OnProcessingProgressChanged(folderPath, statusMessage, currentFolder, totalFolders);
         }
-    }    /// <summary>
-         /// Generates vault index files for folders in the specified directory.
-         /// </summary>
-         /// <param name="vaultPath">Path to the vault directory.</param>
-         /// <param name="dryRun">If true, simulates processing without making actual changes.</param>
-         /// <param name="templateTypes">Optional filter for specific template types to generate.</param>
-         /// <param name="forceOverwrite">If true, regenerates index files even if they already exist.</param>
-         /// <returns>A summary of processing results.</returns>
+    }
+
+    /// <summary>
+    /// Generates vault index files for folders in the specified directory.
+    /// </summary>
+    /// <param name="vaultPath">Path to the vault directory.</param>
+    /// <param name="dryRun">If true, simulates processing without making actual changes.</param>
+    /// <param name="templateTypes">Optional filter for specific template types to generate.</param>
+    /// <param name="forceOverwrite">If true, regenerates index files even if they already exist.</param>
+    /// <returns>A summary of processing results.</returns>
     public async Task<VaultIndexBatchResult> GenerateIndexesAsync(
         string vaultPath,
         bool dryRun = false,
@@ -230,26 +242,26 @@ public class VaultIndexBatchProcessor(
 
         try
         {
-            _logger.LogInformation("Starting vault index generation for vault: {VaultPath}", vaultPath);
+            this.logger.LogInformation("Starting vault index generation for vault: {VaultPath}", vaultPath);
 
             // Clean up old index.md files first (if not dry run)
             if (!dryRun)
             {
-                await CleanupOldIndexFilesAsync(vaultPath);
+                await this.CleanupOldIndexFilesAsync(vaultPath).ConfigureAwait(false);
             }
 
             // Initialize the processing queue
-            InitializeProcessingQueue(vaultPath, templateTypes);
+            this.InitializeProcessingQueue(vaultPath, templateTypes);
 
-            var queueCopy = Queue.ToList();
+            var queueCopy = this.Queue.ToList();
             if (!queueCopy.Any())
             {
-                _logger.LogWarning("No folders found to process in vault: {VaultPath}", vaultPath);
+                this.logger.LogWarning("No folders found to process in vault: {VaultPath}", vaultPath);
                 return result;
             }
 
             result.TotalFolders = queueCopy.Count;
-            _logger.LogInformation("Found {Count} folders to process", queueCopy.Count);
+            this.logger.LogInformation("Found {Count} folders to process", queueCopy.Count);
 
             // Process each folder in the queue
             for (int folderIndex = 0; folderIndex < queueCopy.Count; folderIndex++)
@@ -261,16 +273,17 @@ public class VaultIndexBatchProcessor(
                 try
                 {
                     // Update status to processing
-                    UpdateQueueItemStatus(folderPath, DocumentProcessingStatus.Processing, ProcessingStage.MarkdownCreation,
+                    this.UpdateQueueItemStatus(folderPath, DocumentProcessingStatus.Processing, ProcessingStage.MarkdownCreation,
                         $"Generating index for folder {folderIndex + 1}/{queueCopy.Count}: {Path.GetFileName(folderPath)}",
                         folderIndex + 1, queueCopy.Count);
 
                     var stopwatch = Stopwatch.StartNew();                    // Use the explicit vaultRoot if provided, otherwise use vaultPath
-                    string effectiveVaultPath = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : vaultPath; bool wasGenerated = await _indexProcessor.GenerateIndexAsync(
+                    string effectiveVaultPath = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : vaultPath;
+                    bool wasGenerated = await this.indexProcessor.GenerateIndexAsync(
                         folderPath,
                         effectiveVaultPath,
                         forceOverwrite,
-                        dryRun);
+                        dryRun).ConfigureAwait(false);
                     stopwatch.Stop();
 
                     if (wasGenerated)
@@ -280,20 +293,20 @@ public class VaultIndexBatchProcessor(
                             ? $"[DRY RUN] Would generate index for: {relativePath}"
                             : $"Generated index for: {relativePath} in {stopwatch.ElapsedMilliseconds}ms";
 
-                        UpdateQueueItemStatus(folderPath, DocumentProcessingStatus.Completed, ProcessingStage.Completed,
+                        this.UpdateQueueItemStatus(folderPath, DocumentProcessingStatus.Completed, ProcessingStage.Completed,
                             successMessage, folderIndex + 1, queueCopy.Count);
 
-                        _logger.LogInformation("✓ {Message}", successMessage);
+                        this.logger.LogInformation("✓ {Message}", successMessage);
                     }
                     else
                     {
                         result.SkippedFolders++;
                         string skipMessage = $"Skipped {relativePath} (no changes needed or no content)";
 
-                        UpdateQueueItemStatus(folderPath, DocumentProcessingStatus.Completed, ProcessingStage.Completed,
+                        this.UpdateQueueItemStatus(folderPath, DocumentProcessingStatus.Completed, ProcessingStage.Completed,
                             skipMessage, folderIndex + 1, queueCopy.Count);
 
-                        _logger.LogDebug("- {Message}", skipMessage);
+                        this.logger.LogDebug("- {Message}", skipMessage);
                     }
                 }
                 catch (Exception ex)
@@ -302,25 +315,25 @@ public class VaultIndexBatchProcessor(
                     failedFolders.Add(folderPath);
                     string errorMessage = $"Failed to process {relativePath}: {ex.Message}";
 
-                    UpdateQueueItemStatus(folderPath, DocumentProcessingStatus.Failed, ProcessingStage.NotStarted,
+                    this.UpdateQueueItemStatus(folderPath, DocumentProcessingStatus.Failed, ProcessingStage.NotStarted,
                         errorMessage, folderIndex + 1, queueCopy.Count);
 
-                    _logger.LogError(ex, "✗ {Message}", errorMessage);
+                    this.logger.LogError(ex, "✗ {Message}", errorMessage);
                 }
             }
 
             // Log summary
-            LogBatchResults(result, dryRun);
+            this.LogBatchResults(result, dryRun);
 
             // Save failed folders list if any
             if (failedFolders.Count > 0)
             {
-                await SaveFailedFoldersList(vaultPath, failedFolders);
+                await this.SaveFailedFoldersList(vaultPath, failedFolders).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Batch index generation failed for vault: {VaultPath}", vaultPath);
+            this.logger.LogError(ex, "Batch index generation failed for vault: {VaultPath}", vaultPath);
             result.Success = false;
             result.ErrorMessage = ex.Message;
         }
@@ -343,25 +356,25 @@ public class VaultIndexBatchProcessor(
                 try
                 {
                     File.Delete(indexFile);
-                    _logger.LogDebug("Deleted old index file: {FilePath}", indexFile);
+                    this.logger.LogDebug("Deleted old index file: {FilePath}", indexFile);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to delete old index file: {FilePath}", indexFile);
+                    this.logger.LogWarning(ex, "Failed to delete old index file: {FilePath}", indexFile);
                 }
             }
 
             if (indexFiles.Length > 0)
             {
-                _logger.LogInformation("Cleaned up {Count} old index.md files", indexFiles.Length);
+                this.logger.LogInformation("Cleaned up {Count} old index.md files", indexFiles.Length);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Failed to cleanup old index files");
+            this.logger.LogWarning(ex, "Failed to cleanup old index files");
         }
 
-        await Task.CompletedTask;
+        await Task.CompletedTask.ConfigureAwait(false);
     }
 
     /// <summary>
@@ -372,7 +385,7 @@ public class VaultIndexBatchProcessor(
         return new VaultIndexBatchResult
         {
             Success = false,
-            ErrorMessage = errorMessage
+            ErrorMessage = errorMessage,
         };
     }
 
@@ -381,15 +394,15 @@ public class VaultIndexBatchProcessor(
     /// </summary>
     private void LogBatchResults(VaultIndexBatchResult result, bool dryRun)
     {
-        string prefix = dryRun ? "[DRY RUN] " : "";
+        string prefix = dryRun ? "[DRY RUN] " : string.Empty;
 
-        _logger.LogInformation(
+        this.logger.LogInformation(
             "{Prefix}Index generation completed: {Processed} processed, {Skipped} skipped, {Failed} failed out of {Total} total folders",
             prefix, result.ProcessedFolders, result.SkippedFolders, result.FailedFolders, result.TotalFolders);
 
         if (result.FailedFolders > 0)
         {
-            _logger.LogWarning("{FailedCount} folders failed to process", result.FailedFolders);
+            this.logger.LogWarning("{FailedCount} folders failed to process", result.FailedFolders);
         }
     }
 
@@ -401,12 +414,12 @@ public class VaultIndexBatchProcessor(
         try
         {
             string failedFoldersPath = Path.Combine(vaultPath, "failed_index_folders.txt");
-            await File.WriteAllLinesAsync(failedFoldersPath, failedFolders);
-            _logger.LogInformation("Saved {Count} failed folders to: {FilePath}", failedFolders.Count, failedFoldersPath);
+            await File.WriteAllLinesAsync(failedFoldersPath, failedFolders).ConfigureAwait(false);
+            this.logger.LogInformation("Saved {Count} failed folders to: {FilePath}", failedFolders.Count, failedFoldersPath);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to save failed folders list");
+            this.logger.LogError(ex, "Failed to save failed folders list");
         }
     }
 
@@ -434,7 +447,7 @@ public class VaultIndexBatchProcessor(
 public class VaultIndexBatchResult
 {
     /// <summary>
-    /// Gets or sets whether the operation was successful.
+    /// Gets or sets a value indicating whether gets or sets whether the operation was successful.
     /// </summary>
     public bool Success { get; set; } = true;
 

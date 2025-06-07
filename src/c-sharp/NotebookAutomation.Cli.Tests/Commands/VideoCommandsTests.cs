@@ -1,23 +1,21 @@
-﻿using System;
-using System.CommandLine.Parsing;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Moq;
-
-using NotebookAutomation.Cli.Commands;
-
+// <copyright file="VideoCommandsTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli.Tests/Commands/VideoCommandsTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Cli.Tests.Commands;
+
 /// <summary>
 /// Unit tests for VideoCommands.
 /// </summary>
 [TestClass]
-public class VideoCommandsTests
+internal class VideoCommandsTests
 {
-    private readonly Mock<ILogger<VideoCommands>> _mockLogger = new();
+    private readonly Mock<ILogger<VideoCommands>> mockLogger = new();
 
     /// <summary>
     /// Verifies that the 'video-notes' command prints usage/help when no arguments are provided.
@@ -26,32 +24,34 @@ public class VideoCommandsTests
     [TestMethod]
     public async Task VideoNotesCommand_PrintsUsage_WhenNoArgs()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        _ = new VideoCommands(_mockLogger.Object);
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        _ = new VideoCommands(this.mockLogger.Object);
         VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Ensure DI is initialized for handler
-        NotebookAutomation.Cli.Program.SetupDependencyInjection(null, false);
+        Program.SetupDependencyInjection(null, false);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync("video-notes");
+            await parser.InvokeAsync("video-notes").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
     }
+
     /// <summary>
     /// Tests that the VideoCommands class can be instantiated successfully.
     /// </summary>
@@ -59,7 +59,8 @@ public class VideoCommandsTests
     public void VideoCommand_Initialization_ShouldSucceed()
     {
         // Arrange
-        var command = new VideoCommands(_mockLogger.Object);
+        var command = new VideoCommands(this.mockLogger.Object);
+
         // Act & Assert
         Assert.IsNotNull(command);
     }
@@ -71,12 +72,12 @@ public class VideoCommandsTests
     public void Register_AddsVideoNotesCommandToRoot()
     {
         // Arrange
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var videoCommands = new VideoCommands(_mockLogger.Object);
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var videoCommands = new VideoCommands(this.mockLogger.Object);
 
         // Act
         VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

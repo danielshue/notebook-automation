@@ -1,0 +1,152 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  id: NotebookAutomation.Core.Configuration
+  children:
+  - NotebookAutomation.Core.Configuration.AIServiceConfig
+  - NotebookAutomation.Core.Configuration.AppConfig
+  - NotebookAutomation.Core.Configuration.AzureProviderConfig
+  - NotebookAutomation.Core.Configuration.ConfigurationExtensions
+  - NotebookAutomation.Core.Configuration.ConfigurationSetup
+  - NotebookAutomation.Core.Configuration.FailedOperations
+  - NotebookAutomation.Core.Configuration.FoundryProviderConfig
+  - NotebookAutomation.Core.Configuration.ILoggingService
+  - NotebookAutomation.Core.Configuration.LoggingService
+  - NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  - NotebookAutomation.Core.Configuration.OpenAiProviderConfig
+  - NotebookAutomation.Core.Configuration.PathsConfig
+  - NotebookAutomation.Core.Configuration.ServiceRegistration
+  - NotebookAutomation.Core.Configuration.UserSecretsHelper
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Configuration.AIServiceConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AIServiceConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AIServiceConfig.html
+  name: AIServiceConfig
+  nameWithType: AIServiceConfig
+  fullName: NotebookAutomation.Core.Configuration.AIServiceConfig
+- uid: NotebookAutomation.Core.Configuration.OpenAiProviderConfig
+  commentId: T:NotebookAutomation.Core.Configuration.OpenAiProviderConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.OpenAiProviderConfig.html
+  name: OpenAiProviderConfig
+  nameWithType: OpenAiProviderConfig
+  fullName: NotebookAutomation.Core.Configuration.OpenAiProviderConfig
+- uid: NotebookAutomation.Core.Configuration.AzureProviderConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AzureProviderConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AzureProviderConfig.html
+  name: AzureProviderConfig
+  nameWithType: AzureProviderConfig
+  fullName: NotebookAutomation.Core.Configuration.AzureProviderConfig
+- uid: NotebookAutomation.Core.Configuration.FoundryProviderConfig
+  commentId: T:NotebookAutomation.Core.Configuration.FoundryProviderConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.FoundryProviderConfig.html
+  name: FoundryProviderConfig
+  nameWithType: FoundryProviderConfig
+  fullName: NotebookAutomation.Core.Configuration.FoundryProviderConfig
+- uid: NotebookAutomation.Core.Configuration.AppConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AppConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig
+- uid: NotebookAutomation.Core.Configuration.ConfigurationExtensions
+  commentId: T:NotebookAutomation.Core.Configuration.ConfigurationExtensions
+  href: NotebookAutomation.Core.Configuration.ConfigurationExtensions.html
+  name: ConfigurationExtensions
+  nameWithType: ConfigurationExtensions
+  fullName: NotebookAutomation.Core.Configuration.ConfigurationExtensions
+- uid: NotebookAutomation.Core.Configuration.ConfigurationSetup
+  commentId: T:NotebookAutomation.Core.Configuration.ConfigurationSetup
+  href: NotebookAutomation.Core.Configuration.ConfigurationSetup.html
+  name: ConfigurationSetup
+  nameWithType: ConfigurationSetup
+  fullName: NotebookAutomation.Core.Configuration.ConfigurationSetup
+- uid: NotebookAutomation.Core.Configuration.FailedOperations
+  commentId: T:NotebookAutomation.Core.Configuration.FailedOperations
+  href: NotebookAutomation.Core.Configuration.FailedOperations.html
+  name: FailedOperations
+  nameWithType: FailedOperations
+  fullName: NotebookAutomation.Core.Configuration.FailedOperations
+- uid: NotebookAutomation.Core.Configuration.ILoggingService
+  commentId: T:NotebookAutomation.Core.Configuration.ILoggingService
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.ILoggingService.html
+  name: ILoggingService
+  nameWithType: ILoggingService
+  fullName: NotebookAutomation.Core.Configuration.ILoggingService
+- uid: NotebookAutomation.Core.Configuration.LoggingService
+  commentId: T:NotebookAutomation.Core.Configuration.LoggingService
+  href: NotebookAutomation.Core.Configuration.LoggingService.html
+  name: LoggingService
+  nameWithType: LoggingService
+  fullName: NotebookAutomation.Core.Configuration.LoggingService
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  commentId: T:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.html
+  name: MicrosoftGraphConfig
+  nameWithType: MicrosoftGraphConfig
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+- uid: NotebookAutomation.Core.Configuration.PathsConfig
+  commentId: T:NotebookAutomation.Core.Configuration.PathsConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.PathsConfig.html
+  name: PathsConfig
+  nameWithType: PathsConfig
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig
+- uid: NotebookAutomation.Core.Configuration.ServiceRegistration
+  commentId: T:NotebookAutomation.Core.Configuration.ServiceRegistration
+  href: NotebookAutomation.Core.Configuration.ServiceRegistration.html
+  name: ServiceRegistration
+  nameWithType: ServiceRegistration
+  fullName: NotebookAutomation.Core.Configuration.ServiceRegistration
+- uid: NotebookAutomation.Core.Configuration.UserSecretsHelper
+  commentId: T:NotebookAutomation.Core.Configuration.UserSecretsHelper
+  href: NotebookAutomation.Core.Configuration.UserSecretsHelper.html
+  name: UserSecretsHelper
+  nameWithType: UserSecretsHelper
+  fullName: NotebookAutomation.Core.Configuration.UserSecretsHelper
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html

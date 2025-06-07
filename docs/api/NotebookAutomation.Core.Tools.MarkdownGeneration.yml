@@ -1,0 +1,30 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration
+  commentId: N:NotebookAutomation.Core.Tools.MarkdownGeneration
+  id: NotebookAutomation.Core.Tools.MarkdownGeneration
+  children:
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor
+  - NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Tools.MarkdownGeneration
+  nameWithType: NotebookAutomation.Core.Tools.MarkdownGeneration
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor
+  commentId: T:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor.html
+  name: MarkdownNoteProcessor
+  nameWithType: MarkdownNoteProcessor
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  commentId: T:NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+  href: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html
+  name: MarkdownParser
+  nameWithType: MarkdownParser
+  fullName: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser

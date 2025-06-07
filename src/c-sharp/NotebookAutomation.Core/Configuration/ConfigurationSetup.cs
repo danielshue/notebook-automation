@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Configuration;
+﻿// <copyright file="ConfigurationSetup.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/ConfigurationSetup.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Configuration;
 
 /// <summary>
 /// Provides methods to set up application configuration with support for various sources,

@@ -1,6 +1,14 @@
-﻿// Enable nullable reference types for this file
+// <copyright file="MockTextChunkingService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/MockTextChunkingService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+// Enable nullable reference types for this file
 #nullable enable
-using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -11,7 +19,7 @@ namespace NotebookAutomation.Core.Tests;
 /// This implementation allows tests to control the chunking behavior and verify that
 /// AISummarizer correctly delegates to the chunking service.
 /// </remarks>
-public class MockTextChunkingService : ITextChunkingService
+internal class MockTextChunkingService : ITextChunkingService
 {
     /// <summary>
     /// Gets or sets the list of chunks to return when SplitTextIntoChunks is called.
@@ -24,12 +32,12 @@ public class MockTextChunkingService : ITextChunkingService
     public int TokenCountToReturn { get; set; } = 0;
 
     /// <summary>
-    /// Gets or sets a flag to track if SplitTextIntoChunks was called.
+    /// Gets a value indicating whether gets or sets a flag to track if SplitTextIntoChunks was called.
     /// </summary>
     public bool SplitTextWasCalled { get; private set; }
 
     /// <summary>
-    /// Gets or sets a flag to track if EstimateTokenCount was called.
+    /// Gets a value indicating whether gets or sets a flag to track if EstimateTokenCount was called.
     /// </summary>
     public bool EstimateTokenWasCalled { get; private set; }
 
@@ -61,10 +69,10 @@ public class MockTextChunkingService : ITextChunkingService
     public List<string> SplitTextIntoChunks(string text, int chunkSize = 8000, int overlap = 500)
     {
         // Always record the method was called
-        SplitTextWasCalled = true;
-        LastInputText = text;
-        LastChunkSize = chunkSize;
-        LastOverlap = overlap;
+        this.SplitTextWasCalled = true;
+        this.LastInputText = text;
+        this.LastChunkSize = chunkSize;
+        this.LastOverlap = overlap;
 
         // Check for null text
         if (text == null)
@@ -95,9 +103,9 @@ public class MockTextChunkingService : ITextChunkingService
         }
 
         // Return predefined chunks if available
-        if (PredefinedChunks.Count > 0)
+        if (this.PredefinedChunks.Count > 0)
         {
-            return PredefinedChunks;
+            return this.PredefinedChunks;
         }
 
         // Otherwise create a simple chunking
@@ -124,15 +132,15 @@ public class MockTextChunkingService : ITextChunkingService
     /// <returns>The estimated token count.</returns>
     public int EstimateTokenCount(string text)
     {
-        EstimateTokenWasCalled = true;
+        this.EstimateTokenWasCalled = true;
 
         if (string.IsNullOrWhiteSpace(text))
         {
             return 0;
         }
 
-        return TokenCountToReturn > 0
-            ? TokenCountToReturn
+        return this.TokenCountToReturn > 0
+            ? this.TokenCountToReturn
             : (int)Math.Ceiling(text.Length / 4.0); // Default behavior
     }
 }

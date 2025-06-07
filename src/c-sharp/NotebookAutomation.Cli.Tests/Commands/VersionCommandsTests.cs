@@ -1,21 +1,26 @@
-﻿using System.Linq;
-
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using NotebookAutomation.Cli.Commands;
-
+// <copyright file="VersionCommandsTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli.Tests/Commands/VersionCommandsTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Cli.Tests.Commands;
+
 /// <summary>
 /// Unit tests for VersionCommands.
 /// </summary>
 [TestClass]
-public class VersionCommandsTests
+internal class VersionCommandsTests
 {
     [TestMethod]
     public void VersionCommand_Initialization_ShouldSucceed()
     {
         // Arrange
         var command = new VersionCommands();
+
         // Act & Assert
         Assert.IsNotNull(command);
     }
@@ -24,7 +29,7 @@ public class VersionCommandsTests
     public void Register_AddsVersionCommandToRoot()
     {
         // Arrange
-        var rootCommand = new System.CommandLine.RootCommand();
+        var rootCommand = new RootCommand();
         var versionCommands = new VersionCommands();
 
         // Act

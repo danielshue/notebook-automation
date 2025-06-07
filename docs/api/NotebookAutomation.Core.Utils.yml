@@ -1,0 +1,142 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Utils
+  commentId: N:NotebookAutomation.Core.Utils
+  id: NotebookAutomation.Core.Utils
+  children:
+  - NotebookAutomation.Core.Utils.BaseBlockGenerator
+  - NotebookAutomation.Core.Utils.CourseStructureExtractor
+  - NotebookAutomation.Core.Utils.FileSizeFormatter
+  - NotebookAutomation.Core.Utils.FriendlyTitleHelper
+  - NotebookAutomation.Core.Utils.IYamlHelper
+  - NotebookAutomation.Core.Utils.LoggerExtensions
+  - NotebookAutomation.Core.Utils.MarkdownNoteBuilder
+  - NotebookAutomation.Core.Utils.MetadataHierarchyDetector
+  - NotebookAutomation.Core.Utils.MetadataTemplateManager
+  - NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor
+  - NotebookAutomation.Core.Utils.PathFormatter
+  - NotebookAutomation.Core.Utils.PathUtils
+  - NotebookAutomation.Core.Utils.YamlHelper
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Utils
+  nameWithType: NotebookAutomation.Core.Utils
+  fullName: NotebookAutomation.Core.Utils
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Utils.BaseBlockGenerator
+  commentId: T:NotebookAutomation.Core.Utils.BaseBlockGenerator
+  href: NotebookAutomation.Core.Utils.BaseBlockGenerator.html
+  name: BaseBlockGenerator
+  nameWithType: BaseBlockGenerator
+  fullName: NotebookAutomation.Core.Utils.BaseBlockGenerator
+- uid: NotebookAutomation.Core.Utils.CourseStructureExtractor
+  commentId: T:NotebookAutomation.Core.Utils.CourseStructureExtractor
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.CourseStructureExtractor.html
+  name: CourseStructureExtractor
+  nameWithType: CourseStructureExtractor
+  fullName: NotebookAutomation.Core.Utils.CourseStructureExtractor
+- uid: NotebookAutomation.Core.Utils.FileSizeFormatter
+  commentId: T:NotebookAutomation.Core.Utils.FileSizeFormatter
+  href: NotebookAutomation.Core.Utils.FileSizeFormatter.html
+  name: FileSizeFormatter
+  nameWithType: FileSizeFormatter
+  fullName: NotebookAutomation.Core.Utils.FileSizeFormatter
+- uid: NotebookAutomation.Core.Utils.FriendlyTitleHelper
+  commentId: T:NotebookAutomation.Core.Utils.FriendlyTitleHelper
+  href: NotebookAutomation.Core.Utils.FriendlyTitleHelper.html
+  name: FriendlyTitleHelper
+  nameWithType: FriendlyTitleHelper
+  fullName: NotebookAutomation.Core.Utils.FriendlyTitleHelper
+- uid: NotebookAutomation.Core.Utils.IYamlHelper
+  commentId: T:NotebookAutomation.Core.Utils.IYamlHelper
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.IYamlHelper.html
+  name: IYamlHelper
+  nameWithType: IYamlHelper
+  fullName: NotebookAutomation.Core.Utils.IYamlHelper
+- uid: NotebookAutomation.Core.Utils.LoggerExtensions
+  commentId: T:NotebookAutomation.Core.Utils.LoggerExtensions
+  href: NotebookAutomation.Core.Utils.LoggerExtensions.html
+  name: LoggerExtensions
+  nameWithType: LoggerExtensions
+  fullName: NotebookAutomation.Core.Utils.LoggerExtensions
+- uid: NotebookAutomation.Core.Utils.MarkdownNoteBuilder
+  commentId: T:NotebookAutomation.Core.Utils.MarkdownNoteBuilder
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.MarkdownNoteBuilder.html
+  name: MarkdownNoteBuilder
+  nameWithType: MarkdownNoteBuilder
+  fullName: NotebookAutomation.Core.Utils.MarkdownNoteBuilder
+- uid: NotebookAutomation.Core.Utils.MetadataHierarchyDetector
+  commentId: T:NotebookAutomation.Core.Utils.MetadataHierarchyDetector
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.MetadataHierarchyDetector.html
+  name: MetadataHierarchyDetector
+  nameWithType: MetadataHierarchyDetector
+  fullName: NotebookAutomation.Core.Utils.MetadataHierarchyDetector
+- uid: NotebookAutomation.Core.Utils.MetadataTemplateManager
+  commentId: T:NotebookAutomation.Core.Utils.MetadataTemplateManager
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.MetadataTemplateManager.html
+  name: MetadataTemplateManager
+  nameWithType: MetadataTemplateManager
+  fullName: NotebookAutomation.Core.Utils.MetadataTemplateManager
+- uid: NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor
+  commentId: T:NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor
+  href: NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor.html
+  name: NoQuotesForBannerVisitor
+  nameWithType: NoQuotesForBannerVisitor
+  fullName: NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor
+- uid: NotebookAutomation.Core.Utils.PathFormatter
+  commentId: T:NotebookAutomation.Core.Utils.PathFormatter
+  href: NotebookAutomation.Core.Utils.PathFormatter.html
+  name: PathFormatter
+  nameWithType: PathFormatter
+  fullName: NotebookAutomation.Core.Utils.PathFormatter
+- uid: NotebookAutomation.Core.Utils.PathUtils
+  commentId: T:NotebookAutomation.Core.Utils.PathUtils
+  href: NotebookAutomation.Core.Utils.PathUtils.html
+  name: PathUtils
+  nameWithType: PathUtils
+  fullName: NotebookAutomation.Core.Utils.PathUtils
+- uid: NotebookAutomation.Core.Utils.YamlHelper
+  commentId: T:NotebookAutomation.Core.Utils.YamlHelper
+  href: NotebookAutomation.Core.Utils.YamlHelper.html
+  name: YamlHelper
+  nameWithType: YamlHelper
+  fullName: NotebookAutomation.Core.Utils.YamlHelper
+- uid: NotebookAutomation.Core.Utils
+  commentId: N:NotebookAutomation.Core.Utils
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Utils
+  nameWithType: NotebookAutomation.Core.Utils
+  fullName: NotebookAutomation.Core.Utils
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html

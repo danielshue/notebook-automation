@@ -1,0 +1,1411 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  commentId: T:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  id: PdfNoteProcessor
+  parent: NotebookAutomation.Core.Tools.PdfProcessing
+  children:
+  - NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor},NotebookAutomation.Core.Services.AISummarizer,NotebookAutomation.Core.Utils.IYamlHelper,NotebookAutomation.Core.Utils.MetadataHierarchyDetector,NotebookAutomation.Core.Configuration.AppConfig)
+  - NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.ExtractTextAndMetadataAsync(System.String)
+  - NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})
+  - NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GeneratePdfSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  langs:
+  - csharp
+  - vb
+  name: PdfNoteProcessor
+  nameWithType: PdfNoteProcessor
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: PdfNoteProcessor
+    path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+    startLine: 53
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.PdfProcessing
+  summary: Provides functionality for extracting text and metadata from PDF files and generating markdown notes.
+  remarks: >-
+    <p>
+
+    This class integrates with the AI summarizer and YAML helper to process PDF files and generate
+
+    markdown notes. It supports:
+
+    <ul><li>Text extraction from PDF pages</li><li>Metadata extraction (e.g., title, author, keywords)</li><li>Course structure detection (module and lesson information)</li><li>Markdown note generation with YAML frontmatter</li></ul>
+
+    </p>
+
+    <p>
+
+    The class logs detailed diagnostic information during processing and handles errors gracefully.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var processor = new PdfNoteProcessor(logger, aiSummarizer);
+
+    var (text, metadata) = await processor.ExtractTextAndMetadataAsync("example.pdf");
+
+    Console.WriteLine(text);
+
+    Console.WriteLine(metadata);</code></pre>
+  syntax:
+    content: 'public class PdfNoteProcessor : DocumentNoteProcessorBase'
+    content.vb: Public Class PdfNoteProcessor Inherits DocumentNoteProcessorBase
+  inheritance:
+  - System.Object
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  inheritedMembers:
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.Logger
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.Summarizer
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateAiSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.Boolean,System.Boolean)
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor},NotebookAutomation.Core.Services.AISummarizer,NotebookAutomation.Core.Utils.IYamlHelper,NotebookAutomation.Core.Utils.MetadataHierarchyDetector,NotebookAutomation.Core.Configuration.AppConfig)
+  commentId: M:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor},NotebookAutomation.Core.Services.AISummarizer,NotebookAutomation.Core.Utils.IYamlHelper,NotebookAutomation.Core.Utils.MetadataHierarchyDetector,NotebookAutomation.Core.Configuration.AppConfig)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor},NotebookAutomation.Core.Services.AISummarizer,NotebookAutomation.Core.Utils.IYamlHelper,NotebookAutomation.Core.Utils.MetadataHierarchyDetector,NotebookAutomation.Core.Configuration.AppConfig)'
+  parent: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  langs:
+  - csharp
+  - vb
+  name: PdfNoteProcessor(ILogger<PdfNoteProcessor>, AISummarizer, IYamlHelper, MetadataHierarchyDetector, AppConfig?)
+  nameWithType: PdfNoteProcessor.PdfNoteProcessor(ILogger<PdfNoteProcessor>, AISummarizer, IYamlHelper, MetadataHierarchyDetector, AppConfig?)
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.PdfNoteProcessor(Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor>, NotebookAutomation.Core.Services.AISummarizer, NotebookAutomation.Core.Utils.IYamlHelper, NotebookAutomation.Core.Utils.MetadataHierarchyDetector, NotebookAutomation.Core.Configuration.AppConfig?)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+    startLine: 53
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.PdfProcessing
+  summary: Provides functionality for extracting text and metadata from PDF files and generating markdown notes.
+  remarks: >-
+    <p>
+
+    This class integrates with the AI summarizer and YAML helper to process PDF files and generate
+
+    markdown notes. It supports:
+
+    <ul><li>Text extraction from PDF pages</li><li>Metadata extraction (e.g., title, author, keywords)</li><li>Course structure detection (module and lesson information)</li><li>Markdown note generation with YAML frontmatter</li></ul>
+
+    </p>
+
+    <p>
+
+    The class logs detailed diagnostic information during processing and handles errors gracefully.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var processor = new PdfNoteProcessor(logger, aiSummarizer);
+
+    var (text, metadata) = await processor.ExtractTextAndMetadataAsync("example.pdf");
+
+    Console.WriteLine(text);
+
+    Console.WriteLine(metadata);</code></pre>
+  syntax:
+    content: public PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector, AppConfig? appConfig = null)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor}
+      description: Logger for diagnostics.
+    - id: aiSummarizer
+      type: NotebookAutomation.Core.Services.AISummarizer
+      description: The AISummarizer service for generating AI-powered summaries.
+    - id: yamlHelper
+      type: NotebookAutomation.Core.Utils.IYamlHelper
+      description: The YAML helper for processing YAML frontmatter.
+    - id: hierarchyDetector
+      type: NotebookAutomation.Core.Utils.MetadataHierarchyDetector
+      description: The metadata hierarchy detector for extracting metadata from directory structure.
+    - id: appConfig
+      type: NotebookAutomation.Core.Configuration.AppConfig
+      description: Optional application configuration for advanced hierarchy detection.
+    content.vb: Public Sub New(logger As ILogger(Of PdfNoteProcessor), aiSummarizer As AISummarizer, yamlHelper As IYamlHelper, hierarchyDetector As MetadataHierarchyDetector, appConfig As AppConfig = Nothing)
+  overload: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.#ctor*
+  nameWithType.vb: PdfNoteProcessor.New(ILogger(Of PdfNoteProcessor), AISummarizer, IYamlHelper, MetadataHierarchyDetector, AppConfig)
+  fullName.vb: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.New(Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor), NotebookAutomation.Core.Services.AISummarizer, NotebookAutomation.Core.Utils.IYamlHelper, NotebookAutomation.Core.Utils.MetadataHierarchyDetector, NotebookAutomation.Core.Configuration.AppConfig)
+  name.vb: New(ILogger(Of PdfNoteProcessor), AISummarizer, IYamlHelper, MetadataHierarchyDetector, AppConfig)
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.ExtractTextAndMetadataAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.ExtractTextAndMetadataAsync(System.String)
+  id: ExtractTextAndMetadataAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  langs:
+  - csharp
+  - vb
+  name: ExtractTextAndMetadataAsync(string)
+  nameWithType: PdfNoteProcessor.ExtractTextAndMetadataAsync(string)
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.ExtractTextAndMetadataAsync(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ExtractTextAndMetadataAsync
+    path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+    startLine: 85
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.PdfProcessing
+  summary: Extracts text and metadata from a PDF file.
+  remarks: >-
+    <p>
+
+    This method reads the PDF file, extracts text from its pages, and collects metadata such as:
+
+    <ul><li>Page count</li><li>Title, author, subject, and keywords</li><li>File size and creation date</li><li>Course structure information (module and lesson)</li></ul>
+
+    </p>
+
+    <p>
+
+    The extracted text and metadata are returned as a tuple. If the file does not exist or an error occurs,
+
+    the method logs the issue and returns empty results.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var (text, metadata) = await processor.ExtractTextAndMetadataAsync("example.pdf");
+
+    Console.WriteLine(text);
+
+    Console.WriteLine(metadata);</code></pre>
+  syntax:
+    content: public override Task<(string Text, Dictionary<string, object> Metadata)> ExtractTextAndMetadataAsync(string pdfPath)
+    parameters:
+    - id: pdfPath
+      type: System.String
+      description: Path to the PDF file.
+    return:
+      type: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}}
+      description: Tuple of extracted text and metadata dictionary.
+    content.vb: Public Overrides Function ExtractTextAndMetadataAsync(pdfPath As String) As Task(Of (Text As String, Metadata As Dictionary(Of String, Object)))
+  overridden: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.ExtractTextAndMetadataAsync(System.String)
+  overload: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.ExtractTextAndMetadataAsync*
+  nameWithType.vb: PdfNoteProcessor.ExtractTextAndMetadataAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.ExtractTextAndMetadataAsync(String)
+  name.vb: ExtractTextAndMetadataAsync(String)
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})
+  commentId: M:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})
+  id: GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})
+  parent: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  langs:
+  - csharp
+  - vb
+  name: GenerateMarkdownNote(string, Dictionary<string, object>?)
+  nameWithType: PdfNoteProcessor.GenerateMarkdownNote(string, Dictionary<string, object>?)
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GenerateMarkdownNote(string, System.Collections.Generic.Dictionary<string, object>?)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GenerateMarkdownNote
+    path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+    startLine: 402
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.PdfProcessing
+  summary: Generates a markdown note from extracted PDF text and metadata.
+  example: []
+  syntax:
+    content: public string GenerateMarkdownNote(string pdfText, Dictionary<string, object>? metadata = null)
+    parameters:
+    - id: pdfText
+      type: System.String
+      description: The extracted PDF text.
+    - id: metadata
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: Optional metadata for the note.
+    return:
+      type: System.String
+      description: The generated markdown content.
+    content.vb: Public Function GenerateMarkdownNote(pdfText As String, metadata As Dictionary(Of String, Object) = Nothing) As String
+  overload: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GenerateMarkdownNote*
+  nameWithType.vb: PdfNoteProcessor.GenerateMarkdownNote(String, Dictionary(Of String, Object))
+  fullName.vb: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GenerateMarkdownNote(String, System.Collections.Generic.Dictionary(Of String, Object))
+  name.vb: GenerateMarkdownNote(String, Dictionary(Of String, Object))
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GeneratePdfSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  commentId: M:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GeneratePdfSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  id: GeneratePdfSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String)
+  parent: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+  langs:
+  - csharp
+  - vb
+  name: GeneratePdfSummaryAsync(string, Dictionary<string, object>, string?)
+  nameWithType: PdfNoteProcessor.GeneratePdfSummaryAsync(string, Dictionary<string, object>, string?)
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GeneratePdfSummaryAsync(string, System.Collections.Generic.Dictionary<string, object>, string?)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GeneratePdfSummaryAsync
+    path: src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+    startLine: 415
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.PdfProcessing
+  summary: Generates an AI summary for the PDF content with proper variable substitution.
+  example: []
+  syntax:
+    content: public Task<string> GeneratePdfSummaryAsync(string pdfText, Dictionary<string, object> metadata, string? promptFileName = null)
+    parameters:
+    - id: pdfText
+      type: System.String
+      description: The extracted PDF text.
+    - id: metadata
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: The PDF metadata dictionary.
+    - id: promptFileName
+      type: System.String
+      description: Optional prompt template file name.
+    return:
+      type: System.Threading.Tasks.Task{System.String}
+      description: The AI-generated summary text.
+    content.vb: Public Function GeneratePdfSummaryAsync(pdfText As String, metadata As Dictionary(Of String, Object), promptFileName As String = Nothing) As Task(Of String)
+  overload: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GeneratePdfSummaryAsync*
+  nameWithType.vb: PdfNoteProcessor.GeneratePdfSummaryAsync(String, Dictionary(Of String, Object), String)
+  fullName.vb: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GeneratePdfSummaryAsync(String, System.Collections.Generic.Dictionary(Of String, Object), String)
+  name.vb: GeneratePdfSummaryAsync(String, Dictionary(Of String, Object), String)
+references:
+- uid: NotebookAutomation.Core.Tools.PdfProcessing
+  commentId: N:NotebookAutomation.Core.Tools.PdfProcessing
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.PdfProcessing
+  nameWithType: NotebookAutomation.Core.Tools.PdfProcessing
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.PdfProcessing
+    name: PdfProcessing
+    href: NotebookAutomation.Core.Tools.PdfProcessing.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.PdfProcessing
+    name: PdfProcessing
+    href: NotebookAutomation.Core.Tools.PdfProcessing.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  commentId: T:NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  parent: NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html
+  name: DocumentNoteProcessorBase
+  nameWithType: DocumentNoteProcessorBase
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.Logger
+  commentId: F:NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.Logger
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_Logger
+  name: Logger
+  nameWithType: DocumentNoteProcessorBase.Logger
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.Logger
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.Summarizer
+  commentId: F:NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.Summarizer
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_Summarizer
+  name: Summarizer
+  nameWithType: DocumentNoteProcessorBase.Summarizer
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.Summarizer
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateAiSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateAiSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  isExternal: true
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_GenerateAiSummaryAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_String_
+  name: GenerateAiSummaryAsync(string, Dictionary<string, string>, string)
+  nameWithType: DocumentNoteProcessorBase.GenerateAiSummaryAsync(string, Dictionary<string, string>, string)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateAiSummaryAsync(string, System.Collections.Generic.Dictionary<string, string>, string)
+  nameWithType.vb: DocumentNoteProcessorBase.GenerateAiSummaryAsync(String, Dictionary(Of String, String), String)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateAiSummaryAsync(String, System.Collections.Generic.Dictionary(Of String, String), String)
+  name.vb: GenerateAiSummaryAsync(String, Dictionary(Of String, String), String)
+  spec.csharp:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateAiSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String)
+    name: GenerateAiSummaryAsync
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_GenerateAiSummaryAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateAiSummaryAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.String},System.String)
+    name: GenerateAiSummaryAsync
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_GenerateAiSummaryAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_String__System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.Boolean,System.Boolean)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.Boolean,System.Boolean)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  isExternal: true
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_GenerateMarkdownNote_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_System_Boolean_System_Boolean_
+  name: GenerateMarkdownNote(string, Dictionary<string, object>, string, bool, bool)
+  nameWithType: DocumentNoteProcessorBase.GenerateMarkdownNote(string, Dictionary<string, object>, string, bool, bool)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateMarkdownNote(string, System.Collections.Generic.Dictionary<string, object>, string, bool, bool)
+  nameWithType.vb: DocumentNoteProcessorBase.GenerateMarkdownNote(String, Dictionary(Of String, Object), String, Boolean, Boolean)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateMarkdownNote(String, System.Collections.Generic.Dictionary(Of String, Object), String, Boolean, Boolean)
+  name.vb: GenerateMarkdownNote(String, Dictionary(Of String, Object), String, Boolean, Boolean)
+  spec.csharp:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.Boolean,System.Boolean)
+    name: GenerateMarkdownNote
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_GenerateMarkdownNote_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_System_Boolean_System_Boolean_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+  spec.vb:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.GenerateMarkdownNote(System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.Boolean,System.Boolean)
+    name: GenerateMarkdownNote
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_GenerateMarkdownNote_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_System_Boolean_System_Boolean_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: )
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Tools.Shared
+  commentId: N:NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.Shared
+  nameWithType: NotebookAutomation.Core.Tools.Shared
+  fullName: NotebookAutomation.Core.Tools.Shared
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.#ctor
+  href: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.html#NotebookAutomation_Core_Tools_PdfProcessing_PdfNoteProcessor__ctor_Microsoft_Extensions_Logging_ILogger_NotebookAutomation_Core_Tools_PdfProcessing_PdfNoteProcessor__NotebookAutomation_Core_Services_AISummarizer_NotebookAutomation_Core_Utils_IYamlHelper_NotebookAutomation_Core_Utils_MetadataHierarchyDetector_NotebookAutomation_Core_Configuration_AppConfig_
+  name: PdfNoteProcessor
+  nameWithType: PdfNoteProcessor.PdfNoteProcessor
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.PdfNoteProcessor
+  nameWithType.vb: PdfNoteProcessor.New
+  fullName.vb: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor}
+  commentId: T:Microsoft.Extensions.Logging.ILogger{NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor}
+  parent: Microsoft.Extensions.Logging
+  definition: Microsoft.Extensions.Logging.ILogger`1
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<PdfNoteProcessor>
+  nameWithType: ILogger<PdfNoteProcessor>
+  fullName: Microsoft.Extensions.Logging.ILogger<NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor>
+  nameWithType.vb: ILogger(Of PdfNoteProcessor)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor)
+  name.vb: ILogger(Of PdfNoteProcessor)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+    name: PdfNoteProcessor
+    href: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.html
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+    name: PdfNoteProcessor
+    href: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.html
+  - name: )
+- uid: NotebookAutomation.Core.Services.AISummarizer
+  commentId: T:NotebookAutomation.Core.Services.AISummarizer
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.AISummarizer.html
+  name: AISummarizer
+  nameWithType: AISummarizer
+  fullName: NotebookAutomation.Core.Services.AISummarizer
+- uid: NotebookAutomation.Core.Utils.IYamlHelper
+  commentId: T:NotebookAutomation.Core.Utils.IYamlHelper
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.IYamlHelper.html
+  name: IYamlHelper
+  nameWithType: IYamlHelper
+  fullName: NotebookAutomation.Core.Utils.IYamlHelper
+- uid: NotebookAutomation.Core.Utils.MetadataHierarchyDetector
+  commentId: T:NotebookAutomation.Core.Utils.MetadataHierarchyDetector
+  parent: NotebookAutomation.Core.Utils
+  href: NotebookAutomation.Core.Utils.MetadataHierarchyDetector.html
+  name: MetadataHierarchyDetector
+  nameWithType: MetadataHierarchyDetector
+  fullName: NotebookAutomation.Core.Utils.MetadataHierarchyDetector
+- uid: NotebookAutomation.Core.Configuration.AppConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AppConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig
+- uid: Microsoft.Extensions.Logging.ILogger`1
+  commentId: T:Microsoft.Extensions.Logging.ILogger`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  name: ILogger<TCategoryName>
+  nameWithType: ILogger<TCategoryName>
+  fullName: Microsoft.Extensions.Logging.ILogger<TCategoryName>
+  nameWithType.vb: ILogger(Of TCategoryName)
+  fullName.vb: Microsoft.Extensions.Logging.ILogger(Of TCategoryName)
+  name.vb: ILogger(Of TCategoryName)
+  spec.csharp:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: <
+  - name: TCategoryName
+  - name: '>'
+  spec.vb:
+  - uid: Microsoft.Extensions.Logging.ILogger`1
+    name: ILogger
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TCategoryName
+  - name: )
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: NotebookAutomation.Core.Services
+  commentId: N:NotebookAutomation.Core.Services
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Services
+  nameWithType: NotebookAutomation.Core.Services
+  fullName: NotebookAutomation.Core.Services
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+- uid: NotebookAutomation.Core.Utils
+  commentId: N:NotebookAutomation.Core.Utils
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Utils
+  nameWithType: NotebookAutomation.Core.Utils
+  fullName: NotebookAutomation.Core.Utils
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Utils
+    name: Utils
+    href: NotebookAutomation.Core.Utils.html
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.ExtractTextAndMetadataAsync(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.ExtractTextAndMetadataAsync(System.String)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  isExternal: true
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_ExtractTextAndMetadataAsync_System_String_
+  name: ExtractTextAndMetadataAsync(string)
+  nameWithType: DocumentNoteProcessorBase.ExtractTextAndMetadataAsync(string)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.ExtractTextAndMetadataAsync(string)
+  nameWithType.vb: DocumentNoteProcessorBase.ExtractTextAndMetadataAsync(String)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.ExtractTextAndMetadataAsync(String)
+  name.vb: ExtractTextAndMetadataAsync(String)
+  spec.csharp:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.ExtractTextAndMetadataAsync(System.String)
+    name: ExtractTextAndMetadataAsync
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_ExtractTextAndMetadataAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  spec.vb:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.ExtractTextAndMetadataAsync(System.String)
+    name: ExtractTextAndMetadataAsync
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteProcessorBase_ExtractTextAndMetadataAsync_System_String_
+  - name: (
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.ExtractTextAndMetadataAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.ExtractTextAndMetadataAsync
+  href: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.html#NotebookAutomation_Core_Tools_PdfProcessing_PdfNoteProcessor_ExtractTextAndMetadataAsync_System_String_
+  name: ExtractTextAndMetadataAsync
+  nameWithType: PdfNoteProcessor.ExtractTextAndMetadataAsync
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.ExtractTextAndMetadataAsync
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}}
+  commentId: T:System.Threading.Tasks.Task{System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<(string Text, Dictionary<string, object> Metadata)>
+  nameWithType: Task<(string Text, Dictionary<string, object> Metadata)>
+  fullName: System.Threading.Tasks.Task<(string Text, System.Collections.Generic.Dictionary<string, object> Metadata)>
+  nameWithType.vb: Task(Of (Text As String, Metadata As Dictionary(Of String, Object)))
+  fullName.vb: System.Threading.Tasks.Task(Of (Text As String, Metadata As System.Collections.Generic.Dictionary(Of String, Object)))
+  name.vb: Task(Of (Text As String, Metadata As Dictionary(Of String, Object)))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}.Text
+    name: Text
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.text
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}.Metadata
+    name: Metadata
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.metadata
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}.Text
+    name: Text
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.text
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}.Metadata
+    name: Metadata
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.metadata
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GenerateMarkdownNote*
+  commentId: Overload:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GenerateMarkdownNote
+  href: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.html#NotebookAutomation_Core_Tools_PdfProcessing_PdfNoteProcessor_GenerateMarkdownNote_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__
+  name: GenerateMarkdownNote
+  nameWithType: PdfNoteProcessor.GenerateMarkdownNote
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GenerateMarkdownNote
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GeneratePdfSummaryAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GeneratePdfSummaryAsync
+  href: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.html#NotebookAutomation_Core_Tools_PdfProcessing_PdfNoteProcessor_GeneratePdfSummaryAsync_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_
+  name: GeneratePdfSummaryAsync
+  nameWithType: PdfNoteProcessor.GeneratePdfSummaryAsync
+  fullName: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.GeneratePdfSummaryAsync
+- uid: System.Threading.Tasks.Task{System.String}
+  commentId: T:System.Threading.Tasks.Task{System.String}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<string>
+  nameWithType: Task<string>
+  fullName: System.Threading.Tasks.Task<string>
+  nameWithType.vb: Task(Of String)
+  fullName.vb: System.Threading.Tasks.Task(Of String)
+  name.vb: Task(Of String)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )

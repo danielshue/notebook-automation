@@ -1,57 +1,62 @@
-﻿using System;
-using System.CommandLine.Parsing;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Moq;
-
-using NotebookAutomation.Cli.Commands;
-
+// <copyright file="OneDriveCommandsTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli.Tests/Commands/OneDriveCommandsTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Cli.Tests.Commands;
+
 /// <summary>
 /// Unit tests for OneDriveCommands.
 /// </summary>
 [TestClass]
-public class OneDriveCommandsTests
+internal class OneDriveCommandsTests
 {
-    private Mock<ILogger<OneDriveCommands>> _mockLogger;
+    private Mock<ILogger<OneDriveCommands>> mockLogger;
 
+    /// <summary>
+    /// Initializes the test environment before each test method runs.
+    /// Sets up mock objects for the OneDrive commands logger.
+    /// </summary>
     [TestInitialize]
     public void Setup()
     {
-        _mockLogger = new Mock<ILogger<OneDriveCommands>>();
+        this.mockLogger = new Mock<ILogger<OneDriveCommands>>();
     }
 
     /// <summary>
     /// Verifies that the 'onedrive download' command prints usage/help when required arguments are missing.
     /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     [TestMethod]
     public async Task OneDriveDownloadCommand_PrintsUsage_WhenArgsMissing()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(_mockLogger.Object);
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
+
             // Missing both required args
-            await parser.InvokeAsync("onedrive download");
+            await parser.InvokeAsync("onedrive download").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("remote-path") || output.Contains("Usage"), "Should print usage/help when required args are missing.");
     }
@@ -59,30 +64,33 @@ public class OneDriveCommandsTests
     /// <summary>
     /// Verifies that the 'onedrive upload' command prints usage/help when required arguments are missing.
     /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     [TestMethod]
     public async Task OneDriveUploadCommand_PrintsUsage_WhenArgsMissing()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(_mockLogger.Object);
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
+
             // Missing both required args
-            await parser.InvokeAsync("onedrive upload");
+            await parser.InvokeAsync("onedrive upload").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("local-path") || output.Contains("Usage"), "Should print usage/help when required args are missing.");
     }
@@ -90,30 +98,33 @@ public class OneDriveCommandsTests
     /// <summary>
     /// Verifies that the 'onedrive search' command prints usage/help when required arguments are missing.
     /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     [TestMethod]
     public async Task OneDriveSearchCommand_PrintsUsage_WhenArgsMissing()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(_mockLogger.Object);
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
+
             // Missing required arg
-            await parser.InvokeAsync("onedrive search");
+            await parser.InvokeAsync("onedrive search").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("query") || output.Contains("Usage"), "Should print usage/help when required args are missing.");
     }
@@ -121,33 +132,37 @@ public class OneDriveCommandsTests
     /// <summary>
     /// Verifies that the 'onedrive sync' command prints usage/help when required arguments are missing.
     /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     [TestMethod]
     public async Task OneDriveSyncCommand_PrintsUsage_WhenArgsMissing()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(_mockLogger.Object);
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
+
             // Missing required arg
-            await parser.InvokeAsync("onedrive sync");
+            await parser.InvokeAsync("onedrive sync").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("local-path") || output.Contains("Usage"), "Should print usage/help when required args are missing.");
     }
+
     /// <summary>
     /// Verifies that the 'onedrive list' command prints usage/help when no arguments are provided.
     /// </summary>
@@ -155,29 +170,31 @@ public class OneDriveCommandsTests
     [TestMethod]
     public async Task OneDriveListCommand_PrintsUsage_WhenNoArgs()
     {
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(_mockLogger.Object);
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
-        var stringWriter = new System.IO.StringWriter();
+        var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
         try
         {
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync("onedrive list");
+            await parser.InvokeAsync("onedrive list").ConfigureAwait(false);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+
         string output = stringWriter.ToString();
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
     }
+
     /// <summary>
     /// Tests that the OneDriveCommands class can be instantiated successfully.
     /// </summary>
@@ -185,7 +202,8 @@ public class OneDriveCommandsTests
     public void OneDriveCommand_Initialization_ShouldSucceed()
     {
         // Arrange
-        var command = new OneDriveCommands(_mockLogger.Object);
+        var command = new OneDriveCommands(this.mockLogger.Object);
+
         // Act & Assert
         Assert.IsNotNull(command);
     }
@@ -197,12 +215,12 @@ public class OneDriveCommandsTests
     public void Register_AddsOneDriveCommandToRoot()
     {
         // Arrange
-        var rootCommand = new System.CommandLine.RootCommand();
-        var configOption = new System.CommandLine.Option<string>("--config");
-        var debugOption = new System.CommandLine.Option<bool>("--debug");
-        var verboseOption = new System.CommandLine.Option<bool>("--verbose");
-        var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(_mockLogger.Object);
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
 
         // Act
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

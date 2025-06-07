@@ -1,21 +1,22 @@
-﻿using System.IO;
-
+﻿// <copyright file="TestSummarizerTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/TestSummarizerTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
 using Microsoft.SemanticKernel.TextGeneration;
 
-using Moq;
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Utils;
-
 namespace NotebookAutomation.Core.Tests;
 
 /// <summary>
-/// A simple implementation of ITextGenerationService for testing
+/// A simple implementation of ITextGenerationService for testing.
 /// </summary>
-public class TestTextGenerationService : ITextGenerationService
+internal class TestTextGenerationService : ITextGenerationService
 {
     public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
 
@@ -54,15 +55,15 @@ public class TestTextGenerationService : ITextGenerationService
 /// Tests for verifying that prompt logging works correctly in AISummarizer.
 /// </summary>
 [TestClass]
-public class TestSummarizerTests
+internal class TestSummarizerTests
 {
-    private readonly Mock<ILogger<AISummarizer>> _loggerMock;
-    private readonly PromptTemplateService _promptTemplateService;
-    private readonly AISummarizer _summarizer;
+    private readonly Mock<ILogger<AISummarizer>> loggerMock;
+    private readonly PromptTemplateService promptTemplateService;
+    private readonly AISummarizer summarizer;
 
     public TestSummarizerTests()
     {
-        _loggerMock = new Mock<ILogger<AISummarizer>>();
+        this.loggerMock = new Mock<ILogger<AISummarizer>>();
 
         // Set up paths for prompt templates
         string projectDir = Directory.GetCurrentDirectory();
@@ -71,28 +72,28 @@ public class TestSummarizerTests
         // Create AppConfig with paths
         PathsConfig pathsConfig = new()
         {
-            PromptsPath = promptsPath
+            PromptsPath = promptsPath,
         };
 
         AppConfig appConfig = new()
         {
-            Paths = pathsConfig
+            Paths = pathsConfig,
         };        // Create a real PromptTemplateService with the actual prompts directory
-        _promptTemplateService = new PromptTemplateService(
+        this.promptTemplateService = new PromptTemplateService(
             Mock.Of<ILogger<PromptTemplateService>>(),
             new YamlHelper(Mock.Of<ILogger<YamlHelper>>()),
             appConfig);
 
         // Create a test implementation of ITextGenerationService
         _ = new
+
         // Create a test implementation of ITextGenerationService
         TestTextGenerationService();
 
         // Create AISummarizer with dependencies
-        _summarizer = new AISummarizer(
-            _loggerMock.Object,
-            _promptTemplateService,
+        this.summarizer = new AISummarizer(
+            this.loggerMock.Object,
+            this.promptTemplateService,
             null);
     }
 }
-

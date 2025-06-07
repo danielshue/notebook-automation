@@ -1,19 +1,24 @@
-﻿using NotebookAutomation.Core.Services;
-
+﻿// <copyright file="TextChunkingServiceTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/TextChunkingServiceTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests;
 
 /// <summary>
 /// Test suite for the TextChunkingService class, verifying text splitting and token estimation functionality.
 /// </summary>
 [TestClass]
-public class TextChunkingServiceTests
+internal class TextChunkingServiceTests
 {
-    private ITextChunkingService _chunkingService;
+    private ITextChunkingService chunkingService;
 
     [TestInitialize]
-    public void SetUp() => _chunkingService = new TextChunkingService();
-
-    #region SplitTextIntoChunks Tests
+    public void SetUp() => this.chunkingService = new TextChunkingService();
 
     /// <summary>
     /// Tests that text shorter than chunk size returns a single chunk.
@@ -27,7 +32,7 @@ public class TextChunkingServiceTests
         int overlap = 10;
 
         // Act
-        List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> result = this.chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
 
         // Assert
         Assert.IsNotNull(result);
@@ -47,7 +52,7 @@ public class TextChunkingServiceTests
         int overlap = 20;
 
         // Act
-        List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> result = this.chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
 
         // Assert
         Assert.IsNotNull(result);
@@ -77,7 +82,7 @@ public class TextChunkingServiceTests
         int overlap = 10;
 
         // Act
-        List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> result = this.chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
 
         // Assert
         Assert.IsNotNull(result);
@@ -96,7 +101,7 @@ public class TextChunkingServiceTests
         int overlap = 10;
 
         // Act
-        Assert.ThrowsExactly<ArgumentNullException>(() => _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap));
+        Assert.ThrowsExactly<ArgumentNullException>(() => this.chunkingService.SplitTextIntoChunks(text, chunkSize, overlap));
     }
 
     /// <summary>
@@ -111,7 +116,7 @@ public class TextChunkingServiceTests
         int overlap = 10;
 
         // Act
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => this.chunkingService.SplitTextIntoChunks(text, chunkSize, overlap));
     }
 
     /// <summary>
@@ -126,10 +131,12 @@ public class TextChunkingServiceTests
         int overlap = -5;
 
         // Act
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap));
-    }        /// <summary>
-             /// Tests that overlap larger than chunk size throws ArgumentException.
-             /// </summary>
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => this.chunkingService.SplitTextIntoChunks(text, chunkSize, overlap));
+    }
+
+    /// <summary>
+    /// Tests that overlap larger than chunk size throws ArgumentException.
+    /// </summary>
     [TestMethod]
     public void SplitTextIntoChunks_OverlapLargerThanChunkSize_ThrowsArgumentException()
     {
@@ -139,10 +146,12 @@ public class TextChunkingServiceTests
         int overlap = 100;
 
         // Act
-        Assert.ThrowsExactly<ArgumentException>(() => _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap));
-    }        /// <summary>
-             /// Tests chunking with zero overlap works correctly.
-             /// </summary>
+        Assert.ThrowsExactly<ArgumentException>(() => this.chunkingService.SplitTextIntoChunks(text, chunkSize, overlap));
+    }
+
+    /// <summary>
+    /// Tests chunking with zero overlap works correctly.
+    /// </summary>
     [TestMethod]
     public void SplitTextIntoChunks_ZeroOverlap_WorksCorrectly()
     {
@@ -152,7 +161,7 @@ public class TextChunkingServiceTests
         int overlap = 0;
 
         // Act
-        List<string> result = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> result = this.chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
 
         // Assert
         Assert.IsNotNull(result);
@@ -165,11 +174,8 @@ public class TextChunkingServiceTests
         Assert.AreEqual(new string('A', 100), result[1]);
     }
 
-    #endregion
-
-    #region EstimateTokenCount Tests        /// <summary>
-    /// Tests token estimation for normal text.
-    /// </summary>
+    // Tests token estimation for normal text.
+    // </summary>
     [TestMethod]
     public void EstimateTokenCount_NormalText_ReturnsExpectedCount()
     {
@@ -178,7 +184,7 @@ public class TextChunkingServiceTests
         int expectedTokens = (int)Math.Ceiling(45 / 4.0); // 12 tokens
 
         // Act
-        int result = _chunkingService.EstimateTokenCount(text);
+        int result = this.chunkingService.EstimateTokenCount(text);
 
         // Assert
         Assert.AreEqual(expectedTokens, result);
@@ -194,7 +200,7 @@ public class TextChunkingServiceTests
         string text = string.Empty;
 
         // Act
-        int result = _chunkingService.EstimateTokenCount(text);
+        int result = this.chunkingService.EstimateTokenCount(text);
 
         // Assert
         Assert.AreEqual(0, result);
@@ -210,7 +216,7 @@ public class TextChunkingServiceTests
         string text = null;
 
         // Act
-        int result = _chunkingService.EstimateTokenCount(text);
+        int result = this.chunkingService.EstimateTokenCount(text);
 
         // Assert
         Assert.AreEqual(0, result);
@@ -226,7 +232,7 @@ public class TextChunkingServiceTests
         string text = "   \t\n  ";
 
         // Act
-        int result = _chunkingService.EstimateTokenCount(text);
+        int result = this.chunkingService.EstimateTokenCount(text);
 
         // Assert
         Assert.AreEqual(0, result);
@@ -242,7 +248,7 @@ public class TextChunkingServiceTests
         string text = "A";
 
         // Act
-        int result = _chunkingService.EstimateTokenCount(text);
+        int result = this.chunkingService.EstimateTokenCount(text);
 
         // Assert
         Assert.AreEqual(1, result);
@@ -258,7 +264,7 @@ public class TextChunkingServiceTests
         string text = "ABCD"; // Exactly 4 characters
 
         // Act
-        int result = _chunkingService.EstimateTokenCount(text);
+        int result = this.chunkingService.EstimateTokenCount(text);
 
         // Assert
         Assert.AreEqual(1, result);
@@ -275,15 +281,11 @@ public class TextChunkingServiceTests
         int expectedTokens = (int)Math.Ceiling(10000 / 4.0); // 2,500 tokens
 
         // Act
-        int result = _chunkingService.EstimateTokenCount(text);
+        int result = this.chunkingService.EstimateTokenCount(text);
 
         // Assert
         Assert.AreEqual(expectedTokens, result);
     }
-
-    #endregion
-
-    #region Integration Tests
 
     /// <summary>
     /// Tests the integration of chunking and token estimation.
@@ -297,11 +299,11 @@ public class TextChunkingServiceTests
         int overlap = 50;
 
         // Act
-        List<string> chunks = _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
+        List<string> chunks = this.chunkingService.SplitTextIntoChunks(text, chunkSize, overlap);
         int totalEstimatedTokens = 0;
         foreach (string chunk in chunks)
         {
-            totalEstimatedTokens += _chunkingService.EstimateTokenCount(chunk);
+            totalEstimatedTokens += this.chunkingService.EstimateTokenCount(chunk);
         }
 
         // Assert
@@ -309,9 +311,7 @@ public class TextChunkingServiceTests
         Assert.IsTrue(totalEstimatedTokens > 0);
 
         // Due to overlap, total estimated tokens should be more than original text tokens
-        int originalTokens = _chunkingService.EstimateTokenCount(text);
+        int originalTokens = this.chunkingService.EstimateTokenCount(text);
         Assert.IsTrue(totalEstimatedTokens >= originalTokens);
     }
-
-    #endregion
 }

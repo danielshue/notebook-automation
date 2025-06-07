@@ -1,4 +1,13 @@
-﻿using System.CommandLine.Invocation;
+﻿// <copyright file="ConfigCommands.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli/Commands/ConfigCommands.cs
+// Purpose: Provides CLI commands for configuration management including viewing, updating, and managing user secrets.
+// Created: 2025-06-07
+// </summary>
+using System.CommandLine.Invocation;
 
 using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
@@ -74,20 +83,28 @@ internal class ConfigCommands
         context.Console.WriteLine("---");
         context.Console.WriteLine("  aiservice.foundry.endpoint         - Foundry API endpoint (if using Foundry)");
         context.Console.WriteLine("  aiservice.foundry.model            - Foundry API model (if using Foundry)");
-        context.Console.WriteLine("  aiservice.foundry.key              - Foundry API key (if using Foundry)");
+        context.Console.WriteLine(ConfigCommandsResources.FoundryKeyDescription);
     }
+
     /// <summary>
     /// Prints the usage/help for the 'config view' command.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Displays the command-line usage syntax, description, and available options
+    /// for the 'config view' command in a formatted, colorized style.
+    /// </para>    ///. </remarks>
     internal static void PrintViewUsage()
     {
+        var optionsText = $"  {AnsiColors.OKGREEN}--config, -c <config>{AnsiColors.ENDC}    Path to the configuration file\n" +
+                          $"  {AnsiColors.OKGREEN}--debug, -d{AnsiColors.ENDC}              Enable debug output";
+
         AnsiConsoleHelper.WriteUsage(
             "Usage: config view [options]",
             "Shows the current configuration settings.",
-            $"  {AnsiColors.OKGREEN}--config, -c <config>{AnsiColors.ENDC}    Path to the configuration file\n" +
-            $"  {AnsiColors.OKGREEN}--debug, -d{AnsiColors.ENDC}              Enable debug output"
-        );
+            optionsText);
     }
+
     /// <summary>
     /// Registers the 'config' command and its subcommands with the root command.
     /// </summary>
@@ -117,6 +134,7 @@ internal class ConfigCommands
                 PrintViewUsage();
                 return;
             }
+
             string? configPath = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             try
@@ -127,6 +145,7 @@ internal class ConfigCommands
                 {
                     Console.WriteLine($"\n{AnsiColors.OKCYAN}Using configuration file: {AnsiColors.BOLD}{configFile}{AnsiColors.ENDC}\n");
                 }
+
                 var appConfig = AppConfig.LoadFromJsonFile(configFile);
                 PrintConfigFormatted(appConfig);
             }
@@ -142,7 +161,7 @@ internal class ConfigCommands
         var updateCommand = new Command("update", "Update a configuration key")
         {
             keyArg,
-            valueArg
+            valueArg,
         };
         updateCommand.SetHandler(context =>
         {
@@ -165,6 +184,7 @@ internal class ConfigCommands
                 else
                 {
                     Console.WriteLine($"Failed to update key '{key}'. Key not found or invalid.");
+
                     // Print available keys if update failed
                     ConfigCommands.PrintAvailableConfigKeys(context);
                 }
@@ -173,20 +193,21 @@ internal class ConfigCommands
             {
                 // This exception is thrown when arguments are missing
                 context.Console.WriteLine("Usage: config update <key> <value> [options]");
-                context.Console.WriteLine("");
+                context.Console.WriteLine(string.Empty);
                 context.Console.WriteLine("Updates a configuration key with the specified value.");
-                context.Console.WriteLine("");
+                context.Console.WriteLine(string.Empty);
                 context.Console.WriteLine("Arguments:");
                 context.Console.WriteLine("  <key>    Configuration key to update (e.g. paths.resources_root)");
                 context.Console.WriteLine("  <value>  New value for the key");
-                context.Console.WriteLine("");
+                context.Console.WriteLine(string.Empty);
                 context.Console.WriteLine("Options:");
                 context.Console.WriteLine("  --config, -c <config>    Path to the configuration file");
                 context.Console.WriteLine("  --debug, -d              Enable debug output");
-                context.Console.WriteLine("");
+                context.Console.WriteLine(string.Empty);
                 ConfigCommands.PrintAvailableConfigKeys(context);
             }
         });
+
         // Display user secrets status
         var displaySecretsCommand = new Command("display-secrets", "Display user secrets status (no values shown)");
         configCommand.AddCommand(displaySecretsCommand);
@@ -254,8 +275,7 @@ internal class ConfigCommands
                 AnsiConsoleHelper.WriteUsage(
                     "Usage: notebookautomation.exe config [command] [options]",
                     configCommand.Description ?? "Available config commands:",
-                    options
-                );
+                    options);
             }
             else
             {
@@ -263,14 +283,26 @@ internal class ConfigCommands
                 AnsiConsoleHelper.WriteUsage(
                     "Usage: notebookautomation.exe config [command] [options]",
                     "Please provide a valid config subcommand. Available options:",
-                    options
-                );
+                    options);
             }
+
             return Task.CompletedTask;
         });
 
         rootCommand.AddCommand(configCommand);
     }
+
+    /// <summary>
+    /// Initializes the configuration system with the specified configuration file path and debug settings.
+    /// </summary>
+    /// <param name="configPath">The path to the configuration file to use. If null, the default configuration file will be located.</param>
+    /// <param name="debug">Indicates whether debug mode should be enabled.</param>
+    /// <remarks>
+    /// <para>
+    /// This method sets up dependency injection using the specified configuration file path.
+    /// If the configuration file doesn't exist at the specified path, an error message is displayed.
+    /// </para>
+    /// </remarks>    /// <exception cref="FileNotFoundException">Thrown when the configuration file is not found at the specified path.</exception>
     public static void Initialize(string? configPath, bool debug)
     {
         // Initialize dependency injection if needed
@@ -281,26 +313,48 @@ internal class ConfigCommands
                 AnsiConsoleHelper.WriteError($"Configuration file not found: {configPath}");
                 return;
             }
+
             Program.SetupDependencyInjection(configPath, debug);
         }
     }
 
-
+    /// <summary>
     /// Updates a configuration key in the AppConfig object.
     /// </summary>
     /// <param name="appConfig">The AppConfig instance to update.</param>
     /// <param name="key">The configuration key (e.g. 'paths.resourcesRoot').</param>
     /// <param name="value">The new value to set.</param>
     /// <returns>True if the key was updated, false if the key was not found or invalid.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method supports updating configuration values using dot notation for nested properties.
+    /// Supported key patterns include:
+    /// <list type="bullet">
+    /// <item><description>paths.* - Path configuration settings</description></item>
+    /// <item><description>microsoft_graph.* - Microsoft Graph API settings</description></item>
+    /// <item><description>aiservice.provider - AI service provider selection</description></item>
+    /// <item><description>aiservice.{provider}.* - Provider-specific settings</description></item>
+    /// <item><description>video_extensions - Video file extensions list</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// bool success = UpdateConfigKey(config, "paths.onedrive_fullpath_root", "/path/to/onedrive");
+    /// bool success2 = UpdateConfigKey(config, "aiservice.openai.model", "gpt-4");
+    /// </code>
+    /// </example>
     private static bool UpdateConfigKey(AppConfig appConfig, string key, string value)
     {
         var parts = key.Split('.');
+
         // Special case: top-level key for video_extensions
         if (key.Equals("video_extensions", StringComparison.OrdinalIgnoreCase))
         {
             appConfig.SetVideoExtensions([.. value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]);
             return true;
         }
+
         if (parts.Length == 2)
         {
             var section = parts[0].ToLowerInvariant();
@@ -317,6 +371,7 @@ internal class ConfigCommands
                         case "prompts_path": paths.PromptsPath = value; return true;
                         case "logging_dir": paths.LoggingDir = value; return true;
                     }
+
                     break;
                 case "microsoft_graph":
                     var mg = appConfig.MicrosoftGraph;
@@ -327,6 +382,7 @@ internal class ConfigCommands
                         case "authority": mg.Authority = value; return true;
                         case "scopes": mg.Scopes = [.. value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]; return true;
                     }
+
                     break;
                 case "aiservice":
                     var aiService = appConfig.AiService;
@@ -334,6 +390,7 @@ internal class ConfigCommands
                     {
                         case "provider": aiService.Provider = value; return true;
                     }
+
                     break;
                 case "video_extensions":
                     appConfig.SetVideoExtensions([.. value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)]);
@@ -354,6 +411,7 @@ internal class ConfigCommands
                         case "model": aiService.OpenAI.Model = value; return true;
                         case "endpoint": aiService.OpenAI.Endpoint = value; return true;
                     }
+
                     break;
                 case "azure":
                     aiService.Azure ??= new AzureProviderConfig();
@@ -363,6 +421,7 @@ internal class ConfigCommands
                         case "endpoint": aiService.Azure.Endpoint = value; return true;
                         case "deployment": aiService.Azure.Deployment = value; return true;
                     }
+
                     break;
                 case "foundry":
                     aiService.Foundry ??= new FoundryProviderConfig();
@@ -371,9 +430,11 @@ internal class ConfigCommands
                         case "model": aiService.Foundry.Model = value; return true;
                         case "endpoint": aiService.Foundry.Endpoint = value; return true;
                     }
+
                     break;
             }
         }
+
         return false;
     }
 
@@ -398,15 +459,27 @@ internal class ConfigCommands
 
         // Yellow foreground on blue background, bold, spanning the CLI width
         int width;
-        try { width = Console.WindowWidth; } catch { width = 80; }
+        try
+        {
+            width = Console.WindowWidth;
+        }
+        catch
+        {
+            width = 80;
+        }
+
         string headerText = "   Notebook Automation Configuration   ";
         int padLeft = (width - headerText.Length) / 2;
-        if (padLeft < 0) padLeft = 0;
+        if (padLeft < 0)
+        {
+            padLeft = 0;
+        }
+
         string paddedHeader = headerText.PadLeft(headerText.Length + padLeft).PadRight(width);
         Console.WriteLine();
-        Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}");
-        Console.WriteLine($"{AnsiColors.BG_BLUE}{AnsiColors.WARNING}{AnsiColors.BOLD}{paddedHeader}{AnsiColors.ENDC}");
-        Console.WriteLine($"{AnsiColors.BG_BLUE}{new string(' ', width)}{AnsiColors.ENDC}");
+        Console.WriteLine($"{AnsiColors.BGBLUE}{new string(' ', width)}{AnsiColors.ENDC}");
+        Console.WriteLine($"{AnsiColors.BGBLUE}{AnsiColors.WARNING}{AnsiColors.BOLD}{paddedHeader}{AnsiColors.ENDC}");
+        Console.WriteLine($"{AnsiColors.BGBLUE}{new string(' ', width)}{AnsiColors.ENDC}");
         Console.WriteLine($"{AnsiColors.OKBLUE}{AnsiColors.BOLD}== Paths =={AnsiColors.ENDC}");
 
         if (appConfig == null)
@@ -499,6 +572,7 @@ internal class ConfigCommands
                     selectedEndpoint = ai.Foundry != null ? ai.Foundry.Endpoint ?? "[not set]" : "[not set]";
                     break;
             }
+
             PrintAligned("selected_model", selectedModel);
             PrintAligned("selected_endpoint", selectedEndpoint);
 
@@ -513,6 +587,7 @@ internal class ConfigCommands
                 PrintAligned("openai:model", "[not set]");
                 PrintAligned("openai:endpoint", "[not set]");
             }
+
             if (ai.Azure != null)
             {
                 PrintAligned("azure:model", ai.Azure.Model ?? "[not set]");
@@ -525,6 +600,7 @@ internal class ConfigCommands
                 PrintAligned("azure:endpoint", "[not set]");
                 PrintAligned("azure:deployment", "[not set]");
             }
+
             if (ai.Foundry != null)
             {
                 PrintAligned("foundry:model", ai.Foundry.Model ?? "[not set]");
@@ -538,7 +614,15 @@ internal class ConfigCommands
 
             // Always show where the API key is sourced from
             string? apiKey;
-            try { apiKey = ai.GetApiKey(); } catch { apiKey = null; }
+            try
+            {
+                apiKey = ai.GetApiKey();
+            }
+            catch
+            {
+                apiKey = null;
+            }
+
             string apiKeyStatus;
             if (!string.IsNullOrEmpty(apiKey))
             {
@@ -548,6 +632,7 @@ internal class ConfigCommands
             {
                 apiKeyStatus = "[not set - set via User Secrets or ENV]";
             }
+
             PrintAligned("api_key", apiKeyStatus);
         }
 
@@ -560,6 +645,7 @@ internal class ConfigCommands
         {
             PrintAligned("video_extensions", "[not set]");
         }
+
         Console.WriteLine($"\n{AnsiColors.GREY}Tip: Use '{AnsiColors.BOLD}config update <key> <value>{AnsiColors.ENDC}{AnsiColors.GREY}' to change a setting.{AnsiColors.ENDC}\n");
     }
 

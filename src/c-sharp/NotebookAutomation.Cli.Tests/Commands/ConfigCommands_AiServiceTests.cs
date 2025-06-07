@@ -1,14 +1,19 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using NotebookAutomation.Cli.Commands;
-using NotebookAutomation.Core.Configuration;
-
+// <copyright file="ConfigCommands_AiServiceTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli.Tests/Commands/ConfigCommands_AiServiceTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Cli.Tests.Commands;
+
 /// <summary>
 /// Unit tests for config update with aiservice.* keys.
 /// </summary>
 [TestClass]
-public class ConfigCommands_AiServiceTests
+internal class ConfigCommands_AiServiceTests
 {
     private static AppConfig GetDefaultConfig()
     {
@@ -18,12 +23,16 @@ public class ConfigCommands_AiServiceTests
             {
                 Provider = "openai",
                 OpenAI = new OpenAiProviderConfig { Model = "gpt-4", Endpoint = "https://api.openai.com/v1" },
-                Azure = new AzureProviderConfig { Model = "", Endpoint = "", Deployment = "" },
-                Foundry = new FoundryProviderConfig { Model = "", Endpoint = "" }
-            }
+                Azure = new AzureProviderConfig { Model = string.Empty, Endpoint = string.Empty, Deployment = string.Empty },
+                Foundry = new FoundryProviderConfig { Model = string.Empty, Endpoint = string.Empty },
+            },
         };
     }
 
+    /// <summary>
+    /// Tests updating the AI service provider configuration key
+    /// to verify that the provider can be changed from openai to azure.
+    /// </summary>
     [TestMethod]
     public void Update_AiService_Provider()
     {
@@ -35,6 +44,10 @@ public class ConfigCommands_AiServiceTests
         Assert.AreEqual("azure", config.AiService.Provider);
     }
 
+    /// <summary>
+    /// Tests updating the OpenAI model configuration key
+    /// to verify that the OpenAI model can be changed from gpt-4 to gpt-4o.
+    /// </summary>
     [TestMethod]
     public void Update_AiService_OpenAI_Model()
     {
@@ -46,6 +59,10 @@ public class ConfigCommands_AiServiceTests
         Assert.AreEqual("gpt-4o", config.AiService.OpenAI.Model);
     }
 
+    /// <summary>
+    /// Tests updating the OpenAI endpoint configuration key
+    /// to verify that the OpenAI endpoint can be changed to a custom URL.
+    /// </summary>
     [TestMethod]
     public void Update_AiService_OpenAI_Endpoint()
     {
@@ -57,6 +74,10 @@ public class ConfigCommands_AiServiceTests
         Assert.AreEqual("https://custom.openai.com", config.AiService.OpenAI.Endpoint);
     }
 
+    /// <summary>
+    /// Tests updating the Azure OpenAI model configuration key
+    /// to verify that the Azure model can be set correctly.
+    /// </summary>
     [TestMethod]
     public void Update_AiService_Azure_Model()
     {
@@ -68,6 +89,10 @@ public class ConfigCommands_AiServiceTests
         Assert.AreEqual("azure-gpt", config.AiService.Azure.Model);
     }
 
+    /// <summary>
+    /// Tests updating the Azure OpenAI endpoint and deployment configuration keys
+    /// to verify that both Azure endpoint and deployment can be set correctly.
+    /// </summary>
     [TestMethod]
     public void Update_AiService_Azure_Endpoint_And_Deployment()
     {
@@ -84,6 +109,10 @@ public class ConfigCommands_AiServiceTests
         Assert.AreEqual("my-deployment", config.AiService.Azure.Deployment);
     }
 
+    /// <summary>
+    /// Tests updating the Foundry model and endpoint configuration keys
+    /// to verify that both Foundry model and endpoint can be set correctly.
+    /// </summary>
     [TestMethod]
     public void Update_AiService_Foundry_Model_And_Endpoint()
     {

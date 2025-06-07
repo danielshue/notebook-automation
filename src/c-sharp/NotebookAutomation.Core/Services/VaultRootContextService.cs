@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Services;
+// <copyright file="VaultRootContextService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Services/VaultRootContextService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Services;
 
 /// <summary>
 /// Provides scoped context for vault root path overrides during processing operations.
@@ -19,10 +28,10 @@ public class VaultRootContextService
     public string? VaultRootOverride { get; set; }
 
     /// <summary>
-    /// Determines if a vault root override is active.
+    /// Gets a value indicating whether determines if a vault root override is active.
     /// </summary>
     /// <value>
     /// True if a vault root override is set, false otherwise.
     /// </value>
-    public bool HasVaultRootOverride => !string.IsNullOrEmpty(VaultRootOverride);
+    public bool HasVaultRootOverride => !string.IsNullOrEmpty(this.VaultRootOverride);
 }

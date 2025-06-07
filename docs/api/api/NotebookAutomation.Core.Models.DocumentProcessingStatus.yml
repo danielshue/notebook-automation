@@ -1,0 +1,184 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  commentId: T:NotebookAutomation.Core.Models.DocumentProcessingStatus
+  id: DocumentProcessingStatus
+  parent: NotebookAutomation.Core.Models
+  children:
+  - NotebookAutomation.Core.Models.DocumentProcessingStatus.Completed
+  - NotebookAutomation.Core.Models.DocumentProcessingStatus.Failed
+  - NotebookAutomation.Core.Models.DocumentProcessingStatus.Processing
+  - NotebookAutomation.Core.Models.DocumentProcessingStatus.Waiting
+  langs:
+  - csharp
+  - vb
+  name: DocumentProcessingStatus
+  nameWithType: DocumentProcessingStatus
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  type: Enum
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: DocumentProcessingStatus
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+    startLine: 14
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Represents the status of a document in the processing queue.
+  example: []
+  syntax:
+    content: public enum DocumentProcessingStatus
+    content.vb: Public Enum DocumentProcessingStatus
+- uid: NotebookAutomation.Core.Models.DocumentProcessingStatus.Waiting
+  commentId: F:NotebookAutomation.Core.Models.DocumentProcessingStatus.Waiting
+  id: Waiting
+  parent: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  langs:
+  - csharp
+  - vb
+  name: Waiting
+  nameWithType: DocumentProcessingStatus.Waiting
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingStatus.Waiting
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Waiting
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+    startLine: 19
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: The document is waiting to be processed.
+  example: []
+  syntax:
+    content: Waiting = 0
+    return:
+      type: NotebookAutomation.Core.Models.DocumentProcessingStatus
+- uid: NotebookAutomation.Core.Models.DocumentProcessingStatus.Processing
+  commentId: F:NotebookAutomation.Core.Models.DocumentProcessingStatus.Processing
+  id: Processing
+  parent: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  langs:
+  - csharp
+  - vb
+  name: Processing
+  nameWithType: DocumentProcessingStatus.Processing
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingStatus.Processing
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Processing
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+    startLine: 24
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: The document is currently being processed.
+  example: []
+  syntax:
+    content: Processing = 1
+    return:
+      type: NotebookAutomation.Core.Models.DocumentProcessingStatus
+- uid: NotebookAutomation.Core.Models.DocumentProcessingStatus.Completed
+  commentId: F:NotebookAutomation.Core.Models.DocumentProcessingStatus.Completed
+  id: Completed
+  parent: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  langs:
+  - csharp
+  - vb
+  name: Completed
+  nameWithType: DocumentProcessingStatus.Completed
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingStatus.Completed
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Completed
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+    startLine: 29
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: The document has been successfully processed.
+  example: []
+  syntax:
+    content: Completed = 2
+    return:
+      type: NotebookAutomation.Core.Models.DocumentProcessingStatus
+- uid: NotebookAutomation.Core.Models.DocumentProcessingStatus.Failed
+  commentId: F:NotebookAutomation.Core.Models.DocumentProcessingStatus.Failed
+  id: Failed
+  parent: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  langs:
+  - csharp
+  - vb
+  name: Failed
+  nameWithType: DocumentProcessingStatus.Failed
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingStatus.Failed
+  type: Field
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Failed
+    path: src/c-sharp/NotebookAutomation.Core/Models/DocumentProcessingStatus.cs
+    startLine: 34
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Models
+  summary: Processing the document failed.
+  example: []
+  syntax:
+    content: Failed = 3
+    return:
+      type: NotebookAutomation.Core.Models.DocumentProcessingStatus
+references:
+- uid: NotebookAutomation.Core.Models
+  commentId: N:NotebookAutomation.Core.Models
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Models
+  nameWithType: NotebookAutomation.Core.Models
+  fullName: NotebookAutomation.Core.Models
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+- uid: NotebookAutomation.Core.Models.DocumentProcessingStatus
+  commentId: T:NotebookAutomation.Core.Models.DocumentProcessingStatus
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.DocumentProcessingStatus.html
+  name: DocumentProcessingStatus
+  nameWithType: DocumentProcessingStatus
+  fullName: NotebookAutomation.Core.Models.DocumentProcessingStatus

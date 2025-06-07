@@ -1,0 +1,636 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Configuration.PathsConfig
+  commentId: T:NotebookAutomation.Core.Configuration.PathsConfig
+  id: PathsConfig
+  parent: NotebookAutomation.Core.Configuration
+  children:
+  - NotebookAutomation.Core.Configuration.PathsConfig.LoggingDir
+  - NotebookAutomation.Core.Configuration.PathsConfig.MetadataFile
+  - NotebookAutomation.Core.Configuration.PathsConfig.NotebookVaultFullpathRoot
+  - NotebookAutomation.Core.Configuration.PathsConfig.OnedriveFullpathRoot
+  - NotebookAutomation.Core.Configuration.PathsConfig.OnedriveResourcesBasepath
+  - NotebookAutomation.Core.Configuration.PathsConfig.PromptsPath
+  langs:
+  - csharp
+  - vb
+  name: PathsConfig
+  nameWithType: PathsConfig
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: PathsConfig
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+    startLine: 21
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Represents the configuration settings for various file paths used in the application.
+  remarks: >-
+    This class encapsulates paths for directories and files that are essential for the application's
+
+    operation, including paths for OneDrive resources, notebook vaults, metadata files, logging,
+
+    and prompt templates. It is designed to be serialized and deserialized from JSON configuration files.
+  example: []
+  syntax:
+    content: public class PathsConfig
+    content.vb: Public Class PathsConfig
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveFullpathRoot
+  commentId: P:NotebookAutomation.Core.Configuration.PathsConfig.OnedriveFullpathRoot
+  id: OnedriveFullpathRoot
+  parent: NotebookAutomation.Core.Configuration.PathsConfig
+  langs:
+  - csharp
+  - vb
+  name: OnedriveFullpathRoot
+  nameWithType: PathsConfig.OnedriveFullpathRoot
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveFullpathRoot
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: OnedriveFullpathRoot
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+    startLine: 29
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets full path to the root directory where OneDrive files are stored locally.
+  remarks: This path is used to locate the local storage directory for OneDrive files.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("onedrive_fullpath_root")]
+
+      public string OnedriveFullpathRoot { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("onedrive_fullpath_root")>
+
+      Public Property OnedriveFullpathRoot As String
+  overload: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveFullpathRoot*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: onedrive_fullpath_root
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.NotebookVaultFullpathRoot
+  commentId: P:NotebookAutomation.Core.Configuration.PathsConfig.NotebookVaultFullpathRoot
+  id: NotebookVaultFullpathRoot
+  parent: NotebookAutomation.Core.Configuration.PathsConfig
+  langs:
+  - csharp
+  - vb
+  name: NotebookVaultFullpathRoot
+  nameWithType: PathsConfig.NotebookVaultFullpathRoot
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.NotebookVaultFullpathRoot
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: NotebookVaultFullpathRoot
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+    startLine: 40
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets full path to the root directory for the notebook vault.
+  remarks: >-
+    This path is used to locate the directory where notebook vault files are stored.    /// This property specifies the name of the folder that should be treated as the main program folder
+
+    when generating index files. This folder will have template-type: main and the index will be named
+
+    whatever is the folder name.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("notebook_vault_fullpath_root")]
+
+      public string NotebookVaultFullpathRoot { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("notebook_vault_fullpath_root")>
+
+      Public Property NotebookVaultFullpathRoot As String
+  overload: NotebookAutomation.Core.Configuration.PathsConfig.NotebookVaultFullpathRoot*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: notebook_vault_fullpath_root
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.MetadataFile
+  commentId: P:NotebookAutomation.Core.Configuration.PathsConfig.MetadataFile
+  id: MetadataFile
+  parent: NotebookAutomation.Core.Configuration.PathsConfig
+  langs:
+  - csharp
+  - vb
+  name: MetadataFile
+  nameWithType: PathsConfig.MetadataFile
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.MetadataFile
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: MetadataFile
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+    startLine: 49
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets path to the metadata file.
+  remarks: The metadata file contains structured information about the application's resources.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("metadata_file")]
+
+      public string MetadataFile { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("metadata_file")>
+
+      Public Property MetadataFile As String
+  overload: NotebookAutomation.Core.Configuration.PathsConfig.MetadataFile*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: metadata_file
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveResourcesBasepath
+  commentId: P:NotebookAutomation.Core.Configuration.PathsConfig.OnedriveResourcesBasepath
+  id: OnedriveResourcesBasepath
+  parent: NotebookAutomation.Core.Configuration.PathsConfig
+  langs:
+  - csharp
+  - vb
+  name: OnedriveResourcesBasepath
+  nameWithType: PathsConfig.OnedriveResourcesBasepath
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveResourcesBasepath
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: OnedriveResourcesBasepath
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+    startLine: 58
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets base path for OneDrive resources.
+  remarks: This path is used to locate the base directory for OneDrive-related resources.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("onedrive_resources_basepath")]
+
+      public string OnedriveResourcesBasepath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("onedrive_resources_basepath")>
+
+      Public Property OnedriveResourcesBasepath As String
+  overload: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveResourcesBasepath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: onedrive_resources_basepath
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.LoggingDir
+  commentId: P:NotebookAutomation.Core.Configuration.PathsConfig.LoggingDir
+  id: LoggingDir
+  parent: NotebookAutomation.Core.Configuration.PathsConfig
+  langs:
+  - csharp
+  - vb
+  name: LoggingDir
+  nameWithType: PathsConfig.LoggingDir
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.LoggingDir
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: LoggingDir
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+    startLine: 67
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets directory for log files.
+  remarks: This directory is used to store application log files for debugging and monitoring purposes.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("logging_dir")]
+
+      public string LoggingDir { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("logging_dir")>
+
+      Public Property LoggingDir As String
+  overload: NotebookAutomation.Core.Configuration.PathsConfig.LoggingDir*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: logging_dir
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.PromptsPath
+  commentId: P:NotebookAutomation.Core.Configuration.PathsConfig.PromptsPath
+  id: PromptsPath
+  parent: NotebookAutomation.Core.Configuration.PathsConfig
+  langs:
+  - csharp
+  - vb
+  name: PromptsPath
+  nameWithType: PathsConfig.PromptsPath
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.PromptsPath
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: PromptsPath
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/PathsConfig.cs
+    startLine: 76
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets directory containing prompt template files.
+  remarks: This directory is used to store template files for generating prompts in the application.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("prompts_path")]
+
+      public string PromptsPath { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("prompts_path")>
+
+      Public Property PromptsPath As String
+  overload: NotebookAutomation.Core.Configuration.PathsConfig.PromptsPath*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: prompts_path
+references:
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveFullpathRoot*
+  commentId: Overload:NotebookAutomation.Core.Configuration.PathsConfig.OnedriveFullpathRoot
+  href: NotebookAutomation.Core.Configuration.PathsConfig.html#NotebookAutomation_Core_Configuration_PathsConfig_OnedriveFullpathRoot
+  name: OnedriveFullpathRoot
+  nameWithType: PathsConfig.OnedriveFullpathRoot
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveFullpathRoot
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.NotebookVaultFullpathRoot*
+  commentId: Overload:NotebookAutomation.Core.Configuration.PathsConfig.NotebookVaultFullpathRoot
+  href: NotebookAutomation.Core.Configuration.PathsConfig.html#NotebookAutomation_Core_Configuration_PathsConfig_NotebookVaultFullpathRoot
+  name: NotebookVaultFullpathRoot
+  nameWithType: PathsConfig.NotebookVaultFullpathRoot
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.NotebookVaultFullpathRoot
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.MetadataFile*
+  commentId: Overload:NotebookAutomation.Core.Configuration.PathsConfig.MetadataFile
+  href: NotebookAutomation.Core.Configuration.PathsConfig.html#NotebookAutomation_Core_Configuration_PathsConfig_MetadataFile
+  name: MetadataFile
+  nameWithType: PathsConfig.MetadataFile
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.MetadataFile
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveResourcesBasepath*
+  commentId: Overload:NotebookAutomation.Core.Configuration.PathsConfig.OnedriveResourcesBasepath
+  href: NotebookAutomation.Core.Configuration.PathsConfig.html#NotebookAutomation_Core_Configuration_PathsConfig_OnedriveResourcesBasepath
+  name: OnedriveResourcesBasepath
+  nameWithType: PathsConfig.OnedriveResourcesBasepath
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.OnedriveResourcesBasepath
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.LoggingDir*
+  commentId: Overload:NotebookAutomation.Core.Configuration.PathsConfig.LoggingDir
+  href: NotebookAutomation.Core.Configuration.PathsConfig.html#NotebookAutomation_Core_Configuration_PathsConfig_LoggingDir
+  name: LoggingDir
+  nameWithType: PathsConfig.LoggingDir
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.LoggingDir
+- uid: NotebookAutomation.Core.Configuration.PathsConfig.PromptsPath*
+  commentId: Overload:NotebookAutomation.Core.Configuration.PathsConfig.PromptsPath
+  href: NotebookAutomation.Core.Configuration.PathsConfig.html#NotebookAutomation_Core_Configuration_PathsConfig_PromptsPath
+  name: PromptsPath
+  nameWithType: PathsConfig.PromptsPath
+  fullName: NotebookAutomation.Core.Configuration.PathsConfig.PromptsPath

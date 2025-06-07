@@ -1,14 +1,16 @@
-﻿using Moq;
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tools.VideoProcessing;
-using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="VideoNoteProcessorTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Tools/VideoNoteProcessorTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Tools;
 
 [TestClass]
-public class VideoNoteProcessorTests
+internal class VideoNoteProcessorTests
 {
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
@@ -35,10 +37,9 @@ public class VideoNoteProcessorTests
         VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer, yamlHelperMock.Object, hierarchyDetector);
 
         // Act - using a null OpenAI key should result in simulated summary
-        string result = await processor.GenerateAiSummaryAsync("Test text");
+        string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);
 
         // Assert - fallback behavior should return simulated summary
         Assert.AreEqual("[Simulated AI summary]", result);
     }
 }
-

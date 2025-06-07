@@ -1,0 +1,96 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.Shared
+  commentId: N:NotebookAutomation.Core.Tools.Shared
+  id: NotebookAutomation.Core.Tools.Shared
+  children:
+  - NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  langs:
+  - csharp
+  - vb
+  name: NotebookAutomation.Core.Tools.Shared
+  nameWithType: NotebookAutomation.Core.Tools.Shared
+  fullName: NotebookAutomation.Core.Tools.Shared
+  type: Namespace
+  assemblies:
+  - NotebookAutomation.Core
+references:
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  commentId: T:NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  parent: NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html
+  name: BatchProcessResult
+  nameWithType: BatchProcessResult
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  commentId: T:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  name: DocumentNoteBatchProcessor<TProcessor>
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor)
+  name.vb: DocumentNoteBatchProcessor(Of TProcessor)
+  spec.csharp:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+    name: DocumentNoteBatchProcessor
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  - name: <
+  - name: TProcessor
+  - name: '>'
+  spec.vb:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+    name: DocumentNoteBatchProcessor
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TProcessor
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  commentId: T:NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+  parent: NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html
+  name: DocumentNoteProcessorBase
+  nameWithType: DocumentNoteProcessorBase
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+- uid: NotebookAutomation.Core.Tools.Shared
+  commentId: N:NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.Shared
+  nameWithType: NotebookAutomation.Core.Tools.Shared
+  fullName: NotebookAutomation.Core.Tools.Shared
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html

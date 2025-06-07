@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Cli.Utilities;
+﻿// <copyright file="AnsiColors.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli/Utilities/AnsiColors.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Cli.Utilities;
 
 /// <summary>
 /// Provides ANSI color codes for CLI console output.
@@ -7,7 +16,7 @@
 /// These constants can be used to format text output in the console with various colors and styles.
 /// ANSI escape codes are widely supported in modern terminal emulators.
 /// </remarks>
-public static class AnsiColors
+internal static class AnsiColors
 {
     /// <summary>
     /// ANSI code for blue background.
@@ -17,7 +26,7 @@ public static class AnsiColors
     /// Console.WriteLine(AnsiColors.BG_BLUE + "Text with blue background" + AnsiColors.ENDC);
     /// </code>
     /// </example>
-    public const string BG_BLUE = "\u001b[44m";
+    public const string BGBLUE = "\u001b[44m";
 
     /// <summary>
     /// ANSI code for bold text.

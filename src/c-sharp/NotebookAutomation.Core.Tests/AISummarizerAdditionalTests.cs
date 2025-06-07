@@ -1,10 +1,14 @@
-﻿#nullable enable
+﻿// <copyright file="AISummarizerAdditionalTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/AISummarizerAdditionalTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 using Microsoft.SemanticKernel;
-
-using Moq;
-
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tests.Helpers;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -13,24 +17,25 @@ namespace NotebookAutomation.Core.Tests;
 /// for specific edge cases and complex scenarios.
 /// </summary>
 [TestClass]
-public class AISummarizerAdditionalTests
+internal class AISummarizerAdditionalTests
 {
-    private Mock<ILogger<AISummarizer>> _mockLogger = null!;
-    private MockPromptTemplateService _mockPromptService = null!;
+    private Mock<ILogger<AISummarizer>> mockLogger = null!;
+    private MockPromptTemplateService mockPromptService = null!;
 
     [TestInitialize]
     public void SetUp()
     {
-        _mockLogger = new Mock<ILogger<AISummarizer>>();
-        _mockPromptService = new MockPromptTemplateService
+        this.mockLogger = new Mock<ILogger<AISummarizer>>();
+        this.mockPromptService = new MockPromptTemplateService
         {
-            Template = "Test prompt template with {{content}}"
+            Template = "Test prompt template with {{content}}",
         };
     }
 
     /// <summary>
     /// Tests the full overloaded method signature with all parameters supplied.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithAllParameters_ProcessesCorrectly()
     {
@@ -41,8 +46,8 @@ public class AISummarizerAdditionalTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         string inputText = "Content to summarize";
@@ -50,7 +55,7 @@ public class AISummarizerAdditionalTests
         {
             ["course"] = "Test Course",
             ["type"] = "lecture_notes",
-            ["source"] = "Test Source"
+            ["source"] = "Test Source",
         };
         string promptName = "custom_prompt";
 
@@ -62,17 +67,18 @@ public class AISummarizerAdditionalTests
             inputText,
             variables,
             promptName,
-            token);
+            token).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedResponse, result);
-        Assert.AreEqual(promptName, _mockPromptService.LastTemplateName);
+        Assert.AreEqual(promptName, this.mockPromptService.LastTemplateName);
     }
 
     /// <summary>
     /// Tests handling of YAML frontmatter in the input text when no variables dictionary is provided.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithYAMLInInputText_ProcessesCorrectly()
     {
@@ -90,12 +96,12 @@ This is the actual content that follows YAML frontmatter.";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputTextWithYAML);
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputTextWithYAML).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
@@ -105,6 +111,7 @@ This is the actual content that follows YAML frontmatter.";
     /// <summary>
     /// Tests handling of whitespace in the content value when variables are provided.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithWhitespaceInContentVariable_ReturnsEmptyString()
     {
@@ -113,26 +120,29 @@ This is the actual content that follows YAML frontmatter.";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         Dictionary<string, string> variables = new()
         {
             ["content"] = "   \t\n  ",
-            ["course"] = "Test Course"
+            ["course"] = "Test Course",
         };
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync("", variables);
+        string? result = await summarizer.SummarizeWithVariablesAsync(string.Empty, variables).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(string.Empty, result);
-    }        /// <summary>
-             /// Tests handling of large inputs that would previously require chunking.
-             /// Now SK handles chunking internally.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests handling of large inputs that would previously require chunking.
+    /// Now SK handles chunking internally.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithLargeInput_ProcessesSuccessfully()
     {
@@ -140,40 +150,48 @@ This is the actual content that follows YAML frontmatter.";
         string expectedResponse = "Summary of large content";
 
         // Create a kernel with mock service
-        Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse); AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+        Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
+        AISummarizer summarizer = new(
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         // Large text that would trigger chunking in SK
         string largeText = new('A', 25000);            // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(largeText);            // Assert
+        string? result = await summarizer.SummarizeWithVariablesAsync(largeText).ConfigureAwait(false);            // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual("[Simulated AI summary]", result);
-    }        /// <summary>
-             /// Tests that the service handles specific exception types from the kernel.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests that the service handles specific exception types from the kernel.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithSpecificException_HandlesGracefully()
     {
         // Arrange            // Create a test kernel
         Kernel kernel = TestKernelHelper.CreateTestKernel();
 
-        AISummarizer summarizer = new(_mockLogger.Object,
-            _mockPromptService,
+        AISummarizer summarizer = new(
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         string inputText = "Content that will cause cancellation exception";
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputText);
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual("[Simulated AI summary]", result);
-    }        /// <summary>
-             /// Tests handling of extremely large text (SK handles chunking internally now).
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests handling of extremely large text (SK handles chunking internally now).
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithExtremelyLargeText_HandlesSuccessfully()
     {
@@ -184,20 +202,23 @@ This is the actual content that follows YAML frontmatter.";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         // Very large text that would be chunked by SK internally
         string veryLargeText = new('A', 100000);            // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(veryLargeText);
+        string? result = await summarizer.SummarizeWithVariablesAsync(veryLargeText).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual("[Simulated AI summary]", result);
-    }        /// <summary>
-             /// Tests scenario where no prompt service is available.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests scenario where no prompt service is available.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_NoPromptService_ReturnsEmptyString()
     {
@@ -206,15 +227,14 @@ This is the actual content that follows YAML frontmatter.";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
+            this.mockLogger.Object,
             null, // No prompt service
             kernel);
 
         string inputText = "Content that won't be summarized";
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputText);            // Assert
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText).ConfigureAwait(false);            // Assert
         Assert.IsNotNull(result); // Should return simulated response even with no prompt service
     }
 }
-

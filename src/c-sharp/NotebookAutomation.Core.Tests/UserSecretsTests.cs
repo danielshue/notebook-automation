@@ -1,12 +1,16 @@
-﻿using System.IO;
-using System.Text.Json;
-
-using NotebookAutomation.Core.Configuration;
-
+﻿// <copyright file="UserSecretsTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/UserSecretsTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
-public class UserSecretsTests
+internal class UserSecretsTests
 {
     [TestMethod]
     public void ConfigurationSetup_ShouldLoadUserSecrets()
@@ -22,14 +26,14 @@ public class UserSecretsTests
                 {
                     OpenAI = new
                     {
-                        ApiKey = "test-openai-key"
+                        ApiKey = "test-openai-key",
                     },
                     Microsoft = new
                     {
                         ClientId = "test-client-id",
-                        TenantId = "test-tenant-id"
-                    }
-                }
+                        TenantId = "test-tenant-id",
+                    },
+                },
             });
             File.WriteAllText(tempSecretFile, secretsJson);
 

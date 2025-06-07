@@ -1,0 +1,414 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Configuration.ConfigurationExtensions
+  commentId: T:NotebookAutomation.Core.Configuration.ConfigurationExtensions
+  id: ConfigurationExtensions
+  parent: NotebookAutomation.Core.Configuration
+  children:
+  - NotebookAutomation.Core.Configuration.ConfigurationExtensions.AddObject(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.Object)
+  langs:
+  - csharp
+  - vb
+  name: ConfigurationExtensions
+  nameWithType: ConfigurationExtensions
+  fullName: NotebookAutomation.Core.Configuration.ConfigurationExtensions
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/ConfigurationExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ConfigurationExtensions
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/ConfigurationExtensions.cs
+    startLine: 22
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Provides extension methods for IConfiguration and ConfigurationBuilder.
+  remarks: >-
+    This class includes utility methods to simplify the process of adding custom objects
+
+    as configuration sources and converting objects into key-value pairs for configuration.
+
+    It is designed to handle both simple and complex objects, supporting nested properties
+
+    and ensuring compatibility with the IConfiguration interface.
+  example: []
+  syntax:
+    content: public static class ConfigurationExtensions
+    content.vb: Public Module ConfigurationExtensions
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Configuration.ConfigurationExtensions.AddObject(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.Object)
+  commentId: M:NotebookAutomation.Core.Configuration.ConfigurationExtensions.AddObject(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.Object)
+  id: AddObject(Microsoft.Extensions.Configuration.IConfigurationBuilder,System.Object)
+  isExtensionMethod: true
+  parent: NotebookAutomation.Core.Configuration.ConfigurationExtensions
+  langs:
+  - csharp
+  - vb
+  name: AddObject(IConfigurationBuilder, object)
+  nameWithType: ConfigurationExtensions.AddObject(IConfigurationBuilder, object)
+  fullName: NotebookAutomation.Core.Configuration.ConfigurationExtensions.AddObject(Microsoft.Extensions.Configuration.IConfigurationBuilder, object)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/ConfigurationExtensions.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: AddObject
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/ConfigurationExtensions.cs
+    startLine: 34
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Adds an object as a configuration source.
+  remarks: >-
+    This method serializes the provided object into key-value pairs and adds them
+
+    to the configuration builder as an in-memory collection.
+  example: []
+  syntax:
+    content: public static IConfigurationBuilder AddObject(this IConfigurationBuilder configurationBuilder, object obj)
+    parameters:
+    - id: configurationBuilder
+      type: Microsoft.Extensions.Configuration.IConfigurationBuilder
+      description: The configuration builder to add to.
+    - id: obj
+      type: System.Object
+      description: The object to serialize as configuration values.
+    return:
+      type: Microsoft.Extensions.Configuration.IConfigurationBuilder
+      description: The same configuration builder.
+    content.vb: Public Shared Function AddObject(configurationBuilder As IConfigurationBuilder, obj As Object) As IConfigurationBuilder
+  overload: NotebookAutomation.Core.Configuration.ConfigurationExtensions.AddObject*
+  nameWithType.vb: ConfigurationExtensions.AddObject(IConfigurationBuilder, Object)
+  fullName.vb: NotebookAutomation.Core.Configuration.ConfigurationExtensions.AddObject(Microsoft.Extensions.Configuration.IConfigurationBuilder, Object)
+  name.vb: AddObject(IConfigurationBuilder, Object)
+references:
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Configuration.ConfigurationExtensions.AddObject*
+  commentId: Overload:NotebookAutomation.Core.Configuration.ConfigurationExtensions.AddObject
+  href: NotebookAutomation.Core.Configuration.ConfigurationExtensions.html#NotebookAutomation_Core_Configuration_ConfigurationExtensions_AddObject_Microsoft_Extensions_Configuration_IConfigurationBuilder_System_Object_
+  name: AddObject
+  nameWithType: ConfigurationExtensions.AddObject
+  fullName: NotebookAutomation.Core.Configuration.ConfigurationExtensions.AddObject
+- uid: Microsoft.Extensions.Configuration.IConfigurationBuilder
+  commentId: T:Microsoft.Extensions.Configuration.IConfigurationBuilder
+  parent: Microsoft.Extensions.Configuration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration.iconfigurationbuilder
+  name: IConfigurationBuilder
+  nameWithType: IConfigurationBuilder
+  fullName: Microsoft.Extensions.Configuration.IConfigurationBuilder
+- uid: Microsoft.Extensions.Configuration
+  commentId: N:Microsoft.Extensions.Configuration
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Configuration
+  nameWithType: Microsoft.Extensions.Configuration
+  fullName: Microsoft.Extensions.Configuration
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Configuration
+    name: Configuration
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Configuration
+    name: Configuration
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.configuration

@@ -1,4 +1,13 @@
-﻿#nullable enable
+﻿// <copyright file="PathFormatter.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Utils/PathFormatter.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 
 namespace NotebookAutomation.Core.Utils;
 
@@ -10,7 +19,7 @@ public static class PathFormatter
     /// <summary>
     /// Maximum length for truncated paths in log messages.
     /// </summary>
-    private const int _maxPathLength = 80;
+    private const int MaxPathLength = 80;
 
     /// <summary>
     /// Formats a file path for logging based on the log level.
@@ -22,7 +31,9 @@ public static class PathFormatter
     public static string Format(string path, LogLevel logLevel)
     {
         if (string.IsNullOrEmpty(path))
+        {
             return string.Empty;
+        }
 
         // For Debug or Trace level, use the full path
         if (logLevel == LogLevel.Debug || logLevel == LogLevel.Trace)
@@ -31,7 +42,7 @@ public static class PathFormatter
         }
 
         // For other levels, show a shortened path
-        return ShortenPath(path, _maxPathLength);
+        return ShortenPath(path, MaxPathLength);
     }
 
     /// <summary>
@@ -44,26 +55,36 @@ public static class PathFormatter
     public static string ShortenPath(string path, int maxLength)
     {
         if (string.IsNullOrEmpty(path))
+        {
             return string.Empty;
+        }
 
         if (path.Length <= maxLength)
+        {
             return path;
+        }
 
         // Always include the file name
         string fileName = Path.GetFileName(path);
 
         // If just the filename is too long, truncate it
         if (fileName.Length >= maxLength)
+        {
             return "..." + fileName[Math.Max(0, fileName.Length - maxLength + 4)..];
+        }
 
         // Calculate how much path we can include
         int pathLength = maxLength - fileName.Length - 4; // 4 for "...\"
         if (pathLength <= 0)
+        {
             return "..." + Path.DirectorySeparatorChar + fileName;
+        }
 
         string directory = Path.GetDirectoryName(path) ?? string.Empty;
         if (directory.Length <= pathLength)
+        {
             return path; // Shouldn't happen since we already checked path.Length > maxLength
+        }
 
         // Get the end portion of the directory path
         string shortenedDirectory = directory[^pathLength..];
@@ -71,7 +92,9 @@ public static class PathFormatter
         // Find the first directory separator to ensure we start with a complete directory name
         int firstSeparatorIndex = shortenedDirectory.IndexOf(Path.DirectorySeparatorChar);
         if (firstSeparatorIndex > 0)
+        {
             shortenedDirectory = shortenedDirectory[firstSeparatorIndex..];
+        }
 
         return "..." + shortenedDirectory + Path.DirectorySeparatorChar + fileName;
     }

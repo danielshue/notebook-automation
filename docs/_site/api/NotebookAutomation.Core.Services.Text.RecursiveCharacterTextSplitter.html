@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class RecursiveCharacterTextSplitter | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class RecursiveCharacterTextSplitter | Obsidian Notebook Automation for Coursera ">
+      
+      <meta name="description" content="A sophisticated text splitter that recursively splits text based on a hierarchy of separators, preserving semantic boundaries and ensuring better context maintenance between chunks.">
+      <link rel="icon" href="../favicon.ico">
+      <link rel="stylesheet" href="../public/docfx.min.css">
+      <link rel="stylesheet" href="../public/main.css">
+      <meta name="docfx:navrel" content="../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../">
+      
+      
+      
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../index.html">
+            <img id="logo" class="svg" src="../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter">
+
+
+
+  <h1 id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter" data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter" class="text-break">
+Class RecursiveCharacterTextSplitter  
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Services.html">Services</a>.<a class="xref" href="NotebookAutomation.Core.Services.Text.html">Text</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>A sophisticated text splitter that recursively splits text based on a hierarchy of separators,
+preserving semantic boundaries and ensuring better context maintenance between chunks.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class RecursiveCharacterTextSplitter</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">RecursiveCharacterTextSplitter</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_examples">Examples</h2>
+  <pre><code class="lang-csharp">var splitter = new RecursiveCharacterTextSplitter(logger);
+var chunks = splitter.SplitText("This is a sample text with multiple paragraphs.");
+foreach (var chunk in chunks)
+{
+    Console.WriteLine(chunk);
+}</code></pre>
+
+
+  <h2 id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+This implementation is inspired by the RecursiveCharacterTextSplitter concept from LangChain
+but adapted specifically for C# and the NotebookAutomation project. The splitter works by:
+<ul><li>Splitting on the strongest separators first (e.g., triple newlines, headers)</li><li>Progressively moving to weaker separators (e.g., single spaces) if necessary</li><li>Preserving special patterns like markdown headers, code blocks, and lists</li></ul>
+
+<p>
+The splitter is optimized for handling markdown and code content, ensuring semantic boundaries
+are maintained while splitting text into manageable chunks.
+</p>
+</div>
+
+
+  <h2 class="section" id="constructors">Constructors
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter__ctor_" data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.#ctor*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter__ctor_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32_System_Collections_Generic_List_System_String__System_Boolean_" data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.#ctor(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32,System.Collections.Generic.List{System.String},System.Boolean)">
+  RecursiveCharacterTextSplitter(ILogger, int, int, List&lt;string&gt;?, bool)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs/#L70"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Initializes a new instance of the <a class="xref" href="api/NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html">RecursiveCharacterTextSplitter</a> class.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public RecursiveCharacterTextSplitter(ILogger logger, int chunkSize = 3000, int chunkOverlap = 500, List&lt;string&gt;? separators = null, bool keepSeparator = true)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger">ILogger</a></dt>
+    <dd><p>Logger for diagnostic information.</p>
+</dd>
+    <dt><code>chunkSize</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Maximum size of each chunk in estimated tokens.</p>
+</dd>
+    <dt><code>chunkOverlap</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Number of tokens to overlap between chunks.</p>
+</dd>
+    <dt><code>separators</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>Optional list of separators to use for splitting, in order of priority.</p>
+</dd>
+    <dt><code>keepSeparator</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p>Whether to keep the separator with the chunk.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter__ctor_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32_System_Collections_Generic_List_System_String__System_Boolean__examples">Examples</h4>
+  <pre><code class="lang-csharp">var splitter = new RecursiveCharacterTextSplitter(logger, chunkSize: 3000, chunkOverlap: 500);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter__ctor_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32_System_Collections_Generic_List_System_String__System_Boolean__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This constructor initializes the splitter with default or custom settings for chunk size,
+overlap, and separator hierarchy. It validates input parameters and ensures the chunk overlap
+is smaller than the chunk size.
+</p>
+</div>
+
+
+
+
+  <h2 class="section" id="methods">Methods
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_CreateForCode_" data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_CreateForCode_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32_" data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForCode(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)">
+  CreateForCode(ILogger, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs/#L167"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a recursive text splitter optimized for code content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RecursiveCharacterTextSplitter CreateForCode(ILogger logger, int chunkSize = 3000, int chunkOverlap = 500)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger">ILogger</a></dt>
+    <dd><p>Logger for diagnostic information.</p>
+</dd>
+    <dt><code>chunkSize</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Maximum size of each chunk in estimated tokens.</p>
+</dd>
+    <dt><code>chunkOverlap</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Number of tokens to overlap between chunks.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="api/NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html">RecursiveCharacterTextSplitter</a></dt>
+    <dd><p>A RecursiveCharacterTextSplitter configured for code content.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_CreateForMarkdown_" data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_CreateForMarkdown_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32_" data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.CreateForMarkdown(Microsoft.Extensions.Logging.ILogger,System.Int32,System.Int32)">
+  CreateForMarkdown(ILogger, int, int)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs/#L139"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Creates a recursive text splitter optimized for markdown content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public static RecursiveCharacterTextSplitter CreateForMarkdown(ILogger logger, int chunkSize = 3000, int chunkOverlap = 500)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>logger</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger">ILogger</a></dt>
+    <dd><p>Logger for diagnostic information.</p>
+</dd>
+    <dt><code>chunkSize</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Maximum size of each chunk in estimated tokens.</p>
+</dd>
+    <dt><code>chunkOverlap</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.int32">int</a></dt>
+    <dd><p>Number of tokens to overlap between chunks.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="api/NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html">RecursiveCharacterTextSplitter</a></dt>
+    <dd><p>A RecursiveCharacterTextSplitter configured for markdown content.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_CreateForMarkdown_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32__examples">Examples</h4>
+  <pre><code class="lang-csharp">var markdownSplitter = RecursiveCharacterTextSplitter.CreateForMarkdown(logger);</code></pre>
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_CreateForMarkdown_Microsoft_Extensions_Logging_ILogger_System_Int32_System_Int32__remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+This factory method creates a splitter with a separator hierarchy optimized for markdown content,
+including headers, paragraph breaks, and other markdown-specific patterns.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_SplitText_" data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_Text_RecursiveCharacterTextSplitter_SplitText_System_String_" data-uid="NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.SplitText(System.String)">
+  SplitText(string)
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/Text/RecursiveCharacterTextSplitter.cs/#L193"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Splits the text into chunks recursively respecting the defined separators.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public List&lt;string&gt; SplitText(string text)</code></pre>
+  </div>
+
+  <h4 class="section">Parameters</h4>
+  <dl class="parameters">
+    <dt><code>text</code> <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a></dt>
+    <dd><p>The text to split.</p>
+</dd>
+  </dl>
+
+  <h4 class="section">Returns</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1">List</a>&lt;<a class="xref" href="https://learn.microsoft.com/dotnet/api/system.string">string</a>&gt;</dt>
+    <dd><p>A list of text chunks that respect the configured size constraints.</p>
+</dd>
+  </dl>
+
+
+
+
+
+
+
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

@@ -1,0 +1,2400 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  commentId: T:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  id: DocumentNoteBatchProcessor`1
+  parent: NotebookAutomation.Core.Tools.Shared
+  children:
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.#ctor(Microsoft.Extensions.Logging.ILogger,`0,NotebookAutomation.Core.Services.AISummarizer)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.CompileProcessingResults(System.Int32,System.Int32,System.TimeSpan,System.TimeSpan,System.Int32)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.DiscoverAndFilterFiles(System.String,System.Collections.Generic.List{System.String},System.Boolean,System.String,System.String)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ExtractContentAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAISummaryAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.Boolean,System.Nullable{System.Int32},System.String,System.Boolean)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAndSaveMarkdownAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.Boolean,System.Boolean)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateOutputPath(System.String,System.String,System.String)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GetDocumentType(System.String)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.InitializeProcessingQueue(System.Collections.Generic.List{System.String})
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.PreserveUserContentAfterNotes(System.String,System.String)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessDocumentsAsync(System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,NotebookAutomation.Core.Configuration.AppConfig,System.String,System.String,System.Boolean)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessSingleFileAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.String,System.Boolean,System.Boolean,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.String)
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessingProgressChanged
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.Queue
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.QueueChanged
+  - NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ValidateAndSetupProcessing(System.String,System.String,NotebookAutomation.Core.Configuration.AppConfig)
+  langs:
+  - csharp
+  - vb
+  name: DocumentNoteBatchProcessor<TProcessor>
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>
+  type: Class
+  source:
+    id: DocumentNoteBatchProcessor
+    path: System.Text.RegularExpressions.Generator\System.Text.RegularExpressions.Generator.RegexGenerator\RegexGenerator.g.cs
+    startLine: 173
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  syntax:
+    content: 'public class DocumentNoteBatchProcessor<TProcessor> where TProcessor : DocumentNoteProcessorBase'
+    typeParameters:
+    - id: TProcessor
+    content.vb: Public Class DocumentNoteBatchProcessor(Of TProcessor As DocumentNoteProcessorBase)
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor)
+  name.vb: DocumentNoteBatchProcessor(Of TProcessor)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessingProgressChanged
+  commentId: E:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessingProgressChanged
+  id: ProcessingProgressChanged
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: ProcessingProgressChanged
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.ProcessingProgressChanged
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.ProcessingProgressChanged
+  type: Event
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessingProgressChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 101
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Event triggered when processing progress changes.
+  remarks: >-
+    <p>
+
+    This event is raised whenever the progress of the batch processing operation changes.
+
+    Subscribers can use this event to update progress indicators or logs.
+
+    </p>
+  example:
+  - <pre><code class="lang-csharp">processor.ProcessingProgressChanged += (sender, args) =&gt; Console.WriteLine(args.Progress);</code></pre>
+  syntax:
+    content: public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
+    return:
+      type: System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+    content.vb: Public Event ProcessingProgressChanged As EventHandler(Of DocumentProcessingProgressEventArgs)
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).ProcessingProgressChanged
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).ProcessingProgressChanged
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.QueueChanged
+  commentId: E:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.QueueChanged
+  id: QueueChanged
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: QueueChanged
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.QueueChanged
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.QueueChanged
+  type: Event
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: QueueChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 117
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Event triggered when the processing queue changes.
+  remarks: >-
+    <p>
+
+    This event is raised whenever the processing queue is updated (e.g., items added or removed).
+
+    Subscribers can use this event to monitor the state of the queue.
+
+    </p>
+  example:
+  - <pre><code class="lang-csharp">processor.QueueChanged += (sender, args) =&gt; Console.WriteLine(args.Queue);</code></pre>
+  syntax:
+    content: public event EventHandler<QueueChangedEventArgs>? QueueChanged
+    return:
+      type: System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+    content.vb: Public Event QueueChanged As EventHandler(Of QueueChangedEventArgs)
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).QueueChanged
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).QueueChanged
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.Queue
+  commentId: P:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.Queue
+  id: Queue
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: Queue
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.Queue
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.Queue
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Queue
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 137
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Gets a read-only view of the current processing queue.
+  remarks: >-
+    <p>
+
+    This property provides a snapshot of the current processing queue, allowing external
+
+    components to inspect the queue without modifying it.
+
+    </p>
+  example:
+  - >-
+    <pre><code class="lang-csharp">var queue = processor.Queue;
+
+    foreach (var item in queue)
+
+    {
+        Console.WriteLine(item.FilePath);
+    }</code></pre>
+  syntax:
+    content: public IReadOnlyList<QueueItem> Queue { get; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+    content.vb: Public ReadOnly Property Queue As IReadOnlyList(Of QueueItem)
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.Queue*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).Queue
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).Queue
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  id: OnProcessingProgressChanged(System.String,System.String,System.Int32,System.Int32)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: OnProcessingProgressChanged(string, string, int, int)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.OnProcessingProgressChanged(string, string, int, int)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.OnProcessingProgressChanged(string, string, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: OnProcessingProgressChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 155
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Raises the ProcessingProgressChanged event.
+  example: []
+  syntax:
+    content: protected virtual void OnProcessingProgressChanged(string filePath, string status, int currentFile, int totalFiles)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: The path of the file being processed.
+    - id: status
+      type: System.String
+      description: The current processing status message.
+    - id: currentFile
+      type: System.Int32
+      description: The current file index being processed.
+    - id: totalFiles
+      type: System.Int32
+      description: The total number of files to process.
+    content.vb: Protected Overridable Sub OnProcessingProgressChanged(filePath As String, status As String, currentFile As Integer, totalFiles As Integer)
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnProcessingProgressChanged*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).OnProcessingProgressChanged(String, String, Integer, Integer)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).OnProcessingProgressChanged(String, String, Integer, Integer)
+  name.vb: OnProcessingProgressChanged(String, String, Integer, Integer)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  id: OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: OnQueueChanged(QueueItem?)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.OnQueueChanged(QueueItem?)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.OnQueueChanged(NotebookAutomation.Core.Models.QueueItem?)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: OnQueueChanged
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 164
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Raises the QueueChanged event.
+  example: []
+  syntax:
+    content: protected virtual void OnQueueChanged(QueueItem? changedItem = null)
+    parameters:
+    - id: changedItem
+      type: NotebookAutomation.Core.Models.QueueItem
+      description: The specific item that changed, or null if the entire queue changed.
+    content.vb: Protected Overridable Sub OnQueueChanged(changedItem As QueueItem = Nothing)
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnQueueChanged*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).OnQueueChanged(QueueItem)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).OnQueueChanged(NotebookAutomation.Core.Models.QueueItem)
+  name.vb: OnQueueChanged(QueueItem)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GetDocumentType(System.String)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GetDocumentType(System.String)
+  id: GetDocumentType(System.String)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: GetDocumentType(string)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.GetDocumentType(string)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.GetDocumentType(string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GetDocumentType
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 177
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Determines the document type based on file extension.
+  example: []
+  syntax:
+    content: protected virtual string GetDocumentType(string filePath)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: File path to check.
+    return:
+      type: System.String
+      description: Document type (e.g., "PDF", "VIDEO").
+    content.vb: Protected Overridable Function GetDocumentType(filePath As String) As String
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GetDocumentType*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).GetDocumentType(String)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).GetDocumentType(String)
+  name.vb: GetDocumentType(String)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.#ctor(Microsoft.Extensions.Logging.ILogger,`0,NotebookAutomation.Core.Services.AISummarizer)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.#ctor(Microsoft.Extensions.Logging.ILogger,`0,NotebookAutomation.Core.Services.AISummarizer)
+  id: '#ctor(Microsoft.Extensions.Logging.ILogger,`0,NotebookAutomation.Core.Services.AISummarizer)'
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: DocumentNoteBatchProcessor(ILogger, TProcessor, AISummarizer)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.DocumentNoteBatchProcessor(ILogger, TProcessor, AISummarizer)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.DocumentNoteBatchProcessor(Microsoft.Extensions.Logging.ILogger, TProcessor, NotebookAutomation.Core.Services.AISummarizer)
+  type: Constructor
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: .ctor
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 209
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Initializes a new instance of the <xref href="NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor%601" data-throw-if-not-resolved="false"></xref> class.
+  example: []
+  syntax:
+    content: public DocumentNoteBatchProcessor(ILogger logger, TProcessor processor, AISummarizer aiSummarizer)
+    parameters:
+    - id: logger
+      type: Microsoft.Extensions.Logging.ILogger
+      description: The logger instance.
+    - id: processor
+      type: '{TProcessor}'
+      description: The document note processor instance.
+    - id: aiSummarizer
+      type: NotebookAutomation.Core.Services.AISummarizer
+      description: The AI summarizer instance.
+    content.vb: Public Sub New(logger As ILogger, processor As TProcessor, aiSummarizer As AISummarizer)
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.#ctor*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).New(ILogger, TProcessor, AISummarizer)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).New(Microsoft.Extensions.Logging.ILogger, TProcessor, NotebookAutomation.Core.Services.AISummarizer)
+  name.vb: New(ILogger, TProcessor, AISummarizer)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessDocumentsAsync(System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,NotebookAutomation.Core.Configuration.AppConfig,System.String,System.String,System.Boolean)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessDocumentsAsync(System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,NotebookAutomation.Core.Configuration.AppConfig,System.String,System.String,System.Boolean)
+  id: ProcessDocumentsAsync(System.String,System.String,System.Collections.Generic.List{System.String},System.String,System.Boolean,System.Boolean,System.Boolean,System.Boolean,System.Nullable{System.Int32},System.String,NotebookAutomation.Core.Configuration.AppConfig,System.String,System.String,System.Boolean)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: ProcessDocumentsAsync(string, string?, List<string>, string?, bool, bool, bool, bool, int?, string?, AppConfig?, string, string, bool)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.ProcessDocumentsAsync(string, string?, List<string>, string?, bool, bool, bool, bool, int?, string?, AppConfig?, string, string, bool)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.ProcessDocumentsAsync(string, string?, System.Collections.Generic.List<string>, string?, bool, bool, bool, bool, int?, string?, NotebookAutomation.Core.Configuration.AppConfig?, string, string, bool)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessDocumentsAsync
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 252
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: >-
+    Processes one or more document files, generating markdown notes for each, with extended options.
+
+    Returns a BatchProcessResult with summary and statistics for CLI/UI output.
+  example: []
+  syntax:
+    content: public virtual Task<BatchProcessResult> ProcessDocumentsAsync(string input, string? output, List<string> fileExtensions, string? openAiApiKey, bool dryRun = false, bool noSummary = false, bool forceOverwrite = false, bool retryFailed = false, int? timeoutSeconds = null, string? resourcesRoot = null, AppConfig? appConfig = null, string noteType = "Document Note", string failedFilesListName = "failed_files.txt", bool noShareLinks = false)
+    parameters:
+    - id: input
+      type: System.String
+      description: Input file path or directory containing files.
+    - id: output
+      type: System.String
+      description: Output directory where markdown notes will be saved.
+    - id: fileExtensions
+      type: System.Collections.Generic.List{System.String}
+      description: List of file extensions to recognize as valid files.
+    - id: openAiApiKey
+      type: System.String
+      description: Optional OpenAI API key for generating summaries.
+    - id: dryRun
+      type: System.Boolean
+      description: If true, simulates processing without writing output files.
+    - id: noSummary
+      type: System.Boolean
+      description: If true, disables OpenAI summary generation.
+    - id: forceOverwrite
+      type: System.Boolean
+      description: If true, overwrites existing notes.
+    - id: retryFailed
+      type: System.Boolean
+      description: If true, retries only failed files from previous run.
+    - id: timeoutSeconds
+      type: System.Nullable{System.Int32}
+      description: Optional API request timeout in seconds.
+    - id: resourcesRoot
+      type: System.String
+      description: Optional override for OneDrive fullpath root directory.
+    - id: appConfig
+      type: NotebookAutomation.Core.Configuration.AppConfig
+      description: The application configuration object.
+    - id: noteType
+      type: System.String
+      description: Type of note (e.g., "PDF Note", "Video Note").
+    - id: failedFilesListName
+      type: System.String
+      description: Name of the failed files list file (defaults to "failed_files.txt").
+    - id: noShareLinks
+      type: System.Boolean
+      description: If true, skips OneDrive share link creation.
+    return:
+      type: System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Shared.BatchProcessResult}
+      description: A BatchProcessResult containing processing statistics and summary information.
+    content.vb: Public Overridable Function ProcessDocumentsAsync(input As String, output As String, fileExtensions As List(Of String), openAiApiKey As String, dryRun As Boolean = False, noSummary As Boolean = False, forceOverwrite As Boolean = False, retryFailed As Boolean = False, timeoutSeconds As Integer? = Nothing, resourcesRoot As String = Nothing, appConfig As AppConfig = Nothing, noteType As String = "Document Note", failedFilesListName As String = "failed_files.txt", noShareLinks As Boolean = False) As Task(Of BatchProcessResult)
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessDocumentsAsync*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).ProcessDocumentsAsync(String, String, List(Of String), String, Boolean, Boolean, Boolean, Boolean, Integer?, String, AppConfig, String, String, Boolean)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).ProcessDocumentsAsync(String, String, System.Collections.Generic.List(Of String), String, Boolean, Boolean, Boolean, Boolean, Integer?, String, NotebookAutomation.Core.Configuration.AppConfig, String, String, Boolean)
+  name.vb: ProcessDocumentsAsync(String, String, List(Of String), String, Boolean, Boolean, Boolean, Boolean, Integer?, String, AppConfig, String, String, Boolean)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessSingleFileAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.String,System.Boolean,System.Boolean,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.String)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessSingleFileAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.String,System.Boolean,System.Boolean,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.String)
+  id: ProcessSingleFileAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.String,System.Boolean,System.Boolean,System.String,System.Boolean,System.Nullable{System.Int32},System.Boolean,System.String)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: ProcessSingleFileAsync(string, QueueItem?, int, int, string, string?, bool, bool, string?, bool, int?, bool, string)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.ProcessSingleFileAsync(string, QueueItem?, int, int, string, string?, bool, bool, string?, bool, int?, bool, string)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.ProcessSingleFileAsync(string, NotebookAutomation.Core.Models.QueueItem?, int, int, string, string?, bool, bool, string?, bool, int?, bool, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ProcessSingleFileAsync
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 440
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Processes a single file with complete error handling and progress tracking.
+  example: []
+  syntax:
+    content: protected virtual Task<(bool success, string? errorMessage)> ProcessSingleFileAsync(string filePath, QueueItem? queueItem, int fileIndex, int totalFiles, string effectiveOutput, string? resourcesRoot, bool forceOverwrite, bool dryRun, string? openAiApiKey, bool noSummary, int? timeoutSeconds, bool noShareLinks, string noteType)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: Path to the file to process.
+    - id: queueItem
+      type: NotebookAutomation.Core.Models.QueueItem
+      description: Queue item for progress tracking.
+    - id: fileIndex
+      type: System.Int32
+      description: Current file index.
+    - id: totalFiles
+      type: System.Int32
+      description: Total number of files.
+    - id: effectiveOutput
+      type: System.String
+      description: Output directory.
+    - id: resourcesRoot
+      type: System.String
+      description: Resources root directory.
+    - id: forceOverwrite
+      type: System.Boolean
+      description: Whether to overwrite existing files.
+    - id: dryRun
+      type: System.Boolean
+      description: Whether this is a dry run.
+    - id: openAiApiKey
+      type: System.String
+      description: OpenAI API key.
+    - id: noSummary
+      type: System.Boolean
+      description: Whether to skip summary generation.
+    - id: timeoutSeconds
+      type: System.Nullable{System.Int32}
+      description: API timeout in seconds.
+    - id: noShareLinks
+      type: System.Boolean
+      description: Whether to skip share link generation.
+    - id: noteType
+      type: System.String
+      description: Type of note to generate.
+    return:
+      type: System.Threading.Tasks.Task{System.ValueTuple{System.Boolean,System.String}}
+      description: Tuple indicating success and any error message.
+    content.vb: Protected Overridable Function ProcessSingleFileAsync(filePath As String, queueItem As QueueItem, fileIndex As Integer, totalFiles As Integer, effectiveOutput As String, resourcesRoot As String, forceOverwrite As Boolean, dryRun As Boolean, openAiApiKey As String, noSummary As Boolean, timeoutSeconds As Integer?, noShareLinks As Boolean, noteType As String) As Task(Of (success As Boolean, errorMessage As String))
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessSingleFileAsync*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).ProcessSingleFileAsync(String, QueueItem, Integer, Integer, String, String, Boolean, Boolean, String, Boolean, Integer?, Boolean, String)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).ProcessSingleFileAsync(String, NotebookAutomation.Core.Models.QueueItem, Integer, Integer, String, String, Boolean, Boolean, String, Boolean, Integer?, Boolean, String)
+  name.vb: ProcessSingleFileAsync(String, QueueItem, Integer, Integer, String, String, Boolean, Boolean, String, Boolean, Integer?, Boolean, String)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAndSaveMarkdownAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.Boolean,System.Boolean)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAndSaveMarkdownAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.Boolean,System.Boolean)
+  id: GenerateAndSaveMarkdownAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},System.String,System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.Boolean,System.Boolean)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: GenerateAndSaveMarkdownAsync(string, string, Dictionary<string, object>, string, string, QueueItem?, int, int, bool, bool)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.GenerateAndSaveMarkdownAsync(string, string, Dictionary<string, object>, string, string, QueueItem?, int, int, bool, bool)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.GenerateAndSaveMarkdownAsync(string, string, System.Collections.Generic.Dictionary<string, object>, string, string, NotebookAutomation.Core.Models.QueueItem?, int, int, bool, bool)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GenerateAndSaveMarkdownAsync
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 524
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Generates markdown content and saves it to file with progress tracking.
+  example: []
+  syntax:
+    content: protected virtual Task GenerateAndSaveMarkdownAsync(string filePath, string summaryText, Dictionary<string, object> metadata, string noteType, string outputPath, QueueItem? queueItem, int fileIndex, int totalFiles, bool forceOverwrite, bool dryRun)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: Source file path.
+    - id: summaryText
+      type: System.String
+      description: Generated summary text.
+    - id: metadata
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: File metadata.
+    - id: noteType
+      type: System.String
+      description: Type of note to generate.
+    - id: outputPath
+      type: System.String
+      description: Output file path.
+    - id: queueItem
+      type: NotebookAutomation.Core.Models.QueueItem
+      description: Queue item for progress tracking.
+    - id: fileIndex
+      type: System.Int32
+      description: Current file index.
+    - id: totalFiles
+      type: System.Int32
+      description: Total number of files.
+    - id: forceOverwrite
+      type: System.Boolean
+      description: Whether to overwrite existing files.
+    - id: dryRun
+      type: System.Boolean
+      description: Whether this is a dry run.
+    return:
+      type: System.Threading.Tasks.Task
+      description: A <xref href="System.Threading.Tasks.Task" data-throw-if-not-resolved="false"></xref> representing the asynchronous operation.
+    content.vb: Protected Overridable Function GenerateAndSaveMarkdownAsync(filePath As String, summaryText As String, metadata As Dictionary(Of String, Object), noteType As String, outputPath As String, queueItem As QueueItem, fileIndex As Integer, totalFiles As Integer, forceOverwrite As Boolean, dryRun As Boolean) As Task
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAndSaveMarkdownAsync*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).GenerateAndSaveMarkdownAsync(String, String, Dictionary(Of String, Object), String, String, QueueItem, Integer, Integer, Boolean, Boolean)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).GenerateAndSaveMarkdownAsync(String, String, System.Collections.Generic.Dictionary(Of String, Object), String, String, NotebookAutomation.Core.Models.QueueItem, Integer, Integer, Boolean, Boolean)
+  name.vb: GenerateAndSaveMarkdownAsync(String, String, Dictionary(Of String, Object), String, String, QueueItem, Integer, Integer, Boolean, Boolean)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.CompileProcessingResults(System.Int32,System.Int32,System.TimeSpan,System.TimeSpan,System.Int32)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.CompileProcessingResults(System.Int32,System.Int32,System.TimeSpan,System.TimeSpan,System.Int32)
+  id: CompileProcessingResults(System.Int32,System.Int32,System.TimeSpan,System.TimeSpan,System.Int32)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: CompileProcessingResults(int, int, TimeSpan, TimeSpan, int)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.CompileProcessingResults(int, int, TimeSpan, TimeSpan, int)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.CompileProcessingResults(int, int, System.TimeSpan, System.TimeSpan, int)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: CompileProcessingResults
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 654
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Compiles processing results and statistics into a BatchProcessResult.
+  example: []
+  syntax:
+    content: protected virtual BatchProcessResult CompileProcessingResults(int processed, int failed, TimeSpan batchTime, TimeSpan totalSummaryTime, int totalTokens)
+    parameters:
+    - id: processed
+      type: System.Int32
+      description: Number of successfully processed files.
+    - id: failed
+      type: System.Int32
+      description: Number of failed files.
+    - id: batchTime
+      type: System.TimeSpan
+      description: Total batch processing time.
+    - id: totalSummaryTime
+      type: System.TimeSpan
+      description: Total AI summary time.
+    - id: totalTokens
+      type: System.Int32
+      description: Total tokens used.
+    return:
+      type: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+      description: Compiled batch processing result.
+    content.vb: Protected Overridable Function CompileProcessingResults(processed As Integer, failed As Integer, batchTime As TimeSpan, totalSummaryTime As TimeSpan, totalTokens As Integer) As BatchProcessResult
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.CompileProcessingResults*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).CompileProcessingResults(Integer, Integer, TimeSpan, TimeSpan, Integer)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).CompileProcessingResults(Integer, Integer, System.TimeSpan, System.TimeSpan, Integer)
+  name.vb: CompileProcessingResults(Integer, Integer, TimeSpan, TimeSpan, Integer)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateOutputPath(System.String,System.String,System.String)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateOutputPath(System.String,System.String,System.String)
+  id: GenerateOutputPath(System.String,System.String,System.String)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: GenerateOutputPath(string, string, string?)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.GenerateOutputPath(string, string, string?)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.GenerateOutputPath(string, string, string?)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GenerateOutputPath
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 790
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Generates the output path for a processed file, handling video-specific naming and directory structure.
+  example: []
+  syntax:
+    content: protected virtual string GenerateOutputPath(string inputFilePath, string outputDir, string? resourcesRoot)
+    parameters:
+    - id: inputFilePath
+      type: System.String
+      description: The input file path.
+    - id: outputDir
+      type: System.String
+      description: The base output directory.
+    - id: resourcesRoot
+      type: System.String
+      description: The resources root directory for calculating relative paths.
+    return:
+      type: System.String
+      description: The output file path.
+    content.vb: Protected Overridable Function GenerateOutputPath(inputFilePath As String, outputDir As String, resourcesRoot As String) As String
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateOutputPath*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).GenerateOutputPath(String, String, String)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).GenerateOutputPath(String, String, String)
+  name.vb: GenerateOutputPath(String, String, String)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.PreserveUserContentAfterNotes(System.String,System.String)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.PreserveUserContentAfterNotes(System.String,System.String)
+  id: PreserveUserContentAfterNotes(System.String,System.String)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: PreserveUserContentAfterNotes(string, string)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.PreserveUserContentAfterNotes(string, string)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.PreserveUserContentAfterNotes(string, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: PreserveUserContentAfterNotes
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 860
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Preserves user content that appears after the "## Notes" section in existing video markdown files.
+  example: []
+  syntax:
+    content: protected virtual string PreserveUserContentAfterNotes(string existingFilePath, string newMarkdown)
+    parameters:
+    - id: existingFilePath
+      type: System.String
+      description: Path to the existing markdown file.
+    - id: newMarkdown
+      type: System.String
+      description: The newly generated markdown content.
+    return:
+      type: System.String
+      description: The new markdown with preserved user content appended.
+    content.vb: Protected Overridable Function PreserveUserContentAfterNotes(existingFilePath As String, newMarkdown As String) As String
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.PreserveUserContentAfterNotes*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).PreserveUserContentAfterNotes(String, String)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).PreserveUserContentAfterNotes(String, String)
+  name.vb: PreserveUserContentAfterNotes(String, String)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ValidateAndSetupProcessing(System.String,System.String,NotebookAutomation.Core.Configuration.AppConfig)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ValidateAndSetupProcessing(System.String,System.String,NotebookAutomation.Core.Configuration.AppConfig)
+  id: ValidateAndSetupProcessing(System.String,System.String,NotebookAutomation.Core.Configuration.AppConfig)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: ValidateAndSetupProcessing(string, string?, AppConfig?)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.ValidateAndSetupProcessing(string, string?, AppConfig?)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.ValidateAndSetupProcessing(string, string?, NotebookAutomation.Core.Configuration.AppConfig?)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ValidateAndSetupProcessing
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 917
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Validates input parameters and sets up processing configuration.
+  example: []
+  syntax:
+    content: protected virtual (string effectiveInput, string effectiveOutput)? ValidateAndSetupProcessing(string input, string? output, AppConfig? appConfig)
+    parameters:
+    - id: input
+      type: System.String
+      description: Input path.
+    - id: output
+      type: System.String
+      description: Output path.
+    - id: appConfig
+      type: NotebookAutomation.Core.Configuration.AppConfig
+      description: Application configuration.
+    return:
+      type: System.Nullable{System.ValueTuple{System.String,System.String}}
+      description: Tuple containing effective input and output paths, or null if validation failed.
+    content.vb: Protected Overridable Function ValidateAndSetupProcessing(input As String, output As String, appConfig As AppConfig) As (effectiveInput As String, effectiveOutput As String)?
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ValidateAndSetupProcessing*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).ValidateAndSetupProcessing(String, String, AppConfig)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).ValidateAndSetupProcessing(String, String, NotebookAutomation.Core.Configuration.AppConfig)
+  name.vb: ValidateAndSetupProcessing(String, String, AppConfig)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ExtractContentAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ExtractContentAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32)
+  id: ExtractContentAsync(System.String,NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: ExtractContentAsync(string, QueueItem?, int, int)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.ExtractContentAsync(string, QueueItem?, int, int)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.ExtractContentAsync(string, NotebookAutomation.Core.Models.QueueItem?, int, int)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ExtractContentAsync
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 942
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Extracts content and metadata from a file with progress tracking.
+  example: []
+  syntax:
+    content: protected virtual Task<(string text, Dictionary<string, object> metadata)> ExtractContentAsync(string filePath, QueueItem? queueItem, int fileIndex, int totalFiles)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: Path to the file to extract from.
+    - id: queueItem
+      type: NotebookAutomation.Core.Models.QueueItem
+      description: Queue item to update with progress.
+    - id: fileIndex
+      type: System.Int32
+      description: Current file index.
+    - id: totalFiles
+      type: System.Int32
+      description: Total number of files.
+    return:
+      type: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}}
+      description: Tuple containing extracted text and metadata.
+    content.vb: Protected Overridable Function ExtractContentAsync(filePath As String, queueItem As QueueItem, fileIndex As Integer, totalFiles As Integer) As Task(Of (text As String, metadata As Dictionary(Of String, Object)))
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ExtractContentAsync*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).ExtractContentAsync(String, QueueItem, Integer, Integer)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).ExtractContentAsync(String, NotebookAutomation.Core.Models.QueueItem, Integer, Integer)
+  name.vb: ExtractContentAsync(String, QueueItem, Integer, Integer)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAISummaryAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.Boolean,System.Nullable{System.Int32},System.String,System.Boolean)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAISummaryAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.Boolean,System.Nullable{System.Int32},System.String,System.Boolean)
+  id: GenerateAISummaryAsync(System.String,System.String,System.Collections.Generic.Dictionary{System.String,System.Object},NotebookAutomation.Core.Models.QueueItem,System.Int32,System.Int32,System.String,System.Boolean,System.Nullable{System.Int32},System.String,System.Boolean)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: GenerateAISummaryAsync(string, string, Dictionary<string, object>, QueueItem?, int, int, string?, bool, int?, string?, bool)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.GenerateAISummaryAsync(string, string, Dictionary<string, object>, QueueItem?, int, int, string?, bool, int?, string?, bool)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.GenerateAISummaryAsync(string, string, System.Collections.Generic.Dictionary<string, object>, NotebookAutomation.Core.Models.QueueItem?, int, int, string?, bool, int?, string?, bool)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: GenerateAISummaryAsync
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 998
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Generates AI summary using processor-specific methods.
+  example: []
+  syntax:
+    content: protected virtual Task<(string summaryText, int summaryTokens, TimeSpan summaryTime)> GenerateAISummaryAsync(string filePath, string text, Dictionary<string, object> metadata, QueueItem? queueItem, int fileIndex, int totalFiles, string? openAiApiKey, bool noSummary, int? timeoutSeconds, string? resourcesRoot, bool noShareLinks)
+    parameters:
+    - id: filePath
+      type: System.String
+      description: Path to the file being processed.
+    - id: text
+      type: System.String
+      description: Extracted text content.
+    - id: metadata
+      type: System.Collections.Generic.Dictionary{System.String,System.Object}
+      description: File metadata.
+    - id: queueItem
+      type: NotebookAutomation.Core.Models.QueueItem
+      description: Queue item to update with progress.
+    - id: fileIndex
+      type: System.Int32
+      description: Current file index.
+    - id: totalFiles
+      type: System.Int32
+      description: Total number of files.
+    - id: openAiApiKey
+      type: System.String
+      description: OpenAI API key.
+    - id: noSummary
+      type: System.Boolean
+      description: Whether to skip summary generation.
+    - id: timeoutSeconds
+      type: System.Nullable{System.Int32}
+      description: API timeout in seconds.
+    - id: resourcesRoot
+      type: System.String
+      description: Resources root directory.
+    - id: noShareLinks
+      type: System.Boolean
+      description: Whether to skip share link generation.
+    return:
+      type: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.Int32,System.TimeSpan}}
+      description: Tuple containing summary text, token count, and summary time.
+    content.vb: Protected Overridable Function GenerateAISummaryAsync(filePath As String, text As String, metadata As Dictionary(Of String, Object), queueItem As QueueItem, fileIndex As Integer, totalFiles As Integer, openAiApiKey As String, noSummary As Boolean, timeoutSeconds As Integer?, resourcesRoot As String, noShareLinks As Boolean) As Task(Of (summaryText As String, summaryTokens As Integer, summaryTime As TimeSpan))
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAISummaryAsync*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).GenerateAISummaryAsync(String, String, Dictionary(Of String, Object), QueueItem, Integer, Integer, String, Boolean, Integer?, String, Boolean)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).GenerateAISummaryAsync(String, String, System.Collections.Generic.Dictionary(Of String, Object), NotebookAutomation.Core.Models.QueueItem, Integer, Integer, String, Boolean, Integer?, String, Boolean)
+  name.vb: GenerateAISummaryAsync(String, String, Dictionary(Of String, Object), QueueItem, Integer, Integer, String, Boolean, Integer?, String, Boolean)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.DiscoverAndFilterFiles(System.String,System.Collections.Generic.List{System.String},System.Boolean,System.String,System.String)
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.DiscoverAndFilterFiles(System.String,System.Collections.Generic.List{System.String},System.Boolean,System.String,System.String)
+  id: DiscoverAndFilterFiles(System.String,System.Collections.Generic.List{System.String},System.Boolean,System.String,System.String)
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: DiscoverAndFilterFiles(string, List<string>, bool, string, string)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.DiscoverAndFilterFiles(string, List<string>, bool, string, string)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.DiscoverAndFilterFiles(string, System.Collections.Generic.List<string>, bool, string, string)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: DiscoverAndFilterFiles
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 1150
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Discovers files to process based on input path and file extensions.
+  example: []
+  syntax:
+    content: protected virtual List<string>? DiscoverAndFilterFiles(string effectiveInput, List<string> fileExtensions, bool retryFailed, string effectiveOutput, string failedFilesListName)
+    parameters:
+    - id: effectiveInput
+      type: System.String
+      description: Effective input path.
+    - id: fileExtensions
+      type: System.Collections.Generic.List{System.String}
+      description: List of file extensions to process.
+    - id: retryFailed
+      type: System.Boolean
+      description: Whether to retry only failed files.
+    - id: effectiveOutput
+      type: System.String
+      description: Output directory for failed files list.
+    - id: failedFilesListName
+      type: System.String
+      description: Name of failed files list.
+    return:
+      type: System.Collections.Generic.List{System.String}
+      description: List of files to process, or null if discovery failed.
+    content.vb: Protected Overridable Function DiscoverAndFilterFiles(effectiveInput As String, fileExtensions As List(Of String), retryFailed As Boolean, effectiveOutput As String, failedFilesListName As String) As List(Of String)
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.DiscoverAndFilterFiles*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).DiscoverAndFilterFiles(String, List(Of String), Boolean, String, String)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).DiscoverAndFilterFiles(String, System.Collections.Generic.List(Of String), Boolean, String, String)
+  name.vb: DiscoverAndFilterFiles(String, List(Of String), Boolean, String, String)
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.InitializeProcessingQueue(System.Collections.Generic.List{System.String})
+  commentId: M:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.InitializeProcessingQueue(System.Collections.Generic.List{System.String})
+  id: InitializeProcessingQueue(System.Collections.Generic.List{System.String})
+  parent: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  langs:
+  - csharp
+  - vb
+  name: InitializeProcessingQueue(List<string>)
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.InitializeProcessingQueue(List<string>)
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.InitializeProcessingQueue(System.Collections.Generic.List<string>)
+  type: Method
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: InitializeProcessingQueue
+    path: src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
+    startLine: 1201
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Tools.Shared
+  summary: Initializes the processing queue with discovered files.
+  example: []
+  syntax:
+    content: protected virtual void InitializeProcessingQueue(List<string> files)
+    parameters:
+    - id: files
+      type: System.Collections.Generic.List{System.String}
+      description: List of files to add to queue.
+    content.vb: Protected Overridable Sub InitializeProcessingQueue(files As List(Of String))
+  overload: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.InitializeProcessingQueue*
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).InitializeProcessingQueue(List(Of String))
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).InitializeProcessingQueue(System.Collections.Generic.List(Of String))
+  name.vb: InitializeProcessingQueue(List(Of String))
+references:
+- uid: NotebookAutomation.Core.Tools.Shared
+  commentId: N:NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Tools.Shared
+  nameWithType: NotebookAutomation.Core.Tools.Shared
+  fullName: NotebookAutomation.Core.Tools.Shared
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools
+    name: Tools
+    href: NotebookAutomation.Core.Tools.html
+  - name: .
+  - uid: NotebookAutomation.Core.Tools.Shared
+    name: Shared
+    href: NotebookAutomation.Core.Tools.Shared.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+  commentId: T:System.EventHandler{NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<DocumentProcessingProgressEventArgs>
+  nameWithType: EventHandler<DocumentProcessingProgressEventArgs>
+  fullName: System.EventHandler<NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs>
+  nameWithType.vb: EventHandler(Of DocumentProcessingProgressEventArgs)
+  fullName.vb: System.EventHandler(Of NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs)
+  name.vb: EventHandler(Of DocumentProcessingProgressEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+    name: DocumentProcessingProgressEventArgs
+    href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+    name: DocumentProcessingProgressEventArgs
+    href: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html
+  - name: )
+- uid: System.EventHandler`1
+  commentId: T:System.EventHandler`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<TEventArgs>
+  nameWithType: EventHandler<TEventArgs>
+  fullName: System.EventHandler<TEventArgs>
+  nameWithType.vb: EventHandler(Of TEventArgs)
+  fullName.vb: System.EventHandler(Of TEventArgs)
+  name.vb: EventHandler(Of TEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - name: TEventArgs
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TEventArgs
+  - name: )
+- uid: System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+  commentId: T:System.EventHandler{NotebookAutomation.Core.Models.QueueChangedEventArgs}
+  parent: System
+  definition: System.EventHandler`1
+  href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  name: EventHandler<QueueChangedEventArgs>
+  nameWithType: EventHandler<QueueChangedEventArgs>
+  fullName: System.EventHandler<NotebookAutomation.Core.Models.QueueChangedEventArgs>
+  nameWithType.vb: EventHandler(Of QueueChangedEventArgs)
+  fullName.vb: System.EventHandler(Of NotebookAutomation.Core.Models.QueueChangedEventArgs)
+  name.vb: EventHandler(Of QueueChangedEventArgs)
+  spec.csharp:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+    name: QueueChangedEventArgs
+    href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html
+  - name: '>'
+  spec.vb:
+  - uid: System.EventHandler`1
+    name: EventHandler
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.eventhandler-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+    name: QueueChangedEventArgs
+    href: NotebookAutomation.Core.Models.QueueChangedEventArgs.html
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.Queue*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.Queue
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_Queue
+  name: Queue
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.Queue
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.Queue
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).Queue
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).Queue
+- uid: System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+  commentId: T:System.Collections.Generic.IReadOnlyList{NotebookAutomation.Core.Models.QueueItem}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.IReadOnlyList`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<QueueItem>
+  nameWithType: IReadOnlyList<QueueItem>
+  fullName: System.Collections.Generic.IReadOnlyList<NotebookAutomation.Core.Models.QueueItem>
+  nameWithType.vb: IReadOnlyList(Of QueueItem)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of NotebookAutomation.Core.Models.QueueItem)
+  name.vb: IReadOnlyList(Of QueueItem)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - uid: NotebookAutomation.Core.Models.QueueItem
+    name: QueueItem
+    href: NotebookAutomation.Core.Models.QueueItem.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Models.QueueItem
+    name: QueueItem
+    href: NotebookAutomation.Core.Models.QueueItem.html
+  - name: )
+- uid: System.Collections.Generic.IReadOnlyList`1
+  commentId: T:System.Collections.Generic.IReadOnlyList`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  name: IReadOnlyList<T>
+  nameWithType: IReadOnlyList<T>
+  fullName: System.Collections.Generic.IReadOnlyList<T>
+  nameWithType.vb: IReadOnlyList(Of T)
+  fullName.vb: System.Collections.Generic.IReadOnlyList(Of T)
+  name.vb: IReadOnlyList(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.IReadOnlyList`1
+    name: IReadOnlyList
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.ireadonlylist-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnProcessingProgressChanged*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnProcessingProgressChanged
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_OnProcessingProgressChanged_System_String_System_String_System_Int32_System_Int32_
+  name: OnProcessingProgressChanged
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.OnProcessingProgressChanged
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.OnProcessingProgressChanged
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).OnProcessingProgressChanged
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).OnProcessingProgressChanged
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: System.Int32
+  commentId: T:System.Int32
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int
+  nameWithType: int
+  fullName: int
+  nameWithType.vb: Integer
+  fullName.vb: Integer
+  name.vb: Integer
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnQueueChanged*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.OnQueueChanged
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_OnQueueChanged_NotebookAutomation_Core_Models_QueueItem_
+  name: OnQueueChanged
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.OnQueueChanged
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.OnQueueChanged
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).OnQueueChanged
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).OnQueueChanged
+- uid: NotebookAutomation.Core.Models.QueueItem
+  commentId: T:NotebookAutomation.Core.Models.QueueItem
+  parent: NotebookAutomation.Core.Models
+  href: NotebookAutomation.Core.Models.QueueItem.html
+  name: QueueItem
+  nameWithType: QueueItem
+  fullName: NotebookAutomation.Core.Models.QueueItem
+- uid: NotebookAutomation.Core.Models
+  commentId: N:NotebookAutomation.Core.Models
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Models
+  nameWithType: NotebookAutomation.Core.Models
+  fullName: NotebookAutomation.Core.Models
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Models
+    name: Models
+    href: NotebookAutomation.Core.Models.html
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GetDocumentType*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GetDocumentType
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GetDocumentType_System_String_
+  name: GetDocumentType
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.GetDocumentType
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.GetDocumentType
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).GetDocumentType
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).GetDocumentType
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  commentId: T:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  name: DocumentNoteBatchProcessor<TProcessor>
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor)
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor)
+  name.vb: DocumentNoteBatchProcessor(Of TProcessor)
+  spec.csharp:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+    name: DocumentNoteBatchProcessor
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  - name: <
+  - name: TProcessor
+  - name: '>'
+  spec.vb:
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+    name: DocumentNoteBatchProcessor
+    href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TProcessor
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.#ctor*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.#ctor
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1__ctor_Microsoft_Extensions_Logging_ILogger__0_NotebookAutomation_Core_Services_AISummarizer_
+  name: DocumentNoteBatchProcessor
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.DocumentNoteBatchProcessor
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.DocumentNoteBatchProcessor
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).New
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).New
+  name.vb: New
+- uid: Microsoft.Extensions.Logging.ILogger
+  commentId: T:Microsoft.Extensions.Logging.ILogger
+  parent: Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging.ilogger
+  name: ILogger
+  nameWithType: ILogger
+  fullName: Microsoft.Extensions.Logging.ILogger
+- uid: '{TProcessor}'
+  commentId: '!:TProcessor'
+  definition: TProcessor
+  name: TProcessor
+  nameWithType: TProcessor
+  fullName: TProcessor
+- uid: NotebookAutomation.Core.Services.AISummarizer
+  commentId: T:NotebookAutomation.Core.Services.AISummarizer
+  parent: NotebookAutomation.Core.Services
+  href: NotebookAutomation.Core.Services.AISummarizer.html
+  name: AISummarizer
+  nameWithType: AISummarizer
+  fullName: NotebookAutomation.Core.Services.AISummarizer
+- uid: Microsoft.Extensions.Logging
+  commentId: N:Microsoft.Extensions.Logging
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/microsoft
+  name: Microsoft.Extensions.Logging
+  nameWithType: Microsoft.Extensions.Logging
+  fullName: Microsoft.Extensions.Logging
+  spec.csharp:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+  spec.vb:
+  - uid: Microsoft
+    name: Microsoft
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft
+  - name: .
+  - uid: Microsoft.Extensions
+    name: Extensions
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions
+  - name: .
+  - uid: Microsoft.Extensions.Logging
+    name: Logging
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/microsoft.extensions.logging
+- uid: TProcessor
+  commentId: '!:TProcessor'
+  name: TProcessor
+  nameWithType: TProcessor
+  fullName: TProcessor
+- uid: NotebookAutomation.Core.Services
+  commentId: N:NotebookAutomation.Core.Services
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Services
+  nameWithType: NotebookAutomation.Core.Services
+  fullName: NotebookAutomation.Core.Services
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Services
+    name: Services
+    href: NotebookAutomation.Core.Services.html
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessDocumentsAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessDocumentsAsync
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ProcessDocumentsAsync_System_String_System_String_System_Collections_Generic_List_System_String__System_String_System_Boolean_System_Boolean_System_Boolean_System_Boolean_System_Nullable_System_Int32__System_String_NotebookAutomation_Core_Configuration_AppConfig_System_String_System_String_System_Boolean_
+  name: ProcessDocumentsAsync
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.ProcessDocumentsAsync
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.ProcessDocumentsAsync
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).ProcessDocumentsAsync
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).ProcessDocumentsAsync
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Boolean
+  commentId: T:System.Boolean
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.boolean
+  name: bool
+  nameWithType: bool
+  fullName: bool
+  nameWithType.vb: Boolean
+  fullName.vb: Boolean
+  name.vb: Boolean
+- uid: System.Nullable{System.Int32}
+  commentId: T:System.Nullable{System.Int32}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.int32
+  name: int?
+  nameWithType: int?
+  fullName: int?
+  nameWithType.vb: Integer?
+  fullName.vb: Integer?
+  name.vb: Integer?
+  spec.csharp:
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+  spec.vb:
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: '?'
+- uid: NotebookAutomation.Core.Configuration.AppConfig
+  commentId: T:NotebookAutomation.Core.Configuration.AppConfig
+  parent: NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.Core.Configuration.AppConfig.html
+  name: AppConfig
+  nameWithType: AppConfig
+  fullName: NotebookAutomation.Core.Configuration.AppConfig
+- uid: System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Shared.BatchProcessResult}
+  commentId: T:System.Threading.Tasks.Task{NotebookAutomation.Core.Tools.Shared.BatchProcessResult}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<BatchProcessResult>
+  nameWithType: Task<BatchProcessResult>
+  fullName: System.Threading.Tasks.Task<NotebookAutomation.Core.Tools.Shared.BatchProcessResult>
+  nameWithType.vb: Task(Of BatchProcessResult)
+  fullName.vb: System.Threading.Tasks.Task(Of NotebookAutomation.Core.Tools.Shared.BatchProcessResult)
+  name.vb: Task(Of BatchProcessResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+    name: BatchProcessResult
+    href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+    name: BatchProcessResult
+    href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Nullable`1
+  commentId: T:System.Nullable`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  name: Nullable<T>
+  nameWithType: Nullable<T>
+  fullName: System.Nullable<T>
+  nameWithType.vb: Nullable(Of T)
+  fullName.vb: System.Nullable(Of T)
+  name.vb: Nullable(Of T)
+  spec.csharp:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Nullable`1
+    name: Nullable
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.nullable-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: System.Threading.Tasks.Task`1
+  commentId: T:System.Threading.Tasks.Task`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<TResult>
+  nameWithType: Task<TResult>
+  fullName: System.Threading.Tasks.Task<TResult>
+  nameWithType.vb: Task(Of TResult)
+  fullName.vb: System.Threading.Tasks.Task(Of TResult)
+  name.vb: Task(Of TResult)
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: TResult
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TResult
+  - name: )
+- uid: System.Threading.Tasks
+  commentId: N:System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Threading.Tasks
+  nameWithType: System.Threading.Tasks
+  fullName: System.Threading.Tasks
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Threading
+    name: Threading
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading
+  - name: .
+  - uid: System.Threading.Tasks
+    name: Tasks
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessSingleFileAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ProcessSingleFileAsync
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ProcessSingleFileAsync_System_String_NotebookAutomation_Core_Models_QueueItem_System_Int32_System_Int32_System_String_System_String_System_Boolean_System_Boolean_System_String_System_Boolean_System_Nullable_System_Int32__System_Boolean_System_String_
+  name: ProcessSingleFileAsync
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.ProcessSingleFileAsync
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.ProcessSingleFileAsync
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).ProcessSingleFileAsync
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).ProcessSingleFileAsync
+- uid: System.Threading.Tasks.Task{System.ValueTuple{System.Boolean,System.String}}
+  commentId: T:System.Threading.Tasks.Task{System.ValueTuple{System.Boolean,System.String}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<(bool success, string errorMessage)>
+  nameWithType: Task<(bool success, string errorMessage)>
+  fullName: System.Threading.Tasks.Task<(bool success, string errorMessage)>
+  nameWithType.vb: Task(Of (success As Boolean, errorMessage As String))
+  fullName.vb: System.Threading.Tasks.Task(Of (success As Boolean, errorMessage As String))
+  name.vb: Task(Of (success As Boolean, errorMessage As String))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: (
+  - uid: System.Boolean
+    name: bool
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: " "
+  - uid: System.ValueTuple{System.Boolean,System.String}.success
+    name: success
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string-.success
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.Boolean,System.String}.errorMessage
+    name: errorMessage
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string-.errormessage
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.Boolean,System.String}.success
+    name: success
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string-.success
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Boolean
+    name: Boolean
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.boolean
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.Boolean,System.String}.errorMessage
+    name: errorMessage
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.boolean,system.string-.errormessage
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: )
+- uid: System.Threading.Tasks.Task
+  commentId: T:System.Threading.Tasks.Task
+  parent: System.Threading.Tasks
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task
+  name: Task
+  nameWithType: Task
+  fullName: System.Threading.Tasks.Task
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAndSaveMarkdownAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAndSaveMarkdownAsync
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GenerateAndSaveMarkdownAsync_System_String_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__System_String_System_String_NotebookAutomation_Core_Models_QueueItem_System_Int32_System_Int32_System_Boolean_System_Boolean_
+  name: GenerateAndSaveMarkdownAsync
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.GenerateAndSaveMarkdownAsync
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.GenerateAndSaveMarkdownAsync
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).GenerateAndSaveMarkdownAsync
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).GenerateAndSaveMarkdownAsync
+- uid: System.Collections.Generic.Dictionary{System.String,System.Object}
+  commentId: T:System.Collections.Generic.Dictionary{System.String,System.Object}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.Dictionary`2
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<string, object>
+  nameWithType: Dictionary<string, object>
+  fullName: System.Collections.Generic.Dictionary<string, object>
+  nameWithType.vb: Dictionary(Of String, Object)
+  fullName.vb: System.Collections.Generic.Dictionary(Of String, Object)
+  name.vb: Dictionary(Of String, Object)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Collections.Generic.Dictionary`2
+  commentId: T:System.Collections.Generic.Dictionary`2
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  name: Dictionary<TKey, TValue>
+  nameWithType: Dictionary<TKey, TValue>
+  fullName: System.Collections.Generic.Dictionary<TKey, TValue>
+  nameWithType.vb: Dictionary(Of TKey, TValue)
+  fullName.vb: System.Collections.Generic.Dictionary(Of TKey, TValue)
+  name.vb: Dictionary(Of TKey, TValue)
+  spec.csharp:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - name: TKey
+  - name: ','
+  - name: " "
+  - name: TValue
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.CompileProcessingResults*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.CompileProcessingResults
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_CompileProcessingResults_System_Int32_System_Int32_System_TimeSpan_System_TimeSpan_System_Int32_
+  name: CompileProcessingResults
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.CompileProcessingResults
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.CompileProcessingResults
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).CompileProcessingResults
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).CompileProcessingResults
+- uid: System.TimeSpan
+  commentId: T:System.TimeSpan
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.timespan
+  name: TimeSpan
+  nameWithType: TimeSpan
+  fullName: System.TimeSpan
+- uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  commentId: T:NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+  parent: NotebookAutomation.Core.Tools.Shared
+  href: NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html
+  name: BatchProcessResult
+  nameWithType: BatchProcessResult
+  fullName: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateOutputPath*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateOutputPath
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GenerateOutputPath_System_String_System_String_System_String_
+  name: GenerateOutputPath
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.GenerateOutputPath
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.GenerateOutputPath
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).GenerateOutputPath
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).GenerateOutputPath
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.PreserveUserContentAfterNotes*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.PreserveUserContentAfterNotes
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_PreserveUserContentAfterNotes_System_String_System_String_
+  name: PreserveUserContentAfterNotes
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.PreserveUserContentAfterNotes
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.PreserveUserContentAfterNotes
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).PreserveUserContentAfterNotes
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).PreserveUserContentAfterNotes
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ValidateAndSetupProcessing*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ValidateAndSetupProcessing
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ValidateAndSetupProcessing_System_String_System_String_NotebookAutomation_Core_Configuration_AppConfig_
+  name: ValidateAndSetupProcessing
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.ValidateAndSetupProcessing
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.ValidateAndSetupProcessing
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).ValidateAndSetupProcessing
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).ValidateAndSetupProcessing
+- uid: System.Nullable{System.ValueTuple{System.String,System.String}}
+  commentId: T:System.Nullable{System.ValueTuple{System.String,System.String}}
+  parent: System
+  definition: System.Nullable`1
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: (string effectiveInput, string effectiveOutput)?
+  nameWithType: (string effectiveInput, string effectiveOutput)?
+  fullName: (string effectiveInput, string effectiveOutput)?
+  nameWithType.vb: (effectiveInput As String, effectiveOutput As String)?
+  fullName.vb: (effectiveInput As String, effectiveOutput As String)?
+  name.vb: (effectiveInput As String, effectiveOutput As String)?
+  spec.csharp:
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.effectiveInput
+    name: effectiveInput
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.effectiveinput
+  - name: ','
+  - name: " "
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.effectiveOutput
+    name: effectiveOutput
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.effectiveoutput
+  - name: )
+  - name: '?'
+  spec.vb:
+  - name: (
+  - uid: System.ValueTuple{System.String,System.String}.effectiveInput
+    name: effectiveInput
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.effectiveinput
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.String}.effectiveOutput
+    name: effectiveOutput
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.string-.effectiveoutput
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+  - name: '?'
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ExtractContentAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.ExtractContentAsync
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_ExtractContentAsync_System_String_NotebookAutomation_Core_Models_QueueItem_System_Int32_System_Int32_
+  name: ExtractContentAsync
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.ExtractContentAsync
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.ExtractContentAsync
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).ExtractContentAsync
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).ExtractContentAsync
+- uid: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}}
+  commentId: T:System.Threading.Tasks.Task{System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<(string Text, Dictionary<string, object> Metadata)>
+  nameWithType: Task<(string Text, Dictionary<string, object> Metadata)>
+  fullName: System.Threading.Tasks.Task<(string Text, System.Collections.Generic.Dictionary<string, object> Metadata)>
+  nameWithType.vb: Task(Of (Text As String, Metadata As Dictionary(Of String, Object)))
+  fullName.vb: System.Threading.Tasks.Task(Of (Text As String, Metadata As System.Collections.Generic.Dictionary(Of String, Object)))
+  name.vb: Task(Of (Text As String, Metadata As Dictionary(Of String, Object)))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}.Text
+    name: Text
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.text
+  - name: ','
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: '>'
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}.Metadata
+    name: Metadata
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.metadata
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}.Text
+    name: Text
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.text
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Collections.Generic.Dictionary{System.String,System.Object}}.Metadata
+    name: Metadata
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.collections.generic.dictionary-system.string,system.object--.metadata
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Collections.Generic.Dictionary`2
+    name: Dictionary
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.dictionary-2
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  - name: )
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAISummaryAsync*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.GenerateAISummaryAsync
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_GenerateAISummaryAsync_System_String_System_String_System_Collections_Generic_Dictionary_System_String_System_Object__NotebookAutomation_Core_Models_QueueItem_System_Int32_System_Int32_System_String_System_Boolean_System_Nullable_System_Int32__System_String_System_Boolean_
+  name: GenerateAISummaryAsync
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.GenerateAISummaryAsync
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.GenerateAISummaryAsync
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).GenerateAISummaryAsync
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).GenerateAISummaryAsync
+- uid: System.Threading.Tasks.Task{System.ValueTuple{System.String,System.Int32,System.TimeSpan}}
+  commentId: T:System.Threading.Tasks.Task{System.ValueTuple{System.String,System.Int32,System.TimeSpan}}
+  parent: System.Threading.Tasks
+  definition: System.Threading.Tasks.Task`1
+  href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  name: Task<(string summaryText, int summaryTokens, TimeSpan summaryTime)>
+  nameWithType: Task<(string summaryText, int summaryTokens, TimeSpan summaryTime)>
+  fullName: System.Threading.Tasks.Task<(string summaryText, int summaryTokens, System.TimeSpan summaryTime)>
+  nameWithType.vb: Task(Of (summaryText As String, summaryTokens As Integer, summaryTime As TimeSpan))
+  fullName.vb: System.Threading.Tasks.Task(Of (summaryText As String, summaryTokens As Integer, summaryTime As System.TimeSpan))
+  name.vb: Task(Of (summaryText As String, summaryTokens As Integer, summaryTime As TimeSpan))
+  spec.csharp:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: <
+  - name: (
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Int32,System.TimeSpan}.summaryText
+    name: summaryText
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32,system.timespan-.summarytext
+  - name: ','
+  - name: " "
+  - uid: System.Int32
+    name: int
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Int32,System.TimeSpan}.summaryTokens
+    name: summaryTokens
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32,system.timespan-.summarytokens
+  - name: ','
+  - name: " "
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Int32,System.TimeSpan}.summaryTime
+    name: summaryTime
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32,system.timespan-.summarytime
+  - name: )
+  - name: '>'
+  spec.vb:
+  - uid: System.Threading.Tasks.Task`1
+    name: Task
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.threading.tasks.task-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: (
+  - uid: System.ValueTuple{System.String,System.Int32,System.TimeSpan}.summaryText
+    name: summaryText
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32,system.timespan-.summarytext
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Int32,System.TimeSpan}.summaryTokens
+    name: summaryTokens
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32,system.timespan-.summarytokens
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.Int32
+    name: Integer
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.int32
+  - name: ','
+  - name: " "
+  - uid: System.ValueTuple{System.String,System.Int32,System.TimeSpan}.summaryTime
+    name: summaryTime
+    href: https://learn.microsoft.com/dotnet/api/system.valuetuple-system.string,system.int32,system.timespan-.summarytime
+  - name: " "
+  - name: As
+  - name: " "
+  - uid: System.TimeSpan
+    name: TimeSpan
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.timespan
+  - name: )
+  - name: )
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.DiscoverAndFilterFiles*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.DiscoverAndFilterFiles
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_DiscoverAndFilterFiles_System_String_System_Collections_Generic_List_System_String__System_Boolean_System_String_System_String_
+  name: DiscoverAndFilterFiles
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.DiscoverAndFilterFiles
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.DiscoverAndFilterFiles
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).DiscoverAndFilterFiles
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).DiscoverAndFilterFiles
+- uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.InitializeProcessingQueue*
+  commentId: Overload:NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1.InitializeProcessingQueue
+  href: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html#NotebookAutomation_Core_Tools_Shared_DocumentNoteBatchProcessor_1_InitializeProcessingQueue_System_Collections_Generic_List_System_String__
+  name: InitializeProcessingQueue
+  nameWithType: DocumentNoteBatchProcessor<TProcessor>.InitializeProcessingQueue
+  fullName: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>.InitializeProcessingQueue
+  nameWithType.vb: DocumentNoteBatchProcessor(Of TProcessor).InitializeProcessingQueue
+  fullName.vb: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor(Of TProcessor).InitializeProcessingQueue

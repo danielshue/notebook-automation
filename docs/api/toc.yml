@@ -1,0 +1,233 @@
+### YamlMime:TableOfContent
+items:
+- uid: NotebookAutomation.Core.Configuration
+  name: NotebookAutomation.Core.Configuration
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Configuration.AIServiceConfig
+    name: AIServiceConfig
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.AppConfig
+    name: AppConfig
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.AzureProviderConfig
+    name: AzureProviderConfig
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.ConfigurationExtensions
+    name: ConfigurationExtensions
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.ConfigurationSetup
+    name: ConfigurationSetup
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.FailedOperations
+    name: FailedOperations
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.FoundryProviderConfig
+    name: FoundryProviderConfig
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.ILoggingService
+    name: ILoggingService
+    type: Interface
+  - uid: NotebookAutomation.Core.Configuration.LoggingService
+    name: LoggingService
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+    name: MicrosoftGraphConfig
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.OpenAiProviderConfig
+    name: OpenAiProviderConfig
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.PathsConfig
+    name: PathsConfig
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.ServiceRegistration
+    name: ServiceRegistration
+    type: Class
+  - uid: NotebookAutomation.Core.Configuration.UserSecretsHelper
+    name: UserSecretsHelper
+    type: Class
+- uid: NotebookAutomation.Core.Models
+  name: NotebookAutomation.Core.Models
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs
+    name: DocumentProcessingProgressEventArgs
+    type: Class
+  - uid: NotebookAutomation.Core.Models.DocumentProcessingStatus
+    name: DocumentProcessingStatus
+    type: Enum
+  - uid: NotebookAutomation.Core.Models.ProcessingStage
+    name: ProcessingStage
+    type: Enum
+  - uid: NotebookAutomation.Core.Models.QueueChangedEventArgs
+    name: QueueChangedEventArgs
+    type: Class
+  - uid: NotebookAutomation.Core.Models.QueueItem
+    name: QueueItem
+    type: Class
+  - uid: NotebookAutomation.Core.Models.VaultFileInfo
+    name: VaultFileInfo
+    type: Class
+  - uid: NotebookAutomation.Core.Models.VaultIndexOptions
+    name: VaultIndexOptions
+    type: Class
+- uid: NotebookAutomation.Core.Services
+  name: NotebookAutomation.Core.Services
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Services.AISummarizer
+    name: AISummarizer
+    type: Class
+  - uid: NotebookAutomation.Core.Services.IAISummarizer
+    name: IAISummarizer
+    type: Interface
+  - uid: NotebookAutomation.Core.Services.IOneDriveService
+    name: IOneDriveService
+    type: Interface
+  - uid: NotebookAutomation.Core.Services.IPromptService
+    name: IPromptService
+    type: Interface
+  - uid: NotebookAutomation.Core.Services.ITextChunkingService
+    name: ITextChunkingService
+    type: Interface
+  - uid: NotebookAutomation.Core.Services.OneDriveCliOptions
+    name: OneDriveCliOptions
+    type: Class
+  - uid: NotebookAutomation.Core.Services.OneDriveService
+    name: OneDriveService
+    type: Class
+  - uid: NotebookAutomation.Core.Services.PromptTemplateService
+    name: PromptTemplateService
+    type: Class
+  - uid: NotebookAutomation.Core.Services.TextChunkingService
+    name: TextChunkingService
+    type: Class
+  - uid: NotebookAutomation.Core.Services.VaultRootContextService
+    name: VaultRootContextService
+    type: Class
+- uid: NotebookAutomation.Core.Services.Text
+  name: NotebookAutomation.Core.Services.Text
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter
+    name: RecursiveCharacterTextSplitter
+    type: Class
+- uid: NotebookAutomation.Core.Tools.MarkdownGeneration
+  name: NotebookAutomation.Core.Tools.MarkdownGeneration
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor
+    name: MarkdownNoteProcessor
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser
+    name: MarkdownParser
+    type: Class
+- uid: NotebookAutomation.Core.Tools.PdfProcessing
+  name: NotebookAutomation.Core.Tools.PdfProcessing
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor
+    name: PdfNoteBatchProcessor
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor
+    name: PdfNoteProcessor
+    type: Class
+- uid: NotebookAutomation.Core.Tools.Shared
+  name: NotebookAutomation.Core.Tools.Shared
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Tools.Shared.BatchProcessResult
+    name: BatchProcessResult
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor`1
+    name: DocumentNoteBatchProcessor<TProcessor>
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase
+    name: DocumentNoteProcessorBase
+    type: Class
+- uid: NotebookAutomation.Core.Tools.TagManagement
+  name: NotebookAutomation.Core.Tools.TagManagement
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Tools.TagManagement.TagProcessor
+    name: TagProcessor
+    type: Class
+- uid: NotebookAutomation.Core.Tools.Vault
+  name: NotebookAutomation.Core.Tools.Vault
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Tools.Vault.DictionaryExtensions
+    name: DictionaryExtensions
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.Vault.MetadataBatchResult
+    name: MetadataBatchResult
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor
+    name: MetadataEnsureBatchProcessor
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor
+    name: MetadataEnsureProcessor
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor
+    name: VaultIndexBatchProcessor
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult
+    name: VaultIndexBatchResult
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor
+    name: VaultIndexProcessor
+    type: Class
+- uid: NotebookAutomation.Core.Tools.VideoProcessing
+  name: NotebookAutomation.Core.Tools.VideoProcessing
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor
+    name: VideoNoteBatchProcessor
+    type: Class
+  - uid: NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor
+    name: VideoNoteProcessor
+    type: Class
+- uid: NotebookAutomation.Core.Utils
+  name: NotebookAutomation.Core.Utils
+  type: Namespace
+  items:
+  - uid: NotebookAutomation.Core.Utils.BaseBlockGenerator
+    name: BaseBlockGenerator
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.CourseStructureExtractor
+    name: CourseStructureExtractor
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.FileSizeFormatter
+    name: FileSizeFormatter
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.FriendlyTitleHelper
+    name: FriendlyTitleHelper
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.IYamlHelper
+    name: IYamlHelper
+    type: Interface
+  - uid: NotebookAutomation.Core.Utils.LoggerExtensions
+    name: LoggerExtensions
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.MarkdownNoteBuilder
+    name: MarkdownNoteBuilder
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.MetadataHierarchyDetector
+    name: MetadataHierarchyDetector
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.MetadataTemplateManager
+    name: MetadataTemplateManager
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor
+    name: NoQuotesForBannerVisitor
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.PathFormatter
+    name: PathFormatter
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.PathUtils
+    name: PathUtils
+    type: Class
+  - uid: NotebookAutomation.Core.Utils.YamlHelper
+    name: YamlHelper
+    type: Class
+memberLayout: SamePage

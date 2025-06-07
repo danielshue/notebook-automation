@@ -1,71 +1,75 @@
-﻿using System.IO;
-using System.Linq;
-
-using Moq;
-
-using NotebookAutomation.Core.Tools.TagManagement;
-using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="TagProcessorTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Tools/TagManagement/TagProcessorTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Tools.TagManagement;
 
 /// <summary>
 /// Unit tests for the TagProcessor class.
 /// </summary>
 [TestClass]
-public class TagProcessorTests
+internal class TagProcessorTests
 {
-    private Mock<ILogger<TagProcessor>> _loggerMock;
-    private Mock<ILogger> _failedLoggerMock;
-    private TagProcessor _processor;
-    private YamlHelper _yamlHelper;
-    private string _fixturesPath;
-    private string _tempDir; [TestInitialize]
+    private Mock<ILogger<TagProcessor>> loggerMock;
+    private Mock<ILogger> failedLoggerMock;
+    private TagProcessor processor;
+    private YamlHelper yamlHelper;
+    private string fixturesPath;
+    private string tempDir;
+
+    [TestInitialize]
     public void Setup()
     {
-        _loggerMock = new Mock<ILogger<TagProcessor>>();
-        _failedLoggerMock = new Mock<ILogger>();
-        _yamlHelper = new YamlHelper(_loggerMock.Object);
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        this.loggerMock = new Mock<ILogger<TagProcessor>>();
+        this.failedLoggerMock = new Mock<ILogger>();
+        this.yamlHelper = new YamlHelper(this.loggerMock.Object);
+        this.processor = new TagProcessor(this.loggerMock.Object, this.failedLoggerMock.Object, this.yamlHelper, false, true);
 
         // Path to the fixtures directory
-        _fixturesPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "..", "tests", "fixtures", "frontmatter"));
+        this.fixturesPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "..", "tests", "fixtures", "frontmatter"));
 
         // Create a temporary directory for test outputs
-        _tempDir = Path.Combine(Path.GetTempPath(), "TagProcessorTests_" + Guid.NewGuid().ToString());
-        Directory.CreateDirectory(_tempDir);
+        this.tempDir = Path.Combine(Path.GetTempPath(), "TagProcessorTests_" + Guid.NewGuid().ToString());
+        Directory.CreateDirectory(this.tempDir);
 
         // Copy fixtures to the temp directory to avoid modifying the original files
-        CopyDirectory(_fixturesPath, _tempDir, true);
+        CopyDirectory(this.fixturesPath, this.tempDir, true);
     }
 
     [TestCleanup]
     public void Cleanup()
     {
         // Clean up the temporary directory
-        if (Directory.Exists(_tempDir))
+        if (Directory.Exists(this.tempDir))
         {
-            Directory.Delete(_tempDir, true);
+            Directory.Delete(this.tempDir, true);
         }
     }
 
     /// <summary>
     /// Tests the UpdateFrontmatterKeyAsync method with a single file that has existing frontmatter.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task UpdateFrontmatterKeyAsync_SingleFile_WithExistingFrontmatter_UpdatesKey()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "test.md");
+        string filePath = Path.Combine(this.tempDir, "test.md");
 
         // Act
-        Dictionary<string, int> result = await _processor.UpdateFrontmatterKeyAsync(filePath, "newKey", "newValue");
+        Dictionary<string, int> result = await this.processor.UpdateFrontmatterKeyAsync(filePath, "newKey", "newValue").ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(1, result["FilesProcessed"]);
         Assert.AreEqual(1, result["FilesModified"]);
 
         // Verify the content contains the new key
-        string content = await File.ReadAllTextAsync(filePath);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.IsTrue(content.Contains("newKey: newValue"), "The file should contain the new key-value pair.");
 
         // Verify the original frontmatter values are preserved
@@ -76,21 +80,22 @@ public class TagProcessorTests
     /// <summary>
     /// Tests the UpdateFrontmatterKeyAsync method with a single file that has no frontmatter.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task UpdateFrontmatterKeyAsync_SingleFile_WithNoFrontmatter_AddsKeyAndFrontmatter()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "no_frontmatter.md");
+        string filePath = Path.Combine(this.tempDir, "no_frontmatter.md");
 
         // Act
-        Dictionary<string, int> result = await _processor.UpdateFrontmatterKeyAsync(filePath, "newKey", "newValue");
+        Dictionary<string, int> result = await this.processor.UpdateFrontmatterKeyAsync(filePath, "newKey", "newValue").ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(1, result["FilesProcessed"]);
         Assert.AreEqual(1, result["FilesModified"]);
 
         // Verify the content contains the new frontmatter with the key
-        string content = await File.ReadAllTextAsync(filePath);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.IsTrue(content.Contains("---"), "The file should have frontmatter delimiters.");
         Assert.IsTrue(content.Contains("newKey: newValue"), "The file should contain the new key-value pair.");
 
@@ -101,14 +106,15 @@ public class TagProcessorTests
     /// <summary>
     /// Tests the UpdateFrontmatterKeyAsync method with a directory containing multiple files.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task UpdateFrontmatterKeyAsync_Directory_UpdatesAllFiles()
     {
         // Arrange
-        string dirPath = _tempDir;
+        string dirPath = this.tempDir;
 
         // Act
-        Dictionary<string, int> result = await _processor.UpdateFrontmatterKeyAsync(dirPath, "common", "sharedValue");
+        Dictionary<string, int> result = await this.processor.UpdateFrontmatterKeyAsync(dirPath, "common", "sharedValue").ConfigureAwait(false);
 
         // Assert
         int expectedFiles = Directory.GetFiles(dirPath, "*.md", SearchOption.AllDirectories).Length;
@@ -120,50 +126,52 @@ public class TagProcessorTests
         string nestedFile = Path.Combine(dirPath, "subdir", "test1.md");
         string noFrontmatterFile = Path.Combine(dirPath, "no_frontmatter.md");
 
-        Assert.IsTrue((await File.ReadAllTextAsync(mainFile)).Contains("common: sharedValue"));
-        Assert.IsTrue((await File.ReadAllTextAsync(nestedFile)).Contains("common: sharedValue"));
-        Assert.IsTrue((await File.ReadAllTextAsync(noFrontmatterFile)).Contains("common: sharedValue"));
+        Assert.IsTrue((await File.ReadAllTextAsync(mainFile).ConfigureAwait(false)).Contains("common: sharedValue"));
+        Assert.IsTrue((await File.ReadAllTextAsync(nestedFile).ConfigureAwait(false)).Contains("common: sharedValue"));
+        Assert.IsTrue((await File.ReadAllTextAsync(noFrontmatterFile).ConfigureAwait(false)).Contains("common: sharedValue"));
     }
 
     /// <summary>
     /// Tests the UpdateFrontmatterKeyAsync method with an existing key that already has the same value.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task UpdateFrontmatterKeyAsync_ExistingKey_WithSameValue_DoesNotModify()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "test.md");
-        string originalContent = await File.ReadAllTextAsync(filePath);
+        string filePath = Path.Combine(this.tempDir, "test.md");
+        string originalContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
         // Act
-        Dictionary<string, int> result = await _processor.UpdateFrontmatterKeyAsync(filePath, "title", "Updated Title");
+        Dictionary<string, int> result = await this.processor.UpdateFrontmatterKeyAsync(filePath, "title", "Updated Title").ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(1, result["FilesProcessed"]);
         Assert.AreEqual(0, result["FilesModified"]); // Should not modify the file
 
-        string newContent = await File.ReadAllTextAsync(filePath);
+        string newContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.AreEqual(originalContent, newContent, "The file content should remain unchanged.");
     }
 
     /// <summary>
     /// Tests the UpdateFrontmatterKeyAsync method with a non-existing file.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task UpdateFrontmatterKeyAsync_NonExistentFile_ReturnsError()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "non_existent.md");
+        string filePath = Path.Combine(this.tempDir, "non_existent.md");
 
         // Act
-        Dictionary<string, int> result = await _processor.UpdateFrontmatterKeyAsync(filePath, "key", "value");
+        Dictionary<string, int> result = await this.processor.UpdateFrontmatterKeyAsync(filePath, "key", "value").ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(0, result["FilesProcessed"]);
         Assert.AreEqual(0, result["FilesModified"]);
         Assert.AreEqual(1, result["FilesWithErrors"]);
 
-        _failedLoggerMock.Verify(
+        this.failedLoggerMock.Verify(
             logger => logger.Log(
                 It.Is<LogLevel>(level => level == LogLevel.Error),
                 It.IsAny<EventId>(),
@@ -176,26 +184,27 @@ public class TagProcessorTests
     /// <summary>
     /// Tests the UpdateFrontmatterKeyAsync method in dry run mode.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task UpdateFrontmatterKeyAsync_DryRun_DoesNotModifyFiles()
     {
         // Arrange
-        TagProcessor dryRunProcessor = new(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, true, true); // true = dryRun
-        string filePath = Path.Combine(_tempDir, "test.md");
-        string originalContent = await File.ReadAllTextAsync(filePath);
+        TagProcessor dryRunProcessor = new(this.loggerMock.Object, this.failedLoggerMock.Object, this.yamlHelper, true, true); // true = dryRun
+        string filePath = Path.Combine(this.tempDir, "test.md");
+        string originalContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
         // Act
-        Dictionary<string, int> result = await dryRunProcessor.UpdateFrontmatterKeyAsync(filePath, "dryRunKey", "dryRunValue");
+        Dictionary<string, int> result = await dryRunProcessor.UpdateFrontmatterKeyAsync(filePath, "dryRunKey", "dryRunValue").ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(1, result["FilesProcessed"]);
         Assert.AreEqual(0, result["FilesModified"]); // Should not modify in dry run
 
-        string newContent = await File.ReadAllTextAsync(filePath);
+        string newContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.AreEqual(originalContent, newContent, "The file content should remain unchanged in dry run mode.");
 
         // Verify the log message for dry run
-        _loggerMock.Verify(
+        this.loggerMock.Verify(
             logger => logger.Log(
                 It.Is<LogLevel>(level => level == LogLevel.Information),
                 It.IsAny<EventId>(),
@@ -214,22 +223,22 @@ public class TagProcessorTests
         // Arrange
         Dictionary<string, object> frontmatterWithStringTags = new()
         {
-            { "tags", "tag1, tag2, tag3" }
+            { "tags", "tag1, tag2, tag3" },
         };
 
         Dictionary<string, object> frontmatterWithListTags = new()
         {
-            { "tags", new List<object> { "tag1", "tag2", "tag3" } }
+            { "tags", new List<object> { "tag1", "tag2", "tag3" } },
         };
 
         Dictionary<string, object> frontmatterWithEmptyTags = new()
         {
-            { "tags", "" }
+            { "tags", string.Empty },
         };
 
         Dictionary<string, object> frontmatterWithNoTags = new()
         {
-            { "title", "No Tags" }
+            { "title", "No Tags" },
         };
 
         // Act
@@ -241,9 +250,11 @@ public class TagProcessorTests
         CollectionAssert.AreEqual(new List<string> { "tag1", "tag2", "tag3" }, tagsFromList);
         Assert.AreEqual(0, tagsFromEmpty.Count);
         Assert.AreEqual(0, tagsFromNoTags.Count);
-    }        /// <summary>
-             /// Tests generating nested tags based on frontmatter fields.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests generating nested tags based on frontmatter fields.
+    /// </summary>
     [TestMethod]
     public void GenerateNestedTags_WithDifferentFields_CreatesCorrectHierarchy()
     {
@@ -253,14 +264,14 @@ public class TagProcessorTests
             { "course", "Finance 101" },
             { "professor", "Dr. Jane Doe" },
             { "type", "Lecture Notes" },
-            { "subjects", new List<object> { "Financial Analysis", "Accounting" } }
+            { "subjects", new List<object> { "Financial Analysis", "Accounting" } },
         };
 
         List<string> existingTags = ["mba/course/finance-101"];        // Reset the processor for this test to isolate it
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        this.processor = new TagProcessor(this.loggerMock.Object, this.failedLoggerMock.Object, this.yamlHelper, false, true);
 
         // Act
-        List<string> newTags = _processor.GenerateNestedTags(frontmatter, existingTags);
+        List<string> newTags = this.processor.GenerateNestedTags(frontmatter, existingTags);
 
         // Debug - output all tags that were generated
         Console.WriteLine("Generated tags:");
@@ -295,9 +306,11 @@ public class TagProcessorTests
         Assert.IsTrue(hasFinancialAnalysisTag, "Tag related to 'financial-analysis' should be present");
         Assert.IsTrue(hasAccountingTag, "Tag related to 'accounting' should be present");
         Assert.IsFalse(newTags.Contains("mba/course/finance-101"), "Should not duplicate existing tags");
-    }        /// <summary>
-             /// Tests tag value normalization.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests tag value normalization.
+    /// </summary>
     [TestMethod]
     public void NormalizeTagValue_WithVariousInputs_NormalizesConsistently()
     {
@@ -311,8 +324,8 @@ public class TagProcessorTests
         Assert.AreEqual("lecture-notes", TagProcessor.NormalizeTagValue("Lecture; Notes"));
         Assert.AreEqual("leadership", TagProcessor.NormalizeTagValue("\"Leadership\""));
         Assert.AreEqual("ethics", TagProcessor.NormalizeTagValue("'Ethics'"));
-        Assert.AreEqual("", TagProcessor.NormalizeTagValue(""));
-        Assert.AreEqual("", TagProcessor.NormalizeTagValue(null));
+        Assert.AreEqual(string.Empty, TagProcessor.NormalizeTagValue(string.Empty));
+        Assert.AreEqual(string.Empty, TagProcessor.NormalizeTagValue(null));
     }
 
     /// <summary>
@@ -338,11 +351,12 @@ public class TagProcessorTests
     /// <summary>
     /// Tests clearing tags from index files.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task ClearTagsFromFileAsync_WithIndexFile_RemovesTags()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "index.md");
+        string filePath = Path.Combine(this.tempDir, "index.md");
         string content = @"---
 title: Index Page
 tags:
@@ -351,21 +365,21 @@ tags:
 ---
 # Index Page Content
 ";
-        await File.WriteAllTextAsync(filePath, content);        // Reset the processor stats for this test to isolate the test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        await File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);        // Reset the processor stats for this test to isolate the test
+        this.processor = new TagProcessor(this.loggerMock.Object, this.failedLoggerMock.Object, this.yamlHelper, false, true);
 
         // Read the file content and frontmatter for the test
-        string frontmatter = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+        string frontmatter = this.yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatterDict = this.yamlHelper.ParseYamlToDictionary(frontmatter);
 
         // Act
-        bool result = await _processor.ClearTagsFromFileAsync(filePath, frontmatterDict, content);
+        bool result = await this.processor.ClearTagsFromFileAsync(filePath, frontmatterDict, content).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result);
-        Assert.AreEqual(1, _processor.Stats["IndexFilesCleared"]);
+        Assert.AreEqual(1, this.processor.Stats["IndexFilesCleared"]);
 
-        string updatedContent = await File.ReadAllTextAsync(filePath);
+        string updatedContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
         // Debug output to help troubleshooting
         Console.WriteLine("Updated content:");
@@ -381,25 +395,26 @@ tags:
     /// <summary>
     /// Tests adding example tags to a file.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task AddExampleTagsToFileAsync_AddsTagsCorrectly()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "no_tags.md");
+        string filePath = Path.Combine(this.tempDir, "no_tags.md");
         await File.WriteAllTextAsync(filePath, @"---
 title: No Tags
 ---
 # File with no tags
-");
+").ConfigureAwait(false);
 
         // Act
-        bool result = await _processor.AddExampleTagsToFileAsync(filePath);
+        bool result = await this.processor.AddExampleTagsToFileAsync(filePath).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result);
-        Assert.AreEqual(1, _processor.Stats["FilesModified"]);
+        Assert.AreEqual(1, this.processor.Stats["FilesModified"]);
 
-        string content = await File.ReadAllTextAsync(filePath);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.IsTrue(content.Contains("mba/course/finance"));
         Assert.IsTrue(content.Contains("type/note/case-study"));
         Assert.IsTrue(content.Contains("subject/leadership"));
@@ -408,11 +423,12 @@ title: No Tags
     /// <summary>
     /// Tests restructuring tags in a file.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task RestructureTagsInFileAsync_NormalizesTags()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "messy_tags.md");
+        string filePath = Path.Combine(this.tempDir, "messy_tags.md");
         await File.WriteAllTextAsync(filePath, @"---
 title: Messy Tags
 tags:
@@ -422,61 +438,67 @@ tags:
   - DUPLICATE
 ---
 # File with messy tags
-");
+").ConfigureAwait(false);
 
         // Act
-        bool result = await _processor.RestructureTagsInFileAsync(filePath);
+        bool result = await this.processor.RestructureTagsInFileAsync(filePath).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result);
-        Assert.AreEqual(1, _processor.Stats["FilesModified"]);
+        Assert.AreEqual(1, this.processor.Stats["FilesModified"]);
 
-        string content = await File.ReadAllTextAsync(filePath);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.IsTrue(content.Contains("messy-tag"));
         Assert.IsTrue(content.Contains("another-tag"));
         Assert.IsTrue(content.Contains("duplicate"));
 
         // Check that there's only one instance of "duplicate" after normalization
-        string yaml = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatter = _yamlHelper.ParseYamlToDictionary(yaml);
+        string yaml = this.yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatter = this.yamlHelper.ParseYamlToDictionary(yaml);
         List<string> tags = TagProcessor.GetExistingTags(frontmatter);
         Assert.AreEqual(3, tags.Count);
         Assert.AreEqual(1, tags.Count(t => t == "duplicate"));
-    }        /// <summary>
-             /// Tests enforcing metadata consistency in a file.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests enforcing metadata consistency in a file.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task CheckAndEnforceMetadataConsistencyInFileAsync_AddsRequiredFields()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "incomplete_metadata.md");
+        string filePath = Path.Combine(this.tempDir, "incomplete_metadata.md");
         await File.WriteAllTextAsync(filePath, @"---
 title: Incomplete Metadata
 ---
 # File with incomplete metadata
-");
+").ConfigureAwait(false);
 
         // Reset the processor stats for this test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        this.processor = new TagProcessor(this.loggerMock.Object, this.failedLoggerMock.Object, this.yamlHelper, false, true);
 
         // Act
-        bool result = await _processor.CheckAndEnforceMetadataConsistencyInFileAsync(filePath);
+        bool result = await this.processor.CheckAndEnforceMetadataConsistencyInFileAsync(filePath).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result);
-        Assert.AreEqual(1, _processor.Stats["FilesModified"]);
+        Assert.AreEqual(1, this.processor.Stats["FilesModified"]);
 
-        string content = await File.ReadAllTextAsync(filePath);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.IsTrue(content.Contains("title: Incomplete Metadata"));
         Assert.IsTrue(content.Contains("[MISSING]"), "The file should contain [MISSING] placeholder values");
-    }/// <summary>
-     /// Tests processing all files in a directory recursively.
-     /// </summary>
+    }
+
+    /// <summary>
+    /// Tests processing all files in a directory recursively.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task ProcessDirectoryAsync_ProcessesAllMarkdownFiles()
     {
         // Arrange
-        string testDir = Path.Combine(_tempDir, "process_test_" + Guid.NewGuid().ToString());
+        string testDir = Path.Combine(this.tempDir, "process_test_" + Guid.NewGuid().ToString());
         Directory.CreateDirectory(testDir);
 
         string mainFile = Path.Combine(testDir, "main.md");
@@ -485,7 +507,7 @@ title: Main File
 course: Finance 101
 ---
 # Main content
-");
+").ConfigureAwait(false);
 
         string subDir = Path.Combine(testDir, "subdir");
         Directory.CreateDirectory(subDir);
@@ -495,13 +517,13 @@ title: Sub File
 professor: Dr. Smith
 ---
 # Sub content
-");
+").ConfigureAwait(false);
 
         // Reset the processor stats for this test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        this.processor = new TagProcessor(this.loggerMock.Object, this.failedLoggerMock.Object, this.yamlHelper, false, true);
 
         // Act
-        Dictionary<string, int> stats = await _processor.ProcessDirectoryAsync(testDir);
+        Dictionary<string, int> stats = await this.processor.ProcessDirectoryAsync(testDir).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(2, stats["FilesProcessed"]);
@@ -509,8 +531,8 @@ professor: Dr. Smith
         Assert.IsTrue(stats["TagsAdded"] >= 2);
 
         // Verify tags were added correctly
-        string mainContent = await File.ReadAllTextAsync(mainFile);
-        string subContent = await File.ReadAllTextAsync(subFile);
+        string mainContent = await File.ReadAllTextAsync(mainFile).ConfigureAwait(false);
+        string subContent = await File.ReadAllTextAsync(subFile).ConfigureAwait(false);
 
         bool mainHasFinanceTag = mainContent.Contains("mba/course/finance-101") ||
                               mainContent.Contains("finance-101") ||
@@ -528,14 +550,17 @@ professor: Dr. Smith
 
         Assert.IsTrue(mainHasFinanceTag, "Main file should contain finance tag");
         Assert.IsTrue(subHasProfessorTag, "Sub file should contain professor tag");
-    }        /// <summary>
-             /// Tests adding nested tags based on frontmatter fields to a file.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests adding nested tags based on frontmatter fields to a file.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task AddNestedTagsToFileAsync_AddsTagsBasedOnFields()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "course_file.md");
+        string filePath = Path.Combine(this.tempDir, "course_file.md");
         string content = @"---
 title: Course Information
 course: Data Science 101
@@ -544,23 +569,23 @@ type: Lecture
 ---
 # Course content
 ";
-        await File.WriteAllTextAsync(filePath, content);
+        await File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);
 
         // Reset the processor stats for this test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        this.processor = new TagProcessor(this.loggerMock.Object, this.failedLoggerMock.Object, this.yamlHelper, false, true);
 
         // Read the file contentand frontmatter for the test
-        string frontmatter = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+        string frontmatter = this.yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatterDict = this.yamlHelper.ParseYamlToDictionary(frontmatter);
 
         // Act
-        bool result = await _processor.AddNestedTagsToFileAsync(filePath, frontmatterDict, content);
+        bool result = await this.processor.AddNestedTagsToFileAsync(filePath, frontmatterDict, content).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result);
-        Assert.AreEqual(1, _processor.Stats["FilesModified"]);
+        Assert.AreEqual(1, this.processor.Stats["FilesModified"]);
 
-        string updatedContent = await File.ReadAllTextAsync(filePath);
+        string updatedContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
         // Debug output to help with troubleshooting
         Console.WriteLine("Updated content:");
@@ -590,11 +615,12 @@ type: Lecture
     /// <summary>
     /// Tests adding nested tags based on frontmatter fields including custom field names.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task AddNestedTagsToFileAsync_WithCustomField_AddsCustomTags()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "custom_field_file.md");
+        string filePath = Path.Combine(this.tempDir, "custom_field_file.md");
         string content = @"---
 title: Custom Field Test
 custom-field: Custom Value
@@ -602,27 +628,27 @@ semester: Fall 2025
 ---
 # Content with custom fields
 ";
-        await File.WriteAllTextAsync(filePath, content);        // Create a processor with custom fields to process
+        await File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);        // Create a processor with custom fields to process
         TagProcessor customFieldsProcessor = new(
-            _loggerMock.Object,
-            _failedLoggerMock.Object,
-            _yamlHelper,
+            this.loggerMock.Object,
+            this.failedLoggerMock.Object,
+            this.yamlHelper,
             false,
             true,
             ["custom-field", "semester"]);
 
         // Read the file content and frontmatter for the test
-        string frontmatter = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+        string frontmatter = this.yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatterDict = this.yamlHelper.ParseYamlToDictionary(frontmatter);
 
         // Act
-        bool result = await customFieldsProcessor.AddNestedTagsToFileAsync(filePath, frontmatterDict, content);
+        bool result = await customFieldsProcessor.AddNestedTagsToFileAsync(filePath, frontmatterDict, content).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result);
         Assert.AreEqual(1, customFieldsProcessor.Stats["FilesModified"]);
 
-        string updatedContent = await File.ReadAllTextAsync(filePath);
+        string updatedContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
         // Debug output to help with troubleshooting
         Console.WriteLine("Updated content:");
@@ -630,10 +656,10 @@ semester: Fall 2025
 
         // Check for custom tags
         bool hasCustomFieldTag = updatedContent.Contains("custom-field/custom-value") ||
-                                 updatedContent.Contains("custom-field") && updatedContent.Contains("custom-value");
+                                 (updatedContent.Contains("custom-field") && updatedContent.Contains("custom-value"));
 
         bool hasSemesterTag = updatedContent.Contains("semester/fall-2025") ||
-                               updatedContent.Contains("semester") && updatedContent.Contains("fall-2025");
+                               (updatedContent.Contains("semester") && updatedContent.Contains("fall-2025"));
 
         Assert.IsTrue(hasCustomFieldTag, "File should contain tag based on custom-field");
         Assert.IsTrue(hasSemesterTag, "File should contain tag based on semester field");
@@ -642,11 +668,12 @@ semester: Fall 2025
     /// <summary>
     /// Tests processing a file with existing tags.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task ProcessFileAsync_FileWithExistingTags_AddsNestedTags()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "existing_tags.md");
+        string filePath = Path.Combine(this.tempDir, "existing_tags.md");
         await File.WriteAllTextAsync(filePath, @"---
 title: Existing Tags
 course: Marketing 101
@@ -655,17 +682,17 @@ tags:
   - marketing
 ---
 # Content with existing tags
-");
+").ConfigureAwait(false);
 
         // Act
-        bool result = await _processor.ProcessFileAsync(filePath);
+        bool result = await this.processor.ProcessFileAsync(filePath).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result);
-        Assert.AreEqual(1, _processor.Stats["FilesModified"]);
-        Assert.IsTrue(_processor.Stats["TagsAdded"] > 0);
+        Assert.AreEqual(1, this.processor.Stats["FilesModified"]);
+        Assert.IsTrue(this.processor.Stats["TagsAdded"] > 0);
 
-        string content = await File.ReadAllTextAsync(filePath);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.IsTrue(content.Contains("mba/course/marketing-101"));
         Assert.IsTrue(content.Contains("existing-tag"));
         Assert.IsTrue(content.Contains("marketing"));
@@ -674,62 +701,65 @@ tags:
     /// <summary>
     /// Tests processing a file with no frontmatter.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task ProcessFileAsync_NoFrontmatter_ReturnsFalse()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "no_frontmatter.md");
+        string filePath = Path.Combine(this.tempDir, "no_frontmatter.md");
 
         // Act
-        bool result = await _processor.ProcessFileAsync(filePath);
+        bool result = await this.processor.ProcessFileAsync(filePath).ConfigureAwait(false);
 
         // Assert
         Assert.IsFalse(result);
-        Assert.AreEqual(1, _processor.Stats["FilesProcessed"]);
-        Assert.AreEqual(0, _processor.Stats["FilesModified"]);
+        Assert.AreEqual(1, this.processor.Stats["FilesProcessed"]);
+        Assert.AreEqual(0, this.processor.Stats["FilesModified"]);
     }
 
     /// <summary>
     /// Tests processing an index file.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task ProcessFileAsync_IndexFile_SkipsProcessing()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "index.md");
+        string filePath = Path.Combine(this.tempDir, "index.md");
         await File.WriteAllTextAsync(filePath, @"---
 title: Index Page
 course: Overview
 ---
 # Index content
-");
+").ConfigureAwait(false);
 
         // Act
-        bool result = await _processor.ProcessFileAsync(filePath);
+        bool result = await this.processor.ProcessFileAsync(filePath).ConfigureAwait(false);
 
         // Assert
         Assert.IsFalse(result);
-        Assert.AreEqual(1, _processor.Stats["FilesProcessed"]);
-        Assert.AreEqual(0, _processor.Stats["FilesModified"]);
+        Assert.AreEqual(1, this.processor.Stats["FilesProcessed"]);
+        Assert.AreEqual(0, this.processor.Stats["FilesModified"]);
     }
 
     /// <summary>
     /// Tests processing a non-existent file.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task ProcessFileAsync_NonExistentFile_LogsErrorAndReturnsFalse()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "non_existent.md");
+        string filePath = Path.Combine(this.tempDir, "non_existent.md");
 
         // Act
-        bool result = await _processor.ProcessFileAsync(filePath);
+        bool result = await this.processor.ProcessFileAsync(filePath).ConfigureAwait(false);
 
         // Assert
         Assert.IsFalse(result);
-        Assert.AreEqual(1, _processor.Stats["FilesWithErrors"]);
+        Assert.AreEqual(1, this.processor.Stats["FilesWithErrors"]);
 
-        _failedLoggerMock.Verify(
+        this.failedLoggerMock.Verify(
             logger => logger.Log(
                 It.Is<LogLevel>(level => level == LogLevel.Error),
                 It.IsAny<EventId>(),
@@ -742,11 +772,12 @@ course: Overview
     /// <summary>
     /// Tests restructuring tags in a directory.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task RestructureTagsInDirectoryAsync_NormalizesTags()
     {
         // Arrange
-        string subDir = Path.Combine(_tempDir, "restructure");
+        string subDir = Path.Combine(this.tempDir, "restructure");
         Directory.CreateDirectory(subDir);
 
         string file1 = Path.Combine(subDir, "file1.md");
@@ -756,7 +787,7 @@ tags:
   - Messy Tag
   - Another_Tag
 ---
-");
+").ConfigureAwait(false);
 
         string file2 = Path.Combine(subDir, "file2.md");
         await File.WriteAllTextAsync(file2, @"---
@@ -765,61 +796,67 @@ tags:
   - Tag.With.Periods
   - UPPERCASE tag
 ---
-");
+").ConfigureAwait(false);
 
         // Act
-        Dictionary<string, int> stats = await _processor.RestructureTagsInDirectoryAsync(subDir);
+        Dictionary<string, int> stats = await this.processor.RestructureTagsInDirectoryAsync(subDir).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(2, stats["FilesModified"]);
 
-        string content1 = await File.ReadAllTextAsync(file1);
-        string content2 = await File.ReadAllTextAsync(file2);
+        string content1 = await File.ReadAllTextAsync(file1).ConfigureAwait(false);
+        string content2 = await File.ReadAllTextAsync(file2).ConfigureAwait(false);
 
         Assert.IsTrue(content1.Contains("messy-tag"));
         Assert.IsTrue(content1.Contains("another-tag"));
         Assert.IsTrue(content2.Contains("tag-with-periods"));
         Assert.IsTrue(content2.Contains("uppercase-tag"));
-    }        /// <summary>
-             /// Tests checking and enforcing metadata consistency in a directory.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests checking and enforcing metadata consistency in a directory.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task CheckAndEnforceMetadataConsistencyAsync_AddsMissingFields()
     {
         // Arrange
-        string subDir = Path.Combine(_tempDir, "metadata_" + Guid.NewGuid().ToString());
+        string subDir = Path.Combine(this.tempDir, "metadata_" + Guid.NewGuid().ToString());
         Directory.CreateDirectory(subDir);
 
         string file1 = Path.Combine(subDir, "file1.md");
         await File.WriteAllTextAsync(file1, @"---
 title: File 1
 ---
-");
+").ConfigureAwait(false);
 
         string file2 = Path.Combine(subDir, "file2.md");
         await File.WriteAllTextAsync(file2, @"---
 type: Note
 ---
-");        // Reset the processor stats for this test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+").ConfigureAwait(false);        // Reset the processor stats for this test
+        this.processor = new TagProcessor(this.loggerMock.Object, this.failedLoggerMock.Object, this.yamlHelper, false, true);
 
         // Act
-        Dictionary<string, int> stats = await _processor.CheckAndEnforceMetadataConsistencyAsync(subDir);
+        Dictionary<string, int> stats = await this.processor.CheckAndEnforceMetadataConsistencyAsync(subDir).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(2, stats["FilesModified"]);
 
-        string content1 = await File.ReadAllTextAsync(file1);
-        string content2 = await File.ReadAllTextAsync(file2);
+        string content1 = await File.ReadAllTextAsync(file1).ConfigureAwait(false);
+        string content2 = await File.ReadAllTextAsync(file2).ConfigureAwait(false);
 
         Assert.IsTrue(content1.Contains("title: File 1"));
         Assert.IsTrue(content1.Contains("[MISSING]"), "File 1 should contain [MISSING] placeholder values");
 
         Assert.IsTrue(content2.Contains("type: Note"));
         Assert.IsTrue(content2.Contains("[MISSING]"), "File 2 should contain [MISSING] placeholder values");
-    }        /// <summary>
-             /// Tests generating tags with custom fields to process.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests generating tags with custom fields to process.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task ProcessFileAsync_WithCustomFields_GeneratesCustomTags()
     {
@@ -827,15 +864,16 @@ type: Note
         HashSet<string> customFields =
         [
             "category", "platform", "technology", "level"
-        ]; TagProcessor customProcessor = new(
-            _loggerMock.Object,
-            _failedLoggerMock.Object,
-            _yamlHelper,
+        ];
+        TagProcessor customProcessor = new(
+            this.loggerMock.Object,
+            this.failedLoggerMock.Object,
+            this.yamlHelper,
             false,
             true,
             customFields);
 
-        string filePath = Path.Combine(_tempDir, "custom_fields.md");
+        string filePath = Path.Combine(this.tempDir, "custom_fields.md");
         await File.WriteAllTextAsync(filePath, @"---
 title: Custom Fields
 category: Web Development
@@ -844,17 +882,18 @@ technology: .NET Core
 level: Advanced
 ---
 # Content with custom fields
-");
+").ConfigureAwait(false);
 
         // Act
         // First run the processor to add initial tags
-        bool result = await customProcessor.ProcessFileAsync(filePath);
+        bool result = await customProcessor.ProcessFileAsync(filePath).ConfigureAwait(false);
 
         // Then check if the tags were added as expected
-        string content = await File.ReadAllTextAsync(filePath);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
         // Assert
         Assert.IsTrue(result, "ProcessFileAsync should return true indicating the file was modified");
+
         // Check that some tags have been created (we might not need to test exact tag formats)
         bool hasTagsSection = content.Contains("tags:");
         bool hasAnyCustomTag = content.Contains("category") ||
@@ -863,29 +902,31 @@ level: Advanced
                                content.Contains("level");
 
         // Print content to understand what's actually being generated
-        _loggerMock.Object.LogInformation("Generated content: {Content}", content);
+        this.loggerMock.Object.LogInformation("Generated content: {Content}", content);
 
         Assert.IsTrue(hasTagsSection, "Tags section should be created");
         Assert.IsTrue(hasAnyCustomTag, "At least one custom tag should be present");
     }
+
     /// <summary>
     /// Tests updating a frontmatter key in a file with nested metadata structure.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task UpdateFrontmatterKeyAsync_NestedMetadata_UpdatesValue()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "nested_metadata.md");
+        string filePath = Path.Combine(this.tempDir, "nested_metadata.md");
 
         // Act
-        Dictionary<string, int> result = await _processor.UpdateFrontmatterKeyAsync(filePath, "author", "New Author");
+        Dictionary<string, int> result = await this.processor.UpdateFrontmatterKeyAsync(filePath, "author", "New Author").ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(1, result["FilesProcessed"]);
         Assert.AreEqual(1, result["FilesModified"]);
 
         // Verify the content contains the new value
-        string content = await File.ReadAllTextAsync(filePath);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.IsTrue(content.Contains("author: New Author"));
 
         // Verify nested structure is preserved
@@ -897,31 +938,32 @@ level: Advanced
     /// <summary>
     /// Tests the dry run option for processing directory.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task ProcessDirectoryAsync_DryRun_LogsButDoesNotModify()
-    {        // Arrange
-        TagProcessor dryRunProcessor = new(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, true, true);
+    { // Arrange
+        TagProcessor dryRunProcessor = new(this.loggerMock.Object, this.failedLoggerMock.Object, this.yamlHelper, true, true);
 
-        string mainFile = Path.Combine(_tempDir, "dry_run_test.md");
+        string mainFile = Path.Combine(this.tempDir, "dry_run_test.md");
         await File.WriteAllTextAsync(mainFile, @"---
 title: Dry Run Test
 course: Finance 101
 ---
 # Main content
-");
-        string originalContent = await File.ReadAllTextAsync(mainFile);
+").ConfigureAwait(false);
+        string originalContent = await File.ReadAllTextAsync(mainFile).ConfigureAwait(false);
 
         // Act
-        Dictionary<string, int> stats = await dryRunProcessor.ProcessDirectoryAsync(_tempDir);
+        Dictionary<string, int> stats = await dryRunProcessor.ProcessDirectoryAsync(this.tempDir).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(0, stats["FilesModified"]);
         Assert.IsTrue(stats["FilesProcessed"] > 0);
 
-        string updatedContent = await File.ReadAllTextAsync(mainFile);
+        string updatedContent = await File.ReadAllTextAsync(mainFile).ConfigureAwait(false);
         Assert.AreEqual(originalContent, updatedContent);
 
-        _loggerMock.Verify(
+        this.loggerMock.Verify(
             logger => logger.Log(
                 It.Is<LogLevel>(level => level == LogLevel.Information),
                 It.IsAny<EventId>(),
@@ -934,22 +976,23 @@ course: Finance 101
     /// <summary>
     /// Tests updating a frontmatter key with a complex value.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task UpdateFrontmatterKeyAsync_ComplexValue_UpdatesCorrectly()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "test.md");
+        string filePath = Path.Combine(this.tempDir, "test.md");
         List<string> complexValue = ["item1", "item2", "item3"];
 
         // Act
-        Dictionary<string, int> result = await _processor.UpdateFrontmatterKeyAsync(filePath, "complexList", complexValue);
+        Dictionary<string, int> result = await this.processor.UpdateFrontmatterKeyAsync(filePath, "complexList", complexValue).ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(1, result["FilesProcessed"]);
         Assert.AreEqual(1, result["FilesModified"]);
 
         // Verify the content contains the new complex value
-        string content = await File.ReadAllTextAsync(filePath);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.IsTrue(content.Contains("complexList:"));
         Assert.IsTrue(content.Contains("- item1"));
         Assert.IsTrue(content.Contains("- item2"));
@@ -959,11 +1002,12 @@ course: Finance 101
     /// <summary>
     /// Tests processing a file with nested metadata structure.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task ProcessFileAsync_WithNestedMetadata_ExtractsAndProcessesCorrectly()
     {
         // Arrange
-        string filePath = Path.Combine(_tempDir, "nested_metadata_test.md");
+        string filePath = Path.Combine(this.tempDir, "nested_metadata_test.md");
         await File.WriteAllTextAsync(filePath, @"---
 title: Nested Metadata Test
 metadata:
@@ -972,20 +1016,20 @@ metadata:
 type: Lecture
 ---
 # Content with nested metadata structure
-");        // Reset the processor stats for this test
-        _processor = new TagProcessor(
-            _loggerMock.Object,
-            _failedLoggerMock.Object,
-            _yamlHelper,
+").ConfigureAwait(false);        // Reset the processor stats for this test
+        this.processor = new TagProcessor(
+            this.loggerMock.Object,
+            this.failedLoggerMock.Object,
+            this.yamlHelper,
             false,
             true,
             ["metadata.course", "metadata.professor", "type"]);
 
         // Act
-        bool result = await _processor.ProcessFileAsync(filePath);
+        bool result = await this.processor.ProcessFileAsync(filePath).ConfigureAwait(false);
 
         // Get the updated content
-        string updatedContent = await File.ReadAllTextAsync(filePath);
+        string updatedContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Console.WriteLine("Updated content:");
         Console.WriteLine(updatedContent);
 
@@ -995,9 +1039,9 @@ type: Lecture
         Assert.IsTrue(result, "ProcessFileAsync should process the file due to the non-nested 'type' field");
 
         // Now let's manually extract the nested metadata and process it
-        string content = await File.ReadAllTextAsync(filePath);
-        string frontmatter = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+        string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+        string frontmatter = this.yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatterDict = this.yamlHelper.ParseYamlToDictionary(frontmatter);
 
         // Check that we can extract the nested metadata
         Assert.IsTrue(frontmatterDict.ContainsKey("metadata"), "Frontmatter should contain 'metadata' key");

@@ -1,4 +1,13 @@
-﻿using NotebookAutomation.Core.Configuration;
+// <copyright file="PdfNoteProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Utils;
@@ -44,10 +53,8 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing;
 /// <param name="appConfig">Optional application configuration for advanced hierarchy detection.</param>
 public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector, AppConfig? appConfig = null) : DocumentNoteProcessorBase(logger, aiSummarizer)
 {
-    private readonly IYamlHelper _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
-    private readonly MetadataHierarchyDetector _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
-    private readonly AppConfig? _appConfig = appConfig;
-    private string _yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter
+    private readonly MetadataHierarchyDetector hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
+    private string yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter
 
     /// <summary>
     /// Extracts text and metadata from a PDF file.
@@ -81,19 +88,20 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
         var metadata = new Dictionary<string, object>();
         if (!File.Exists(pdfPath))
         {
-            Logger.LogErrorWithPath("PDF file not found: {FilePath}", pdfPath);
+            this.Logger.LogErrorWithPath("PDF file not found: {FilePath}", pdfPath);
             return (string.Empty, metadata);
         }
+
         string extractedText = string.Empty;
         try
         {
-            Logger.LogInformationWithPath("Starting PDF content extraction: {FilePath}", pdfPath);
+            this.Logger.LogInformationWithPath("Starting PDF content extraction: {FilePath}", pdfPath);
             extractedText = await Task.Run(() =>
             {
                 var sb = new StringBuilder();
                 using (PdfDocument document = PdfDocument.Open(pdfPath))
                 {
-                    Logger.LogDebugWithPath("Opened PDF document with {PageCount} pages", pdfPath, document.NumberOfPages);
+                    this.Logger.LogDebugWithPath("Opened PDF document with {PageCount} pages", pdfPath, document.NumberOfPages);
                     sb.AppendLine();
 
                     int pageCount = 0;
@@ -102,23 +110,36 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
                         pageCount++;
                         if (pageCount % 10 == 0 || pageCount == 1 || pageCount == document.NumberOfPages)
                         {
-                            Logger.LogDebugWithPath("Extracting text from page {CurrentPage}/{TotalPages}", pdfPath, pageCount, document.NumberOfPages);
+                            this.Logger.LogDebugWithPath("Extracting text from page {CurrentPage}/{TotalPages}", pdfPath, pageCount, document.NumberOfPages);
                         }
+
                         sb.AppendLine(page.Text);
                     }
 
                     // Collect metadata after reading pages
                     metadata["page_count"] = document.NumberOfPages;
+
                     // "generated" field removed as requested
                     var info = document.Information;
                     if (!string.IsNullOrWhiteSpace(info?.Title))
+                    {
                         metadata["title"] = info.Title;
+                    }
+
                     if (!string.IsNullOrWhiteSpace(info?.Author))
+                    {
                         metadata["authors"] = new string[] { info.Author }; // Using authors (string array) as requested
+                    }
+
                     if (!string.IsNullOrWhiteSpace(info?.Subject))
+                    {
                         metadata["subject"] = info.Subject;
+                    }
+
                     if (!string.IsNullOrWhiteSpace(info?.Keywords))
+                    {
                         metadata["keywords"] = info.Keywords;
+                    }
                 }
 
                 // Extract module and lesson information                Logger.LogDebugWithPath("Extracting course structure information", pdfPath);
@@ -128,8 +149,8 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
                 courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);
 
                 // Extract hierarchy information using injected MetadataHierarchyDetector
-                Logger.LogDebugWithPath("Extracting hierarchy information from file path", pdfPath);
-                var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(pdfPath);
+                this.Logger.LogDebugWithPath("Extracting hierarchy information from file path", pdfPath);
+                var hierarchyInfo = this.hierarchyDetector.FindHierarchyInfo(pdfPath);
                 MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo);
 
                 // Add file information for PDF
@@ -149,39 +170,57 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
                 metadata["onedrive_fullpath_file_reference"] = pdfPath;
 
                 return sb.ToString();
-            });
+            }).ConfigureAwait(false);
 
             int extractedCharCount = extractedText.Length;
-            Logger.LogInformationWithPath("Extracted {CharCount:N0} characters of text from PDF: {FilePath}", pdfPath, extractedCharCount);
+            this.Logger.LogInformationWithPath("Extracted {CharCount:N0} characters of text from PDF: {FilePath}", pdfPath, extractedCharCount);
 
             // Ensure all required fields are in the metadata dictionary
             // These will be used both for frontmatter and for the AI summarizer
             if (!metadata.ContainsKey("template-type"))
+            {
                 metadata["template-type"] = "pdf-reference";
+            }
 
             if (!metadata.ContainsKey("auto-generated-state"))
+            {
                 metadata["auto-generated-state"] = "writable";
+            }
 
             if (!metadata.ContainsKey("module"))
+            {
                 metadata["module"] = string.Empty;
+            }
 
             if (!metadata.ContainsKey("lesson"))
+            {
                 metadata["lesson"] = string.Empty;
+            }
 
             if (!metadata.ContainsKey("comprehension"))
+            {
                 metadata["comprehension"] = 0;
+            }
 
             if (!metadata.ContainsKey("completion-date"))
+            {
                 metadata["completion-date"] = string.Empty;
+            }
 
             if (!metadata.ContainsKey("date-review"))
+            {
                 metadata["date-review"] = string.Empty;
+            }
 
             if (!metadata.ContainsKey("onedrive-shared-link"))
+            {
                 metadata["onedrive-shared-link"] = string.Empty;
+            }
 
             if (!metadata.ContainsKey("publisher"))
+            {
                 metadata["publisher"] = "University of Illinois at Urbana-Champaign";
+            }
 
             // Make sure we have the author field from authors if available
             if (metadata.TryGetValue("authors", out var authors) && authors != null)
@@ -190,10 +229,10 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
             }
 
             // Build YAML frontmatter without the --- separators
-            string yamlContent = BuildYamlFrontmatter(metadata);
+            string yamlContent = this.BuildYamlFrontmatter(metadata);
 
             // Store in a temporary field for use by GeneratePdfSummaryAsync
-            _yamlFrontmatter = yamlContent;
+            this.yamlFrontmatter = yamlContent;
 
             // Remove any unwanted fields
             metadata.Remove("aliases");
@@ -205,7 +244,7 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
         }
         catch (Exception ex)
         {
-            Logger.LogErrorWithPath(ex, "Failed to extract text from PDF: {FilePath}", pdfPath);
+            this.Logger.LogErrorWithPath(ex, "Failed to extract text from PDF: {FilePath}", pdfPath);
             return (string.Empty, metadata);
         }
     }
@@ -224,7 +263,7 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
             {
                 ["template-type"] = "pdf-reference",
                 ["auto-generated-state"] = "writable",
-                ["type"] = "note/case-study"
+                ["type"] = "note/case-study",
             };
 
             // Add title if available
@@ -344,13 +383,13 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
 
             int yamlLength = yamlString.Length;
             int fields = yamlData.Count;
-            Logger.LogInformationWithPath("Generated YAML frontmatter for PDF: {Length} chars, {FieldCount} fields", "yamlFrontmatter", yamlLength, fields);
-            Logger.LogDebug("Generated YAML frontmatter for PDF without separators");
+            this.Logger.LogInformationWithPath("Generated YAML frontmatter for PDF: {Length} chars, {FieldCount} fields", "yamlFrontmatter", yamlLength, fields);
+            this.Logger.LogDebug("Generated YAML frontmatter for PDF without separators");
             return yamlString;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to build YAML frontmatter for PDF");
+            this.Logger.LogError(ex, "Failed to build YAML frontmatter for PDF");
             return string.Empty;
         }
     }
@@ -364,7 +403,7 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
     public string GenerateMarkdownNote(string pdfText, Dictionary<string, object>? metadata = null)
     {
         // Use base implementation for consistent formatting, include the title from metadata
-        return base.GenerateMarkdownNote(pdfText, metadata, "PDF Note", includeNoteTypeTitle: true);
+        return this.GenerateMarkdownNote(pdfText, metadata, "PDF Note", includeNoteTypeTitle: true);
     }
 
     /// <summary>
@@ -380,74 +419,82 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
         var variables = new Dictionary<string, string>();
         string effectivePrompt = promptFileName ?? "final_summary_prompt";
 
-        Logger.LogInformationWithPath("Preparing variables for AI summarization", effectivePrompt);
+        this.Logger.LogInformationWithPath("Preparing variables for AI summarization", effectivePrompt);
 
         // Track character counts for detailed progress reporting
         int textLength = pdfText?.Length ?? 0;
         int estimatedTokens = textLength / 4; // Rough estimate: 4 chars per token
-        Logger.LogInformationWithPath("PDF content to summarize: {CharCount:N0} characters (~{TokenEstimate:N0} estimated tokens)",
+        this.Logger.LogInformationWithPath(
+            "PDF content to summarize: {CharCount:N0} characters (~{TokenEstimate:N0} estimated tokens)",
             effectivePrompt, textLength, estimatedTokens);
 
         // Add title if available
         if (metadata.TryGetValue("title", out var titleObj) && titleObj != null)
         {
             variables["title"] = titleObj.ToString() ?? "Untitled PDF";
-            Logger.LogInformationWithPath("Added title to variables: {Title}", effectivePrompt, variables["title"]);
-        }            // Add YAML frontmatter as a variable - but don't wrap it in --- separators
+            this.Logger.LogInformationWithPath("Added title to variables: {Title}", effectivePrompt, variables["title"]);
+        } // Add YAML frontmatter as a variable - but don't wrap it in --- separators
+
         // as that will be handled by the template/prompt
-        if (!string.IsNullOrEmpty(_yamlFrontmatter))
+        if (!string.IsNullOrEmpty(this.yamlFrontmatter))
         {
             // The _yamlFrontmatter should now contain just the YAML content without separators
-            variables["yamlfrontmatter"] = _yamlFrontmatter;
-            Logger.LogInformationWithPath("Added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer",
-                effectivePrompt, _yamlFrontmatter.Length);
+            variables["yamlfrontmatter"] = this.yamlFrontmatter;
+            this.Logger.LogInformationWithPath(
+                "Added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer",
+                effectivePrompt, this.yamlFrontmatter.Length);
         }
         else
         {
             // Build it now if not already built - again without wrapping in --- separators
-            string yamlContent = BuildYamlFrontmatter(metadata);
+            string yamlContent = this.BuildYamlFrontmatter(metadata);
             variables["yamlfrontmatter"] = yamlContent;
-            Logger.LogInformationWithPath("Built and added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer",
+            this.Logger.LogInformationWithPath(
+                "Built and added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer",
                 effectivePrompt, yamlContent.Length);
         }
 
         // Make a copy to avoid modifying the original metadata
         _ = new
+
         // Make a copy to avoid modifying the original metadata
         Dictionary<string, object>(metadata);
 
-        Logger.LogInformationWithPath("Starting AI summarization process with prompt template: {FilePath}",
+        this.Logger.LogInformationWithPath(
+            "Starting AI summarization process with prompt template: {FilePath}",
             effectivePrompt);
-        Logger.LogInformationWithPath("AI summary generation beginning - this may take some time for large documents",
+        this.Logger.LogInformationWithPath(
+            "AI summary generation beginning - this may take some time for large documents",
             effectivePrompt);
 
         // Use the summarizer directly
         string? result = null;
         try
         {
-            if (Summarizer != null)
+            if (this.Summarizer != null)
             {
-                Logger.LogInformationWithPath("Sending content to AI summarizer", effectivePrompt);
-                result = await Summarizer.SummarizeWithVariablesAsync(
+                this.Logger.LogInformationWithPath("Sending content to AI summarizer", effectivePrompt);
+                result = await this.Summarizer.SummarizeWithVariablesAsync(
                     pdfText ?? string.Empty,
                     variables,
-                    effectivePrompt);
+                    effectivePrompt).ConfigureAwait(false);
             }
             else
             {
-                Logger.LogWarningWithPath("AI summarizer service not available", effectivePrompt);
+                this.Logger.LogWarningWithPath("AI summarizer service not available", effectivePrompt);
                 result = "[Simulated AI summary - summarizer service unavailable]";
             }
 
             // Log the result statistics
             int summaryLength = result?.Length ?? 0;
             int compressionRatio = textLength > 0 ? (int)(100 - ((double)summaryLength / textLength * 100)) : 0;
-            Logger.LogInformationWithPath("AI summary generation complete: {Length:N0} characters ({CompressionRatio}% reduction)",
+            this.Logger.LogInformationWithPath(
+                "AI summary generation complete: {Length:N0} characters ({CompressionRatio}% reduction)",
                 effectivePrompt, summaryLength, compressionRatio);
         }
         catch (Exception ex)
         {
-            Logger.LogErrorWithPath(ex, "Error generating AI summary for PDF", effectivePrompt);
+            this.Logger.LogErrorWithPath(ex, "Error generating AI summary for PDF", effectivePrompt);
             result = "[Error generating AI summary]";
         }
 

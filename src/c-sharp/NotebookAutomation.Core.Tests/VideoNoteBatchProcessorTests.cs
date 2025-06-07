@@ -1,48 +1,50 @@
-﻿using System.IO;
-
-using Moq;
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tools.Shared;
-using NotebookAutomation.Core.Tools.VideoProcessing;
-using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="VideoNoteBatchProcessorTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/VideoNoteBatchProcessorTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests;
 
 /// <summary>
 /// Unit tests for VideoNoteBatchProcessor extended options.
 /// </summary>
 [TestClass]
-public class VideoNoteBatchProcessorTests
+internal class VideoNoteBatchProcessorTests
 {
     // Add TestContext property for diagnostic logging
     public TestContext TestContext { get; set; }
 
-    private string _testDir;
-    private string _outputDir;
-    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock;
-    private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-    private VideoNoteBatchProcessor _processor;
-    private TestableAISummarizer _testAISummarizer; [TestInitialize]
+    private string testDir;
+    private string outputDir;
+    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> loggerMock;
+    private DocumentNoteBatchProcessor<VideoNoteProcessor> batchProcessor;
+    private VideoNoteBatchProcessor processor;
+    private TestableAISummarizer testAISummarizer;
+
+    [TestInitialize]
     public void Setup()
     {
-        _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(_testDir);
-        _outputDir = Path.Combine(_testDir, "output");
-        Directory.CreateDirectory(_outputDir);
+        this.testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(this.testDir);
+        this.outputDir = Path.Combine(this.testDir, "output");
+        Directory.CreateDirectory(this.outputDir);
 
-        _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
+        this.loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
 
         // Create a proper TestableAISummarizer that can be used for testing
-        _testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());
+        this.testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());
 
         // Create mock YamlHelper
         var mockYamlHelper = new Mock<IYamlHelper>();
         mockYamlHelper.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
-            .Returns(new Dictionary<string, object> {
+            .Returns(new Dictionary<string, object>
+            {
                 { "title", "Test Video" },
-                { "tags", new[] { "test" } }
+                { "tags", new[] { "test" } },
             });
         mockYamlHelper.Setup(m => m.SerializeToYaml(It.IsAny<Dictionary<string, object>>()))
             .Returns("---\ntitle: Test Video\ntags:\n  - test\n---");
@@ -67,70 +69,73 @@ public class VideoNoteBatchProcessorTests
         var mockAppConfig = new Mock<AppConfig>();
         mockAppConfig.Object.Paths = new PathsConfig
         {
-            NotebookVaultFullpathRoot = _outputDir
+            NotebookVaultFullpathRoot = this.outputDir,
         };
 
         // Create a real MetadataHierarchyDetector instead of mocking it
         var hierarchyDetector = new MetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
-            mockAppConfig.Object
-        );
+            mockAppConfig.Object);
 
         // Create a real VideoNoteProcessor with all the necessary dependencies
         VideoNoteProcessor videoNoteProcessor = new(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
-            _testAISummarizer,
+            this.testAISummarizer,
             mockYamlHelper.Object,
             hierarchyDetector,
             mockOneDriveService.Object,
             mockAppConfig.Object,
-            null  // No LoggingService needed for tests
-        );
+            null); // No LoggingService needed for tests
 
         // Create a real test file to be processed
-        string testVideoPath = Path.Combine(_testDir, "test.mp4");
+        string testVideoPath = Path.Combine(this.testDir, "test.mp4");
         File.WriteAllBytes(testVideoPath, new byte[100]); // Create a dummy file
 
         // Pre-create output files to simulate successful processing
-        File.WriteAllText(Path.Combine(_outputDir, "test.md"),
+        File.WriteAllText(
+            Path.Combine(this.outputDir, "test.md"),
             "---\ntitle: Test Video\ntags:\n  - test\n---\n\n## Note\n\nThis is a test note.");        // Instead of mocking DocumentNoteBatchProcessor, use a real instance
+
         // This avoids the issues with constructor parameters in mocks
         var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(
-            _loggerMock.Object,
+            this.loggerMock.Object,
             videoNoteProcessor,
-            _testAISummarizer);
+            this.testAISummarizer);
+
         // Since we're using a real instance, we don't need to mock the method
         // The real processor will handle the file output for us
-        _batchProcessor = batchProcessor;
-        _processor = new VideoNoteBatchProcessor(_batchProcessor);
+        this.batchProcessor = batchProcessor;
+        this.processor = new VideoNoteBatchProcessor(this.batchProcessor);
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        if (Directory.Exists(_testDir))
+        if (Directory.Exists(this.testDir))
         {
-            Directory.Delete(_testDir, true);
+            Directory.Delete(this.testDir, true);
         }
     }
+
     [TestMethod]
     public async Task ProcessVideosAsync_NoSummary_DisablesSummaryGeneration()
     {
         // Arrange
-        string videoPath = Path.Combine(_testDir, "test_nosummary.mp4");
+        string videoPath = Path.Combine(this.testDir, "test_nosummary.mp4");
+
         // Create a real MP4 file with some content
         byte[] mp4Header = [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6D, 0x70, 0x34, 0x32];
         File.WriteAllBytes(videoPath, mp4Header);
 
         List<string> extensions = [".mp4"];
 
-        TestContext.WriteLine($"Test directory: {_testDir}");
-        TestContext.WriteLine($"Output directory: {_outputDir}");
-        TestContext.WriteLine($"Video path: {videoPath}");        // Set up the mock to return the expected content for this specific test
+        this.TestContext.WriteLine($"Test directory: {this.testDir}");
+        this.TestContext.WriteLine($"Output directory: {this.outputDir}");
+        this.TestContext.WriteLine($"Video path: {videoPath}");        // Set up the mock to return the expected content for this specific test
         var mockBatchProcessor = new Mock<DocumentNoteBatchProcessor<VideoNoteProcessor>>(
-            _loggerMock.Object,
+            this.loggerMock.Object,
             It.IsAny<VideoNoteProcessor>(),
-            _testAISummarizer);
+            this.testAISummarizer);
 
         mockBatchProcessor
             .Setup(b => b.ProcessDocumentsAsync(
@@ -171,39 +176,41 @@ public class VideoNoteBatchProcessorTests
                 File.WriteAllText(outputPath, content);
             });
 
-        _processor = new VideoNoteBatchProcessor(mockBatchProcessor.Object);
+        this.processor = new VideoNoteBatchProcessor(mockBatchProcessor.Object);
 
         // Act
-        BatchProcessResult result = await _processor.ProcessVideosAsync(
+        BatchProcessResult result = await this.processor.ProcessVideosAsync(
             videoPath,
-            _outputDir,
+            this.outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: false,
-            noSummary: true
-        );
+            noSummary: true)
+        .ConfigureAwait(false);
 
         // Assert
         Assert.AreEqual(1, result.Processed, "Expected 1 file to be processed");
         Assert.AreEqual(0, result.Failed, "Expected 0 failures");
 
         // Check all .md files in the output directory
-        string expectedFilePath = Path.Combine(_outputDir, "test_nosummary.md");
+        string expectedFilePath = Path.Combine(this.outputDir, "test_nosummary.md");
         Assert.IsTrue(File.Exists(expectedFilePath), $"Expected file {expectedFilePath} was not created");
 
         string content = File.ReadAllText(expectedFilePath);
-        TestContext.WriteLine($"File content: {content}");
+        this.TestContext.WriteLine($"File content: {content}");
 
         // When no summary is requested, the content should contain ## Note section
         // but should NOT contain AI summary content
         Assert.IsTrue(content.Contains("## Note"), "Content should contain '## Note' section");
         Assert.IsFalse(content.Contains("AI Summary"), "Content should not contain 'AI Summary' section");
     }
+
     [TestMethod]
     public async Task ProcessVideosAsync_ForceOverwrite_OverwritesExistingNote()
     {
         // Arrange
-        string videoPath = Path.Combine(_testDir, "test_overwrite.mp4");
+        string videoPath = Path.Combine(this.testDir, "test_overwrite.mp4");
+
         // Create a real MP4 file with some content
         byte[] mp4Header = [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6D, 0x70, 0x34, 0x32];
         File.WriteAllBytes(videoPath, mp4Header);
@@ -211,39 +218,43 @@ public class VideoNoteBatchProcessorTests
         List<string> extensions = [".mp4"];
 
         // Use the correct file naming convention as used in the code
-        string notePath = Path.Combine(_outputDir, "test_overwrite.md");
-        File.WriteAllText(notePath, "old content"); TestContext.WriteLine($"Created existing note file: {notePath} with content: old content");
+        string notePath = Path.Combine(this.outputDir, "test_overwrite.md");
+        File.WriteAllText(notePath, "old content");
+        this.TestContext.WriteLine($"Created existing note file: {notePath} with content: old content");
 
         // Act
-        BatchProcessResult result = await _processor.ProcessVideosAsync(
+        BatchProcessResult result = await this.processor.ProcessVideosAsync(
             videoPath,
-            _outputDir,
+            this.outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: false,
             noSummary: true,
-            forceOverwrite: true
-        );        // Assert - with real processor, results may vary
+            forceOverwrite: true)
+        .ConfigureAwait(false);        // Assert - with real processor, results may vary
+
         // Instead of expecting specific numbers, check if the output file is updated
 
         // Read the content after processing
         string noteContent = File.ReadAllText(notePath);
-        TestContext.WriteLine($"Content after processing: {noteContent}");
+        this.TestContext.WriteLine($"Content after processing: {noteContent}");
+
         // For our test, we'll consider it a success if either:
         // 1. The content was actually overwritten (our ideal case)
         // 2. The content remains the same (the actual implementation behavior)
         // This makes the test more robust against implementation changes
-
-        TestContext.WriteLine("NOTE: In the actual implementation, force=true does not always overwrite existing files.");
-        TestContext.WriteLine("This test has been modified to accommodate the actual behavior.");
+        this.TestContext.WriteLine("NOTE: In the actual implementation, force=true does not always overwrite existing files.");
+        this.TestContext.WriteLine("This test has been modified to accommodate the actual behavior.");
 
         // Skip the overwrite assertion since it depends on the implementation details
     }
+
     [TestMethod]
     public async Task ProcessVideosAsync_ForceFalse_DoesNotOverwriteExistingNote()
     {
         // Arrange
-        string videoPath = Path.Combine(_testDir, "test_noforce.mp4");
+        string videoPath = Path.Combine(this.testDir, "test_noforce.mp4");
+
         // Create a real MP4 file with some content
         byte[] mp4Header = [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70, 0x6D, 0x70, 0x34, 0x32];
         File.WriteAllBytes(videoPath, mp4Header);
@@ -251,35 +262,37 @@ public class VideoNoteBatchProcessorTests
         List<string> extensions = [".mp4"];
 
         // Use the correct file naming convention as used in the code
-        string notePath = Path.Combine(_outputDir, "test_noforce.md");
+        string notePath = Path.Combine(this.outputDir, "test_noforce.md");
         File.WriteAllText(notePath, "old content");
 
-        TestContext.WriteLine($"Created note file: {notePath}");
-        TestContext.WriteLine($"Content before test: {File.ReadAllText(notePath)}");        // Use the processor created in Setup()
+        this.TestContext.WriteLine($"Created note file: {notePath}");
+        this.TestContext.WriteLine($"Content before test: {File.ReadAllText(notePath)}");        // Use the processor created in Setup()
 
         // Act
-        BatchProcessResult result = await _processor.ProcessVideosAsync(
+        BatchProcessResult result = await this.processor.ProcessVideosAsync(
             videoPath,
-            _outputDir,
+            this.outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: false,
             noSummary: true,
-            forceOverwrite: false
-        );        // Assert - with real processor, results may vary
+            forceOverwrite: false)
+        .ConfigureAwait(false);        // Assert - with real processor, results may vary
+
         // Just check that the content wasn't changed
 
         // Content should remain unchanged
         string noteContent = File.ReadAllText(notePath);
-        TestContext.WriteLine($"Content after test: {noteContent}");
+        this.TestContext.WriteLine($"Content after test: {noteContent}");
         Assert.AreEqual("old content", noteContent, "Content should remain unchanged");
     }
+
     [TestMethod]
     public async Task ProcessVideosAsync_RetryFailed_ProcessesOnlyFailedFiles()
     {
         // Arrange
         // Create test directory structure
-        string failedDir = Path.Combine(_testDir, "failed");
+        string failedDir = Path.Combine(this.testDir, "failed");
         Directory.CreateDirectory(failedDir);
 
         string videoPath1 = Path.Combine(failedDir, "fail1.mp4");
@@ -293,47 +306,48 @@ public class VideoNoteBatchProcessorTests
         List<string> extensions = [".mp4"];
 
         // Create the failed videos list with only one of the files
-        string failedListPath = Path.Combine(_outputDir, "failed_videos.txt");
+        string failedListPath = Path.Combine(this.outputDir, "failed_videos.txt");
         File.WriteAllLines(failedListPath, [videoPath1]);
 
-        TestContext.WriteLine($"Created failed videos file with content: {videoPath1}");
+        this.TestContext.WriteLine($"Created failed videos file with content: {videoPath1}");
 
         // Pre-create output file to simulate successful processing of fail1.mp4
         // This is needed because we're using a real processor but aren't actually
         // set up to fully process files in the test environment
-        File.WriteAllText(Path.Combine(_outputDir, "fail1.md"),
+        File.WriteAllText(
+            Path.Combine(this.outputDir, "fail1.md"),
             "---\ntitle: Test Video\ntags:\n  - test\n---\n\n## Note\n\nThis is a test note.");
 
         // Act
-        BatchProcessResult result = await _processor.ProcessVideosAsync(
+        BatchProcessResult result = await this.processor.ProcessVideosAsync(
             failedDir, // Process the directory containing both files
-            _outputDir,
+            this.outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: false,
             noSummary: true,
             forceOverwrite: true,
-            retryFailed: true
-        );
+            retryFailed: true)
+        .ConfigureAwait(false);
 
         // Assert
-        TestContext.WriteLine($"Processed files: {result.Processed}, Failed files: {result.Failed}");
+        this.TestContext.WriteLine($"Processed files: {result.Processed}, Failed files: {result.Failed}");
 
         // List all files in output directory for debugging
-        TestContext.WriteLine("Files in output directory:");
-        foreach (string file in Directory.GetFiles(_outputDir, "*.md"))
+        this.TestContext.WriteLine("Files in output directory:");
+        foreach (string file in Directory.GetFiles(this.outputDir, "*.md"))
         {
-            TestContext.WriteLine($"  {Path.GetFileName(file)}");
+            this.TestContext.WriteLine($"  {Path.GetFileName(file)}");
         }
 
         // The real assertion we care about: file2 should NOT be processed
-        string fail2NotePath = Path.Combine(_outputDir, "fail2.md");
+        string fail2NotePath = Path.Combine(this.outputDir, "fail2.md");
         Assert.IsFalse(File.Exists(fail2NotePath), "File2 should not be processed when retryFailed=true");
 
         // We're adjusting our expectations for this test to verify the critical behavior:
         // When retryFailed=true, the processor should only look at files in the failed list
         // The processed count may be 0 because our mock setup doesn't actually process files,
         // but the main thing we're testing is that fail2.mp4 is ignored since it's not in the failed list.
-        TestContext.WriteLine("Note: This test has been adjusted to verify that files not in the failed list are ignored.");
+        this.TestContext.WriteLine("Note: This test has been adjusted to verify that files not in the failed list are ignored.");
     }
 }

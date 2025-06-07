@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+      <title>Class OneDriveCliOptions | Obsidian Notebook Automation for Coursera </title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="title" content="Class OneDriveCliOptions | Obsidian Notebook Automation for Coursera ">
+      
+      <meta name="description" content="Options for configuring the behavior of OneDrive operations via the command-line interface.">
+      <link rel="icon" href="../../favicon.ico">
+      <link rel="stylesheet" href="../../public/docfx.min.css">
+      <link rel="stylesheet" href="../../public/main.css">
+      <meta name="docfx:navrel" content="../../toc.html">
+      <meta name="docfx:tocrel" content="toc.html">
+      
+      <meta name="docfx:rel" content="../../">
+      
+      
+      <meta name="docfx:docurl" content="https://github.com/danielshue/notebook-automation/new/master/apiSpec/new?filename=NotebookAutomation_Core_Services_OneDriveCliOptions.md&amp;value=---%0Auid%3A%20NotebookAutomation.Core.Services.OneDriveCliOptions%0Asummary%3A%20&#39;*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax&#39;%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">
+      <meta name="loc:inThisArticle" content="In this article">
+      <meta name="loc:searchResultsCount" content="{count} results for &quot;{query}&quot;">
+      <meta name="loc:searchNoResults" content="No results for &quot;{query}&quot;">
+      <meta name="loc:tocFilter" content="Filter by title">
+      <meta name="loc:nextArticle" content="Next">
+      <meta name="loc:prevArticle" content="Previous">
+      <meta name="loc:themeLight" content="Light">
+      <meta name="loc:themeDark" content="Dark">
+      <meta name="loc:themeAuto" content="Auto">
+      <meta name="loc:changeTheme" content="Change theme">
+      <meta name="loc:copy" content="Copy">
+      <meta name="loc:downloadPdf" content="Download PDF">
+
+      <script type="module" src="./../../public/docfx.min.js"></script>
+
+      <script>
+        const theme = localStorage.getItem('theme') || 'auto'
+        document.documentElement.setAttribute('data-bs-theme', theme === 'auto' ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme)
+      </script>
+
+  </head>
+
+  <body class="tex2jax_ignore" data-layout="" data-yaml-mime="ManagedReference">
+    <header class="bg-body border-bottom">
+      <nav id="autocollapse" class="navbar navbar-expand-md" role="navigation">
+        <div class="container-xxl flex-nowrap">
+          <a class="navbar-brand" href="../../index.html">
+            <img id="logo" class="svg" src="../../logo.svg" alt="notebook-automation">
+            notebook-automation
+          </a>
+          <button class="btn btn-lg d-md-none border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navpanel" aria-controls="navpanel" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <div class="collapse navbar-collapse" id="navpanel">
+            <div id="navbar">
+              <form class="search" role="search" id="search">
+                <i class="bi bi-search"></i>
+                <input class="form-control" id="search-query" type="search" disabled placeholder="Search" autocomplete="off" aria-label="Search">
+              </form>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container-xxl">
+      <div class="toc-offcanvas">
+        <div class="offcanvas-md offcanvas-start" tabindex="-1" id="tocOffcanvas" aria-labelledby="tocOffcanvasLabel">
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="tocOffcanvasLabel">Table of Contents</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#tocOffcanvas" aria-label="Close"></button>
+          </div>
+          <div class="offcanvas-body">
+            <nav class="toc" id="toc"></nav>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="actionbar">
+          <button class="btn btn-lg border-0 d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#tocOffcanvas" aria-controls="tocOffcanvas" aria-expanded="false" aria-label="Show table of contents">
+            <i class="bi bi-list"></i>
+          </button>
+
+          <nav id="breadcrumb"></nav>
+        </div>
+
+        <article data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions">
+
+
+
+  <h1 id="NotebookAutomation_Core_Services_OneDriveCliOptions" data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions" class="text-break">
+Class OneDriveCliOptions  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs/#L44"><i class="bi bi-code-slash"></i></a>
+  </h1>
+
+  <div class="facts text-secondary">
+    <dl><dt>Namespace</dt><dd><a class="xref" href="NotebookAutomation.html">NotebookAutomation</a>.<a class="xref" href="NotebookAutomation.Core.html">Core</a>.<a class="xref" href="NotebookAutomation.Core.Services.html">Services</a></dd></dl>
+  <dl><dt>Assembly</dt><dd>NotebookAutomation.Core.dll</dd></dl>
+  </div>
+
+  <div class="markdown summary"><p>Options for configuring the behavior of OneDrive operations via the command-line interface.</p>
+</div>
+  <div class="markdown conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public class OneDriveCliOptions</code></pre>
+  </div>
+
+
+
+
+  <dl class="typelist inheritance">
+    <dt>Inheritance</dt>
+    <dd>
+      <div><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object">object</a></div>
+      <div><span class="xref">OneDriveCliOptions</span></div>
+    </dd>
+  </dl>
+
+
+
+  <dl class="typelist inheritedMembers">
+    <dt>Inherited Members</dt>
+    <dd>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)">object.Equals(object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)">object.Equals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gethashcode">object.GetHashCode()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.gettype">object.GetType()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone">object.MemberwiseClone()</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.referenceequals">object.ReferenceEquals(object, object)</a>
+    </div>
+    <div>
+      <a class="xref" href="https://learn.microsoft.com/dotnet/api/system.object.tostring">object.ToString()</a>
+    </div>
+  </dd></dl>
+
+
+
+  <h2 id="NotebookAutomation_Core_Services_OneDriveCliOptions_examples">Examples</h2>
+  <p>Example of setting up options based on command-line arguments:</p>
+<pre><code class="lang-csharp">var options = new OneDriveCliOptions
+{
+    DryRun = context.ParseResult.GetValueForOption(dryRunOption),
+    Verbose = context.ParseResult.GetValueForOption(verboseOption),
+    Force = context.ParseResult.GetValueForOption(forceOption),
+    Retry = true  // Always retry by default
+};
+oneDriveService.SetCliOptions(options);</code></pre>
+
+
+  <h2 id="NotebookAutomation_Core_Services_OneDriveCliOptions_remarks">Remarks</h2>
+  <div class="markdown level0 remarks"><p>
+The OneDriveCliOptions class provides a structured way to configure how OneDrive operations
+behave when invoked through the command-line interface. These options control behaviors such as:
+<ul><li>Whether operations should run in dry-run mode (simulating changes without actually making them)</li><li>Whether to display verbose output during operations</li><li>Whether to force operations even if they might overwrite existing content</li><li>Whether to retry operations on failure</li></ul>
+
+<p>
+These options are typically set based on command-line arguments provided by the user,
+and then passed to the OneDriveService for use during operations.
+</p>
+</div>
+
+
+  <h2 class="section" id="properties">Properties
+</h2>
+
+
+  <a id="NotebookAutomation_Core_Services_OneDriveCliOptions_DryRun_" data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_OneDriveCliOptions_DryRun" data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions.DryRun">
+  DryRun
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs/#L58"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a value indicating whether gets or sets whether to simulate operations without making actual changes.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool DryRun { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><code>true</code> to run in dry-run mode (simulating but not performing operations);
+<code>false</code> to perform actual operations.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_OneDriveCliOptions_DryRun_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>When DryRun is enabled, the OneDriveService will log what would have happened
+but won't actually modify, upload, or download any files. This is useful for
+verifying what operations would be performed without risking any data changes.</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_OneDriveCliOptions_Force_" data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions.Force*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_OneDriveCliOptions_Force" data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions.Force">
+  Force
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs/#L84"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a value indicating whether gets or sets whether to force operations even if they would overwrite existing content.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Force { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><code>true</code> to force operations; <code>false</code> to prompt or skip when conflicts occur.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_OneDriveCliOptions_Force_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>When Force is enabled, the OneDriveService will overwrite existing files without
+prompting for confirmation. If Force is disabled, the service might skip conflicting
+operations or prompt for confirmation, depending on the specific implementation.</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_OneDriveCliOptions_Retry_" data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions.Retry*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_OneDriveCliOptions_Retry" data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions.Retry">
+  Retry
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs/#L103"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a value indicating whether gets or sets whether to retry failed operations.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Retry { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><code>true</code> to retry failed operations; <code>false</code> to fail immediately.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_OneDriveCliOptions_Retry_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>
+When Retry is enabled, the OneDriveService will attempt to retry operations that
+fail due to transient errors, like network issues or rate limiting. The specific
+retry strategy (number of retries, delays) is determined by the service implementation.
+</p>
+<p>
+This is particularly useful for operations that are likely to succeed on retry,
+such as uploads or downloads that might fail due to temporary network issues.
+</p>
+</div>
+
+
+
+
+  <a id="NotebookAutomation_Core_Services_OneDriveCliOptions_Verbose_" data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose*"></a>
+
+  <h3 id="NotebookAutomation_Core_Services_OneDriveCliOptions_Verbose" data-uid="NotebookAutomation.Core.Services.OneDriveCliOptions.Verbose">
+  Verbose
+  <a class="header-action link-secondary" title="View source" href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs/#L71"><i class="bi bi-code-slash"></i></a>
+  </h3>
+
+  <div class="markdown level1 summary"><p>Gets or sets a value indicating whether gets or sets whether to display detailed, verbose output during operations.</p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">public bool Verbose { get; set; }</code></pre>
+  </div>
+
+
+
+
+
+  <h4 class="section">Property Value</h4>
+  <dl class="parameters">
+    <dt><a class="xref" href="https://learn.microsoft.com/dotnet/api/system.boolean">bool</a></dt>
+    <dd><p><code>true</code> to display verbose output; <code>false</code> for standard output.</p>
+</dd>
+  </dl>
+
+
+
+
+  <h4 class="section" id="NotebookAutomation_Core_Services_OneDriveCliOptions_Verbose_remarks">Remarks</h4>
+  <div class="markdown level1 remarks"><p>When Verbose is enabled, the OneDriveService will log additional details about
+each operation, including file sizes, paths, timestamps, and more. This is useful
+for debugging or for understanding exactly what the service is doing.</p>
+</div>
+
+
+
+
+
+</article>
+
+        <div class="contribution d-print-none">
+          <a href="https://github.com/danielshue/notebook-automation/blob/master/src/c-sharp/NotebookAutomation.Core/Services/OneDriveCliOptions.cs/#L44" class="edit-link">Edit this page</a>
+        </div>
+
+
+      </div>
+
+      <div class="affix">
+        <nav id="affix"></nav>
+      </div>
+    </main>
+
+    <div class="container-xxl search-results" id="search-results"></div>
+
+    <footer class="border-top text-secondary">
+      <div class="container-xxl">
+        <div class="flex-fill">
+          <span>Made with <a href="https://dotnet.github.io/docfx">docfx</a></span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

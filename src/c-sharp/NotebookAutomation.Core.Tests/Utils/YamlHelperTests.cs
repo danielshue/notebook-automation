@@ -1,5 +1,12 @@
-﻿using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="YamlHelperTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Utils/YamlHelperTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 #nullable enable
 
 namespace NotebookAutomation.Core.Tests.Utils;
@@ -8,10 +15,10 @@ namespace NotebookAutomation.Core.Tests.Utils;
 /// Tests for the YamlHelper class focusing on YAML parsing and handling.
 /// </summary>
 [TestClass]
-public class YamlHelperTests
+internal class YamlHelperTests
 {
-    private ILogger<YamlHelper> _logger = null!;
-    private YamlHelper _yamlHelper = null!;
+    private ILogger<YamlHelper> logger = null!;
+    private YamlHelper yamlHelper = null!;
 
     /// <summary>
     /// Initialize test resources before each test.
@@ -19,8 +26,8 @@ public class YamlHelperTests
     [TestInitialize]
     public void Setup()
     {
-        _logger = new LoggerFactory().CreateLogger<YamlHelper>();
-        _yamlHelper = new YamlHelper(_logger);
+        this.logger = new LoggerFactory().CreateLogger<YamlHelper>();
+        this.yamlHelper = new YamlHelper(this.logger);
     }
 
     /// <summary>
@@ -38,7 +45,7 @@ tags: [test, yaml]
 # Content starts here";
 
         // Act
-        string? result = _yamlHelper.ExtractFrontmatter(markdown);
+        string? result = this.yamlHelper.ExtractFrontmatter(markdown);
 
         // Assert
         Assert.IsNotNull(result);
@@ -56,7 +63,7 @@ tags: [test, yaml]
         string markdown = "# Just a regular markdown document\nNo frontmatter here.";
 
         // Act
-        string? result = _yamlHelper.ExtractFrontmatter(markdown);
+        string? result = this.yamlHelper.ExtractFrontmatter(markdown);
 
         // Assert
         Assert.IsNull(result);
@@ -76,7 +83,7 @@ tags:
 date: 2023-05-15";
 
         // Act
-        Dictionary<string, object> result = _yamlHelper.ParseYamlToDictionary(yaml);
+        Dictionary<string, object> result = this.yamlHelper.ParseYamlToDictionary(yaml);
 
         // Assert
         Assert.AreEqual(3, result.Count);
@@ -93,10 +100,10 @@ date: 2023-05-15";
     public void ParseYamlToDictionary_WithEmptyInput_ReturnsEmptyDictionary()
     {
         // Arrange
-        string yaml = "";
+        string yaml = string.Empty;
 
         // Act
-        Dictionary<string, object> result = _yamlHelper.ParseYamlToDictionary(yaml);
+        Dictionary<string, object> result = this.yamlHelper.ParseYamlToDictionary(yaml);
 
         // Assert
         Assert.AreEqual(0, result.Count);
@@ -117,7 +124,7 @@ tags:
 ```";
 
         // Act
-        Dictionary<string, object> result = _yamlHelper.ParseYamlToDictionary(yamlInCodeBlock);
+        Dictionary<string, object> result = this.yamlHelper.ParseYamlToDictionary(yamlInCodeBlock);
 
         // Assert
         Assert.AreEqual(2, result.Count);
@@ -140,7 +147,7 @@ tags:
 ```";
 
         // Act
-        Dictionary<string, object> result = _yamlHelper.ParseYamlToDictionary(yamlInCodeBlock);
+        Dictionary<string, object> result = this.yamlHelper.ParseYamlToDictionary(yamlInCodeBlock);
 
         // Assert
         Assert.IsTrue(result.Count > 0, "Failed to extract and parse YAML from code block");
@@ -164,7 +171,7 @@ tags:
   - yaml";
 
         // Act
-        Dictionary<string, object> result = _yamlHelper.ParseYamlToDictionary(yaml);
+        Dictionary<string, object> result = this.yamlHelper.ParseYamlToDictionary(yaml);
 
         // Assert
         Assert.IsTrue(result.Count > 0, "Failed to parse valid YAML");
@@ -188,7 +195,7 @@ tags:
 ";
 
         // Act
-        Dictionary<string, object> result = _yamlHelper.ParseYamlToDictionary(yamlWithWhitespace);
+        Dictionary<string, object> result = this.yamlHelper.ParseYamlToDictionary(yamlWithWhitespace);
 
         // Assert
         Assert.AreEqual(2, result.Count);
@@ -209,7 +216,7 @@ tags:
   - test";
 
         // Act
-        Dictionary<string, object> result = _yamlHelper.ParseYamlToDictionary(malformedYaml);
+        Dictionary<string, object> result = this.yamlHelper.ParseYamlToDictionary(malformedYaml);
 
         // Assert
         Assert.AreEqual(0, result.Count);
@@ -232,7 +239,7 @@ tags:
 # Content";
 
         // Act
-        var (success, message, data) = _yamlHelper.DiagnoseYamlFrontmatter(markdown);
+        var (success, message, data) = this.yamlHelper.DiagnoseYamlFrontmatter(markdown);
 
         // Assert
         Assert.IsTrue(success);
@@ -258,7 +265,7 @@ missing_bracket_close: value
 # Content";
 
         // Act
-        var (success, message, data) = _yamlHelper.DiagnoseYamlFrontmatter(markdown);
+        var (success, message, data) = this.yamlHelper.DiagnoseYamlFrontmatter(markdown);
 
         // Assert
         Assert.IsFalse(success);
@@ -286,7 +293,7 @@ description: >-
 ```";
 
         // Act
-        Dictionary<string, object> result = _yamlHelper.ParseYamlToDictionary(aiGeneratedYaml);
+        Dictionary<string, object> result = this.yamlHelper.ParseYamlToDictionary(aiGeneratedYaml);
 
         // Assert
         Assert.IsTrue(result.Count > 0);
@@ -311,7 +318,7 @@ tags:
 created:   2023-05-15   ";
 
         // Act
-        Dictionary<string, object> result = _yamlHelper.ParseYamlToDictionary(problematicYaml);
+        Dictionary<string, object> result = this.yamlHelper.ParseYamlToDictionary(problematicYaml);
 
         // Assert
         Assert.AreEqual(3, result.Count);
@@ -338,11 +345,11 @@ tags:
         Dictionary<string, object> newFrontmatter = new()
         {
             { "title", "Updated Title" },
-            { "tags", new List<object> { "updated" } }
+            { "tags", new List<object> { "updated" } },
         };
 
         // Act
-        string result = _yamlHelper.UpdateFrontmatter(markdown, newFrontmatter);
+        string result = this.yamlHelper.UpdateFrontmatter(markdown, newFrontmatter);
 
         // Assert
         Assert.IsTrue(result.Contains("title: Updated Title"));
@@ -361,11 +368,11 @@ tags:
         Dictionary<string, object> newFrontmatter = new()
         {
             { "title", "New Title" },
-            { "tags", new List<object> { "new" } }
+            { "tags", new List<object> { "new" } },
         };
 
         // Act
-        string result = _yamlHelper.UpdateFrontmatter(markdown, newFrontmatter);
+        string result = this.yamlHelper.UpdateFrontmatter(markdown, newFrontmatter);
 
         // Assert
         Assert.IsTrue(result.Contains("title: New Title"));

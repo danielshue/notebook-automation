@@ -1,7 +1,17 @@
-﻿using NotebookAutomation.Cli.Utilities;
+﻿// <copyright file="ConfigValidation.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Cli/Commands/ConfigValidation.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Cli.Commands;
+
 /// <summary>
 /// Provides static helpers for validating configuration values for feature-specific requirements.
 /// </summary>
@@ -25,9 +35,9 @@ namespace NotebookAutomation.Cli.Commands;
 /// }
 /// </code>
 /// </example>
-public static class ConfigValidation
+internal static class ConfigValidation
 {
-    private static readonly string[] _collection = [
+    private static readonly string[] Collection = [
                 "paths.onedrive_fullpath_root",
                 "paths.notebook_vault_fullpath_root",
                 "paths.metadata_file",
@@ -64,24 +74,42 @@ public static class ConfigValidation
         missingKeys = [];
         if (config.Paths == null)
         {
-            missingKeys.AddRange(_collection);
+            missingKeys.AddRange(Collection);
             return false;
         }
+
         if (string.IsNullOrWhiteSpace(config.Paths.OnedriveFullpathRoot))
+        {
             missingKeys.Add("paths.onedrive_fullpath_root");
+        }
+
         if (string.IsNullOrWhiteSpace(config.Paths.NotebookVaultFullpathRoot))
+        {
             missingKeys.Add("paths.notebook_vault_fullpath_root");
+        }
+
         if (string.IsNullOrWhiteSpace(config.Paths.MetadataFile))
+        {
             missingKeys.Add("paths.metadata_file");
+        }
+
         if (string.IsNullOrWhiteSpace(config.Paths.OnedriveResourcesBasepath))
+        {
             missingKeys.Add("paths.onedrive_resources_basepath");
+        }
+
         if (string.IsNullOrWhiteSpace(config.Paths.LoggingDir))
+        {
             missingKeys.Add("paths.logging_dir");
+        }
+
         return missingKeys.Count == 0;
     }
+
     /// <summary>
     /// Validates that Microsoft Graph config values are present. Returns true if valid, else prints error and config.
     /// </summary>
+    /// <returns></returns>
     public static bool RequireMicrosoftGraph(AppConfig config)
     {
         if (config.MicrosoftGraph == null ||
@@ -94,10 +122,14 @@ public static class ConfigValidation
             ConfigCommands.PrintConfigFormatted(config);
             return false;
         }
+
         return true;
-    }        /// <summary>
-             /// Validates that AI service config values are present. Returns true if valid, else prints error and config.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Validates that AI service config values are present. Returns true if valid, else prints error and config.
+    /// </summary>
+    /// <returns></returns>
     public static bool RequireOpenAi(AppConfig config)
     {
         if (config.AiService == null)
@@ -106,6 +138,7 @@ public static class ConfigValidation
             ConfigCommands.PrintConfigFormatted(config);
             return false;
         }
+
         var apiKey = config.AiService.GetApiKey();
         if (string.IsNullOrWhiteSpace(apiKey))
         {
@@ -113,6 +146,7 @@ public static class ConfigValidation
             ConfigCommands.PrintConfigFormatted(config);
             return false;
         }
+
         return true;
     }
 }

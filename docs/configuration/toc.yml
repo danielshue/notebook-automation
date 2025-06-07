@@ -1,0 +1,6 @@
+- name: Configuration
+  href: index.md
+- name: AI Services
+  href: ai-services.md
+- name: User Secrets
+  href: user-secrets.md

@@ -1,9 +1,16 @@
-﻿using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="PathFormatterTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Utils/PathFormatterTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Utils;
 
 [TestClass]
-public class PathFormatterTests
+internal class PathFormatterTests
 {
     [TestMethod]
     public void Format_WithDebugLogLevel_ReturnsFullPath()
@@ -46,6 +53,7 @@ public class PathFormatterTests
         StringAssert.Contains(formatted, "filename.txt"); // Should still contain the filename
         Assert.IsTrue(formatted.StartsWith("...")); // Should start with ellipsis
     }
+
     [TestMethod]
     public void Format_WithShortPath_ReturnsOriginalPath()
     {
@@ -115,6 +123,7 @@ public class PathFormatterTests
         Assert.IsTrue(shortened.Length <= maxLength);
         Assert.IsTrue(shortened.StartsWith("...")); // Should start with ellipsis
     }
+
     [TestMethod]
     public void LoggerExtensions_LogWithFormattedPath_AppliesCorrectFormatting()
     {

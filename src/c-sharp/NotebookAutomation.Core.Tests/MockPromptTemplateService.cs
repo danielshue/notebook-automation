@@ -1,5 +1,13 @@
-﻿#nullable enable
-using NotebookAutomation.Core.Services;
+// <copyright file="MockPromptTemplateService.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/MockPromptTemplateService.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -11,7 +19,7 @@ namespace NotebookAutomation.Core.Tests;
 /// requiring file system access. It doesn't use the real configuration and doesn't
 /// need to be mocked with Moq.
 /// </remarks>
-public class MockPromptTemplateService : IPromptService
+internal class MockPromptTemplateService : IPromptService
 {
     /// <summary>
     /// Gets or sets the template text that will be returned by LoadTemplateAsync.
@@ -24,7 +32,7 @@ public class MockPromptTemplateService : IPromptService
     public string? ExpectedSubstitution { get; set; }
 
     /// <summary>
-    /// Gets or sets whether LoadTemplateAsync should throw an exception.
+    /// Gets or sets a value indicating whether gets or sets whether LoadTemplateAsync should throw an exception.
     /// </summary>
     public bool ThrowExceptionOnLoad { get; set; } = false;
 
@@ -44,7 +52,7 @@ public class MockPromptTemplateService : IPromptService
     public Dictionary<string, string>? LastVariables { get; private set; }
 
     /// <summary>
-    /// Initializes a new instance of the MockPromptTemplateService class.
+    /// Initializes a new instance of the <see cref="MockPromptTemplateService"/> class.
     /// </summary>
     public MockPromptTemplateService()
     {
@@ -59,14 +67,14 @@ public class MockPromptTemplateService : IPromptService
     /// <exception cref="Exception">Throws the configured exception if ThrowExceptionOnLoad is true.</exception>
     public Task<string> LoadTemplateAsync(string templateName)
     {
-        LastTemplateName = templateName;
+        this.LastTemplateName = templateName;
 
-        if (ThrowExceptionOnLoad)
+        if (this.ThrowExceptionOnLoad)
         {
-            throw ExceptionToThrow ?? new InvalidOperationException($"Failed to load template {templateName}");
+            throw this.ExceptionToThrow ?? new InvalidOperationException($"Failed to load template {templateName}");
         }
 
-        return Task.FromResult(Template);
+        return Task.FromResult(this.Template);
     }
 
     /// <summary>
@@ -77,12 +85,12 @@ public class MockPromptTemplateService : IPromptService
     /// <returns>The processed template with variables substituted.</returns>
     public string SubstituteVariables(string template, Dictionary<string, string>? variables)
     {
-        LastVariables = variables != null ? new Dictionary<string, string>(variables) : null;
+        this.LastVariables = variables != null ? new Dictionary<string, string>(variables) : null;
 
         // If ExpectedSubstitution is set, return that directly for testing
-        if (!string.IsNullOrEmpty(ExpectedSubstitution))
+        if (!string.IsNullOrEmpty(this.ExpectedSubstitution))
         {
-            return ExpectedSubstitution;
+            return this.ExpectedSubstitution;
         }
 
         // Simple placeholder substitution logic
@@ -98,23 +106,27 @@ public class MockPromptTemplateService : IPromptService
         }
 
         return result;
-    }        /// <summary>
-             /// Gets a prompt with variables substituted.
-             /// </summary>
-             /// <param name="templateName">Name of the template to load.</param>
-             /// <param name="variables">Dictionary of variables to substitute.</param>
-             /// <returns>The processed template with variables substituted.</returns>
+    }
+
+    /// <summary>
+    /// Gets a prompt with variables substituted.
+    /// </summary>
+    /// <param name="templateName">Name of the template to load.</param>
+    /// <param name="variables">Dictionary of variables to substitute.</param>
+    /// <returns>The processed template with variables substituted.</returns>
     public async Task<string> GetPromptAsync(string templateName, Dictionary<string, string>? variables)
     {
-        string template = await LoadTemplateAsync(templateName);
-        return SubstituteVariables(template, variables);
-    }    /// <summary>
-         /// Processes template with variables for compatibility with AISummarizer tests.
-         /// </summary>
-         /// <param name="template">The template string with placeholders.</param>
-         /// <param name="variables">Dictionary of variable names and values.</param>
-         /// <returns>The template with variables substituted.</returns>
-    public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(SubstituteVariables(template, variables));
+        string template = await this.LoadTemplateAsync(templateName).ConfigureAwait(false);
+        return this.SubstituteVariables(template, variables);
+    }
+
+    /// <summary>
+    /// Processes template with variables for compatibility with AISummarizer tests.
+    /// </summary>
+    /// <param name="template">The template string with placeholders.</param>
+    /// <param name="variables">Dictionary of variable names and values.</param>
+    /// <returns>The template with variables substituted.</returns>
+    public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(this.SubstituteVariables(template, variables));
 
     /// <summary>
     /// Verifies that a specific variable was substituted in the template.
@@ -125,10 +137,11 @@ public class MockPromptTemplateService : IPromptService
     /// <remarks>This method is used to verify YAML frontmatter substitution in tests.</remarks>
     public bool VerifySubstitution(string variableName, string expectedValue)
     {
-        if (LastVariables != null && LastVariables.TryGetValue(variableName, out var actualValue))
+        if (this.LastVariables != null && this.LastVariables.TryGetValue(variableName, out var actualValue))
         {
             return actualValue == expectedValue;
         }
+
         return false;
     }
 }

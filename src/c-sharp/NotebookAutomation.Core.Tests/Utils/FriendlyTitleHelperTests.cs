@@ -1,12 +1,19 @@
-﻿using NotebookAutomation.Core.Utils;
-
+﻿// <copyright file="FriendlyTitleHelperTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Utils/FriendlyTitleHelperTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
 namespace NotebookAutomation.Core.Tests.Utils;
 
 /// <summary>
 /// Tests for the FriendlyTitleHelper class.
 /// </summary>
 [TestClass]
-public class FriendlyTitleHelperTests
+internal class FriendlyTitleHelperTests
 {
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RemovesLeadingNumbers()
@@ -75,7 +82,7 @@ public class FriendlyTitleHelperTests
     public void GetFriendlyTitleFromFileName_HandlesEmptyInput()
     {
         // Arrange
-        string fileName = "";
+        string fileName = string.Empty;
 
         // Act
         string result = FriendlyTitleHelper.GetFriendlyTitleFromFileName(fileName);
@@ -95,7 +102,8 @@ public class FriendlyTitleHelperTests
 
         // Assert
         Assert.AreEqual("Financial Planning Basics 101", result);
-    }        // Real-world MBA-Resources filename test cases
+    } // Real-world MBA-Resources filename test cases
+
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_OperationsManagementTitle()
     {
@@ -165,6 +173,7 @@ public class FriendlyTitleHelperTests
         string result = FriendlyTitleHelper.GetFriendlyTitleFromFileName(fileName);            // Assert
         Assert.AreEqual("One Shot Inventory Decisions Newsvendor Model", result);
     }
+
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_SupplyChainManagement()
     {
@@ -227,6 +236,7 @@ public class FriendlyTitleHelperTests
         // Assert
         Assert.AreEqual("Conducting Market Research Part 1", result);
     }
+
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_ComplexHyphenatedTitle()
     {

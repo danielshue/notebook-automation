@@ -1,0 +1,10 @@
+- name: Tutorials
+  href: index.md
+- name: Getting Started Tutorial
+  href: getting-started-tutorial.md
+- name: Academic Note Processing
+  href: academic-notes.md
+- name: Batch Processing Tutorial
+  href: batch-processing.md
+- name: Custom Configuration
+  href: custom-configuration.md

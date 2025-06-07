@@ -1,4 +1,13 @@
-﻿namespace NotebookAutomation.Core.Services;
+﻿// <copyright file="IAISummarizer.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Services/IAISummarizer.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+namespace NotebookAutomation.Core.Services;
 
 /// <summary>
 /// Defines the contract for AI-powered text summarization services.

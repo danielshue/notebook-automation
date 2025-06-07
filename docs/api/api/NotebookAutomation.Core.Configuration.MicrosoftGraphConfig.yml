@@ -1,0 +1,685 @@
+### YamlMime:ManagedReference
+items:
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  commentId: T:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  id: MicrosoftGraphConfig
+  parent: NotebookAutomation.Core.Configuration
+  children:
+  - NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ApiEndpoint
+  - NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Authority
+  - NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ClientId
+  - NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Scopes
+  - NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.TenantId
+  langs:
+  - csharp
+  - vb
+  name: MicrosoftGraphConfig
+  nameWithType: MicrosoftGraphConfig
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  type: Class
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: MicrosoftGraphConfig
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+    startLine: 21
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Configuration for Microsoft Graph API.
+  remarks: >-
+    This class encapsulates the necessary parameters for authenticating and accessing
+
+    Microsoft Graph API resources, including client credentials, API endpoints, and scopes.
+
+    It is designed to be serialized and deserialized from JSON configuration files.
+  example: []
+  syntax:
+    content: public class MicrosoftGraphConfig
+    content.vb: Public Class MicrosoftGraphConfig
+  inheritance:
+  - System.Object
+  inheritedMembers:
+  - System.Object.Equals(System.Object)
+  - System.Object.Equals(System.Object,System.Object)
+  - System.Object.GetHashCode
+  - System.Object.GetType
+  - System.Object.MemberwiseClone
+  - System.Object.ReferenceEquals(System.Object,System.Object)
+  - System.Object.ToString
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ClientId
+  commentId: P:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ClientId
+  id: ClientId
+  parent: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  langs:
+  - csharp
+  - vb
+  name: ClientId
+  nameWithType: MicrosoftGraphConfig.ClientId
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ClientId
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ClientId
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+    startLine: 30
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets client ID for authenticating with Microsoft Graph.
+  remarks: >-
+    The Client ID is a unique identifier assigned to the application by Azure Active Directory.
+
+    It is used during the authentication process to identify the application.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("client_id")]
+
+      public string ClientId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("client_id")>
+
+      Public Property ClientId As String
+  overload: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ClientId*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: client_id
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ApiEndpoint
+  commentId: P:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ApiEndpoint
+  id: ApiEndpoint
+  parent: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  langs:
+  - csharp
+  - vb
+  name: ApiEndpoint
+  nameWithType: MicrosoftGraphConfig.ApiEndpoint
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ApiEndpoint
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: ApiEndpoint
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+    startLine: 40
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets aPI endpoint for Microsoft Graph.
+  remarks: >-
+    The API endpoint specifies the base URL for accessing Microsoft Graph services.
+
+    Typically, this is "https://graph.microsoft.com/v1.0" for production environments.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("api_endpoint")]
+
+      public string ApiEndpoint { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("api_endpoint")>
+
+      Public Property ApiEndpoint As String
+  overload: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ApiEndpoint*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: api_endpoint
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Authority
+  commentId: P:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Authority
+  id: Authority
+  parent: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  langs:
+  - csharp
+  - vb
+  name: Authority
+  nameWithType: MicrosoftGraphConfig.Authority
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Authority
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Authority
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+    startLine: 50
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets authority URL for Microsoft Graph authentication.
+  remarks: >-
+    The authority URL is used to direct authentication requests to the appropriate Azure Active Directory.
+
+    For example, "https://login.microsoftonline.com/common" for multi-tenant applications.
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("authority")]
+
+      public string Authority { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: >-
+      <JsonPropertyName("authority")>
+
+      Public Property Authority As String
+  overload: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Authority*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: authority
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Scopes
+  commentId: P:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Scopes
+  id: Scopes
+  parent: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  langs:
+  - csharp
+  - vb
+  name: Scopes
+  nameWithType: MicrosoftGraphConfig.Scopes
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Scopes
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: Scopes
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+    startLine: 60
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets scopes required for Microsoft Graph API access.
+  remarks: >-
+    Scopes define the permissions that the application needs to access Microsoft Graph resources.
+
+    Examples include "User.Read" and "Mail.Send".
+  example: []
+  syntax:
+    content: >-
+      [JsonPropertyName("scopes")]
+
+      public List<string> Scopes { get; set; }
+    parameters: []
+    return:
+      type: System.Collections.Generic.List{System.String}
+    content.vb: >-
+      <JsonPropertyName("scopes")>
+
+      Public Property Scopes As List(Of String)
+  overload: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Scopes*
+  attributes:
+  - type: System.Text.Json.Serialization.JsonPropertyNameAttribute
+    ctor: System.Text.Json.Serialization.JsonPropertyNameAttribute.#ctor(System.String)
+    arguments:
+    - type: System.String
+      value: scopes
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.TenantId
+  commentId: P:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.TenantId
+  id: TenantId
+  parent: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig
+  langs:
+  - csharp
+  - vb
+  name: TenantId
+  nameWithType: MicrosoftGraphConfig.TenantId
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.TenantId
+  type: Property
+  source:
+    remote:
+      path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+      branch: master
+      repo: https://github.com/danielshue/notebook-automation.git
+    id: TenantId
+    path: src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+    startLine: 71
+  assemblies:
+  - NotebookAutomation.Core
+  namespace: NotebookAutomation.Core.Configuration
+  summary: Gets or sets the tenant ID for Microsoft Graph authentication.
+  remarks: >-
+    The tenant ID is used to identify the directory in Azure Active Directory
+
+    that the application belongs to. It can be set to "common" for multi-tenant
+
+    applications or a specific tenant ID for single-tenant applications.
+  example: []
+  syntax:
+    content: public string? TenantId { get; set; }
+    parameters: []
+    return:
+      type: System.String
+    content.vb: Public Property TenantId As String
+  overload: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.TenantId*
+references:
+- uid: NotebookAutomation.Core.Configuration
+  commentId: N:NotebookAutomation.Core.Configuration
+  href: NotebookAutomation.html
+  name: NotebookAutomation.Core.Configuration
+  nameWithType: NotebookAutomation.Core.Configuration
+  fullName: NotebookAutomation.Core.Configuration
+  spec.csharp:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+  spec.vb:
+  - uid: NotebookAutomation
+    name: NotebookAutomation
+    href: NotebookAutomation.html
+  - name: .
+  - uid: NotebookAutomation.Core
+    name: Core
+    href: NotebookAutomation.Core.html
+  - name: .
+  - uid: NotebookAutomation.Core.Configuration
+    name: Configuration
+    href: NotebookAutomation.Core.Configuration.html
+- uid: System.Object
+  commentId: T:System.Object
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object
+  name: object
+  nameWithType: object
+  fullName: object
+  nameWithType.vb: Object
+  fullName.vb: Object
+  name.vb: Object
+- uid: System.Object.Equals(System.Object)
+  commentId: M:System.Object.Equals(System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  name: Equals(object)
+  nameWithType: object.Equals(object)
+  fullName: object.Equals(object)
+  nameWithType.vb: Object.Equals(Object)
+  fullName.vb: Object.Equals(Object)
+  name.vb: Equals(Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.Equals(System.Object,System.Object)
+  commentId: M:System.Object.Equals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  name: Equals(object, object)
+  nameWithType: object.Equals(object, object)
+  fullName: object.Equals(object, object)
+  nameWithType.vb: Object.Equals(Object, Object)
+  fullName.vb: Object.Equals(Object, Object)
+  name.vb: Equals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.Equals(System.Object,System.Object)
+    name: Equals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.equals#system-object-equals(system-object-system-object)
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.GetHashCode
+  commentId: M:System.Object.GetHashCode
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  name: GetHashCode()
+  nameWithType: object.GetHashCode()
+  fullName: object.GetHashCode()
+  nameWithType.vb: Object.GetHashCode()
+  fullName.vb: Object.GetHashCode()
+  spec.csharp:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetHashCode
+    name: GetHashCode
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gethashcode
+  - name: (
+  - name: )
+- uid: System.Object.GetType
+  commentId: M:System.Object.GetType
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  name: GetType()
+  nameWithType: object.GetType()
+  fullName: object.GetType()
+  nameWithType.vb: Object.GetType()
+  fullName.vb: Object.GetType()
+  spec.csharp:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.GetType
+    name: GetType
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.gettype
+  - name: (
+  - name: )
+- uid: System.Object.MemberwiseClone
+  commentId: M:System.Object.MemberwiseClone
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  name: MemberwiseClone()
+  nameWithType: object.MemberwiseClone()
+  fullName: object.MemberwiseClone()
+  nameWithType.vb: Object.MemberwiseClone()
+  fullName.vb: Object.MemberwiseClone()
+  spec.csharp:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.MemberwiseClone
+    name: MemberwiseClone
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.memberwiseclone
+  - name: (
+  - name: )
+- uid: System.Object.ReferenceEquals(System.Object,System.Object)
+  commentId: M:System.Object.ReferenceEquals(System.Object,System.Object)
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  name: ReferenceEquals(object, object)
+  nameWithType: object.ReferenceEquals(object, object)
+  fullName: object.ReferenceEquals(object, object)
+  nameWithType.vb: Object.ReferenceEquals(Object, Object)
+  fullName.vb: Object.ReferenceEquals(Object, Object)
+  name.vb: ReferenceEquals(Object, Object)
+  spec.csharp:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+  spec.vb:
+  - uid: System.Object.ReferenceEquals(System.Object,System.Object)
+    name: ReferenceEquals
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.referenceequals
+  - name: (
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: ','
+  - name: " "
+  - uid: System.Object
+    name: Object
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object
+  - name: )
+- uid: System.Object.ToString
+  commentId: M:System.Object.ToString
+  parent: System.Object
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  name: ToString()
+  nameWithType: object.ToString()
+  fullName: object.ToString()
+  nameWithType.vb: Object.ToString()
+  fullName.vb: Object.ToString()
+  spec.csharp:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+  spec.vb:
+  - uid: System.Object.ToString
+    name: ToString
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.object.tostring
+  - name: (
+  - name: )
+- uid: System
+  commentId: N:System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System
+  nameWithType: System
+  fullName: System
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ClientId*
+  commentId: Overload:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ClientId
+  href: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.html#NotebookAutomation_Core_Configuration_MicrosoftGraphConfig_ClientId
+  name: ClientId
+  nameWithType: MicrosoftGraphConfig.ClientId
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ClientId
+- uid: System.String
+  commentId: T:System.String
+  parent: System
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.string
+  name: string
+  nameWithType: string
+  fullName: string
+  nameWithType.vb: String
+  fullName.vb: String
+  name.vb: String
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ApiEndpoint*
+  commentId: Overload:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ApiEndpoint
+  href: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.html#NotebookAutomation_Core_Configuration_MicrosoftGraphConfig_ApiEndpoint
+  name: ApiEndpoint
+  nameWithType: MicrosoftGraphConfig.ApiEndpoint
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.ApiEndpoint
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Authority*
+  commentId: Overload:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Authority
+  href: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.html#NotebookAutomation_Core_Configuration_MicrosoftGraphConfig_Authority
+  name: Authority
+  nameWithType: MicrosoftGraphConfig.Authority
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Authority
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Scopes*
+  commentId: Overload:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Scopes
+  href: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.html#NotebookAutomation_Core_Configuration_MicrosoftGraphConfig_Scopes
+  name: Scopes
+  nameWithType: MicrosoftGraphConfig.Scopes
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.Scopes
+- uid: System.Collections.Generic.List{System.String}
+  commentId: T:System.Collections.Generic.List{System.String}
+  parent: System.Collections.Generic
+  definition: System.Collections.Generic.List`1
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<string>
+  nameWithType: List<string>
+  fullName: System.Collections.Generic.List<string>
+  nameWithType.vb: List(Of String)
+  fullName.vb: System.Collections.Generic.List(Of String)
+  name.vb: List(Of String)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - uid: System.String
+    name: string
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - uid: System.String
+    name: String
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.string
+  - name: )
+- uid: System.Collections.Generic.List`1
+  commentId: T:System.Collections.Generic.List`1
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  name: List<T>
+  nameWithType: List<T>
+  fullName: System.Collections.Generic.List<T>
+  nameWithType.vb: List(Of T)
+  fullName.vb: System.Collections.Generic.List(Of T)
+  name.vb: List(Of T)
+  spec.csharp:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: <
+  - name: T
+  - name: '>'
+  spec.vb:
+  - uid: System.Collections.Generic.List`1
+    name: List
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic.list-1
+  - name: (
+  - name: Of
+  - name: " "
+  - name: T
+  - name: )
+- uid: System.Collections.Generic
+  commentId: N:System.Collections.Generic
+  isExternal: true
+  href: https://learn.microsoft.com/dotnet/api/system
+  name: System.Collections.Generic
+  nameWithType: System.Collections.Generic
+  fullName: System.Collections.Generic
+  spec.csharp:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+  spec.vb:
+  - uid: System
+    name: System
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system
+  - name: .
+  - uid: System.Collections
+    name: Collections
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections
+  - name: .
+  - uid: System.Collections.Generic
+    name: Generic
+    isExternal: true
+    href: https://learn.microsoft.com/dotnet/api/system.collections.generic
+- uid: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.TenantId*
+  commentId: Overload:NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.TenantId
+  href: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.html#NotebookAutomation_Core_Configuration_MicrosoftGraphConfig_TenantId
+  name: TenantId
+  nameWithType: MicrosoftGraphConfig.TenantId
+  fullName: NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.TenantId

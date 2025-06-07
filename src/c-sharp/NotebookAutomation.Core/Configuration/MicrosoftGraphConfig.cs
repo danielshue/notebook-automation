@@ -1,4 +1,13 @@
-﻿using System.Text.Json.Serialization;
+﻿// <copyright file="MicrosoftGraphConfig.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/MicrosoftGraphConfig.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using System.Text.Json.Serialization;
 
 namespace NotebookAutomation.Core.Configuration;
 
@@ -13,7 +22,7 @@ namespace NotebookAutomation.Core.Configuration;
 public class MicrosoftGraphConfig
 {
     /// <summary>
-    /// Client ID for authenticating with Microsoft Graph.
+    /// Gets or sets client ID for authenticating with Microsoft Graph.
     /// </summary>
     /// <remarks>
     /// The Client ID is a unique identifier assigned to the application by Azure Active Directory.
@@ -23,7 +32,7 @@ public class MicrosoftGraphConfig
     public string ClientId { get; set; } = string.Empty;
 
     /// <summary>
-    /// API endpoint for Microsoft Graph.
+    /// Gets or sets aPI endpoint for Microsoft Graph.
     /// </summary>
     /// <remarks>
     /// The API endpoint specifies the base URL for accessing Microsoft Graph services.
@@ -33,7 +42,7 @@ public class MicrosoftGraphConfig
     public string ApiEndpoint { get; set; } = string.Empty;
 
     /// <summary>
-    /// Authority URL for Microsoft Graph authentication.
+    /// Gets or sets authority URL for Microsoft Graph authentication.
     /// </summary>
     /// <remarks>
     /// The authority URL is used to direct authentication requests to the appropriate Azure Active Directory.
@@ -43,7 +52,7 @@ public class MicrosoftGraphConfig
     public string Authority { get; set; } = string.Empty;
 
     /// <summary>
-    /// Scopes required for Microsoft Graph API access.
+    /// Gets or sets scopes required for Microsoft Graph API access.
     /// </summary>
     /// <remarks>
     /// Scopes define the permissions that the application needs to access Microsoft Graph resources.
@@ -61,5 +70,4 @@ public class MicrosoftGraphConfig
     /// applications or a specific tenant ID for single-tenant applications.
     /// </remarks>
     public string? TenantId { get; set; }
-
 }

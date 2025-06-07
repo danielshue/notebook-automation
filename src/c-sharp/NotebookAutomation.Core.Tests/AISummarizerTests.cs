@@ -1,10 +1,14 @@
-﻿#nullable enable
+﻿// <copyright file="AISummarizerTests.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core.Tests/AISummarizerTests.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+#nullable enable
 using Microsoft.SemanticKernel;
-
-using Moq;
-
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tests.Helpers;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -12,24 +16,25 @@ namespace NotebookAutomation.Core.Tests;
 /// Test suite for the AISummarizer class, verifying its functionality with different AI framework integrations.
 /// </summary>
 [TestClass]
-public class AISummarizerTests
+internal class AISummarizerTests
 {
-    private Mock<ILogger<AISummarizer>> _mockLogger = null!;
-    private MockPromptTemplateService _mockPromptService = null!;
+    private Mock<ILogger<AISummarizer>> mockLogger = null!;
+    private MockPromptTemplateService mockPromptService = null!;
 
     [TestInitialize]
     public void SetUp()
     {
-        _mockLogger = new Mock<ILogger<AISummarizer>>();
-        _mockPromptService = new MockPromptTemplateService
+        this.mockLogger = new Mock<ILogger<AISummarizer>>();
+        this.mockPromptService = new MockPromptTemplateService
         {
-            Template = "You are a summarizer. Summarize this content: {{content}}"
+            Template = "You are a summarizer. Summarize this content: {{content}}",
         };
     }
 
     /// <summary>
     /// Tests that summarization with variables works correctly when input text is empty.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_EmptyInputText_ReturnsEmptyString()
     {
@@ -37,12 +42,12 @@ public class AISummarizerTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync("");
+        string? result = await summarizer.SummarizeWithVariablesAsync(string.Empty).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
@@ -52,6 +57,7 @@ public class AISummarizerTests
     /// <summary>
     /// Tests that summarization with variables works correctly when input text is null.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_NullInputText_ReturnsEmptyString()
     {
@@ -59,12 +65,12 @@ public class AISummarizerTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(null!);
+        string? result = await summarizer.SummarizeWithVariablesAsync(null!).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
@@ -74,6 +80,7 @@ public class AISummarizerTests
     /// <summary>
     /// Tests that the basic use case for summarization works correctly.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_BasicUseCase_ReturnsExpectedSummary()
     {
@@ -82,14 +89,14 @@ public class AISummarizerTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         string inputText = "This is a basic text to summarize.";
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputText);
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
@@ -99,6 +106,7 @@ public class AISummarizerTests
     /// <summary>
     /// Tests that variables are processed correctly when provided.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithVariables_ProcessesCorrectly()
     {
@@ -107,26 +115,29 @@ public class AISummarizerTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         string inputText = "Text to summarize with variables";
         Dictionary<string, string> variables = new()
         {
             ["course"] = "Test Course",
-            ["type"] = "lecture_notes"
+            ["type"] = "lecture_notes",
         };
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputText, variables);
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText, variables).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedResponse, result);
-    }        /// <summary>
-             /// Tests that exceptions are handled gracefully during summarization.
-             /// </summary>
+    }
+
+    /// <summary>
+    /// Tests that exceptions are handled gracefully during summarization.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithException_ReturnsEmptyString()
     {
@@ -134,14 +145,14 @@ public class AISummarizerTests
         Kernel kernel = TestKernelHelper.CreateTestKernel();
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
-            _mockPromptService,
+            this.mockLogger.Object,
+            this.mockPromptService,
             kernel);
 
         string inputText = "Text that will cause an exception";
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputText);
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText).ConfigureAwait(false);
 
         // Assert
         Assert.IsNotNull(result);
@@ -151,6 +162,7 @@ public class AISummarizerTests
     /// <summary>
     /// Tests that [yamlfrontmatter] placeholder is properly replaced in the prompt template.
     /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous unit test.</returns>
     [TestMethod]
     public async Task SummarizeWithVariablesAsync_WithYamlFrontmatter_ReplacesPlaceholder()
     {
@@ -161,11 +173,11 @@ public class AISummarizerTests
         // Create a mock prompt service with a template containing [yamlfrontmatter]
         var mockPromptWithYaml = new MockPromptTemplateService
         {
-            Template = "Test prompt with YAML:\n\n---\n\n[yamlfrontmatter]\n\n---\n\nSummarize: {{content}}"
+            Template = "Test prompt with YAML:\n\n---\n\n[yamlfrontmatter]\n\n---\n\nSummarize: {{content}}",
         };
 
         AISummarizer summarizer = new(
-            _mockLogger.Object,
+            this.mockLogger.Object,
             mockPromptWithYaml,
             kernel);
 
@@ -174,11 +186,11 @@ public class AISummarizerTests
         Dictionary<string, string> variables = new()
         {
             ["content"] = inputText,
-            ["yamlfrontmatter"] = yamlContent
+            ["yamlfrontmatter"] = yamlContent,
         };
 
         // Act
-        string? result = await summarizer.SummarizeWithVariablesAsync(inputText, variables);        // Assert
+        string? result = await summarizer.SummarizeWithVariablesAsync(inputText, variables).ConfigureAwait(false);        // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedSummary, result);
 
@@ -186,7 +198,8 @@ public class AISummarizerTests
         // We can't directly test the [yamlfrontmatter] replacement since that happens after
         // the PromptService.SubstituteVariables call, but we can verify the basic integration
         Assert.IsNotNull(mockPromptWithYaml.LastVariables);
-        Assert.IsTrue(mockPromptWithYaml.LastVariables.ContainsKey("content"),
+        Assert.IsTrue(
+            mockPromptWithYaml.LastVariables.ContainsKey("content"),
             "The content variable should be passed to the prompt service");
     }
 }

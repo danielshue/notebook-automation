@@ -1,0 +1,2162 @@
+{
+  "source_base_path": "D:/source/notebook-automation/docs",
+  "xrefmap": "xrefmap.yml",
+  "files": [
+    {
+      "type": "Resource",
+      "output": {
+        "resource": {
+          "relative_path": "index.json"
+        }
+      }
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "File-Header-Templates.md",
+      "output": {
+        ".html": {
+          "relative_path": "File-Header-Templates.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "Metadata-Extraction-System.md",
+      "output": {
+        ".html": {
+          "relative_path": "Metadata-Extraction-System.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "UserSecrets.md",
+      "output": {
+        ".html": {
+          "relative_path": "UserSecrets.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.AIServiceConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.AIServiceConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.AIServiceConfig",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.AIServiceConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration for AI services, supporting multiple providers such as OpenAI, Azure, and Foundry.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.AppConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.AppConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.AppConfig",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.AppConfig.yml\" sourcestartlinenumber=\"1\">Represents the application configuration for Notebook Automation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.AzureProviderConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.AzureProviderConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.AzureProviderConfig",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.AzureProviderConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration for the Azure provider.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.ConfigurationExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.ConfigurationExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.ConfigurationExtensions",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.ConfigurationExtensions.yml\" sourcestartlinenumber=\"1\">Provides extension methods for IConfiguration and ConfigurationBuilder.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.ConfigurationSetup.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.ConfigurationSetup.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.ConfigurationSetup",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.ConfigurationSetup.yml\" sourcestartlinenumber=\"1\">Provides methods to set up application configuration with support for various sources,\nincluding JSON files, environment variables, and user secrets.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.FailedOperations.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.FailedOperations.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.FailedOperations",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.FailedOperations.yml\" sourcestartlinenumber=\"1\">Contains methods and constants for managing and recording failed operations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.FoundryProviderConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.FoundryProviderConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.FoundryProviderConfig",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.FoundryProviderConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration for the Foundry provider.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.ILoggingService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.ILoggingService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.ILoggingService",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.ILoggingService.yml\" sourcestartlinenumber=\"1\">Defines the contract for a centralized logging service for the notebook automation system.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.LoggingService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.LoggingService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.LoggingService",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.LoggingService.yml\" sourcestartlinenumber=\"1\">Provides centralized logging capabilities for the notebook automation system.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.MicrosoftGraphConfig",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.yml\" sourcestartlinenumber=\"1\">Configuration for Microsoft Graph API.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.OpenAiProviderConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.OpenAiProviderConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.OpenAiProviderConfig",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.OpenAiProviderConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration for the OpenAI provider.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.PathsConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.PathsConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.PathsConfig",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.PathsConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration settings for various file paths used in the application.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.ServiceRegistration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.ServiceRegistration.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.ServiceRegistration",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.UserSecretsHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.UserSecretsHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.UserSecretsHelper",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Configuration.UserSecretsHelper.yml\" sourcestartlinenumber=\"1\">Provides convenient access to user secrets in the application.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Configuration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Configuration.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.yml\" sourcestartlinenumber=\"1\">Represents the progress of document processing, including the current file and status.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Models.DocumentProcessingStatus.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Models.DocumentProcessingStatus.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.DocumentProcessingStatus",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Models.DocumentProcessingStatus.yml\" sourcestartlinenumber=\"1\">Represents the status of a document in the processing queue.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Models.ProcessingStage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Models.ProcessingStage.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.ProcessingStage",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Models.ProcessingStage.yml\" sourcestartlinenumber=\"1\">Represents the current processing stage of a document.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Models.QueueChangedEventArgs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Models.QueueChangedEventArgs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.QueueChangedEventArgs",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Models.QueueChangedEventArgs.yml\" sourcestartlinenumber=\"1\">Event arguments for queue changes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Models.QueueItem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Models.QueueItem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.QueueItem",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Models.QueueItem.yml\" sourcestartlinenumber=\"1\">Represents a document in the processing queue.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Models.VaultFileInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Models.VaultFileInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.VaultFileInfo",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Models.VaultFileInfo.yml\" sourcestartlinenumber=\"1\">Represents information about a file within a vault for index generation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Models.VaultIndexOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Models.VaultIndexOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.VaultIndexOptions",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Models.VaultIndexOptions.yml\" sourcestartlinenumber=\"1\">Options for vault index generation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Models.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Models.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.AISummarizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.AISummarizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.AISummarizer",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.AISummarizer.yml\" sourcestartlinenumber=\"1\">Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.\nImplements intelligent chunking strategies for large text processing, optimized for MBA coursework content\nincluding video transcripts, PDF documents, and academic materials. Supports variable substitution\nfor metadata augmentation and configurable prompt templates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.IAISummarizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.IAISummarizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.IAISummarizer",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.IAISummarizer.yml\" sourcestartlinenumber=\"1\">Defines the contract for AI-powered text summarization services.\nProvides methods for generating summaries with variable substitution and configurable prompt templates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.IOneDriveService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.IOneDriveService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.IOneDriveService",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.IOneDriveService.yml\" sourcestartlinenumber=\"1\">Interface for OneDrive service operations including authentication, file operations, sharing, and path mapping.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.IPromptService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.IPromptService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.IPromptService",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.IPromptService.yml\" sourcestartlinenumber=\"1\">Interface for services that manage and process prompt templates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.ITextChunkingService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.ITextChunkingService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.ITextChunkingService",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.ITextChunkingService.yml\" sourcestartlinenumber=\"1\">Defines the contract for text chunking operations used in AI summarization.\nProvides methods for splitting large texts into manageable chunks with intelligent overlap.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.OneDriveCliOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.OneDriveCliOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.OneDriveCliOptions",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.OneDriveCliOptions.yml\" sourcestartlinenumber=\"1\">Options for configuring the behavior of OneDrive operations via the command-line interface.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.OneDriveService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.OneDriveService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.OneDriveService",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.OneDriveService.yml\" sourcestartlinenumber=\"1\">Provides methods for authenticating and accessing OneDrive files/folders.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.PromptTemplateService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.PromptTemplateService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.PromptTemplateService",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.PromptTemplateService.yml\" sourcestartlinenumber=\"1\">Service for loading prompt templates and performing variable substitution.\nHandles different template types (e.g., chunk summary, final summary) and supports dynamic prompt file loading.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.yml\" sourcestartlinenumber=\"1\">A sophisticated text splitter that recursively splits text based on a hierarchy of separators,\npreserving semantic boundaries and ensuring better context maintenance between chunks.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.Text.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.Text.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.Text",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.TextChunkingService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.TextChunkingService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.TextChunkingService",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.TextChunkingService.yml\" sourcestartlinenumber=\"1\">Provides text chunking operations for AI summarization services.\nImplements intelligent text splitting with overlap to maintain context continuity.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.VaultRootContextService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.VaultRootContextService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.VaultRootContextService",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Services.VaultRootContextService.yml\" sourcestartlinenumber=\"1\">Provides scoped context for vault root path overrides during processing operations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Services.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Services.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor.yml\" sourcestartlinenumber=\"1\">Provides functionality for converting HTML, TXT, or EPUB files to markdown notes, with optional AI-generated summaries.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.yml\" sourcestartlinenumber=\"1\">Parser for markdown content with frontmatter handling.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.MarkdownGeneration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.MarkdownGeneration.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.MarkdownGeneration",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor.yml\" sourcestartlinenumber=\"1\">Provides batch processing capabilities for converting multiple PDF files to markdown notes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.yml\" sourcestartlinenumber=\"1\">Provides functionality for extracting text and metadata from PDF files and generating markdown notes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.PdfProcessing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.PdfProcessing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.PdfProcessing",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Shared.BatchProcessResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Shared.BatchProcessResult",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.Shared.BatchProcessResult.yml\" sourcestartlinenumber=\"1\">Represents the result and statistics of a batch document processing operation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.yml\" sourcestartlinenumber=\"1\">Abstract base class for document note processors (PDF, video, etc.).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Shared.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Shared.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Shared",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.TagManagement.TagProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.TagManagement.TagProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.TagManagement.TagProcessor.yml\" sourcestartlinenumber=\"1\">Processes tags in markdown files and handles tag management operations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.TagManagement.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.TagManagement.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.TagManagement",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Vault.DictionaryExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Vault.DictionaryExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.DictionaryExtensions",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.Vault.DictionaryExtensions.yml\" sourcestartlinenumber=\"1\">Extension methods for Dictionary operations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Vault.MetadataBatchResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Vault.MetadataBatchResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.MetadataBatchResult",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.Vault.MetadataBatchResult.yml\" sourcestartlinenumber=\"1\">Result of batch metadata processing operation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.yml\" sourcestartlinenumber=\"1\">Batch processor for ensuring metadata in multiple markdown files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor.yml\" sourcestartlinenumber=\"1\">Processor for ensuring metadata in markdown files based on directory structure.\nExtracts program/course/class/module/lesson metadata and updates YAML frontmatter.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.yml\" sourcestartlinenumber=\"1\">Batch processor for generating vault index files in an Obsidian vault.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.yml\" sourcestartlinenumber=\"1\">Result of batch vault index generation operation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor.yml\" sourcestartlinenumber=\"1\">Processor for generating individual vault index files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.Vault.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.Vault.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.yml\" sourcestartlinenumber=\"1\">Provides batch processing capabilities for converting multiple video files to markdown notes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.yml\" sourcestartlinenumber=\"1\">Represents a processor for handling video files to extract metadata, generate AI-powered summaries,\nand create markdown notes for knowledge management systems.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Tools.VideoProcessing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Tools.VideoProcessing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.VideoProcessing",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.BaseBlockGenerator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.BaseBlockGenerator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.BaseBlockGenerator",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.BaseBlockGenerator.yml\" sourcestartlinenumber=\"1\">Provides functionality to generate Obsidian Base blocks from a YAML template with dynamic parameters.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.CourseStructureExtractor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.CourseStructureExtractor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.CourseStructureExtractor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.CourseStructureExtractor.yml\" sourcestartlinenumber=\"1\">Utility class for extracting course structure information (modules, lessons) from file paths.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.FileSizeFormatter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.FileSizeFormatter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.FileSizeFormatter",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.FileSizeFormatter.yml\" sourcestartlinenumber=\"1\">Provides utility methods for formatting file sizes into human-readable strings.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.FriendlyTitleHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.FriendlyTitleHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.FriendlyTitleHelper",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.FriendlyTitleHelper.yml\" sourcestartlinenumber=\"1\">Provides utility methods for generating friendly titles from file names or paths.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.IYamlHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.IYamlHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.IYamlHelper",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.IYamlHelper.yml\" sourcestartlinenumber=\"1\">Interface for YAML helper functionality used to process YAML frontmatter in markdown files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.LoggerExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.LoggerExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.LoggerExtensions",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.LoggerExtensions.yml\" sourcestartlinenumber=\"1\">Provides extension methods for <xref href=\"Microsoft.Extensions.Logging.ILogger\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Microsoft.Extensions.Logging.ILogger%601\" data-throw-if-not-resolved=\"false\"></xref> to simplify and standardize\nlogging of messages with file path formatting, exception handling, and flexible message templates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.MarkdownNoteBuilder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.MarkdownNoteBuilder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.MarkdownNoteBuilder",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.MarkdownNoteBuilder.yml\" sourcestartlinenumber=\"1\">Provides a reusable, strongly-typed builder for generating markdown notes with YAML frontmatter.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.MetadataHierarchyDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.MetadataHierarchyDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.MetadataHierarchyDetector",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.MetadataHierarchyDetector.yml\" sourcestartlinenumber=\"1\">Detects and infers hierarchical metadata (program, course, class, module) from file paths in a notebook vault.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.MetadataTemplateManager.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.MetadataTemplateManager.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.MetadataTemplateManager",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.MetadataTemplateManager.yml\" sourcestartlinenumber=\"1\">Manages loading, parsing, and application of metadata templates from the <code>metadata.yaml</code> file.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor.yml\" sourcestartlinenumber=\"1\">Custom YamlDotNet visitor to avoid quotes for the banner field.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.PathFormatter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.PathFormatter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.PathFormatter",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.PathFormatter.yml\" sourcestartlinenumber=\"1\">Utility class for formatting file paths in log messages.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.PathUtils.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.PathUtils.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.PathUtils",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.PathUtils.yml\" sourcestartlinenumber=\"1\">Provides utility methods for working with file and directory paths.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.YamlHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.YamlHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.YamlHelper",
+      "Summary": "<p sourcefile=\"api/NotebookAutomation.Core.Utils.YamlHelper.yml\" sourcestartlinenumber=\"1\">Helper class for working with YAML content in markdown files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/NotebookAutomation.Core.Utils.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/NotebookAutomation.Core.Utils.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.AIServiceConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.AIServiceConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.AIServiceConfig",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.AIServiceConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration for AI services, supporting multiple providers such as OpenAI, Azure, and Foundry.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.AppConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.AppConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.AppConfig",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.AppConfig.yml\" sourcestartlinenumber=\"1\">Represents the application configuration for Notebook Automation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.AzureProviderConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.AzureProviderConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.AzureProviderConfig",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.AzureProviderConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration for the Azure provider.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.ConfigurationExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.ConfigurationExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.ConfigurationExtensions",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.ConfigurationExtensions.yml\" sourcestartlinenumber=\"1\">Provides extension methods for IConfiguration and ConfigurationBuilder.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.ConfigurationSetup.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.ConfigurationSetup.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.ConfigurationSetup",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.ConfigurationSetup.yml\" sourcestartlinenumber=\"1\">Provides methods to set up application configuration with support for various sources,\nincluding JSON files, environment variables, and user secrets.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.FailedOperations.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.FailedOperations.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.FailedOperations",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.FailedOperations.yml\" sourcestartlinenumber=\"1\">Contains methods and constants for managing and recording failed operations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.FoundryProviderConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.FoundryProviderConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.FoundryProviderConfig",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.FoundryProviderConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration for the Foundry provider.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.ILoggingService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.ILoggingService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.ILoggingService",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.ILoggingService.yml\" sourcestartlinenumber=\"1\">Defines the contract for a centralized logging service for the notebook automation system.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.LoggingService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.LoggingService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.LoggingService",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.LoggingService.yml\" sourcestartlinenumber=\"1\">Provides centralized logging capabilities for the notebook automation system.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.MicrosoftGraphConfig",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.MicrosoftGraphConfig.yml\" sourcestartlinenumber=\"1\">Configuration for Microsoft Graph API.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.OpenAiProviderConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.OpenAiProviderConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.OpenAiProviderConfig",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.OpenAiProviderConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration for the OpenAI provider.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.PathsConfig.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.PathsConfig.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.PathsConfig",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.PathsConfig.yml\" sourcestartlinenumber=\"1\">Represents the configuration settings for various file paths used in the application.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.ServiceRegistration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.ServiceRegistration.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.ServiceRegistration",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.UserSecretsHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.UserSecretsHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration.UserSecretsHelper",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Configuration.UserSecretsHelper.yml\" sourcestartlinenumber=\"1\">Provides convenient access to user secrets in the application.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Configuration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Configuration.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Configuration",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Models.DocumentProcessingProgressEventArgs.yml\" sourcestartlinenumber=\"1\">Represents the progress of document processing, including the current file and status.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Models.DocumentProcessingStatus.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Models.DocumentProcessingStatus.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.DocumentProcessingStatus",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Models.DocumentProcessingStatus.yml\" sourcestartlinenumber=\"1\">Represents the status of a document in the processing queue.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Models.ProcessingStage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Models.ProcessingStage.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.ProcessingStage",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Models.ProcessingStage.yml\" sourcestartlinenumber=\"1\">Represents the current processing stage of a document.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Models.QueueChangedEventArgs.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Models.QueueChangedEventArgs.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.QueueChangedEventArgs",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Models.QueueChangedEventArgs.yml\" sourcestartlinenumber=\"1\">Event arguments for queue changes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Models.QueueItem.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Models.QueueItem.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.QueueItem",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Models.QueueItem.yml\" sourcestartlinenumber=\"1\">Represents a document in the processing queue.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Models.VaultFileInfo.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Models.VaultFileInfo.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.VaultFileInfo",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Models.VaultFileInfo.yml\" sourcestartlinenumber=\"1\">Represents information about a file within a vault for index generation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Models.VaultIndexOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Models.VaultIndexOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models.VaultIndexOptions",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Models.VaultIndexOptions.yml\" sourcestartlinenumber=\"1\">Options for vault index generation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Models.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Models.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Models",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.AISummarizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.AISummarizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.AISummarizer",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.AISummarizer.yml\" sourcestartlinenumber=\"1\">Provides AI-powered text summarization using Microsoft.SemanticKernel with Azure OpenAI integration.\nImplements intelligent chunking strategies for large text processing, optimized for MBA coursework content\nincluding video transcripts, PDF documents, and academic materials. Supports variable substitution\nfor metadata augmentation and configurable prompt templates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.IAISummarizer.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.IAISummarizer.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.IAISummarizer",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.IAISummarizer.yml\" sourcestartlinenumber=\"1\">Defines the contract for AI-powered text summarization services.\nProvides methods for generating summaries with variable substitution and configurable prompt templates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.IOneDriveService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.IOneDriveService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.IOneDriveService",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.IOneDriveService.yml\" sourcestartlinenumber=\"1\">Interface for OneDrive service operations including authentication, file operations, sharing, and path mapping.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.IPromptService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.IPromptService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.IPromptService",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.IPromptService.yml\" sourcestartlinenumber=\"1\">Interface for services that manage and process prompt templates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.ITextChunkingService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.ITextChunkingService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.ITextChunkingService",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.ITextChunkingService.yml\" sourcestartlinenumber=\"1\">Defines the contract for text chunking operations used in AI summarization.\nProvides methods for splitting large texts into manageable chunks with intelligent overlap.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.OneDriveCliOptions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.OneDriveCliOptions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.OneDriveCliOptions",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.OneDriveCliOptions.yml\" sourcestartlinenumber=\"1\">Options for configuring the behavior of OneDrive operations via the command-line interface.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.OneDriveService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.OneDriveService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.OneDriveService",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.OneDriveService.yml\" sourcestartlinenumber=\"1\">Provides methods for authenticating and accessing OneDrive files/folders.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.PromptTemplateService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.PromptTemplateService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.PromptTemplateService",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.PromptTemplateService.yml\" sourcestartlinenumber=\"1\">Service for loading prompt templates and performing variable substitution.\nHandles different template types (e.g., chunk summary, final summary) and supports dynamic prompt file loading.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.Text.RecursiveCharacterTextSplitter.yml\" sourcestartlinenumber=\"1\">A sophisticated text splitter that recursively splits text based on a hierarchy of separators,\npreserving semantic boundaries and ensuring better context maintenance between chunks.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.Text.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.Text.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.Text",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.TextChunkingService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.TextChunkingService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.TextChunkingService",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.TextChunkingService.yml\" sourcestartlinenumber=\"1\">Provides text chunking operations for AI summarization services.\nImplements intelligent text splitting with overlap to maintain context continuity.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.VaultRootContextService.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.VaultRootContextService.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services.VaultRootContextService",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Services.VaultRootContextService.yml\" sourcestartlinenumber=\"1\">Provides scoped context for vault root path overrides during processing operations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Services.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Services.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Services",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownNoteProcessor.yml\" sourcestartlinenumber=\"1\">Provides functionality for converting HTML, TXT, or EPUB files to markdown notes, with optional AI-generated summaries.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.MarkdownGeneration.MarkdownParser.yml\" sourcestartlinenumber=\"1\">Parser for markdown content with frontmatter handling.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.MarkdownGeneration.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.MarkdownGeneration.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.MarkdownGeneration",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteBatchProcessor.yml\" sourcestartlinenumber=\"1\">Provides batch processing capabilities for converting multiple PDF files to markdown notes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.PdfProcessing.PdfNoteProcessor.yml\" sourcestartlinenumber=\"1\">Provides functionality for extracting text and metadata from PDF files and generating markdown notes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.PdfProcessing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.PdfProcessing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.PdfProcessing",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Shared.BatchProcessResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Shared.BatchProcessResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Shared.BatchProcessResult",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.Shared.BatchProcessResult.yml\" sourcestartlinenumber=\"1\">Represents the result and statistics of a batch document processing operation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor-1.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Shared.DocumentNoteBatchProcessor<TProcessor>",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.Shared.DocumentNoteProcessorBase.yml\" sourcestartlinenumber=\"1\">Abstract base class for document note processors (PDF, video, etc.).</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Shared.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Shared.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Shared",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.TagManagement.TagProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.TagManagement.TagProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.TagManagement.TagProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.TagManagement.TagProcessor.yml\" sourcestartlinenumber=\"1\">Processes tags in markdown files and handles tag management operations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.TagManagement.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.TagManagement.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.TagManagement",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.DictionaryExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.DictionaryExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.DictionaryExtensions",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.Vault.DictionaryExtensions.yml\" sourcestartlinenumber=\"1\">Extension methods for Dictionary operations.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.MetadataBatchResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.MetadataBatchResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.MetadataBatchResult",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.Vault.MetadataBatchResult.yml\" sourcestartlinenumber=\"1\">Result of batch metadata processing operation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureBatchProcessor.yml\" sourcestartlinenumber=\"1\">Batch processor for ensuring metadata in multiple markdown files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.Vault.MetadataEnsureProcessor.yml\" sourcestartlinenumber=\"1\">Processor for ensuring metadata in markdown files based on directory structure.\nExtracts program/course/class/module/lesson metadata and updates YAML frontmatter.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchProcessor.yml\" sourcestartlinenumber=\"1\">Batch processor for generating vault index files in an Obsidian vault.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.Vault.VaultIndexBatchResult.yml\" sourcestartlinenumber=\"1\">Result of batch vault index generation operation.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.Vault.VaultIndexProcessor.yml\" sourcestartlinenumber=\"1\">Processor for generating individual vault index files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.Vault.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.Vault",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteBatchProcessor.yml\" sourcestartlinenumber=\"1\">Provides batch processing capabilities for converting multiple video files to markdown notes.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Tools.VideoProcessing.VideoNoteProcessor.yml\" sourcestartlinenumber=\"1\">Represents a processor for handling video files to extract metadata, generate AI-powered summaries,\nand create markdown notes for knowledge management systems.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Tools.VideoProcessing.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Tools.VideoProcessing.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Tools.VideoProcessing",
+      "Summary": null
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.BaseBlockGenerator.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.BaseBlockGenerator.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.BaseBlockGenerator",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.BaseBlockGenerator.yml\" sourcestartlinenumber=\"1\">Provides functionality to generate Obsidian Base blocks from a YAML template with dynamic parameters.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.CourseStructureExtractor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.CourseStructureExtractor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.CourseStructureExtractor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.CourseStructureExtractor.yml\" sourcestartlinenumber=\"1\">Utility class for extracting course structure information (modules, lessons) from file paths.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.FileSizeFormatter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.FileSizeFormatter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.FileSizeFormatter",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.FileSizeFormatter.yml\" sourcestartlinenumber=\"1\">Provides utility methods for formatting file sizes into human-readable strings.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.FriendlyTitleHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.FriendlyTitleHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.FriendlyTitleHelper",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.FriendlyTitleHelper.yml\" sourcestartlinenumber=\"1\">Provides utility methods for generating friendly titles from file names or paths.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.IYamlHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.IYamlHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.IYamlHelper",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.IYamlHelper.yml\" sourcestartlinenumber=\"1\">Interface for YAML helper functionality used to process YAML frontmatter in markdown files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.LoggerExtensions.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.LoggerExtensions.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.LoggerExtensions",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.LoggerExtensions.yml\" sourcestartlinenumber=\"1\">Provides extension methods for <xref href=\"Microsoft.Extensions.Logging.ILogger\" data-throw-if-not-resolved=\"false\"></xref> and <xref href=\"Microsoft.Extensions.Logging.ILogger%601\" data-throw-if-not-resolved=\"false\"></xref> to simplify and standardize\nlogging of messages with file path formatting, exception handling, and flexible message templates.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.MarkdownNoteBuilder.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.MarkdownNoteBuilder.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.MarkdownNoteBuilder",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.MarkdownNoteBuilder.yml\" sourcestartlinenumber=\"1\">Provides a reusable, strongly-typed builder for generating markdown notes with YAML frontmatter.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.MetadataHierarchyDetector.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.MetadataHierarchyDetector.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.MetadataHierarchyDetector",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.MetadataHierarchyDetector.yml\" sourcestartlinenumber=\"1\">Detects and infers hierarchical metadata (program, course, class, module) from file paths in a notebook vault.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.MetadataTemplateManager.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.MetadataTemplateManager.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.MetadataTemplateManager",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.MetadataTemplateManager.yml\" sourcestartlinenumber=\"1\">Manages loading, parsing, and application of metadata templates from the <code>metadata.yaml</code> file.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.NoQuotesForBannerVisitor.yml\" sourcestartlinenumber=\"1\">Custom YamlDotNet visitor to avoid quotes for the banner field.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.PathFormatter.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.PathFormatter.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.PathFormatter",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.PathFormatter.yml\" sourcestartlinenumber=\"1\">Utility class for formatting file paths in log messages.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.PathUtils.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.PathUtils.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.PathUtils",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.PathUtils.yml\" sourcestartlinenumber=\"1\">Provides utility methods for working with file and directory paths.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.YamlHelper.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.YamlHelper.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils.YamlHelper",
+      "Summary": "<p sourcefile=\"api/api/NotebookAutomation.Core.Utils.YamlHelper.yml\" sourcestartlinenumber=\"1\">Helper class for working with YAML content in markdown files.</p>\n"
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "api/api/NotebookAutomation.Core.Utils.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/NotebookAutomation.Core.Utils.html"
+        }
+      },
+      "version": "",
+      "Uid": null,
+      "IsMRef": true,
+      "Title": "NotebookAutomation.Core.Utils",
+      "Summary": null
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/api/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html"
+        },
+        ".json": {
+          "relative_path": "api/toc.json"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "getting-started.md",
+      "output": {
+        ".html": {
+          "relative_path": "getting-started.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "index.md",
+      "output": {
+        ".html": {
+          "relative_path": "index.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Conceptual",
+      "source_relative_path": "introduction.md",
+      "output": {
+        ".html": {
+          "relative_path": "introduction.html"
+        }
+      },
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "toc.html"
+        },
+        ".json": {
+          "relative_path": "toc.json"
+        }
+      },
+      "version": ""
+    }
+  ],
+  "groups": [
+    {
+      "xrefmap": "xrefmap.yml"
+    }
+  ]
+}

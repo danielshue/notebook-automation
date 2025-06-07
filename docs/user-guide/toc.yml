@@ -1,0 +1,14 @@
+- name: User Guide
+  href: index.md
+- name: File Processing
+  href: file-processing.md
+- name: Batch Operations
+  href: batch-operations.md
+- name: Output Management
+  href: output-management.md
+- name: Academic Workflows
+  href: academic-workflows.md
+- name: CI/CD Integration
+  href: ci-cd-integration.md
+- name: Performance Tuning
+  href: performance-tuning.md

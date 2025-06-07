@@ -1,4 +1,13 @@
-﻿using NotebookAutomation.Core.Models;
+// <copyright file="PdfNoteBatchProcessor.cs" company="PlaceholderCompany">
+// Copyright (c) PlaceholderCompany. All rights reserved.
+// </copyright>
+// <author>Dan Shue</author>
+// <summary>
+// File: ./src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteBatchProcessor.cs
+// Purpose: [TODO: Add file purpose description]
+// Created: 2025-06-07
+// </summary>
+using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Tools.Shared;
 
 namespace NotebookAutomation.Core.Tools.PdfProcessing;
@@ -39,15 +48,15 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
     /// <summary>
     /// The generic batch processor that handles the actual batch processing logic.
     /// </summary>
-    private readonly DocumentNoteBatchProcessor<PdfNoteProcessor> _batchProcessor = batchProcessor ?? throw new ArgumentNullException(nameof(batchProcessor));
+    private readonly DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor = batchProcessor ?? throw new ArgumentNullException(nameof(batchProcessor));
 
     /// <summary>
     /// Event triggered when processing progress changes.
     /// </summary>
     public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
     {
-        add => _batchProcessor.ProcessingProgressChanged += value;
-        remove => _batchProcessor.ProcessingProgressChanged -= value;
+        add => this.batchProcessor.ProcessingProgressChanged += value;
+        remove => this.batchProcessor.ProcessingProgressChanged -= value;
     }
 
     /// <summary>
@@ -98,7 +107,7 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
         bool dryRun = false)
     {
         var extensions = pdfExtensions ?? [".pdf"];
-        return await _batchProcessor.ProcessDocumentsAsync(
+        return await this.batchProcessor.ProcessDocumentsAsync(
             input,
             output,
             extensions,
@@ -111,7 +120,7 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
             resourcesRoot: null,
             appConfig: null,
             "PDF Note",
-            "failed_pdfs.txt");
+            "failed_pdfs.txt").ConfigureAwait(false);
     }
 
     /// <summary>
@@ -156,7 +165,7 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
         Configuration.AppConfig? appConfig = null)
     {
         var extensions = pdfExtensions ?? [".pdf"];
-        return await _batchProcessor.ProcessDocumentsAsync(
+        return await this.batchProcessor.ProcessDocumentsAsync(
             input,
             output,
             extensions,
@@ -169,6 +178,6 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
             resourcesRoot,
             appConfig,
             "PDF Note",
-            "failed_pdfs.txt");
+            "failed_pdfs.txt").ConfigureAwait(false);
     }
 }
