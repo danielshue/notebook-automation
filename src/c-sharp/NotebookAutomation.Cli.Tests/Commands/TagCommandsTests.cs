@@ -2,12 +2,14 @@
 using System.CommandLine.Parsing;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
 using NotebookAutomation.Cli.Commands;
+using NotebookAutomation.Core.Configuration;
 
 
 namespace NotebookAutomation.Cli.Tests.Commands;
@@ -18,11 +20,20 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 public class TagCommandsTests
 {
     private Mock<ILogger<TagCommands>> _mockLogger;
+    private Mock<IServiceProvider> _mockServiceProvider;
+    private Mock<AppConfig> _mockAppConfig;
 
     [TestInitialize]
     public void Setup()
     {
-        _mockLogger = new Mock<ILogger<TagCommands>>();
+        _mockLogger = new Mock<ILogger<TagCommands>>(); _mockServiceProvider = new Mock<IServiceProvider>();
+        _mockAppConfig = new Mock<AppConfig>();
+        _mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig))).Returns(_mockAppConfig.Object);
+    }
+
+    private TagCommands CreateTagCommands()
+    {
+        return new TagCommands(_mockLogger.Object, _mockServiceProvider.Object);
     }
 
     /// <summary>
@@ -37,7 +48,7 @@ public class TagCommandsTests
         var debugOption = new System.CommandLine.Option<bool>("--debug");
         var verboseOption = new System.CommandLine.Option<bool>("--verbose");
         var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = new TagCommands(_mockLogger.Object);
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -68,7 +79,7 @@ public class TagCommandsTests
         var debugOption = new System.CommandLine.Option<bool>("--debug");
         var verboseOption = new System.CommandLine.Option<bool>("--verbose");
         var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = new TagCommands(_mockLogger.Object);
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -99,7 +110,7 @@ public class TagCommandsTests
         var debugOption = new System.CommandLine.Option<bool>("--debug");
         var verboseOption = new System.CommandLine.Option<bool>("--verbose");
         var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = new TagCommands(_mockLogger.Object);
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -130,7 +141,7 @@ public class TagCommandsTests
         var debugOption = new System.CommandLine.Option<bool>("--debug");
         var verboseOption = new System.CommandLine.Option<bool>("--verbose");
         var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = new TagCommands(_mockLogger.Object);
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -161,7 +172,7 @@ public class TagCommandsTests
         var debugOption = new System.CommandLine.Option<bool>("--debug");
         var verboseOption = new System.CommandLine.Option<bool>("--verbose");
         var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = new TagCommands(_mockLogger.Object);
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -192,7 +203,7 @@ public class TagCommandsTests
         var debugOption = new System.CommandLine.Option<bool>("--debug");
         var verboseOption = new System.CommandLine.Option<bool>("--verbose");
         var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = new TagCommands(_mockLogger.Object);
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -224,7 +235,7 @@ public class TagCommandsTests
         var debugOption = new System.CommandLine.Option<bool>("--debug");
         var verboseOption = new System.CommandLine.Option<bool>("--verbose");
         var dryRunOption = new System.CommandLine.Option<bool>("--dry-run");
-        var tagCommands = new TagCommands(_mockLogger.Object);
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;

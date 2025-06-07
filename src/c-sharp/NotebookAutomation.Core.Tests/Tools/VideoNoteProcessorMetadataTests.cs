@@ -128,6 +128,7 @@ video-uploaded:";
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            new MetadataHierarchyDetector(Mock.Of<ILogger<MetadataHierarchyDetector>>(), _appConfig),
             _oneDriveServiceMock.Object,
             _appConfig
         );
@@ -161,6 +162,7 @@ video-uploaded:";
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            new MetadataHierarchyDetector(Mock.Of<ILogger<MetadataHierarchyDetector>>(), _appConfig),
             _oneDriveServiceMock.Object,
             _appConfig
         ); Dictionary<string, object> metadata = new()
@@ -188,6 +190,7 @@ video-uploaded:";
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            new MetadataHierarchyDetector(Mock.Of<ILogger<MetadataHierarchyDetector>>(), _appConfig),
             _oneDriveServiceMock.Object,
             _appConfig
         );
@@ -224,6 +227,7 @@ video-uploaded:";
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            new MetadataHierarchyDetector(Mock.Of<ILogger<MetadataHierarchyDetector>>(), _appConfig),
             _oneDriveServiceMock.Object,
             _appConfig
         );
@@ -259,6 +263,7 @@ video-uploaded:";
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            new MetadataHierarchyDetector(Mock.Of<ILogger<MetadataHierarchyDetector>>(), _appConfig),
             _oneDriveServiceMock.Object,
             _appConfig
         );
@@ -296,11 +301,11 @@ video-uploaded:";
     {
         // Arrange
         string testShareLink = "https://onedrive.live.com/view.aspx?test=example"; _oneDriveServiceMock
-            .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(testShareLink); VideoNoteProcessor processor = new(
+            .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(testShareLink); VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            new MetadataHierarchyDetector(Mock.Of<ILogger<MetadataHierarchyDetector>>(), _appConfig),
             _oneDriveServiceMock.Object,
             _appConfig
         );

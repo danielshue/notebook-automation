@@ -1,17 +1,20 @@
 # Video - Excel Best Practices for Finance
 
 ## Video Information
-**Duration:** 38 minutes  
-**Instructor:** Dr. Rachel Thompson  
-**Module:** Advanced Financial Modeling  
+
+**Duration:** 38 minutes
+**Instructor:** Dr. Rachel Thompson
+**Module:** Advanced Financial Modeling
 
 ## Learning Objectives
+
 - Master Excel techniques for financial modeling
 - Understand best practices for model structure and design
 - Learn advanced formulas and functions for finance
 - Implement error-checking and model validation techniques
 
 ## Video Outline
+
 1. **Model Structure Fundamentals** (0:00-10:00)
    - Organizing worksheets and data flow
    - Input vs. calculation vs. output sheets
@@ -36,6 +39,7 @@
    - Version control strategies
 
 ## Key Excel Functions Covered
+
 - SUMPRODUCT for weighted calculations
 - OFFSET for dynamic ranges
 - INDIRECT for flexible references
@@ -43,21 +47,25 @@
 - Goal Seek and Solver applications
 
 ## Practical Exercises
+
 - Build a DCF model from scratch
 - Create automated sensitivity tables
 - Implement scenario analysis
 - Design executive dashboard
 
 ## Common Mistakes to Avoid
+
 - Hardcoding values in formulas
 - Circular references without iteration
 - Inconsistent formatting and structure
 - Lack of documentation and assumptions
 
 ## Templates Provided
+
 - Financial model template
 - Sensitivity analysis template
 - Dashboard design examples
 
 ## Tags
-#finance #excel #financial-modeling #video #module3 #spreadsheet
+
+# finance #excel #financial-modeling #video #module3 #spreadsheet

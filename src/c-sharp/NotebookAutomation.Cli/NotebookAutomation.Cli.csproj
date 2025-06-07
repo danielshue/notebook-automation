@@ -43,11 +43,9 @@
                 Include="$(MSBuildThisFileDirectory)..\NotebookAutomation.Core\Prompts\*.md" />
         </ItemGroup>
         <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\"
-            SkipUnchangedFiles="true" />
-
-        <!-- Copy prompts from repository root -->
+            SkipUnchangedFiles="true" />        <!-- Copy prompts from repository root -->
         <ItemGroup>
-            <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\Prompts\*.md" />
+            <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\prompts\*.md" />
         </ItemGroup>
         <Copy SourceFiles="@(RepoPromptFiles)" DestinationFolder="$(OutDir)Prompts\"
             SkipUnchangedFiles="true" />

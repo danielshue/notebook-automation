@@ -74,7 +74,8 @@ public class VaultCommands
         generateIndexCommand.SetHandler(async context =>
         {
             if (string.IsNullOrWhiteSpace(context.ParseResult.GetValueForArgument(pathArg)))
-            {                AnsiConsoleHelper.WriteUsage(
+            {
+                AnsiConsoleHelper.WriteUsage(
                     "Usage: vault generate-index <path> [--force] [--override-vault-root] [--template-types <type1> <type2>...]",
                     "Generate a vault index for the specified directory.",
                     "  <path>                Path to the directory to start indexing (required)\n" +
@@ -87,7 +88,7 @@ public class VaultCommands
             string path = context.ParseResult.GetValueForArgument(pathArg);
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
-            bool verbose = context.ParseResult.GetValueForOption(verboseOption);            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption); bool force = context.ParseResult.GetValueForOption(forceOption);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption); bool dryRun = context.ParseResult.GetValueForOption(dryRunOption); bool force = context.ParseResult.GetValueForOption(forceOption);
             bool overrideVaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
             string[]? templateTypes = context.ParseResult.GetValueForOption(templateTypesOption);
 
@@ -211,7 +212,8 @@ public class VaultCommands
         try
         {
             switch (command)
-            {                case "generate-index":
+            {
+                case "generate-index":
                     await ExecuteGenerateIndexAsync(path, dryRun, force, vaultRoot, templateTypes);
                     break;
                 case "ensure-metadata":
@@ -265,7 +267,7 @@ public class VaultCommands
                     {
                         string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
                         updateStatus(safeStatus);
-                    };                    return await batchProcessor.GenerateIndexesAsync(
+                    }; return await batchProcessor.GenerateIndexesAsync(
                         vaultPath: path,
                         dryRun: dryRun,
                         templateTypes: templateTypes?.ToList(), // Convert array to list

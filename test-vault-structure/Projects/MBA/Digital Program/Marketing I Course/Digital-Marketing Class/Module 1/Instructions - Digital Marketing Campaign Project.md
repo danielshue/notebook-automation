@@ -1,11 +1,13 @@
 # Instructions - Digital Marketing Campaign Project
 
 ## Project Overview
+
 Design and execute a comprehensive digital marketing campaign for a real or fictional business. This project integrates multiple digital marketing channels and requires data-driven decision making.
 
 ## Project Requirements
 
 ### Phase 1: Strategy Development (Week 1-2)
+
 1. **Business and Audience Analysis**
    - Select a business (existing or create fictional)
    - Define target audience with personas
@@ -18,6 +20,7 @@ Design and execute a comprehensive digital marketing campaign for a real or fict
    - Allocate budget across channels
 
 ### Phase 2: Campaign Creation (Week 3-4)
+
 1. **Content Development**
    - Create campaign messaging and positioning
    - Develop creative assets (graphics, copy, videos)
@@ -29,6 +32,7 @@ Design and execute a comprehensive digital marketing campaign for a real or fict
    - Implement conversion tracking
 
 ### Phase 3: Execution and Optimization (Week 5-6)
+
 1. **Campaign Launch**
    - Execute campaigns across all channels
    - Monitor initial performance
@@ -40,6 +44,7 @@ Design and execute a comprehensive digital marketing campaign for a real or fict
    - Make data-driven optimizations
 
 ### Final Deliverables
+
 1. **Strategy Document** (15 pages max)
    - Executive summary
    - Situation analysis
@@ -57,23 +62,27 @@ Design and execute a comprehensive digital marketing campaign for a real or fict
    - Recommendations for future campaigns
 
 ### Grading Rubric
+
 - Strategy quality and justification (30%)
 - Creative execution and consistency (25%)
 - Technical implementation (20%)
 - Performance analysis and insights (25%)
 
 ### Team Formation
+
 - Teams of 3-4 students
 - Submit team formation by Week 1 Friday
 - Peer evaluation component included
 
 ### Resources Available
+
 - Google Ads credit ($100 per team)
 - Facebook Ads credit ($50 per team)
 - Canva Pro access
 - Google Analytics training materials
 
 ### Important Dates
+
 - **Week 1 Friday**: Team formation due
 - **Week 2 Friday**: Strategy document due
 - **Week 4 Friday**: Creative portfolio due
@@ -81,4 +90,5 @@ Design and execute a comprehensive digital marketing campaign for a real or fict
 - **Week 6 Friday**: Final report due
 
 ## Tags
-#marketing #digital-marketing #instructions #project #module1 #campaign
+
+# marketing #digital-marketing #instructions #project #module1 #campaign

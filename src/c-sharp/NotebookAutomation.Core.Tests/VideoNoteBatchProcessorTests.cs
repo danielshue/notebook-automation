@@ -63,17 +63,25 @@ public class VideoNoteBatchProcessorTests
                 It.IsAny<string>(),
                 It.IsAny<bool>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync("{\"webUrl\":\"https://example.com/shareable-link\"}");
-        // Mock AppConfig for consistency
+            .ReturnsAsync("{\"webUrl\":\"https://example.com/shareable-link\"}");        // Mock AppConfig for consistency
         var mockAppConfig = new Mock<AppConfig>();
         mockAppConfig.Object.Paths = new PathsConfig
         {
             NotebookVaultFullpathRoot = _outputDir
-        };        // Create a real VideoNoteProcessor with all the necessary dependencies
+        };
+
+        // Create a real MetadataHierarchyDetector instead of mocking it
+        var hierarchyDetector = new MetadataHierarchyDetector(
+            Mock.Of<ILogger<MetadataHierarchyDetector>>(),
+            mockAppConfig.Object
+        );
+
+        // Create a real VideoNoteProcessor with all the necessary dependencies
         VideoNoteProcessor videoNoteProcessor = new(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             _testAISummarizer,
             mockYamlHelper.Object,
+            hierarchyDetector,
             mockOneDriveService.Object,
             mockAppConfig.Object,
             null  // No LoggingService needed for tests

@@ -1,62 +1,74 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
-    <UserSecretsId>c6a8ab21-82a5-4993-bea2-7db0b10724ea</UserSecretsId>
-  </PropertyGroup>
-  <ItemGroup>    <PackageReference Include="Azure.Identity" Version="1.14.0" />    <PackageReference Include="Microsoft.Extensions.AI" Version="9.5.0" />    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0-preview.1.25265.7" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0-preview.5.24306.7" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0-preview.5.24306.7" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0-preview.5.24306.7" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0-preview.5.24306.7" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0-preview.5.24306.7" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0-preview.5.24306.7" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-preview.5.24306.7" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0-preview.5.24306.7" />
-    <PackageReference Include="Microsoft.Graph" Version="5.79.0" />
-    <PackageReference Include="Microsoft.Identity.Client" Version="4.72.1" />
-    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.72.1" />
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.54.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.54.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.54.0" />
-    <PackageReference Include="ReverseMarkdown" Version="4.6.0" />
-    <PackageReference Include="Serilog" Version="3.1.1" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
-    <PackageReference Include="VersOne.Epub" Version="3.3.4" />
-    <PackageReference Include="Xabe.FFmpeg" Version="6.0.1" />
-    <PackageReference Include="YamlDotNet" Version="13.7.1" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Prompts\*.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <!-- Copy prompts from repository root if they exist -->
-  <Target Name="CopyPrompts" BeforeTargets="Build">
-    <!-- Copy prompts from Core project directory -->
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>preview</LangVersion>
+        <UserSecretsId>c6a8ab21-82a5-4993-bea2-7db0b10724ea</UserSecretsId>
+    </PropertyGroup>
     <ItemGroup>
-      <CorePromptFiles Include="$(MSBuildThisFileDirectory)Prompts\*.md" />
+        <PackageReference Include="Azure.Identity" Version="1.14.0" />
+        <PackageReference Include="Microsoft.Extensions.AI" Version="9.5.0" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0-preview.1.25265.7" />
+        <PackageReference Include="Microsoft.Extensions.Configuration"
+            Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder"
+            Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
+            Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json"
+            Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets"
+            Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection"
+            Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console"
+            Version="9.0.0-preview.5.24306.7" />
+        <PackageReference Include="Microsoft.Graph" Version="5.79.0" />
+        <PackageReference Include="Microsoft.Identity.Client" Version="4.72.1" />
+        <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.72.1" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="1.54.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.54.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars"
+            Version="1.54.0" />
+        <PackageReference Include="ReverseMarkdown" Version="4.6.0" />
+        <PackageReference Include="Serilog" Version="3.1.1" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="5.0.1" />
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+        <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
+        <PackageReference Include="VersOne.Epub" Version="3.3.4" />
+        <PackageReference Include="Xabe.FFmpeg" Version="6.0.1" />
+        <PackageReference Include="YamlDotNet" Version="13.7.1" />
     </ItemGroup>
-    <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\" SkipUnchangedFiles="true" />
-
-    <!-- Copy prompts from repository root -->
     <ItemGroup>
-      <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\Prompts\*.md" />
+        <None Update="config.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Update="Prompts\*.md">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
-    <Copy SourceFiles="@(RepoPromptFiles)" DestinationFolder="$(OutDir)Prompts\" SkipUnchangedFiles="true" />
 
-    <!-- Log info about prompt files -->
-    <Message Text="Copying prompt files to output directory: $(OutDir)Prompts\" Importance="high" />
-  </Target>
+    <!-- Copy prompts from repository root if they exist -->
+    <Target Name="CopyPrompts" BeforeTargets="Build">
+        <!-- Copy prompts from Core project directory -->
+        <ItemGroup>
+            <CorePromptFiles Include="$(MSBuildThisFileDirectory)Prompts\*.md" />
+        </ItemGroup>
+        <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\"
+            SkipUnchangedFiles="true" />    <!-- Copy prompts from repository root -->
+        <ItemGroup>
+            <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\prompts\*.md" />
+        </ItemGroup>
+        <Copy SourceFiles="@(RepoPromptFiles)" DestinationFolder="$(OutDir)Prompts\"
+            SkipUnchangedFiles="true" />
+
+        <!-- Log info about prompt files -->
+        <Message Text="Copying prompt files to output directory: $(OutDir)Prompts\"
+            Importance="high" />
+    </Target>
 
 </Project>

@@ -1,17 +1,20 @@
 # Video - Marketing Attribution Models
 
 ## Video Information
-**Duration:** 39 minutes  
-**Instructor:** Prof. David Park  
-**Module:** Advanced Digital Marketing Strategies  
+
+**Duration:** 39 minutes
+**Instructor:** Prof. David Park
+**Module:** Advanced Digital Marketing Strategies
 
 ## Learning Objectives
+
 - Understand different attribution models and their applications
 - Implement multi-touch attribution tracking
 - Analyze customer journey across multiple touchpoints
 - Optimize budget allocation based on attribution insights
 
 ## Video Outline
+
 1. **Attribution Fundamentals** (0:00-10:00)
    - What is marketing attribution
    - Single-touch vs multi-touch attribution
@@ -39,12 +42,14 @@
    - Customer journey optimization
 
 ## Practical Examples
+
 - B2B lead attribution across channels
 - E-commerce purchase journey analysis
 - Content marketing attribution challenges
 - Offline to online attribution methods
 
 ## Tools and Platforms
+
 - Google Analytics attribution
 - HubSpot attribution reporting
 - Adobe Analytics
@@ -52,6 +57,7 @@
 - Third-party attribution tools
 
 ## Key Concepts
+
 - Customer journey mapping
 - Touchpoint identification
 - Attribution windows
@@ -59,4 +65,5 @@
 - Privacy-first attribution
 
 ## Tags
-#marketing #attribution #analytics #digital-marketing #video #module3
+
+# marketing #attribution #analytics #digital-marketing #video #module3

@@ -1,7 +1,11 @@
-﻿using NotebookAutomation.Core.Configuration;
+﻿using Microsoft.Extensions.Logging.Abstractions;
+
+using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Utils;
+
 // Enable nullable reference types for this file
 #nullable enable
-using NotebookAutomation.Core.Services;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -26,10 +30,11 @@ public class TestPromptTemplateService : PromptTemplateService
     public string? LastTemplateName { get; private set; }
 
     /// <summary>
-    /// Initializes a new instance of the TestPromptTemplateService class.
-    /// </summary>
+    /// Initializes a new instance of the TestPromptTemplateService class.    /// </summary>
     public TestPromptTemplateService()
-        : base(Microsoft.Extensions.Logging.Abstractions.NullLogger<PromptTemplateService>.Instance, new AppConfig())
+        : base(Microsoft.Extensions.Logging.Abstractions.NullLogger<PromptTemplateService>.Instance,
+               new YamlHelper(Microsoft.Extensions.Logging.Abstractions.NullLogger<YamlHelper>.Instance),
+               new AppConfig())
     {
     }
 

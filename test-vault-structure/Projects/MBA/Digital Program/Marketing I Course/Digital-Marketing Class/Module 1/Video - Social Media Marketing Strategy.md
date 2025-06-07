@@ -1,17 +1,20 @@
 # Video - Social Media Marketing Strategy
 
 ## Video Information
-**Duration:** 41 minutes  
-**Instructor:** Ms. Jennifer Martinez  
-**Module:** Digital Marketing Fundamentals  
+
+**Duration:** 41 minutes
+**Instructor:** Ms. Jennifer Martinez
+**Module:** Digital Marketing Fundamentals
 
 ## Learning Objectives
+
 - Develop comprehensive social media marketing strategies
 - Understand platform-specific content optimization
 - Analyze social media metrics and ROI
 - Create engaging content across multiple channels
 
 ## Video Outline
+
 1. **Platform Landscape Overview** (0:00-10:00)
    - Facebook, Instagram, Twitter, LinkedIn, TikTok
    - Audience demographics by platform
@@ -36,12 +39,14 @@
    - Platform analytics tools
 
 ## Case Studies Featured
+
 - Nike's "Just Do It" social campaign
 - Wendy's Twitter engagement strategy
 - Airbnb's Instagram storytelling
 - B2B LinkedIn marketing examples
 
 ## Tools and Platforms Covered
+
 - Hootsuite for scheduling
 - Canva for content creation
 - Facebook Business Manager
@@ -49,12 +54,14 @@
 - Native platform analytics
 
 ## Practical Exercises
+
 - Create platform-specific content strategy
 - Design social media content calendar
 - Develop crisis response protocol
 - Analyze competitor social presence
 
 ## Key Metrics to Track
+
 - Engagement rate and reach
 - Click-through rates
 - Conversion attribution
@@ -62,10 +69,12 @@
 - Brand sentiment analysis
 
 ## Action Items for Students
+
 1. Audit current social media presence
 2. Develop 30-day content calendar
 3. Create brand guidelines for social
 4. Set up analytics tracking
 
 ## Tags
-#marketing #social-media #digital-marketing #video #module1 #strategy
+
+# marketing #social-media #digital-marketing #video #module1 #strategy

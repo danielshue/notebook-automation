@@ -1,9 +1,10 @@
-﻿using System.IO;
+using System.IO;
 
 using Moq;
 
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -15,15 +16,32 @@ namespace NotebookAutomation.Core.Tests;
 public class PromptTemplateServiceTests
 {
     private Mock<ILogger<PromptTemplateService>> _loggerMock;
-    private string _testFolder;
-
-    /// <summary>
-    /// Set up the test environment before each test.
-    /// </summary>
+    private Mock<IYamlHelper> _yamlHelperMock;
+    private string _testFolder;    /// <summary>
+                                   /// Set up the test environment before each test.
+                                   /// </summary>
     [TestInitialize]
     public void TestInitialize()
     {
         _loggerMock = new Mock<ILogger<PromptTemplateService>>();
+        _yamlHelperMock = new Mock<IYamlHelper>();
+
+        // Set up yamlHelper to simulate frontmatter removal
+        _yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
+            .Returns<string>(content =>
+            {
+                // Simple frontmatter removal: if starts with ---, remove everything until second ---
+                if (content.StartsWith("---"))
+                {
+                    int endIndex = content.IndexOf("---", 3);
+                    if (endIndex > 0)
+                    {
+                        return content[(endIndex + 3)..].Trim();
+                    }
+                }
+                return content;
+            });
+
         // Create a temporary test folder for prompt templates
         _testFolder = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(_testFolder);
@@ -51,7 +69,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}, welcome to {{course}}!";
         Dictionary<string, string> variables = new()
         {
@@ -74,7 +92,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}, welcome to {{course}}!";
         Dictionary<string, string> variables = new()
         {
@@ -97,7 +115,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}!";
         Dictionary<string, string> variables = new()
         {
@@ -120,7 +138,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = @"# 📝 Notes for {{course}}
 
 ## 🧩 Topics Covered in {{module}}
@@ -174,7 +192,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string templatePath = Path.Combine(_testFolder, "test_template.md");
         string templateContent = "Hello {{name}}, welcome to {{course}}!";
         await File.WriteAllTextAsync(templatePath, templateContent);
@@ -200,7 +218,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string nonExistentPath = Path.Combine(_testFolder, "non_existent.md");
         Dictionary<string, string> variables = new()
         {
@@ -232,7 +250,7 @@ public class PromptTemplateServiceTests
 
         // Arrange - Create a service with a mocked logger that we can verify
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
 
         // Act
         string result = await service.LoadTemplateAsync("non_existent_template");
@@ -253,13 +271,15 @@ public class PromptTemplateServiceTests
 
     /// <summary>
     /// Tests that GetDefaultTemplate returns the appropriate default template.
-    /// </summary>
-    [TestMethod]
+    /// </summary>    [TestMethod]
     public async Task LoadTemplateAsync_GetsCorrectDefaultTemplate()
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        // Set the prompts path to the repository root prompts directory
+        string repoRoot = GetRepositoryRoot();
+        config.Paths.PromptsPath = Path.Combine(repoRoot, "prompts");
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
 
         // Act
         string chunkResult = await service.LoadTemplateAsync("chunk_summary_prompt");
@@ -273,11 +293,15 @@ public class PromptTemplateServiceTests
         Assert.IsNotNull(finalResult);
         Assert.IsNotNull(videoResult);
         Assert.IsNotNull(unknownResult);            // Normalize line endings and trim trailing whitespace for comparison
-        static string Normalize(string s) => s.Replace("\r\n", "\n").Replace("\r", "\n").TrimEnd();
-
-        // Since this is an integration test, check that templates were loaded correctly
+        static string Normalize(string s) => s.Replace("\r\n", "\n").Replace("\r", "\n").TrimEnd();        // Since this is an integration test, check that templates were loaded correctly
         // For chunk_summary_prompt, the file content should be used (which is normalized for comparison)
-        Assert.AreEqual(Normalize(PromptTemplateService.DefaultChunkPrompt), Normalize(chunkResult));
+        // The file should start with the expected content and be different from the default
+        StringAssert.StartsWith(chunkResult, "You are an educational content summarizer for MBA course materials.");
+        Assert.IsTrue(chunkResult.Length > 100, "Chunk summary prompt should be loaded from file and be substantial");
+
+        // The loaded template should not exactly match the default since it's loaded from file
+        Assert.AreNotEqual(Normalize(PromptTemplateService.DefaultChunkPrompt), Normalize(chunkResult),
+            "Loaded template should be from file, not default");
 
         // For final_summary_prompt, the content should have been loaded from the file            // Just verify it contains the expected starting text
         StringAssert.StartsWith(finalResult, "You are an educational content summarizer for MBA course materials.");
@@ -291,6 +315,24 @@ public class PromptTemplateServiceTests
 
         // For unknown templates, we should get the default final prompt template as fallback
         Assert.AreEqual(Normalize(PromptTemplateService.DefaultFinalPrompt), Normalize(unknownResult));
+    }
+
+    /// <summary>
+    /// Gets the repository root directory by walking up from the current directory.
+    /// </summary>
+    private static string GetRepositoryRoot()
+    {
+        string currentDir = AppContext.BaseDirectory;
+        while (!string.IsNullOrEmpty(currentDir))
+        {
+            if (Directory.Exists(Path.Combine(currentDir, "prompts")) &&
+                File.Exists(Path.Combine(currentDir, "README.md")))
+            {
+                return currentDir;
+            }
+            currentDir = Directory.GetParent(currentDir)?.FullName;
+        }
+        throw new DirectoryNotFoundException("Could not find repository root directory");
     }
 
     /// <summary>
@@ -318,7 +360,7 @@ public class PromptTemplateServiceTests
         );
 
         // Create service
-        TestablePromptTemplateService service = new(_loggerMock.Object, promptsDir);
+        TestablePromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, promptsDir);
 
         // Act
         string result = await service.LoadTemplateAsyncWithPath("test_template");
@@ -337,7 +379,7 @@ public class PromptTemplateServiceTests
         // for testing purposes.
 
         // Arrange
-        TestablePromptTemplateService service = new(_loggerMock.Object, _testFolder);
+        TestablePromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, _testFolder);
 
         // Act
         string chunkTemplate = service.GetDefaultTemplateForTest("chunk_summary_prompt");
@@ -372,7 +414,7 @@ public class PromptTemplateServiceTests
         string templatePath = Path.Combine(promptsDir, "welcome_template.md");
         await File.WriteAllTextAsync(templatePath, templateContent);
 
-        TestablePromptTemplateService service = new(_loggerMock.Object, promptsDir);
+        TestablePromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, promptsDir);
         Dictionary<string, string> variables = new()
         {
             { "name", "John" },
@@ -395,7 +437,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}, your course is {{course}}";
 
         Dictionary<string, string> variables = new()
@@ -428,7 +470,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{  name  }}, welcome to {{ course}}!";
 
         Dictionary<string, string> variables = new()
@@ -450,7 +492,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange - Create a mock FileSystem that throws an exception
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
 
         // We need to use a path that will cause an exception
         // In this case, we'll use a path with invalid characters
@@ -500,7 +542,7 @@ public class PromptTemplateServiceTests
     {
         // Arrange
         AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, config);
+        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "{{greeting}}, {{name}}! {{message}}";
 
         Dictionary<string, string> variables = new()
@@ -521,7 +563,7 @@ public class PromptTemplateServiceTests
 /// <summary>
 /// A testable version of PromptTemplateService that allows setting the prompts directory.
 /// </summary>
-public class TestablePromptTemplateService(ILogger<PromptTemplateService> logger, string promptsDirectory) : PromptTemplateService(logger, new AppConfig())
+public class TestablePromptTemplateService(ILogger<PromptTemplateService> logger, IYamlHelper yamlHelper, string promptsDirectory) : PromptTemplateService(logger, yamlHelper, new AppConfig())
 {
     private readonly string _testPromptsDirectory = promptsDirectory;
 

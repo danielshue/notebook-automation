@@ -20,7 +20,16 @@ public class VideoNoteBatchProcessorResourcesRootTests
     // private Mock<AISummarizer> _aiSummarizerMock;
     private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
     private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-    private VideoNoteBatchProcessor _processor; [TestInitialize]
+    private VideoNoteBatchProcessor _processor;
+
+    private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
+    {
+        return new MetadataHierarchyDetector(
+            Mock.Of<ILogger<MetadataHierarchyDetector>>(),
+            new AppConfig());
+    }
+
+    [TestInitialize]
     public void Setup()
     {
         _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -33,13 +42,12 @@ public class VideoNoteBatchProcessorResourcesRootTests
         // Create a mock for IOneDriveService
         IOneDriveService mockOneDriveService = Mock.Of<IOneDriveService>();
         // Create mock YamlHelper
-        var mockYamlHelper = Mock.Of<IYamlHelper>();
-        // Set up mock with test dependencies and updated constructor signature
+        var mockYamlHelper = Mock.Of<IYamlHelper>();        // Set up mock with test dependencies and updated constructor signature
         _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
-            MockBehavior.Loose,
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             testAISummarizer,
             mockYamlHelper, // Required YamlHelper parameter
+            CreateMetadataHierarchyDetector(), // Required MetadataHierarchyDetector parameter
             mockOneDriveService, // Optional OneDriveService
             null as AppConfig, // Optional AppConfig
             null // Optional LoggingService

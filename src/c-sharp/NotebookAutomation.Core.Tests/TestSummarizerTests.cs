@@ -8,6 +8,7 @@ using Moq;
 
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -76,11 +77,10 @@ public class TestSummarizerTests
         AppConfig appConfig = new()
         {
             Paths = pathsConfig
-        };
-
-        // Create a real PromptTemplateService with the actual prompts directory
+        };        // Create a real PromptTemplateService with the actual prompts directory
         _promptTemplateService = new PromptTemplateService(
             Mock.Of<ILogger<PromptTemplateService>>(),
+            new YamlHelper(Mock.Of<ILogger<YamlHelper>>()),
             appConfig);
 
         // Create a test implementation of ITextGenerationService

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Utils;
 
 #nullable enable
 
@@ -20,6 +21,7 @@ namespace NotebookAutomation.Core.Tests;
 public class TestableAISummarizer(ILogger<AISummarizer> logger) : AISummarizer(logger,
           new PromptTemplateService(
                   NullLogger<PromptTemplateService>.Instance,
+                  new YamlHelper(NullLogger<YamlHelper>.Instance),
                   new AppConfig()),
           null!)
 {

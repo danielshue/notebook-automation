@@ -14,27 +14,26 @@ public class MockAISummarizer(ILogger logger)
 {
     public string PredefinedSummary { get; set; } = "Test summary from injected AISummarizer";
 
-    private readonly ILogger _logger = logger;
-
-    public Task<string> SummarizeAsync(string inputText, string prompt = null, string promptFileName = null) => Task.FromResult(PredefinedSummary);
+    public string GenerateAiSummary(string text) => PredefinedSummary;
 }
+
 [TestClass]
 public class VideoNoteProcessorDITests
 {
     [TestMethod]
-    public async Task GenerateAiSummaryAsync_WithDI_UsesCorrectAISummarizer()
-    {
-        // Arrange
-        NullLogger<VideoNoteProcessor> logger = NullLogger<VideoNoteProcessor>.Instance;
+    public async Task GenerateAiSummaryAsync_WithMockAISummarizer_ReturnsSimulatedSummary()
+    {        // Arrange - inject a mock AISummarizer with known values
+        var logger = NullLogger<VideoNoteProcessor>.Instance;
         PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
+            new YamlHelper(NullLogger<YamlHelper>.Instance),
             new AppConfig());
         AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
-            null);
-        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper);
+            null); var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, new AppConfig());
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector);
 
         // Act - Using null OpenAI key should return simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text");
@@ -44,19 +43,19 @@ public class VideoNoteProcessorDITests
     }
 
     [TestMethod]
-    public async Task GenerateAiSummaryAsync_FallsBackToNewAISummarizer_WhenNotInjected()
-    {
-        // Arrange
-        NullLogger<VideoNoteProcessor> logger = NullLogger<VideoNoteProcessor>.Instance;
+    public async Task GenerateAiSummaryAsync_WithNullOpenAIKey_ReturnsSimulatedSummary()
+    {        // Arrange
+        var logger = NullLogger<VideoNoteProcessor>.Instance;
         PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
+            new YamlHelper(NullLogger<YamlHelper>.Instance),
             new AppConfig());
         AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
-            null);
-        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper);
+            null); var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, new AppConfig());
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector);
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text");
         // Assert - fallback behavior should return simulated summary

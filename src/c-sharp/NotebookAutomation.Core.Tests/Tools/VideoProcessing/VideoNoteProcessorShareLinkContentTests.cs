@@ -2,6 +2,7 @@
 
 using Moq;
 
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Core.Utils;
@@ -88,6 +89,7 @@ public class VideoNoteProcessorShareLinkContentTests
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            CreateMetadataHierarchyDetector(),
             _oneDriveServiceMock.Object,
             null
         );
@@ -125,7 +127,6 @@ public class VideoNoteProcessorShareLinkContentTests
             Assert.IsFalse(frontmatter.Contains("share_link"), "Should not contain share_link field in metadata");
         }
     }
-
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithNoShareLinks_DoesNotContainReferencesSection()
     {
@@ -134,6 +135,7 @@ public class VideoNoteProcessorShareLinkContentTests
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            CreateMetadataHierarchyDetector(),
             _oneDriveServiceMock.Object,
             null
         );
@@ -160,7 +162,6 @@ public class VideoNoteProcessorShareLinkContentTests
         Assert.IsFalse(markdown.Contains("[Video Recording]"), "Should not contain video recording link when noShareLinks=true");            // Verify OneDriveService was not called
         _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
-
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithFailedShareLink_DoesNotContainReferencesSection()
     {            // Arrange
@@ -172,6 +173,7 @@ public class VideoNoteProcessorShareLinkContentTests
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            CreateMetadataHierarchyDetector(),
             _oneDriveServiceMock.Object,
             null
         );
@@ -197,7 +199,6 @@ public class VideoNoteProcessorShareLinkContentTests
         Assert.IsFalse(markdown.Contains("[Video Recording]"), "Should not contain video recording link when share link generation fails");            // Verify OneDriveService was called but failed
         _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
-
     [TestMethod]
     public async Task GetShareLink_OneDriveEnabled_ReturnsShareLink()
     {
@@ -213,6 +214,7 @@ public class VideoNoteProcessorShareLinkContentTests
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            CreateMetadataHierarchyDetector(),
             _oneDriveServiceMock.Object,
             null
         );
@@ -243,12 +245,15 @@ public class VideoNoteProcessorShareLinkContentTests
         // Arrange
         Directory.CreateDirectory(_testDir);
 
-        // Use another instance to ensure we're not using the mock
+        // Use another instance to ensure we're not using the mock (OneDriveService is null)
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
-            null
+            CreateMetadataHierarchyDetector(),
+            null, // OneDriveService is null to disable OneDrive functionality
+            null, // AppConfig
+            null  // LoggingService
         );
 
         string videoPath = Path.Combine(_testDir, "test-video.mp4");
@@ -269,7 +274,6 @@ public class VideoNoteProcessorShareLinkContentTests
         Assert.IsNotNull(markdown);
         Assert.IsFalse(markdown.Contains("## References"), "Should not contain References section when OneDrive is disabled");
     }
-
     [TestMethod]
     public async Task GenerateShareLinkMarkdown_HasLink_IncludesLinkInNote()
     {
@@ -288,6 +292,7 @@ public class VideoNoteProcessorShareLinkContentTests
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
+            CreateMetadataHierarchyDetector(),
             _oneDriveServiceMock.Object,
             null
         );
@@ -310,6 +315,16 @@ public class VideoNoteProcessorShareLinkContentTests
         Assert.IsNotNull(markdown);
         Assert.IsTrue(markdown.Contains("## References"), "Should contain References section");
         Assert.IsTrue(markdown.Contains($"[Video Recording]({expectedShareLink})"), "Should contain share link in References section");
+    }
+
+    private MetadataHierarchyDetector CreateMetadataHierarchyDetector()
+    {
+        var mockAppConfig = new AppConfig();
+        mockAppConfig.Paths = new PathsConfig { NotebookVaultFullpathRoot = _testDir };
+        return new MetadataHierarchyDetector(
+            Mock.Of<ILogger<MetadataHierarchyDetector>>(),
+            mockAppConfig
+        );
     }
 }
 

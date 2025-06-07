@@ -1,5 +1,6 @@
 ﻿using System.IO;
 
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Core.Utils;
@@ -28,10 +29,9 @@ public class VideoNoteProcessorNoSummaryTests
         ILogger<AISummarizer> mockAiLogger = new LoggerFactory().CreateLogger<AISummarizer>();
         TestPromptTemplateService testPromptService = new();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
-        _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
-
-        var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>());
-        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper);
+        _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel); var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>());
+        var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), new AppConfig());
+        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper, hierarchyDetector);
 
         // Create temporary directory and mock video file
         _tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());

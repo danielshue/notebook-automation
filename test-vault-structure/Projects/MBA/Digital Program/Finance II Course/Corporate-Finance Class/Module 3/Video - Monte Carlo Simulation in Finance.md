@@ -1,17 +1,20 @@
 # Video - Monte Carlo Simulation in Finance
 
 ## Video Information
-**Duration:** 47 minutes  
-**Instructor:** Prof. David Kim  
-**Module:** Advanced Financial Modeling  
+
+**Duration:** 47 minutes
+**Instructor:** Prof. David Kim
+**Module:** Advanced Financial Modeling
 
 ## Learning Objectives
+
 - Understand Monte Carlo simulation principles
 - Apply probabilistic modeling to financial scenarios
 - Build simulation models for risk assessment
 - Interpret simulation results for decision-making
 
 ## Video Outline
+
 1. **Introduction to Monte Carlo Methods** (0:00-8:00)
    - Historical background and applications
    - When to use simulation vs. analytical methods
@@ -36,29 +39,35 @@
    - Credit risk modeling
 
 ## Practical Demonstrations
+
 - Revenue forecasting with uncertainty
 - Investment portfolio optimization
 - Real options valuation
 - Stress testing financial models
 
 ## Software Tools Covered
+
 - Excel with @RISK add-in
 - Basic Python implementation
 - Crystal Ball overview
 - R programming examples
 
 ## Assignment Preview
+
 Students will build a Monte Carlo model for:
+
 - Company valuation with uncertain inputs
 - 10,000+ simulation runs
 - Risk metrics calculation
 - Management recommendations
 
 ## Key Takeaways
+
 - Simulation provides insights beyond point estimates
 - Understanding uncertainty improves decision-making
 - Results interpretation is as important as model building
 - Communication of probabilistic results to management
 
 ## Tags
-#finance #monte-carlo #simulation #risk #video #module3 #probability
+
+# finance #monte-carlo #simulation #risk #video #module3 #probability
