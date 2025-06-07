@@ -1,0 +1,8 @@
+{
+  "id": "f4fdfa85-13e5-4f09-b471-6cd780509a01",
+  "title": "Fixed MetadataHierarchyDetector DI Parameter Order",
+  "details": "ISSUE: MetadataHierarchyDetector was receiving incorrect vault root override due to parameter order mismatch in dependency injection registration.\n\nPROBLEM: In ServiceRegistration.cs, the MetadataHierarchyDetector was being instantiated with:\n```csharp\nreturn new MetadataHierarchyDetector(logger, appConfig, vaultRootOverride);\n```\n\nBut the constructor signature expects:\n```csharp\nMetadataHierarchyDetector(\n    ILogger<MetadataHierarchyDetector> logger,\n    AppConfig appConfig,\n    string? programOverride = null,\n    bool verbose = false,\n    string? vaultRootOverride = null)\n```\n\nThis meant that vaultRootOverride was being passed as programOverride, causing hierarchy metadata to be incorrectly detected using the wrong vault root.\n\nSOLUTION: Fixed the DI registration to use named parameters:\n```csharp\nreturn new MetadataHierarchyDetector(logger, appConfig, programOverride: null, verbose: false, vaultRootOverride: vaultRootOverride);\n```\n\nRESULT: Hierarchy metadata is now correctly generated in all index files, with vault root override properly applied through VaultRootContextService in DI scope.\n\nTESTED: Validated with temp-test-vault showing correct hierarchy metadata:\n- program: MBA\n- course: Program  \n- class: Finance/Operations/Marketing\n- module: Supply-Chain, etc.\n\nThis fix ensures the vault root override functionality works correctly for generating indexes with proper hierarchy metadata.",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-06T23:21:44.726Z",
+  "dateUpdated": "2025-06-06T23:21:44.726Z"
+}

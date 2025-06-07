@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
 namespace NotebookAutomation.Core.Configuration;
+
 /// <summary>
 /// Represents the configuration settings for various file paths used in the application.
 /// </summary>
@@ -24,7 +25,9 @@ public class PathsConfig
     /// Full path to the root directory for the notebook vault.
     /// </summary>
     /// <remarks>
-    /// This path is used to locate the directory where notebook vault files are stored.
+    /// This path is used to locate the directory where notebook vault files are stored.    /// This property specifies the name of the folder that should be treated as the main program folder
+    /// when generating index files. This folder will have template-type: main and the index will be named
+    /// whatever is the folder name.
     /// </remarks>
     [JsonPropertyName("notebook_vault_fullpath_root")]
     public string NotebookVaultFullpathRoot { get; set; } = string.Empty;

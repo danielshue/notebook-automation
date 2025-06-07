@@ -71,10 +71,11 @@ public class MetadataEnsureProcessor(
             var hierarchyInfo = _metadataDetector.FindHierarchyInfo(filePath);
 
             // Extract course structure information (module, lesson) into metadata directly
-            _structureExtractor.ExtractModuleAndLesson(filePath, metadata);
+            _structureExtractor.ExtractModuleAndLesson(filePath, metadata);            // Determine the correct template-type based on existing metadata
+            string? templateType = metadata.GetValueOrDefault("template-type", "")?.ToString();
 
-            // Update metadata with hierarchy information
-            MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo);
+            // Update metadata with hierarchy information based on template-type
+            MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, templateType);
 
             // Ensure required fields based on template type
             EnsureRequiredFields(metadata);
@@ -339,8 +340,7 @@ public class MetadataEnsureProcessor(
     /// </summary>
     /// <param name="original">Original metadata.</param>
     /// <param name="updated">Updated metadata.</param>
-    /// <param name="forceOverwrite">Whether to force overwrite existing values.</param>
-    /// <returns>True if changes were made.</returns>
+    /// <param name="forceOverwrite">Whether to force overwrite existing values.</param>    /// <returns>True if changes were made.</returns>
     private static bool HasMetadataChanged(Dictionary<string, object> original, Dictionary<string, object> updated, bool forceOverwrite)
     {
         // If force overwrite is enabled, we consider changes if any fields in updated are different
@@ -349,7 +349,16 @@ public class MetadataEnsureProcessor(
             return !DictionariesEqual(original, updated);
         }
 
-        // Otherwise, only check if new fields were added or empty fields were populated
+        // Check for removed fields (fields in original but not in updated)
+        foreach (var kvp in original)
+        {
+            if (!updated.ContainsKey(kvp.Key))
+            {
+                return true; // Field was removed
+            }
+        }
+
+        // Check for new fields or populated empty fields
         foreach (var kvp in updated)
         {
             if (!original.ContainsKey(kvp.Key))
@@ -362,6 +371,12 @@ public class MetadataEnsureProcessor(
 
             // If original was empty and updated has value, that's a change
             if (string.IsNullOrWhiteSpace(originalValue) && !string.IsNullOrWhiteSpace(updatedValue))
+            {
+                return true;
+            }
+
+            // If values are different (including updates to existing non-empty values), that's a change
+            if (originalValue != updatedValue)
             {
                 return true;
             }
@@ -388,12 +403,14 @@ public class MetadataEnsureProcessor(
         }
 
         return true;
-    }        /// <summary>
-             /// Logs the changes made to metadata for debugging.
-             /// </summary>
-             /// <param name="original">Original metadata.</param>
-             /// <param name="updated">Updated metadata.</param>
-             /// <param name="filePath">Optional file path for detailed logging.</param>
+    }
+
+    /// <summary>
+    /// Logs the changes made to metadata for debugging.
+    /// </summary>
+    /// <param name="original">Original metadata.</param>
+    /// <param name="updated">Updated metadata.</param>
+    /// <param name="filePath">Optional file path for detailed logging.</param>
     private void LogMetadataChanges(Dictionary<string, object> original, Dictionary<string, object> updated, string? filePath = null)
     {
         var changes = new List<string>();
@@ -502,9 +519,107 @@ public class MetadataEnsureProcessor(
                     string.Join(", ", deletions));
             }
         }
-    }
-}
+    }    /// <summary>    /// <summary>
+         /// Determines the hierarchy level based on the file's template-type or position in the hierarchy.
+         /// </summary>
+         /// <param name="filePath">The path of the file.</param>
+         /// <param name="metadata">The metadata dictionary.</param>
+         /// <returns>The determined hierarchy level (e.g., "main", "program", "course"), or null if it cannot be determined.</returns>
+    private string? DetermineHierarchyLevelFromPath(string filePath, Dictionary<string, object> metadata)
+    {
+        // First check if template-type is already set and extract hierarchy level from it
+        if (metadata.TryGetValue("template-type", out var templateTypeObj) && templateTypeObj != null)
+        {
+            string templateType = templateTypeObj.ToString() ?? "";
+            if (!string.IsNullOrEmpty(templateType))
+            {
+                // Extract hierarchy level from template-type (e.g., "course-index" -> "course")
+                string? hierarchyLevel = ExtractHierarchyLevelFromTemplateType(templateType);
+                if (!string.IsNullOrEmpty(hierarchyLevel))
+                {
+                    return hierarchyLevel;
+                }
+            }
+        }
 
+        // If no template-type or it doesn't indicate hierarchy, determine from file position
+        string fileName = Path.GetFileName(filePath);
+        string folderName = Path.GetFileName(Path.GetDirectoryName(filePath) ?? "");
+
+        // Check if this is likely an index file (filename matches folder name)
+        string fileBaseName = Path.GetFileNameWithoutExtension(fileName);
+        bool isIndexFile = fileBaseName.Equals(folderName, StringComparison.OrdinalIgnoreCase) ||
+                          fileName.Equals("index.md", StringComparison.OrdinalIgnoreCase);
+
+        if (!isIndexFile)
+        {
+            // For non-index files, don't determine hierarchy level
+            return null;
+        }
+
+        // Get the vault root from the metadata detector
+        string vaultRoot = _metadataDetector.VaultRoot;
+
+        // Calculate the relative path from vault root
+        string relativePath = Path.GetRelativePath(vaultRoot, filePath);
+
+        // Count the directory depth (number of path separators)
+        // Subtract 1 because the file itself doesn't count as a level
+        int pathDepth = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length - 1;
+
+        // Determine hierarchy level based on directory depth:
+        // Depth 0: vault root -> main
+        // Depth 1: program level -> program
+        // Depth 2: course level -> course
+        // Depth 3: class level -> class
+        // Depth 4+: module level -> module
+        return pathDepth switch
+        {
+            0 => "main",      // Files at vault root
+            1 => "program",   // Files in program folder
+            2 => "course",    // Files in course folder
+            3 => "class",     // Files in class folder
+            _ => "module"     // Files at module level or deeper
+        };
+    }    /// <summary>
+         /// Extracts the hierarchy level from a template-type string.
+         /// </summary>
+         /// <param name="templateType">The template-type value (e.g., "course", "video-reference-note").</param>
+         /// <returns>The hierarchy level (e.g., "course") or null if not a hierarchy template.</returns>
+    private static string? ExtractHierarchyLevelFromTemplateType(string templateType)
+    {
+        if (string.IsNullOrEmpty(templateType))
+            return null;
+
+        // Handle new naming convention - index templates use simple names
+        return templateType switch
+        {
+            "main" => "main",
+            "program" => "program",
+            "course" => "course",
+            "class" => "class",
+            "module" => "module",
+            "lesson" => "lesson",
+            "case-studies" => "case-studies",
+            "readings" => "readings",
+            "resources" => "resources",
+            "case-study" => "case-study",
+            // Legacy support for old naming convention
+            "main-index" => "main",
+            "program-index" => "program",
+            "course-index" => "course",
+            "class-index" => "class",
+            "module-index" => "module",
+            "lesson-index" => "lesson",
+            "case-studies-index" => "case-studies",
+            "readings-index" => "readings",
+            "resources-index" => "resources",
+            "case-study-index" => "case-study",
+            _ => null // Non-hierarchy templates like "video-reference-note", etc.
+        };
+    }
+
+}
 /// <summary>
 /// Extension methods for Dictionary operations.
 /// </summary>

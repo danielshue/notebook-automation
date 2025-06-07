@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Tag Management Test Scripts
 
 This directory contains test scripts for the tag management functionality in the MBA Notebook Automation system.

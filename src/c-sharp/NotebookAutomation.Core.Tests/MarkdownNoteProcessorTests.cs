@@ -4,21 +4,33 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
 
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.MarkdownGeneration;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
 public class MarkdownNoteProcessorTests
 {
+    private static MetadataHierarchyDetector CreateTestHierarchyDetector()
+    {
+        var mockAppConfig = new Mock<AppConfig>();
+        return new MetadataHierarchyDetector(
+            new Mock<ILogger<MetadataHierarchyDetector>>().Object,
+            mockAppConfig.Object,
+            vaultRootOverride: Path.GetTempPath());
+    }
+
     [TestMethod]
     public async Task ConvertToMarkdownAsync_TxtFile_ReturnsMarkdown()
     {
         // Arrange
         ILogger<MarkdownNoteProcessor> logger = new Mock<ILogger<MarkdownNoteProcessor>>().Object;
         TestableAISummarizer summarizer = new(NullLogger<AISummarizer>.Instance);
-        MarkdownNoteProcessor processor = new(logger, summarizer);
+        MetadataHierarchyDetector hierarchyDetector = CreateTestHierarchyDetector();
+        MarkdownNoteProcessor processor = new(logger, summarizer, hierarchyDetector);
         string testFile = "test.txt";
         await File.WriteAllTextAsync(testFile, "Hello world!");
 
@@ -29,13 +41,12 @@ public class MarkdownNoteProcessorTests
         Assert.IsTrue(result.Contains("Hello world!"));
         File.Delete(testFile);
     }
-
     [TestMethod]
     public async Task ConvertToMarkdownAsync_HtmlFile_StripsHtmlTags()
     {
         ILogger<MarkdownNoteProcessor> logger = new Mock<ILogger<MarkdownNoteProcessor>>().Object;
         TestableAISummarizer summarizer = new(NullLogger<AISummarizer>.Instance);
-        MarkdownNoteProcessor processor = new(logger, summarizer);
+        MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector());
         string testFile = "test.html";
         await File.WriteAllTextAsync(testFile, "<h1>Header</h1><p>Paragraph</p>");
         string result = await processor.ConvertToMarkdownAsync(testFile);
@@ -50,7 +61,7 @@ public class MarkdownNoteProcessorTests
     {
         ILogger<MarkdownNoteProcessor> logger = new Mock<ILogger<MarkdownNoteProcessor>>().Object;
         TestableAISummarizer summarizer = new(NullLogger<AISummarizer>.Instance);
-        MarkdownNoteProcessor processor = new(logger, summarizer);
+        MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector());
         string testFile = "empty.html";
         await File.WriteAllTextAsync(testFile, "");
         string result = await processor.ConvertToMarkdownAsync(testFile);
@@ -63,30 +74,28 @@ public class MarkdownNoteProcessorTests
     {
         ILogger<MarkdownNoteProcessor> logger = new Mock<ILogger<MarkdownNoteProcessor>>().Object;
         TestableAISummarizer summarizer = new(NullLogger<AISummarizer>.Instance);
-        MarkdownNoteProcessor processor = new(logger, summarizer);
+        MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector());
         string testFile = "test.unsupported";
         await File.WriteAllTextAsync(testFile, "data");
         string result = await processor.ConvertToMarkdownAsync(testFile);
         Assert.AreEqual(string.Empty, result);
         File.Delete(testFile);
     }
-
     [TestMethod]
     public async Task ConvertToMarkdownAsync_MissingFile_ReturnsEmpty()
     {
         ILogger<MarkdownNoteProcessor> logger = new Mock<ILogger<MarkdownNoteProcessor>>().Object;
         TestableAISummarizer summarizer = new(NullLogger<AISummarizer>.Instance);
-        MarkdownNoteProcessor processor = new(logger, summarizer);
+        MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector());
         string result = await processor.ConvertToMarkdownAsync("doesnotexist.txt");
         Assert.AreEqual(string.Empty, result);
     }
-
     [TestMethod]
     public async Task ConvertToMarkdownAsync_HtmlFile_OnlyTags_ReturnsEmptyBody()
     {
         ILogger<MarkdownNoteProcessor> logger = new Mock<ILogger<MarkdownNoteProcessor>>().Object;
         TestableAISummarizer summarizer = new(NullLogger<AISummarizer>.Instance);
-        MarkdownNoteProcessor processor = new(logger, summarizer);
+        MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector());
         string testFile = "tags.html";
         await File.WriteAllTextAsync(testFile, "<div><span></span></div>");
         string result = await processor.ConvertToMarkdownAsync(testFile);
@@ -100,7 +109,7 @@ public class MarkdownNoteProcessorTests
         ILogger<MarkdownNoteProcessor> logger = new Mock<ILogger<MarkdownNoteProcessor>>().Object;
         TestableAISummarizer summarizer = new(NullLogger<AISummarizer>.Instance);
         summarizer.SetupSummarizeAsyncResult("AI summary result");
-        MarkdownNoteProcessor processor = new(logger, summarizer);
+        MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector());
         string testFile = "ai.txt";
         await File.WriteAllTextAsync(testFile, "This is a test for AI summary.");
         string result = await processor.ConvertToMarkdownAsync(testFile, "fake-key");
@@ -114,7 +123,7 @@ public class MarkdownNoteProcessorTests
         // Arrange
         ILogger<MarkdownNoteProcessor> logger = new Mock<ILogger<MarkdownNoteProcessor>>().Object;
         TestableAISummarizer summarizer = new(NullLogger<AISummarizer>.Instance);
-        MarkdownNoteProcessor processor = new(logger, summarizer);
+        MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector());
         string testFile = "test.epub";
         // Simulate EPUB file (file must exist, but content is mocked)
         await File.WriteAllTextAsync(testFile, "EPUB content");

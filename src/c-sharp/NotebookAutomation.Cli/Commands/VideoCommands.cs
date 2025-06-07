@@ -80,7 +80,13 @@ public class VideoCommands
             IsRequired = true
         }; var outputOption = new Option<string>(
             aliases: ["--overwrite-output-dir", "-o"],
-            description: "Override the default output directory (normally uses notebook_vault_fullpath_root from config)"); var resourcesRootOption = new Option<string?>(
+            description: "Override the default output directory (normally uses notebook_vault_fullpath_root from config)");
+
+        var vaultRootOverrideOption = new Option<string?>(
+            aliases: ["--override-vault-root"],
+            description: "Specify the explicit vault root path (overrides the config)");
+
+        var resourcesRootOption = new Option<string?>(
             aliases: ["--onedrive-fullpath-root"],
             description: "Override OneDrive fullpath root directory"
         ); var noSummaryOption = new Option<bool>(
@@ -105,21 +111,21 @@ public class VideoCommands
         ); var noShareLinksOption = new Option<bool>(
             aliases: ["--no-share-links"],
             description: "Skip OneDrive share link creation (links are created by default)"
-        );
+        ); var videoCommand = new Command("video-notes", "Video notes and metadata commands");
 
-        var videoCommand = new Command("video-notes", "Video notes and metadata commands"); videoCommand.AddOption(inputOption);
+        videoCommand.AddOption(inputOption);
         videoCommand.AddOption(outputOption);
+        videoCommand.AddOption(vaultRootOverrideOption);
         videoCommand.AddOption(resourcesRootOption);
         videoCommand.AddOption(noSummaryOption);
         videoCommand.AddOption(retryFailedOption);
         videoCommand.AddOption(forceOption); videoCommand.AddOption(timeoutOption);
         videoCommand.AddOption(refreshAuthOption);
-        videoCommand.AddOption(noShareLinksOption);
-
-        videoCommand.SetHandler(async context =>
+        videoCommand.AddOption(noShareLinksOption); videoCommand.SetHandler(async context =>
         {
             string? input = context.ParseResult.GetValueForOption(inputOption);
             string? overrideOutputDir = context.ParseResult.GetValueForOption(outputOption);
+            string? vaultRootOverride = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -152,23 +158,33 @@ public class VideoCommands
                     return;
                 }
                 Program.SetupDependencyInjection(config, debug);
-            }
-
-            // Use DI container to get services
+            }            // Use DI container to get services and create scoped context for vault root override
             var serviceProvider = Program.ServiceProvider;
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger("VideoCommands");
-            var loggingService = serviceProvider.GetRequiredService<LoggingService>();
+            using var scope = serviceProvider.CreateScope();
+            var scopedServices = scope.ServiceProvider;
 
-            var appConfig = serviceProvider.GetRequiredService<AppConfig>();
-            var batchProcessor = serviceProvider.GetRequiredService<VideoNoteBatchProcessor>();
+            var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("VideoCommands");
+            var loggingService = scopedServices.GetRequiredService<LoggingService>();
+            var appConfig = scopedServices.GetRequiredService<AppConfig>();
+
+            // Determine effective output directory for vault root context
+            string effectiveOutputDir = overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated";
+            effectiveOutputDir = Path.GetFullPath(effectiveOutputDir);
+
+            // Set up vault root override in scoped context
+            var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
+            vaultRootContext.VaultRootOverride = effectiveOutputDir;
+            logger.LogInformationWithPath("Using vault root override for metadata hierarchy: {VaultRoot}", "VideoCommands.cs", effectiveOutputDir);
+
+            var batchProcessor = scopedServices.GetRequiredService<VideoNoteBatchProcessor>();
 
             // Handle refresh auth flag - set force refresh on OneDriveService if requested
             if (refreshAuth)
             {
                 try
                 {
-                    var oneDriveService = serviceProvider.GetService<IOneDriveService>();
+                    var oneDriveService = scopedServices.GetService<IOneDriveService>();
                     if (oneDriveService != null)
                     {
                         oneDriveService.SetForceRefresh(true);
@@ -198,7 +214,7 @@ public class VideoCommands
             {
                 try
                 {
-                    var oneDriveService = serviceProvider.GetService<IOneDriveService>();
+                    var oneDriveService = scopedServices.GetService<IOneDriveService>();
                     if (oneDriveService != null && !string.IsNullOrWhiteSpace(appConfig.Paths.OnedriveResourcesBasepath))
                     {
                         // Build the local resources path by combining OneDrive sync root with resources subpath
@@ -317,11 +333,9 @@ public class VideoCommands
                             string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
                             // The status already contains file count information, so we don't need to add it
                             updateStatus(safeStatus);
-                        };
-
-                        return await batchProcessor.ProcessVideosAsync(
+                        }; return await batchProcessor.ProcessVideosAsync(
                             input,
-                            overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",
+                            effectiveOutputDir,
                             videoExtensions,
                             openAiApiKey,
                             dryRun,

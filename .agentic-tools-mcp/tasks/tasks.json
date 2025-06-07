@@ -205,6 +205,15 @@
       "completed": true,
       "createdAt": "2025-06-05T02:27:21.278Z",
       "updatedAt": "2025-06-05T02:33:41.454Z"
+    },
+    {
+      "id": "bdd93777-42d0-491c-ad5e-d8de33ce007b",
+      "name": "Fix Vault Index Generation Navigation and Hierarchy Issues",
+      "details": "Fixed critical navigation and hierarchy metadata issues in VaultIndexProcessor. The main problems resolved:\n\n1. **Navigation Issue**: Main index (MBA.md) was incorrectly showing \"Back to Program Index\" and parent folder links due to using hierarchyLevel == 0 for detection. Fixed by using frontmatter[\"index-type\"] == \"main\" instead.\n\n2. **Vault Root Index**: Prevented creation of index file at vault root (temp-test-vault.md) by updating VaultIndexBatchProcessor logic.\n\n3. **Hierarchy Metadata**: Fixed MetadataHierarchyDetector mapping to ensure correct hierarchy metadata at all levels:\n   - Main index: No hierarchy metadata (correct)\n   - Program level: program field set\n   - Course level: program + course fields set  \n   - Class level: program + course + class fields set\n   - Module/Lesson levels: all fields set appropriately\n\n4. **DI Configuration**: Updated ServiceRegistration to properly provide vault root override via VaultRootContextService.\n\n**Files Modified:**\n- VaultIndexProcessor.cs: Fixed navigation logic for main index detection\n- MetadataHierarchyDetector.cs: Fixed parameter order and hierarchy mapping\n- VaultIndexBatchProcessor.cs: Removed vault root from processing list\n- ServiceRegistration.cs: Updated DI configuration\n- VaultCommands.cs: Added CLI flags and logging\n\n**Validation Complete**: \n- MBA.md contains correct navigation (Dashboard and Classes Assignments only)\n- All hierarchy levels have appropriate metadata\n- No index file created at vault root\n- All 16 folders processed correctly with appropriate hierarchy metadata",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-07T00:11:49.826Z",
+      "updatedAt": "2025-06-07T00:11:56.124Z"
     }
   ],
   "subtasks": [

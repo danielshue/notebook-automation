@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Markdown Nested Tag Generator
 
 This script processes markdown files with YAML frontmatter to extract fields and convert them into nested tags.

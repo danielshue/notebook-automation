@@ -1,0 +1,8 @@
+{
+  "id": "9731db15-e8f3-469c-94bc-c0c8f77513ba",
+  "title": "Index Header Corrections Task",
+  "details": "TASK: Standardize section headers in generated Obsidian vault index files\n\nREQUIRED HIERARCHY MAPPING:\n- template-type: main → \"## Programs\"\n- template-type: program → \"## Courses\" \n- template-type: course → \"## Modules\"\n- template-type: class → \"## Modules\"\n\nCURRENT STATUS:\n✅ template-type: main → Shows \"## Programs\" (CORRECT)\n❌ template-type: program → Shows \"## Modules\" (SHOULD BE \"## Courses\")\n✅ template-type: course → Shows \"## Modules\" (CORRECT)\n\nISSUE IDENTIFIED:\n- Content generation logic in VaultIndexProcessor.GenerateIndexContent() uses hierarchyLevel instead of templateType\n- This causes template-type: program at hierarchy level 2 to show wrong section header\n- Need to change logic from hierarchyLevel-based to templateType-based\n\nNEXT STEPS:\n1. Fix GenerateIndexContent() to use templateType parameter instead of hierarchyLevel\n2. Update conditional logic to map template types to correct section headers\n3. Test with regenerated indexes to confirm fixes\n\nFILE: src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexProcessor.cs\nMETHOD: GenerateIndexContent() around line 441-462",
+  "category": "task_progress",
+  "dateCreated": "2025-06-07T04:39:29.505Z",
+  "dateUpdated": "2025-06-07T04:39:29.505Z"
+}

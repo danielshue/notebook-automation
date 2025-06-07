@@ -1,0 +1,8 @@
+{
+  "id": "de519147-0534-471c-8465-fe48cb61b08e",
+  "title": "Simplified MetadataHierarchyDetector",
+  "details": "# Simplified MetadataHierarchyDetector Implementation\n\nThe `MetadataHierarchyDetector` class has been significantly simplified to rely purely on path-based hierarchy detection without any filesystem access or index file scanning.\n\n## Key Changes\n\n1. **Removed File System Scanning**:\n   - Eliminated all code that reads and parses index files\n   - No longer depends on index files existing or having specific formats\n   - No file I/O operations for hierarchy detection\n\n2. **Pure Path-Based Detection**:\n   - Uses only the folder structure relative to vault root\n   - First folder level = program\n   - Second folder level = course\n   - Third folder level = class\n   - Fourth folder level = module\n\n3. **Simplified Architecture**:\n   - Reduced the method from ~200 lines to ~100 lines\n   - Eliminated multiple helper methods no longer needed\n   - Clearer, more maintainable code\n\n4. **Preserved Core Features**:\n   - Still supports explicit program overrides\n   - Still excludes folders starting with periods (.)\n   - Still falls back to vault root folder name when needed\n\nThis approach is more robust, faster (no file I/O), and simpler to understand, while still correctly identifying the hierarchy levels based on the folder structure.",
+  "category": "code_updates",
+  "dateCreated": "2025-06-06T19:07:13.364Z",
+  "dateUpdated": "2025-06-06T19:07:13.364Z"
+}

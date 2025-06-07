@@ -1,0 +1,8 @@
+{
+  "id": "aeb20666-c5b8-4a76-a1e8-7c4702f098d1",
+  "title": "Index-type hierarchy detection bug",
+  "details": "Issue found in ensure-metadata process: The hierarchy metadata (program, course, class, module) is being applied incorrectly because the index-type determination is flawed.\n\nCurrent behavior:\n- The MetadataEnsureProcessor reads existing index-type from metadata\n- If index-type is missing or incorrect, it doesn't get corrected\n- This causes incorrect hierarchy levels to be applied (e.g., Program folder gets course-level metadata instead of program-level)\n\nRoot cause:\n- UpdateMetadataWithHierarchy method in MetadataHierarchyDetector uses the existing index-type to determine maxLevel\n- But the index-type itself is not being determined dynamically based on file position\n\nExamples:\n- temp-test-vault/MBA/Program/Program.md should have index-type: program but has index-type: course\n- This causes wrong hierarchy metadata to be applied\n\nSolution needed:\n- Add logic to determine correct index-type based on file's position in vault hierarchy\n- Ensure index-type is set correctly before calling UpdateMetadataWithHierarchy",
+  "category": "bug",
+  "dateCreated": "2025-06-07T01:50:14.586Z",
+  "dateUpdated": "2025-06-07T01:50:14.586Z"
+}

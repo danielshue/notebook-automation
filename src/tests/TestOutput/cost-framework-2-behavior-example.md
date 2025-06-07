@@ -13,7 +13,12 @@ duration: 00:05:55.3553549
 resolution: 1280x720
 codec: h264
 resources_root: d:/source/notebook-automation-csharp-migration/src/c-sharp/TestVideos
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
 ---
+
 # Video Note
 
 ---

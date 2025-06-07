@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Notebook Automation
 
 A comprehensive, cross-platform toolkit for automating the management and organization of educational content in Obsidian vaults. This project provides intelligent content processing, metadata extraction, and seamless integration between OneDrive resources and Obsidian knowledge management systems.

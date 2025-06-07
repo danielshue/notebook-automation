@@ -1,0 +1,8 @@
+{
+  "id": "d95493e3-0892-4151-8546-d94954a52e38",
+  "title": "Header Correction Task Status",
+  "details": "## Header Correction Task Status\n\n**ISSUE IDENTIFIED:** The content generation logic in VaultIndexProcessor.cs is using hierarchy level instead of template type to determine section headers. This causes incorrect headers:\n\n**Current State:**\n- Main index (template-type: main) → \"Programs\" ✅ CORRECT\n- Program index (template-type: program) → \"Modules\" ❌ should be \"Courses\"  \n- Course index (template-type: course) → \"Modules\" ✅ CORRECT\n\n**Required Mapping:**\n- template-type: main → \"Programs\"\n- template-type: program → \"Courses\" \n- template-type: course → \"Modules\" (unless Bases enabled, then suppress)\n- template-type: class → \"Modules\"\n\n**Root Cause:** Lines 441-509 in VaultIndexProcessor.cs use hierarchyLevel conditions instead of templateType to determine section headers.\n\n**Fix Required:** Change content generation logic from hierarchy-level-based to template-type-based in the GenerateIndexContent method.\n\n**Files Verified:**\n- test-vault-structure/Projects/Projects.md (main) - Shows \"Programs\" ✅\n- test-vault-structure/Projects/MBA/MBA.md (program) - Shows \"Modules\" ❌ \n- test-vault-structure/Projects/MBA/Digital Program/Digital Program.md (course) - Shows \"Modules\" ✅",
+  "category": "project_context",
+  "dateCreated": "2025-06-07T04:38:26.805Z",
+  "dateUpdated": "2025-06-07T04:38:26.805Z"
+}

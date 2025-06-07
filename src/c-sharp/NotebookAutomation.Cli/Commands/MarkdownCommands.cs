@@ -84,18 +84,22 @@ public class MarkdownCommands
             aliases: ["--dest-dir", "-d"],
             description: "Destination directory for generated markdown files");
 
+        var vaultRootOverrideOption = new Option<string?>(
+            aliases: ["--override-vault-root"],
+            description: "Specify the explicit vault root path (overrides the config)");
+
         var markdownCommand = new Command("generate-markdown", "Generate markdown from HTML, TXT, and EPUB sources");
         markdownCommand.AddOption(srcDirsOption);
         markdownCommand.AddOption(destDirOption);
+        markdownCommand.AddOption(vaultRootOverrideOption);
         markdownCommand.AddOption(configOption);
         markdownCommand.AddOption(debugOption);
         markdownCommand.AddOption(verboseOption);
-        markdownCommand.AddOption(dryRunOption);
-
-        markdownCommand.SetHandler(async context =>
+        markdownCommand.AddOption(dryRunOption); markdownCommand.SetHandler(async context =>
         {
             string[] srcDirs = context.ParseResult.GetValueForOption(srcDirsOption) ?? [];
             string? destDir = context.ParseResult.GetValueForOption(destDirOption);
+            string? vaultRootOverride = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -123,25 +127,25 @@ public class MarkdownCommands
                 Program.SetupDependencyInjection(config, debug);
             }
 
-            await ProcessMarkdownAsync(srcDirs, destDir, config, debug, verbose, dryRun);
+            await ProcessMarkdownAsync(srcDirs, destDir, vaultRootOverride, config, debug, verbose, dryRun);
         });
 
         rootCommand.AddCommand(markdownCommand);
-    }
-
-    /// <summary>
-    /// Processes source files in the specified directories and generates markdown notes.
-    /// </summary>
-    /// <param name="sourceDirs">Array of source directories to process.</param>
-    /// <param name="destDir">Destination directory for generated markdown files.</param>
-    /// <param name="configPath">Path to the configuration file.</param>
-    /// <param name="debug">Enable debug output.</param>
-    /// <param name="verbose">Enable verbose output.</param>
-    /// <param name="dryRun">Simulate actions without making changes.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
+    }    /// <summary>
+         /// Processes source files in the specified directories and generates markdown notes.
+         /// </summary>
+         /// <param name="sourceDirs">Array of source directories to process.</param>
+         /// <param name="destDir">Destination directory for generated markdown files.</param>
+         /// <param name="vaultRootOverride">Explicit vault root path override.</param>
+         /// <param name="configPath">Path to the configuration file.</param>
+         /// <param name="debug">Enable debug output.</param>
+         /// <param name="verbose">Enable verbose output.</param>
+         /// <param name="dryRun">Simulate actions without making changes.</param>
+         /// <returns>A task representing the asynchronous operation.</returns>
     private async Task ProcessMarkdownAsync(
         string[]? sourceDirs,
         string? destDir,
+        string? vaultRootOverride,
         string? configPath,
         bool debug,
         bool verbose,
@@ -149,12 +153,15 @@ public class MarkdownCommands
     {
         try
         {
-            // Use DI container to get services
+            // Use DI container to get services and create scoped context for vault root override
             var serviceProvider = Program.ServiceProvider;
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            using var scope = serviceProvider.CreateScope();
+            var scopedServices = scope.ServiceProvider;
+
+            var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("MarkdownCommands");
-            var appConfig = serviceProvider.GetRequiredService<AppConfig>();
-            var loggingService = serviceProvider.GetRequiredService<LoggingService>();
+            var appConfig = scopedServices.GetRequiredService<AppConfig>();
+            var loggingService = scopedServices.GetRequiredService<LoggingService>();
             var failedLogger = loggingService?.FailedLogger;
 
             // Validate OpenAI config before proceeding
@@ -169,15 +176,26 @@ public class MarkdownCommands
                 return;
             }
 
+            // Determine effective output directory for vault root context
+            string effectiveOutputDir = destDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated";
+            effectiveOutputDir = Path.GetFullPath(effectiveOutputDir);
+
+            // Set up vault root override in scoped context
+            var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
+
+            // Use explicit vault root override if provided, otherwise use effective output directory
+            string finalVaultRoot = vaultRootOverride ?? effectiveOutputDir;
+            vaultRootContext.VaultRootOverride = finalVaultRoot;
+            logger.LogInformationWithPath("Using vault root override for metadata hierarchy: {VaultRoot}", "MarkdownCommands.cs", finalVaultRoot);
+
             string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
             if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
             {
                 openAiApiKey = appConfig.AiService.GetApiKey();
             }
 
-            // Resolve dependencies for MarkdownNoteProcessor
-            var aiSummarizer = serviceProvider.GetRequiredService<AISummarizer>();
-            var processor = new MarkdownNoteProcessor(logger, aiSummarizer);
+            // Get MarkdownNoteProcessor from DI instead of manual creation
+            var processor = scopedServices.GetRequiredService<MarkdownNoteProcessor>();
             foreach (var sourceDir in sourceDirs)
             {
                 if (!Directory.Exists(sourceDir))
@@ -196,13 +214,10 @@ public class MarkdownCommands
                     try
                     {
                         logger.LogInformationWithPath("Processing file: {File}", file);
-                        string markdown = await processor.ConvertToMarkdownAsync(file, openAiApiKey, "chunk_summary_prompt.md");
-
-                        if (!dryRun)
+                        string markdown = await processor.ConvertToMarkdownAsync(file, openAiApiKey, "chunk_summary_prompt.md"); if (!dryRun)
                         {
-                            string outputDir = destDir ?? (appConfig?.Paths?.NotebookVaultFullpathRoot ?? "Generated");
-                            Directory.CreateDirectory(outputDir);
-                            string outputPath = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(file) + ".md");
+                            Directory.CreateDirectory(effectiveOutputDir);
+                            string outputPath = Path.Combine(effectiveOutputDir, Path.GetFileNameWithoutExtension(file) + ".md");
                             await File.WriteAllTextAsync(outputPath, markdown);
                             logger.LogInformationWithPath("Markdown note saved to: {OutputPath}", outputPath);
                         }

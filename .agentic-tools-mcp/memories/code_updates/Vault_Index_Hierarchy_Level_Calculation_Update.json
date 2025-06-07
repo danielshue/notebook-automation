@@ -1,0 +1,8 @@
+{
+  "id": "b53973bc-3d6d-406f-986e-2ecf04198b28",
+  "title": "Vault Index Hierarchy Level Calculation Update",
+  "details": "Updated the VaultIndexProcessor.cs to use AppConfig.PathsConfig.NotebookVaultFullpathRoot for hierarchy level calculations instead of relying solely on the provided vaultPath parameter.\n\nChanges made:\n1. Modified the `CalculateHierarchyLevel` method to prioritize the configured vault root path from AppConfig\n2. Made the method non-static to access the AppConfig and logger instances\n3. Added path normalization to ensure consistent formatting (normalizing separators and trimming trailing separators)\n4. Added logging to aid in troubleshooting\n5. Updated the `GetRootIndexFilename` method to use the same approach for consistency\n\nThese changes ensure that the hierarchy level calculation and index filenames are consistently based on the configured vault root path rather than potentially varying command-line parameters.\n\nNote: Encountered some issues with templates not being found (\"Template type not found: generic-index\"), which suggests the hierarchy level calculation might be resulting in unexpected values. Further investigation may be needed.",
+  "category": "code_updates",
+  "dateCreated": "2025-06-06T14:51:12.771Z",
+  "dateUpdated": "2025-06-06T14:51:12.771Z"
+}

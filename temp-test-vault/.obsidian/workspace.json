@@ -1,0 +1,234 @@
+{
+  "main": {
+    "id": "6915bb1d01cb25ce",
+    "type": "split",
+    "children": [
+      {
+        "id": "81b1e40fe9456e77",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "be8d1813ca7439fa",
+            "type": "leaf",
+            "state": {
+              "type": "image",
+              "state": {
+                "file": "gies-banner.png"
+              },
+              "icon": "lucide-image",
+              "title": "gies-banner"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "8586e6ea5dd41a44",
+    "type": "split",
+    "children": [
+      {
+        "id": "f58492d4e3e50e5e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cd09ff072337fb6e",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "d320b22b18e69ed5",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "0e8bca45db73a77c",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 256.5
+  },
+  "right": {
+    "id": "3b846f592c3169f7",
+    "type": "split",
+    "children": [
+      {
+        "id": "7387e2247ebdd44c",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b1e10e6980fb7f17",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "temp-test-vault.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for temp-test-vault"
+            }
+          },
+          {
+            "id": "5a8a4fd9cc0c0c89",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "temp-test-vault.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from temp-test-vault"
+            }
+          },
+          {
+            "id": "337ec194d941f953",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "552eb4135b9e8d45",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "temp-test-vault.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of temp-test-vault"
+            }
+          },
+          {
+            "id": "c1d89c13c558bcd1",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "6b25d15b104d3858",
+            "type": "leaf",
+            "state": {
+              "type": "file-properties",
+              "state": {
+                "file": "gies-banner.png"
+              },
+              "icon": "lucide-info",
+              "title": "File properties for gies-banner"
+            }
+          }
+        ],
+        "currentTab": 5
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "obsidian42-brat:BRAT": false
+    }
+  },
+  "active": "cd09ff072337fb6e",
+  "lastOpenFiles": [
+    "MBA/MBA.md",
+    "MBA/Program/Program.md",
+    "MBA/Program/Finance/Finance.md",
+    "MBA/Program/Finance/Corporate-Finance/Corporate-Finance.md",
+    "MBA/Program/Finance/Corporate-Finance/Week1/Time-Value-Money.md",
+    "MBA/Program/Finance/Corporate-Finance/Week1/Risk-Return-Analysis.md",
+    "MBA/Program/Marketing/Marketing.md",
+    "MBA/Program/Finance/Corporate-Finance/Corporate-Finance-Syllabus.md",
+    "MBA/Program-Overview.md",
+    "MBA/Program/Finance/Corporate-Finance/Week1/Week1.md",
+    "MBA/Program/Operations/Supply-Chain/Supply-Chain-Fundamentals.md",
+    "MBA/Program/Operations/Supply-Chain/Case-Studies/Amazon-Case-Study.md",
+    "MBA/Program/Operations/Supply-Chain/Case-Studies/Case-Studies.md",
+    "MBA/Program/Marketing/Digital-Marketing/Module1/Digital-Strategy.md",
+    "MBA/Program/Finance/Corporate-Finance/Week2/Capital-Budgeting.md",
+    "MBA/Program/Finance/Corporate-Finance/Week2/Week2.md",
+    "temp-test-vault.md",
+    "gies-banner.png",
+    "MBA/Program/Operations/Operations.md",
+    "MBA/Program/Operations/Supply-Chain/Supply-Chain.md",
+    "MBA/Program/Marketing/Digital-Marketing/Module1/Module1.md",
+    "MBA/Program/Marketing/Digital-Marketing/Digital-Marketing.md",
+    "MBA/Program/Finance/Finance-Intro.md",
+    "MBA/Program/Marketing/Digital-Marketing/Module1",
+    "MBA/Program/Marketing/Digital-Marketing",
+    "MBA/Program/Marketing",
+    "MBA/Program/Finance/Corporate-Finance/Week2",
+    "MBA/Program/Finance/Corporate-Finance/Week1",
+    "MBA/Program/Finance/Corporate-Finance",
+    "MBA/Program/Finance",
+    "MBA/Program",
+    "MBA/Marketing/Marketing.md",
+    "MBA/Finance/Finance.md",
+    "MBA/Finance/Corporate-Finance/Corporate-Finance.md",
+    "MBA/Marketing/Digital-Marketing/Digital-Marketing.md"
+  ]
+}

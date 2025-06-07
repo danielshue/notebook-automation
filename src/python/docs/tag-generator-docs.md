@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Nested Tag Generator Documentation
 
 This tool automatically generates and manages nested tags in your Markdown files based on YAML frontmatter fields.

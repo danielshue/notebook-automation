@@ -3,7 +3,10 @@ title: Marketing Glossary
 type: glossary
 created: 2025-05-13
 tags:
-  - marketing/glossary
+- marketing/glossary
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
 ---
 
 # Marketing Glossary

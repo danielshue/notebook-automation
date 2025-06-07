@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Notebook Automation
 
 Notebook Automation is a comprehensive Python toolkit for managing online course notes, resources, and metadata in an Obsidian vault. It automates the conversion, organization, and enrichment of course materials, supporting advanced workflows for PDF and video reference note generation, OneDrive integration, and AI-powered summaries.

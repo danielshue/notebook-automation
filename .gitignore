@@ -223,3 +223,4 @@ src/c-sharp/coverage.cobertura.xml
 src/c-sharp/coverage.xml
 src/c-sharp/NotebookAutomation.Cli/coverage.cobertura.xml
 publish/win-arm64/Prompts/chunk_summary_prompt.md
+src/tests/fixtures/frontmatter/subdir/subdir.md

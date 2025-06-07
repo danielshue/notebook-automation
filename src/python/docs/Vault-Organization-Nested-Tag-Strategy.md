@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # MBA Vault Organization: Nested Tag Strategy
 
 This document outlines a comprehensive approach to organizing your MBA study materials using Obsidian's nested tag feature. The strategy focuses on creating a flexible, cross-cutting organization system that complements your folder structure.

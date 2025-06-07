@@ -1,10 +1,13 @@
 ---
 title: Updated Title
 date: 2025-05-25
-module: 1
+auto-generated-state: writable
 weight: 2.5
-course: Operations Management
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
 ---
+
 # Test Content
 
 

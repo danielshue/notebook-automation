@@ -2,6 +2,7 @@
 
 using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.Vault;
 using NotebookAutomation.Core.Utils;
 
@@ -56,45 +57,84 @@ public class VaultCommands
         ArgumentNullException.ThrowIfNull(verboseOption);
         ArgumentNullException.ThrowIfNull(dryRunOption);
 
-        var pathArg = new Argument<string>("path", "Path to the vault directory");
-        var vaultCommand = new Command("vault", "Vault management commands");
+        var pathArg = new Argument<string>("path", "Path to the directory to start indexing");
+        var vaultCommand = new Command("vault", "Vault management commands"); var generateIndexCommand = new Command("generate-index", "Generate a vault index file");
+        generateIndexCommand.AddArgument(pathArg);        // Add force option to regenerate indexes even if they already exist
+        var forceOption = new Option<bool>("--force", "Force regeneration of index files even if they already exist");
+        generateIndexCommand.AddOption(forceOption);
 
-        var generateIndexCommand = new Command("generate-index", "Generate a vault index file");
-        generateIndexCommand.AddArgument(pathArg);
+        // Add override-vault-root option to use the provided path as vault root (overrides config)
+        var vaultRootOverrideOption = new Option<bool>("--override-vault-root", "Use the provided path as the vault root (overrides the config)");        // Add template-types option to specify which types of indexes to generate
+        var templateTypesOption = new Option<string[]>("--template-types", "Specify which template types to generate (main, program, course, class, module, lesson). Default: all types")
+        {
+            AllowMultipleArgumentsPerToken = true
+        }; generateIndexCommand.AddOption(vaultRootOverrideOption);
+        generateIndexCommand.AddOption(templateTypesOption);
+
         generateIndexCommand.SetHandler(async context =>
         {
             if (string.IsNullOrWhiteSpace(context.ParseResult.GetValueForArgument(pathArg)))
-            {
-                AnsiConsoleHelper.WriteUsage(
-                    "Usage: vault generate-index <path>",
+            {                AnsiConsoleHelper.WriteUsage(
+                    "Usage: vault generate-index <path> [--force] [--override-vault-root] [--template-types <type1> <type2>...]",
                     "Generate a vault index for the specified directory.",
-                    "  <path>    Path to the vault directory (required)"
+                    "  <path>                Path to the directory to start indexing (required)\n" +
+                    "  --force               Force regeneration of index files\n" +
+                    "  --override-vault-root Use the provided path as the vault root (overrides config)\n" +
+                    "  --template-types <types>  Specify index types: main, program, course, class, module, lesson (default: all)"
                 );
                 return;
             }
             string path = context.ParseResult.GetValueForArgument(pathArg);
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
-            bool verbose = context.ParseResult.GetValueForOption(verboseOption);
-            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
-            await ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun);
+            bool verbose = context.ParseResult.GetValueForOption(verboseOption);            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption); bool force = context.ParseResult.GetValueForOption(forceOption);
+            bool overrideVaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
+            string[]? templateTypes = context.ParseResult.GetValueForOption(templateTypesOption);
+
+            // If override-vault-root is specified, use the provided path as vault root
+            string? vaultRoot = overrideVaultRoot ? path : null;
+
+            await ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun, force, vaultRoot, templateTypes);
         });
 
         var ensureMetadataCommand = new Command("ensure-metadata", "Update YAML frontmatter with program/course/class metadata based on directory structure");
         ensureMetadataCommand.AddArgument(pathArg);
-        ensureMetadataCommand.SetHandler(async context =>
+        ensureMetadataCommand.AddOption(vaultRootOverrideOption); ensureMetadataCommand.SetHandler(async context =>
         {
             string path = context.ParseResult.GetValueForArgument(pathArg);
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+            bool overrideVaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
 
-            await ExecuteVaultCommandAsync("ensure-metadata", path, config, debug, verbose, dryRun);
+            // If override-vault-root is specified, use the provided path as vault root
+            string? vaultRoot = overrideVaultRoot ? path : null;
+
+            await ExecuteVaultCommandAsync("ensure-metadata", path, config, debug, verbose, dryRun, false, vaultRoot, null);
+        });
+
+        var cleanIndexCommand = new Command(
+            "clean-index",
+            "Delete all index markdown files in the vault. " +
+            "This includes any file with type: index or with a known index template-type (main, program, course, class, module, lesson, case-studies, readings, resources, case-study) in the YAML frontmatter.");
+        cleanIndexCommand.AddArgument(pathArg);
+        cleanIndexCommand.AddOption(vaultRootOverrideOption); cleanIndexCommand.AddOption(dryRunOption); // Add dry-run option
+        cleanIndexCommand.SetHandler(async context =>
+        {
+            string path = context.ParseResult.GetValueForArgument(pathArg);
+            bool overrideVaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
+            bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
+
+            // If override-vault-root is specified, use the provided path as vault root
+            string? vaultRootOverride = overrideVaultRoot ? path : null;
+
+            await ExecuteVaultCommandAsync("clean-index", path, null, false, false, dryRun, false, vaultRootOverride, null);
         });
 
         vaultCommand.AddCommand(generateIndexCommand);
         vaultCommand.AddCommand(ensureMetadataCommand);
+        vaultCommand.AddCommand(cleanIndexCommand);
         rootCommand.AddCommand(vaultCommand);
     }
 
@@ -111,8 +151,7 @@ public class VaultCommands
     /// <remarks>
     /// This method handles the following commands:
     /// <list type="bullet">
-    /// <item><description>generate-index: Creates index files for each directory in the vault</description></item>
-    /// <item><description>ensure-metadata: Updates YAML frontmatter with program/course/class metadata based on directory hierarchy (Program/Course/Class structure)</description></item>
+    /// <item><description>generate-index: Creates index files for each directory in the vault</description></item>    /// <item><description>ensure-metadata: Updates YAML frontmatter with program/course/class metadata based on directory hierarchy (Program/Course/Class structure)</description></item>
     /// </list>
     /// </remarks>
     private async Task ExecuteVaultCommandAsync(
@@ -121,7 +160,10 @@ public class VaultCommands
         string? configPath,
         bool debug,
         bool verbose,
-        bool dryRun)
+        bool dryRun,
+        bool force = false,
+        string? vaultRoot = null,
+        string[]? templateTypes = null)
     {
         if (_appConfig == null)
         {
@@ -134,11 +176,33 @@ public class VaultCommands
             _logger.LogErrorWithPath("Path is required: {FilePath}", "VaultCommands.cs", path ?? "unknown");
             return;
         }
-
         if (!Directory.Exists(path))
         {
             _logger.LogErrorWithPath("Vault directory does not exist: {FilePath}", "VaultCommands.cs", path);
             return;
+        }
+
+        // Validate that the path is within the configured vault root or that vault root override is provided
+        if (string.IsNullOrEmpty(vaultRoot))
+        {
+            string? configuredVaultRoot = _appConfig.Paths?.NotebookVaultFullpathRoot;
+            if (!string.IsNullOrEmpty(configuredVaultRoot))
+            {
+                string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
+                string normalizedConfigRoot = Path.GetFullPath(configuredVaultRoot).Replace('\\', '/');
+
+                if (!normalizedPath.StartsWith(normalizedConfigRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    string errorMessage = $"Error: The specified path '{path}' is not within the configured vault root '{configuredVaultRoot}'.\n" +
+                                         $"To process files outside the configured vault root, use the --override-vault-root flag:\n" +
+                                         $"  {command} \"{path}\" --override-vault-root \"{path}\"";
+
+                    AnsiConsoleHelper.WriteError(errorMessage);
+                    _logger.LogErrorWithPath("Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
+                        "VaultCommands.cs", path, configuredVaultRoot);
+                    return;
+                }
+            }
         }
 
         _logger.LogInformationWithPath("Executing vault command: {Command} on path: {FilePath}", "VaultCommands.cs", command, path);
@@ -147,12 +211,14 @@ public class VaultCommands
         try
         {
             switch (command)
-            {
-                case "generate-index":
-                    await ExecuteGenerateIndexAsync(path, dryRun);
+            {                case "generate-index":
+                    await ExecuteGenerateIndexAsync(path, dryRun, force, vaultRoot, templateTypes);
                     break;
                 case "ensure-metadata":
-                    await ExecuteEnsureMetadataAsync(path, dryRun, verbose);
+                    await ExecuteEnsureMetadataAsync(path, dryRun, verbose, vaultRoot);
+                    break;
+                case "clean-index":
+                    await ExecuteCleanIndexAsync(path, dryRun, vaultRoot);
                     break;
                 default:
                     _logger.LogErrorWithPath("Unknown vault command: {Command}", "VaultCommands.cs", command);
@@ -169,31 +235,127 @@ public class VaultCommands
     }
 
     /// <summary>
-    /// Executes the generate-index command (placeholder implementation).
+    /// Executes the generate-index command using the VaultIndexBatchProcessor.
     /// </summary>
     /// <param name="path">Path to the vault directory.</param>
     /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task ExecuteGenerateIndexAsync(string path, bool dryRun)
+    private async Task ExecuteGenerateIndexAsync(string path, bool dryRun, bool force = false, string? vaultRoot = null, string[]? templateTypes = null)
     {
-        _logger.LogWarningWithPath("Generate-index command is not yet implemented", "VaultCommands.cs");
-        await Task.CompletedTask;
-    }
+        try
+        {
+            _logger.LogInformationWithPath("Starting vault index generation process for vault: {VaultPath}", "VaultCommands.cs", path);
 
-    /// <summary>
-    /// Executes the ensure-metadata command using the MetadataEnsureBatchProcessor.
-    /// </summary>
-    /// <param name="path">Path to the vault directory.</param>
-    /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
-    /// <param name="verbose">Whether to enable verbose output.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    private async Task ExecuteEnsureMetadataAsync(string path, bool dryRun, bool verbose)
+            // Create a new scope to set vault root override
+            using var scope = _serviceProvider.CreateScope();
+            var scopedServices = scope.ServiceProvider;            // Set up vault root override in scoped context
+            var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
+
+            // Use explicit vault root if provided, otherwise use the provided path as vault root
+            string effectiveVaultRoot = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : Path.GetFullPath(path);
+            vaultRootContext.VaultRootOverride = effectiveVaultRoot;
+            _logger.LogInformationWithPath("Using vault root override: {VaultRoot}", "VaultCommands.cs", effectiveVaultRoot);
+
+            var batchProcessor = scopedServices.GetRequiredService<VaultIndexBatchProcessor>();
+
+            var result = await AnsiConsoleHelper.WithStatusAsync(
+                async (updateStatus) =>
+                {
+                    batchProcessor.ProcessingProgressChanged += (sender, e) =>
+                    {
+                        string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
+                        updateStatus(safeStatus);
+                    };                    return await batchProcessor.GenerateIndexesAsync(
+                        vaultPath: path,
+                        dryRun: dryRun,
+                        templateTypes: templateTypes?.ToList(), // Convert array to list
+                        forceOverwrite: force,      // Use the force parameter
+                        vaultRoot: vaultRoot        // Use the explicit vault root if provided
+                    );
+                },
+                $"Generating indexes for vault: {Path.GetFileName(path)}"
+            );
+
+            if (result.Success)
+            {
+                string prefix = dryRun ? "[DRY RUN] " : ""; AnsiConsoleHelper.WriteSuccess($"\n{prefix}Vault index generation completed");
+                AnsiConsoleHelper.WriteInfo($"  Folders processed: {result.ProcessedFolders}");
+                AnsiConsoleHelper.WriteInfo($"  Folders skipped: {result.SkippedFolders}");
+                if (result.FailedFolders > 0)
+                {
+                    AnsiConsoleHelper.WriteWarning($"  Folders failed: {result.FailedFolders}");
+                }
+                AnsiConsoleHelper.WriteInfo($"  Total folders: {result.TotalFolders}");
+
+                if (dryRun)
+                {
+                    AnsiConsoleHelper.WriteInfo("\nDetailed index generation changes are available in the log file:");
+
+                    var loggingService = _serviceProvider.GetRequiredService<ILoggingService>();
+                    var logFilePath = loggingService.CurrentLogFilePath;
+
+                    if (!string.IsNullOrEmpty(logFilePath))
+                    {
+                        AnsiConsoleHelper.WriteInfo($"  {logFilePath}");
+                    }
+                    else if (_appConfig?.Paths?.LoggingDir != null)
+                    {
+                        string logPath = _appConfig.Paths.LoggingDir;
+                        string logFile = Path.Combine(logPath, $"notebookautomation.core_{DateTime.Now:yyyyMMdd}.log");
+                        AnsiConsoleHelper.WriteInfo($"  {logFile}");
+                    }
+
+                    AnsiConsoleHelper.WriteInfo("\nTip: Use --verbose for more details about the index generation process.");
+                }
+                _logger.LogInformationWithPath(
+                    "{Prefix}Vault index generation completed: {Processed} processed, {Skipped} skipped, {Failed} failed out of {Total} total folders",
+                    "VaultCommands.cs",
+                    prefix, result.ProcessedFolders, result.SkippedFolders, result.FailedFolders, result.TotalFolders);
+
+                if (result.FailedFolders > 0)
+                {
+                    _logger.LogWarningWithPath("Some folders failed to process. Check the logs for details.", "VaultCommands.cs");
+                }
+            }
+            else
+            {
+                AnsiConsoleHelper.WriteError($"Vault index generation failed: {result.ErrorMessage ?? "Unknown error"}");
+                _logger.LogErrorWithPath("Vault index generation failed: {ErrorMessage}", "VaultCommands.cs", result.ErrorMessage ?? "Unknown error");
+            }
+        }
+        catch (Exception ex)
+        {
+            AnsiConsoleHelper.WriteError($"Failed to execute generate-index command: {ex.Message}");
+            _logger.LogErrorWithPath(ex, "Failed to execute generate-index command", "VaultCommands.cs");
+            throw;
+        }
+    }    /// <summary>
+         /// Executes the ensure-metadata command using the MetadataEnsureBatchProcessor.
+         /// </summary>
+         /// <param name="path">Path to the vault directory.</param>
+         /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
+         /// <param name="verbose">Whether to enable verbose output.</param>
+         /// <param name="vaultRoot">Optional vault root override path.</param>
+         /// <returns>A task representing the asynchronous operation.</returns>
+    private async Task ExecuteEnsureMetadataAsync(string path, bool dryRun, bool verbose, string? vaultRoot = null)
     {
         try
         {
             _logger.LogInformationWithPath("Starting metadata ensure process for vault: {VaultPath}", "VaultCommands.cs", path);
 
-            var batchProcessor = _serviceProvider.GetRequiredService<MetadataEnsureBatchProcessor>();
+            // Create a new scope to set vault root override
+            using var scope = _serviceProvider.CreateScope();
+            var scopedServices = scope.ServiceProvider;
+
+            // Set up vault root override in scoped context
+            var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
+
+            // Use explicit vault root if provided, otherwise use the provided path as vault root
+            string effectiveVaultRoot = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : Path.GetFullPath(path);
+            vaultRootContext.VaultRootOverride = effectiveVaultRoot;
+            _logger.LogInformationWithPath("Using vault root override: {VaultRoot}", "VaultCommands.cs", effectiveVaultRoot);
+
+            var batchProcessor = scopedServices.GetRequiredService<MetadataEnsureBatchProcessor>();
 
             var result = await AnsiConsoleHelper.WithStatusAsync(
                 async (updateStatus) =>
@@ -273,5 +435,41 @@ public class VaultCommands
             _logger.LogErrorWithPath(ex, "Failed to execute ensure-metadata command", "VaultCommands.cs");
             throw;
         }
+    }    /// <summary>
+         /// Executes the clean-index command to delete all index markdown files in the vault.
+         /// </summary>
+         /// <param name="path">Path to the vault directory.</param>
+         /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
+         /// <param name="vaultRoot">Explicit vault root path override.</param>
+         /// <returns>A task representing the asynchronous operation.</returns>
+    private async Task ExecuteCleanIndexAsync(string path, bool dryRun, string? vaultRoot = null)
+    {
+        var mdFiles = Directory.GetFiles(path, "*.md", SearchOption.AllDirectories);        // Known index template-types (should match those in metadata.yaml)
+        string[] indexTemplateTypes = [
+            "main", "program", "course", "class", "module", "lesson",
+            "case-studies", "readings", "resources", "case-study"
+        ];
+        int deleted = 0;
+        foreach (var file in mdFiles)
+        {
+            string content = await File.ReadAllTextAsync(file);
+            var yaml = new YamlHelper(_logger).ExtractFrontmatter(content);
+            if (yaml != null)
+            {
+                var dict = new YamlHelper(_logger).ParseYamlToDictionary(yaml);
+                var typeVal = dict.TryGetValue("type", out var t) ? t?.ToString() : null;
+                var templateTypeVal = dict.TryGetValue("template-type", out var tt) ? tt?.ToString() : null;
+                bool isIndexType = typeVal == "index";
+                bool isIndexTemplate = templateTypeVal != null && indexTemplateTypes.Contains(templateTypeVal);
+                if (isIndexType || isIndexTemplate)
+                {
+                    if (!dryRun)
+                        File.Delete(file);
+                    deleted++;
+                    _logger.LogInformationWithPath($"Deleted index file: {file}", "VaultCommands.cs");
+                }
+            }
+        }
+        _logger.LogInformationWithPath($"Deleted {deleted} index files in {path}", "VaultCommands.cs");
     }
 }

@@ -1,109 +1,262 @@
-template-type: main-index
+# template-type: main (template for the top-level MBA program index)
+template-type: main
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
 auto-generated-state: writable
+
+# banner: Banner image for the index page (Obsidian embed syntax)
+banner: gies-banner.png
+
+# template-description: Short description of the template purpose
 template-description: Top-level folder for the entire MBA program.
+
+# title: Title of the index page
 title: MBA Program Index
+
+# type: index (file type)
 type: index
-index-type: main
-tags: 
-  - index
-  - mba
-date-created: 2025-04-19
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
 ---
-template-type: program-index
+# template-type: program (template for a program area index)
+template-type: program
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
 auto-generated-state: writable
+
+# banner: Banner image for the index page (Obsidian embed syntax)
+banner: gies-banner.png
+
+# template-description: Short description of the template purpose
 template-description: Program area folder within the MBA curriculum.
+
+# title: Title of the index page
 title: Program Index
+
+# type: index (file type)
 type: index
-index-type: program
-tags: 
+
+# tags: List of tags for the index page
+tags:
   - index
   - program
-date-created: 2025-04-19
----
-template-type: course-index
-auto-generated-state: writable
-template-description: Top-level folder for a single course.
-title: Course Index
-type: index
-index-type: course
-tags: 
-  - index
-  - course
-date-created: 2025-04-19
----
-template-type: class-index
-auto-generated-state: writable
-template-description: Top-level folder for a single class.
-title: Class Index
-type: index
-index-type: class
-tags: 
-  - index
-  - class
-date-created: 2025-04-19
----
-template-type: module-index
-auto-generated-state: writable
-template-description: Groups together lessons or topics within a course.
-title: Module Index
-type: index
-index-type: module
-tags: 
-  - index
-  - module
-date-created: 2025-04-19
----
-template-type: lesson-index
-auto-generated-state: writable
-template-description: A single lesson's landing page.
-title: Lesson Index
-type: index
-index-type: lesson
-tags: 
-  - lesson
-  - course-materials
-date-created: 2025-04-19
----
-template-type: live-session-note
-auto-generated-state: writable
-template-description: Notes from a live class session.
-title: Live Session Notes
-type: note
-tags: 
-  - live-session
-  - course-materials
-date-created: 2025-04-19
 
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
+# program since that's the only thing  that is known at this level.
+
+# program: Program Name (populated automatically)
+program:
+
+
+---
+# template-type: course (template for a single course index)
+template-type: course
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
+auto-generated-state: writable
+
+# banner: Banner image for the index page (Obsidian embed syntax)
+banner: gies-banner.png
+
+# template-description: Short description of the template purpose
+template-description: Top-level folder for a single course.
+
+# title: Title of the index page
+title: Course Index
+
+# type: index (file type)
+type: index
+
+# tags: List of tags for the index page
+tags:
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
+# program, course
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+---
+# template-type: class (template for a single class index)
+template-type: class
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
+auto-generated-state: writable
+
+# banner: Banner image for the index page (Obsidian embed syntax)
+banner: gies-banner.png
+
+# template-description: Short description of the template purpose
+template-description: Top-level folder for a single class.
+
+# title: Title of the index page
+title: Class Index
+
+# type: index (file type)
+type: index
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
+# program, course, class, and module
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
+# module: Module Name (populated automatically)
+module:
+---
+# template-type: module (template for a module index)
+template-type: module
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
+auto-generated-state: writable
+
+# banner: Banner image for the index page (Obsidian embed syntax)
+banner: gies-banner.png
+
+# template-description: Short description of the template purpose
+template-description: Groups together lessons or topics within a course.
+
+# title: Title of the index page
+title: Module Index
+
+# type: index (file type)
+type: index
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
+# program, course, class, and module
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
+# module: Module Name (populated automatically)
+module:
+---
+# template-type: lesson (template for a lesson index)
+template-type: lesson
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
+auto-generated-state: writable
+
+# banner: Banner image for the index page (Obsidian embed syntax)
+banner: gies-banner.png
+
+# template-description: Short description of the template purpose
+template-description: A single lesson's landing page.
+
+# title: Title of the index page
+title: Lesson Index
+
+# type: index (file type)
+type: index
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
+# program, course, class, and module
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
+# module: Module Name (populated automatically)
+module:
+---
+# template-type: live-session-note (template for live session notes)
+template-type: live-session-note
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
+auto-generated-state: writable
+
+# template-description: Short description of the template purpose
+template-description: Notes from a live class session.
+
+# title: Title of the note
+title: Live Session Notes
+
+# type: note (file type)
+type: note
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
+# onedrive-path: Path to the file in OneDrive
 onedrive-path: path/to/file.pdf
+
+# onedrive-sharing-link: Sharing link for the file in OneDrive
 onedrive-sharing-link: path/to/sharing-link
 ---
-template-type: transcript
+# template-type: transcript-note (template for a video transcript)
+template-type: transcript-note
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
 auto-generated-state: writable
+
+# template-description: Short description of the template purpose
 template-description: Transcript of a video lecture.
+
+# title: Title of the transcript
 title: Transcript
+
+# type: transcript (file type)
 type: transcript
-tags: 
-  - transcript
-  - course-materials
-date-created: 2025-04-19
-class: Class Name
-course: Course Name
-program: Program Name
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
+# program, course, class, and module
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
 ---
-template-type: case-study-index
+template-type: case-study
 auto-generated-state: writable
 template-description: Index page for a case study.
 title: Case Study
 type: index
-index-type: case-study
-tags: 
-  - case-study
-  - course-materials
-date-created: 2025-04-19
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
 ---
 # Description: Links to a video file stored in OneDrive for improved sharing and accessibility.
-# template-type: video-reference | pdf-reference | case-studies-index | readings-index | resources-index | assignment-individual | assignment-group | assignment-quiz | note-case-study | resource-reading | pdf-reference
-template-type: video-reference
+# template-type: video-reference-note | pdf-reference-note | case-studies | readings | resources | assignment-individual-note | assignment-group-note | assignment-quiz-note | note-case-study | resource-reading-note | pdf-reference-note
+template-type: video-reference-note
 
 # auto-generated-state: writable | read-only
 auto-generated-state: writable
@@ -112,12 +265,12 @@ auto-generated-state: writable
 type: note/video-note
 
 # title: Video Title (populated automatically based off a friendly name of the video)
-title: 
+title:
 
 # The following fields are grouped and sorted as requested (with their comments):
 
-# author: Author Names (array of names)
-author:
+# authors: Author Names (array of names)
+authors:
 
 # program, course, class, module, lesson (grouped together)
 
@@ -143,10 +296,10 @@ comprehension: 0
 completion-date:
 
 # date-created: YYYY-MM-DD (populated automatically)
-date-created: 
+date-created:
 
 # date-modified: YYYY-MM-DD
-date-modified: 
+date-modified:
 
 # date-review: YYYY-MM-DD
 date-review:
@@ -155,7 +308,7 @@ date-review:
 onedrive-shared-link:
 
 # onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
-onedrive_fullpath_file_reference: 
+onedrive_fullpath_file_reference:
 
 # publication-year: 2023
 publication-year:
@@ -164,13 +317,13 @@ publication-year:
 publisher: University of Illinois at Urbana-Champaign
 
 # status: unwatched | watched | read | unread | in-progress
-status: unwatched 
+status: unwatched
 
 # tags: line separated tags
 #  - "tag1"
 #  - "tag2"
 #  - "tag3"
-tags: 
+tags:
 
 # video-codec: H.264
 video-codec:
@@ -189,8 +342,8 @@ video-uploaded:
 
 ---
 # Description: Links to a video file stored in OneDrive for improved sharing and accessibility.
-# template-type: video-reference | pdf-reference | case-studies-index | readings-index | resources-index | assignment-individual | assignment-group | assignment-quiz | note-case-study | resource-reading | pdf-reference
-template-type: pdf-reference
+# template-type: video-reference-note | pdf-reference-note | case-studies | readings | resources | assignment-individual-note | assignment-group-note | assignment-quiz-note | note-case-study | resource-reading-note | pdf-reference-note
+template-type: pdf-reference-note
 
 # auto-generated-state: writable | read-only
 auto-generated-state: writable
@@ -199,7 +352,7 @@ auto-generated-state: writable
 type: note/case-study
 
 # title: PDF Title (populated automatically based off a friendly name of the PDF)
-title: 
+title:
 
 # The following fields are grouped and sorted as requested (with their comments):
 
@@ -230,10 +383,10 @@ comprehension: 0
 completion-date:
 
 # date-created: YYYY-MM-DD (populated automatically)
-date-created: 
+date-created:
 
 # date-modified: YYYY-MM-DD  (blank by default)
-date-modified: 
+date-modified:
 
 # date-review: YYYY-MM-DD (blank by default)
 date-review:
@@ -242,19 +395,19 @@ date-review:
 onedrive-shared-link:
 
 # onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
-onedrive_fullpath_file_reference: 
+onedrive_fullpath_file_reference:
 
 # publisher: Publisher Name
 publisher: University of Illinois at Urbana-Champaign
 
 # status: read | unread | in-progress
-status: unread 
+status: unread
 
 # tags: line separated tags (blank by default)
 #  - "tag1"
 #  - "tag2"
 #  - "tag3"
-tags: 
+tags:
 
 # pdf-size: 0 MB
 pdf-size:
@@ -263,90 +416,159 @@ pdf-size:
 pdf-uploaded:
 
 # pdf-page-count: (populated automatically)
-page-count: 
+page-count:
 
 # pages: 1-10, 5-15, 20-25
-pages: 
+pages:
 
 ---
-template-type: case-studies-index
+template-type: case-studies
 auto-generated-state: writable
 template-description: Index page for a collection of case studies within a course or class.
 title: Case Studies Index
 type: index
-program: Program Name
-course: Course Name
-index-type: case-studies
-tags:
-  - index
-  - case-studies
-  - course-materials
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
 date-created: 2025-04-20
 ---
-template-type: readings-index
+template-type: readings
 auto-generated-state: writable
 template-description: Index page for required readings within a course or class.
 title: Required Readings Index
 type: index
-program: Program Name
-course: Course Name
-index-type: readings
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
 tags:
-  - index
-  - readings
-  - required-readings
-  - course-materials
+
 date-created: 2025-04-29
 ---
-template-type: resources-index
+template-type: resources
 auto-generated-state: writable
 template-description: Index page for additional resources within a course or class.
 title: Resources Index
 type: index
-program: Program Name
-course: Course Name
-index-type: resources
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
 tags:
-  - index
-  - resources
-  - course-materials
+
 date-created: 2025-04-29
 ---
-template-type: assignment-individual
+# template-type: assignment-individual-note (template for an individual assignment)
+template-type: assignment-individual-note
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
 auto-generated-state: writable
+
+# template-description: Short description of the template purpose
 template-description: Individual Assignment for the course or class.
+
+# title: Title of the assignment
 title: Assignment
+
+# type: assignment/individual (file type)
 type: assignment/individual
+
+# program: Program Name (populated automatically)
 program: Program Name
+
+# course: Course Name (populated automatically)
 course: Course Name
+
+# class: Class Name (populated automatically)
+class: Class Name
+
+# date-created: YYYY-MM-DD (populated automatically)
 date-created: 2025-04-29
+
+# status: in-progress | completed | not-started (assignment status)
 status: in-progress
 ---
-template-type: assignment-group
+# template-type: assignment-group-note (template for a group assignment)
+template-type: assignment-group-note
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
 auto-generated-state: writable
+
+# template-description: Short description of the template purpose
 template-description: Group Assignment for the course or class.
+
+# title: Title of the assignment
 title: Assignment
+
+# type: assignment/group (file type)
 type: assignment/group
+
+# program: Program Name (populated automatically)
 program: Program Name
+
+# course: Course Name (populated automatically)
 course: Course Name
+
+# class: Class Name (populated automatically)
+class: Class Name
+
+# date-created: YYYY-MM-DD (populated automatically)
 date-created: 2025-04-29
+
+# status: in-progress | completed | not-started (assignment status)
 status: in-progress
 ---
-template-type: assignment-quiz
+# template-type: assignment-quiz-note (template for a quiz assignment)
+template-type: assignment-quiz-note
+
+# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
 auto-generated-state: writable
+
+# template-description: Short description of the template purpose
 template-description: Quiz for the course or class.
+
+# title: Title of the quiz
 title: Quiz 1
+
+# type: assignment/quiz (file type)
 type: assignment/quiz
+
+# program: Program Name (populated automatically)
 program: Program Name
+
+# course: Course Name (populated automatically)
 course: Course Name
+
+# class: Class Name (populated automatically)
+class: Class Name
+
+# date-created: YYYY-MM-DD (populated automatically)
 date-created: 2025-04-29
+
+# status: in-progress | completed | not-started (quiz status)
 status: in-progress
 ---
 # Description: HTML or text file stored in OneDrive for improved sharing and accessibility which have been converted to markdown.
 # for exampe, a reading or resource that is in HTML format to markdown such as instuctions, guidelines, or other text-based content.
 # in some cases, we can use the filename (e.g. *-instructions.md) to know that it should be this template-type.
-# template-type: video-reference | pdf-reference | case-studies-index | readings-index | resources-index | assignment-individual | assignment-group | assignment-quiz | note-case-study | resource-reading | pdf-reference
-template-type: resource-reading
+# template-type: video-reference | pdf-reference | case-studies | readings | resources | assignment-individual | assignment-group | assignment-quiz | note-case-study | resource-reading | pdf-reference
+template-type: resource-reading-note
 
 # auto-generated-state: writable | read-only
 auto-generated-state: writable
@@ -355,7 +577,7 @@ auto-generated-state: writable
 type: note/reading
 
 # title: Reading Title (populated automatically based off a friendly name of the Filen name of the reading)
-title: 
+title:
 
 # The following fields are grouped and sorted as requested (with their comments):
 
@@ -386,10 +608,10 @@ comprehension: 0
 completion-date:
 
 # date-created: YYYY-MM-DD (populated automatically)
-date-created: 
+date-created:
 
 # date-modified: YYYY-MM-DD  (blank by default)
-date-modified: 
+date-modified:
 
 # date-review: YYYY-MM-DD (blank by default)
 date-review:
@@ -398,22 +620,22 @@ date-review:
 onedrive-shared-link:
 
 # onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
-onedrive_fullpath_file_reference: 
+onedrive_fullpath_file_reference:
 
 # publisher: Publisher Name
 publisher: University of Illinois at Urbana-Champaign
 
 # status: read | unread | in-progress
-status: unread 
+status: unread
 
 # tags: line separated tags (blank by default)
 #  - "tag1"
 #  - "tag2"
 #  - "tag3"
-tags: 
+tags:
 
 # pdf-page-count: (populated automatically)
-page-count: 
+page-count:
 
 # pages: 1-10, 5-15, 20-25
-pages: 
+pages:

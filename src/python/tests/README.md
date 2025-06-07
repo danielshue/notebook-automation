@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Test Suite for Notebook Automation
 
 This directory contains test scripts for verifying the functionality of the Notebook Automation system. These tests help ensure that various components of the system are working correctly and help identify issues when making changes to the codebase.

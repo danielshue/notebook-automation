@@ -1,0 +1,8 @@
+{
+  "id": "13a4443b-7c8f-4f25-a95b-64f67d71fac5",
+  "title": "Main Index Navigation Bar Update",
+  "details": "Updated the VaultIndexProcessor.cs to add only the Dashboard and Classes Assignments links to the main index.\n\nPrevious behavior:\n- Main index had no navigation links\n- Non-main indices had Back, Home, Dashboard, and Classes Assignments links\n\nNew behavior:\n- Main index now shows Dashboard and Classes Assignments links (no Back or Home since it's already at the root)\n- Non-main indices continue to show Back, Home, Dashboard, and Classes Assignments links\n\nThis change ensures that users have consistent access to Dashboard and Classes Assignments regardless of which index page they're viewing, while avoiding redundant navigation options at the root level.\n\nAlso ensured that folders starting with a period are excluded from the main index, which was already implemented for other levels.",
+  "category": "code_updates",
+  "dateCreated": "2025-06-06T17:28:09.665Z",
+  "dateUpdated": "2025-06-06T17:28:09.665Z"
+}

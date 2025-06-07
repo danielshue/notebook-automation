@@ -81,7 +81,7 @@ public class MetadataEnsureBatchProcessor(
     /// <param name="vaultPath">Path to the vault directory containing markdown files.</param>
     protected virtual void InitializeProcessingQueue(string vaultPath)
     {
-        var markdownFiles = Directory.GetFiles(vaultPath, "*.md", SearchOption.AllDirectories)
+        var markdownFiles = GetMarkdownFilesExcludingDotDirectories(vaultPath)
             .Where(f => !Path.GetFileName(f).StartsWith('.')) // Skip hidden files
             .ToList();
 
@@ -304,6 +304,46 @@ public class MetadataEnsureBatchProcessor(
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to save failed files list");
+        }
+    }
+
+    /// <summary>
+    /// Gets all markdown files from the specified directory while excluding directories that start with a period.
+    /// </summary>
+    /// <param name="vaultPath">The path to search for markdown files.</param>
+    /// <returns>An enumerable of markdown file paths.</returns>
+    private static IEnumerable<string> GetMarkdownFilesExcludingDotDirectories(string vaultPath)
+    {
+        return GetMarkdownFilesRecursive(vaultPath);
+    }
+
+    /// <summary>
+    /// Recursively searches for markdown files while skipping directories that start with a period.
+    /// </summary>
+    /// <param name="directoryPath">The directory to search.</param>
+    /// <returns>An enumerable of markdown file paths.</returns>
+    private static IEnumerable<string> GetMarkdownFilesRecursive(string directoryPath)
+    {
+        if (!Directory.Exists(directoryPath))
+            yield break;
+
+        // Get markdown files in the current directory
+        foreach (string file in Directory.GetFiles(directoryPath, "*.md"))
+        {
+            yield return file;
+        }
+
+        // Get subdirectories and recurse, but skip directories that start with a period
+        foreach (string subDirectory in Directory.GetDirectories(directoryPath))
+        {
+            string dirName = Path.GetFileName(subDirectory);
+            if (!dirName.StartsWith('.'))
+            {
+                foreach (string file in GetMarkdownFilesRecursive(subDirectory))
+                {
+                    yield return file;
+                }
+            }
         }
     }
 }

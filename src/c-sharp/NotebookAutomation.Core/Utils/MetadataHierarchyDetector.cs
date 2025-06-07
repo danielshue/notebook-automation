@@ -3,36 +3,40 @@
 namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
-/// Detects and infers hierarchical metadata (program, course, class) from file paths in a notebook vault.
+/// Detects and infers hierarchical metadata (program, course, class, module) from file paths in a notebook vault.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Implements path-based hierarchy detection, mirroring the logic of the Python ensure_metadata.py script.
-/// Determines the appropriate program, course, and class metadata based on a file's location in the directory structure,
+/// Implements path-based hierarchy detection based on the directory structure.
+/// Determines the appropriate program, course, class, and module metadata based on a file's location,
 /// following the conventions used in the notebook vault.
 /// </para>
-/// <para>
-/// <b>Expected Directory Structure:</b>
+/// <para> /// <b>Expected Directory Structure:</b>
 /// <code>
-/// Root (main-index)
-/// └── Program Folders (program-index)
-///     └── Course Folders (course-index)
-///         └── Class Folders (class-index)
-///             ├── Case Study Folders (case-study-index)
-///             └── Module Folders (module-index)
-///                 ├── Live Session Folder (live-session-index)
-///                 └── Lesson Folders (lesson-index)
+/// Vault Root (main-index) - NO hierarchy metadata
+/// └── Program Folders (program-index) - program only
+///     └── Course Folders (course-index) - program + course
+///         └── Class Folders (class-index) - program + course + class
+///             ├── Case Study Folders (case-study-index) - program + course + class + module
+///             └── Module Folders (module-index) - program + course + class + module
+///                 ├── Live Session Folder (live-session-index) - program + course + class + module
+///                 └── Lesson Folders (lesson-index) - program + course + class + module
 ///                     └── Content Files (readings, videos, transcripts, etc.)
 /// </code>
 /// </para>
 /// <para>
-/// The detector supports explicit program overrides, special handling for Value Chain Management, and robust fallback logic.
+/// Features:
+/// - Configurable vault root path (from config or override)
+/// - Support for explicit program overrides via parameter
+/// - Dynamic hierarchy detection based on folder structure
+/// - Dynamic fallback to folder names when index files aren't available
+/// - Robust path traversal for hierarchy detection
 /// </para>
 /// <example>
 /// <code>
 /// var detector = new MetadataHierarchyDetector(logger, appConfig);
-/// var info = detector.FindHierarchyInfo(@"C:\\notebook-vault\\MBA Program\\Course1\\ClassA\\Lesson1\\file.md");
-/// // info["program"] == "MBA Program", info["course"] == "Course1", info["class"] == "ClassA"
+/// var info = detector.FindHierarchyInfo(@"C:\\notebook-vault\\MBA\\Course1\\ClassA\\Lesson1\\file.md");
+/// // info["program"] == "MBA", info["course"] == "Course1", info["class"] == "ClassA"
 /// </code>
 /// </example>
 /// </remarks>
@@ -40,341 +44,343 @@ public class MetadataHierarchyDetector(
     ILogger<MetadataHierarchyDetector> logger,
     AppConfig appConfig,
     string? programOverride = null,
-    bool verbose = false)
+    bool verbose = false,
+    string? vaultRootOverride = null)
 {
     private readonly ILogger<MetadataHierarchyDetector> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly string _notebookVaultRoot = appConfig?.Paths?.NotebookVaultFullpathRoot
-            ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
+    private readonly string _notebookVaultRoot = !string.IsNullOrEmpty(vaultRootOverride)
+            ? vaultRootOverride
+            : appConfig?.Paths?.NotebookVaultFullpathRoot
+                ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
     private readonly string? _programOverride = programOverride;
-    private readonly YamlHelper _yamlHelper = new(logger);
     private readonly bool _verbose = verbose;
 
     /// <summary>
-    /// Finds program, course, and class information by analyzing the file path and scanning parent directories for index files.
+    /// Gets the vault root path being used by this detector.
     /// </summary>
-    /// <param name="filePath">The path to the file to analyze.</param>
-    /// <returns>A dictionary with keys <c>program</c>, <c>course</c>, and <c>class</c> containing the detected hierarchy information.</returns>
+    public string VaultRoot => _notebookVaultRoot;
+
+    /// <summary>
+    /// Finds program, course, class, and module information by analyzing the file path structure relative to the vault root.
+    /// </summary>
+    /// <param name="filePath">The path to the file or directory to analyze.</param>
+    /// <returns>A dictionary with keys <c>program</c>, <c>course</c>, <c>class</c>, and possibly <c>module</c> containing the detected hierarchy information.</returns>
     /// <remarks>
-    /// This method uses a combination of explicit program overrides, special-case logic for Value Chain Management, and directory traversal
-    /// to infer the correct metadata. It logs detailed information if verbose mode is enabled.
+    /// <para>
+    /// This method uses purely path-based analysis to determine hierarchy levels, with no file system access needed.
+    /// It assumes a standard folder structure where:
+    /// - The first folder level below vault root is the program (e.g., MBA)
+    /// - The second folder level is the course (e.g., Finance)
+    /// - The third folder level is the class (e.g., Accounting)
+    /// - The fourth folder level is the module (e.g., Week1)
+    /// </para>
+    /// <para>
+    /// Priority is given to explicit program overrides if provided in the constructor.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>
-    /// var info = detector.FindHierarchyInfo(@"C:\\notebook-vault\\MBA Program\\Course1\\ClassA\\Lesson1\\file.md");
-    /// // info["program"] == "MBA Program", info["course"] == "Course1", info["class"] == "ClassA"
+    /// var info = detector.FindHierarchyInfo(@"C:\\notebook-vault\\MBA\\Finance\\Accounting\\Week1\\file.md");
+    /// // info["program"] == "MBA", info["course"] == "Finance", info["class"] == "Accounting", info["module"] == "Week1"
     /// </code>
     /// </example>
     public Dictionary<string, string> FindHierarchyInfo(string filePath)
     {
+        // Initialize with empty values for all standard hierarchy levels
         var info = new Dictionary<string, string>
         {
-            { "program", _programOverride ?? string.Empty },
+            { "program", string.Empty },
             { "course", string.Empty },
             { "class", string.Empty }
+            // Note: module is only added if present
         };
 
-        if (!File.Exists(filePath))
+        // Add program if override is provided
+        if (!string.IsNullOrEmpty(_programOverride))
         {
-            _logger.LogWarningWithPath("File does not exist: {FilePath}", nameof(MetadataHierarchyDetector), filePath);
+            info["program"] = _programOverride;
+        }
+
+        // Validate that the path exists
+        bool isFile = File.Exists(filePath);
+        bool isDirectory = Directory.Exists(filePath);
+        if (!isFile && !isDirectory)
+        {
+            _logger.LogWarningWithPath("Path does not exist or is not accessible: {FilePath}", nameof(MetadataHierarchyDetector), filePath);
             return info;
         }
 
-        // If program is explicitly provided, we don't need special path handling for program
+        // If program is explicitly provided via constructor parameter, use it
         if (!string.IsNullOrEmpty(_programOverride))
         {
             if (_verbose)
             {
                 _logger.LogInformationWithPath("Using explicit program override: {Program}", nameof(MetadataHierarchyDetector), _programOverride);
             }
-        }
-
-        // Special case handling for Value Chain Management
-        string pathStr = filePath;
-
-        // Detect Value Chain Management in the path, prioritizing it over other detection methods
-        if (string.IsNullOrEmpty(_programOverride) && pathStr.Contains("Value Chain Management"))
+        }        // Pure path-based hierarchy detection
+        try
         {
-            // Set the program explicitly
-            info["program"] = "Value Chain Management";
-            if (_verbose)
-            {
-                _logger.LogInformationWithPath("Found 'Value Chain Management' in path, using it as program name", nameof(MetadataHierarchyDetector));
-            }
-
-            // Extract course and class info from the path structure
-            var parts = pathStr.Split(Path.DirectorySeparatorChar);
-
-            int vcmIdx = Array.FindIndex(parts, p => p == "Value Chain Management");
-            if (vcmIdx >= 0)
-            {
-                // Check if this is the "01_Projects" structure which has additional levels
-                if (vcmIdx + 1 < parts.Length && parts[vcmIdx + 1] == "01_Projects")
-                {
-                    // Skip the "01_Projects" level and use the next one for course
-                    if (vcmIdx + 2 < parts.Length)
-                    {
-                        info["course"] = parts[vcmIdx + 2];
-                        if (_verbose)
-                        {
-                            _logger.LogInformationWithPath("Found course in Value Chain Management path: {Course}", nameof(MetadataHierarchyDetector), info["course"]);
-                        }
-
-                        // Class would be the next level
-                        if (vcmIdx + 3 < parts.Length)
-                        {
-                            info["class"] = parts[vcmIdx + 3];
-                            if (_verbose)
-                            {
-                                _logger.LogInformationWithPath("Found class in Value Chain Management path: {Class}", nameof(MetadataHierarchyDetector), info["class"]);
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // Normal case - course is directly after VCM in the path
-                    if (vcmIdx + 1 < parts.Length)
-                    {
-                        info["course"] = parts[vcmIdx + 1];
-                        if (_verbose)
-                        {
-                            _logger.LogInformationWithPath("Found course in Value Chain Management path: {Course}", nameof(MetadataHierarchyDetector), info["course"]);
-                        }
-
-                        // Class would be the next level
-                        if (vcmIdx + 2 < parts.Length)
-                        {
-                            info["class"] = parts[vcmIdx + 2];
-                            if (_verbose)
-                            {
-                                _logger.LogInformationWithPath("Found class in Value Chain Management path: {Class}", nameof(MetadataHierarchyDetector), info["class"]);
-                            }
-                        }
-                    }
-                }
-            }
+            // Get the path elements between vault root and the provided file/directory
+            Console.WriteLine($"DEBUG: FindHierarchyInfo - vault root: '{_notebookVaultRoot}', filePath: '{filePath}'");
+            string relativePath = GetRelativePath(_notebookVaultRoot, filePath);
+            Console.WriteLine($"DEBUG: FindHierarchyInfo - relativePath: '{relativePath}'");
+            string[] pathSegments = [.. relativePath.Split(Path.DirectorySeparatorChar)
+                .Where(p => !string.IsNullOrEmpty(p) && !p.StartsWith("."))];
 
             if (_verbose)
             {
-                _logger.LogInformationWithPath("Value Chain Management path analysis: program='{Program}', course='{Course}', class='{Class}'", nameof(MetadataHierarchyDetector), info["program"], info["course"], info["class"]);
+                _logger.LogInformationWithPath("Path segments for hierarchy detection: {Segments}",
+                    nameof(MetadataHierarchyDetector),
+                    string.Join(" > ", pathSegments));
+            }// Calculate the depth level - this determines which hierarchy fields to include
+            int depthLevel = pathSegments.Length;
+
+            if (_verbose)
+            {
+                _logger.LogInformationWithPath("Path depth level: {DepthLevel}",
+                    nameof(MetadataHierarchyDetector), depthLevel);
+            }            // Hierarchy mapping based on semantic meaning:
+            // Level 0: Vault root/main index - NO hierarchy metadata
+            // Level 1 (e.g., Program): Program level - program only
+            // Level 2 (e.g., Finance): Course level - program + course
+            // Level 3 (e.g., Corporate-Finance): Class level - program + course + class
+            // Level 4+: Module/content level - program + course + class + module
+
+            // Only set program if we're at program level or deeper (depth >= 1)
+            if (string.IsNullOrEmpty(_programOverride) && depthLevel >= 1)
+            {
+                info["program"] = pathSegments[0];
+                if (_verbose)
+                {
+                    _logger.LogInformationWithPath("Setting program from first path segment: {Program}",
+                        nameof(MetadataHierarchyDetector), info["program"]);
+                }
             }
 
-            // Return early since we've determined the hierarchy for VCM
-            return info;
-        }
-
-        // Start from the file's directory and move up the tree
-        var currentDir = new DirectoryInfo(Path.GetDirectoryName(filePath) ?? string.Empty);
-        var rootPath = new DirectoryInfo(_notebookVaultRoot);
-
-        // IMPORTANT: For programs, we want the highest level (closest to root)
-        // For courses and classes, we want the closest to the file (deepest level)
-        DirectoryInfo? highestProgramDir = null;  // Track the highest directory with program-index
-        int courseLevel = -1;
-        int classLevel = -1;
-        int currentLevel = 0;
-
-        // Look through index files in parent directories
-        while (currentDir != null && IsSubdirectoryOf(currentDir, rootPath))
-        {
-            // Look for index files in the current directory
-            foreach (var indexFile in currentDir.GetFiles("*.md"))
+            // Only set course if we're at course level or deeper (depth >= 2)
+            if (depthLevel >= 2)
             {
-                try
+                info["course"] = pathSegments[1];
+                if (_verbose)
                 {
-                    var content = File.ReadAllText(indexFile.FullName);
-                    var frontmatter = _yamlHelper.ExtractFrontmatter(content);
+                    _logger.LogInformationWithPath("Setting course from second path segment: {Course}",
+                        nameof(MetadataHierarchyDetector), info["course"]);
+                }
 
-                    if (!string.IsNullOrEmpty(frontmatter))
+                // Only set class if we're at class level or deeper (depth >= 3)
+                if (depthLevel >= 3)
+                {
+                    info["class"] = pathSegments[2];
+                    if (_verbose)
                     {
-                        var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+                        _logger.LogInformationWithPath("Setting class from third path segment: {Class}",
+                            nameof(MetadataHierarchyDetector), info["class"]);
+                    }
 
-                        if (frontmatterDict.TryGetValue("index-type", out object? value))
+                    // Only set module if we're at module level or deeper (depth >= 4)
+                    if (depthLevel >= 4)
+                    {
+                        info["module"] = pathSegments[3];
+                        if (_verbose)
                         {
-                            string indexType = value.ToString() ?? string.Empty;
-                            string dirName = currentDir.Name;
-
-                            // For program, we want the highest level (closest to root)
-                            // But don't override existing Value Chain Management setting
-                            if (indexType == "program-index" && string.IsNullOrEmpty(info["program"]))
-                            {
-                                // Only update if we haven't found a program yet, or if this is higher in the hierarchy
-                                if (highestProgramDir == null || GetPathDepth(currentDir) < GetPathDepth(highestProgramDir))
-                                {
-                                    highestProgramDir = currentDir;
-                                    info["program"] = GetValueOrDefault(frontmatterDict, "title", dirName);
-                                    if (_verbose)
-                                    {
-                                        _logger.LogInformationWithPath("Found program: {Program} at {Dir}", nameof(MetadataHierarchyDetector), info["program"], currentDir.FullName);
-                                    }
-                                }
-                            }
-
-                            // For course and class, we want the deepest level (closest to the file)
-                            else if (indexType == "course-index" && currentLevel > courseLevel)
-                            {
-                                courseLevel = currentLevel;
-                                info["course"] = GetValueOrDefault(frontmatterDict, "title", dirName);
-                                if (_verbose)
-                                {
-                                    _logger.LogInformationWithPath("Found course: {Course} at {Dir}", nameof(MetadataHierarchyDetector), info["course"], currentDir.FullName);
-                                }
-                            }
-
-                            else if (indexType == "class-index" && currentLevel > classLevel)
-                            {
-                                classLevel = currentLevel;
-                                info["class"] = GetValueOrDefault(frontmatterDict, "title", dirName);
-                                if (_verbose)
-                                {
-                                    _logger.LogInformationWithPath("Found class: {Class} at {Dir}", nameof(MetadataHierarchyDetector), info["class"], currentDir.FullName);
-                                }
-                            }
+                            _logger.LogInformationWithPath("Setting module from fourth path segment: {Module}",
+                                nameof(MetadataHierarchyDetector), info["module"]);
                         }
                     }
                 }
-                catch (Exception ex)
-                {
-                    _logger.LogWarningWithPath(ex, "Error processing index file {File}: {Error}", nameof(MetadataHierarchyDetector), indexFile.FullName, ex.Message);
-                }
             }
 
-            // Move up to the parent directory
-            currentDir = currentDir.Parent;
-            currentLevel++;
+            if (_verbose)
+            {
+                _logger.LogInformationWithPath(
+                    "Path-based hierarchy detection results: program='{Program}', course='{Course}', class='{Class}', module='{Module}'",
+                    nameof(MetadataHierarchyDetector),
+                    info["program"],
+                    info["course"],
+                    info["class"],
+                    info.ContainsKey("module") ? info["module"] : string.Empty);
+            }
         }
-
-        // If program is still null, try to determine from path structure
-        if (string.IsNullOrEmpty(info["program"]) && !string.IsNullOrEmpty(filePath))
+        catch (Exception ex)
         {
-            try
-            {
-                // Get the relevant parts of the path between vault root and file
-                string relativePath = GetRelativePath(_notebookVaultRoot, filePath);
-                string[] relevant = [.. relativePath.Split(Path.DirectorySeparatorChar).Where(p => !string.IsNullOrEmpty(p) && p != "01_Projects")];
-
-                // Walk up the directory tree from the file's parent, looking for program-index.md
-                string? programTitle = null;
-                var searchDir = new DirectoryInfo(Path.GetDirectoryName(filePath) ?? string.Empty);
-                var rootDir = new DirectoryInfo(_notebookVaultRoot);
-
-                while (searchDir != null && IsSubdirectoryOf(searchDir, rootDir))
-                {
-                    var programIndex = Path.Combine(searchDir.FullName, "program-index.md");
-                    if (File.Exists(programIndex))
-                    {
-                        try
-                        {
-                            var content = File.ReadAllText(programIndex);
-                            var frontmatter = _yamlHelper.ExtractFrontmatter(content);
-                            if (!string.IsNullOrEmpty(frontmatter))
-                            {
-                                var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
-                                if (frontmatterDict.TryGetValue("title", out object? value))
-                                {
-                                    programTitle = value.ToString();
-                                    break;
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            // Continue searching if we encounter an error
-                        }
-                    }
-                    searchDir = searchDir.Parent;
-                }
-
-                if (programTitle != null)
-                {
-                    info["program"] = programTitle;
-                }
-                // Fallback to directory structure
-                else if (relevant.Length >= 1)
-                {
-                    info["program"] = info["program"] ?? relevant[0];
-                }
-
-                // Always assign course and class as the next two folders after program, if available
-                if (relevant.Length >= 2 && string.IsNullOrEmpty(info["course"]))
-                {
-                    info["course"] = relevant[1];
-                }
-                if (relevant.Length >= 3 && string.IsNullOrEmpty(info["class"]))
-                {
-                    info["class"] = relevant[2];
-                }
-
-                if (_verbose)
-                {
-                    _logger.LogInformationWithPath("Path fallback: program='{Program}', course='{Course}', class='{Class}'", nameof(MetadataHierarchyDetector), info["program"], info["course"], info["class"]);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarningWithPath(ex, "Error during path-based fallback: {Error}", nameof(MetadataHierarchyDetector), ex.Message);
-            }
-
-            // If we still don't have a program, use a default
-            if (string.IsNullOrEmpty(info["program"]))
-            {
-                info["program"] = "MBA Program";
-                if (_verbose)
-                {
-                    _logger.LogInformationWithPath("No program identifier found, using default: {Program}", nameof(MetadataHierarchyDetector), info["program"]);
-                }
-            }
+            _logger.LogWarningWithPath(ex, "Error during path-based hierarchy detection: {Error}",
+                nameof(MetadataHierarchyDetector), ex.Message);
         }
 
-        // Debug logging to help understand the final hierarchy
+        // If program is still empty (no override and no path elements), use vault root name as fallback
+        if (string.IsNullOrEmpty(info["program"]))
+        {
+            string vaultRootName = Path.GetFileName(Path.GetFullPath(_notebookVaultRoot).TrimEnd(Path.DirectorySeparatorChar));
+
+            if (!string.IsNullOrEmpty(vaultRootName))
+            {
+                info["program"] = vaultRootName;
+                if (_verbose)
+                {
+                    _logger.LogInformationWithPath("No program from path, using vault root folder name: {Program}",
+                        nameof(MetadataHierarchyDetector), vaultRootName);
+                }
+            }
+            else
+            {
+                if (_verbose)
+                {
+                    _logger.LogInformationWithPath("No program could be determined from path or vault root",
+                        nameof(MetadataHierarchyDetector));
+                }
+            }
+        }        // Debug logging to help understand the final hierarchy
         if (_verbose)
         {
-            _logger.LogInformationWithPath("Final metadata info: Program='{Program}', Course='{Course}', Class='{Class}'", nameof(MetadataHierarchyDetector), info["program"], info["course"], info["class"]);
+            _logger.LogInformationWithPath("Final metadata info: Program='{Program}', Course='{Course}', Class='{Class}'",
+                nameof(MetadataHierarchyDetector),
+                info.TryGetValue("program", out var program) ? program : string.Empty,
+                info.TryGetValue("course", out var course) ? course : string.Empty,
+                info.TryGetValue("class", out var classValue) ? classValue : string.Empty);
         }
 
         return info;
     }
-
     /// <summary>
-    /// Updates a metadata dictionary with program, course, and class information from a hierarchy info dictionary.
+    /// Updates a metadata dictionary with program, course, class, and module information appropriate for a specific hierarchy level.
     /// </summary>
     /// <param name="metadata">The existing metadata dictionary to update (will be mutated).</param>
-    /// <param name="hierarchyInfo">The hierarchy information to apply (should contain keys <c>program</c>, <c>course</c>, <c>class</c>).</param>
+    /// <param name="hierarchyInfo">The hierarchy information to apply (should contain keys for hierarchical levels).</param>
+    /// <param name="templateType">Optional template type to determine which hierarchy levels to include. Defaults to including all detected levels.</param>
     /// <returns>The updated metadata dictionary with hierarchy fields set if missing or empty.</returns>
     /// <remarks>
+    /// <para>
     /// Only updates fields that are missing or empty in the original metadata.
+    /// The method will look for the following keys in the hierarchyInfo dictionary:
+    /// - program: The program name (top level of the hierarchy) - included for all index types
+    /// - course: The course name (second level of the hierarchy) - included for course, class and module index types
+    /// - class: The class name (third level of the hierarchy) - included for class and module index types
+    /// - module: The module name (fourth level of the hierarchy) - included only for module index types
+    /// </para>
+    /// <para>
+    /// Each level only includes metadata appropriate for its level in the hierarchy.
+    /// For example, a program-level index will only include program metadata, while
+    /// a class-level index will include program, course, and class metadata.
+    /// </para>
     /// </remarks>
     /// <example>
     /// <code>
-    /// var updated = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, info);
+    /// // For a program-level index
+    /// var updated = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, info, "program-index");
+    /// // Only includes program metadata
+    ///
+    /// // For a class-level index
+    /// var updated = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, info, "class-index");
+    /// // Includes program, course, and class metadata
     /// </code>
     /// </example>
     public static Dictionary<string, object> UpdateMetadataWithHierarchy(
         Dictionary<string, object> metadata,
-        Dictionary<string, string> hierarchyInfo)
-    {
-        // Update program if needed and if we found program info
-        if (!string.IsNullOrEmpty(hierarchyInfo["program"]) &&
-            (!metadata.ContainsKey("program") ||
-             string.IsNullOrEmpty(metadata["program"]?.ToString())))
-        {
-            metadata["program"] = hierarchyInfo["program"];
-        }
+        Dictionary<string, string> hierarchyInfo,
+        string? templateType = null)
+    {        // Determine which levels to include based on the index type
+        int maxLevel;
 
-        // Update course if needed and if we found course info
-        if (!string.IsNullOrEmpty(hierarchyInfo["course"]) &&
-            (!metadata.ContainsKey("course") ||
-             string.IsNullOrEmpty(metadata["course"]?.ToString())))
+        Console.WriteLine($"DEBUG: UpdateMetadataWithHierarchy called with templateType='{templateType}'"); if (string.IsNullOrEmpty(templateType) || templateType == "main-index" || templateType == "main")
         {
-            metadata["course"] = hierarchyInfo["course"];
+            // For main-index (vault root), include NO hierarchy metadata
+            maxLevel = 0;
+            Console.WriteLine($"DEBUG: Setting maxLevel=0 for main index (templateType='{templateType}')");
         }
-
-        // Update class if needed and if we found class info
-        if (!string.IsNullOrEmpty(hierarchyInfo["class"]) &&
-            (!metadata.ContainsKey("class") ||
-             string.IsNullOrEmpty(metadata["class"]?.ToString())))
+        else if (templateType == "program-index" || templateType == "program")
         {
-            metadata["class"] = hierarchyInfo["class"];
+            // For program index, only include program
+            maxLevel = 1;
+        }
+        else if (templateType == "course-index" || templateType == "course")
+        {
+            // For course index, include program and course
+            maxLevel = 2;
+        }
+        else if (templateType == "class-index" || templateType == "class")
+        {
+            // For class index, include program, course, and class
+            maxLevel = 3;
+        }
+        else if (templateType == "module-index" || templateType == "module" || templateType == "lesson-index" || templateType == "lesson")
+        {
+            // For module/lesson indices, include all levels
+            maxLevel = 4;
+        }
+        else if (templateType?.EndsWith("-note") == true)
+        {
+            // For content templates (ending with -note), include all hierarchy levels
+            maxLevel = 4;
+        }
+        else
+        {
+            // For unknown types, include all levels as a fallback
+            maxLevel = 4;
+        }// List of hierarchy levels in order (top to bottom)
+        string[] hierarchyLevels = ["program", "course", "class", "module"];        // If maxLevel is 0, remove all hierarchy metadata
+        if (maxLevel == 0)
+        {
+            foreach (var level in hierarchyLevels)
+            {
+                if (metadata.ContainsKey(level))
+                {
+                    Console.WriteLine($"DEBUG: Removing hierarchy metadata '{level}' for maxLevel=0 (templateType={templateType})");
+                    metadata.Remove(level);
+                }
+            }
+            return metadata;
+        }        // Track if we've broken the hierarchy chain
+        bool hierarchyChainBroken = false;
+        int currentLevel = 0;
+
+        // Update each level in sequence, but only up to the maximum level for this index type
+        foreach (var level in hierarchyLevels)
+        {
+            currentLevel++;
+
+            // If we've exceeded the maximum level for this index type, remove any existing metadata
+            if (currentLevel > maxLevel)
+            {
+                if (metadata.ContainsKey(level))
+                {
+                    Console.WriteLine($"DEBUG: Removing hierarchy metadata '{level}' for maxLevel={maxLevel} (templateType={templateType})");
+                    metadata.Remove(level);
+                }
+                continue;
+            }
+
+            // If the hierarchy chain is broken, remove any remaining levels
+            if (hierarchyChainBroken)
+            {
+                if (metadata.ContainsKey(level))
+                {
+                    Console.WriteLine($"DEBUG: Removing hierarchy metadata '{level}' due to broken chain (templateType={templateType})");
+                    metadata.Remove(level);
+                }
+                continue;
+            }
+
+            // Check if this level exists in the hierarchy info
+            if (hierarchyInfo.TryGetValue(level, out string? value) && !string.IsNullOrEmpty(value))
+            {
+                // Always update the metadata with the correct value (aggressive update)
+                var currentValue = metadata.ContainsKey(level) ? metadata[level]?.ToString() : null;
+                if (currentValue != value)
+                {
+                    Console.WriteLine($"DEBUG: Updating hierarchy metadata '{level}' from '{currentValue}' to '{value}' (templateType={templateType})");
+                    metadata[level] = value;
+                }
+            }
+            else
+            {
+                // If this level is missing from hierarchy info, remove it and break the chain for lower levels
+                if (metadata.ContainsKey(level))
+                {
+                    Console.WriteLine($"DEBUG: Removing hierarchy metadata '{level}' - not found in hierarchy info (templateType={templateType})");
+                    metadata.Remove(level);
+                }
+                hierarchyChainBroken = true;
+            }
         }
 
         return metadata;
@@ -399,33 +405,6 @@ public class MetadataHierarchyDetector(
     }
 
     /// <summary>
-    /// Determines if <paramref name="child"/> is a subdirectory of <paramref name="parent"/>.
-    /// </summary>
-    /// <param name="child">The child directory.</param>
-    /// <param name="parent">The parent directory.</param>
-    /// <returns><c>true</c> if <paramref name="child"/> is a subdirectory of <paramref name="parent"/>; otherwise, <c>false</c>.</returns>
-    private static bool IsSubdirectoryOf(DirectoryInfo child, DirectoryInfo parent)
-    {
-        if (child == null || parent == null)
-            return false;
-
-        var childPath = child.FullName;
-        var parentPath = parent.FullName;
-
-        return childPath.StartsWith(parentPath, StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Gets the depth (number of path segments) of a directory.
-    /// </summary>
-    /// <param name="dir">The directory to measure.</param>
-    /// <returns>The number of segments in the directory's full path.</returns>
-    private static int GetPathDepth(DirectoryInfo dir)
-    {
-        return dir.FullName.Split(Path.DirectorySeparatorChar).Length;
-    }
-
-    /// <summary>
     /// Gets the relative path from <paramref name="basePath"/> to <paramref name="fullPath"/>.
     /// </summary>
     /// <param name="basePath">The base directory path.</param>
@@ -433,16 +412,26 @@ public class MetadataHierarchyDetector(
     /// <returns>The relative path from <paramref name="basePath"/> to <paramref name="fullPath"/>.</returns>
     private static string GetRelativePath(string basePath, string fullPath)
     {
-        // Ensure trailing directory separator for proper relative path calculation
-        if (!basePath.EndsWith(Path.DirectorySeparatorChar))
-            basePath += Path.DirectorySeparatorChar;
+        // Normalize paths for comparison
+        string normalizedBasePath = Path.GetFullPath(basePath);
+        string normalizedFullPath = Path.GetFullPath(fullPath);
 
-        if (fullPath.StartsWith(basePath, StringComparison.OrdinalIgnoreCase))
+        // If the paths are the same (vault root case), return empty string
+        if (string.Equals(normalizedBasePath, normalizedFullPath, StringComparison.OrdinalIgnoreCase))
         {
-            return fullPath[basePath.Length..];
+            return string.Empty;
+        }
+
+        // Ensure trailing directory separator for proper relative path calculation
+        if (!normalizedBasePath.EndsWith(Path.DirectorySeparatorChar))
+            normalizedBasePath += Path.DirectorySeparatorChar;
+
+        if (normalizedFullPath.StartsWith(normalizedBasePath, StringComparison.OrdinalIgnoreCase))
+        {
+            return normalizedFullPath[normalizedBasePath.Length..];
         }
 
         // If not a subdirectory, return the full path (though this shouldn't happen)
-        return fullPath;
+        return normalizedFullPath;
     }
 }

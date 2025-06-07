@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Notebook Automation Tool
 
 A comprehensive toolkit for managing course notes and resources in an Obsidian vault. The suite of scripts automates the process of converting course materials, generating index files, and organizing content for easy navigation and retrieval. It also supports advanced workflows for PDF and video reference note generation with OneDrive integration and AI-powered summaries.

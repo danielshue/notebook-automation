@@ -1,0 +1,8 @@
+{
+  "id": "41a723f6-06d0-4bbf-b794-b01cefe6e5a1",
+  "title": "Banner Field YAML Serialization Fix",
+  "details": "Fixed issues with banner field serialization in YAML frontmatter:\n\n1. Modified the `NoQuotesForBannerVisitor` class to better handle banner field serialization and added improved documentation.\n\n2. Updated `MarkdownNoteBuilder.BuildNote()` method to:\n   - Check for and remove quotes from banner values before serialization\n   - Post-process the serialized YAML to specifically replace quoted banner values with unquoted ones\n   - Add proper line breaks between XML documentation and method declaration\n\n3. Modified `VaultIndexProcessor` to check for and remove quotes from banner values during index generation.\n\nThis ensures Obsidian wiki links in the banner field are not surrounded by quotes in the generated markdown files (e.g., `banner: [[gies-banner.png]]` instead of `banner: '[[gies-banner.png]]'` or `banner: \"[[gies-banner.png]]\"`). \n\nThe fixes work with both single and double quotes, handling them at multiple levels to ensure proper output regardless of how the banner value enters the system.\n\nKey files modified:\n- NotebookAutomation.Core/Utils/NoQuotesForBannerVisitor.cs\n- NotebookAutomation.Core/Utils/MarkdownNoteBuilder.cs\n- NotebookAutomation.Core/Tools/Vault/VaultIndexProcessor.cs",
+  "category": "code_updates",
+  "dateCreated": "2025-06-06T14:16:06.815Z",
+  "dateUpdated": "2025-06-06T14:16:06.815Z"
+}

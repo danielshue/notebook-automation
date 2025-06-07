@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # MBA Notebook Automation - Primary Scripts Reference
 
 This document provides a quick reference list of the primary scripts in the MBA Notebook Automation toolkit, organized by their function.

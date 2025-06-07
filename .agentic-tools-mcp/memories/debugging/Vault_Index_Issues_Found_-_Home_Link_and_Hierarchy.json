@@ -1,0 +1,8 @@
+{
+  "id": "c1059ed9-3de4-451a-a261-0b78fe5f84ac",
+  "title": "Vault Index Issues Found - Home Link and Hierarchy",
+  "details": "During investigation of vault index generation, found two key issues that need to be fixed:\n\n1. **HOME LINK IS EMPTY**: \n   - The Home link shows `🏠 [[|Home]]` instead of `🏠 [[MBA|Home]]`  \n   - GetRootIndexFilename method is returning empty string\n   - Need to debug why the main index file search is failing\n\n2. **HIERARCHY METADATA IS WRONG**:\n   - All frontmatter shows filesystem paths instead of course hierarchy:\n     ```\n     program: 'D:'\n     course: source  \n     class: notebook-automation\n     module: temp-test-vault\n     ```\n   - Should show proper course structure like:\n     ```\n     program: MBA\n     course: Finance\n     class: Corporate-Finance\n     module: Week1\n     ```\n\n3. **WHAT'S WORKING**:\n   - Navigation structure: Only one navigation line per index ✓\n   - Section headers: \"Courses\", \"Classes\", \"Modules\" are correct ✓\n   - Back navigation uses friendly names ✓\n   - No duplicate parent/⬆️ links ✓\n\nNext steps: Fix GetRootIndexFilename and hierarchy detection logic.",
+  "category": "debugging",
+  "dateCreated": "2025-06-07T00:27:36.418Z",
+  "dateUpdated": "2025-06-07T00:27:36.418Z"
+}

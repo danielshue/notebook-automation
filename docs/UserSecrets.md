@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Using User Secrets in Notebook Automation
 
 User secrets provide a way to store sensitive information like API keys outside of your configuration files. This ensures that sensitive data doesn't get committed to source control and is only available on your development machine.
