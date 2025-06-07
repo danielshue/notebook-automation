@@ -1,17 +1,20 @@
 # Video - Consumer Psychology in Digital Marketing
 
 ## Video Information
-**Duration:** 43 minutes  
-**Instructor:** Dr. Sarah Mitchell  
-**Module:** Consumer Behavior and Digital Strategy  
+
+**Duration:** 43 minutes
+**Instructor:** Dr. Sarah Mitchell
+**Module:** Consumer Behavior and Digital Strategy
 
 ## Learning Objectives
+
 - Understand psychological triggers in digital marketing
 - Apply behavioral economics principles to marketing campaigns
 - Design persuasive user experiences
 - Leverage social proof and authority in digital contexts
 
 ## Video Outline
+
 1. **Psychological Foundations** (0:00-11:00)
    - Cognitive biases in decision-making
    - System 1 vs System 2 thinking
@@ -37,28 +40,33 @@
    - Long-term customer value
 
 ## Practical Applications
+
 - Landing page psychology optimization
 - Email subject line persuasion
 - Social media engagement triggers
 - E-commerce conversion psychology
 
 ## Case Studies
+
 - Amazon's persuasion techniques
 - Netflix recommendation psychology
 - Booking.com urgency tactics
 - Apple's premium positioning psychology
 
 ## Tools for Analysis
+
 - Heat mapping software
 - Eye tracking studies
 - A/B testing platforms
 - User behavior analytics
 
 ## Ethical Framework
+
 - Consumer protection principles
 - Transparency requirements
 - Informed consent practices
 - Sustainable marketing approaches
 
 ## Tags
-#marketing #psychology #consumer-behavior #digital-marketing #video #module2
+
+# marketing #psychology #consumer-behavior #digital-marketing #video #module2

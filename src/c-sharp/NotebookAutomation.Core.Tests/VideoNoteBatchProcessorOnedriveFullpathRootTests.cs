@@ -20,26 +20,37 @@ public class VideoNoteBatchProcessorOnedriveFullpathRootTests
     // private Mock<AISummarizer> _aiSummarizerMock;
     private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
     private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-    private VideoNoteBatchProcessor _processor; [TestInitialize]
+    private VideoNoteBatchProcessor _processor;
+
+    private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
+    {
+        return new MetadataHierarchyDetector(
+            Mock.Of<ILogger<MetadataHierarchyDetector>>(),
+            new AppConfig());
+    }
+
+    [TestInitialize]
     public void Setup()
     {
         _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(_testDir);
         _outputDir = Path.Combine(_testDir, "output");
+        Directory.CreateDirectory(_testDir);
         Directory.CreateDirectory(_outputDir);
 
         _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
 
         // Create a TestableAISummarizer that can be used in tests
-        TestableAISummarizer testAISummarizer = new(Mock.Of<ILogger<AISummarizer>>());        // Create a mock for IOneDriveService
+        TestableAISummarizer testAISummarizer = new(Mock.Of<ILogger<AISummarizer>>());
+        // Create a mock for IOneDriveService
         IOneDriveService mockOneDriveService = Mock.Of<IOneDriveService>();
         // Create a mock for IYamlHelper
-        IYamlHelper mockYamlHelper = Mock.Of<IYamlHelper>();        // Set up mock with test dependencies
+        IYamlHelper mockYamlHelper = Mock.Of<IYamlHelper>();
+        // Set up mock with test dependencies
         _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
-            MockBehavior.Loose,
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             testAISummarizer,
-            mockYamlHelper,  // Add YamlHelper as required parameter
+            mockYamlHelper,
+            CreateMetadataHierarchyDetector(),
             mockOneDriveService,
             null,  // AppConfig
             null); // LoggingService

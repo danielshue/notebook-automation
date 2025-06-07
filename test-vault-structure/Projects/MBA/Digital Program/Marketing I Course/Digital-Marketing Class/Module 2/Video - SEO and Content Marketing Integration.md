@@ -1,17 +1,20 @@
 # Video - SEO and Content Marketing Integration
 
 ## Video Information
-**Duration:** 44 minutes  
-**Instructor:** Dr. Alex Thompson  
-**Module:** Marketing Automation and Analytics  
+
+**Duration:** 44 minutes
+**Instructor:** Dr. Alex Thompson
+**Module:** Marketing Automation and Analytics
 
 ## Learning Objectives
+
 - Understand SEO fundamentals and ranking factors
 - Create SEO-optimized content strategies
 - Integrate content marketing with SEO goals
 - Measure and track SEO performance
 
 ## Video Outline
+
 1. **SEO Fundamentals** (0:00-11:00)
    - How search engines work
    - On-page vs off-page SEO
@@ -37,6 +40,7 @@
    - ROI measurement techniques
 
 ## Tools Demonstrated
+
 - Google Search Console
 - SEMrush keyword research
 - Ahrefs competitor analysis
@@ -44,4 +48,5 @@
 - Google PageSpeed Insights
 
 ## Tags
-#marketing #seo #content-marketing #digital-marketing #video #module2
+
+# marketing #seo #content-marketing #digital-marketing #video #module2

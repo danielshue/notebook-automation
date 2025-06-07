@@ -1,17 +1,20 @@
 # Video - Marketing Analytics and Data Visualization
 
 ## Video Information
-**Duration:** 52 minutes  
-**Instructor:** Dr. Michael Rodriguez  
-**Module:** Marketing Automation and Analytics  
+
+**Duration:** 52 minutes
+**Instructor:** Dr. Michael Rodriguez
+**Module:** Marketing Automation and Analytics
 
 ## Learning Objectives
+
 - Set up comprehensive marketing analytics tracking
 - Create meaningful data visualizations and dashboards
 - Analyze customer journey and attribution models
 - Make data-driven marketing decisions
 
 ## Video Outline
+
 1. **Analytics Foundation** (0:00-13:00)
    - Google Analytics 4 setup and configuration
    - UTM parameter strategies
@@ -37,6 +40,7 @@
    - Predictive analytics applications
 
 ## Tools and Platforms
+
 - Google Analytics 4
 - Google Data Studio/Looker Studio
 - Tableau for advanced visualization
@@ -44,18 +48,21 @@
 - HubSpot analytics features
 
 ## Practical Exercises
+
 - Build a comprehensive marketing dashboard
 - Analyze customer acquisition costs
 - Create attribution models
 - Design executive summary reports
 
 ## Case Studies
+
 - E-commerce attribution analysis
 - SaaS customer journey mapping
 - Multi-channel campaign performance
 - Marketing ROI optimization
 
 ## Key Metrics Covered
+
 - Customer Acquisition Cost (CAC)
 - Customer Lifetime Value (CLV)
 - Return on Ad Spend (ROAS)
@@ -63,4 +70,5 @@
 - Conversion rates by channel
 
 ## Tags
-#marketing #analytics #data-visualization #digital-marketing #video #module2
+
+# marketing #analytics #data-visualization #digital-marketing #video #module2

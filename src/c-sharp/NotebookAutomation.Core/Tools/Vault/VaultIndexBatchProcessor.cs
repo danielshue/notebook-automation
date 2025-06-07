@@ -201,13 +201,13 @@ public class VaultIndexBatchProcessor(
             OnProcessingProgressChanged(folderPath, statusMessage, currentFolder, totalFolders);
         }
     }    /// <summary>
-    /// Generates vault index files for folders in the specified directory.
-    /// </summary>
-    /// <param name="vaultPath">Path to the vault directory.</param>
-    /// <param name="dryRun">If true, simulates processing without making actual changes.</param>
-    /// <param name="templateTypes">Optional filter for specific template types to generate.</param>
-    /// <param name="forceOverwrite">If true, regenerates index files even if they already exist.</param>
-    /// <returns>A summary of processing results.</returns>
+         /// Generates vault index files for folders in the specified directory.
+         /// </summary>
+         /// <param name="vaultPath">Path to the vault directory.</param>
+         /// <param name="dryRun">If true, simulates processing without making actual changes.</param>
+         /// <param name="templateTypes">Optional filter for specific template types to generate.</param>
+         /// <param name="forceOverwrite">If true, regenerates index files even if they already exist.</param>
+         /// <returns>A summary of processing results.</returns>
     public async Task<VaultIndexBatchResult> GenerateIndexesAsync(
         string vaultPath,
         bool dryRun = false,
@@ -266,7 +266,7 @@ public class VaultIndexBatchProcessor(
                         folderIndex + 1, queueCopy.Count);
 
                     var stopwatch = Stopwatch.StartNew();                    // Use the explicit vaultRoot if provided, otherwise use vaultPath
-                    string effectiveVaultPath = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : vaultPath;                    bool wasGenerated = await _indexProcessor.GenerateIndexAsync(
+                    string effectiveVaultPath = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : vaultPath; bool wasGenerated = await _indexProcessor.GenerateIndexAsync(
                         folderPath,
                         effectiveVaultPath,
                         forceOverwrite,

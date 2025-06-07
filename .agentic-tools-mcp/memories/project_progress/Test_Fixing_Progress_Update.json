@@ -1,0 +1,8 @@
+{
+  "id": "a80c3c3d-4a01-4cd9-bb57-41d985579f67",
+  "title": "Test Fixing Progress Update",
+  "details": "Successfully fixed most test failures related to constructor parameter mismatches:\n\n## Fixed Issues:\n1. **PromptTemplateService Constructor**: Added missing IYamlHelper parameter to all test instantiations\n2. **MetadataHierarchyDetector Mocking**: Replaced Mock.Of<MetadataHierarchyDetector>() with real instances using helper methods\n3. **VideoNoteProcessor Mocking**: Fixed constructor parameter order and added MetadataHierarchyDetector parameter\n4. **Build Errors**: Fixed ServiceRegistration.cs to include IYamlHelper in PromptTemplateService DI setup\n\n## Remaining Test Failures (3 total):\n1. **PromptTemplateServiceTests.LoadTemplateAsync_GetsCorrectDefaultTemplate**: \n   - Test expects template loaded from file but gets default template\n   - Issue: AppContext.BaseDirectory during test points to test output, prompt files not found\n   - Prompt files exist at: d:\\source\\notebook-automation\\prompts\\\n   \n2. **MetadataHierarchyDetectorTests.UpdateMetadataWithHierarchy_DoesNotOverrideExistingValues**:\n   - Expected: \"Existing Program\", Actual: \"MBA Program\"\n   - Test expects existing metadata values to be preserved\n   \n3. **MetadataHierarchyDetectorTests.UpdateMetadataWithHierarchy_RespectsTemplateTypeHierarchy**:\n   - KeyNotFoundException: The given key 'program' was not present in the dictionary\n   - Missing 'program' key in metadata dictionary\n\n## Status:\n- Build: ✅ Successful (1 warning only)\n- Most constructor/DI issues: ✅ Fixed\n- Remaining failures: 🔍 Under investigation",
+  "category": "project_progress",
+  "dateCreated": "2025-06-07T07:17:54.730Z",
+  "dateUpdated": "2025-06-07T07:17:54.730Z"
+}

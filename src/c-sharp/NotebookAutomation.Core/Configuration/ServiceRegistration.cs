@@ -105,8 +105,9 @@ public static class ServiceRegistration
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<PromptTemplateService>();
+            var yamlHelper = provider.GetRequiredService<IYamlHelper>();
             var appConfig = provider.GetRequiredService<AppConfig>();
-            return new PromptTemplateService(logger, appConfig);
+            return new PromptTemplateService(logger, yamlHelper, appConfig);
         });
 
         // Register Semantic Kernel

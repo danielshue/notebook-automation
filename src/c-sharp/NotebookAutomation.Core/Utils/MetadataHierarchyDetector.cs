@@ -283,9 +283,9 @@ public class MetadataHierarchyDetector(
 
         Console.WriteLine($"DEBUG: UpdateMetadataWithHierarchy called with templateType='{templateType}'"); if (string.IsNullOrEmpty(templateType) || templateType == "main-index" || templateType == "main")
         {
-            // For main-index (vault root), include NO hierarchy metadata
-            maxLevel = 0;
-            Console.WriteLine($"DEBUG: Setting maxLevel=0 for main index (templateType='{templateType}')");
+            // For main-index (vault root), include only program metadata
+            maxLevel = 1;
+            Console.WriteLine($"DEBUG: Setting maxLevel=1 for main index (templateType='{templateType}')");
         }
         else if (templateType == "program-index" || templateType == "program")
         {
@@ -358,17 +358,19 @@ public class MetadataHierarchyDetector(
                     metadata.Remove(level);
                 }
                 continue;
-            }
-
-            // Check if this level exists in the hierarchy info
+            }            // Check if this level exists in the hierarchy info
             if (hierarchyInfo.TryGetValue(level, out string? value) && !string.IsNullOrEmpty(value))
             {
-                // Always update the metadata with the correct value (aggressive update)
+                // Only update if the current value is missing or empty (non-aggressive update)
                 var currentValue = metadata.ContainsKey(level) ? metadata[level]?.ToString() : null;
-                if (currentValue != value)
+                if (string.IsNullOrEmpty(currentValue))
                 {
                     Console.WriteLine($"DEBUG: Updating hierarchy metadata '{level}' from '{currentValue}' to '{value}' (templateType={templateType})");
                     metadata[level] = value;
+                }
+                else
+                {
+                    Console.WriteLine($"DEBUG: Keeping existing hierarchy metadata '{level}' = '{currentValue}' (templateType={templateType})");
                 }
             }
             else

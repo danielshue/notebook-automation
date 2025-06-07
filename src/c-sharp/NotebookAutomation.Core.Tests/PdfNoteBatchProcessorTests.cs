@@ -4,7 +4,9 @@ using System.IO;
 
 using Moq;
 
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Tools.PdfProcessing;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tests;
 
@@ -18,18 +20,32 @@ public class PdfNoteBatchProcessorTests
     private TestBatchProcessor _batchProcessor = null!;
     private PdfNoteBatchProcessor _processor = null!;
     private string _testDir = null!;
-    private string _outputDir = null!;
-
-    /// <summary>
-    /// Test double for DocumentNoteBatchProcessor that overrides ProcessDocumentsAsync.
-    /// </summary>
+    private string _outputDir = null!;    /// <summary>
+                                          /// Test double for DocumentNoteBatchProcessor that overrides ProcessDocumentsAsync.
+                                          /// </summary>
     private class TestBatchProcessor : Core.Tools.Shared.DocumentNoteBatchProcessor<PdfNoteProcessor>
     {
         public TestBatchProcessor() : base(
             new Mock<ILogger<Core.Tools.Shared.DocumentNoteBatchProcessor<PdfNoteProcessor>>>().Object,
-            new Mock<PdfNoteProcessor>(MockBehavior.Loose, Mock.Of<ILogger<PdfNoteProcessor>>(), new TestableAISummarizer(Mock.Of<ILogger<Core.Services.AISummarizer>>())).Object,
+            CreatePdfNoteProcessor(),
             new TestableAISummarizer(Mock.Of<ILogger<Core.Services.AISummarizer>>()))
         { }
+
+        private static PdfNoteProcessor CreatePdfNoteProcessor()
+        {
+            var mockAppConfig = new AppConfig();
+            mockAppConfig.Paths = new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() };
+            var hierarchyDetector = new MetadataHierarchyDetector(
+                Mock.Of<ILogger<MetadataHierarchyDetector>>(),
+                mockAppConfig
+            );
+            return new PdfNoteProcessor(
+                Mock.Of<ILogger<PdfNoteProcessor>>(),
+                new TestableAISummarizer(Mock.Of<ILogger<Core.Services.AISummarizer>>()),
+                Mock.Of<IYamlHelper>(),
+                hierarchyDetector
+            );
+        }
 
         public override Task<Core.Tools.Shared.BatchProcessResult> ProcessDocumentsAsync(
             string input,

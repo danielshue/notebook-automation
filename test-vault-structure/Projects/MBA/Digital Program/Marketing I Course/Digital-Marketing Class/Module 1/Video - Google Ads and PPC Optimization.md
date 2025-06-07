@@ -1,17 +1,20 @@
 # Video - Google Ads and PPC Optimization
 
 ## Video Information
-**Duration:** 55 minutes  
-**Instructor:** Dr. Robert Chen  
-**Module:** Digital Marketing Fundamentals  
+
+**Duration:** 55 minutes
+**Instructor:** Dr. Robert Chen
+**Module:** Digital Marketing Fundamentals
 
 ## Learning Objectives
+
 - Master Google Ads campaign setup and optimization
 - Understand keyword research and bidding strategies
 - Learn ad copywriting and landing page optimization
 - Analyze and improve campaign performance metrics
 
 ## Video Outline
+
 1. **Google Ads Fundamentals** (0:00-12:00)
    - Account structure and organization
    - Campaign types and objectives
@@ -37,6 +40,7 @@
    - Budget optimization techniques
 
 ## Hands-on Demonstrations
+
 - Setting up a Google Ads campaign from scratch
 - Keyword research using Google Keyword Planner
 - Creating compelling ad copy variations
@@ -44,6 +48,7 @@
 - Analyzing performance reports
 
 ## Tools and Resources
+
 - Google Ads interface
 - Google Keyword Planner
 - Google Analytics integration
@@ -51,12 +56,14 @@
 - Landing page testing tools
 
 ## Case Study Examples
+
 - E-commerce campaign optimization
 - B2B lead generation campaigns
 - Local business advertising
 - Mobile app promotion strategies
 
 ## Best Practices Covered
+
 - Campaign structure optimization
 - Ad scheduling and geographic targeting
 - Device bid adjustments
@@ -64,6 +71,7 @@
 - Seasonal campaign management
 
 ## Common Mistakes to Avoid
+
 - Poor keyword organization
 - Irrelevant ad copy
 - Weak landing page experience
@@ -71,11 +79,14 @@
 - Ignoring mobile optimization
 
 ## Assignment Preview
+
 Students will create and optimize a Google Ads campaign including:
+
 - Keyword research and selection
 - Ad copy creation (3 variations)
 - Landing page recommendations
 - Performance tracking setup
 
 ## Tags
-#marketing #google-ads #ppc #digital-marketing #video #module1 #advertising
+
+# marketing #google-ads #ppc #digital-marketing #video #module1 #advertising

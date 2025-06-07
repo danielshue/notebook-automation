@@ -2,9 +2,11 @@
 
 using Moq;
 
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.PdfProcessing;
 using NotebookAutomation.Core.Tools.Shared;
+using NotebookAutomation.Core.Utils;
 // Duplicate using removed
 
 namespace NotebookAutomation.Core.Tests;
@@ -21,16 +23,25 @@ public class BatchProcessResultTests
     private Mock<ILogger<AISummarizer>> _aiLoggerMock;
     private Mock<AISummarizer> _aiSummarizerMock;
     private string _testDir;
-    private string _outputDir;
-
-    [TestInitialize]
+    private string _outputDir; [TestInitialize]
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>>();
         _pdfLoggerMock = new Mock<ILogger<PdfNoteProcessor>>();
         _aiLoggerMock = new Mock<ILogger<AISummarizer>>();
         _aiSummarizerMock = new Mock<AISummarizer>(_aiLoggerMock.Object, null, null, null);
-        PdfNoteProcessor pdfNoteProcessor = new(_pdfLoggerMock.Object, _aiSummarizerMock.Object);
+
+        // Create a mock AppConfig for MetadataHierarchyDetector
+        var mockAppConfig = new Mock<AppConfig>();
+        mockAppConfig.Object.Paths = new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() };
+
+        // Create a real MetadataHierarchyDetector instead of mocking it
+        var hierarchyDetector = new MetadataHierarchyDetector(
+            Mock.Of<ILogger<MetadataHierarchyDetector>>(),
+            mockAppConfig.Object
+        );
+
+        PdfNoteProcessor pdfNoteProcessor = new(_pdfLoggerMock.Object, _aiSummarizerMock.Object, Mock.Of<IYamlHelper>(), hierarchyDetector);
         DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor = new(_loggerMock.Object, pdfNoteProcessor, _aiSummarizerMock.Object);
         _processor = new PdfNoteBatchProcessor(batchProcessor);
         _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

@@ -18,6 +18,7 @@ Analyze and recommend optimal capital structure for a selected company.
 ## Phase 1: Company Selection
 
 Choose from the approved list of companies:
+
 - Amazon
 - Microsoft
 - General Electric
@@ -27,6 +28,7 @@ Choose from the approved list of companies:
 ## Phase 2: Data Collection
 
 Gather 5 years of financial data:
+
 - Balance sheets
 - Income statements
 - Cash flow statements
@@ -35,6 +37,7 @@ Gather 5 years of financial data:
 ## Phase 3: Analysis
 
 Perform the following analyses:
+
 1. Current capital structure evaluation
 2. Industry benchmark comparison
 3. Cost of capital calculation

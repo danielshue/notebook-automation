@@ -32,13 +32,13 @@ public class VaultIndexProcessor(
     private readonly string _defaultVaultRootPath = !string.IsNullOrEmpty(vaultRootPath)
         ? vaultRootPath
         : appConfig.Paths.NotebookVaultFullpathRoot;    /// <summary>
-    /// Generates an index file for the specified folder.
-    /// </summary>
-    /// <param name="folderPath">Path to the folder to generate an index for.</param>
-    /// <param name="vaultPath">Path to the vault root directory.</param>
-    /// <param name="forceOverwrite">If true, regenerates the index even if it already exists.</param>
-    /// <param name="dryRun">If true, simulates the operation without making actual changes.</param>
-    /// <returns>True if an index was generated or would be generated, false otherwise.</returns>
+                                                        /// Generates an index file for the specified folder.
+                                                        /// </summary>
+                                                        /// <param name="folderPath">Path to the folder to generate an index for.</param>
+                                                        /// <param name="vaultPath">Path to the vault root directory.</param>
+                                                        /// <param name="forceOverwrite">If true, regenerates the index even if it already exists.</param>
+                                                        /// <param name="dryRun">If true, simulates the operation without making actual changes.</param>
+                                                        /// <returns>True if an index was generated or would be generated, false otherwise.</returns>
     public async Task<bool> GenerateIndexAsync(
         string folderPath,
         string vaultPath,
@@ -311,8 +311,8 @@ public class VaultIndexProcessor(
 
         return "note";
     }    /// <summary>
-    /// Generates the index content for a folder.
-    /// </summary>
+         /// Generates the index content for a folder.
+         /// </summary>
     private Task<string> GenerateIndexContentAsync(
         string folderPath,
         string vaultPath,
@@ -474,7 +474,8 @@ public class VaultIndexProcessor(
                         }
                     }
                 }
-            }            else if (hierarchyLevel == 2) // Program index - show courses and readings/case studies
+            }
+            else if (hierarchyLevel == 2) // Program index - show courses and readings/case studies
             {
                 // Always show folder listing at program level (Bases integration only applies at class level)
                 if (subFolders.Any())
@@ -536,7 +537,8 @@ public class VaultIndexProcessor(
                     }
                     contentSections.Add("");
                 }
-            }            else if (hierarchyLevel == 4) // Class level - only show Bases blocks (no modules or files)
+            }
+            else if (hierarchyLevel == 4) // Class level - only show Bases blocks (no modules or files)
             {
                 // For class level, we only want Bases blocks - no static content
                 // The Bases blocks will be added separately below
@@ -561,7 +563,8 @@ public class VaultIndexProcessor(
                 foreach (var contentType in new[] { "reading", "video", "transcript", "assignment", "discussion", "note" })
                 {
                     if (groupedFiles.TryGetValue(contentType, out var typeFiles) && typeFiles.Count > 0)
-                    {                        string icon = GetContentTypeIcon(contentType);
+                    {
+                        string icon = GetContentTypeIcon(contentType);
                         string title = GetContentTypeTitle(contentType);
 
                         contentSections.Add($"## {icon} {title}");

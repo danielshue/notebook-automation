@@ -14,12 +14,14 @@ tags: [finance, analysis, statements]
 This reading covers the fundamentals of analyzing financial statements for corporate finance decision-making.
 
 ## Key Topics
+
 - Balance Sheet Analysis
 - Income Statement Interpretation
 - Cash Flow Statement Review
 - Ratio Analysis Techniques
 
 ## Learning Objectives
+
 - Understand the three main financial statements
 - Calculate and interpret key financial ratios
 - Identify trends and patterns in financial data

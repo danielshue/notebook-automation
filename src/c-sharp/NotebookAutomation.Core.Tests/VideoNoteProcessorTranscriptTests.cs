@@ -3,6 +3,7 @@
 using System.IO;
 
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 
 using Moq;
 
@@ -30,11 +31,11 @@ public class VideoNoteProcessorTranscriptTests
     [TestInitialize]
     public void Initialize()
     {
-        _tempDirectory = Path.Combine(Path.GetTempPath(), $"VideoProcessorTests_{Guid.NewGuid()}");
-        Directory.CreateDirectory(_tempDirectory);
+        _tempDirectory = Path.Combine(Path.GetTempPath(), $"VideoProcessorTests_{Guid.NewGuid()}"); Directory.CreateDirectory(_tempDirectory);
         _logger = NullLogger<VideoNoteProcessor>.Instance;
         PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
+            new YamlHelper(NullLogger<YamlHelper>.Instance),
             new AppConfig()); AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
@@ -58,13 +59,15 @@ public class VideoNoteProcessorTranscriptTests
             .Returns("template-type: video-reference\ntitle: Test Video");
 
         yamlHelperMock.Setup(m => m.SerializeToYaml(It.IsAny<Dictionary<string, object>>()))
-            .Returns("---\ntemplate-type: video-reference\ntitle: Test Video\n---\n");
-
-        var mockYamlHelper = yamlHelperMock.Object;
+            .Returns("---\ntemplate-type: video-reference\ntitle: Test Video\n---\n"); var mockYamlHelper = yamlHelperMock.Object;
+        var mockLogger = Mock.Of<ILogger<MetadataHierarchyDetector>>();
+        var mockAppConfig = Mock.Of<AppConfig>();
+        var mockHierarchyDetector = new MetadataHierarchyDetector(mockLogger, mockAppConfig);
         _processor = new VideoNoteProcessor(
             _logger,
             aiSummarizer,
             mockYamlHelper,  // Required YamlHelper parameter
+            mockHierarchyDetector,  // Required MetadataHierarchyDetector parameter
             null,  // Optional OneDriveService
             null,  // Optional AppConfig
             null   // Optional LoggingService
