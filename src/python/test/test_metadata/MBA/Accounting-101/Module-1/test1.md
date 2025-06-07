@@ -1,8 +1,7 @@
 ---
 title: Test File
-program: "MBA"
-course: "Accounting-101"
-class: "Module-1"
+publisher: University of Illinois at Urbana-Champaign
+date-created: 2025-06-06
 tags:
 - course/accounting-101
 - program/mba
@@ -14,6 +13,7 @@ tags:
 - tool/excel
 - status/active
 - priority/high
-
+auto-generated-state: writable
 ---
+
 This is a test file.

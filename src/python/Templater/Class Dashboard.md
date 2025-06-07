@@ -1,15 +1,12 @@
-
 ---
-title: 📚 {{class_name}} Dashboard
+title: "\U0001F4DA {{class_name}} Dashboard"
 auto-generated-state: writable
 banner: '[[gies-banner.png]]'
 banner_x: 0.25
-class: {{class_name}}
-course: {{course_name}}
+publisher: University of Illinois at Urbana-Champaign
 date-created: <% tp.date.now("YYYY-MM-DD") %>
 date-modified: <% tp.date.now("YYYY-MM-DD") %>
-linter-yaml-title-alias: 📚 {{class_name}} Dashboard
-program: {{program_name}}
+linter-yaml-title-alias: "\U0001F4DA {{class_name}} Dashboard"
 tags: []
 ---
 

@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Cache Files
 
 This directory contains cache files used by the MBA Notebook Automation system. These include authentication tokens, temporary files, and other cache data.

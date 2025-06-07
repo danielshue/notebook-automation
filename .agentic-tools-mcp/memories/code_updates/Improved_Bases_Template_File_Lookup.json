@@ -1,0 +1,8 @@
+{
+  "id": "c92b9bf7-3231-4642-86e0-b6d72f8732fe",
+  "title": "Improved Bases Template File Lookup",
+  "details": "We improved the BaseBlockTemplate.yaml file lookup process in the VaultIndexProcessor to be more robust, especially when working with test vaults or different configurations. The changes include:\n\n1. Added multiple possible paths to check for the template file:\n   - Relative to the vault root path (vaultPath or _defaultVaultRootPath)\n   - In the current working directory's config folder\n   - Relative to the executable location (AppContext.BaseDirectory)\n\n2. Added detailed logging to show where the template file was found, making troubleshooting easier.\n\n3. Kept the original fallback mechanism of walking up directories from the executable location if none of the explicit paths work.\n\nThese changes ensure that the BaseBlockTemplate.yaml file can be found regardless of the current working directory or the vault location being used, making the --include-bases feature more reliable across different environments and test scenarios.",
+  "category": "code_updates",
+  "dateCreated": "2025-06-06T16:29:25.315Z",
+  "dateUpdated": "2025-06-06T16:29:25.315Z"
+}

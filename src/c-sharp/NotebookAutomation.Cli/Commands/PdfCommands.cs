@@ -58,11 +58,13 @@ public class PdfCommands
             description: "Path to the input PDF file or directory (will auto-detect if it's a file or folder)")
         {
             IsRequired = true
-        };
-
-        var outputOption = new Option<string>(
+        }; var outputOption = new Option<string>(
             aliases: ["--overwrite-output-dir", "-o"],
             description: "Override the default output directory (normally uses notebook_vault_fullpath_root from config)");
+
+        var vaultRootOverrideOption = new Option<string?>(
+            aliases: ["--override-vault-root"],
+            description: "Specify the explicit vault root path (overrides the config)");
 
         var resourcesRootOption = new Option<string?>(
             aliases: ["--onedrive-fullpath-root"],
@@ -99,22 +101,20 @@ public class PdfCommands
             description: "Skip OneDrive share link creation (links are created by default)"
         );
 
-        var pdfCommand = new Command("pdf-notes", "PDF notes and metadata commands");
-
-        pdfCommand.AddOption(inputOption);
+        var pdfCommand = new Command("pdf-notes", "PDF notes and metadata commands"); pdfCommand.AddOption(inputOption);
         pdfCommand.AddOption(outputOption);
+        pdfCommand.AddOption(vaultRootOverrideOption);
         pdfCommand.AddOption(resourcesRootOption);
         pdfCommand.AddOption(noSummaryOption);
         pdfCommand.AddOption(retryFailedOption);
         pdfCommand.AddOption(forceOption);
         pdfCommand.AddOption(timeoutOption);
         pdfCommand.AddOption(refreshAuthOption);
-        pdfCommand.AddOption(noShareLinksOption);
-
-        pdfCommand.SetHandler(async context =>
+        pdfCommand.AddOption(noShareLinksOption); pdfCommand.SetHandler(async context =>
         {
             string? input = context.ParseResult.GetValueForOption(inputOption);
             string? overrideOutputDir = context.ParseResult.GetValueForOption(outputOption);
+            string? vaultRootOverride = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
             string? config = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
@@ -147,23 +147,34 @@ public class PdfCommands
                     return;
                 }
                 Program.SetupDependencyInjection(config, debug);
-            }
-
-            // Use DI container to get services
+            }            // Use DI container to get services and create scoped context for vault root override
             var serviceProvider = Program.ServiceProvider;
-            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
-            var logger = loggerFactory.CreateLogger("PdfCommands");
-            var loggingService = serviceProvider.GetRequiredService<LoggingService>();
+            using var scope = serviceProvider.CreateScope();
+            var scopedServices = scope.ServiceProvider;
 
-            var appConfig = serviceProvider.GetRequiredService<AppConfig>();
-            var batchProcessor = serviceProvider.GetRequiredService<PdfNoteBatchProcessor>();
+            var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();
+            var logger = loggerFactory.CreateLogger("PdfCommands");
+            var loggingService = scopedServices.GetRequiredService<LoggingService>();
+            var appConfig = scopedServices.GetRequiredService<AppConfig>();            // Determine effective output directory for vault root context
+            string effectiveOutputDir = overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated";
+            effectiveOutputDir = Path.GetFullPath(effectiveOutputDir);
+
+            // Set up vault root override in scoped context
+            var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
+
+            // Use explicit vault root override if provided, otherwise use effective output directory
+            string finalVaultRoot = vaultRootOverride ?? effectiveOutputDir;
+            vaultRootContext.VaultRootOverride = finalVaultRoot;
+            logger.LogInformationWithPath("Using vault root override for metadata hierarchy: {VaultRoot}", "PdfCommands.cs", finalVaultRoot);
+
+            var batchProcessor = scopedServices.GetRequiredService<PdfNoteBatchProcessor>();
 
             // Handle refresh auth flag - set force refresh on OneDriveService if requested
             if (refreshAuth)
             {
                 try
                 {
-                    var oneDriveService = serviceProvider.GetService<IOneDriveService>();
+                    var oneDriveService = scopedServices.GetService<IOneDriveService>();
                     if (oneDriveService != null)
                     {
                         oneDriveService.SetForceRefresh(true);
@@ -195,7 +206,7 @@ public class PdfCommands
             {
                 try
                 {
-                    var oneDriveService = serviceProvider.GetService<IOneDriveService>();
+                    var oneDriveService = scopedServices.GetService<IOneDriveService>();
                     if (oneDriveService != null && !string.IsNullOrWhiteSpace(appConfig.Paths.OnedriveResourcesBasepath))
                     {
                         // Build the local resources path by combining OneDrive sync root with resources subpath
@@ -320,11 +331,9 @@ public class PdfCommands
                             string safeStatus = e.Status.Replace("[", "[[").Replace("]", "]]");
                             // The status already contains file count information, so we don't need to add it
                             updateStatus(safeStatus);
-                        };
-
-                        return await batchProcessor.ProcessPdfsAsync(
+                        }; return await batchProcessor.ProcessPdfsAsync(
                             input,
-                            overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated",
+                            effectiveOutputDir,
                             pdfExtensions,
                             openAiApiKey,
                             dryRun,

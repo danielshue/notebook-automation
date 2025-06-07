@@ -39,6 +39,8 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
     /// </example>
     public string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter)
     {
+        frontmatter["banner"] = "gies-banner.png"; // Default banner if not specified
+
         var yaml = _yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
 
         // Remove any trailing newlines or content after frontmatter
@@ -59,14 +61,38 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
     /// <remarks>
     /// The frontmatter is always placed at the top of the note, followed by the markdown body.
     /// </remarks>
-    /// <example>
-    /// <code>
+    /// <example>    /// <code>
     /// var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };
     /// string note = builder.BuildNote(frontmatter, "# Heading\nContent");
     /// </code>
     /// </example>
     public string BuildNote(Dictionary<string, object> frontmatter, string body)
     {
-        return _yamlHelper.UpdateFrontmatter(body, frontmatter);
+        if (frontmatter.ContainsKey("banner") && frontmatter["banner"] is string bannerValue)
+        {
+            // Remove any quotes that might be around the banner value
+            if (bannerValue.StartsWith("\"") && bannerValue.EndsWith("\""))
+                bannerValue = bannerValue.Substring(1, bannerValue.Length - 2);
+
+            // Remove wiki link brackets if present
+            if (bannerValue.StartsWith("[[") && bannerValue.EndsWith("]]"))
+                bannerValue = bannerValue.Substring(2, bannerValue.Length - 4);
+
+            frontmatter["banner"] = bannerValue;
+        }
+        else
+        {
+            frontmatter["banner"] = "gies-banner.png";
+        }
+
+        var serializer = new YamlDotNet.Serialization.SerializerBuilder()
+            .WithEmissionPhaseObjectGraphVisitor(args => new NoQuotesForBannerVisitor(args.InnerVisitor))
+            .Build();
+        var yaml = serializer.Serialize(frontmatter);
+
+        // We no longer need to post-process [[]] in banner since we now use simple format
+
+        var newFrontmatter = $"---\n{yaml}---\n\n";
+        return newFrontmatter + body;
     }
 }

@@ -1,17 +1,19 @@
 ---
 title: Corporate Finance Exam Notes
 type: notes
-course: FIN571
-program: MBA
+auto-generated-state: writable
+date-created: 2025-06-06
 term: Spring 2024
 status: complete
 tags:
-- "#course/FIN571"
-- "#program/MBA"
-- "#status/complete"
-- "#term/Spring-2024"
-- "#type/notes"
+- '#course/FIN571'
+- '#program/MBA'
+- '#status/complete'
+- '#term/Spring-2024'
+- '#type/notes'
+publisher: University of Illinois at Urbana-Champaign
 ---
+
 # Corporate Finance Final Exam Notes
 
 These are my notes for the final exam preparation.

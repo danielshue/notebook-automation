@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # MBA Program and Course Reference
 
 This document serves as a reference for course codes and program information used in the tag structure.

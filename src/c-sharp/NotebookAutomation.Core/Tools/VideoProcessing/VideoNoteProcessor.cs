@@ -29,7 +29,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     private readonly IOneDriveService? _oneDriveService;
     private readonly AppConfig? _appConfig;
     private readonly MetadataTemplateManager? _templateManager;
-    private readonly MetadataHierarchyDetector? _hierarchyDetector;
+    private readonly MetadataHierarchyDetector _hierarchyDetector;
     private readonly IYamlHelper _yamlHelper;
     private readonly ILoggingService? _loggingService;
 
@@ -38,22 +38,22 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// </summary>
     /// <param name="logger">The logger instance for logging diagnostic and error information.</param>
     /// <param name="aiSummarizer">The AI summarizer service for generating summaries.</param>
-    /// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>
-    /// <param name="appConfig">Optional application configuration for metadata management.</param>        /// <param name="yamlHelper">The YAML helper for processing YAML frontmatter in markdown documents.</param>
+    /// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>    /// <param name="appConfig">Optional application configuration for metadata management.</param>        /// <param name="yamlHelper">The YAML helper for processing YAML frontmatter in markdown documents.</param>
+    /// <param name="hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
     /// <param name="loggingService">Optional logging service for creating typed loggers.</param>
     /// <remarks>
     /// This constructor initializes the video note processor with optional services for metadata management
-    /// and hierarchical detection. If <paramref name="appConfig"/> is provided, it attempts to initialize
-    /// the metadata template manager and hierarchy detector.
+    /// and hierarchical detection.
     /// </remarks>
-    public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, IOneDriveService? oneDriveService = null, AppConfig? appConfig = null, ILoggingService? loggingService = null) : base(logger, aiSummarizer)
+    public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector, IOneDriveService? oneDriveService = null, AppConfig? appConfig = null, ILoggingService? loggingService = null) : base(logger, aiSummarizer)
     {
         _oneDriveService = oneDriveService;
         _appConfig = appConfig;
         _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
+        _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
         _loggingService = loggingService;
 
-        // Initialize template manager and hierarchy detector if appConfig is provided
+        // Initialize template manager if appConfig is provided
         if (_appConfig != null)
         {
             try
@@ -68,20 +68,6 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                     {
                         _templateManager = new MetadataTemplateManager(logger, _appConfig, _yamlHelper);
                     }
-                }
-
-                // Use logging service if available, otherwise fall back to a new logger factory
-                if (_loggingService != null)
-                {
-                    var hierarchyLogger = _loggingService.GetLogger<MetadataHierarchyDetector>();
-                    _hierarchyDetector = new MetadataHierarchyDetector(hierarchyLogger, _appConfig);
-                }
-                else
-                {
-                    // Fall back to creating a local logger factory if no logging service provided
-                    var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-                    var hierarchyLogger = loggerFactory.CreateLogger<MetadataHierarchyDetector>();
-                    _hierarchyDetector = new MetadataHierarchyDetector(hierarchyLogger, _appConfig);
                 }
             }
             catch (Exception ex)
@@ -513,15 +499,18 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             }
         }            // Apply path-based hierarchy detection if file path is available
         // Note: We temporarily add the path to metadata just for hierarchy detection
-        var pathForHierarchy = metadata.TryGetValue("_internal_path", out object? pathValue) ? pathValue.ToString() : null;
-        if (!string.IsNullOrEmpty(pathForHierarchy) && _hierarchyDetector != null)
+        var pathForHierarchy = metadata.TryGetValue("_internal_path", out object? pathValue) ? pathValue.ToString() : null; if (!string.IsNullOrEmpty(pathForHierarchy))
         {
             try
             {
                 Logger.LogDebugWithPath("Detecting hierarchy information from path: {FilePath}", pathForHierarchy);
-                var hierarchyInfo = _hierarchyDetector!.FindHierarchyInfo(pathForHierarchy);
-                // Update metadata with detected hierarchy information
-                mergedMetadata = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(mergedMetadata, hierarchyInfo);
+                var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(pathForHierarchy);                // For videos, we want all hierarchy information regardless of level
+                // since videos are content files, not index files
+                mergedMetadata = MetadataHierarchyDetector.UpdateMetadataWithHierarchy(
+                    mergedMetadata,
+                    hierarchyInfo,
+                    "module" // Use module to include all hierarchy levels
+                );
                 Logger.LogInformationWithPath(
                     "Added hierarchy metadata - Program: {Program}, Course: {Course}, Class: {Class}",
                     pathForHierarchy!,

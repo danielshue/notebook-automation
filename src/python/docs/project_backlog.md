@@ -2,6 +2,9 @@
 title: MBA Notebook Automation Backlog
 date-created: Thursday, May 8th 2025, 3:30:00 pm
 date-modified: Thursday, May 8th 2025, 6:30:00 pm
+auto-generated-state: writable
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
 ---
 
 # MBA Notebook Automation Project Backlog

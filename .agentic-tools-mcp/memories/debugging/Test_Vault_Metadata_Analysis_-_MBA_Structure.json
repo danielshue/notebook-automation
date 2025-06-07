@@ -1,0 +1,8 @@
+{
+  "id": "3067007f-9902-4468-9570-246ded840cc8",
+  "title": "Test Vault Metadata Analysis - MBA Structure",
+  "details": "Analysis of test vault metadata issues in D:\\source\\notebook-automation\\test-vault-structure\\Projects\\MBA:\n\n**Issues Identified:**\n1. The main MBA.md file has incorrect metadata: `course: MBA.md` when it should be empty for a main-level index\n2. The ensure-metadata command is working correctly for new indexes but not updating existing problematic metadata\n3. The index generation is working properly and creating correct hierarchy structure\n\n**Key Findings:**\n- ensure-metadata processed 31 files but skipped all of them with \"no changes needed\"\n- generate-index correctly created 2 new index files with proper metadata:\n  - XYZ Program/XYZ Program.md (program-level with program: XYZ Program)\n  - XYZ Program/Operations/Supply-Chain 2/Supply-Chain 2.md (class-level with program: XYZ Program, course: Operations, class: Supply-Chain 2)\n\n**Debug Output Shows:**\n- Main index (MBA.md) should have maxLevel=0 and removes program/course metadata\n- But existing incorrect metadata persists in the file\n\n**Root Cause:**\nThe ensure-metadata command appears to skip files that already have metadata, even if that metadata is incorrect. The logic needs to be more aggressive about correcting malformed metadata in existing files.",
+  "category": "debugging",
+  "dateCreated": "2025-06-07T02:56:21.753Z",
+  "dateUpdated": "2025-06-07T02:56:21.753Z"
+}

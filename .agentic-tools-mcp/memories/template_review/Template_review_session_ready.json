@@ -1,0 +1,8 @@
+{
+  "id": "4661cbe1-a76c-4e5f-b053-f8ae1005179c",
+  "title": "Template review session ready",
+  "details": "Ready to review and improve template formatting for the notebook automation system.\n\nCURRENT STATUS:\n- Template-type naming standardized (main, program, course, class, module)\n- Index generation working correctly with proper hierarchy detection\n- Special folders (Case Studies, Lesson, Live Class) treated as modules\n\nTEMPLATES TO REVIEW:\n1. main - Top-level MBA program index\n2. program - Program area within MBA curriculum  \n3. course - Single course folder\n4. class - Single class folder\n5. module - Module/lesson/case study folder\n6. Content templates with -note suffix\n\nGENERATED FILE EXAMPLES CHECKED:\n- MBA.md (main template) - includes program hierarchy\n- Digital Program.md (program template) - includes MBA as program\n\nReady to address specific template formatting, content, layout, or metadata issues.",
+  "category": "template_review",
+  "dateCreated": "2025-06-07T04:22:17.779Z",
+  "dateUpdated": "2025-06-07T04:22:17.779Z"
+}

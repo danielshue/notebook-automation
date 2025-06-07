@@ -1,0 +1,8 @@
+{
+  "id": "10b91605-82c5-4fc4-a5eb-78998c008b08",
+  "title": "Vault Index Generator Improvements",
+  "details": "Made several improvements to the Vault Index Generator in NotebookAutomation.Core:\n\n1. Updated the index generation to include friendly H1 titles and navigation bars for all non-main index pages.\n2. Configured main index to list only program folders with friendly names.\n3. Implemented proper content sections for each hierarchy level (program, course, class, module).\n4. Integrated the BaseBlockGenerator for class and module indices, using the configurable YAML template.\n5. Removed unused GenerateBasesSection method which was replaced by the more flexible BaseBlockGenerator approach.\n6. Fixed emoji and formatting issues in navigation and Bases blocks.\n7. Fixed a variable naming conflict with the title variable.\n\nThe BaseBlockGenerator loads templates from config/BaseBlockTemplate.yaml and dynamically populates them with course, class, module, and type parameters rather than using hardcoded queries.\n\nKey files modified:\n- NotebookAutomation.Core/Tools/Vault/VaultIndexProcessor.cs",
+  "category": "code_updates",
+  "dateCreated": "2025-06-06T13:45:22.731Z",
+  "dateUpdated": "2025-06-06T13:45:22.731Z"
+}

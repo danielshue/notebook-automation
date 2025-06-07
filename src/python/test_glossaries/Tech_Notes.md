@@ -3,7 +3,10 @@ title: Technology Notes
 type: notes
 created: 2025-05-13
 tags:
-  - tech/notes
+- tech/notes
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
 ---
 
 # Technology Notes

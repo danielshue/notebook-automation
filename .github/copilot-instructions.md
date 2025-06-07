@@ -24,6 +24,7 @@
 - All classes, methods, and properties should have descriptive documentation
 - Use standard C# XML documentation format:
   ```csharp
+
   /// <summary>
   /// Short description of method.
   /// </summary>
@@ -36,6 +37,7 @@
   /// var result = MethodName("example", 123);
   /// </code>
   /// </example>
+
   ```
 
 ## C# Coding Standards
@@ -52,16 +54,22 @@
 - Use expression-bodied members for simple operations
 - Make sure the using statements are cleaned up and organized
 - Shorten the fully qualified names where appropriate and use `using` directives for namespaces
+- Always have multiple line breaks between xmldocs and classes, between each method and properties for readability
+- When waiting for terminal response, don't wait more than 10 seconds. Assume that its returned.
+- For the c-sharp source code, the solution is locate at D:\source\notebook-automation\src\c-sharp
+- Before executing any terminal command, be mindful of which directory you're in.
 
 ## Modern C# Features (C# 12+)
 - **Use file-scoped namespaces** for all new files: `namespace MyNamespace;` instead of wrapping in braces
 - **Prefer primary constructors** for simple classes that primarily initialize fields:
   ```csharp
+
   public class Person(string name, int age)
   {
       public string Name => name;
       public int Age => age;
   }
+
   ```
 - **Use target-typed new expressions** where type is obvious: `List<string> items = new();`
 - **Use collection expressions** for collection initialization: `string[] names = ["Alice", "Bob"];`

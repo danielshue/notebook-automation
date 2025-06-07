@@ -1,0 +1,8 @@
+{
+  "id": "5908f95c-47cd-4fda-9f20-02477c0e4ba2",
+  "title": "Vault Root Hierarchy Counting Logic",
+  "details": "HIERARCHY COUNTING LOGIC - CRITICAL UNDERSTANDING:\n\nWhen given a vault path like \"d:\\source\\notebook-automation\\test-vault-structure\\Projects\\MBA\", the MBA folder is treated as LEVEL 1 (vault root).\n\nThe hierarchy counting ALWAYS starts from the supplied vault root at LEVEL 1, ignoring all previous path components:\n- Level 1: MBA (vault root - uses \"main\" template, shows \"Programs\" section)\n- Level 2: MBA subfolders like \"Digital Program\" (uses \"program\" template, shows \"Courses\" section)  \n- Level 3: Course folders like specific courses (uses \"course\" template, shows \"Modules\" section)\n- Level 4+: Module/content folders (uses \"module\" template)\n\nKEY FIXES NEEDED:\n1. Update DetermineTemplateType() hierarchy mapping:\n   - 1 => \"main\" (vault root)\n   - 2 => \"program\" \n   - 3 => \"course\"\n   - 4 => \"class\"\n   - 5+ => \"module\"\n\n2. Update special content folder detection to hierarchyLevel >= 5\n\n3. Update main program folder detection to level 1\n\n4. Update CalculateHierarchyLevel to return 1 for vault root, not 0\n\nThe CalculateHierarchyLevel method needs to be adjusted to start counting from 1 instead of 0.",
+  "category": "code-fixes",
+  "dateCreated": "2025-06-07T04:47:38.369Z",
+  "dateUpdated": "2025-06-07T04:48:42.298Z"
+}

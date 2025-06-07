@@ -1,0 +1,8 @@
+{
+  "id": "1d787f35-0f1f-42a2-95c7-db3e85edbbe2",
+  "title": "Vault Root Folder Config Consolidation",
+  "details": "We made the following changes to eliminate the MainProgramFolder property and rely on the NotebookVaultFullpathRoot instead:\n\n1. Removed the MainProgramFolder property from PathsConfig.cs. This property was redundant since we can use NotebookVaultFullpathRoot to determine the main program folder.\n\n2. Updated the IsMainProgramFolder method in VaultIndexProcessor.cs to no longer use _appConfig.Paths.MainProgramFolder.\n\n3. Modified the IsMainProgramFolder implementation to extract the folder name from the NotebookVaultFullpathRoot path using Path.GetFileName().\n\n4. Added proper logging to trace the decision-making process.\n\nThis change ensures we don't have two separate configuration properties for similar purposes, making the code more maintainable and reducing configuration complexity. Now, the vault root folder name is automatically used as the main program folder name, ensuring consistency without additional configuration.\n\nAdditionally, we kept the existing folder exclusion logic that ignores folders starting with a period when generating index files.",
+  "category": "code_updates",
+  "dateCreated": "2025-06-06T15:41:28.446Z",
+  "dateUpdated": "2025-06-06T15:41:28.446Z"
+}

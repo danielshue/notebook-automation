@@ -1,0 +1,13 @@
+filters:
+  and:
+    - course.contains("{Course}")
+    - class.contains("{Class}")
+    - type.contains("{Type}")
+views:
+  - type: table
+    name: Table
+    order:
+      - file.name
+      - type
+      - status
+      - module

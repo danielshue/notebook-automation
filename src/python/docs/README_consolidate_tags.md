@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # MBA Notebook Tag Consolidator
 
 This script helps simplify your MBA notebook tagging system by consolidating multiple nested tags into a single, most specific tag for each note.

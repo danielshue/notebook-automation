@@ -1,0 +1,8 @@
+{
+  "id": "cc41bc17-7320-43f4-b829-1f375b2d451d",
+  "title": "Remove include-bases flag always render Bases",
+  "details": "TASK: Remove the --include-bases flag and always render Bases blocks for hierarchy level 4 (class level) without showing other modules, files, or folders.\n\nCURRENT STATE:\n- --include-bases flag exists in CLI (VaultCommands.cs)\n- includeBases parameter flows through VaultIndexBatchProcessor and VaultIndexProcessor\n- Bases blocks only render when includeBases=true AND hierarchyLevel=4\n- VaultIndexOptions.cs has IncludeBases property\n\nCHANGES NEEDED:\n1. Remove --include-bases CLI option from VaultCommands.cs\n2. Remove includeBases parameter from all method signatures\n3. Always render Bases blocks for hierarchy level 4 (change condition from \"includeBases && hierarchyLevel == 4\" to \"hierarchyLevel == 4\")\n4. Ensure class-level indexes only show Bases blocks, not other content\n5. Remove IncludeBases property from VaultIndexOptions.cs\n6. Update documentation and help text\n\nFILES TO MODIFY:\n- src/c-sharp/NotebookAutomation.Cli/Commands/VaultCommands.cs\n- src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexProcessor.cs  \n- src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexBatchProcessor.cs\n- src/c-sharp/NotebookAutomation.Core/Models/VaultIndexOptions.cs",
+  "category": "task_planning",
+  "dateCreated": "2025-06-07T06:08:38.705Z",
+  "dateUpdated": "2025-06-07T06:08:38.705Z"
+}

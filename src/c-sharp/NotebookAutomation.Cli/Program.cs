@@ -81,9 +81,7 @@ public class Program
         var serviceProvider = SetupDependencyInjection(configPath, args.Contains("--debug"));
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger<Program>();
-        logger.LogInformationWithPath("Application started", "Program.cs");
-
-        var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>());
+        logger.LogInformationWithPath("Application started", "Program.cs"); var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>(), serviceProvider);
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption); var vaultCommands = new VaultCommands(loggerFactory.CreateLogger<VaultCommands>(), serviceProvider);
         vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 

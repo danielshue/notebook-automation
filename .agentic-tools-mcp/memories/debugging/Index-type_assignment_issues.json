@@ -1,0 +1,8 @@
+{
+  "id": "3a10b91d-a98a-48cc-aadc-c23f15748ee1",
+  "title": "Index-type assignment issues",
+  "details": "Investigation of index-type assignment issues in ensure-metadata:\n\n1. VAULT ROOT OVERRIDE ISSUE:\n   - The --override-vault-root parameter is not being properly used\n   - Debug shows: vault root: 'c:/users/danshue.REDMOND/Vault/01_Projects/MBA/' but it should be 'D:\\source\\notebook-automation\\temp-test-vault'\n   - This causes incorrect relative path calculation\n\n2. INDEX-TYPE ASSIGNMENT ISSUE:\n   - The DetermineIndexTypeFromHierarchy logic was fixed to check deepest hierarchy level first\n   - However, many files are still getting index-type='module' when they should be different levels\n\n3. TEST VAULT STRUCTURE ISSUE:\n   - Current temp-test-vault has extra MBA folder layer: temp-test-vault\\MBA\\Program\\...\n   - Should be: temp-test-vault\\Program\\... for proper hierarchy detection\n\n4. PATH RESOLUTION ISSUE:\n   - VaultRootContextService might not be properly applying the vault root override\n   - Need to check how the override is passed through the DI system\n\nNEXT STEPS:\n- Fix vault root override passing\n- Create proper test vault structure without extra MBA layer\n- Test index-type assignment with correct vault root",
+  "category": "debugging",
+  "dateCreated": "2025-06-07T02:01:23.400Z",
+  "dateUpdated": "2025-06-07T02:01:23.400Z"
+}

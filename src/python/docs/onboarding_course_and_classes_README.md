@@ -2,7 +2,11 @@
 title: Onboarding New Course
 date-created: Thursday, May 8th 2025, 9:52:11 am
 date-modified: Thursday, May 8th 2025, 3:15:00 pm
+auto-generated-state: writable
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
 ---
+
 # Onboarding Course or Class (multiple classes in a course)
 
 ## Table of Contents

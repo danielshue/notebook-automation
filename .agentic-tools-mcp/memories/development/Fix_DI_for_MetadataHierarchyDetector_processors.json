@@ -1,0 +1,8 @@
+{
+  "id": "b6e92398-f068-4b3a-a944-261bd93c73ff",
+  "title": "Fix DI for MetadataHierarchyDetector processors",
+  "details": "Currently, several processors manually create MetadataHierarchyDetector instances instead of using DI. Need to update:\n\n1. VideoNoteProcessor - lines 76-77, 83-84 (creates own instance)\n2. PdfNoteProcessor - lines 132-133 (creates own instance) \n3. MarkdownNoteProcessor - lines 175-176 (creates own instance)\n\nMetadataHierarchyDetector is already properly registered in DI with VaultRootContextService support in ServiceRegistration.cs lines 383-392.\n\nThese processors should be updated to:\n- Add MetadataHierarchyDetector as a constructor parameter\n- Remove manual instantiation code\n- Use the injected instance instead\n\nThis ensures all processors use the same vault root override logic via VaultRootContextService.",
+  "category": "development",
+  "dateCreated": "2025-06-07T00:45:07.930Z",
+  "dateUpdated": "2025-06-07T00:45:07.930Z"
+}

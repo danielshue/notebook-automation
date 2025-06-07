@@ -1,0 +1,8 @@
+{
+  "id": "a25e2041-a758-4ab9-a752-0843298baceb",
+  "title": "Hierarchy Detection Implementation Pattern",
+  "details": "VideoNoteProcessor MetadataHierarchyDetector Usage Pattern:\n1. Constructor initializes _hierarchyDetector field if appConfig is provided\n2. Uses either loggingService or creates local logger factory for typed logger\n3. In GenerateMarkdownNote method, uses metadata[\"_internal_path\"] to get file path\n4. Calls _hierarchyDetector.FindHierarchyInfo(path) to get hierarchy dictionary \n5. Uses MetadataHierarchyDetector.UpdateMetadataWithHierarchy() with \"module-index\" to include all hierarchy levels\n6. Logs successful hierarchy detection with program/course/class info\n7. Removes the internal path field after processing\n\nThis pattern needs to be replicated in: PdfNoteProcessor, MarkdownNoteProcessor, and MetadataEnsureBatchProcessor",
+  "category": "implementation_analysis",
+  "dateCreated": "2025-06-06T22:36:05.655Z",
+  "dateUpdated": "2025-06-06T22:36:05.655Z"
+}

@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Video Metadata CLI Parity: Python vs C#
 
 ## Outstanding Tasks for Full Parity with generate_video_meta.py

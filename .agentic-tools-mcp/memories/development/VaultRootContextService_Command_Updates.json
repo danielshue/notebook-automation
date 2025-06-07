@@ -1,0 +1,8 @@
+{
+  "id": "bca2465e-6607-48df-b9ef-d85f5a2fd284",
+  "title": "VaultRootContextService Command Updates",
+  "details": "TASK: Ensure all processors use VaultRootContextService via DI, not just VaultIndexProcessor.\n\nSTATUS: In Progress - Updating command classes\n\nFINDINGS:\n- MetadataHierarchyDetector is already registered in DI with VaultRootContextService support\n- User made manual edits to VideoNoteProcessor, PdfNoteProcessor, MarkdownNoteProcessor to use DI-injected MetadataHierarchyDetector\n- Need to update command classes to use VaultRootContextService pattern like VaultCommands does\n\nCOMMANDS THAT NEED UPDATING:\n1. VideoCommands - uses VideoNoteBatchProcessor (which uses VideoNoteProcessor via DI)\n2. PdfCommands - uses PdfNoteBatchProcessor (which uses PdfNoteProcessor via DI)\n3. MarkdownCommands - directly creates MarkdownNoteProcessor (should use DI instead)\n4. TagCommands - uses TagProcessor (check if it needs vault context)\n\nPATTERN FROM VaultCommands:\n- Create scoped service provider: using var scope = _serviceProvider.CreateScope();\n- Get VaultRootContextService: var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();\n- Set override: vaultRootContext.VaultRootOverride = effectiveVaultRoot;\n- Get batch processor from scoped services: var batchProcessor = scopedServices.GetRequiredService<VaultIndexBatchProcessor>();\n\nNEXT STEPS:\n- Update VideoCommands, PdfCommands, MarkdownCommands to use scoped VaultRootContextService\n- Check if TagCommands needs vault context\n- Test all commands after updates",
+  "category": "development",
+  "dateCreated": "2025-06-07T00:50:42.581Z",
+  "dateUpdated": "2025-06-07T00:50:42.581Z"
+}

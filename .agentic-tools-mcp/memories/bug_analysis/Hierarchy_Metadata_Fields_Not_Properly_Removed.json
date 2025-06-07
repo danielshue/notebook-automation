@@ -1,0 +1,8 @@
+{
+  "id": "b47fd0f2-240e-4a03-8393-9e296cd2af33",
+  "title": "Hierarchy Metadata Fields Not Properly Removed",
+  "details": "ISSUE: The UpdateMetadataWithHierarchy method in MetadataHierarchyDetector.cs does not remove hierarchy fields that exceed the maxLevel for a given index type. \n\nPROBLEM: \n- For main-index (maxLevel=0): All hierarchy fields are properly removed\n- For other index types (program-index maxLevel=1, course-index maxLevel=2, etc.): Fields beyond the max level are NOT removed\n- Additionally, the method only updates fields if they are missing or empty, not if they contain incorrect values\n\nEXAMPLES:\n- A program-index file with \"course: SomeValue\" should have the course field removed (only program allowed)\n- A main-index file with \"course: MBA.md\" should have all hierarchy fields removed (no hierarchy allowed)\n\nCURRENT LOGIC ISSUES:\n1. Lines 348-352: Only updates if field is missing/empty, doesn't correct wrong values\n2. Missing logic to remove fields beyond maxLevel (except for maxLevel=0 case)\n\nSOLUTION: Add logic to:\n1. Remove all hierarchy fields beyond maxLevel for any index type\n2. Update existing fields with correct values even if they contain data\n3. Ensure aggressive cleanup of inappropriate hierarchy metadata",
+  "category": "bug_analysis",
+  "dateCreated": "2025-06-07T02:59:32.515Z",
+  "dateUpdated": "2025-06-07T02:59:32.515Z"
+}

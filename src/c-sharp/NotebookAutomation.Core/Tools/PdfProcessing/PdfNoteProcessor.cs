@@ -1,4 +1,5 @@
-﻿using NotebookAutomation.Core.Services;
+﻿using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Utils;
 
@@ -38,9 +39,14 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing;
 /// </example>
 /// <param name="logger">Logger for diagnostics.</param>
 /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
-public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer) : DocumentNoteProcessorBase(logger, aiSummarizer)
+/// <param name="yamlHelper">The YAML helper for processing YAML frontmatter.</param>
+/// <param name="hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
+/// <param name="appConfig">Optional application configuration for advanced hierarchy detection.</param>
+public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector, AppConfig? appConfig = null) : DocumentNoteProcessorBase(logger, aiSummarizer)
 {
-    private readonly YamlHelper _yamlHelper = new(logger);
+    private readonly IYamlHelper _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
+    private readonly MetadataHierarchyDetector _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
+    private readonly AppConfig? _appConfig = appConfig;
     private string _yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter
 
     /// <summary>
@@ -115,12 +121,16 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
                         metadata["keywords"] = info.Keywords;
                 }
 
-                // Extract module and lesson information
-                Logger.LogDebugWithPath("Extracting course structure information", pdfPath);
+                // Extract module and lesson information                Logger.LogDebugWithPath("Extracting course structure information", pdfPath);
                 var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
                 var courseLogger = loggerFactory.CreateLogger<CourseStructureExtractor>();
                 var courseStructureExtractor = new CourseStructureExtractor(courseLogger);
                 courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);
+
+                // Extract hierarchy information using injected MetadataHierarchyDetector
+                Logger.LogDebugWithPath("Extracting hierarchy information from file path", pdfPath);
+                var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(pdfPath);
+                MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo);
 
                 // Add file information for PDF
                 var fileInfo = new FileInfo(pdfPath);

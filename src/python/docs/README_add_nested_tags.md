@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Markdown YAML Frontmatter Tag Processor with Quoted Tags
 
 This script recursively scans a folder for markdown (.md) files, extracts fields from the YAML frontmatter, and converts them to nested tags in the format `#field/value`. These tags are then added to the existing tags field or a new tags field is created if it doesn't exist. All tags are properly enclosed in double quotes in the YAML frontmatter.

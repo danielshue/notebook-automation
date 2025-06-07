@@ -1,0 +1,8 @@
+{
+  "id": "afd11018-3f2b-400c-9443-0de174bb1038",
+  "title": "Vault Index Navigation Links Fix",
+  "details": "Made the following improvements to the vault index navigation links:\n\n1. Updated the VaultIndexProcessor.cs to use the actual vault root folder name for the navigation links instead of hardcoding \"main-index\".\n\n2. Created a new method `GetRootIndexFilename(string vaultPath)` to extract the vault root folder name from the vault path.\n\n3. Updated the navigation bar generation to use the extracted vault root folder name for both the \"Back to Program Index\" link and the \"Home\" link.\n\n4. Made sure the template type remains \"main-index\" even though the filename now matches the vault root folder name.\n\nThis change ensures that the vault index navigation is more dynamic and correctly references the actual vault root folder.\n\nKey files modified:\n- NotebookAutomation.Core/Tools/Vault/VaultIndexProcessor.cs",
+  "category": "code_updates",
+  "dateCreated": "2025-06-06T14:20:19.345Z",
+  "dateUpdated": "2025-06-06T14:20:19.345Z"
+}

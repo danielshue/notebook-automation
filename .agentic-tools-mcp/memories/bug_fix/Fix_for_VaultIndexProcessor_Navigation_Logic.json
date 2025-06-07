@@ -1,0 +1,8 @@
+{
+  "id": "f05a26ca-7208-4335-8f5e-0622cf1c42a9",
+  "title": "Fix for VaultIndexProcessor Navigation Logic",
+  "details": "Successfully fixed navigation issues in VaultIndexProcessor.cs. The problems resolved:\n\n1. **Main Index Navigation**: Fixed detection logic to use frontmatter[\"index-type\"] == \"main\" instead of hierarchyLevel == 0, ensuring MBA.md shows only Dashboard and Classes Assignments links (no \"Back\" or parent links).\n\n2. **Back Navigation Text**: Fixed hardcoded generic text like \"Back to Program Index\" to use actual parent folder names. Now shows meaningful text like \"MBA\", \"Program\", \"Finance\" etc.\n\n3. **Vault Root Index Prevention**: No index file is created at vault root (temp-test-vault.md).\n\n4. **Hierarchy Metadata**: Fixed MetadataHierarchyDetector mapping to ensure correct hierarchy metadata at all levels.\n\n**Navigation Examples After Fix:**\n- Program.md: \"🔙 [[MBA|MBA]]\" (was \"Back to Program Index\")\n- Finance.md: \"🔙 [[Program|Program]]\" (was \"Back to Course Index\")\n- Corporate-Finance.md: \"🔙 [[Finance|Finance]]\" (was \"Back to Class Index\")\n\n**Technical Changes:**\n- Removed hardcoded backLinkText assignments\n- Used FriendlyTitleHelper.GetFriendlyTitleFromFileName() on backLinkTarget\n- Maintained correct URL targets while fixing display text\n\nThe navigation is now intuitive and shows actual parent folder names instead of generic text.",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-07T00:11:24.799Z",
+  "dateUpdated": "2025-06-07T00:15:55.962Z"
+}

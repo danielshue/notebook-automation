@@ -1,0 +1,8 @@
+{
+  "id": "188d0f73-6c6b-4b3b-bcec-eba03cf0ba3d",
+  "title": "Index-Type to Template-Type Refactor Task",
+  "details": "TASK: Remove index-type field from YAML and update all code to use template-type instead.\n\nKEY FILES TO UPDATE:\n1. MetadataHierarchyDetector.cs - Update UpdateMetadataWithHierarchy method parameter from indexType to templateType\n2. VaultIndexProcessor.cs - Replace all index-type references with template-type\n3. Test files - Update all test cases to use template-type instead of index-type\n4. CLI help text - Update documentation references\n\nCHANGES NEEDED:\n- Replace all \"index-type\" YAML field references with \"template-type\"\n- Update method parameters from indexType to templateType\n- Update conditional logic that checks for index-type values\n- Update comments and documentation\n- Update test cases and fixtures\n\nSTATUS: In progress - need to systematically update all code references",
+  "category": "refactor",
+  "dateCreated": "2025-06-07T03:21:05.047Z",
+  "dateUpdated": "2025-06-07T03:21:05.047Z"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "c4fc8fa2-4e00-4aad-aa00-089fbc8722cb",
+  "title": "Index Files Named After Folder Names",
+  "details": "# Index Files Named After Folder Names\n\nThe Notebook Automation system always generates index files named after the folder they're in, not with a generic name like \"index.md\".\n\nFor example:\n- In a folder named \"MBA\", the index file should be named \"MBA.md\"\n- In a folder named \"Program\", the index file should be named \"Program.md\"\n- In a folder named \"Finance\", the index file should be named \"Finance.md\"\n\nThis naming convention is automatically handled by the `VaultIndexProcessor.cs` class, which sets:\n\n```csharp\nstring indexFileName = $\"{folderName}.md\";\nstring indexFilePath = Path.Combine(folderPath, indexFileName);\n```\n\nWhen referring to or testing the index generation functionality, always remember this convention. File paths in code, tests, and documentation should reflect this naming pattern.\n\nThis convention helps maintain proper linking in Obsidian and ensures that references to the index files are consistent and intuitive.",
+  "category": "standards",
+  "dateCreated": "2025-06-06T18:47:52.730Z",
+  "dateUpdated": "2025-06-06T18:47:52.730Z"
+}

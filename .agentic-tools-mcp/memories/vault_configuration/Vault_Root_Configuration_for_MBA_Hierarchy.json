@@ -1,0 +1,8 @@
+{
+  "id": "ef613932-b2ae-4cd0-8520-d0cc59e75699",
+  "title": "Vault Root Configuration for MBA Hierarchy",
+  "details": "CRITICAL FINDING: To ensure MBA is treated as the \"main\" program level in the hierarchy, the vault root must be set to \"D:\\source\\notebook-automation\\test-vault-structure\\Projects\" rather than \"D:\\source\\notebook-automation\\test-vault-structure\\Projects\\MBA\".\n\nWith vault root = \"Projects\":\n- MBA becomes depth level 1 (program level)\n- Digital Program, Value Program, XYZ Program become depth level 2 (course level)\n- Operations, Finance, Marketing become depth level 3 (class level)\n- Individual modules become depth level 4 (module level)\n\nThis is the correct hierarchy structure based on the business logic requirements.\n\nCommand used: dotnet run --project src/c-sharp/NotebookAutomation.Cli -- vault ensure-metadata \"D:\\source\\notebook-automation\\test-vault-structure\\Projects\" --override-vault-root \"D:\\source\\notebook-automation\\test-vault-structure\\Projects\" --verbose\n\nDebug output confirmed correct hierarchy detection:\n- DEBUG: FindHierarchyInfo - relativePath: 'MBA\\Digital Program\\Finance\\Finance.md'\n- DEBUG: Updating hierarchy metadata 'program' from 'Digital Program' to 'MBA' (templateType=program)",
+  "category": "vault_configuration",
+  "dateCreated": "2025-06-07T04:04:50.303Z",
+  "dateUpdated": "2025-06-07T04:04:50.303Z"
+}

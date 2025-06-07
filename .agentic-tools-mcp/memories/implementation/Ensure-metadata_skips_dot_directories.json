@@ -1,0 +1,8 @@
+{
+  "id": "ab178bab-c7e5-4fb7-83b7-ce9699196448",
+  "title": "Ensure-metadata skips dot directories",
+  "details": "The ensure-metadata process has been updated to skip directories that start with a period (e.g., .obsidian, .git).\n\nImplementation details:\n1. Added GetMarkdownFilesExcludingDotDirectories helper method in MetadataEnsureBatchProcessor.cs\n2. Added GetMarkdownFilesRecursive helper method that recursively searches for markdown files while skipping directories that start with a period\n3. Updated InitializeProcessingQueue to use GetMarkdownFilesExcludingDotDirectories instead of Directory.GetFiles with recursive search\n4. The implementation checks Path.GetFileName(subDirectory).StartsWith('.') to skip dot-prefixed directories\n5. Still processes markdown files in the current directory but skips any hidden files that start with '.'\n\nThe logic properly handles:\n- Skipping .obsidian directories (Obsidian configuration)\n- Skipping .git directories (Git repositories)\n- Skipping any other dot-prefixed directories\n- Still processing markdown files in non-dot directories recursively",
+  "category": "implementation",
+  "dateCreated": "2025-06-07T01:40:52.752Z",
+  "dateUpdated": "2025-06-07T01:40:52.752Z"
+}

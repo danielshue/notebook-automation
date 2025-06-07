@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # MBA Notebook Automation - Reorganization Completion Summary
 
 This document summarizes the complete workspace reorganization that has been performed on the MBA Notebook Automation codebase.

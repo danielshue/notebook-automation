@@ -13,7 +13,12 @@ duration: '[Simulated duration]'
 resolution: '[Unknown]'
 codec: '[Unknown]'
 resources_root: D:\source\notebook-automation-csharp-migration\src\c-sharp\TestVideos
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
 ---
+
 # Video Note
 
 The text is not provided. Please provide the text to be summarized.

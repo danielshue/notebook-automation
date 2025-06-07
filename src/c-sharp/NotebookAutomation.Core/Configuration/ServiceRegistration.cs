@@ -1,6 +1,7 @@
 ﻿using Microsoft.SemanticKernel;
 
 using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Tools.MarkdownGeneration;
 using NotebookAutomation.Core.Tools.PdfProcessing;
 using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Tools.TagManagement;
@@ -175,18 +176,19 @@ public static class ServiceRegistration
     /// <param name="services">The service collection to configure.</param>
     /// <returns>The configured service collection.</returns>
     private static IServiceCollection RegisterDocumentProcessors(IServiceCollection services)
-    {
-        // Register Video processor
+    {        // Register Video processor
         services.AddScoped(provider =>
         {
-            var loggingService = provider.GetRequiredService<ILoggingService>(); var logger = loggingService.GetLogger<VideoNoteProcessor>();
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var logger = loggingService.GetLogger<VideoNoteProcessor>();
             var aiSummarizer = provider.GetRequiredService<AISummarizer>();
             var appConfig = provider.GetRequiredService<AppConfig>();
             // Use GetService instead of GetRequiredService since OneDriveService is optional
             var oneDriveService = provider.GetService<IOneDriveService>();
             var yamlHelper = provider.GetRequiredService<IYamlHelper>();
-            // Pass yamlHelper first, then the optional parameters, and lastly the loggingService
-            return new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, oneDriveService, appConfig, loggingService);
+            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            // Pass yamlHelper, hierarchyDetector, then the optional parameters, and lastly the loggingService
+            return new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, oneDriveService, appConfig, loggingService);
         });
 
         // Register VideoNoteBatchProcessor
@@ -195,11 +197,11 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var batchLogger = loggingService.GetLogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>();
             var processorLogger = loggingService.GetLogger<VideoNoteProcessor>();
-            var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-            var appConfig = provider.GetRequiredService<AppConfig>();
+            var aiSummarizer = provider.GetRequiredService<AISummarizer>(); var appConfig = provider.GetRequiredService<AppConfig>();
             var oneDriveService = provider.GetService<IOneDriveService>();
             var yamlHelper = provider.GetRequiredService<IYamlHelper>();
-            var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, yamlHelper, oneDriveService, appConfig, loggingService);
+            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, yamlHelper, hierarchyDetector, oneDriveService, appConfig, loggingService);
             var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(batchLogger, videoProcessor, aiSummarizer);
             return new VideoNoteBatchProcessor(batchProcessor);
         });
@@ -210,18 +212,32 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<PdfNoteProcessor>();
             var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-            return new PdfNoteProcessor(logger, aiSummarizer);
-        });
-
-        // Register PDF Batch Processor
+            var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            return new PdfNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, appConfig);
+        });        // Register PDF Batch Processor
         services.AddScoped(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var batchLogger = loggingService.GetLogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>();
             var processorLogger = loggingService.GetLogger<PdfNoteProcessor>();
-            var aiSummarizer = provider.GetRequiredService<AISummarizer>(); var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer);
+            var aiSummarizer = provider.GetRequiredService<AISummarizer>();
+            var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer, yamlHelper, hierarchyDetector, appConfig);
             var batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(batchLogger, pdfProcessor, aiSummarizer);
             return new PdfNoteBatchProcessor(batchProcessor);
+        });        // Register Markdown processor
+        services.AddScoped(provider =>
+        {
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var logger = loggingService.GetLogger<MarkdownNoteProcessor>();
+            var aiSummarizer = provider.GetRequiredService<AISummarizer>();
+            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            return new MarkdownNoteProcessor(logger, aiSummarizer, hierarchyDetector, appConfig);
         });
 
         // Register Vault Metadata processors
@@ -243,6 +259,27 @@ public static class ServiceRegistration
             var appConfig = provider.GetRequiredService<AppConfig>();
             var metadataProcessor = provider.GetRequiredService<MetadataEnsureProcessor>();
             return new MetadataEnsureBatchProcessor(logger, metadataProcessor, appConfig);
+        });        // Register Vault Index processors
+        services.AddScoped(provider =>
+        {
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var logger = loggingService.GetLogger<VaultIndexProcessor>();
+            var templateManager = provider.GetRequiredService<MetadataTemplateManager>();
+            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            var structureExtractor = provider.GetRequiredService<CourseStructureExtractor>();
+            var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+            var noteBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            return new VaultIndexProcessor(logger, templateManager, hierarchyDetector, structureExtractor, yamlHelper, noteBuilder, appConfig);
+        });
+
+        services.AddScoped(provider =>
+        {
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var logger = loggingService.GetLogger<VaultIndexBatchProcessor>();
+            var indexProcessor = provider.GetRequiredService<VaultIndexProcessor>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            return new VaultIndexBatchProcessor(logger, indexProcessor, appConfig);
         });
 
         return services;
@@ -327,8 +364,11 @@ public static class ServiceRegistration
                 debug);
 
             return appConfig;
-        });            // Register UserSecretsHelper
+        });        // Register UserSecretsHelper
         services.AddSingleton<UserSecretsHelper>();
+
+        // Register VaultRootContextService as scoped for vault root overrides
+        services.AddScoped<VaultRootContextService>();
 
         // Register YamlHelper with proper logging from LoggingService
         services.AddSingleton<IYamlHelper>(provider =>
@@ -355,15 +395,20 @@ public static class ServiceRegistration
             var appConfig = provider.GetRequiredService<AppConfig>();
             var yamlHelper = provider.GetRequiredService<IYamlHelper>();
             return new MetadataTemplateManager(logger, appConfig, yamlHelper);
-        });
-
-        // Register MetadataHierarchyDetector with factory
+        });        // Register MetadataHierarchyDetector with factory
         services.AddScoped(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<MetadataHierarchyDetector>();
             var appConfig = provider.GetRequiredService<AppConfig>();
-            return new MetadataHierarchyDetector(logger, appConfig);
+            var vaultRootContext = provider.GetRequiredService<VaultRootContextService>();
+
+            // Use vault root override if available, otherwise use config
+            string? vaultRootOverride = vaultRootContext.HasVaultRootOverride
+                ? vaultRootContext.VaultRootOverride
+                : null;
+
+            return new MetadataHierarchyDetector(logger, appConfig, programOverride: null, verbose: false, vaultRootOverride: vaultRootOverride);
         });
 
         // Register CourseStructureExtractor with factory
@@ -372,6 +417,14 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<CourseStructureExtractor>();
             return new CourseStructureExtractor(logger);
+        });
+
+        // Register MarkdownNoteBuilder with factory
+        services.AddScoped(provider =>
+        {
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var logger = loggingService.GetLogger<MarkdownNoteBuilder>();
+            return new MarkdownNoteBuilder(logger);
         });
 
         services.AddScoped<TagProcessor>();

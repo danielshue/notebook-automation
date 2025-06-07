@@ -1,4 +1,5 @@
-﻿using NotebookAutomation.Core.Services;
+﻿using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.MarkdownGeneration;
@@ -34,12 +35,15 @@ public partial class MarkdownNoteProcessor
     private readonly ILogger<MarkdownNoteProcessor> _logger;
     private readonly MarkdownNoteBuilder _noteBuilder;
     private readonly AISummarizer _aiSummarizer;
+    private readonly MetadataHierarchyDetector _hierarchyDetector;
+    private readonly AppConfig? _appConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MarkdownNoteProcessor"/> class.
-    /// </summary>
-    /// <param name="logger">The logger instance.</param>
+    /// </summary>    /// <param name="logger">The logger instance.</param>
     /// <param name="aiSummarizer">The AI summarizer instance.</param>
+    /// <param name="hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
+    /// <param name="appConfig">Optional application configuration for advanced hierarchy detection.</param>
     /// <remarks>
     /// <para>
     /// This constructor initializes the markdown note builder and AI summarizer, ensuring all dependencies are valid.
@@ -47,10 +51,10 @@ public partial class MarkdownNoteProcessor
     /// </remarks>
     /// <example>
     /// <code>
-    /// var processor = new MarkdownNoteProcessor(logger, aiSummarizer);
+    /// var processor = new MarkdownNoteProcessor(logger, aiSummarizer, hierarchyDetector);
     /// </code>
     /// </example>
-    public MarkdownNoteProcessor(ILogger logger, AISummarizer aiSummarizer)
+    public MarkdownNoteProcessor(ILogger logger, AISummarizer aiSummarizer, MetadataHierarchyDetector hierarchyDetector, AppConfig? appConfig = null)
     {
         if (logger is ILogger<MarkdownNoteProcessor> genericLogger)
         {
@@ -71,6 +75,8 @@ public partial class MarkdownNoteProcessor
         }
         _noteBuilder = new MarkdownNoteBuilder(logger);
         _aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
+        _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
+        _appConfig = appConfig;
     }
 
     /// <summary>
@@ -152,7 +158,9 @@ public partial class MarkdownNoteProcessor
         }
         string aiSummary = rawText;
         if (!string.IsNullOrWhiteSpace(openAiApiKey))
-        {                // Use the new method name to avoid ambiguity
+        {
+
+            // Use the new method name to avoid ambiguity
             Dictionary<string, string>? noVariables = null;
             aiSummary = await _aiSummarizer.SummarizeWithVariablesAsync(rawText, noVariables, promptFileName) ?? rawText;
         }
@@ -162,6 +170,12 @@ public partial class MarkdownNoteProcessor
             { "source_file", inputPath },
             { "generated", DateTime.UtcNow.ToString("u") }
         };
+
+        // Extract hierarchy information using injected MetadataHierarchyDetector
+        _logger.LogDebug("Extracting hierarchy information from file path: {FilePath}", inputPath);
+        var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(inputPath);
+        MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "module");
+
         return _noteBuilder.BuildNote(metadata, aiSummary);
     }
 

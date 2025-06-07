@@ -1,3 +1,22 @@
+---
+template-type: resource-reading
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+type: note/reading
+comprehension: 0
+status: unread
+completion-date: ''
+date-modified: ''
+date-review: ''
+onedrive-shared-link: ''
+onedrive_fullpath_file_reference: ''
+page-count: ''
+pages: ''
+authors: ''
+tags: ''
+---
+
 # GitHub Copilot Code Generation Instructions
 
 ## Project Philosophy

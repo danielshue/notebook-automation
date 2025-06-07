@@ -16,7 +16,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
-        <AssemblyName>NotebookAutomation</AssemblyName>
+        <AssemblyName>na</AssemblyName>
         <UserSecretsId>30391e52-b669-419b-a859-fbd67b3c090b</UserSecretsId>
         <GenerateDocumentationFile>False</GenerateDocumentationFile>
         <PublishAot>False</PublishAot>

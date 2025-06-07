@@ -1,3 +1,10 @@
+---
+auto-generated-state: writable
+date-created: 2025-06-06
+publisher: University of Illinois at Urbana-Champaign
+tags: ''
+---
+
 # Archived Scripts
 
 This directory contains scripts that are no longer actively used in the MBA Notebook Automation system. They have been moved here to keep the main directory clean while preserving the code for reference.
