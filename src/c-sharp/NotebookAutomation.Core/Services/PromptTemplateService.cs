@@ -1,12 +1,5 @@
-﻿// <copyright file="PromptTemplateService.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Services/PromptTemplateService.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
+﻿// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Services;
@@ -291,17 +284,15 @@ public partial class PromptTemplateService : IPromptService
     public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? substitutionValues)
     {
         return Task.FromResult(SubstituteVariables(template, substitutionValues));
-    }
-
-    /// <summary>
-    /// Generates a regular expression to match template variables enclosed in double curly braces.
-    /// </summary>
-    /// <returns>
-    /// A <see cref="Regex"/> instance that matches placeholders in the format {{variable_name}}.
-    /// </returns>
-    /// <remarks>
-    /// This method uses the <see cref="GeneratedRegexAttribute"/> to define a compile-time constant regex.
-    /// </remarks>
+    }    /// <summary>
+         /// Generates a regular expression to match template variables enclosed in double curly braces.
+         /// </summary>
+         /// <returns>
+         /// A <see cref="Regex"/> instance that matches placeholders in the format {{variable_name}}.
+         /// </returns>
+         /// <remarks>
+         /// This method uses the <see cref="GeneratedRegexAttribute"/> to define a compile-time constant regex.
+         /// </remarks>
     [GeneratedRegex("{{(.*?)}}")]
-    private static partial Regex TemplateVariableRegex();
+    internal static partial Regex TemplateVariableRegex();
 }

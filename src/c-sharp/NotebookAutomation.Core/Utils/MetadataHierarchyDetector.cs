@@ -85,10 +85,10 @@ public class MetadataHierarchyDetector()
     /// <para>
     /// This method uses purely path-based analysis to determine hierarchy levels, with no file system access needed.
     /// It assumes a standard folder structure where:
-    /// - The first folder level below vault root is the program (e.g., MBA)
-    /// - The second folder level is the course (e.g., Finance)
-    /// - The third folder level is the class (e.g., Accounting)
-    /// - The fourth folder level is the module (e.g., Week1).
+    /// - The first folder level below vault root is the program (e.g., Value Chain Management)
+    /// - The second folder level is the course (e.g., Operations Management)
+    /// - The third folder level is the class (e.g., Supply Chain Fundamentals)
+    /// - The fourth folder level is the module (e.g., Week 1).
     /// </para>
     /// <para>
     /// Priority is given to explicit program overrides if provided in the constructor.
@@ -97,7 +97,7 @@ public class MetadataHierarchyDetector()
     /// <example>
     /// <code>
     /// var info = detector.FindHierarchyInfo(@"C:\\notebook-vault\\MBA\\Finance\\Accounting\\Week1\\file.md");
-    /// // info["program"] == "MBA", info["course"] == "Finance", info["class"] == "Accounting", info["module"] == "Week1"
+    /// // info["program"] == "Value Chain Management", info["course"] == "Finance", info["class"] == "Accounting", info["module"] == "Week 1"
     /// </code>
     /// </example>
     public Dictionary<string, string> FindHierarchyInfo(string filePath)
@@ -110,41 +110,62 @@ public class MetadataHierarchyDetector()
             { "class", string.Empty },
 
             // Note: module is only added if present
-        };
-
-        // Validate that the path exists
+        };        // Log if path doesn't exist, but continue with path-based analysis
         bool isFile = File.Exists(filePath);
         bool isDirectory = Directory.Exists(filePath);
 
         if (!isFile && !isDirectory)
         {
-            Logger.LogWarning($"Path does not exist or is not accessible: {filePath}");
-            return info;
+            Logger.LogDebug($"Path does not exist, but continuing with path-based analysis: {filePath}");
         }
 
-        try
-        {
-            // Get the path elements between vault root and the provided file/directory
-            Logger.LogDebug($"DEBUG: FindHierarchyInfo - vault root: '{VaultRoot}', filePath: '{filePath}'");
-            string relativePath = GetRelativePath(VaultRoot, filePath);
+        // Initialize tracking variables
+        int depthLevel = 0;
 
+        try
+        {            // Get the path elements between vault root and the provided file/directory
+            Logger.LogDebug($"DEBUG: FindHierarchyInfo - vault root: '{VaultRoot}', filePath: '{filePath}'");
+            string relativePath = GetRelativePath(VaultRoot!, filePath);
             Logger.LogDebug($"DEBUG: FindHierarchyInfo - relativePath: '{relativePath}'");
             string[] pathSegments = [.. relativePath.Split(Path.DirectorySeparatorChar).Where(p => !string.IsNullOrEmpty(p)
             && !p.StartsWith("."))];
 
+            // Special handling for files: determine if the filename should be considered part of hierarchy
+            if (isFile && pathSegments.Length > 0)
+            {
+                string filename = pathSegments[^1];
+                string parentFolderName = pathSegments.Length > 1 ? pathSegments[^2] : string.Empty;
+
+                // If the filename appears to be a generic content file (not a template or resource),
+                // and the parent folder seems to be a course-level folder, exclude the filename
+                if (pathSegments.Length == 3 && // File is at course level (program/course/file.ext)
+                    !filename.Contains("template", StringComparison.OrdinalIgnoreCase) &&
+                    !filename.Contains("resource", StringComparison.OrdinalIgnoreCase) &&
+                    !parentFolderName.Equals("Resources", StringComparison.OrdinalIgnoreCase))
+                {
+                    // This appears to be a content file directly in a course folder - exclude filename
+                    pathSegments = pathSegments[..^1];
+                    Logger.LogDebug($"Content file in course folder detected, excluding filename '{filename}' from hierarchy calculation");
+                }
+                else
+                {
+                    // File appears to represent a meaningful hierarchy component (template, resource, etc.)
+                    Logger.LogDebug($"File '{filename}' appears to represent a hierarchy component, including in calculation");
+                }
+            }
+
             Logger.LogDebug($"Path segments for hierarchy detection: {string.Join(" > ", pathSegments)}");
 
             // Calculate the depth level - this determines which hierarchy fields to include
-            int depthLevel = pathSegments.Length;
+            depthLevel = pathSegments.Length;
 
             Logger.LogDebug($"Path depth level: {depthLevel}");
-
             // Hierarchy mapping based on semantic meaning:
-            // Level 0: Vault root/main index - NO hierarchy metadata
-            // Level 1 (e.g., Program): Program level - program only
-            // Level 2 (e.g., Finance): Course level - program + course
-            // Level 3 (e.g., Corporate-Finance): Class level - program + course + class
-            // Level 4+: Module/content level - program + course + class + module
+            // Depth 0: Vault root/main index - NO hierarchy metadata
+            // Depth 1 (e.g., Program): Program level - program only
+            // Depth 2 (e.g., Finance): Course level - program + course
+            // Depth 3 (e.g., Corporate-Finance): Class level - program + course + class
+            // Depth 4+: Module/content level - program + course + class + module
 
             // Only set program if we're at program level or deeper (depth >= 1)
             if (depthLevel >= 1)
@@ -158,20 +179,20 @@ public class MetadataHierarchyDetector()
             {
                 info["course"] = pathSegments[1];
                 Logger.LogDebug($"Setting course from second path segment: {info["course"]}");
+            }
 
-                // Only set class if we're at class level or deeper (depth >= 3)
-                if (depthLevel >= 3)
-                {
-                    info["class"] = pathSegments[2];
-                    Logger.LogDebug($"Setting class from third path segment: {info["class"]}");
+            // Only set class if we're at class level or deeper (depth >= 3)
+            if (depthLevel >= 3)
+            {
+                info["class"] = pathSegments[2];
+                Logger.LogDebug($"Setting class from third path segment: {info["class"]}");
+            }
 
-                    // Only set module if we're at module level or deeper (depth >= 4)
-                    if (depthLevel >= 4)
-                    {
-                        info["module"] = pathSegments[3];
-                        Logger.LogDebug($"Setting module from fourth path segment: {info["module"]}");
-                    }
-                }
+            // Only set module if we're at module level or deeper (depth >= 4)
+            if (depthLevel >= 4)
+            {
+                info["module"] = pathSegments[3];
+                Logger.LogDebug($"Setting module from fourth path segment: {info["module"]}");
             }
 
             Logger.LogDebug($"Path-based hierarchy detection results: program='{info["program"]}', course='{info["course"]}', class='{info["class"]}', module='{(info.ContainsKey("module") ? info["module"] : string.Empty)}'");
@@ -181,8 +202,8 @@ public class MetadataHierarchyDetector()
             Logger.LogError(ex, $"Error during path-based hierarchy detection: {ex.Message}");
         }
 
-        // If program is still empty (no override and no path elements), use vault root name as fallback
-        if (string.IsNullOrEmpty(info["program"]))
+        // If program is still empty and we're not at vault root level (depth > 0), use vault root name as fallback
+        if (string.IsNullOrEmpty(info["program"]) && depthLevel > 0 && !string.IsNullOrEmpty(VaultRoot))
         {
             string vaultRootName = Path.GetFileName(Path.GetFullPath(VaultRoot).TrimEnd(Path.DirectorySeparatorChar));
 
@@ -195,15 +216,15 @@ public class MetadataHierarchyDetector()
             {
                 Logger.LogDebug($"No program could be determined from path or vault root");
             }
-
-
-            var program = info.TryGetValue("program", out var programValue) ? programValue : string.Empty;
-            var course = info.TryGetValue("course", out var courseValue) ? courseValue : string.Empty;
-            var classValue = info.TryGetValue("class", out var classValueValue) ? classValueValue : string.Empty;
-
-            // Debug logging to help understand the final hierarchy
-            Logger.LogDebug($"Final metadata info: Program='{program}', Course='{course}', Class='{classValue}'");
         }
+
+        // Debug logging to help understand the final hierarchy
+        var program = info.TryGetValue("program", out var programValue) ? programValue : string.Empty;
+        var course = info.TryGetValue("course", out var courseValue) ? courseValue : string.Empty;
+        var classValue = info.TryGetValue("class", out var classValueValue) ? classValueValue : string.Empty;
+        var module = info.TryGetValue("module", out var moduleValue) ? moduleValue : string.Empty;
+
+        Logger.LogDebug($"Final metadata info: Program='{program}', Course='{course}', Class='{classValue}', Module='{module}'");
 
         return info;
     }

@@ -1,12 +1,5 @@
-﻿// <copyright file="MarkdownNoteProcessor.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Tools/MarkdownGeneration/MarkdownNoteProcessor.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
+﻿// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Utils;
@@ -226,5 +219,6 @@ public partial class MarkdownNoteProcessor
     /// It matches any text enclosed within angle brackets.
     /// </para>
     /// </remarks>
-    private static Regex HtmlTagStripperRegex() => new Regex("<.*?>");
+    [GeneratedRegex("<.*?>")]
+    internal static partial Regex HtmlTagStripperRegex();
 }

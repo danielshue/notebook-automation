@@ -214,6 +214,24 @@
       "completed": true,
       "createdAt": "2025-06-07T00:11:49.826Z",
       "updatedAt": "2025-06-07T00:11:56.124Z"
+    },
+    {
+      "id": "6ca6a807-3036-4c6c-8e5b-e4aebb024e65",
+      "name": "Fix MetadataHierarchyDetector Level Mapping and Add Unit Tests",
+      "details": "Fixed the MetadataHierarchyDetector hierarchy level mapping and added comprehensive unit tests:\n\n**Issues Fixed:**\n1. **Corrected hierarchy level mapping**: The detector was incorrectly treating vault root as Level 1, but tests showed it should be Depth 0 with no hierarchy metadata.\n2. **Fixed vault root fallback logic**: Added depth level check to prevent vault root name fallback when at depth 0.\n3. **Enabled non-existent path analysis**: Modified implementation to perform path-based analysis even for non-existent paths.\n\n**Hierarchy Levels Corrected:**\n- Depth 0 (Vault Root): NO hierarchy metadata\n- Depth 1 (Program Level): program only\n- Depth 2 (Course Level): program + course  \n- Depth 3 (Class Level): program + course + class\n- Depth 4+ (Module Level): program + course + class + module\n\n**New Unit Tests Added:**\n1. `FindHierarchyInfo_AllDepthLevels_DetectsCorrectHierarchy()` - Comprehensive test validating all hierarchy levels from vault root through deep module structures\n2. `FindHierarchyInfo_DifferentVaultRoots_ProducesConsistentResults()` - Validates consistent results across different vault root locations\n3. `FindHierarchyInfo_SpecialCharactersInPaths_DetectsCorrectHierarchy()` - Tests handling of special characters in folder names\n4. `FindHierarchyInfo_NonExistentPaths_HandlesGracefully()` - Validates path analysis for non-existent paths\n\n**Files Modified:**\n- `MetadataHierarchyDetector.cs`: Fixed hierarchy level logic and path analysis behavior\n- `MetadataHierarchyDetectorTests.cs`: Added comprehensive test coverage\n\nAll tests now pass successfully.",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": false,
+      "createdAt": "2025-06-08T04:55:40.542Z",
+      "updatedAt": "2025-06-08T04:55:40.542Z"
+    },
+    {
+      "id": "8d452cd8-0591-4059-b5e8-fd82d10cb893",
+      "name": "Create Comprehensive Regex Pattern Unit Tests",
+      "details": "Create comprehensive unit tests for all regex patterns used in the NotebookAutomation.Core assembly. This includes:\n\n1. Scanning the core assembly for all regex usage (GeneratedRegex, Regex.Match, Regex.Replace, etc.)\n2. Creating a single test file with tests for each regex pattern\n3. Ensuring tests use actual regex methods from core classes (not new Regex instances)\n4. Making regex methods accessible for testing by adjusting visibility\n5. Verifying all patterns work correctly with both positive and negative test cases\n\nCOMPLETED ✅ ALL PATTERNS FOUND AND TESTED:\n- ✅ Found all regex patterns in 8 core classes (CourseStructureExtractor, YamlHelper, FriendlyTitleHelper, MetadataTemplateManager, MarkdownParser, DocumentNoteBatchProcessor, MarkdownNoteProcessor, PromptTemplateService)\n- ✅ Created RegexPatternsTests.cs with 26 comprehensive tests covering ALL regex patterns\n- ✅ Updated regex methods to be internal static partial for test access\n- ✅ Added [GeneratedRegex] attributes where needed including all missing CourseStructureExtractor patterns\n- ✅ Fixed method visibility and compilation issues\n- ✅ All 26 tests passing successfully - 100% regex pattern test coverage\n- ✅ Test file covers ALL regex patterns in core assembly including all CourseStructureExtractor patterns that were initially missed\n- ✅ Final comprehensive scan completed - found and tested PromptTemplateService.TemplateVariableRegex pattern\n\nFINAL STATUS: Complete coverage of 26 unique regex patterns across 8 classes:\n- CourseStructureExtractor: 15 patterns\n- YamlHelper: 1 pattern  \n- FriendlyTitleHelper: 4 patterns\n- MetadataTemplateManager: 1 pattern\n- MarkdownParser: 2 patterns\n- DocumentNoteBatchProcessor: 1 pattern\n- MarkdownNoteProcessor: 1 pattern\n- PromptTemplateService: 1 pattern (NEWLY ADDED)\n\n✅ COMPREHENSIVE SCAN COMPLETED: Verified no additional regex patterns exist in the core assembly. All 26 patterns tested with 100% pass rate.",
+      "projectId": "3dee4b39-cce9-4bc4-9d68-bcb5f4f02ed6",
+      "completed": true,
+      "createdAt": "2025-06-08T15:51:00.980Z",
+      "updatedAt": "2025-06-08T16:15:00.698Z"
     }
   ],
   "subtasks": [

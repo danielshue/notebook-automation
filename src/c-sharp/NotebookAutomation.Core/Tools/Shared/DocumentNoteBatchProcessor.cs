@@ -1,12 +1,5 @@
-﻿// <copyright file="DocumentNoteBatchProcessor.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
+﻿// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 using System.Diagnostics;
 
 using NotebookAutomation.Core.Configuration;
@@ -62,9 +55,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// This regex is used to identify markdown headers specifically labeled as "Notes" in the content.
     /// It matches headers with two hashes followed by the word "Notes".
     /// </para>
-    /// </remarks>
+    /// </remarks>    [GeneratedRegex(@"^##\s+Notes\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
     [GeneratedRegex(@"^##\s+Notes\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline, "en-US")]
-    private static partial Regex NotesHeaderRegex();
+    internal static partial Regex NotesHeaderRegex();
 
     /// <summary>
     /// Maps document types (e.g., PDF, VIDEO) to their associated file extensions.

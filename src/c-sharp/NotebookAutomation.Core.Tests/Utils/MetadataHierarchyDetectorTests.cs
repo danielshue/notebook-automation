@@ -1300,8 +1300,8 @@ class: SingleClass
     }
 
     /// <summary>
-    /// Tests hierarchy detection specifically at the module level to validate proper
-    /// identification of program, course, class, and module levels in the educational structure.
+    /// Tests hierarchy detection specifically at the module level to validate
+    /// proper identification of program, course, class, and module levels in the educational structure.
     /// </summary>
     /// <remarks>
     /// Validates hierarchy detection for the module organizational level, ensuring that
@@ -1499,5 +1499,556 @@ class: SingleClass
         // Verify original metadata is preserved
         Assert.AreEqual("Investment Fundamentals", result["title"]);
         Assert.AreEqual("index", result["type"]);
+    }
+
+    /// <summary>
+    /// Verifies that passing the vault root path itself returns empty hierarchy metadata.
+    /// </summary>
+    /// <remarks>
+    /// When the file path is exactly the vault root (depth 0), no hierarchy metadata should be returned
+    /// since the vault root represents the main index level with no program/course/class information.
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_VaultRootPath_ReturnsEmptyHierarchy()
+    {
+        // Arrange
+        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        Directory.CreateDirectory(vaultRoot);
+
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig) { Logger = _loggerMock.Object };
+
+        // Act - Test with the vault root path itself
+        Dictionary<string, string> result = detector.FindHierarchyInfo(vaultRoot);
+
+        // Assert - At vault root level (depth 0), no hierarchy metadata should be set
+        Assert.AreEqual(string.Empty, result["program"], "Program should be empty at vault root level");
+        Assert.AreEqual(string.Empty, result["course"], "Course should be empty at vault root level");
+        Assert.AreEqual(string.Empty, result["class"], "Class should be empty at vault root level");
+        Assert.IsFalse(result.ContainsKey("module"), "Module should not be present at vault root level");
+    }
+
+    /// <summary>
+    /// Verifies hierarchy detection at depth 1 (program level) from vault root.
+    /// </summary>
+    /// <remarks>
+    /// At depth 1, only the program field should be populated, representing a program-level folder
+    /// directly under the vault root (e.g., "MBA", "Executive Program").
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_Depth1FromVaultRoot_DetectsProgramOnly()
+    {
+        // Arrange
+        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        string programPath = Path.Combine(vaultRoot, "Executive Program");
+
+        Directory.CreateDirectory(programPath);
+
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig) { Logger = _loggerMock.Object };
+
+        // Act - Test with depth 1 path (program level)
+        Dictionary<string, string> result = detector.FindHierarchyInfo(programPath);
+
+        // Assert - At depth 1, only program should be set
+        Assert.AreEqual("Executive Program", result["program"], "Program should be detected at depth 1");
+        Assert.AreEqual(string.Empty, result["course"], "Course should be empty at depth 1");
+        Assert.AreEqual(string.Empty, result["class"], "Class should be empty at depth 1");
+        Assert.IsFalse(result.ContainsKey("module"), "Module should not be present at depth 1");
+    }
+
+    /// <summary>
+    /// Verifies hierarchy detection at depth 2 (course level) from vault root.
+    /// </summary>
+    /// <remarks>
+    /// At depth 2, both program and course fields should be populated, representing a course folder
+    /// within a program (e.g., "MBA/Corporate Finance").
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_Depth2FromVaultRoot_DetectsProgramAndCourse()
+    {
+        // Arrange
+        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        string coursePath = Path.Combine(vaultRoot, "MBA", "Corporate Finance");
+
+        Directory.CreateDirectory(coursePath);
+
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig) { Logger = _loggerMock.Object };
+
+        // Act - Test with depth 2 path (course level)
+        Dictionary<string, string> result = detector.FindHierarchyInfo(coursePath);
+
+        // Assert - At depth 2, program and course should be set
+        Assert.AreEqual("MBA", result["program"], "Program should be detected at depth 2");
+        Assert.AreEqual("Corporate Finance", result["course"], "Course should be detected at depth 2");
+        Assert.AreEqual(string.Empty, result["class"], "Class should be empty at depth 2");
+        Assert.IsFalse(result.ContainsKey("module"), "Module should not be present at depth 2");
+    }
+
+    /// <summary>
+    /// Verifies hierarchy detection at depth 3 (class level) from vault root.
+    /// </summary>
+    /// <remarks>
+    /// At depth 3, program, course, and class fields should be populated, representing a class folder
+    /// within a course (e.g., "MBA/Finance/Financial Modeling").
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_Depth3FromVaultRoot_DetectsProgramCourseAndClass()
+    {
+        // Arrange
+        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        string classPath = Path.Combine(vaultRoot, "MBA", "Finance", "Financial Modeling");
+
+        Directory.CreateDirectory(classPath);
+
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig) { Logger = _loggerMock.Object };
+
+        // Act - Test with depth 3 path (class level)
+        Dictionary<string, string> result = detector.FindHierarchyInfo(classPath);
+
+        // Assert - At depth 3, program, course, and class should be set
+        Assert.AreEqual("MBA", result["program"], "Program should be detected at depth 3");
+        Assert.AreEqual("Finance", result["course"], "Course should be detected at depth 3");
+        Assert.AreEqual("Financial Modeling", result["class"], "Class should be detected at depth 3");
+        Assert.IsFalse(result.ContainsKey("module"), "Module should not be present at depth 3");
+    }
+
+    /// <summary>
+    /// Verifies hierarchy detection at depth 4 (module level) from vault root.
+    /// </summary>
+    /// <remarks>
+    /// At depth 4, all hierarchy fields including module should be populated, representing
+    /// a module folder within a class (e.g., "MBA/Finance/Financial Modeling/Advanced Techniques").
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_Depth4FromVaultRoot_DetectsFullHierarchy()
+    {
+        // Arrange
+        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        string modulePath = Path.Combine(vaultRoot, "MBA", "Finance", "Financial Modeling", "Advanced Techniques");
+
+        Directory.CreateDirectory(modulePath);
+
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig) { Logger = _loggerMock.Object };
+
+        // Act - Test with depth 4 path (module level)
+        Dictionary<string, string> result = detector.FindHierarchyInfo(modulePath);
+
+        // Assert - At depth 4, all hierarchy levels should be set
+        Assert.AreEqual("MBA", result["program"], "Program should be detected at depth 4");
+        Assert.AreEqual("Finance", result["course"], "Course should be detected at depth 4");
+        Assert.AreEqual("Financial Modeling", result["class"], "Class should be detected at depth 4");
+        Assert.IsTrue(result.ContainsKey("module"), "Module should be present at depth 4");
+        Assert.AreEqual("Advanced Techniques", result["module"], "Module should be detected at depth 4");
+    }
+
+    /// <summary>
+    /// Verifies hierarchy detection for content files at depth 5+ from vault root.
+    /// </summary>
+    /// <remarks>
+    /// At depth 5 and beyond, the hierarchy should still include all four levels (program, course, class, module)
+    /// with the module being the 4th path segment, regardless of how deep the content files are nested.
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_Depth5PlusFromVaultRoot_DetectsCorrectHierarchy()
+    {
+        // Arrange
+        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        string contentFilePath = Path.Combine(vaultRoot, "MBA", "Finance", "Financial Modeling", "Advanced Techniques", "Lesson 1", "video.mp4");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(contentFilePath));
+        File.WriteAllText(contentFilePath, "test content");
+
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig) { Logger = _loggerMock.Object };
+
+        // Act - Test with depth 5+ path (content file level)
+        Dictionary<string, string> result = detector.FindHierarchyInfo(contentFilePath);
+
+        // Assert - At depth 5+, hierarchy should use first 4 path segments
+        Assert.AreEqual("MBA", result["program"], "Program should be detected from 1st path segment");
+        Assert.AreEqual("Finance", result["course"], "Course should be detected from 2nd path segment");
+        Assert.AreEqual("Financial Modeling", result["class"], "Class should be detected from 3rd path segment");
+        Assert.IsTrue(result.ContainsKey("module"), "Module should be present at depth 5+");
+        Assert.AreEqual("Advanced Techniques", result["module"], "Module should be detected from 4th path segment");
+
+        // Cleanup
+        if (File.Exists(contentFilePath))
+        {
+            File.Delete(contentFilePath);
+        }
+    }
+
+    /// <summary>
+    /// Comprehensive test suite validating hierarchy detection at all depth levels from vault root.
+    /// </summary>
+    /// <remarks>
+    /// These tests ensure that the MetadataHierarchyDetector correctly identifies hierarchy levels
+    /// based on the path depth relative to the vault root, covering all possible scenarios from
+    /// vault root itself (depth 0) through deep module structures (depth 4+).
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_AllDepthLevels_DetectsCorrectHierarchy()
+    {
+        // Arrange
+        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig) { Logger = _loggerMock.Object };
+
+        // Create test directory structure
+        Directory.CreateDirectory(vaultRoot);
+
+        // Test paths at different depth levels
+        string programPath = Path.Combine(vaultRoot, "Executive MBA");
+        string coursePath = Path.Combine(programPath, "Strategic Management");
+        string classPath = Path.Combine(coursePath, "Leadership Fundamentals");
+        string modulePath = Path.Combine(classPath, "Week 1 - Introduction");
+        string contentPath = Path.Combine(modulePath, "lesson-notes.md");
+
+        // Create the full directory structure
+        Directory.CreateDirectory(Path.GetDirectoryName(contentPath)!);
+        File.WriteAllText(contentPath, "test content");
+
+        // Act & Assert - Depth 0: Vault Root
+        var vaultRootResult = detector.FindHierarchyInfo(vaultRoot);
+        Assert.AreEqual(string.Empty, vaultRootResult["program"], "Vault root should have empty program");
+        Assert.AreEqual(string.Empty, vaultRootResult["course"], "Vault root should have empty course");
+        Assert.AreEqual(string.Empty, vaultRootResult["class"], "Vault root should have empty class");
+        Assert.IsFalse(vaultRootResult.ContainsKey("module"), "Vault root should not contain module");
+
+        // Act & Assert - Depth 1: Program Level
+        var programResult = detector.FindHierarchyInfo(programPath);
+        Assert.AreEqual("Executive MBA", programResult["program"], "Depth 1 should detect program");
+        Assert.AreEqual(string.Empty, programResult["course"], "Depth 1 should have empty course");
+        Assert.AreEqual(string.Empty, programResult["class"], "Depth 1 should have empty class");
+        Assert.IsFalse(programResult.ContainsKey("module"), "Depth 1 should not contain module");
+
+        // Act & Assert - Depth 2: Course Level
+        var courseResult = detector.FindHierarchyInfo(coursePath);
+        Assert.AreEqual("Executive MBA", courseResult["program"], "Depth 2 should detect program");
+        Assert.AreEqual("Strategic Management", courseResult["course"], "Depth 2 should detect course");
+        Assert.AreEqual(string.Empty, courseResult["class"], "Depth 2 should have empty class");
+        Assert.IsFalse(courseResult.ContainsKey("module"), "Depth 2 should not contain module");
+
+        // Act & Assert - Depth 3: Class Level
+        var classResult = detector.FindHierarchyInfo(classPath);
+        Assert.AreEqual("Executive MBA", classResult["program"], "Depth 3 should detect program");
+        Assert.AreEqual("Strategic Management", classResult["course"], "Depth 3 should detect course");
+        Assert.AreEqual("Leadership Fundamentals", classResult["class"], "Depth 3 should detect class");
+        Assert.IsFalse(classResult.ContainsKey("module"), "Depth 3 should not contain module");
+
+        // Act & Assert - Depth 4: Module Level
+        var moduleResult = detector.FindHierarchyInfo(modulePath);
+        Assert.AreEqual("Executive MBA", moduleResult["program"], "Depth 4 should detect program");
+        Assert.AreEqual("Strategic Management", moduleResult["course"], "Depth 4 should detect course");
+        Assert.AreEqual("Leadership Fundamentals", moduleResult["class"], "Depth 4 should detect class");
+        Assert.AreEqual("Week 1 - Introduction", moduleResult["module"], "Depth 4 should detect module");
+
+        // Act & Assert - Depth 5: Content Level (same as depth 4)
+        var contentResult = detector.FindHierarchyInfo(contentPath);
+        Assert.AreEqual("Executive MBA", contentResult["program"], "Depth 5 should detect program");
+        Assert.AreEqual("Strategic Management", contentResult["course"], "Depth 5 should detect course");
+        Assert.AreEqual("Leadership Fundamentals", contentResult["class"], "Depth 5 should detect class");
+        Assert.AreEqual("Week 1 - Introduction", contentResult["module"], "Depth 5 should detect module");
+
+        // Cleanup
+        if (Directory.Exists(vaultRoot))
+        {
+            Directory.Delete(vaultRoot, true);
+        }
+    }
+
+    /// <summary>
+    /// Validates that different vault root paths produce consistent hierarchy detection results.
+    /// </summary>
+    /// <remarks>
+    /// Tests that the detector works correctly regardless of the vault root location,
+    /// ensuring that hierarchy detection is purely based on relative path structure.
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_DifferentVaultRoots_ProducesConsistentResults()
+    {
+        // Arrange - Create two different vault root locations
+        string vaultRoot1 = Path.Combine(Path.GetTempPath(), "TestVault1");
+        string vaultRoot2 = Path.Combine(Path.GetTempPath(), "TestVault2");
+
+        var config1 = new AppConfig { Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot1 } };
+        var config2 = new AppConfig { Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot2 } };
+
+        var detector1 = new MetadataHierarchyDetector(_loggerMock.Object, config1) { Logger = _loggerMock.Object };
+        var detector2 = new MetadataHierarchyDetector(_loggerMock.Object, config2) { Logger = _loggerMock.Object };
+
+        // Create identical structure in both vaults
+        string[] pathSegments = ["Business Analytics", "Data Science", "Machine Learning Fundamentals"];
+
+        string filePath1 = Path.Combine(vaultRoot1, Path.Combine(pathSegments), "assignment.md");
+        string filePath2 = Path.Combine(vaultRoot2, Path.Combine(pathSegments), "assignment.md");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath1)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath2)!);
+        File.WriteAllText(filePath1, "test content");
+        File.WriteAllText(filePath2, "test content");
+
+        // Act
+        var result1 = detector1.FindHierarchyInfo(filePath1);
+        var result2 = detector2.FindHierarchyInfo(filePath2);
+
+        // Assert - Both should produce identical hierarchy results
+        Assert.AreEqual(result1["program"], result2["program"], "Program should be identical across vault roots");
+        Assert.AreEqual(result1["course"], result2["course"], "Course should be identical across vault roots");
+        Assert.AreEqual(result1["class"], result2["class"], "Class should be identical across vault roots");
+
+        Assert.AreEqual("Business Analytics", result1["program"]);
+        Assert.AreEqual("Data Science", result1["course"]);
+        Assert.AreEqual("Machine Learning Fundamentals", result1["class"]);        // Cleanup
+        if (Directory.Exists(vaultRoot1))
+        {
+            Directory.Delete(vaultRoot1, true);
+        }
+
+        if (Directory.Exists(vaultRoot2))
+        {
+            Directory.Delete(vaultRoot2, true);
+        }
+    }
+
+    /// <summary>
+    /// Tests hierarchy detection with various special characters and spaces in folder names.
+    /// </summary>
+    /// <remarks>
+    /// Ensures the detector handles real-world folder naming conventions including spaces,
+    /// hyphens, underscores, and other common characters used in educational content organization.
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_SpecialCharactersInPaths_DetectsCorrectHierarchy()
+    {        // Arrange
+        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig) { Logger = _loggerMock.Object };        // Test with paths containing special characters commonly used in educational content
+        string programName = "Executive MBA - Leadership Track";
+        string courseName = "Finance & Accounting Fundamentals";
+        string className = "Corporate Finance (Advanced)";
+        string moduleName = "Week 3 - Investment Analysis & Valuation";
+
+        string testFilePath = Path.Combine(vaultRoot, programName, courseName, className, moduleName, "case-study.md");
+
+        Directory.CreateDirectory(Path.GetDirectoryName(testFilePath)!);
+        File.WriteAllText(testFilePath, "test content");
+
+        // Act
+        var result = detector.FindHierarchyInfo(testFilePath);
+
+        // Assert
+        Assert.AreEqual(programName, result["program"], "Should handle special characters in program name");
+        Assert.AreEqual(courseName, result["course"], "Should handle special characters in course name");
+        Assert.AreEqual(className, result["class"], "Should handle special characters in class name");
+        Assert.AreEqual(moduleName, result["module"], "Should handle special characters in module name");
+
+        // Cleanup
+        if (Directory.Exists(vaultRoot))
+        {
+            Directory.Delete(vaultRoot, true);
+        }
+    }
+
+    /// <summary>
+    /// Validates hierarchy detection behavior when provided with non-existent paths.
+    /// </summary>
+    /// <remarks>
+    /// Tests the detector's robustness when handling paths that don't exist on the file system,
+    /// ensuring it can still perform path-based analysis for planning and validation scenarios.
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_NonExistentPaths_HandlesGracefully()
+    {        // Arrange
+        string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig) { Logger = _loggerMock.Object };
+
+        // Ensure vault root exists but test paths don't
+        Directory.CreateDirectory(vaultRoot);
+        string nonExistentPath = Path.Combine(vaultRoot, "Imaginary Program", "Future Course", "Planned Class", "upcoming-lesson.md");
+
+        // Act
+        var result = detector.FindHierarchyInfo(nonExistentPath);
+
+        // Assert - Should still perform path-based analysis even if path doesn't exist
+        Assert.AreEqual("Imaginary Program", result["program"], "Should analyze non-existent paths");
+        Assert.AreEqual("Future Course", result["course"], "Should analyze non-existent paths");
+        Assert.AreEqual("Planned Class", result["class"], "Should analyze non-existent paths");
+
+        // Cleanup
+        if (Directory.Exists(vaultRoot))
+        {
+            Directory.Delete(vaultRoot, true);
+        }
+    }
+
+    /// <summary>
+    /// Tests hierarchy detection with a realistic vault root path that includes program structure.
+    /// </summary>
+    /// <remarks>
+    /// This test validates the scenario where the vault root itself is nested within a program structure
+    /// (e.g., "c:/users/danshue.REDMOND/Vault/01_Projects/MBA/") and ensures that paths relative to this
+    /// vault root correctly identify hierarchy levels.
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_NestedVaultRootPath_DetectsCorrectHierarchy()
+    {
+        // Arrange - Create a realistic vault root path that includes program structure
+        string baseVaultPath = Path.Combine(Path.GetTempPath(), "Users", "danshue.REDMOND", "Vault", "01_Projects", "MBA");
+        var nestedConfig = new AppConfig
+        {
+            Paths = new PathsConfig { NotebookVaultFullpathRoot = baseVaultPath }
+        };
+
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, nestedConfig) { Logger = _loggerMock.Object };
+
+        // Create the test path structure
+        string testPath = Path.Combine(baseVaultPath, "Value Chain Management", "Operations Management", "test-file.md");
+        Directory.CreateDirectory(Path.GetDirectoryName(testPath)!);
+        File.WriteAllText(testPath, "test content");
+
+        // Act
+        var result = detector.FindHierarchyInfo(testPath);
+
+        // Assert - Verify correct hierarchy detection relative to the nested vault root
+        Assert.AreEqual("Value Chain Management", result["program"], "First level after vault root should be program");
+        Assert.AreEqual("Operations Management", result["course"], "Second level after vault root should be course");
+        Assert.AreEqual(string.Empty, result["class"], "Third level is empty, so class should be empty");
+        Assert.IsFalse(result.ContainsKey("module"), "No module level in this path");
+
+        // Cleanup
+        if (Directory.Exists(baseVaultPath))
+        {
+            Directory.Delete(baseVaultPath, true);
+        }
+    }
+
+    /// <summary>
+    /// Tests hierarchy detection with the exact user-provided vault root and path scenario.
+    /// </summary>
+    /// <remarks>
+    /// Validates the specific scenario mentioned where vault root is
+    /// "c:/users/danshue.REDMOND/Vault/01_Projects/MBA/" and the path is
+    /// "C:/Users/danshue.REDMOND/Vault/01_Projects/MBA/Value Chain Management/Operations Management"
+    /// expecting Operations Management to be at Level 2 (course).
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_UserSpecificScenario_DetectsCorrectHierarchy()
+    {
+        // Arrange - Use the exact scenario provided by the user
+        // Note: Using temp path for testing, but same relative structure
+        string vaultRoot = Path.Combine(Path.GetTempPath(), "users", "danshue.REDMOND", "Vault", "01_Projects", "MBA");
+        var userConfig = new AppConfig
+        {
+            Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot }
+        };
+
+        MetadataHierarchyDetector detector = new(_loggerMock.Object, userConfig) { Logger = _loggerMock.Object };
+
+        // Create the exact path structure mentioned
+        string testPath = Path.Combine(vaultRoot, "Value Chain Management", "Operations Management");
+        Directory.CreateDirectory(testPath);
+
+        // Act
+        var result = detector.FindHierarchyInfo(testPath);
+
+        // Assert - Operations Management should be at Level 2 (course)
+        Assert.AreEqual("Value Chain Management", result["program"], "Value Chain Management should be program (Level 1)");
+        Assert.AreEqual("Operations Management", result["course"], "Operations Management should be course (Level 2)");
+        Assert.AreEqual(string.Empty, result["class"], "No class level in this path");
+        Assert.IsFalse(result.ContainsKey("module"), "No module level in this path");
+
+        // Additional test with a deeper path to verify full hierarchy
+        string deeperPath = Path.Combine(testPath, "Supply Chain Fundamentals", "Week 1", "lesson.md");
+        Directory.CreateDirectory(Path.GetDirectoryName(deeperPath)!);
+        File.WriteAllText(deeperPath, "test content");
+
+        var deeperResult = detector.FindHierarchyInfo(deeperPath);
+        Assert.AreEqual("Value Chain Management", deeperResult["program"], "Program should remain consistent");
+        Assert.AreEqual("Operations Management", deeperResult["course"], "Course should remain consistent");
+        Assert.AreEqual("Supply Chain Fundamentals", deeperResult["class"], "Supply Chain Fundamentals should be class (Level 3)");
+        Assert.AreEqual("Week 1", deeperResult["module"], "Week 1 should be module (Level 4)");
+
+        // Cleanup
+        if (Directory.Exists(vaultRoot))
+        {
+            Directory.Delete(vaultRoot, true);
+        }
+    }
+
+    /// <summary>
+    /// Demonstration test that shows the exact hierarchy detection logic with console output.
+    /// </summary>
+    /// <remarks>
+    /// This test demonstrates the hierarchy detection process step-by-step, showing exactly
+    /// how the detector processes a real-world path and assigns hierarchy levels. Originally
+    /// created as a standalone demo, now integrated as a comprehensive test.
+    /// </remarks>
+    [TestMethod]
+    public void FindHierarchyInfo_DemonstrationWithConsoleOutput_ShowsDetectionProcess()
+    {
+        // Arrange - Set up the exact scenario from the user
+        string vaultRoot = Path.Combine(Path.GetTempPath(), "users", "danshue.REDMOND", "Vault", "01_Projects", "MBA");
+
+        var config = new AppConfig
+        {
+            Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot }
+        };
+
+        var detector = new MetadataHierarchyDetector(_loggerMock.Object, config) { Logger = _loggerMock.Object };
+
+        // Test the exact path provided
+        string testPath = Path.Combine(vaultRoot, "Value Chain Management", "Operations Management");
+
+        // Create the directory structure for testing
+        Directory.CreateDirectory(testPath);
+
+        // Act
+        var result = detector.FindHierarchyInfo(testPath);
+
+        // Assert - Verify the hierarchy detection works correctly
+        Assert.AreEqual("Value Chain Management", result["program"], "Program (Level 1) should be 'Value Chain Management'");
+        Assert.AreEqual("Operations Management", result["course"], "Course (Level 2) should be 'Operations Management'");
+        Assert.AreEqual(string.Empty, result["class"], "Class (Level 3) should be empty");
+        Assert.IsFalse(result.ContainsKey("module"), "Module (Level 4) should not be present");
+
+        // Output demonstration (for debugging/logging purposes)
+        Console.WriteLine($"Vault Root: {vaultRoot}");
+        Console.WriteLine($"Test Path: {testPath}");
+        Console.WriteLine();
+        Console.WriteLine("Hierarchy Detection Results:");
+        Console.WriteLine($"Program (Level 1): '{result["program"]}'");
+        Console.WriteLine($"Course (Level 2): '{result["course"]}'");
+        Console.WriteLine($"Class (Level 3): '{result["class"]}'");
+        if (result.ContainsKey("module"))
+        {
+            Console.WriteLine($"Module (Level 4): '{result["module"]}'");
+        }
+        else
+        {
+            Console.WriteLine("Module (Level 4): (not present)");
+        }
+
+        // Additional verification with a deeper path
+        string deeperTestPath = Path.Combine(testPath, "Supply Chain", "Week 1 - Foundations", "lesson.md");
+        Directory.CreateDirectory(Path.GetDirectoryName(deeperTestPath)!);
+        File.WriteAllText(deeperTestPath, "test content");
+
+        var deeperResult = detector.FindHierarchyInfo(deeperTestPath);
+
+        Assert.AreEqual("Value Chain Management", deeperResult["program"], "Deeper path should maintain program level");
+        Assert.AreEqual("Operations Management", deeperResult["course"], "Deeper path should maintain course level");
+        Assert.AreEqual("Supply Chain", deeperResult["class"], "Deeper path should detect class level");
+        Assert.AreEqual("Week 1 - Foundations", deeperResult["module"], "Deeper path should detect module level");
+
+        Console.WriteLine();
+        Console.WriteLine("Deeper Path Results:");
+        Console.WriteLine($"Path: {deeperTestPath}");
+        Console.WriteLine($"Program: '{deeperResult["program"]}'");
+        Console.WriteLine($"Course: '{deeperResult["course"]}'");
+        Console.WriteLine($"Class: '{deeperResult["class"]}'");
+        Console.WriteLine($"Module: '{deeperResult["module"]}'");
+
+        // Cleanup
+        if (Directory.Exists(vaultRoot))
+        {
+            Directory.Delete(vaultRoot, true);
+        }
     }
 }
