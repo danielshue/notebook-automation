@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Unit tests for ConfigCommands.
 /// </summary>
 [TestClass]
-internal class ConfigCommandsTests
+public class ConfigCommandsTests
 {
     /// <summary>
     /// Tests that the 'config list-keys' command prints all available configuration keys

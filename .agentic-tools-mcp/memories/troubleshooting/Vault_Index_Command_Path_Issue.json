@@ -1,0 +1,8 @@
+{
+  "id": "9faf3a48-5e47-47f2-af2a-2b84cb5dd916",
+  "title": "Vault Index Command Path Issue",
+  "details": "ISSUE RESOLVED: The vault generate-index command was showing error \"Vault directory does not exist: VaultCommands.cs\" due to incorrect logging calls in VaultCommands.cs. The logging methods were hardcoded to use \"VaultCommands.cs\" as the file path parameter instead of the actual vault path being validated.\n\nSOLUTION: Fixed the incorrect LogErrorWithPath calls in VaultCommands.cs by replacing them with proper LogError calls that include the actual path in the message. Also ran dotnet format to clean up code style issues including removing unnecessary 'this.' qualifiers.\n\nFIXED METHODS:\n- Path validation logging in ExecuteVaultCommandAsync method\n- Error logging throughout VaultCommands.cs class\n\nThe .editorconfig files were already properly configured to remove this. qualifiers (dotnet_style_qualification_for_* = false:warning), so running dotnet format applied these rules automatically.",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-07T17:40:40.657Z",
+  "dateUpdated": "2025-06-07T17:51:42.302Z"
+}

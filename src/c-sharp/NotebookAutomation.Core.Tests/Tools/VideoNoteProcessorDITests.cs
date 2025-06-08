@@ -1,4 +1,4 @@
-﻿// <copyright file="VideoNoteProcessorDITests.cs" company="PlaceholderCompany">
+// <copyright file="VideoNoteProcessorDITests.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -16,27 +16,67 @@ internal class MockAISummarizer
 {
     public string PredefinedSummary { get; set; } = "Test summary from injected AISummarizer";
 
-    public string GenerateAiSummary(string text) => this.PredefinedSummary;
+    public string GenerateAiSummary(string text) => PredefinedSummary;
 }
 
 [TestClass]
-internal class VideoNoteProcessorDITests
+public class VideoNoteProcessorDITests
 {
+    private string _testMetadataFile = string.Empty;
+
+    [TestInitialize]
+    public void Setup()
+    {
+        _testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata_di.yaml");
+
+        var testMetadata = @"
+---
+template-type: ""video-note""
+tags:
+  - video
+metadata:
+  type: ""Video Note""
+---";
+
+        File.WriteAllText(_testMetadataFile, testMetadata);
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        if (File.Exists(_testMetadataFile))
+        {
+            File.Delete(_testMetadataFile);
+        }
+    }
+
     [TestMethod]
     public async Task GenerateAiSummaryAsync_WithMockAISummarizer_ReturnsSimulatedSummary()
-    { // Arrange - inject a mock AISummarizer with known values
+    {
+        // Arrange - inject a mock AISummarizer with known values
         var logger = NullLogger<VideoNoteProcessor>.Instance;
+        var appConfig = new AppConfig
+        {
+            Paths = new PathsConfig
+            {
+                MetadataFile = _testMetadataFile,
+                NotebookVaultFullpathRoot = Path.GetTempPath(),
+                LoggingDir = Path.GetTempPath()
+            }
+        };
+
         PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
             new YamlHelper(NullLogger<YamlHelper>.Instance),
-            new AppConfig());
+            appConfig);
         AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
         var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, new AppConfig());
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelper);
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, null, appConfig);
 
         // Act - Using null OpenAI key should return simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);
@@ -47,19 +87,31 @@ internal class VideoNoteProcessorDITests
 
     [TestMethod]
     public async Task GenerateAiSummaryAsync_WithNullOpenAIKey_ReturnsSimulatedSummary()
-    { // Arrange
+    {        // Arrange
         var logger = NullLogger<VideoNoteProcessor>.Instance;
+
+        var appConfig = new AppConfig
+        {
+            Paths = new PathsConfig
+            {
+                MetadataFile = _testMetadataFile,
+                NotebookVaultFullpathRoot = Path.GetTempPath(),
+                LoggingDir = Path.GetTempPath()
+            }
+        };
+
         PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
             new YamlHelper(NullLogger<YamlHelper>.Instance),
-            new AppConfig());
+            appConfig);
         AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
         var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, new AppConfig());
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelper);
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, null, appConfig);
 
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);

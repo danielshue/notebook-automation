@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Unit tests for VaultCommands.
 /// </summary>
 [TestClass]
-internal class VaultCommandsTests
+public class VaultCommandsTests
 {
     private readonly Mock<ILogger<VaultCommands>> mockLogger = new();
     private readonly Mock<IServiceProvider> mockServiceProvider = new();
@@ -22,8 +22,8 @@ internal class VaultCommandsTests
     public VaultCommandsTests()
     {
         // Setup the mock service provider to return AppConfig
-        this.mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
-            .Returns(this.mockAppConfig.Object);
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+            .Returns(mockAppConfig.Object);
     }
 
     [TestMethod]
@@ -35,7 +35,7 @@ internal class VaultCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var vaultCommands = new VaultCommands(this.mockLogger.Object, this.mockServiceProvider.Object);
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
         vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Capture console output
@@ -62,7 +62,7 @@ internal class VaultCommandsTests
     public void VaultCommand_Initialization_ShouldSucceed()
     {
         // Arrange
-        var command = new VaultCommands(this.mockLogger.Object, this.mockServiceProvider.Object);
+        var command = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
 
         // Act & Assert
         Assert.IsNotNull(command);
@@ -77,7 +77,7 @@ internal class VaultCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var vaultCommands = new VaultCommands(this.mockLogger.Object, this.mockServiceProvider.Object);
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
 
         // Act
         vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
@@ -108,7 +108,7 @@ internal class VaultCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var vaultCommands = new VaultCommands(this.mockLogger.Object, this.mockServiceProvider.Object);
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
         vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Create a temp directory with index and non-index files

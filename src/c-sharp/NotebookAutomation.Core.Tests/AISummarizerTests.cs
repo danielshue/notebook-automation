@@ -16,7 +16,7 @@ namespace NotebookAutomation.Core.Tests;
 /// Test suite for the AISummarizer class, verifying its functionality with different AI framework integrations.
 /// </summary>
 [TestClass]
-internal class AISummarizerTests
+public class AISummarizerTests
 {
     private Mock<ILogger<AISummarizer>> mockLogger = null!;
     private MockPromptTemplateService mockPromptService = null!;
@@ -24,8 +24,8 @@ internal class AISummarizerTests
     [TestInitialize]
     public void SetUp()
     {
-        this.mockLogger = new Mock<ILogger<AISummarizer>>();
-        this.mockPromptService = new MockPromptTemplateService
+        mockLogger = new Mock<ILogger<AISummarizer>>();
+        mockPromptService = new MockPromptTemplateService
         {
             Template = "You are a summarizer. Summarize this content: {{content}}",
         };
@@ -42,8 +42,8 @@ internal class AISummarizerTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         // Act
@@ -65,8 +65,8 @@ internal class AISummarizerTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         // Act
@@ -89,8 +89,8 @@ internal class AISummarizerTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         string inputText = "This is a basic text to summarize.";
@@ -115,8 +115,8 @@ internal class AISummarizerTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         string inputText = "Text to summarize with variables";
@@ -145,8 +145,8 @@ internal class AISummarizerTests
         Kernel kernel = TestKernelHelper.CreateTestKernel();
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         string inputText = "Text that will cause an exception";
@@ -177,7 +177,7 @@ internal class AISummarizerTests
         };
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
+            mockLogger.Object,
             mockPromptWithYaml,
             kernel);
 

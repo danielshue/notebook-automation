@@ -1,0 +1,8 @@
+{
+  "id": "c1b9cfb5-0fbb-4073-8451-f19a71e29c56",
+  "title": "Vault Generate-Index Validation Issue",
+  "details": "## Issue: Duplicate Validation Logic in VaultCommands.cs\n\nThe vault generate-index command has duplicate path validation logic:\n\n1. **Handler validation** (lines ~85-98): Checks if path is outside vault root and requires --override-vault-root flag. This logic is CORRECT.\n\n2. **ExecuteVaultCommandAsync validation** (lines 228-245): Redundant validation that also checks if path is within vault root, but this runs AFTER the command handler and can conflict.\n\n### Problem\nWhen running: `na vault generate-index \"path/to/subfolder\"` \n- Handler validation passes (path is within vault root)\n- But ExecuteVaultCommandAsync validation fails because it doesn't account for the fact that we want to allow subfolder processing\n\n### Solution\nThe validation in ExecuteVaultCommandAsync should only run when vaultRoot is NOT provided (meaning we're not overriding), and should be less restrictive for subfolder operations.\n\n### Files Affected\n- `src/c-sharp/NotebookAutomation.Cli/Commands/VaultCommands.cs`\n\n### Status\n- Handler validation: ✅ Fixed\n- ExecuteVaultCommandAsync validation: ❌ Needs fix",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-07T19:23:11.604Z",
+  "dateUpdated": "2025-06-07T19:23:11.604Z"
+}

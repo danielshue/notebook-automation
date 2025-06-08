@@ -1,0 +1,8 @@
+{
+  "id": "842debc8-5996-4a48-b800-77414233d078",
+  "title": "VideoNoteProcessor Constructor Pattern",
+  "details": "The VideoNoteProcessor constructor has been updated to include MetadataTemplateManager as a required dependency.\n\nCORRECT constructor signature:\nVideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AppConfig appConfig, AISummarizer aiSummarizer, IYamlHelper yamlHelper, MetadataHierarchyDetector metadataHierarchyDetector, MetadataTemplateManager templateManager)\n\nCORRECT test instantiation pattern:\n```csharp\nvar processor = new VideoNoteProcessor(\n    _logger,\n    _appConfig,\n    _aiSummarizer,\n    _yamlHelper,\n    _metadataHierarchyDetector,\n    _templateManager);\n```\n\nIMPORTANT: MetadataTemplateManager is the 6th parameter (last one) in the constructor.\n\nAppConfig should NOT have Logger property set via object initializer - this causes CS1513 errors.\n\nMetadataHierarchyDetector constructor: MetadataHierarchyDetector(ILogger<MetadataHierarchyDetector> logger, AppConfig appConfig)\n\nCommon syntax errors to avoid:\n- Missing closing parentheses in constructor calls\n- Setting Logger property via object initializer on AppConfig\n- Wrong parameter order\n- Missing MetadataTemplateManager parameter",
+  "category": "coding-standards",
+  "dateCreated": "2025-06-08T03:45:28.836Z",
+  "dateUpdated": "2025-06-08T03:45:28.836Z"
+}

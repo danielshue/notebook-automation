@@ -1,0 +1,8 @@
+{
+  "id": "bec456a6-74d1-42eb-8cdd-42521c3cae2b",
+  "title": "VideoNoteProcessor Constructor Dependencies",
+  "details": "The VideoNoteProcessor constructor requires the following parameters in this order:\n1. ILogger<VideoNoteProcessor> logger\n2. AISummarizer aiSummarizer\n3. IYamlHelper yamlHelper\n4. MetadataHierarchyDetector hierarchyDetector\n5. MetadataTemplateManager templateManager (NOT NULL)\n6. IOneDriveService oneDriveService\n7. AppConfig appConfig\n\nCommon test issues:\n- MetadataTemplateManager requires a valid MetadataFile parameter\n- MetadataHierarchyDetector requires a valid Logger parameter\n- All path parameters should use full paths not relative paths\n- Test files need to create temporary metadata files for MetadataTemplateManager\n- Mocking VideoNoteProcessor is complex due to its constructor dependencies\n\nKey fixes applied:\n- Fixed TextChunkingServiceTests.cs interface naming (ITextChunkingService vs IText_chunkingService)\n- Fixed RecursiveCharacterTextSplitterTests.cs field naming (_mockLogger vs __mockLogger)\n- Fixed MockTextChunkingServiceTests.cs field naming (_mockChunkingService vs __mockChunkingService)\n- Fixed MarkdownNoteProcessorTests.cs method signatures (ConvertToMarkdownAsync takes 3 params not 4 or 5)",
+  "category": "c-sharp-testing",
+  "dateCreated": "2025-06-08T04:24:27.057Z",
+  "dateUpdated": "2025-06-08T04:24:27.057Z"
+}

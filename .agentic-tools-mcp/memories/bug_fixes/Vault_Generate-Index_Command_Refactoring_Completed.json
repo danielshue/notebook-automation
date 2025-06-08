@@ -1,0 +1,8 @@
+{
+  "id": "668f8547-2ac0-4703-b683-5cb4940d5cd8",
+  "title": "Vault Generate-Index Command Refactoring Completed",
+  "details": "Successfully completed refactoring of the \"vault generate-index\" command in NotebookAutomation.Cli:\n\n**Key Fixes Implemented:**\n1. Fixed hierarchy level calculation bug - command now always uses configured vault root for level calculations unless --override-vault-root is specified\n2. Refactored VaultCommands.cs field naming and constructor to follow coding standards\n3. Fixed template loading in TemplateManager.cs\n4. Improved path handling to support both absolute and relative paths with proper validation\n5. Enhanced error handling and logging\n\n**Files Modified:**\n- VaultCommands.cs: Main refactoring, fixed field names, hierarchy calculation\n- VaultIndexBatchProcessor.cs: Fixed hierarchy level calculation bug\n- TemplateManager.cs: Fixed template loading logic\n\n**Testing Completed:**\n- Command works correctly with production vault path \"Value Chain Management/Operations Management\"\n- Hierarchy levels now calculate correctly (level 3 for target folder, level 4+ for subfolders)\n- Both leading slash and non-leading slash paths work correctly\n- --override-vault-root flag functions as intended for advanced scenarios\n\n**Bug Resolution:**\nThe core issue was that CalculateHierarchyLevel was using the provided path as vault root instead of the configured vault root, causing incorrect level calculations when starting from deep paths. This has been resolved in both VaultCommands.cs and VaultIndexBatchProcessor.cs.",
+  "category": "bug_fixes",
+  "dateCreated": "2025-06-07T20:04:40.928Z",
+  "dateUpdated": "2025-06-07T20:04:40.928Z"
+}

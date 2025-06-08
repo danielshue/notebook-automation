@@ -17,7 +17,7 @@ namespace NotebookAutomation.Core.Tests;
 /// for specific edge cases and complex scenarios.
 /// </summary>
 [TestClass]
-internal class AISummarizerAdditionalTests
+public class AISummarizerAdditionalTests
 {
     private Mock<ILogger<AISummarizer>> mockLogger = null!;
     private MockPromptTemplateService mockPromptService = null!;
@@ -25,8 +25,8 @@ internal class AISummarizerAdditionalTests
     [TestInitialize]
     public void SetUp()
     {
-        this.mockLogger = new Mock<ILogger<AISummarizer>>();
-        this.mockPromptService = new MockPromptTemplateService
+        mockLogger = new Mock<ILogger<AISummarizer>>();
+        mockPromptService = new MockPromptTemplateService
         {
             Template = "Test prompt template with {{content}}",
         };
@@ -46,8 +46,8 @@ internal class AISummarizerAdditionalTests
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         string inputText = "Content to summarize";
@@ -72,7 +72,7 @@ internal class AISummarizerAdditionalTests
         // Assert
         Assert.IsNotNull(result);
         Assert.AreEqual(expectedResponse, result);
-        Assert.AreEqual(promptName, this.mockPromptService.LastTemplateName);
+        Assert.AreEqual(promptName, mockPromptService.LastTemplateName);
     }
 
     /// <summary>
@@ -96,8 +96,8 @@ This is the actual content that follows YAML frontmatter.";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         // Act
@@ -120,8 +120,8 @@ This is the actual content that follows YAML frontmatter.";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         Dictionary<string, string> variables = new()
@@ -152,8 +152,8 @@ This is the actual content that follows YAML frontmatter.";
         // Create a kernel with mock service
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         // Large text that would trigger chunking in SK
@@ -174,8 +174,8 @@ This is the actual content that follows YAML frontmatter.";
         Kernel kernel = TestKernelHelper.CreateTestKernel();
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         string inputText = "Content that will cause cancellation exception";
@@ -202,8 +202,8 @@ This is the actual content that follows YAML frontmatter.";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService(expectedResponse);
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService,
+            mockLogger.Object,
+            mockPromptService,
             kernel);
 
         // Very large text that would be chunked by SK internally
@@ -227,7 +227,7 @@ This is the actual content that follows YAML frontmatter.";
         Kernel kernel = MockKernelFactory.CreateKernelWithMockService("This should not be returned");
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
+            mockLogger.Object,
             null, // No prompt service
             kernel);
 

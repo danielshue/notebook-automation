@@ -13,14 +13,14 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Unit tests for PdfCommands.
 /// </summary>
 [TestClass]
-internal class PdfCommandsTests
+public class PdfCommandsTests
 {
     private Mock<ILogger<PdfCommands>> mockLogger;
 
     [TestInitialize]
     public void Setup()
     {
-        this.mockLogger = new Mock<ILogger<PdfCommands>>();
+        mockLogger = new Mock<ILogger<PdfCommands>>();
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ internal class PdfCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        _ = new PdfCommands(this.mockLogger.Object);
+        _ = new PdfCommands(mockLogger.Object);
         PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -62,7 +62,7 @@ internal class PdfCommandsTests
     public void PdfCommand_Initialization_ShouldSucceed()
     {
         // Arrange
-        var command = new PdfCommands(this.mockLogger.Object);
+        var command = new PdfCommands(mockLogger.Object);
 
         // Act & Assert
         Assert.IsNotNull(command);
@@ -80,7 +80,7 @@ internal class PdfCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var pdfCommands = new PdfCommands(this.mockLogger.Object);            // Act
+        var pdfCommands = new PdfCommands(mockLogger.Object);            // Act
         PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Assert

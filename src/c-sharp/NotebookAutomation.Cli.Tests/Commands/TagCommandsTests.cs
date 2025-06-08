@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Unit tests for TagCommands.
 /// </summary>
 [TestClass]
-internal class TagCommandsTests
+public class TagCommandsTests
 {
     private Mock<ILogger<TagCommands>> mockLogger;
     private Mock<IServiceProvider> mockServiceProvider;
@@ -22,15 +22,15 @@ internal class TagCommandsTests
     [TestInitialize]
     public void Setup()
     {
-        this.mockLogger = new Mock<ILogger<TagCommands>>();
-        this.mockServiceProvider = new Mock<IServiceProvider>();
-        this.mockAppConfig = new Mock<AppConfig>();
-        this.mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig))).Returns(this.mockAppConfig.Object);
+        mockLogger = new Mock<ILogger<TagCommands>>();
+        mockServiceProvider = new Mock<IServiceProvider>();
+        mockAppConfig = new Mock<AppConfig>();
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig))).Returns(mockAppConfig.Object);
     }
 
     private TagCommands CreateTagCommands()
     {
-        return new TagCommands(this.mockLogger.Object, this.mockServiceProvider.Object);
+        return new TagCommands(mockLogger.Object, mockServiceProvider.Object);
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ internal class TagCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var tagCommands = this.CreateTagCommands();
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -77,7 +77,7 @@ internal class TagCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var tagCommands = this.CreateTagCommands();
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -109,7 +109,7 @@ internal class TagCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var tagCommands = this.CreateTagCommands();
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -141,7 +141,7 @@ internal class TagCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var tagCommands = this.CreateTagCommands();
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -173,7 +173,7 @@ internal class TagCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var tagCommands = this.CreateTagCommands();
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -205,7 +205,7 @@ internal class TagCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var tagCommands = this.CreateTagCommands();
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -239,7 +239,7 @@ internal class TagCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var tagCommands = this.CreateTagCommands();
+        var tagCommands = CreateTagCommands();
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;

@@ -1,4 +1,4 @@
-﻿// <copyright file="PdfNoteBatchProcessorTests.cs" company="PlaceholderCompany">
+// <copyright file="PdfNoteBatchProcessorTests.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -15,13 +15,13 @@ namespace NotebookAutomation.Core.Tests;
 /// Unit tests for PdfNoteBatchProcessor.
 /// </summary>
 [TestClass]
-internal class PdfNoteBatchProcessorTests
+public class PdfNoteBatchProcessorTests
 {
-    private Mock<ILogger> loggerMock = null!;
-    private TestBatchProcessor batchProcessor = null!;
-    private PdfNoteBatchProcessor processor = null!;
-    private string testDir = null!;
-    private string outputDir = null!;
+    private Mock<ILogger> _loggerMock = null!;
+    private TestBatchProcessor _batchProcessor = null!;
+    private PdfNoteBatchProcessor _processor = null!;
+    private string _testDir = null!;
+    private string _outputDir = null!;
 
     /// <summary>
     /// Test double for DocumentNoteBatchProcessor that overrides ProcessDocumentsAsync.
@@ -42,11 +42,14 @@ internal class PdfNoteBatchProcessorTests
             mockAppConfig.Paths = new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() };
             var hierarchyDetector = new MetadataHierarchyDetector(
                 Mock.Of<ILogger<MetadataHierarchyDetector>>(),
-                mockAppConfig);
+                mockAppConfig)
+            {
+                Logger = Mock.Of<ILogger<MetadataHierarchyDetector>>()
+            };
+
             return new PdfNoteProcessor(
                 Mock.Of<ILogger<PdfNoteProcessor>>(),
                 new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>()),
-                Mock.Of<IYamlHelper>(),
                 hierarchyDetector);
         }
 
@@ -91,26 +94,26 @@ internal class PdfNoteBatchProcessorTests
     [TestInitialize]
     public void Setup()
     {
-        this.loggerMock = new Mock<ILogger>();
-        this.batchProcessor = new TestBatchProcessor();
-        this.processor = new PdfNoteBatchProcessor(this.batchProcessor);
-        this.testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        this.outputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(this.testDir);
-        Directory.CreateDirectory(this.outputDir);
+        _loggerMock = new Mock<ILogger>();
+        _batchProcessor = new TestBatchProcessor();
+        _processor = new PdfNoteBatchProcessor(_batchProcessor);
+        _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        _outputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_testDir);
+        Directory.CreateDirectory(_outputDir);
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        if (Directory.Exists(this.testDir))
+        if (Directory.Exists(_testDir))
         {
-            Directory.Delete(this.testDir, true);
+            Directory.Delete(_testDir, true);
         }
 
-        if (Directory.Exists(this.outputDir))
+        if (Directory.Exists(_outputDir))
         {
-            Directory.Delete(this.outputDir, true);
+            Directory.Delete(_outputDir, true);
         }
     }
 
@@ -118,16 +121,16 @@ internal class PdfNoteBatchProcessorTests
     public async Task ProcessPdfsAsync_WithSingleFile_ProcessesSuccessfully()
     {
         // Arrange
-        string pdfPath = Path.Combine(this.testDir, "test.pdf");
+        string pdfPath = Path.Combine(_testDir, "test.pdf");
 
         // Create a minimal fake PDF file (this won't be valid for actual processing)
         File.WriteAllText(pdfPath, "fake pdf content");
         List<string> extensions = [".pdf"];
 
         // Act
-        BatchProcessResult result = await this.processor.ProcessPdfsAsync(
+        BatchProcessResult result = await _processor.ProcessPdfsAsync(
             pdfPath,
-            this.outputDir,
+            _outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: true).ConfigureAwait(false); // Use dry run to avoid actual PDF processing
@@ -141,13 +144,13 @@ internal class PdfNoteBatchProcessorTests
     public async Task ProcessPdfsAsync_WithNonExistentFile_ReturnsFailure()
     {
         // Arrange
-        string nonExistentPath = Path.Combine(this.testDir, "nonexistent.pdf");
+        string nonExistentPath = Path.Combine(_testDir, "nonexistent.pdf");
         List<string> extensions = [".pdf"];
 
         // Act
-        BatchProcessResult result = await this.processor.ProcessPdfsAsync(
+        BatchProcessResult result = await _processor.ProcessPdfsAsync(
             nonExistentPath,
-            this.outputDir,
+            _outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: false).ConfigureAwait(false);
@@ -161,18 +164,18 @@ internal class PdfNoteBatchProcessorTests
     public async Task ProcessPdfsAsync_WithDirectory_ProcessesAllPdfFiles()
     {
         // Arrange
-        string pdf1Path = Path.Combine(this.testDir, "test1.pdf");
-        string pdf2Path = Path.Combine(this.testDir, "test2.pdf");
-        string txtPath = Path.Combine(this.testDir, "test.txt");
+        string pdf1Path = Path.Combine(_testDir, "test1.pdf");
+        string pdf2Path = Path.Combine(_testDir, "test2.pdf");
+        string txtPath = Path.Combine(_testDir, "test.txt");
         File.WriteAllText(pdf1Path, "fake pdf content 1");
         File.WriteAllText(pdf2Path, "fake pdf content 2");
         File.WriteAllText(txtPath, "not a pdf file");
         List<string> extensions = [".pdf"];
 
         // Act
-        BatchProcessResult result = await this.processor.ProcessPdfsAsync(
-            this.testDir,
-            this.outputDir,
+        BatchProcessResult result = await _processor.ProcessPdfsAsync(
+            _testDir,
+            _outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: true).ConfigureAwait(false); // Use dry run to avoid actual PDF processing
@@ -186,14 +189,14 @@ internal class PdfNoteBatchProcessorTests
     public async Task ProcessPdfsAsync_WithExtendedOptions_UsesCorrectParameters()
     {
         // Arrange
-        string pdfPath = Path.Combine(this.testDir, "test.pdf");
+        string pdfPath = Path.Combine(_testDir, "test.pdf");
         File.WriteAllText(pdfPath, "fake pdf content");
         List<string> extensions = [".pdf"];
 
         // Act
-        BatchProcessResult result = await this.processor.ProcessPdfsAsync(
+        BatchProcessResult result = await _processor.ProcessPdfsAsync(
             pdfPath,
-            this.outputDir,
+            _outputDir,
             extensions,
             openAiApiKey: "test-key",
             dryRun: true,
@@ -213,9 +216,9 @@ internal class PdfNoteBatchProcessorTests
     public async Task ProcessPdfsAsync_WithEmptyInput_ReturnsFailure()
     {
         // Act
-        BatchProcessResult result = await this.processor.ProcessPdfsAsync(
+        BatchProcessResult result = await _processor.ProcessPdfsAsync(
             string.Empty,
-            this.outputDir,
+            _outputDir,
             [".pdf"],
             openAiApiKey: null,
             dryRun: false).ConfigureAwait(false);

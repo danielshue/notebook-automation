@@ -1,4 +1,4 @@
-﻿// <copyright file="VideoNoteProcessorTests.cs" company="PlaceholderCompany">
+// <copyright file="VideoNoteProcessorTests.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -10,31 +10,42 @@
 namespace NotebookAutomation.Core.Tests.Tools;
 
 [TestClass]
-internal class VideoNoteProcessorTests
+public class VideoNoteProcessorTests
 {
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
         return new MetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
-            new AppConfig());
+            new AppConfig())
+        { Logger = Mock.Of<ILogger<MetadataHierarchyDetector>>() };
     }
 
     [TestMethod]
     public async Task GenerateAiSummaryAsync_FallsBackToNewAISummarizer_WhenNotInjected()
     {
         // Arrange
-        Mock<ILogger<VideoNoteProcessor>> loggerMock = new();
+        Mock<ILogger<VideoNoteProcessor>> loggerMock = new(); var appConfig = new AppConfig
+        {
+            Paths = new PathsConfig
+            {
+                MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml")
+            }
+        };
         PromptTemplateService promptService = new(
             Mock.Of<ILogger<PromptTemplateService>>(),
             new YamlHelper(Mock.Of<ILogger<YamlHelper>>()),
-            new AppConfig());
+            appConfig);
         AISummarizer aiSummarizer = new(
             Mock.Of<ILogger<AISummarizer>>(),
             promptService,
             null);
         Mock<IYamlHelper> yamlHelperMock = new();
         var hierarchyDetector = CreateMetadataHierarchyDetector();
-        VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer, yamlHelperMock.Object, hierarchyDetector);
+        var templateManager = new MetadataTemplateManager(
+            Mock.Of<ILogger<MetadataTemplateManager>>(),
+            appConfig,
+            yamlHelperMock.Object);
+        VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer, yamlHelperMock.Object, hierarchyDetector, templateManager);
 
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);

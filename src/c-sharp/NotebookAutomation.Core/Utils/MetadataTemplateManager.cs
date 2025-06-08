@@ -12,16 +12,16 @@ using NotebookAutomation.Core.Configuration;
 namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
-/// Manages loading, parsing, and application of metadata templates from the <c>metadata.yaml</c> file.
+/// Manages loading, parsing, and application of metadata _templates from the <c>metadata.yaml</c> file.
 /// </summary>
 /// <remarks>
 /// <para>
 /// Responsible for loading and parsing the <c>metadata.yaml</c> file, which contains template definitions for various document types used in the notebook vault.
-/// Provides methods to retrieve, fill, and apply templates to document metadata.
+/// Provides methods to retrieve, fill, and apply _templates to document metadata.
 /// </para>
 /// <example>
 /// <code>
-/// var manager = new MetadataTemplateManager(logger, appConfig, yamlHelper);
+/// var manager = new MetadataTemplateManager(_logger, appConfig, _yamlHelper);
 /// var template = manager.GetTemplate("video-reference");
 /// var filled = manager.GetFilledTemplate("video-reference", new Dictionary&lt;string, string&gt; { ["title"] = "Sample" });
 /// </code>
@@ -29,69 +29,74 @@ namespace NotebookAutomation.Core.Utils;
 /// </remarks>
 public partial class MetadataTemplateManager
 {
-    private readonly ILogger logger;
-    private readonly string metadataFilePath;
-    private readonly IYamlHelper yamlHelper;
-    private readonly Dictionary<string, Dictionary<string, object>> templates;
+    private readonly ILogger _logger;
+    private readonly string _metadataFilePath;
+    private readonly IYamlHelper _yamlHelper;
+    private readonly Dictionary<string, Dictionary<string, object>> _templates;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataTemplateManager"/> class.
     /// </summary>
-    /// <param name="logger">The logger to use for diagnostic and error reporting.</param>
+    /// <param name="_logger">The _logger to use for diagnostic and error reporting.</param>
     /// <param name="appConfig">The application configuration.</param>
     /// <param name="yamlHelper">The YAML helper service for parsing metadata.</param>
     public MetadataTemplateManager(ILogger logger, AppConfig appConfig, IYamlHelper yamlHelper)
     {
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
 
         if (appConfig?.Paths == null)
         {
             throw new ArgumentNullException(nameof(appConfig), "Application config paths must be provided");
         }
 
-        this.metadataFilePath = appConfig.Paths.MetadataFile;
+        _metadataFilePath = appConfig.Paths.MetadataFile;
 
-        if (string.IsNullOrWhiteSpace(this.metadataFilePath))
+        if (string.IsNullOrWhiteSpace(_metadataFilePath))
         {
             throw new ArgumentException("Metadata file path is not configured in appConfig");
         }
 
-        this.templates = [];
+        _templates = [];
 
-        this.LoadTemplates();
+        LoadTemplates();
     }
 
     /// <summary>
-    /// Loads all templates from the <c>metadata.yaml</c> file into memory.
+    /// Loads all _templates from the <c>metadata.yaml</c> file into memory.
     /// </summary>
     /// <remarks>
-    /// Parses each YAML document in the file and stores templates by their <c>template-type</c> key.
+    /// Parses each YAML document in the file and stores _templates by their <c>template-type</c> key.
     /// Logs errors and warnings for missing files or parse failures.
     /// </remarks>
     public void LoadTemplates()
     {
         try
         {
-            if (!File.Exists(this.metadataFilePath))
+            _logger.LogDebug($"Attempting to load _templates from: {_metadataFilePath}");
+            if (!File.Exists(_metadataFilePath))
             {
-                this.logger.LogErrorWithPath("Metadata file does not exist at path: {filePath}", this.metadataFilePath);
+                _logger.LogError($"Metadata file does not exist at path: {_metadataFilePath}");
+                _logger.LogDebug($"File does not exist: {_metadataFilePath}");
                 return;
             }
 
-            this.logger.LogInformationWithPath("Loading templates from metadata file: {filePath}", this.metadataFilePath);
-            string content = File.ReadAllText(this.metadataFilePath);
+            _logger.LogInformation($"Loading _templates from metadata file: {_metadataFilePath}");
+            _logger.LogDebug($"File exists, loading content from: {_metadataFilePath}");
+            string content = File.ReadAllText(_metadataFilePath);
 
             // The metadata.yaml file has multiple YAML documents separated by ---
             var documents = SplitYamlDocuments(content);
+            _logger.LogDebug($"Found {documents.Count()} YAML documents in metadata file");
 
-            this.templates.Clear();
-
+            _templates.Clear();
             foreach (var document in documents)
             {
                 try
                 {
-                    var template = this.yamlHelper.ParseYamlToDictionary(document);
+                    _logger.LogDebug($"Parsing YAML document: {document.Substring(0, Math.Min(100, document.Length))}...");
+                    var template = _yamlHelper.ParseYamlToDictionary(document);
+                    _logger.LogDebug($"Parsed template with {template.Count} keys");
 
                     // Normalize tags to string arrays if present
                     if (template.TryGetValue("tags", out object? value) && value is System.Collections.IEnumerable enumerable && value is not string)
@@ -106,46 +111,59 @@ public partial class MetadataTemplateManager
                     if (template.Count > 0 && template.TryGetValue("template-type", out object? templateTypeValue))
                     {
                         string templateType = templateTypeValue.ToString() ?? string.Empty;
+                        _logger.LogDebug($"Found template type: '{templateType}'");
                         if (!string.IsNullOrEmpty(templateType))
                         {
-                            this.templates[templateType] = template;
-                            this.logger.LogDebug("Loaded template: {TemplateType}", templateType);
+                            _templates[templateType] = template;
+                            _logger.LogInformation("Successfully loaded template: {TemplateType}", templateType);
+                            _logger.LogDebug($"Successfully stored template: '{templateType}'");
                         }
+                        else
+                        {
+                            _logger.LogDebug("Template type is empty, skipping");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogDebug($"Document has no template-type field, skipping. Keys: {string.Join(", ", template.Keys)}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogWarning("Failed to parse template document: {Error}", ex.Message);
+                    _logger.LogWarning("Failed to parse template document: {Error}", ex.Message);
                 }
             }
 
-            this.logger.LogInformation("Loaded {Count} templates from metadata.yaml", this.templates.Count);
+            _logger.LogInformation("Template loading completed. Total _templates loaded: {Count}. Available template types: {TemplateTypes}",
+                _templates.Count, string.Join(", ", _templates.Keys));
         }
         catch (Exception ex)
         {
-            this.logger.LogErrorWithPath(ex, "Failed to load templates from metadata file: {filePath}", this.metadataFilePath);
-            throw;
+            _logger.LogErrorWithPath("Failed to load _templates from {filePath}: {Exception}", _metadataFilePath, ex);
         }
-    }
-
-    /// <summary>
-    /// Gets a template by its type.
-    /// </summary>
-    /// <param name="templateType">The type of template to retrieve (e.g., <c>video-reference</c>).</param>
-    /// <returns>A copy of the template dictionary, or <c>null</c> if not found.</returns>
-    /// <example>
-    /// <code>
-    /// var template = manager.GetTemplate("pdf-reference");
-    /// </code>
-    /// </example>
+    }    /// <summary>
+         /// Gets a template by its type.
+         /// </summary>
+         /// <param name="templateType">The type of template to retrieve (e.g., <c>video-reference</c>).</param>
+         /// <returns>A copy of the template dictionary, or <c>null</c> if not found.</returns>
+         /// <example>
+         /// <code>
+         /// var template = manager.GetTemplate("pdf-reference");
+         /// </code>
+         /// </example>
     public Dictionary<string, object>? GetTemplate(string templateType)
     {
-        if (this.templates.TryGetValue(templateType, out var template))
+        _logger.LogInformation("Looking for template type: {TemplateType}. Available _templates: {AvailableTemplates}",
+            templateType, string.Join(", ", _templates.Keys));
+
+        if (_templates.TryGetValue(templateType, out var template))
         {
+            _logger.LogInformation("Template found for type: {TemplateType}", templateType);
             return new Dictionary<string, object>(template);
         }
 
-        this.logger.LogWarning("Template type not found: {TemplateType}", templateType);
+        _logger.LogWarning("Template type not found: {TemplateType}. Available _templates: {AvailableTemplates}",
+            templateType, string.Join(", ", _templates.Keys));
         return null;
     }
 
@@ -155,7 +173,7 @@ public partial class MetadataTemplateManager
     /// <returns>A list of template type names.</returns>
     public List<string> GetTemplateTypes()
     {
-        return [.. this.templates.Keys];
+        return [.. _templates.Keys];
     }
 
     /// <summary>
@@ -171,7 +189,7 @@ public partial class MetadataTemplateManager
     /// </example>
     public Dictionary<string, object>? GetFilledTemplate(string templateType, Dictionary<string, string> values)
     {
-        var template = this.GetTemplate(templateType);
+        var template = GetTemplate(templateType);
         if (template == null)
         {
             return null;
@@ -209,10 +227,10 @@ public partial class MetadataTemplateManager
         string templateType = DetermineTemplateType(noteType);
 
         // Get the template if available
-        var template = this.GetTemplate(templateType);
+        var template = GetTemplate(templateType);
         if (template == null)
         {
-            this.logger.LogInformation("No template found for {NoteType}, using default fields only", noteType);
+            _logger.LogInformation($"No template found for {noteType}, using default fields only");
             return metadata;  // Return original metadata if no template found
         }
 
@@ -335,13 +353,13 @@ public partial class MetadataTemplateManager
         }
 
         // DEBUG: Log before returning to verify 'type' field
-        this.logger.LogDebug("[DEBUG] Final enhancedMetadata before return in EnhanceMetadataWithTemplate:");
+        _logger.LogDebug("Final enhancedMetadata before return in EnhanceMetadataWithTemplate:");
         foreach (var kvp in enhancedMetadata)
         {
-            this.logger.LogDebug("[DEBUG]   {Key}: {Value}", kvp.Key, kvp.Value);
+            _logger.LogDebug("   {Key}: {Value}", kvp.Key, kvp.Value);
         }
 
-        this.logger.LogDebug("Enhanced metadata with template: {TemplateType}", templateType);
+        _logger.LogDebug("Enhanced metadata with template: {TemplateType}", templateType);
         return enhancedMetadata;
     }
 

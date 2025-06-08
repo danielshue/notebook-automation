@@ -1,4 +1,4 @@
-// <copyright file="UserSecretsHelper.cs" company="PlaceholderCompany">
+﻿// <copyright file="UserSecretsHelper.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -28,7 +28,7 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>The API key if found in user secrets; otherwise, null.</returns>
     public string? GetOpenAIApiKey()
     {
-        return this.configuration["UserSecrets:OpenAI:ApiKey"];
+        return configuration["UserSecrets:OpenAI:ApiKey"];
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>The client ID if found in user secrets; otherwise, null.</returns>
     public string? GetMicrosoftGraphClientId()
     {
-        return this.configuration["UserSecrets:Microsoft:ClientId"];
+        return configuration["UserSecrets:Microsoft:ClientId"];
     }
 
     /// <summary>
@@ -46,7 +46,7 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>The tenant ID if found in user secrets; otherwise, null.</returns>
     public string? GetMicrosoftGraphTenantId()
     {
-        return this.configuration["UserSecrets:Microsoft:TenantId"];
+        return configuration["UserSecrets:Microsoft:TenantId"];
     }
 
     /// <summary>
@@ -56,7 +56,7 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>The value if found; otherwise, null.</returns>
     public string? GetSecret(string key)
     {
-        return this.configuration[$"UserSecrets:{key}"];
+        return configuration[$"UserSecrets:{key}"];
     }
 
     /// <summary>
@@ -66,6 +66,6 @@ public class UserSecretsHelper(IConfiguration configuration)
     /// <returns>True if the user secret exists; otherwise, false.</returns>
     public bool HasSecret(string key)
     {
-        return !string.IsNullOrEmpty(this.configuration[$"UserSecrets:{key}"]);
+        return !string.IsNullOrEmpty(configuration[$"UserSecrets:{key}"]);
     }
 }

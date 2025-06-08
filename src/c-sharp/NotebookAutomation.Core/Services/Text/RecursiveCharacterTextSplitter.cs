@@ -1,4 +1,4 @@
-// <copyright file="RecursiveCharacterTextSplitter.cs" company="PlaceholderCompany">
+﻿// <copyright file="RecursiveCharacterTextSplitter.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -101,7 +101,7 @@ public partial class RecursiveCharacterTextSplitter
         this.keepSeparator = keepSeparator;
 
         // Initialize special patterns for markdown and code content
-        this.specialPatterns =
+        specialPatterns =
         [
 
             // Markdown headers (keep them as separate chunks if possible)
@@ -194,33 +194,33 @@ public partial class RecursiveCharacterTextSplitter
     {
         if (string.IsNullOrEmpty(text))
         {
-            this.logger.LogWarning("Empty text provided to SplitText");
+            logger.LogWarning("Empty text provided to SplitText");
             return [];
         }
 
-        if (EstimateTokenCount(text) <= this.chunkSize)
+        if (EstimateTokenCount(text) <= chunkSize)
         {
-            this.logger.LogDebug(
+            logger.LogDebug(
                 "Text fits in a single chunk ({TextLength} chars, ~{EstimatedTokens} tokens)",
                 text.Length, EstimateTokenCount(text));
             return [text];
         }
 
-        this.logger.LogInformation(
+        logger.LogInformation(
             "Splitting text of {TextLength} chars into chunks (max tokens: {MaxTokens}, overlap: {OverlapTokens})",
-            text.Length, this.chunkSize, this.chunkOverlap);
+            text.Length, chunkSize, chunkOverlap);
 
         // First try to split based on special patterns
-        var specialChunks = this.TrySplitBySpecialPatterns(text);
+        var specialChunks = TrySplitBySpecialPatterns(text);
         if (specialChunks.Count > 0)
         {
-            this.logger.LogDebug("Successfully split text using special patterns into {Count} initial segments", specialChunks.Count);
-            return this.MergeOrSplitToFinalChunks(specialChunks);
+            logger.LogDebug("Successfully split text using special patterns into {Count} initial segments", specialChunks.Count);
+            return MergeOrSplitToFinalChunks(specialChunks);
         }
 
         // If no special patterns matched or the text is still too large,
         // proceed with recursive splitting
-        return this.SplitTextRecursive(text);
+        return SplitTextRecursive(text);
     }
 
     /// <summary>
@@ -233,7 +233,7 @@ public partial class RecursiveCharacterTextSplitter
         var result = new List<string>();
 
         // Sort patterns by priority (higher numbers first)
-        var sortedPatterns = this.specialPatterns.OrderByDescending(p => p.Priority).ToList();
+        var sortedPatterns = specialPatterns.OrderByDescending(p => p.Priority).ToList();
 
         foreach (var (pattern, _) in sortedPatterns)
         {
@@ -243,7 +243,7 @@ public partial class RecursiveCharacterTextSplitter
                 continue;
             }
 
-            this.logger.LogDebug(
+            logger.LogDebug(
                 "Found {MatchCount} matches for pattern: {Pattern}",
                 matches.Count, pattern.ToString());
 
@@ -297,27 +297,27 @@ public partial class RecursiveCharacterTextSplitter
         var finalChunks = new List<string>();
 
         // Try each separator in order
-        foreach (var separator in this.separators)
+        foreach (var separator in separators)
         {
-            this.logger.LogDebug(
+            logger.LogDebug(
                 "Attempting to split with separator: '{Separator}'",
                 separator.Replace("\n", "\\n"));
 
             // Skip empty separator unless it's our last resort
-            if (string.IsNullOrEmpty(separator) && separator != this.separators.Last())
+            if (string.IsNullOrEmpty(separator) && separator != separators.Last())
             {
                 continue;
             }
 
             // Split on this separator
             var splits = string.IsNullOrEmpty(separator)
-                ? SplitByCharacters(text, this.chunkSize)
-                : this.SplitBySeparator(text, separator);
+                ? SplitByCharacters(text, chunkSize)
+                : SplitBySeparator(text, separator);
 
             // If we have multiple splits, process them
             if (splits.Count > 1)
             {
-                this.logger.LogDebug(
+                logger.LogDebug(
                     "Split into {Count} segments using separator: '{Separator}'",
                     splits.Count, separator.Replace("\n", "\\n"));
 
@@ -326,15 +326,15 @@ public partial class RecursiveCharacterTextSplitter
                 {
                     // If this split is still too long, recursively split it
                     // using the next separator in the list
-                    if (EstimateTokenCount(split) > this.chunkSize)
+                    if (EstimateTokenCount(split) > chunkSize)
                     {
                         // Try the next separator level
-                        var nextIndex = this.separators.IndexOf(separator) + 1;
-                        if (nextIndex < this.separators.Count)
+                        var nextIndex = separators.IndexOf(separator) + 1;
+                        if (nextIndex < separators.Count)
                         {
-                            var subSeparators = this.separators.GetRange(nextIndex, this.separators.Count - nextIndex);
+                            var subSeparators = separators.GetRange(nextIndex, separators.Count - nextIndex);
                             var subSplitter = new RecursiveCharacterTextSplitter(
-                                this.logger, this.chunkSize, this.chunkOverlap, subSeparators, this.keepSeparator);
+                                logger, chunkSize, chunkOverlap, subSeparators, keepSeparator);
                             finalChunks.AddRange(subSplitter.SplitText(split));
                         }
                         else
@@ -361,7 +361,7 @@ public partial class RecursiveCharacterTextSplitter
         }
 
         // Apply chunk overlap, ensuring chunks are within size constraints
-        return this.ApplyChunkOverlap(finalChunks);
+        return ApplyChunkOverlap(finalChunks);
     }
 
     /// <summary>
@@ -371,7 +371,7 @@ public partial class RecursiveCharacterTextSplitter
     /// <returns>Chunks with overlap applied.</returns>
     private List<string> ApplyChunkOverlap(List<string> chunks)
     {
-        if (chunks.Count <= 1 || this.chunkOverlap <= 0)
+        if (chunks.Count <= 1 || chunkOverlap <= 0)
         {
             return chunks;
         }
@@ -386,7 +386,7 @@ public partial class RecursiveCharacterTextSplitter
             if (i > 0)
             {
                 var prevChunk = chunks[i - 1];
-                var overlapText = this.GetOverlapText(prevChunk);
+                var overlapText = GetOverlapText(prevChunk);
                 chunk = overlapText + chunk;
             }
 
@@ -408,7 +408,7 @@ public partial class RecursiveCharacterTextSplitter
         // Simple approach: take characters from the end
         // A more sophisticated approach would consider token boundaries
         int estimatedCharsPerToken = 4; // Rough estimate
-        int overlapChars = Math.Min(this.chunkOverlap * estimatedCharsPerToken, text.Length);
+        int overlapChars = Math.Min(chunkOverlap * estimatedCharsPerToken, text.Length);
 
         return text[^overlapChars..];
     }
@@ -430,7 +430,7 @@ public partial class RecursiveCharacterTextSplitter
             var chunkTokens = EstimateTokenCount(chunk);
 
             // If this chunk alone exceeds the limit, we need to split it further
-            if (chunkTokens > this.chunkSize)
+            if (chunkTokens > chunkSize)
             {
                 // First, add any accumulated content
                 if (currentSize > 0)
@@ -441,11 +441,11 @@ public partial class RecursiveCharacterTextSplitter
                 }
 
                 // Then recursively split this chunk
-                finalChunks.AddRange(this.SplitTextRecursive(chunk));
+                finalChunks.AddRange(SplitTextRecursive(chunk));
             }
 
             // If adding this chunk would exceed the limit, finalize current chunk and start a new one
-            else if (currentSize + chunkTokens > this.chunkSize)
+            else if (currentSize + chunkTokens > chunkSize)
             {
                 finalChunks.Add(currentChunk.ToString());
                 currentChunk.Clear();
@@ -473,7 +473,7 @@ public partial class RecursiveCharacterTextSplitter
         }
 
         // Apply chunk overlap
-        return this.ApplyChunkOverlap(finalChunks);
+        return ApplyChunkOverlap(finalChunks);
     }
 
     /// <summary>
@@ -500,7 +500,7 @@ public partial class RecursiveCharacterTextSplitter
             var segment = segments[i];
 
             // If we should keep the separator and it's not the last segment
-            if (this.keepSeparator && i < segments.Length - 1)
+            if (keepSeparator && i < segments.Length - 1)
             {
                 segment += separator;
             }

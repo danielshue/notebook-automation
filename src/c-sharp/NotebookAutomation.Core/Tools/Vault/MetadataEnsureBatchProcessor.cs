@@ -1,4 +1,4 @@
-// <copyright file="MetadataEnsureBatchProcessor.cs" company="PlaceholderCompany">
+﻿// <copyright file="MetadataEnsureBatchProcessor.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -9,7 +9,6 @@
 // </summary>
 using System.Diagnostics;
 
-using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Models;
 
 namespace NotebookAutomation.Core.Tools.Vault;
@@ -24,16 +23,15 @@ namespace NotebookAutomation.Core.Tools.Vault;
 /// monitoring and UI integration.
 /// </remarks>
 public class MetadataEnsureBatchProcessor(
-    ILogger<MetadataEnsureBatchProcessor> logger,
-    MetadataEnsureProcessor processor,
-    AppConfig appConfig)
+    ILogger<MetadataEnsureBatchProcessor> _logger,
+    MetadataEnsureProcessor processor)
 {
-    private readonly ILogger<MetadataEnsureBatchProcessor> logger = logger;
-    private readonly MetadataEnsureProcessor metadataProcessor = processor;
+    private readonly ILogger<MetadataEnsureBatchProcessor> _logger = _logger;
+    private readonly MetadataEnsureProcessor _metadataProcessor = processor;
 
     // Queue-related fields
-    private readonly List<QueueItem> processingQueue = [];
-    private readonly Lock queueLock = new();
+    private readonly List<QueueItem> _processingQueue = [];
+    private readonly Lock _queueLock = new();
 
     /// <summary>
     /// Event triggered when processing progress changes.
@@ -52,9 +50,9 @@ public class MetadataEnsureBatchProcessor(
     {
         get
         {
-            lock (this.queueLock)
+            lock (_queueLock)
             {
-                return this.processingQueue.ToList().AsReadOnly();
+                return _processingQueue.ToList().AsReadOnly();
             }
         }
     }
@@ -68,7 +66,7 @@ public class MetadataEnsureBatchProcessor(
     /// <param name="totalFiles">The total number of files to process.</param>
     protected virtual void OnProcessingProgressChanged(string filePath, string status, int currentFile, int totalFiles)
     {
-        this.ProcessingProgressChanged?.Invoke(this, new DocumentProcessingProgressEventArgs(filePath, status, currentFile, totalFiles));
+        ProcessingProgressChanged?.Invoke(this, new DocumentProcessingProgressEventArgs(filePath, status, currentFile, totalFiles));
     }
 
     /// <summary>
@@ -77,9 +75,9 @@ public class MetadataEnsureBatchProcessor(
     /// <param name="changedItem">The specific item that changed, or null if the entire queue changed.</param>
     protected virtual void OnQueueChanged(QueueItem? changedItem = null)
     {
-        lock (this.queueLock)
+        lock (_queueLock)
         {
-            this.QueueChanged?.Invoke(this, new QueueChangedEventArgs(this.processingQueue.AsReadOnly(), changedItem));
+            QueueChanged?.Invoke(this, new QueueChangedEventArgs(_processingQueue.AsReadOnly(), changedItem));
         }
     }
 
@@ -93,9 +91,9 @@ public class MetadataEnsureBatchProcessor(
             .Where(f => !Path.GetFileName(f).StartsWith('.')) // Skip hidden files
             .ToList();
 
-        lock (this.queueLock)
+        lock (_queueLock)
         {
-            this.processingQueue.Clear();
+            _processingQueue.Clear();
 
             foreach (string filePath in markdownFiles)
             {
@@ -105,11 +103,11 @@ public class MetadataEnsureBatchProcessor(
                     Stage = ProcessingStage.NotStarted,
                     StatusMessage = "Waiting to process metadata",
                 };
-                this.processingQueue.Add(queueItem);
+                _processingQueue.Add(queueItem);
             }
         }
 
-        this.OnQueueChanged();
+        OnQueueChanged();
     }
 
     /// <summary>
@@ -125,9 +123,9 @@ public class MetadataEnsureBatchProcessor(
     {
         QueueItem? queueItem = null;
 
-        lock (this.queueLock)
+        lock (_queueLock)
         {
-            queueItem = this.processingQueue.FirstOrDefault(q => q.FilePath == filePath);
+            queueItem = _processingQueue.FirstOrDefault(q => q.FilePath == filePath);
             if (queueItem != null)
             {
                 queueItem.Status = status;
@@ -147,8 +145,8 @@ public class MetadataEnsureBatchProcessor(
 
         if (queueItem != null)
         {
-            this.OnQueueChanged(queueItem);
-            this.OnProcessingProgressChanged(filePath, statusMessage, currentFile, totalFiles);
+            OnQueueChanged(queueItem);
+            OnProcessingProgressChanged(filePath, statusMessage, currentFile, totalFiles);
         }
     }
 
@@ -181,20 +179,20 @@ public class MetadataEnsureBatchProcessor(
 
         try
         {
-            this.logger.LogInformation("Starting metadata ensure process for vault: {VaultPath}", vaultPath);
+            _logger.LogInformation("Starting metadata ensure process for vault: {VaultPath}", vaultPath);
 
             // Initialize the processing queue
-            this.InitializeProcessingQueue(vaultPath);
+            InitializeProcessingQueue(vaultPath);
 
-            var queueCopy = this.Queue.ToList();
+            var queueCopy = Queue.ToList();
             if (!queueCopy.Any())
             {
-                this.logger.LogWarning("No markdown files found in vault: {VaultPath}", vaultPath);
+                _logger.LogWarning("No markdown files found in vault: {VaultPath}", vaultPath);
                 return result;
             }
 
             result.TotalFiles = queueCopy.Count;
-            this.logger.LogInformation("Found {Count} markdown files to process", queueCopy.Count);
+            _logger.LogInformation("Found {Count} markdown files to process", queueCopy.Count);
 
             // Process each file in the queue
             for (int fileIndex = 0; fileIndex < queueCopy.Count; fileIndex++)
@@ -206,12 +204,12 @@ public class MetadataEnsureBatchProcessor(
                 try
                 {
                     // Update status to processing
-                    this.UpdateQueueItemStatus(filePath, DocumentProcessingStatus.Processing, ProcessingStage.MarkdownCreation,
+                    UpdateQueueItemStatus(filePath, DocumentProcessingStatus.Processing, ProcessingStage.MarkdownCreation,
                         $"Processing metadata for file {fileIndex + 1}/{queueCopy.Count}: {Path.GetFileName(filePath)}",
                         fileIndex + 1, queueCopy.Count);
 
                     var stopwatch = Stopwatch.StartNew();
-                    bool wasUpdated = await this.metadataProcessor.EnsureMetadataAsync(filePath, forceOverwrite, dryRun).ConfigureAwait(false);
+                    bool wasUpdated = await _metadataProcessor.EnsureMetadataAsync(filePath, forceOverwrite, dryRun).ConfigureAwait(false);
                     stopwatch.Stop();
 
                     if (wasUpdated)
@@ -221,20 +219,20 @@ public class MetadataEnsureBatchProcessor(
                             ? $"[DRY RUN] Would update metadata for: {relativePath}"
                             : $"Updated metadata for: {relativePath} in {stopwatch.ElapsedMilliseconds}ms";
 
-                        this.UpdateQueueItemStatus(filePath, DocumentProcessingStatus.Completed, ProcessingStage.Completed,
+                        UpdateQueueItemStatus(filePath, DocumentProcessingStatus.Completed, ProcessingStage.Completed,
                             successMessage, fileIndex + 1, queueCopy.Count);
 
-                        this.logger.LogInformation("✓ {Message}", successMessage);
+                        _logger.LogInformation("✓ {Message}", successMessage);
                     }
                     else
                     {
                         result.SkippedFiles++;
                         string skipMessage = $"Skipped {relativePath} (no changes needed)";
 
-                        this.UpdateQueueItemStatus(filePath, DocumentProcessingStatus.Completed, ProcessingStage.Completed,
+                        UpdateQueueItemStatus(filePath, DocumentProcessingStatus.Completed, ProcessingStage.Completed,
                             skipMessage, fileIndex + 1, queueCopy.Count);
 
-                        this.logger.LogDebug("- {Message}", skipMessage);
+                        _logger.LogDebug("- {Message}", skipMessage);
                     }
                 }
                 catch (Exception ex)
@@ -243,25 +241,25 @@ public class MetadataEnsureBatchProcessor(
                     failedFiles.Add(filePath);
                     string errorMessage = $"Failed to process {relativePath}: {ex.Message}";
 
-                    this.UpdateQueueItemStatus(filePath, DocumentProcessingStatus.Failed, ProcessingStage.NotStarted,
+                    UpdateQueueItemStatus(filePath, DocumentProcessingStatus.Failed, ProcessingStage.NotStarted,
                         errorMessage, fileIndex + 1, queueCopy.Count);
 
-                    this.logger.LogError(ex, "✗ {Message}", errorMessage);
+                    _logger.LogError(ex, "✗ {Message}", errorMessage);
                 }
             }
 
             // Log summary
-            this.LogBatchResults(result, dryRun);
+            LogBatchResults(result, dryRun);
 
             // Save failed files list if any
             if (failedFiles.Count > 0)
             {
-                await this.SaveFailedFilesList(vaultPath, failedFiles).ConfigureAwait(false);
+                await SaveFailedFilesList(vaultPath, failedFiles).ConfigureAwait(false);
             }
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Batch metadata processing failed for vault: {VaultPath}", vaultPath);
+            _logger.LogError(ex, "Batch metadata processing failed for vault: {VaultPath}", vaultPath);
             result.Success = false;
             result.ErrorMessage = ex.Message;
         }
@@ -288,13 +286,13 @@ public class MetadataEnsureBatchProcessor(
     {
         string prefix = dryRun ? "[DRY RUN] " : string.Empty;
 
-        this.logger.LogInformation(
+        _logger.LogInformation(
             "{Prefix}Metadata processing completed: {Processed} processed, {Skipped} skipped, {Failed} failed out of {Total} total files",
             prefix, result.ProcessedFiles, result.SkippedFiles, result.FailedFiles, result.TotalFiles);
 
         if (result.FailedFiles > 0)
         {
-            this.logger.LogWarning("{FailedCount} files failed to process", result.FailedFiles);
+            _logger.LogWarning("{FailedCount} files failed to process", result.FailedFiles);
         }
     }
 
@@ -307,11 +305,11 @@ public class MetadataEnsureBatchProcessor(
         {
             string failedFilesPath = Path.Combine(vaultPath, "failed_metadata_files.txt");
             await File.WriteAllLinesAsync(failedFilesPath, failedFiles).ConfigureAwait(false);
-            this.logger.LogInformation("Saved {Count} failed files to: {FilePath}", failedFiles.Count, failedFilesPath);
+            _logger.LogInformation("Saved {Count} failed files to: {FilePath}", failedFiles.Count, failedFilesPath);
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to save failed files list");
+            _logger.LogError(ex, "Failed to save failed files list");
         }
     }
 

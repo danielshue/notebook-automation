@@ -1,4 +1,4 @@
-// <copyright file="MarkdownParser.cs" company="PlaceholderCompany">
+﻿// <copyright file="MarkdownParser.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -76,18 +76,18 @@ public partial class MarkdownParser(ILogger logger)
     {
         if (!File.Exists(filePath))
         {
-            this.logger.LogError("File not found: {FilePath}", filePath);
+            logger.LogError("File not found: {FilePath}", filePath);
             return (new Dictionary<string, object>(), string.Empty);
         }
 
         try
         {
             string text = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
-            return this.ParseMarkdown(text);
+            return ParseMarkdown(text);
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Error parsing markdown file: {FilePath}", filePath);
+            logger.LogError(ex, "Error parsing markdown file: {FilePath}", filePath);
             return (new Dictionary<string, object>(), string.Empty);
         }
     }
@@ -112,7 +112,7 @@ public partial class MarkdownParser(ILogger logger)
 
         var frontmatterYaml = match.Groups[1].Value;
         var content = markdownText[match.Length..];
-        var frontmatter = this.yamlHelper.ParseYamlToDictionary(frontmatterYaml);
+        var frontmatter = yamlHelper.ParseYamlToDictionary(frontmatterYaml);
 
         return (frontmatter, content);
     }
@@ -125,7 +125,7 @@ public partial class MarkdownParser(ILogger logger)
     /// <returns>The complete markdown document.</returns>
     public string CombineMarkdown(Dictionary<string, object> frontmatter, string content)
     {
-        return this.yamlHelper.UpdateFrontmatter(content, frontmatter);
+        return yamlHelper.UpdateFrontmatter(content, frontmatter);
     }
 
     /// <summary>
@@ -141,14 +141,14 @@ public partial class MarkdownParser(ILogger logger)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filePath) ?? string.Empty);
 
-            var fullContent = this.CombineMarkdown(frontmatter, content);
+            var fullContent = CombineMarkdown(frontmatter, content);
             await File.WriteAllTextAsync(filePath, fullContent, Encoding.UTF8).ConfigureAwait(false);
 
             return true;
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Error writing markdown file: {FilePath}", filePath);
+            logger.LogError(ex, "Error writing markdown file: {FilePath}", filePath);
             return false;
         }
     }

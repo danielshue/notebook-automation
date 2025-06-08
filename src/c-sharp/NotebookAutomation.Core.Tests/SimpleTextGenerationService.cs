@@ -1,4 +1,4 @@
-// <copyright file="SimpleTextGenerationService.cs" company="PlaceholderCompany">
+﻿// <copyright file="SimpleTextGenerationService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -39,9 +39,9 @@ internal class SimpleTextGenerationService : ITextGenerationService
         CancellationToken cancellationToken = default)
     {
         // Throw exception if configured to do so
-        if (this.ExceptionToThrow != null)
+        if (ExceptionToThrow != null)
         {
-            throw this.ExceptionToThrow;
+            throw ExceptionToThrow;
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -49,7 +49,7 @@ internal class SimpleTextGenerationService : ITextGenerationService
         // In a real service this would use the prompt to generate the response
         // For testing purposes, we just return the predefined response
         return Task.FromResult<IReadOnlyList<TextContent>>(
-            [new TextContent(this.Response)]);
+            [new TextContent(Response)]);
     }
 
     /// <summary>

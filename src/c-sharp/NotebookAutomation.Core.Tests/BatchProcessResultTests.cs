@@ -1,4 +1,4 @@
-﻿// <copyright file="BatchProcessResultTests.cs" company="PlaceholderCompany">
+// <copyright file="BatchProcessResultTests.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -15,53 +15,52 @@ namespace NotebookAutomation.Core.Tests;
 /// Unit tests for BatchProcessResult and timing/token statistics in batch processing.
 /// </summary>
 [TestClass]
-internal class BatchProcessResultTests
+public class BatchProcessResultTests
 {
-    private Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>> loggerMock;
-    private PdfNoteBatchProcessor processor;
-    private Mock<ILogger<PdfNoteProcessor>> pdfLoggerMock;
-    private Mock<ILogger<AISummarizer>> aiLoggerMock;
-    private Mock<AISummarizer> aiSummarizerMock;
-    private string testDir;
-    private string outputDir;
+    private Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>> _loggerMock;
+    private PdfNoteBatchProcessor _processor;
+    private Mock<ILogger<PdfNoteProcessor>> _pdfLoggerMock;
+    private Mock<ILogger<AISummarizer>> _aiLoggerMock;
+    private Mock<AISummarizer> _aiSummarizerMock;
+    private string _testDir;
+    private string _outputDir;
 
     [TestInitialize]
     public void Setup()
     {
-        this.loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>>();
-        this.pdfLoggerMock = new Mock<ILogger<PdfNoteProcessor>>();
-        this.aiLoggerMock = new Mock<ILogger<AISummarizer>>();
-        this.aiSummarizerMock = new Mock<AISummarizer>(this.aiLoggerMock.Object, null, null, null);
-
-        // Create a mock AppConfig for MetadataHierarchyDetector
+        _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>>();
+        _pdfLoggerMock = new Mock<ILogger<PdfNoteProcessor>>();
+        _aiLoggerMock = new Mock<ILogger<AISummarizer>>();
+        _aiSummarizerMock = new Mock<AISummarizer>(_aiLoggerMock.Object, null, null, null);        // Create a mock AppConfig for MetadataHierarchyDetector
         var mockAppConfig = new Mock<AppConfig>();
-        mockAppConfig.Object.Paths = new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() };
-
-        // Create a real MetadataHierarchyDetector instead of mocking it
+        mockAppConfig.Object.Paths = new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() };        // Create a real MetadataHierarchyDetector instead of mocking it
         var hierarchyDetector = new MetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
-            mockAppConfig.Object);
+            mockAppConfig.Object)
+        {
+            Logger = Mock.Of<ILogger<MetadataHierarchyDetector>>()
+        };
 
-        PdfNoteProcessor pdfNoteProcessor = new(this.pdfLoggerMock.Object, this.aiSummarizerMock.Object, Mock.Of<IYamlHelper>(), hierarchyDetector);
-        DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor = new(this.loggerMock.Object, pdfNoteProcessor, this.aiSummarizerMock.Object);
-        this.processor = new PdfNoteBatchProcessor(batchProcessor);
-        this.testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        this.outputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(this.testDir);
-        Directory.CreateDirectory(this.outputDir);
+        PdfNoteProcessor pdfNoteProcessor = new(_pdfLoggerMock.Object, _aiSummarizerMock.Object, hierarchyDetector);
+        DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor = new(_loggerMock.Object, pdfNoteProcessor, _aiSummarizerMock.Object);
+        _processor = new PdfNoteBatchProcessor(batchProcessor);
+        _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        _outputDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_testDir);
+        Directory.CreateDirectory(_outputDir);
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        if (Directory.Exists(this.testDir))
+        if (Directory.Exists(_testDir))
         {
-            Directory.Delete(this.testDir, true);
+            Directory.Delete(_testDir, true);
         }
 
-        if (Directory.Exists(this.outputDir))
+        if (Directory.Exists(_outputDir))
         {
-            Directory.Delete(this.outputDir, true);
+            Directory.Delete(_outputDir, true);
         }
     }
 
@@ -71,14 +70,14 @@ internal class BatchProcessResultTests
     public async Task BatchProcessResult_ReportsTimingAndTokens()
     {
         // Arrange
-        string pdfPath = Path.Combine(this.testDir, "test.pdf");
+        string pdfPath = Path.Combine(_testDir, "test.pdf");
         File.WriteAllText(pdfPath, "fake pdf content");
         List<string> extensions = [".pdf"];
 
         // Act
-        BatchProcessResult result = await this.processor.ProcessPdfsAsync(
+        BatchProcessResult result = await _processor.ProcessPdfsAsync(
             pdfPath,
-            this.outputDir,
+            _outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: true) // Use dry run to avoid actual PDF processing

@@ -1,0 +1,8 @@
+{
+  "id": "fb1590e7-09eb-4340-99f6-45c1d9749bcd",
+  "title": "Vault Index Generation Skipping All Folders",
+  "details": "User reported that vault generate-index command is skipping all 834 folders even with --force flag. Investigation shows:\n\n1. Command used: na.exe vault generate-index \"c:/users/danshue.REDMOND/Vault/01_Projects/MBA/\" --force\n2. Result: 0 processed, 834 skipped\n\n**ROOT CAUSE DISCOVERED:**\nThe issue is NOT with the --force flag logic, but with template loading. The debug output shows:\n- \"Template type not found: <type>. Available templates:\"\n- This means the MetadataTemplateManager is not loading any templates\n\n**Investigation findings:**\n1. Configuration correctly points to metadata.yaml: \"D:/source/notebook-automation/config/metadata.yaml\"\n2. metadata.yaml file EXISTS and contains templates for: main, program, course, class, module, lesson, etc.\n3. VaultIndexProcessor.DetermineTemplateType() correctly returns: \"main\", \"program\", \"course\", \"class\", \"module\"\n4. These template types DO exist in metadata.yaml\n\n**Next steps:**\n1. Check why MetadataTemplateManager.LoadTemplates() is not loading templates from metadata.yaml\n2. Possible issues:\n   - YAML parsing error\n   - File path resolution issue  \n   - Template loading logic bug\n   - Service registration/DI issue\n\n**Key files:**\n- VaultIndexProcessor.cs (working correctly)\n- MetadataTemplateManager.cs (template loading issue)\n- metadata.yaml (contains required templates)\n- config.json (correct path configuration)",
+  "category": "bug_investigation",
+  "dateCreated": "2025-06-07T18:41:07.485Z",
+  "dateUpdated": "2025-06-07T18:44:55.970Z"
+}

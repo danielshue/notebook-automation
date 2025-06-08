@@ -1,4 +1,4 @@
-// <copyright file="MarkdownCommands.cs" company="PlaceholderCompany">
+﻿// <copyright file="MarkdownCommands.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -137,7 +137,7 @@ internal class MarkdownCommands
                 Program.SetupDependencyInjection(config, debug);
             }
 
-            await this.ProcessMarkdownAsync(srcDirs, destDir, vaultRootOverride, config, debug, verbose, dryRun).ConfigureAwait(false);
+            await ProcessMarkdownAsync(srcDirs, destDir, vaultRootOverride, config, debug, verbose, dryRun).ConfigureAwait(false);
         });
 
         rootCommand.AddCommand(markdownCommand);
@@ -254,7 +254,7 @@ internal class MarkdownCommands
         }
         catch (Exception ex)
         {
-            this.logger.LogErrorWithPath("Error in markdown command", "MarkdownCommands.cs", ex);
+            logger.LogErrorWithPath("Error in markdown command", "MarkdownCommands.cs", ex);
             AnsiConsoleHelper.WriteError($"Error generating markdown: {ex.Message}");
         }
     }

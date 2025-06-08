@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Tests.Services;
 /// Unit tests for the OneDriveService class.
 /// </summary>
 [TestClass]
-internal class OneDriveServiceTests
+public class OneDriveServiceTests
 {
     [TestMethod]
     [Ignore("Requires MSAL browser interaction or deeper refactor; skip in CI.")]

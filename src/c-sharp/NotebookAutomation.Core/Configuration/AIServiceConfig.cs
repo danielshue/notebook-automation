@@ -1,4 +1,4 @@
-// <copyright file="AIServiceConfig.cs" company="PlaceholderCompany">
+﻿// <copyright file="AIServiceConfig.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -54,7 +54,7 @@ public class AIServiceConfig
     /// <returns>The API key string, or null if not set.</returns>
     public string? GetApiKey()
     {
-        var providerType = this.Provider?.ToLowerInvariant() ?? "openai";
+        var providerType = Provider?.ToLowerInvariant() ?? "openai";
         return providerType switch
         {
             "openai" => Environment.GetEnvironmentVariable("OPENAI_API_KEY"),
@@ -75,12 +75,12 @@ public class AIServiceConfig
     {
         get
         {
-            var providerType = this.Provider?.ToLowerInvariant() ?? "openai";
+            var providerType = Provider?.ToLowerInvariant() ?? "openai";
             return providerType switch
             {
-                "openai" => this.OpenAI?.Model,
-                "azure" => this.Azure?.Model,
-                "foundry" => this.Foundry?.Model,
+                "openai" => OpenAI?.Model,
+                "azure" => Azure?.Model,
+                "foundry" => Foundry?.Model,
                 _ => null,
             };
         }
@@ -94,7 +94,7 @@ public class AIServiceConfig
     /// </remarks>
     [JsonPropertyName("api_key")]
     [JsonIgnore]
-    public string? ApiKey => this.GetApiKey();
+    public string? ApiKey => GetApiKey();
 }
 
 /// <summary>

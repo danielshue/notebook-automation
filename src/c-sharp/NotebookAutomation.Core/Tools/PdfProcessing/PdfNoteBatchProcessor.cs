@@ -1,4 +1,4 @@
-// <copyright file="PdfNoteBatchProcessor.cs" company="PlaceholderCompany">
+﻿// <copyright file="PdfNoteBatchProcessor.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -55,8 +55,8 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
     /// </summary>
     public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
     {
-        add => this.batchProcessor.ProcessingProgressChanged += value;
-        remove => this.batchProcessor.ProcessingProgressChanged -= value;
+        add => batchProcessor.ProcessingProgressChanged += value;
+        remove => batchProcessor.ProcessingProgressChanged -= value;
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
         bool dryRun = false)
     {
         var extensions = pdfExtensions ?? [".pdf"];
-        return await this.batchProcessor.ProcessDocumentsAsync(
+        return await batchProcessor.ProcessDocumentsAsync(
             input,
             output,
             extensions,
@@ -165,7 +165,7 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
         Configuration.AppConfig? appConfig = null)
     {
         var extensions = pdfExtensions ?? [".pdf"];
-        return await this.batchProcessor.ProcessDocumentsAsync(
+        return await batchProcessor.ProcessDocumentsAsync(
             input,
             output,
             extensions,

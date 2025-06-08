@@ -10,7 +10,7 @@
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
-internal class DebugPromptTemplateServiceTests
+public class DebugPromptTemplateServiceTests
 {
     [TestMethod]
     public void Debug_PromptsDirectorySearch()

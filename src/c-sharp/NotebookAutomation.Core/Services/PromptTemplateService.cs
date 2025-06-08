@@ -1,4 +1,4 @@
-// <copyright file="PromptTemplateService.cs" company="PlaceholderCompany">
+﻿// <copyright file="PromptTemplateService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -70,7 +70,7 @@ public partial class PromptTemplateService : IPromptService
     {
         this.logger = logger;
         this.yamlHelper = yamlHelper;
-        this.InitializePromptsDirectory(config);
+        InitializePromptsDirectory(config);
     }
 
     /// <summary>
@@ -106,13 +106,13 @@ public partial class PromptTemplateService : IPromptService
 
             if (Directory.Exists(configPromptsDir))
             {
-                this.promptsDirectory = configPromptsDir;
-                this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from config");
+                promptsDirectory = configPromptsDir;
+                logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from config");
                 return;
             }
             else
             {
-                this.logger.LogWarningWithPath(configPromptsDir, "Configured prompts directory not found");
+                logger.LogWarningWithPath(configPromptsDir, "Configured prompts directory not found");
             }
         }
 
@@ -124,9 +124,9 @@ public partial class PromptTemplateService : IPromptService
 
         if (Directory.Exists(projectPromptsDir))
         {
-            this.promptsDirectory = projectPromptsDir;
+            promptsDirectory = projectPromptsDir;
 
-            this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from output directory");
+            logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from output directory");
 
             return;
         }
@@ -137,8 +137,8 @@ public partial class PromptTemplateService : IPromptService
 
         if (Directory.Exists(corePromptsDir))
         {
-            this.promptsDirectory = corePromptsDir;
-            this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from Core project");
+            promptsDirectory = corePromptsDir;
+            logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from Core project");
             return;
         }
 
@@ -148,8 +148,8 @@ public partial class PromptTemplateService : IPromptService
 
         if (Directory.Exists(rootPromptsDir))
         {
-            this.promptsDirectory = rootPromptsDir;
-            this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from repository root");
+            promptsDirectory = rootPromptsDir;
+            logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from repository root");
             return;
         }
 
@@ -159,20 +159,20 @@ public partial class PromptTemplateService : IPromptService
 
         if (Directory.Exists(parentRootPromptsDir))
         {
-            this.promptsDirectory = parentRootPromptsDir;
-            this.logger.LogInformationWithPath(this.promptsDirectory, "Using prompts directory from parent repository root");
+            promptsDirectory = parentRootPromptsDir;
+            logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from parent repository root");
             return;
         }
 
         // If all else fails, use the current directory
-        this.promptsDirectory = baseDirectory;
-        this.logger.LogWarningWithPath(baseDirectory, "Could not find prompts directory. Using base directory");
+        promptsDirectory = baseDirectory;
+        logger.LogWarningWithPath(baseDirectory, "Could not find prompts directory. Using base directory");
     }
 
     /// <summary>
     /// Gets the path to the prompts directory.
     /// </summary>
-    public string PromptsDirectory => this.promptsDirectory;
+    public string PromptsDirectory => promptsDirectory;
 
     /// <summary>
     /// Loads a prompt template and substitutes variables.
@@ -184,12 +184,12 @@ public partial class PromptTemplateService : IPromptService
     {
         if (!File.Exists(templatePath))
         {
-            this.logger.LogErrorWithPath(templatePath, "Prompt template not found");
+            logger.LogErrorWithPath(templatePath, "Prompt template not found");
             return string.Empty;
         }
 
         string template = await File.ReadAllTextAsync(templatePath).ConfigureAwait(false);
-        string result = this.SubstituteVariables(template, substitutionValues);
+        string result = SubstituteVariables(template, substitutionValues);
         return result;
     }
 
@@ -221,8 +221,8 @@ public partial class PromptTemplateService : IPromptService
     /// <returns>The prompt with variables substituted.</returns>
     public async Task<string> GetPromptAsync(string templateName, Dictionary<string, string>? substitutionValues)
     {
-        string template = await this.LoadTemplateAsync(templateName).ConfigureAwait(false);
-        return this.SubstituteVariables(template, substitutionValues);
+        string template = await LoadTemplateAsync(templateName).ConfigureAwait(false);
+        return SubstituteVariables(template, substitutionValues);
     }
 
     /// <summary>
@@ -232,7 +232,7 @@ public partial class PromptTemplateService : IPromptService
     /// <returns>The template content, or a default template if not found.</returns>
     public virtual async Task<string> LoadTemplateAsync(string templateName)
     {
-        string templatePath = Path.Combine(this.promptsDirectory, $"{templateName}.md");
+        string templatePath = Path.Combine(promptsDirectory, $"{templateName}.md");
         try
         {
             if (File.Exists(templatePath))
@@ -240,8 +240,8 @@ public partial class PromptTemplateService : IPromptService
                 string content = await File.ReadAllTextAsync(templatePath).ConfigureAwait(false);
 
                 // Strip frontmatter if present
-                content = this.yamlHelper.RemoveFrontmatter(content);
-                this.logger.LogInformationWithPath(templatePath, $"Loaded template: {templateName}");
+                content = yamlHelper.RemoveFrontmatter(content);
+                logger.LogInformationWithPath(templatePath, $"Loaded template: {templateName}");
                 return content;
             } // Look in project Prompts directory too
 
@@ -251,17 +251,17 @@ public partial class PromptTemplateService : IPromptService
                 string content = await File.ReadAllTextAsync(projectPromptPath).ConfigureAwait(false);
 
                 // Strip frontmatter if present
-                content = this.yamlHelper.RemoveFrontmatter(content);
-                this.logger.LogInformationWithPath(projectPromptPath, $"Loaded template from project: {templateName}");
+                content = yamlHelper.RemoveFrontmatter(content);
+                logger.LogInformationWithPath(projectPromptPath, $"Loaded template from project: {templateName}");
                 return content;
             }
 
-            return this.GetDefaultTemplate(templateName);
+            return GetDefaultTemplate(templateName);
         }
         catch (Exception ex)
         {
-            this.logger.LogErrorWithPath(templateName, $"Error loading template: {templateName}. Exception: {ex.Message}");
-            return this.GetDefaultTemplate(templateName);
+            logger.LogErrorWithPath(templateName, $"Error loading template: {templateName}. Exception: {ex.Message}");
+            return GetDefaultTemplate(templateName);
         }
     }
 
@@ -272,7 +272,7 @@ public partial class PromptTemplateService : IPromptService
     /// <returns>The default template content.</returns>
     private string GetDefaultTemplate(string templateName)
     {
-        this.logger.LogWarningWithPath(templateName, "Using default template for");
+        logger.LogWarningWithPath(templateName, "Using default template for");
 
         return templateName switch
         {
@@ -290,7 +290,7 @@ public partial class PromptTemplateService : IPromptService
     /// <returns>The template with variables substituted.</returns>
     public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? substitutionValues)
     {
-        return Task.FromResult(this.SubstituteVariables(template, substitutionValues));
+        return Task.FromResult(SubstituteVariables(template, substitutionValues));
     }
 
     /// <summary>

@@ -1,4 +1,4 @@
-// <copyright file="AnsiConsoleHelper.cs" company="PlaceholderCompany">
+﻿// <copyright file="AnsiConsoleHelper.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -420,16 +420,16 @@ internal static class AnsiConsoleHelper
                 })
                 .StartAsync(async ctx =>
                 {
-                    this.context = ctx;
-                    this.task = ctx.AddTask(this.description);
-                    this.onProgressStarted?.Invoke(this.task);
+                    context = ctx;
+                    task = ctx.AddTask(description);
+                    onProgressStarted?.Invoke(task);
 
                     try
                     {
                         // Wait until cancelled (progress will be updated via events)
-                        while (!this.cancellationTokenSource.Token.IsCancellationRequested)
+                        while (!cancellationTokenSource.Token.IsCancellationRequested)
                         {
-                            await Task.Delay(100, this.cancellationTokenSource.Token).ConfigureAwait(false);
+                            await Task.Delay(100, cancellationTokenSource.Token).ConfigureAwait(false);
                         }
                     }
                     catch (TaskCanceledException)
@@ -441,43 +441,43 @@ internal static class AnsiConsoleHelper
 
         public void UpdateProgress(DocumentProcessingProgressEventArgs args)
         {
-            if (this.task != null)
+            if (task != null)
             {
                 // Escape the status text to prevent Spectre.Console from interpreting it as markup
                 var safeStatus = args.Status.Replace("[", "[[").Replace("]", "]]");
-                this.task.Description = $"{this.description}: {safeStatus}";
+                task.Description = $"{description}: {safeStatus}";
                 if (args.TotalFiles > 0)
                 {
-                    this.task.MaxValue = args.TotalFiles;
-                    this.task.Value = args.CurrentFile;
+                    task.MaxValue = args.TotalFiles;
+                    task.Value = args.CurrentFile;
                 }
             }
         }
 
         public void UpdateQueue(QueueChangedEventArgs args)
         {
-            if (this.task != null && args.Queue.Count > 0)
+            if (task != null && args.Queue.Count > 0)
             {
                 var completed = args.Queue.Count(q => q.Status == DocumentProcessingStatus.Completed);
                 var failed = args.Queue.Count(q => q.Status == DocumentProcessingStatus.Failed);
                 var processing = args.Queue.Count(q => q.Status == DocumentProcessingStatus.Processing);
 
-                this.task.Description = $"{this.description}: {completed} completed, {failed} failed, {processing} processing";
-                this.task.MaxValue = args.Queue.Count;
-                this.task.Value = completed + failed;
+                task.Description = $"{description}: {completed} completed, {failed} failed, {processing} processing";
+                task.MaxValue = args.Queue.Count;
+                task.Value = completed + failed;
             }
         }
 
         public async Task StopAsync()
         {
-            this.cancellationTokenSource.Cancel();
+            cancellationTokenSource.Cancel();
             await Task.Delay(100).ConfigureAwait(false); // Give time for the progress to clean up
         }
 
         public void Dispose()
         {
-            this.cancellationTokenSource.Cancel();
-            this.cancellationTokenSource.Dispose();
+            cancellationTokenSource.Cancel();
+            cancellationTokenSource.Dispose();
         }
     }
 }

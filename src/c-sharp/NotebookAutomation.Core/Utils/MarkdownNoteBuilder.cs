@@ -1,4 +1,4 @@
-// <copyright file="MarkdownNoteBuilder.cs" company="PlaceholderCompany">
+﻿// <copyright file="MarkdownNoteBuilder.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -49,7 +49,7 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
     {
         frontmatter["banner"] = "gies-banner.png"; // Default banner if not specified
 
-        var yaml = this.yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
+        var yaml = yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
 
         // Remove any trailing newlines or content after frontmatter
         int end = yaml.IndexOf("---", 3, StringComparison.Ordinal);
@@ -71,39 +71,44 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
     /// The frontmatter is always placed at the top of the note, followed by the markdown body.
     /// </remarks>
     /// <example>    ///. <code>
-    /// var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };
-    /// string note = builder.BuildNote(frontmatter, "# Heading\nContent");
+    /// var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };    /// string note = builder.BuildNote(frontmatter, "# Heading\nContent");
     /// </code>
     /// </example>
     public string BuildNote(Dictionary<string, object> frontmatter, string body)
     {
-        if (frontmatter.ContainsKey("banner") && frontmatter["banner"] is string bannerValue)
+        // Only set default banner if not already present
+        if (!frontmatter.ContainsKey("banner"))
         {
-            // Remove any quotes that might be around the banner value
-            if (bannerValue.StartsWith("\"") && bannerValue.EndsWith("\""))
-            {
-                bannerValue = bannerValue.Substring(1, bannerValue.Length - 2);
-            }
-
-            // Remove wiki link brackets if present
-            if (bannerValue.StartsWith("[[") && bannerValue.EndsWith("]]"))
-            {
-                bannerValue = bannerValue.Substring(2, bannerValue.Length - 4);
-            }
-
-            frontmatter["banner"] = bannerValue;
+            frontmatter["banner"] = "gies-banner.png"; // Default banner if not specified
         }
-        else
-        {
-            frontmatter["banner"] = "gies-banner.png";
-        }
+        // Note: We preserve the banner value exactly as it comes from the template
+        // to maintain proper Obsidian wiki link syntax like '[[gies-banner.png]]'
 
         var serializer = new YamlDotNet.Serialization.SerializerBuilder()
             .WithEmissionPhaseObjectGraphVisitor(args => new NoQuotesForBannerVisitor(args.InnerVisitor))
             .Build();
         var yaml = serializer.Serialize(frontmatter);
 
-        // We no longer need to post-process [[]] in banner since we now use simple format
+        // Post-process to fix banner field formatting if it contains wiki links
+        if (frontmatter.ContainsKey("banner") && frontmatter["banner"] is string bannerValue)
+        {
+            if (bannerValue.Contains("[[") && bannerValue.Contains("]]"))
+            {
+                // Find and replace the banner line to preserve wiki link syntax
+                var lines = yaml.Split('\n');
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    if (lines[i].Trim().StartsWith("banner:"))
+                    {
+                        lines[i] = $"banner: '{bannerValue}'";
+                        break;
+                    }
+                }
+
+                yaml = string.Join('\n', lines);
+            }
+        }
+
         var newFrontmatter = $"---\n{yaml}---\n\n";
         return newFrontmatter + body;
     }

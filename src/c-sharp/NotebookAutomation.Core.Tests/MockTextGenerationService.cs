@@ -1,4 +1,4 @@
-// <copyright file="MockTextGenerationService.cs" company="PlaceholderCompany">
+﻿// <copyright file="MockTextGenerationService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -72,15 +72,15 @@ internal class MockTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (this.TrackCalls)
+        if (TrackCalls)
         {
-            this.CallCount++;
-            this.LastPrompt = prompt;
+            CallCount++;
+            LastPrompt = prompt;
         }
 
-        if (this.ExceptionToThrow != null)
+        if (ExceptionToThrow != null)
         {
-            throw this.ExceptionToThrow;
+            throw ExceptionToThrow;
         }
 
         return GetEmptyAsyncEnumerable();
@@ -106,27 +106,27 @@ internal class MockTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (this.TrackCalls)
+        if (TrackCalls)
         {
-            this.CallCount++;
-            this.LastPrompt = prompt;
+            CallCount++;
+            LastPrompt = prompt;
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (this.ExceptionToThrow != null)
+        if (ExceptionToThrow != null)
         {
-            throw this.ExceptionToThrow;
+            throw ExceptionToThrow;
         }
 
         string responseText;
-        if (this.ResponseQueue != null && this.ResponseQueue.Count > 0)
+        if (ResponseQueue != null && ResponseQueue.Count > 0)
         {
-            responseText = this.ResponseQueue.Dequeue();
+            responseText = ResponseQueue.Dequeue();
         }
         else
         {
-            responseText = this.Response ?? string.Empty;
+            responseText = Response ?? string.Empty;
         }
 
         List<TextContent> result = [new(responseText)];
@@ -147,27 +147,27 @@ internal class MockTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (this.TrackCalls)
+        if (TrackCalls)
         {
-            this.CallCount++;
-            this.LastPrompt = prompt;
+            CallCount++;
+            LastPrompt = prompt;
         }
 
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (this.ExceptionToThrow != null)
+        if (ExceptionToThrow != null)
         {
-            throw this.ExceptionToThrow;
+            throw ExceptionToThrow;
         }
 
         string responseText;
-        if (this.ResponseQueue != null && this.ResponseQueue.Count > 0)
+        if (ResponseQueue != null && ResponseQueue.Count > 0)
         {
-            responseText = this.ResponseQueue.Dequeue();
+            responseText = ResponseQueue.Dequeue();
         }
         else
         {
-            responseText = this.Response ?? string.Empty;
+            responseText = Response ?? string.Empty;
         }
 
         return Task.FromResult(new TextContent(responseText));

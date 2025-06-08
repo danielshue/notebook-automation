@@ -10,7 +10,7 @@
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
-internal class UserSecretsTests
+public class UserSecretsTests
 {
     [TestMethod]
     public void ConfigurationSetup_ShouldLoadUserSecrets()
