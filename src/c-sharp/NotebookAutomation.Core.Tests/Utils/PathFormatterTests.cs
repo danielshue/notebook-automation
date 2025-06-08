@@ -10,7 +10,7 @@
 namespace NotebookAutomation.Core.Tests.Utils;
 
 [TestClass]
-internal class PathFormatterTests
+public class PathFormatterTests
 {
     [TestMethod]
     public void Format_WithDebugLogLevel_ReturnsFullPath()

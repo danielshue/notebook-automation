@@ -17,7 +17,7 @@ namespace NotebookAutomation.Core.Tests.Utils;
 /// Ensures precision and rounding rules are applied as specified in the formatter implementation.
 /// </remarks>
 [TestClass]
-internal class FileSizeFormatterTests
+public class FileSizeFormatterTests
 {
     /// <summary>
     /// Tests formatting of a byte value less than 1 KB.

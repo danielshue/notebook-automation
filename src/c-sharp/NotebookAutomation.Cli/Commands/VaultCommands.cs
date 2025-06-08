@@ -1,4 +1,4 @@
-// <copyright file="VaultCommands.cs" company="PlaceholderCompany">
+﻿// <copyright file="VaultCommands.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -28,9 +28,9 @@ namespace NotebookAutomation.Cli.Commands;
 /// </remarks>
 internal class VaultCommands
 {
-    private readonly ILogger<VaultCommands> logger;
-    private readonly IServiceProvider serviceProvider;
-    private readonly AppConfig appConfig;
+    private readonly ILogger<VaultCommands> _logger;
+    private readonly IServiceProvider _serviceProvider;
+    private readonly AppConfig _appConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VaultCommands"/> class.
@@ -39,10 +39,10 @@ internal class VaultCommands
     /// <param name="serviceProvider">The service provider for dependency injection.</param>
     public VaultCommands(ILogger<VaultCommands> logger, IServiceProvider serviceProvider)
     {
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        this.appConfig = serviceProvider.GetRequiredService<AppConfig>();
-        this.logger.LogInformationWithPath("Vault command initialized", "VaultCommands.cs");
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _appConfig = serviceProvider.GetRequiredService<AppConfig>();
+        _logger.LogInformationWithPath("Vault command initialized", "VaultCommands.cs");
     }
 
     /// <summary>
@@ -108,7 +108,7 @@ internal class VaultCommands
             // If override-vault-root is specified, use the provided path as vault root
             string? vaultRoot = overrideVaultRoot ? path : null;
 
-            await this.ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun, force, vaultRoot, templateTypes).ConfigureAwait(false);
+            await ExecuteVaultCommandAsync("generate-index", path, config, debug, verbose, dryRun, force, vaultRoot, templateTypes).ConfigureAwait(false);
         });
 
         var ensureMetadataCommand = new Command("ensure-metadata", "Update YAML frontmatter with program/course/class metadata based on directory structure");
@@ -126,7 +126,7 @@ internal class VaultCommands
             // If override-vault-root is specified, use the provided path as vault root
             string? vaultRoot = overrideVaultRoot ? path : null;
 
-            await this.ExecuteVaultCommandAsync("ensure-metadata", path, config, debug, verbose, dryRun, false, vaultRoot, null).ConfigureAwait(false);
+            await ExecuteVaultCommandAsync("ensure-metadata", path, config, debug, verbose, dryRun, false, vaultRoot, null).ConfigureAwait(false);
         });
 
         var cleanIndexCommand = new Command(
@@ -145,7 +145,7 @@ internal class VaultCommands
             // If override-vault-root is specified, use the provided path as vault root
             string? vaultRootOverride = overrideVaultRoot ? path : null;
 
-            await this.ExecuteVaultCommandAsync("clean-index", path, null, false, false, dryRun, false, vaultRootOverride, null).ConfigureAwait(false);
+            await ExecuteVaultCommandAsync("clean-index", path, null, false, false, dryRun, false, vaultRootOverride, null).ConfigureAwait(false);
         });
 
         vaultCommand.AddCommand(generateIndexCommand);
@@ -181,28 +181,28 @@ internal class VaultCommands
         string? vaultRoot = null,
         string[]? templateTypes = null)
     {
-        if (this.appConfig == null)
+        if (_appConfig == null)
         {
-            this.logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "VaultCommands.cs");
+            _logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "VaultCommands.cs");
             return;
         }
 
         if (string.IsNullOrEmpty(path))
         {
-            this.logger.LogErrorWithPath("Path is required: {FilePath}", "VaultCommands.cs", path ?? "unknown");
+            _logger.LogErrorWithPath("Path is required: {FilePath}", "VaultCommands.cs", path ?? "unknown");
             return;
         }
 
         if (!Directory.Exists(path))
         {
-            this.logger.LogErrorWithPath("Vault directory does not exist: {FilePath}", "VaultCommands.cs", path);
+            _logger.LogErrorWithPath("Vault directory does not exist: {FilePath}", "VaultCommands.cs", path);
             return;
         }
 
         // Validate that the path is within the configured vault root or that vault root override is provided
         if (string.IsNullOrEmpty(vaultRoot))
         {
-            string? configuredVaultRoot = this.appConfig.Paths?.NotebookVaultFullpathRoot;
+            string? configuredVaultRoot = _appConfig.Paths?.NotebookVaultFullpathRoot;
             if (!string.IsNullOrEmpty(configuredVaultRoot))
             {
                 string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
@@ -215,7 +215,7 @@ internal class VaultCommands
                                          $"  {command} \"{path}\" --override-vault-root \"{path}\"";
 
                     AnsiConsoleHelper.WriteError(errorMessage);
-                    this.logger.LogErrorWithPath(
+                    _logger.LogErrorWithPath(
                         "Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
                         "VaultCommands.cs", path, configuredVaultRoot);
                     return;
@@ -223,33 +223,33 @@ internal class VaultCommands
             }
         }
 
-        this.logger.LogInformationWithPath("Executing vault command: {Command} on path: {FilePath}", "VaultCommands.cs", command, path);
-        this.logger.LogDebugWithPath("Debugging vault command", "VaultCommands.cs");
+        _logger.LogInformationWithPath("Executing vault command: {Command} on path: {FilePath}", "VaultCommands.cs", command, path);
+        _logger.LogDebugWithPath("Debugging vault command", "VaultCommands.cs");
 
         try
         {
             switch (command)
             {
                 case "generate-index":
-                    await this.ExecuteGenerateIndexAsync(path, dryRun, force, vaultRoot, templateTypes).ConfigureAwait(false);
+                    await ExecuteGenerateIndexAsync(path, dryRun, force, vaultRoot, templateTypes).ConfigureAwait(false);
                     break;
                 case "ensure-metadata":
-                    await this.ExecuteEnsureMetadataAsync(path, dryRun, verbose, vaultRoot).ConfigureAwait(false);
+                    await ExecuteEnsureMetadataAsync(path, dryRun, verbose, vaultRoot).ConfigureAwait(false);
                     break;
                 case "clean-index":
-                    await this.ExecuteCleanIndexAsync(path, dryRun, vaultRoot).ConfigureAwait(false);
+                    await ExecuteCleanIndexAsync(path, dryRun, vaultRoot).ConfigureAwait(false);
                     break;
                 default:
-                    this.logger.LogErrorWithPath("Unknown vault command: {Command}", "VaultCommands.cs", command);
+                    _logger.LogErrorWithPath("Unknown vault command: {Command}", "VaultCommands.cs", command);
                     return;
             }
 
-            this.logger.LogInformationWithPath("Vault command completed successfully.", "VaultCommands.cs");
+            _logger.LogInformationWithPath("Vault command completed successfully.", "VaultCommands.cs");
         }
         catch (Exception ex)
         {
-            this.logger.LogErrorWithPath(ex, "An error occurred during vault command execution.", "VaultCommands.cs");
-            this.logger.LogErrorWithPath("Error in vault command", "VaultCommands.cs", ex);
+            _logger.LogErrorWithPath(ex, "An error occurred during vault command execution.", "VaultCommands.cs");
+            _logger.LogErrorWithPath("Error in vault command", "VaultCommands.cs", ex);
         }
     }
 
@@ -263,17 +263,17 @@ internal class VaultCommands
     {
         try
         {
-            this.logger.LogInformationWithPath("Starting vault index generation process for vault: {VaultPath}", "VaultCommands.cs", path);
+            _logger.LogInformationWithPath("Starting vault index generation process for vault: {VaultPath}", "VaultCommands.cs", path);
 
             // Create a new scope to set vault root override
-            using var scope = this.serviceProvider.CreateScope();
+            using var scope = _serviceProvider.CreateScope();
             var scopedServices = scope.ServiceProvider;            // Set up vault root override in scoped context
             var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
 
             // Use explicit vault root if provided, otherwise use the provided path as vault root
             string effectiveVaultRoot = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : Path.GetFullPath(path);
             vaultRootContext.VaultRootOverride = effectiveVaultRoot;
-            this.logger.LogInformationWithPath("Using vault root override: {VaultRoot}", "VaultCommands.cs", effectiveVaultRoot);
+            _logger.LogInformationWithPath("Using vault root override: {VaultRoot}", "VaultCommands.cs", effectiveVaultRoot);
 
             var batchProcessor = scopedServices.GetRequiredService<VaultIndexBatchProcessor>();
 
@@ -313,16 +313,16 @@ internal class VaultCommands
                 {
                     AnsiConsoleHelper.WriteInfo("\nDetailed index generation changes are available in the log file:");
 
-                    var loggingService = this.serviceProvider.GetRequiredService<ILoggingService>();
+                    var loggingService = _serviceProvider.GetRequiredService<ILoggingService>();
                     var logFilePath = loggingService.CurrentLogFilePath;
 
                     if (!string.IsNullOrEmpty(logFilePath))
                     {
                         AnsiConsoleHelper.WriteInfo($"  {logFilePath}");
                     }
-                    else if (this.appConfig?.Paths?.LoggingDir != null)
+                    else if (_appConfig?.Paths?.LoggingDir != null)
                     {
-                        string logPath = this.appConfig.Paths.LoggingDir;
+                        string logPath = _appConfig.Paths.LoggingDir;
                         string logFile = Path.Combine(logPath, $"notebookautomation.core_{DateTime.Now:yyyyMMdd}.log");
                         AnsiConsoleHelper.WriteInfo($"  {logFile}");
                     }
@@ -330,26 +330,26 @@ internal class VaultCommands
                     AnsiConsoleHelper.WriteInfo("\nTip: Use --verbose for more details about the index generation process.");
                 }
 
-                this.logger.LogInformationWithPath(
+                _logger.LogInformationWithPath(
                     "{Prefix}Vault index generation completed: {Processed} processed, {Skipped} skipped, {Failed} failed out of {Total} total folders",
                     "VaultCommands.cs",
                     prefix, result.ProcessedFolders, result.SkippedFolders, result.FailedFolders, result.TotalFolders);
 
                 if (result.FailedFolders > 0)
                 {
-                    this.logger.LogWarningWithPath("Some folders failed to process. Check the logs for details.", "VaultCommands.cs");
+                    _logger.LogWarningWithPath("Some folders failed to process. Check the logs for details.", "VaultCommands.cs");
                 }
             }
             else
             {
                 AnsiConsoleHelper.WriteError($"Vault index generation failed: {result.ErrorMessage ?? "Unknown error"}");
-                this.logger.LogErrorWithPath("Vault index generation failed: {ErrorMessage}", "VaultCommands.cs", result.ErrorMessage ?? "Unknown error");
+                _logger.LogErrorWithPath("Vault index generation failed: {ErrorMessage}", "VaultCommands.cs", result.ErrorMessage ?? "Unknown error");
             }
         }
         catch (Exception ex)
         {
             AnsiConsoleHelper.WriteError($"Failed to execute generate-index command: {ex.Message}");
-            this.logger.LogErrorWithPath(ex, "Failed to execute generate-index command", "VaultCommands.cs");
+            _logger.LogErrorWithPath(ex, "Failed to execute generate-index command", "VaultCommands.cs");
             throw;
         }
     }
@@ -366,10 +366,10 @@ internal class VaultCommands
     {
         try
         {
-            this.logger.LogInformationWithPath("Starting metadata ensure process for vault: {VaultPath}", "VaultCommands.cs", path);
+            _logger.LogInformationWithPath("Starting metadata ensure process for vault: {VaultPath}", "VaultCommands.cs", path);
 
             // Create a new scope to set vault root override
-            using var scope = this.serviceProvider.CreateScope();
+            using var scope = _serviceProvider.CreateScope();
             var scopedServices = scope.ServiceProvider;
 
             // Set up vault root override in scoped context
@@ -378,7 +378,7 @@ internal class VaultCommands
             // Use explicit vault root if provided, otherwise use the provided path as vault root
             string effectiveVaultRoot = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : Path.GetFullPath(path);
             vaultRootContext.VaultRootOverride = effectiveVaultRoot;
-            this.logger.LogInformationWithPath("Using vault root override: {VaultRoot}", "VaultCommands.cs", effectiveVaultRoot);
+            _logger.LogInformationWithPath("Using vault root override: {VaultRoot}", "VaultCommands.cs", effectiveVaultRoot);
 
             var batchProcessor = scopedServices.GetRequiredService<MetadataEnsureBatchProcessor>();
 
@@ -419,16 +419,16 @@ internal class VaultCommands
                 {
                     AnsiConsoleHelper.WriteInfo("\nDetailed metadata changes are available in the log file:");
 
-                    var loggingService = this.serviceProvider.GetRequiredService<ILoggingService>();
+                    var loggingService = _serviceProvider.GetRequiredService<ILoggingService>();
                     var logFilePath = loggingService.CurrentLogFilePath;
 
                     if (!string.IsNullOrEmpty(logFilePath))
                     {
                         AnsiConsoleHelper.WriteInfo($"  {logFilePath}");
                     }
-                    else if (this.appConfig?.Paths?.LoggingDir != null)
+                    else if (_appConfig?.Paths?.LoggingDir != null)
                     {
-                        string logPath = this.appConfig.Paths.LoggingDir;
+                        string logPath = _appConfig.Paths.LoggingDir;
                         string logFile = Path.Combine(logPath, $"notebookautomation.core_{DateTime.Now:yyyyMMdd}.log");
                         AnsiConsoleHelper.WriteInfo($"  {logFile}");
                     }
@@ -439,26 +439,26 @@ internal class VaultCommands
                     }
                 }
 
-                this.logger.LogInformationWithPath(
+                _logger.LogInformationWithPath(
                     "{Prefix}Metadata processing completed: {Processed} processed, {Skipped} skipped, {Failed} failed out of {Total} total files",
                     "VaultCommands.cs",
                     prefix, result.ProcessedFiles, result.SkippedFiles, result.FailedFiles, result.TotalFiles);
 
                 if (result.FailedFiles > 0)
                 {
-                    this.logger.LogWarningWithPath("Some files failed to process. Check the logs and failed_metadata_files.txt for details.", "VaultCommands.cs");
+                    _logger.LogWarningWithPath("Some files failed to process. Check the logs and failed_metadata_files.txt for details.", "VaultCommands.cs");
                 }
             }
             else
             {
                 AnsiConsoleHelper.WriteError($"Metadata processing failed: {result.ErrorMessage ?? "Unknown error"}");
-                this.logger.LogErrorWithPath("Metadata processing failed: {ErrorMessage}", "VaultCommands.cs", result.ErrorMessage ?? "Unknown error");
+                _logger.LogErrorWithPath("Metadata processing failed: {ErrorMessage}", "VaultCommands.cs", result.ErrorMessage ?? "Unknown error");
             }
         }
         catch (Exception ex)
         {
             AnsiConsoleHelper.WriteError($"Failed to execute ensure-metadata command: {ex.Message}");
-            this.logger.LogErrorWithPath(ex, "Failed to execute ensure-metadata command", "VaultCommands.cs");
+            _logger.LogErrorWithPath(ex, "Failed to execute ensure-metadata command", "VaultCommands.cs");
             throw;
         }
     }
@@ -475,20 +475,20 @@ internal class VaultCommands
         var mdFiles = Directory.GetFiles(path, "*.md", SearchOption.AllDirectories);        // Known index template-types (should match those in metadata.yaml)
         string[] indexTemplateTypes = [
             "main", "program", "course", "class", "module", "lesson",
-            "case-studies", "readings", "resources", "case-study"
+            "case-studies", "case-studies-index", "readings", "resources", "case-study"
         ];
         int deleted = 0;
         foreach (var file in mdFiles)
         {
             string content = await File.ReadAllTextAsync(file).ConfigureAwait(false);
-            var yaml = new YamlHelper(this.logger).ExtractFrontmatter(content);
+            var yaml = new YamlHelper(_logger).ExtractFrontmatter(content);
             if (yaml != null)
             {
-                var dict = new YamlHelper(this.logger).ParseYamlToDictionary(yaml);
+                var dict = new YamlHelper(_logger).ParseYamlToDictionary(yaml);
                 var typeVal = dict.TryGetValue("type", out var t) ? t?.ToString() : null;
                 var templateTypeVal = dict.TryGetValue("template-type", out var tt) ? tt?.ToString() : null;
                 bool isIndexType = typeVal == "index";
-                bool isIndexTemplate = templateTypeVal != null && indexTemplateTypes.Contains(templateTypeVal);
+                bool isIndexTemplate = templateTypeVal != null && (indexTemplateTypes.Contains(templateTypeVal) || templateTypeVal.EndsWith("-index"));
                 if (isIndexType || isIndexTemplate)
                 {
                     if (!dryRun)
@@ -497,11 +497,11 @@ internal class VaultCommands
                     }
 
                     deleted++;
-                    this.logger.LogInformationWithPath($"Deleted index file: {file}", "VaultCommands.cs");
+                    _logger.LogInformationWithPath($"Deleted index file: {file}", "VaultCommands.cs");
                 }
             }
         }
 
-        this.logger.LogInformationWithPath($"Deleted {deleted} index files in {path}", "VaultCommands.cs");
+        _logger.LogInformationWithPath($"Deleted {deleted} index files in {path}", "VaultCommands.cs");
     }
 }

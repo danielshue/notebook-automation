@@ -1,4 +1,4 @@
-// <copyright file="VideoNoteBatchProcessor.cs" company="PlaceholderCompany">
+﻿// <copyright file="VideoNoteBatchProcessor.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -34,8 +34,8 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
     /// </summary>
     public event EventHandler<DocumentProcessingProgressEventArgs>? ProcessingProgressChanged
     {
-        add => this.batchProcessor.ProcessingProgressChanged += value;
-        remove => this.batchProcessor.ProcessingProgressChanged -= value;
+        add => batchProcessor.ProcessingProgressChanged += value;
+        remove => batchProcessor.ProcessingProgressChanged -= value;
     }
 
     /// <summary>
@@ -43,8 +43,8 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
     /// </summary>
     public event EventHandler<QueueChangedEventArgs>? QueueChanged
     {
-        add => this.batchProcessor.QueueChanged += value;
-        remove => this.batchProcessor.QueueChanged -= value;
+        add => batchProcessor.QueueChanged += value;
+        remove => batchProcessor.QueueChanged -= value;
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public class VideoNoteBatchProcessor(DocumentNoteBatchProcessor<VideoNoteProcess
         AppConfig? appConfig = null,
         bool noShareLinks = false)
     {
-        return await this.batchProcessor.ProcessDocumentsAsync(
+        return await batchProcessor.ProcessDocumentsAsync(
             input,
             output,
             videoExtensions,

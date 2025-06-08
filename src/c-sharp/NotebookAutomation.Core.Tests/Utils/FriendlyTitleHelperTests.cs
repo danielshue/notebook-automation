@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Tests.Utils;
 /// Tests for the FriendlyTitleHelper class.
 /// </summary>
 [TestClass]
-internal class FriendlyTitleHelperTests
+public class FriendlyTitleHelperTests
 {
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RemovesLeadingNumbers()

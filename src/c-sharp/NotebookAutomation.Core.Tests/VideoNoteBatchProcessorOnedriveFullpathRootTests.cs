@@ -1,4 +1,4 @@
-﻿// <copyright file="VideoNoteBatchProcessorOnedriveFullpathRootTests.cs" company="PlaceholderCompany">
+// <copyright file="VideoNoteBatchProcessorOnedriveFullpathRootTests.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -10,10 +10,12 @@
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
-internal class VideoNoteBatchProcessorOnedriveFullpathRootTests
+public class VideoNoteBatchProcessorOnedriveFullpathRootTests
 {
     private string testDir;
     private string outputDir;
+    private string _testMetadataFile;
+    private AppConfig _testAppConfig;
     private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> loggerMock;
 
     // Removed unused field:
@@ -22,22 +24,58 @@ internal class VideoNoteBatchProcessorOnedriveFullpathRootTests
     private DocumentNoteBatchProcessor<VideoNoteProcessor> batchProcessor;
     private VideoNoteBatchProcessor processor;
 
+    private MetadataTemplateManager CreateTestMetadataTemplateManager()
+    {
+        return new MetadataTemplateManager(
+            NullLogger<MetadataTemplateManager>.Instance,
+            _testAppConfig,
+            Mock.Of<IYamlHelper>());
+    }
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
         return new MetadataHierarchyDetector(
-            Mock.Of<ILogger<MetadataHierarchyDetector>>(),
-            new AppConfig());
+            NullLogger<MetadataHierarchyDetector>.Instance,
+            new AppConfig
+            {
+                Paths = new PathsConfig
+                {
+                    MetadataFile = Path.Combine(Path.GetTempPath(), "temp_metadata.yaml")
+                }
+            })
+        { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
     }
-
     [TestInitialize]
     public void Setup()
     {
-        this.testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        this.outputDir = Path.Combine(this.testDir, "output");
-        Directory.CreateDirectory(this.testDir);
-        Directory.CreateDirectory(this.outputDir);
+        testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        outputDir = Path.Combine(testDir, "output");
+        Directory.CreateDirectory(testDir);
+        Directory.CreateDirectory(outputDir);
 
-        this.loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
+        // Create temp metadata file
+        _testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata_batchprocess.yaml");
+        var testMetadata = @"
+---
+template-type: ""video-note""
+tags:
+  - video
+metadata:
+  type: ""Video Note""
+---";
+        File.WriteAllText(_testMetadataFile, testMetadata);
+
+        // Create test AppConfig
+        _testAppConfig = new AppConfig
+        {
+            Paths = new PathsConfig
+            {
+                NotebookVaultFullpathRoot = testDir,
+                MetadataFile = _testMetadataFile,
+                LoggingDir = Path.GetTempPath()
+            }
+        };
+
+        loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>();
 
         // Create a TestableAISummarizer that can be used in tests
         TestableAISummarizer testAISummarizer = new(Mock.Of<ILogger<AISummarizer>>());
@@ -46,23 +84,21 @@ internal class VideoNoteBatchProcessorOnedriveFullpathRootTests
         IOneDriveService mockOneDriveService = Mock.Of<IOneDriveService>();
 
         // Create a mock for IYamlHelper
-        IYamlHelper mockYamlHelper = Mock.Of<IYamlHelper>();
-
-        // Set up mock with test dependencies
-        this.videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
+        IYamlHelper mockYamlHelper = Mock.Of<IYamlHelper>();        // Set up mock with test dependencies
+        videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             testAISummarizer,
             mockYamlHelper,
             CreateMetadataHierarchyDetector(),
+            CreateTestMetadataTemplateManager(),
             mockOneDriveService,
-            null,  // AppConfig
-            null); // LoggingService
+            null);  // AppConfig
 
         // Create a custom batch processor that will directly create a file with the resourcesRoot
         // so we can test that the parameter is being passed correctly
         Mock<DocumentNoteBatchProcessor<VideoNoteProcessor>> mockBatchProcessor = new(
-            this.loggerMock.Object,
-            this.videoNoteProcessorMock.Object,
+            loggerMock.Object,
+            videoNoteProcessorMock.Object,
             testAISummarizer);
 
         mockBatchProcessor
@@ -105,16 +141,20 @@ internal class VideoNoteBatchProcessorOnedriveFullpathRootTests
                 return new BatchProcessResult { Processed = 1, Failed = 0 };
             });
 
-        this.batchProcessor = mockBatchProcessor.Object;
-        this.processor = new VideoNoteBatchProcessor(this.batchProcessor);
+        batchProcessor = mockBatchProcessor.Object;
+        processor = new VideoNoteBatchProcessor(batchProcessor);
     }
-
     [TestCleanup]
     public void Cleanup()
     {
-        if (Directory.Exists(this.testDir))
+        if (Directory.Exists(testDir))
         {
-            Directory.Delete(this.testDir, true);
+            Directory.Delete(testDir, true);
+        }
+
+        if (File.Exists(_testMetadataFile))
+        {
+            File.Delete(_testMetadataFile);
         }
     }
 
@@ -122,15 +162,15 @@ internal class VideoNoteBatchProcessorOnedriveFullpathRootTests
     public async Task ProcessVideosAsync_OnedriveFullpathRoot_OverridesConfigValue()
     {
         // Arrange
-        string videoPath = Path.Combine(this.testDir, "test.mp4");
+        string videoPath = Path.Combine(testDir, "test.mp4");
         File.WriteAllText(videoPath, "fake video content");
         List<string> extensions = [".mp4"];
-        string customResourcesRoot = Path.Combine(this.testDir, "custom_resources");
+        string customResourcesRoot = Path.Combine(testDir, "custom_resources");
 
         // Act
-        BatchProcessResult result = await this.processor.ProcessVideosAsync(
+        BatchProcessResult result = await processor.ProcessVideosAsync(
             videoPath,
-            this.outputDir,
+            outputDir,
             extensions,
             openAiApiKey: null,
             dryRun: false,
@@ -144,9 +184,10 @@ internal class VideoNoteBatchProcessorOnedriveFullpathRootTests
         // Assert
         Assert.AreEqual(1, result.Processed);
         Assert.AreEqual(0, result.Failed);
-        string notePath = Path.Combine(this.outputDir, "test.md");
+        string notePath = Path.Combine(outputDir, "test.md");
         Assert.IsTrue(File.Exists(notePath));
         string noteContent = File.ReadAllText(notePath);
         StringAssert.Contains(noteContent, customResourcesRoot);
     }
 }
+

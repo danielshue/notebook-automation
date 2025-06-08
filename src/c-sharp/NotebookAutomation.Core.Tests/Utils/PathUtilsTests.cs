@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Tests.Utils;
 /// Unit tests for the <see cref="PathUtils"/> class.
 /// </summary>
 [TestClass]
-internal class PathUtilsTests
+public class PathUtilsTests
 {
     [TestMethod]
     public void NormalizePath_ReturnsEmptyString_WhenInputIsNullOrWhitespace()

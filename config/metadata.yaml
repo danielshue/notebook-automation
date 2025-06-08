@@ -5,7 +5,7 @@ template-type: main
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: gies-banner.png
+banner: '[[gies-banner.png]]'
 
 # template-description: Short description of the template purpose
 template-description: Top-level folder for the entire MBA program.
@@ -27,7 +27,7 @@ template-type: program
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: gies-banner.png
+banner: '[[gies-banner.png]]'
 
 # template-description: Short description of the template purpose
 template-description: Program area folder within the MBA curriculum.
@@ -60,7 +60,7 @@ template-type: course
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: gies-banner.png
+banner: '[[gies-banner.png]]'
 
 # template-description: Short description of the template purpose
 template-description: Top-level folder for a single course.
@@ -93,7 +93,7 @@ template-type: class
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: gies-banner.png
+banner: '[[gies-banner.png]]'
 
 # template-description: Short description of the template purpose
 template-description: Top-level folder for a single class.
@@ -121,14 +121,14 @@ class:
 # module: Module Name (populated automatically)
 module:
 ---
-# template-type: module (template for a module index)
+# template-type: index (template for a general index)
 template-type: module
 
 # auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: gies-banner.png
+banner: '[[gies-banner.png]]'
 
 # template-description: Short description of the template purpose
 template-description: Groups together lessons or topics within a course.
@@ -137,7 +137,7 @@ template-description: Groups together lessons or topics within a course.
 title: Module
 
 # type: index (file type)
-type: module
+type: index
 
 # date-created: YYYY-MM-DD (populated automatically)
 date-created:
@@ -163,7 +163,7 @@ template-type: lesson
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: gies-banner.png
+banner: '[[gies-banner.png]]'
 
 # template-description: Short description of the template purpose
 template-description: A single lesson's landing page.

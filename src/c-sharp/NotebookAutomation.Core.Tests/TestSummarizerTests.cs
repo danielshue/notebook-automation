@@ -55,7 +55,7 @@ internal class TestTextGenerationService : ITextGenerationService
 /// Tests for verifying that prompt logging works correctly in AISummarizer.
 /// </summary>
 [TestClass]
-internal class TestSummarizerTests
+public class TestSummarizerTests
 {
     private readonly Mock<ILogger<AISummarizer>> loggerMock;
     private readonly PromptTemplateService promptTemplateService;
@@ -63,7 +63,7 @@ internal class TestSummarizerTests
 
     public TestSummarizerTests()
     {
-        this.loggerMock = new Mock<ILogger<AISummarizer>>();
+        loggerMock = new Mock<ILogger<AISummarizer>>();
 
         // Set up paths for prompt templates
         string projectDir = Directory.GetCurrentDirectory();
@@ -79,7 +79,7 @@ internal class TestSummarizerTests
         {
             Paths = pathsConfig,
         };        // Create a real PromptTemplateService with the actual prompts directory
-        this.promptTemplateService = new PromptTemplateService(
+        promptTemplateService = new PromptTemplateService(
             Mock.Of<ILogger<PromptTemplateService>>(),
             new YamlHelper(Mock.Of<ILogger<YamlHelper>>()),
             appConfig);
@@ -91,9 +91,9 @@ internal class TestSummarizerTests
         TestTextGenerationService();
 
         // Create AISummarizer with dependencies
-        this.summarizer = new AISummarizer(
-            this.loggerMock.Object,
-            this.promptTemplateService,
+        summarizer = new AISummarizer(
+            loggerMock.Object,
+            promptTemplateService,
             null);
     }
 }

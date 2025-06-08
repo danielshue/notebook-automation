@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Unit tests for config update with aiservice.* keys.
 /// </summary>
 [TestClass]
-internal class ConfigCommands_AiServiceTests
+public class ConfigCommands_AiServiceTests
 {
     private static AppConfig GetDefaultConfig()
     {

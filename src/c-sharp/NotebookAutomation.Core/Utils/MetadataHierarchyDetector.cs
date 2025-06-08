@@ -1,4 +1,4 @@
-// <copyright file="MetadataHierarchyDetector.cs" company="PlaceholderCompany">
+﻿// <copyright file="MetadataHierarchyDetector.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -49,26 +49,32 @@ namespace NotebookAutomation.Core.Utils;
 /// </code>
 /// </example>
 /// </remarks>
-public class MetadataHierarchyDetector(
-    ILogger<MetadataHierarchyDetector> logger,
-    AppConfig appConfig,
-    string? programOverride = null,
-    bool verbose = false,
-    string? vaultRootOverride = null)
+public class MetadataHierarchyDetector()
 {
-    private readonly ILogger<MetadataHierarchyDetector> logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly string notebookVaultRoot = !string.IsNullOrEmpty(vaultRootOverride)
-            ? vaultRootOverride
-            : appConfig?.Paths?.NotebookVaultFullpathRoot
-                ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
-
-    private readonly string? programOverride = programOverride;
-    private readonly bool verbose = verbose;
+    public required ILogger<MetadataHierarchyDetector> Logger { get; init; }
 
     /// <summary>
-    /// Gets the vault root path being used by this detector.
+    /// Gets the root path of the notebook vault.
     /// </summary>
-    public string VaultRoot => this.notebookVaultRoot;
+    /// <remarks>
+    /// The vault root is determined either from the application configuration or an override provided during initialization.
+    /// </remarks>
+    public string? VaultRoot { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MetadataHierarchyDetector"/> class.
+    /// </summary>
+    /// <param name="logger"></param>
+    /// <param name="appConfig"></param>
+    /// <param name="programOverride"></param>
+    /// <param name="verbose"></param>
+    /// <param name="vaultRootOverride"></param>
+    /// <exception cref="ArgumentNullException"></exception>
+    public MetadataHierarchyDetector(ILogger<MetadataHierarchyDetector> logger, AppConfig appConfig, string? vaultRootOverride = null) : this()
+    {
+        Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        VaultRoot = !string.IsNullOrEmpty(vaultRootOverride) ? vaultRootOverride : appConfig?.Paths?.NotebookVaultFullpathRoot ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
+    }
 
     /// <summary>
     /// Finds program, course, class, and module information by analyzing the file path structure relative to the vault root.
@@ -106,56 +112,34 @@ public class MetadataHierarchyDetector(
             // Note: module is only added if present
         };
 
-        // Add program if override is provided
-        if (!string.IsNullOrEmpty(this.programOverride))
-        {
-            info["program"] = this.programOverride;
-        }
-
         // Validate that the path exists
         bool isFile = File.Exists(filePath);
         bool isDirectory = Directory.Exists(filePath);
+
         if (!isFile && !isDirectory)
         {
-            this.logger.LogWarningWithPath("Path does not exist or is not accessible: {FilePath}", nameof(MetadataHierarchyDetector), filePath);
+            Logger.LogWarning($"Path does not exist or is not accessible: {filePath}");
             return info;
         }
-
-        // If program is explicitly provided via constructor parameter, use it
-        if (!string.IsNullOrEmpty(this.programOverride))
-        {
-            if (this.verbose)
-            {
-                this.logger.LogInformationWithPath("Using explicit program override: {Program}", nameof(MetadataHierarchyDetector), this.programOverride);
-            }
-        } // Pure path-based hierarchy detection
 
         try
         {
             // Get the path elements between vault root and the provided file/directory
-            Console.WriteLine($"DEBUG: FindHierarchyInfo - vault root: '{this.notebookVaultRoot}', filePath: '{filePath}'");
-            string relativePath = GetRelativePath(this.notebookVaultRoot, filePath);
-            Console.WriteLine($"DEBUG: FindHierarchyInfo - relativePath: '{relativePath}'");
-            string[] pathSegments = [.. relativePath.Split(Path.DirectorySeparatorChar)
-                .Where(p => !string.IsNullOrEmpty(p) && !p.StartsWith("."))];
+            Logger.LogDebug($"DEBUG: FindHierarchyInfo - vault root: '{VaultRoot}', filePath: '{filePath}'");
+            string relativePath = GetRelativePath(VaultRoot, filePath);
 
-            if (this.verbose)
-            {
-                this.logger.LogInformationWithPath(
-                    "Path segments for hierarchy detection: {Segments}",
-                    nameof(MetadataHierarchyDetector),
-                    string.Join(" > ", pathSegments));
-            }// Calculate the depth level - this determines which hierarchy fields to include
+            Logger.LogDebug($"DEBUG: FindHierarchyInfo - relativePath: '{relativePath}'");
+            string[] pathSegments = [.. relativePath.Split(Path.DirectorySeparatorChar).Where(p => !string.IsNullOrEmpty(p)
+            && !p.StartsWith("."))];
 
+            Logger.LogDebug($"Path segments for hierarchy detection: {string.Join(" > ", pathSegments)}");
+
+            // Calculate the depth level - this determines which hierarchy fields to include
             int depthLevel = pathSegments.Length;
 
-            if (this.verbose)
-            {
-                this.logger.LogInformationWithPath(
-                    "Path depth level: {DepthLevel}",
-                    nameof(MetadataHierarchyDetector), depthLevel);
-            } // Hierarchy mapping based on semantic meaning:
+            Logger.LogDebug($"Path depth level: {depthLevel}");
 
+            // Hierarchy mapping based on semantic meaning:
             // Level 0: Vault root/main index - NO hierarchy metadata
             // Level 1 (e.g., Program): Program level - program only
             // Level 2 (e.g., Finance): Course level - program + course
@@ -163,104 +147,62 @@ public class MetadataHierarchyDetector(
             // Level 4+: Module/content level - program + course + class + module
 
             // Only set program if we're at program level or deeper (depth >= 1)
-            if (string.IsNullOrEmpty(this.programOverride) && depthLevel >= 1)
+            if (depthLevel >= 1)
             {
                 info["program"] = pathSegments[0];
-                if (this.verbose)
-                {
-                    this.logger.LogInformationWithPath(
-                        "Setting program from first path segment: {Program}",
-                        nameof(MetadataHierarchyDetector), info["program"]);
-                }
+                Logger.LogDebug($"Setting program from first path segment: {info["program"]}");
             }
 
             // Only set course if we're at course level or deeper (depth >= 2)
             if (depthLevel >= 2)
             {
                 info["course"] = pathSegments[1];
-                if (this.verbose)
-                {
-                    this.logger.LogInformationWithPath(
-                        "Setting course from second path segment: {Course}",
-                        nameof(MetadataHierarchyDetector), info["course"]);
-                }
+                Logger.LogDebug($"Setting course from second path segment: {info["course"]}");
 
                 // Only set class if we're at class level or deeper (depth >= 3)
                 if (depthLevel >= 3)
                 {
                     info["class"] = pathSegments[2];
-                    if (this.verbose)
-                    {
-                        this.logger.LogInformationWithPath(
-                            "Setting class from third path segment: {Class}",
-                            nameof(MetadataHierarchyDetector), info["class"]);
-                    }
+                    Logger.LogDebug($"Setting class from third path segment: {info["class"]}");
 
                     // Only set module if we're at module level or deeper (depth >= 4)
                     if (depthLevel >= 4)
                     {
                         info["module"] = pathSegments[3];
-                        if (this.verbose)
-                        {
-                            this.logger.LogInformationWithPath(
-                                "Setting module from fourth path segment: {Module}",
-                                nameof(MetadataHierarchyDetector), info["module"]);
-                        }
+                        Logger.LogDebug($"Setting module from fourth path segment: {info["module"]}");
                     }
                 }
             }
 
-            if (this.verbose)
-            {
-                this.logger.LogInformationWithPath(
-                    "Path-based hierarchy detection results: program='{Program}', course='{Course}', class='{Class}', module='{Module}'",
-                    nameof(MetadataHierarchyDetector),
-                    info["program"],
-                    info["course"],
-                    info["class"],
-                    info.ContainsKey("module") ? info["module"] : string.Empty);
-            }
+            Logger.LogDebug($"Path-based hierarchy detection results: program='{info["program"]}', course='{info["course"]}', class='{info["class"]}', module='{(info.ContainsKey("module") ? info["module"] : string.Empty)}'");
         }
         catch (Exception ex)
         {
-            this.logger.LogWarningWithPath(ex, "Error during path-based hierarchy detection: {Error}",
-                nameof(MetadataHierarchyDetector), ex.Message);
+            Logger.LogError(ex, $"Error during path-based hierarchy detection: {ex.Message}");
         }
 
         // If program is still empty (no override and no path elements), use vault root name as fallback
         if (string.IsNullOrEmpty(info["program"]))
         {
-            string vaultRootName = Path.GetFileName(Path.GetFullPath(this.notebookVaultRoot).TrimEnd(Path.DirectorySeparatorChar));
+            string vaultRootName = Path.GetFileName(Path.GetFullPath(VaultRoot).TrimEnd(Path.DirectorySeparatorChar));
 
             if (!string.IsNullOrEmpty(vaultRootName))
             {
                 info["program"] = vaultRootName;
-                if (this.verbose)
-                {
-                    this.logger.LogInformationWithPath(
-                        "No program from path, using vault root folder name: {Program}",
-                        nameof(MetadataHierarchyDetector), vaultRootName);
-                }
+                Logger.LogDebug($"No program from path, using vault root folder name: {vaultRootName}");
             }
             else
             {
-                if (this.verbose)
-                {
-                    this.logger.LogInformationWithPath(
-                        "No program could be determined from path or vault root",
-                        nameof(MetadataHierarchyDetector));
-                }
+                Logger.LogDebug($"No program could be determined from path or vault root");
             }
-        } // Debug logging to help understand the final hierarchy
 
-        if (this.verbose)
-        {
-            this.logger.LogInformationWithPath(
-                "Final metadata info: Program='{Program}', Course='{Course}', Class='{Class}'",
-                nameof(MetadataHierarchyDetector),
-                info.TryGetValue("program", out var program) ? program : string.Empty,
-                info.TryGetValue("course", out var course) ? course : string.Empty,
-                info.TryGetValue("class", out var classValue) ? classValue : string.Empty);
+
+            var program = info.TryGetValue("program", out var programValue) ? programValue : string.Empty;
+            var course = info.TryGetValue("course", out var courseValue) ? courseValue : string.Empty;
+            var classValue = info.TryGetValue("class", out var classValueValue) ? classValueValue : string.Empty;
+
+            // Debug logging to help understand the final hierarchy
+            Logger.LogDebug($"Final metadata info: Program='{program}', Course='{course}', Class='{classValue}'");
         }
 
         return info;
@@ -299,19 +241,19 @@ public class MetadataHierarchyDetector(
     /// // Includes program, course, and class metadata
     /// </code>
     /// </example>
-    public static Dictionary<string, object> UpdateMetadataWithHierarchy(
-        Dictionary<string, object> metadata,
-        Dictionary<string, string> hierarchyInfo,
-        string? templateType = null)
-    { // Determine which levels to include based on the index type
+    public Dictionary<string, object> UpdateMetadataWithHierarchy(Dictionary<string, object> metadata, Dictionary<string, string> hierarchyInfo, string? templateType = null)
+    {
+
+        // Determine which levels to include based on the index type
         int maxLevel;
 
-        Console.WriteLine($"DEBUG: UpdateMetadataWithHierarchy called with templateType='{templateType}'");
+        Logger.LogDebug($"UpdateMetadataWithHierarchy called with templateType='{templateType}'");
+
         if (string.IsNullOrEmpty(templateType) || templateType == "main-index" || templateType == "main")
         {
             // For main-index (vault root), include only program metadata
             maxLevel = 1;
-            Console.WriteLine($"DEBUG: Setting maxLevel=1 for main index (templateType='{templateType}')");
+            Logger.LogDebug($"Setting maxLevel=1 for main index (templateType='{templateType}')");
         }
         else if (templateType == "program-index" || templateType == "program")
         {
@@ -342,8 +284,11 @@ public class MetadataHierarchyDetector(
         {
             // For unknown types, include all levels as a fallback
             maxLevel = 4;
-        }// List of hierarchy levels in order (top to bottom)
 
+
+        }
+
+        // List of hierarchy levels in order (top to bottom)
         string[] hierarchyLevels = ["program", "course", "class", "module"];        // If maxLevel is 0, remove all hierarchy metadata
         if (maxLevel == 0)
         {
@@ -351,13 +296,15 @@ public class MetadataHierarchyDetector(
             {
                 if (metadata.ContainsKey(level))
                 {
-                    Console.WriteLine($"DEBUG: Removing hierarchy metadata '{level}' for maxLevel=0 (templateType={templateType})");
+                    Logger.LogDebug($"Removing hierarchy metadata '{level}' for maxLevel=0 (templateType={templateType})");
                     metadata.Remove(level);
                 }
             }
 
             return metadata;
-        } // Track if we've broken the hierarchy chain
+        }
+
+        // Track if we've broken the hierarchy chain
 
         bool hierarchyChainBroken = false;
         int currentLevel = 0;
@@ -372,7 +319,7 @@ public class MetadataHierarchyDetector(
             {
                 if (metadata.ContainsKey(level))
                 {
-                    Console.WriteLine($"DEBUG: Removing hierarchy metadata '{level}' for maxLevel={maxLevel} (templateType={templateType})");
+                    Logger.LogDebug($"Removing hierarchy metadata '{level}' for maxLevel={maxLevel} (templateType={templateType})");
                     metadata.Remove(level);
                 }
 
@@ -384,12 +331,14 @@ public class MetadataHierarchyDetector(
             {
                 if (metadata.ContainsKey(level))
                 {
-                    Console.WriteLine($"DEBUG: Removing hierarchy metadata '{level}' due to broken chain (templateType={templateType})");
+                    Logger.LogDebug($"Removing hierarchy metadata '{level}' due to broken chain (templateType={templateType})");
                     metadata.Remove(level);
                 }
 
                 continue;
-            } // Check if this level exists in the hierarchy info
+            }
+
+            // Check if this level exists in the hierarchy info
 
             if (hierarchyInfo.TryGetValue(level, out string? value) && !string.IsNullOrEmpty(value))
             {
@@ -397,12 +346,12 @@ public class MetadataHierarchyDetector(
                 var currentValue = metadata.ContainsKey(level) ? metadata[level]?.ToString() : null;
                 if (string.IsNullOrEmpty(currentValue))
                 {
-                    Console.WriteLine($"DEBUG: Updating hierarchy metadata '{level}' from '{currentValue}' to '{value}' (templateType={templateType})");
+                    Logger.LogDebug($"Updating hierarchy metadata '{level}' from '{currentValue}' to '{value}' (templateType={templateType})");
                     metadata[level] = value;
                 }
                 else
                 {
-                    Console.WriteLine($"DEBUG: Keeping existing hierarchy metadata '{level}' = '{currentValue}' (templateType={templateType})");
+                    Logger.LogDebug($"Keeping existing hierarchy metadata '{level}' = '{currentValue}' (templateType={templateType})");
                 }
             }
             else
@@ -410,7 +359,7 @@ public class MetadataHierarchyDetector(
                 // If this level is missing from hierarchy info, remove it and break the chain for lower levels
                 if (metadata.ContainsKey(level))
                 {
-                    Console.WriteLine($"DEBUG: Removing hierarchy metadata '{level}' - not found in hierarchy info (templateType={templateType})");
+                    Logger.LogDebug($"Removing hierarchy metadata '{level}' - not found in hierarchy info (templateType={templateType})");
                     metadata.Remove(level);
                 }
 
@@ -419,25 +368,6 @@ public class MetadataHierarchyDetector(
         }
 
         return metadata;
-    }
-
-    // Helper methods
-
-    /// <summary>
-    /// Gets a value from a dictionary by key, or returns a default if the key is missing or the value is null.
-    /// </summary>
-    /// <param name="dict">The dictionary to search.</param>
-    /// <param name="key">The key to look up.</param>
-    /// <param name="defaultValue">The value to return if the key is missing or null.</param>
-    /// <returns>The value from the dictionary, or the default value if not found.</returns>
-    private static string GetValueOrDefault(Dictionary<string, object> dict, string key, string defaultValue)
-    {
-        if (dict.TryGetValue(key, out var value) && value != null)
-        {
-            return value.ToString() ?? defaultValue;
-        }
-
-        return defaultValue;
     }
 
     /// <summary>

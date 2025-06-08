@@ -1,4 +1,4 @@
-// <copyright file="FakeTextGenerationService.cs" company="PlaceholderCompany">
+﻿// <copyright file="FakeTextGenerationService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -68,19 +68,19 @@ internal class FakeTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (this.ExceptionToThrow != null)
+        if (ExceptionToThrow != null)
         {
-            throw this.ExceptionToThrow;
+            throw ExceptionToThrow;
         }
 
         string responseText;
-        if (this.Responses != null && this.Responses.Count > 0)
+        if (Responses != null && Responses.Count > 0)
         {
-            responseText = this.Responses.Dequeue();
+            responseText = Responses.Dequeue();
         }
         else
         {
-            responseText = this.Response ?? string.Empty;
+            responseText = Response ?? string.Empty;
         }
 
         List<TextContent> result = [new(responseText)];
@@ -97,19 +97,19 @@ internal class FakeTextGenerationService : ITextGenerationService
         Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
-        if (this.ExceptionToThrow != null)
+        if (ExceptionToThrow != null)
         {
-            throw this.ExceptionToThrow;
+            throw ExceptionToThrow;
         }
 
         string responseText;
-        if (this.Responses != null && this.Responses.Count > 0)
+        if (Responses != null && Responses.Count > 0)
         {
-            responseText = this.Responses.Dequeue();
+            responseText = Responses.Dequeue();
         }
         else
         {
-            responseText = this.Response ?? string.Empty;
+            responseText = Response ?? string.Empty;
         }
 
         return Task.FromResult(new TextContent(responseText));

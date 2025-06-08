@@ -1,4 +1,4 @@
-// <copyright file="TagCommands.cs" company="PlaceholderCompany">
+﻿// <copyright file="TagCommands.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -42,7 +42,7 @@ internal class TagCommands
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        this.appConfig = serviceProvider.GetRequiredService<AppConfig>();
+        appConfig = serviceProvider.GetRequiredService<AppConfig>();
         this.logger.LogDebug("Tag command initialized");
     }
 
@@ -95,7 +95,7 @@ internal class TagCommands
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await this.ProcessTagsAsync(path, "add-nested", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
+            await ProcessTagsAsync(path, "add-nested", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // clean-index command
         var cleanIndexCommand = new Command("clean-index", "Clean tags from index files");
         cleanIndexCommand.AddArgument(pathArg);
@@ -119,7 +119,7 @@ internal class TagCommands
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await this.ProcessTagsAsync(path, "clean-index", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
+            await ProcessTagsAsync(path, "clean-index", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // consolidate command
         var consolidateCommand = new Command("consolidate", "Consolidate tags in markdown files");
         consolidateCommand.AddArgument(pathArg);
@@ -143,7 +143,7 @@ internal class TagCommands
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await this.ProcessTagsAsync(path, "consolidate", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
+            await ProcessTagsAsync(path, "consolidate", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // restructure-tags command
         var restructureCommand = new Command("restructure", "Restructure tags for consistency");
         restructureCommand.AddArgument(pathArg);
@@ -167,7 +167,7 @@ internal class TagCommands
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await this.ProcessTagsAsync(path, "restructure-tags", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
+            await ProcessTagsAsync(path, "restructure-tags", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // add-example-tags command
         var addExampleCommand = new Command("add-example", "Add example tags to a file");
         addExampleCommand.AddArgument(pathArg);
@@ -191,7 +191,7 @@ internal class TagCommands
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await this.ProcessTagsAsync(path, "add-example-tags", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
+            await ProcessTagsAsync(path, "add-example-tags", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // metadata-check command
         var metadataCommand = new Command("metadata-check", "Check and enforce metadata consistency");
         metadataCommand.AddArgument(pathArg);
@@ -215,7 +215,7 @@ internal class TagCommands
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await this.ProcessTagsAsync(path, "metadata-check", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
+            await ProcessTagsAsync(path, "metadata-check", config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // update-frontmatter command
         var updateFrontmatterCommand = new Command("update-frontmatter", "Update or add a specific key-value pair in frontmatter");
         updateFrontmatterCommand.AddArgument(pathArg);
@@ -247,7 +247,7 @@ internal class TagCommands
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await this.ProcessUpdateFrontmatterAsync(path, key, value, config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
+            await ProcessUpdateFrontmatterAsync(path, key, value, config, debug, verbose, dryRun, vaultRoot).ConfigureAwait(false);
         });        // diagnose-yaml command
         var diagnoseYamlCommand = new Command("diagnose-yaml", "Diagnose YAML frontmatter issues in markdown files");
         diagnoseYamlCommand.AddArgument(pathArg);
@@ -271,7 +271,7 @@ internal class TagCommands
             bool verbose = context.ParseResult.GetValueForOption(verboseOption);
             bool dryRun = context.ParseResult.GetValueForOption(dryRunOption);
             string? vaultRoot = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
-            await this.DiagnoseYamlAsync(path, config, debug, verbose, vaultRoot).ConfigureAwait(false);
+            await DiagnoseYamlAsync(path, config, debug, verbose, vaultRoot).ConfigureAwait(false);
         });
 
         // Create a parent command for all tag-related operations
@@ -313,26 +313,26 @@ internal class TagCommands
     {
         if (string.IsNullOrEmpty(configPath))
         {
-            this.logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "TagCommands.cs");
+            logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "TagCommands.cs");
             return;
         }
 
         if (string.IsNullOrEmpty(path))
         {
-            this.logger.LogErrorWithPath("Path is required: {FilePath}", "TagCommands.cs", path ?? "unknown");
+            logger.LogErrorWithPath("Path is required: {FilePath}", "TagCommands.cs", path ?? "unknown");
             return;
         }
 
         if (!Directory.Exists(path) && !File.Exists(path))
         {
-            this.logger.LogErrorWithPath("Path does not exist: {FilePath}", "TagCommands.cs", path);
+            logger.LogErrorWithPath("Path does not exist: {FilePath}", "TagCommands.cs", path);
             return;
         }
 
         // Validate that the path is within the configured vault root or that vault root override is provided
         if (string.IsNullOrEmpty(vaultRoot))
         {
-            string? configuredVaultRoot = this.appConfig.Paths?.NotebookVaultFullpathRoot;
+            string? configuredVaultRoot = appConfig.Paths?.NotebookVaultFullpathRoot;
             if (!string.IsNullOrEmpty(configuredVaultRoot))
             {
                 string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
@@ -345,7 +345,7 @@ internal class TagCommands
                                          $"  tag {command} \"{path}\" --override-vault-root \"{path}\"";
 
                     AnsiConsoleHelper.WriteError(errorMessage);
-                    this.logger.LogErrorWithPath(
+                    logger.LogErrorWithPath(
                         "Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
                         "TagCommands.cs", path, configuredVaultRoot);
                     return;
@@ -353,7 +353,7 @@ internal class TagCommands
             }
         }
 
-        this.logger.LogInformationWithPath("Executing tag command: {Command} on path: {FilePath}", command, path, "TagCommands.cs");
+        logger.LogInformationWithPath("Executing tag command: {Command} on path: {FilePath}", command, path, "TagCommands.cs");
 
         try
         {

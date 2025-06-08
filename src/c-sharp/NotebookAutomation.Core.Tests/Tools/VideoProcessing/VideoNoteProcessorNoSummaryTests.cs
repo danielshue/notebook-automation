@@ -1,4 +1,4 @@
-﻿// <copyright file="VideoNoteProcessorNoSummaryTests.cs" company="PlaceholderCompany">
+// <copyright file="VideoNoteProcessorNoSummaryTests.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 /// Tests for VideoNoteProcessor noSummary functionality.
 /// </summary>
 [TestClass]
-internal class VideoNoteProcessorNoSummaryTests
+public class VideoNoteProcessorNoSummaryTests
 {
     private ILogger<VideoNoteProcessor> logger;
     private AISummarizer aiSummarizer;
@@ -27,24 +27,32 @@ internal class VideoNoteProcessorNoSummaryTests
     [TestInitialize]
     public void Setup()
     {
-        this.logger = new LoggerFactory().CreateLogger<VideoNoteProcessor>();
+        logger = new LoggerFactory().CreateLogger<VideoNoteProcessor>();
 
         // Create a mock AI summarizer with required dependencies
         ILogger<AISummarizer> mockAiLogger = new LoggerFactory().CreateLogger<AISummarizer>();
         TestPromptTemplateService testPromptService = new();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
-        this.aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
+        aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
         var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>());
-        var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), new AppConfig());
-        this.processor = new VideoNoteProcessor(this.logger, this.aiSummarizer, yamlHelper, hierarchyDetector);
+        var appConfig = new AppConfig
+        {
+            Paths = new PathsConfig
+            {
+                MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml")
+            }
+        };
+        var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), appConfig) { Logger = new LoggerFactory().CreateLogger<MetadataHierarchyDetector>() };
+        var templateManager = new MetadataTemplateManager(new LoggerFactory().CreateLogger<MetadataTemplateManager>(), appConfig, yamlHelper);
+        processor = new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager);
 
         // Create temporary directory and mock video file
-        this.tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        Directory.CreateDirectory(this.tempDir);
-        this.testVideoPath = Path.Combine(this.tempDir, "test-video.mp4");
+        tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(tempDir);
+        testVideoPath = Path.Combine(tempDir, "test-video.mp4");
 
         // Create a dummy video file (just an empty file for testing)
-        File.WriteAllText(this.testVideoPath, "dummy video content");
+        File.WriteAllText(testVideoPath, "dummy video content");
     }
 
     /// <summary>
@@ -53,9 +61,9 @@ internal class VideoNoteProcessorNoSummaryTests
     [TestCleanup]
     public void Cleanup()
     {
-        if (this.tempDir != null && Directory.Exists(this.tempDir))
+        if (tempDir != null && Directory.Exists(tempDir))
         {
-            Directory.Delete(this.tempDir, true);
+            Directory.Delete(tempDir, true);
         }
     }
 
@@ -70,8 +78,8 @@ internal class VideoNoteProcessorNoSummaryTests
         // No OpenAI API key provided to ensure we're not making actual API calls
 
         // Act
-        string markdown = await this.processor.GenerateVideoNoteAsync(
-            videoPath: this.testVideoPath,
+        string markdown = await processor.GenerateVideoNoteAsync(
+            videoPath: testVideoPath,
             openAiApiKey: null,
             promptFileName: null,
             noSummary: true,
@@ -97,8 +105,8 @@ internal class VideoNoteProcessorNoSummaryTests
         // No OpenAI API key provided, so it should attempt but fail gracefully
 
         // Act
-        string markdown = await this.processor.GenerateVideoNoteAsync(
-            videoPath: this.testVideoPath,
+        string markdown = await processor.GenerateVideoNoteAsync(
+            videoPath: testVideoPath,
             openAiApiKey: null, // This will cause the summarizer to return empty or error
             promptFileName: null,
             noSummary: false,
@@ -115,3 +123,4 @@ internal class VideoNoteProcessorNoSummaryTests
         // Even if the AI summary fails, it should still generate content
     }
 }
+

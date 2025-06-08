@@ -10,7 +10,7 @@
 namespace NotebookAutomation.Core.Tests.Tools;
 
 [TestClass]
-internal class MarkdownParserTests
+public class MarkdownParserTests
 {
     private Mock<ILogger> mockLogger;
     private MarkdownParser parser;
@@ -18,14 +18,14 @@ internal class MarkdownParserTests
     [TestInitialize]
     public void Setup()
     {
-        this.mockLogger = new Mock<ILogger>();
-        this.parser = new MarkdownParser(this.mockLogger.Object);
+        mockLogger = new Mock<ILogger>();
+        parser = new MarkdownParser(mockLogger.Object);
     }
 
     [TestMethod]
     public void ParseMarkdown_EmptyString_ReturnsEmptyFrontmatterAndContent()
     {
-        (Dictionary<string, object> frontmatter, string content) = this.parser.ParseMarkdown(string.Empty);
+        (Dictionary<string, object> frontmatter, string content) = parser.ParseMarkdown(string.Empty);
         Assert.AreEqual(0, frontmatter.Count);
         Assert.AreEqual(string.Empty, content);
     }
@@ -34,7 +34,7 @@ internal class MarkdownParserTests
     public void ParseMarkdown_NoFrontmatter_ReturnsContentOnly()
     {
         string md = "# Title\nContent";
-        (Dictionary<string, object> frontmatter, string content) = this.parser.ParseMarkdown(md);
+        (Dictionary<string, object> frontmatter, string content) = parser.ParseMarkdown(md);
         Assert.AreEqual(0, frontmatter.Count);
         Assert.AreEqual(md, content);
     }
@@ -43,7 +43,7 @@ internal class MarkdownParserTests
     public void ParseMarkdown_WithFrontmatter_ParsesFrontmatterAndContent()
     {
         string md = "---\ntitle: Test\n---\n# Heading\nBody";
-        (Dictionary<string, object> frontmatter, string content) = this.parser.ParseMarkdown(md);
+        (Dictionary<string, object> frontmatter, string content) = parser.ParseMarkdown(md);
         Assert.IsTrue(frontmatter.ContainsKey("title"));
         Assert.AreEqual("Test", frontmatter["title"].ToString());
         Assert.IsTrue(content.StartsWith("# Heading"));
@@ -54,7 +54,7 @@ internal class MarkdownParserTests
     {
         Dictionary<string, object> frontmatter = new() { { "title", "Test" } };
         string content = "# Heading\nBody";
-        string result = this.parser.CombineMarkdown(frontmatter, content);
+        string result = parser.CombineMarkdown(frontmatter, content);
         Assert.IsTrue(result.Contains("title: Test"));
         Assert.IsTrue(result.Contains("# Heading"));
     }
@@ -67,7 +67,7 @@ internal class MarkdownParserTests
         string tempFile = Path.GetTempFileName();
         try
         {
-            bool result = await this.parser.WriteFileAsync(tempFile, frontmatter, content).ConfigureAwait(false);
+            bool result = await parser.WriteFileAsync(tempFile, frontmatter, content).ConfigureAwait(false);
             Assert.IsTrue(result);
             string written = await File.ReadAllTextAsync(tempFile).ConfigureAwait(false);
             Assert.IsTrue(written.Contains("title: Test"));
@@ -87,7 +87,7 @@ internal class MarkdownParserTests
 
         // Use an invalid path to force an error
         string invalidPath = Path.Combine(Path.GetTempPath(), "?invalid:file.md");
-        bool result = await this.parser.WriteFileAsync(invalidPath, frontmatter, content).ConfigureAwait(false);
+        bool result = await parser.WriteFileAsync(invalidPath, frontmatter, content).ConfigureAwait(false);
         Assert.IsFalse(result);
     }
 
@@ -95,7 +95,7 @@ internal class MarkdownParserTests
     public async Task ParseFileAsync_FileNotFound_LogsAndReturnsEmpty()
     {
         string path = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".md");
-        (Dictionary<string, object> frontmatter, string content) = await this.parser.ParseFileAsync(path).ConfigureAwait(false);
+        (Dictionary<string, object> frontmatter, string content) = await parser.ParseFileAsync(path).ConfigureAwait(false);
         Assert.AreEqual(0, frontmatter.Count);
         Assert.AreEqual(string.Empty, content);
     }
@@ -108,7 +108,7 @@ internal class MarkdownParserTests
         await File.WriteAllTextAsync(tempFile, md).ConfigureAwait(false);
         try
         {
-            (Dictionary<string, object> frontmatter, string content) = await this.parser.ParseFileAsync(tempFile).ConfigureAwait(false);
+            (Dictionary<string, object> frontmatter, string content) = await parser.ParseFileAsync(tempFile).ConfigureAwait(false);
             Assert.IsTrue(frontmatter.ContainsKey("title"));
             Assert.AreEqual("Test", frontmatter["title"].ToString());
             Assert.IsTrue(content.StartsWith("# Heading"));

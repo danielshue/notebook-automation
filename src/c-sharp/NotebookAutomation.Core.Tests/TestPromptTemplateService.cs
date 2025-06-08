@@ -1,4 +1,4 @@
-// <copyright file="TestPromptTemplateService.cs" company="PlaceholderCompany">
+﻿// <copyright file="TestPromptTemplateService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -48,8 +48,8 @@ internal class TestPromptTemplateService : PromptTemplateService
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public override Task<string> LoadTemplateAsync(string templateName)
     {
-        this.LastTemplateName = templateName;
-        return Task.FromResult(this.Template ?? $"Default test template for {templateName}");
+        LastTemplateName = templateName;
+        return Task.FromResult(Template ?? $"Default test template for {templateName}");
     }
 
     /// <summary>
@@ -58,9 +58,9 @@ internal class TestPromptTemplateService : PromptTemplateService
     /// <returns></returns>
     public new string SubstituteVariables(string template, Dictionary<string, string>? variables)
     {
-        if (this.ExpectedSubstitution != null)
+        if (ExpectedSubstitution != null)
         {
-            return this.ExpectedSubstitution;
+            return ExpectedSubstitution;
         }
 
         // Simple implementation for tests
@@ -82,5 +82,5 @@ internal class TestPromptTemplateService : PromptTemplateService
     /// <param name="template">The template string with placeholders.</param>
     /// <param name="variables">Dictionary of variable names and values.</param>
     /// <returns>The template with variables substituted.</returns>
-    public new Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(this.SubstituteVariables(template, variables ?? []));
+    public new Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(SubstituteVariables(template, variables ?? []));
 }

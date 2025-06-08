@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Tests for ConfigCommands: view and update-key command execution.
 /// </summary>
 [TestClass]
-internal class ConfigCommandsViewUpdateTests
+public class ConfigCommandsViewUpdateTests
 {
     /// <summary>
     /// Tests that the 'config view' command is properly registered

@@ -16,7 +16,7 @@ namespace NotebookAutomation.Core.Tests;
 /// Tests for AISummarizer specifically focused on Kernel integration.
 /// </summary>
 [TestClass]
-internal class AISummarizerWithKernelTests
+public class AISummarizerWithKernelTests
 {
     private Mock<ILogger<AISummarizer>> mockLogger = null!;
     private Mock<IPromptService> mockPromptService = null!;
@@ -24,11 +24,11 @@ internal class AISummarizerWithKernelTests
     [TestInitialize]
     public void SetUp()
     {
-        this.mockLogger = new Mock<ILogger<AISummarizer>>();
-        this.mockPromptService = new Mock<IPromptService>();
-        this.mockPromptService.Setup(p => p.LoadTemplateAsync(It.IsAny<string>()))
+        mockLogger = new Mock<ILogger<AISummarizer>>();
+        mockPromptService = new Mock<IPromptService>();
+        mockPromptService.Setup(p => p.LoadTemplateAsync(It.IsAny<string>()))
             .Returns(Task.FromResult("Template {{content}}"));
-        this.mockPromptService
+        mockPromptService
             .Setup(p => p.ProcessTemplateAsync(It.IsAny<string>(), It.IsAny<Dictionary<string, string>>()))
             .Returns((string template, Dictionary<string, string>? vars) =>
             {
@@ -54,8 +54,8 @@ internal class AISummarizerWithKernelTests
         Kernel kernel = TestKernelHelper.CreateKernelWithSimulatedResponse(expectedSummary);
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService.Object,
+            mockLogger.Object,
+            mockPromptService.Object,
             kernel);
 
         string inputText = "Text to be summarized by the kernel";
@@ -77,8 +77,8 @@ internal class AISummarizerWithKernelTests
     {
         // Arrange
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService.Object,
+            mockLogger.Object,
+            mockPromptService.Object,
             null); // Null kernel
 
         string inputText = "Text that won't be summarized due to null kernel";
@@ -101,8 +101,8 @@ internal class AISummarizerWithKernelTests
         Kernel kernel = TestKernelHelper.CreateKernelWithSimulatedResponse(expectedSummary);
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService.Object,
+            mockLogger.Object,
+            mockPromptService.Object,
             kernel);
 
         string inputText = "Text for kernel function call";
@@ -129,8 +129,8 @@ internal class AISummarizerWithKernelTests
         Kernel kernel = MockKernelFactory.CreateKernelForChunkingTests(expectedSummary);
 
         AISummarizer summarizer = new(
-            this.mockLogger.Object,
-            this.mockPromptService.Object,
+            mockLogger.Object,
+            mockPromptService.Object,
             kernel);
 
         // Generate a large text that will require chunking

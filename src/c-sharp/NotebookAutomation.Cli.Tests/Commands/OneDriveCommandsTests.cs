@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Unit tests for OneDriveCommands.
 /// </summary>
 [TestClass]
-internal class OneDriveCommandsTests
+public class OneDriveCommandsTests
 {
     private Mock<ILogger<OneDriveCommands>> mockLogger;
 
@@ -24,7 +24,7 @@ internal class OneDriveCommandsTests
     [TestInitialize]
     public void Setup()
     {
-        this.mockLogger = new Mock<ILogger<OneDriveCommands>>();
+        mockLogger = new Mock<ILogger<OneDriveCommands>>();
     }
 
     /// <summary>
@@ -39,7 +39,7 @@ internal class OneDriveCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
+        var oneDriveCommands = new OneDriveCommands(mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -73,7 +73,7 @@ internal class OneDriveCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
+        var oneDriveCommands = new OneDriveCommands(mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -107,7 +107,7 @@ internal class OneDriveCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
+        var oneDriveCommands = new OneDriveCommands(mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -141,7 +141,7 @@ internal class OneDriveCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
+        var oneDriveCommands = new OneDriveCommands(mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -175,7 +175,7 @@ internal class OneDriveCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
+        var oneDriveCommands = new OneDriveCommands(mockLogger.Object);
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
@@ -202,7 +202,7 @@ internal class OneDriveCommandsTests
     public void OneDriveCommand_Initialization_ShouldSucceed()
     {
         // Arrange
-        var command = new OneDriveCommands(this.mockLogger.Object);
+        var command = new OneDriveCommands(mockLogger.Object);
 
         // Act & Assert
         Assert.IsNotNull(command);
@@ -220,7 +220,7 @@ internal class OneDriveCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var oneDriveCommands = new OneDriveCommands(this.mockLogger.Object);
+        var oneDriveCommands = new OneDriveCommands(mockLogger.Object);
 
         // Act
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

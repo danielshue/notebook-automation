@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Tests.Services;
 /// Unit tests for the TokenProvider class (internal, via reflection or InternalsVisibleTo).
 /// </summary>
 [TestClass]
-internal class TokenProviderTests
+public class TokenProviderTests
 {
     private class DummyMsalApp : IDisposable
     {
@@ -31,7 +31,7 @@ internal class TokenProviderTests
 
         public bool ThrowUiRequired { get; set; }
 
-        public void Dispose() => this.DisposeCalled = true;
+        public void Dispose() => DisposeCalled = true;
     }
 
     // TODO: Use InternalsVisibleTo or reflection to instantiate TokenProvider for real tests.

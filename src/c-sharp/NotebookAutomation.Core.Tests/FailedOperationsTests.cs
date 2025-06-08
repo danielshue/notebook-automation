@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Tests;
 /// Unit tests for the FailedOperations static class.
 /// </summary>
 [TestClass]
-internal class FailedOperationsTests
+public class FailedOperationsTests
 {
     [TestMethod]
     public void RecordFailedFileOperation_WithException_LogsError()

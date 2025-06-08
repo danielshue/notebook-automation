@@ -10,7 +10,7 @@
 namespace NotebookAutomation.Core.Tests.Utils;
 
 [TestClass]
-internal class MetadataTemplateManagerTests
+public class MetadataTemplateManagerTests
 {
     private Mock<ILogger> loggerMock;
     private Mock<AppConfig> appConfigMock;
@@ -21,11 +21,11 @@ internal class MetadataTemplateManagerTests
     [TestInitialize]
     public void Setup()
     {
-        this.loggerMock = new Mock<ILogger>();
-        this.yamlHelperMock = new Mock<IYamlHelper>();
+        loggerMock = new Mock<ILogger>();
+        yamlHelperMock = new Mock<IYamlHelper>();
 
         // Setup YamlHelper mock to properly parse YAML
-        this.yamlHelperMock.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
+        yamlHelperMock.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
             .Returns<string>(yaml =>
             {
                 // Simple parsing logic to handle our test data
@@ -51,7 +51,7 @@ internal class MetadataTemplateManagerTests
             });
 
         // Create a temporary metadata.yaml file for testing
-        this.testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata.yaml");
+        testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata.yaml");
 
         // Create test metadata content
         string testMetadata = @"---
@@ -74,31 +74,31 @@ tags:
   - pdf
   - reference
 date-created: 2025-04-19";
-        File.WriteAllText(this.testMetadataFile, testMetadata);
+        File.WriteAllText(testMetadataFile, testMetadata);
 
         // Create a real AppConfig instance instead of mocking it
-        this.appConfigMock = new Mock<AppConfig>();
+        appConfigMock = new Mock<AppConfig>();
 
         // Create the real config and set it up
         AppConfig realConfig = new()
         {
             Paths = new PathsConfig
             {
-                MetadataFile = this.testMetadataFile,
+                MetadataFile = testMetadataFile,
             },
         };
 
         // Store the real config in a field for test usage
-        this.testAppConfig = realConfig;
+        testAppConfig = realConfig;
     }
 
     [TestCleanup]
     public void Cleanup()
     {
         // Delete temporary test file
-        if (File.Exists(this.testMetadataFile))
+        if (File.Exists(testMetadataFile))
         {
-            File.Delete(this.testMetadataFile);
+            File.Delete(testMetadataFile);
         }
     }
 
@@ -106,7 +106,7 @@ date-created: 2025-04-19";
     public void LoadTemplates_ValidMetadataFile_LoadsAllTemplates()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new(this.loggerMock.Object, this.testAppConfig, this.yamlHelperMock.Object);
+        MetadataTemplateManager templateManager = new(loggerMock.Object, testAppConfig, yamlHelperMock.Object);
 
         // Act
         List<string> templateTypes = templateManager.GetTemplateTypes();
@@ -121,7 +121,7 @@ date-created: 2025-04-19";
     public void GetTemplate_ExistingType_ReturnsTemplate()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new(this.loggerMock.Object, this.testAppConfig, this.yamlHelperMock.Object);
+        MetadataTemplateManager templateManager = new(loggerMock.Object, testAppConfig, yamlHelperMock.Object);
 
         // Act
         Dictionary<string, object> template = templateManager.GetTemplate("video-reference");
@@ -136,7 +136,7 @@ date-created: 2025-04-19";
     public void GetTemplate_NonExistentType_ReturnsNull()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new(this.loggerMock.Object, this.testAppConfig, this.yamlHelperMock.Object);
+        MetadataTemplateManager templateManager = new(loggerMock.Object, testAppConfig, yamlHelperMock.Object);
 
         // Act
         Dictionary<string, object> template = templateManager.GetTemplate("non-existent-type");
@@ -149,7 +149,7 @@ date-created: 2025-04-19";
     public void GetFilledTemplate_ProvidesValues_ReplacesPlaceholders()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new(this.loggerMock.Object, this.testAppConfig, this.yamlHelperMock.Object);
+        MetadataTemplateManager templateManager = new(loggerMock.Object, testAppConfig, yamlHelperMock.Object);
         Dictionary<string, string> values = new()
         {
             { "title", "Custom Video Title" },
@@ -170,7 +170,7 @@ date-created: 2025-04-19";
     public void EnhanceMetadataWithTemplate_VideoNote_AppliesVideoTemplate()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new(this.loggerMock.Object, this.testAppConfig, this.yamlHelperMock.Object);
+        MetadataTemplateManager templateManager = new(loggerMock.Object, testAppConfig, yamlHelperMock.Object);
         Dictionary<string, object> metadata = new()
         {
             { "title", "Custom Video Title" },
@@ -198,7 +198,7 @@ date-created: 2025-04-19";
     public void EnhanceMetadataWithTemplate_PdfNote_AppliesPdfTemplate()
     {
         // Arrange
-        MetadataTemplateManager templateManager = new(this.loggerMock.Object, this.testAppConfig, this.yamlHelperMock.Object);
+        MetadataTemplateManager templateManager = new(loggerMock.Object, testAppConfig, yamlHelperMock.Object);
         Dictionary<string, object> metadata = new()
         {
             { "title", "Custom PDF Title" },

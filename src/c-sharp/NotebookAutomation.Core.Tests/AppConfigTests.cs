@@ -12,7 +12,7 @@
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
-internal class AppConfigCoverageBoostTests
+public class AppConfigCoverageBoostTests
 {
     [TestMethod]
     public void Constructor_WithUnderlyingConfiguration_LoadsSections()
@@ -119,7 +119,7 @@ internal class AppConfigCoverageBoostTests
 /// Tests for the AppConfig class, especially focusing on its implementation of IConfiguration.
 /// </summary>
 [TestClass]
-internal class AppConfigTests
+public class AppConfigTests
 {
     private Mock<ILogger<AppConfig>> loggerMock = null!;
     private Mock<IConfiguration> configurationMock = null!;
@@ -127,8 +127,8 @@ internal class AppConfigTests
     [TestInitialize]
     public void Initialize()
     {
-        this.loggerMock = new Mock<ILogger<AppConfig>>();
-        this.configurationMock = new Mock<IConfiguration>();
+        loggerMock = new Mock<ILogger<AppConfig>>();
+        configurationMock = new Mock<IConfiguration>();
     }
 
     /// <summary>
@@ -412,7 +412,7 @@ internal class AppConfigTests
         IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(configValues)
             .Build();        // Create test configuration using constructor with the real configuration
-        AppConfig appConfig = new(configuration, this.loggerMock.Object); // Act & Assert
+        AppConfig appConfig = new(configuration, loggerMock.Object); // Act & Assert
         Assert.AreEqual("/config-vault", appConfig.Paths.NotebookVaultFullpathRoot);
         Assert.AreEqual("/config-resources", appConfig.Paths.OnedriveFullpathRoot);
         Assert.AreEqual("/config-logs", appConfig.Paths.LoggingDir);
@@ -422,7 +422,7 @@ internal class AppConfigTests
 }
 
 [TestClass]
-internal class AppConfigAdditionalTests
+public class AppConfigAdditionalTests
 {
     [TestMethod]
     public void SetVideoExtensions_ShouldUpdateList()

@@ -1,4 +1,4 @@
-// <copyright file="OneDriveService.cs" company="PlaceholderCompany">
+﻿// <copyright file="OneDriveService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -62,8 +62,8 @@ public class OneDriveService : IOneDriveService
             Directory.CreateDirectory(appDataPath);
         }
 
-        this.tokenCacheFile = Path.Combine(appDataPath, "msal_token_cache.dat");
-        this.logger.LogDebug("Token cache file path: {TokenCachePath}", this.tokenCacheFile);
+        tokenCacheFile = Path.Combine(appDataPath, "msal_token_cache.dat");
+        this.logger.LogDebug("Token cache file path: {TokenCachePath}", tokenCacheFile);
     }
 
     /// <summary>
@@ -76,72 +76,72 @@ public class OneDriveService : IOneDriveService
         try
         {
             // Use injected MSAL app if provided, otherwise create
-            if (this.msalApp == null || this.forceRefresh)
+            if (msalApp == null || forceRefresh)
             {
-                this.msalApp = PublicClientApplicationBuilder
-                    .Create(this.clientId)
-                    .WithTenantId(this.tenantId)
+                msalApp = PublicClientApplicationBuilder
+                    .Create(clientId)
+                    .WithTenantId(tenantId)
                     .WithRedirectUri("http://localhost")
                     .Build();
 
                 // Set up token cache
-                await this.ConfigureTokenCacheAsync().ConfigureAwait(false);
+                await ConfigureTokenCacheAsync().ConfigureAwait(false);
             }
 
             AuthenticationResult? authResult;
             IAccount? account = null;
 
             // Try to get existing account from cache
-            var accounts = await this.msalApp.GetAccountsAsync().ConfigureAwait(false);
-            if (accounts.Any() && !this.forceRefresh)
+            var accounts = await msalApp.GetAccountsAsync().ConfigureAwait(false);
+            if (accounts.Any() && !forceRefresh)
             {
-                this.logger.LogInformation("Account found in token cache, attempting to use existing token");
+                logger.LogInformation("Account found in token cache, attempting to use existing token");
                 account = accounts.FirstOrDefault();
             }
 
             // Try silent authentication first if account exists
-            if (account != null && !this.forceRefresh)
+            if (account != null && !forceRefresh)
             {
                 try
                 {
-                    this.logger.LogDebug("Attempting silent token acquisition");
-                    authResult = await this.msalApp.AcquireTokenSilent(this.scopes, account)
+                    logger.LogDebug("Attempting silent token acquisition");
+                    authResult = await msalApp.AcquireTokenSilent(scopes, account)
                         .ExecuteAsync().ConfigureAwait(false);
 
-                    this.logger.LogInformation(
+                    logger.LogInformation(
                         "Successfully acquired token silently for account: {Account}",
                         account.Username);
                 }
                 catch (MsalUiRequiredException)
                 {
-                    this.logger.LogInformation("Silent token acquisition failed, falling back to interactive authentication");
-                    authResult = await this.InteractiveAuthenticationAsync().ConfigureAwait(false);
+                    logger.LogInformation("Silent token acquisition failed, falling back to interactive authentication");
+                    authResult = await InteractiveAuthenticationAsync().ConfigureAwait(false);
                 }
             }
             else
             {
                 // No account found or forced refresh - perform interactive authentication
-                authResult = await this.InteractiveAuthenticationAsync().ConfigureAwait(false);
+                authResult = await InteractiveAuthenticationAsync().ConfigureAwait(false);
             } // Create GraphClient with the token
 
             if (authResult != null)
             {
                 // Create authentication provider with the MSAL token
                 var authProvider = new BaseBearerTokenAuthenticationProvider(
-                    new TokenProvider(this.msalApp, this.scopes, this.logger));
-                this.graphClient = new GraphServiceClient(authProvider);
+                    new TokenProvider(msalApp, scopes, logger));
+                graphClient = new GraphServiceClient(authProvider);
 
                 // Test the authentication by making a simple call to the Drive
                 try
                 {
-                    var drive = await this.graphClient.Me.Drive.GetAsync().ConfigureAwait(false);
-                    this.logger.LogInformation(
+                    var drive = await graphClient.Me.Drive.GetAsync().ConfigureAwait(false);
+                    logger.LogInformation(
                         "Authenticated with Microsoft Graph successfully - Drive ID: {DriveId}",
                         drive?.Id ?? "Unknown");
                 }
                 catch (Exception ex)
                 {
-                    this.logger.LogWarning(ex, "Could not retrieve user drive info, but authentication may still be valid");
+                    logger.LogWarning(ex, "Could not retrieve user drive info, but authentication may still be valid");
                 }
             }
             else
@@ -151,15 +151,15 @@ public class OneDriveService : IOneDriveService
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to authenticate with Microsoft Graph");
+            logger.LogError(ex, "Failed to authenticate with Microsoft Graph");
             throw;
         }
         finally
         {
             // Reset force refresh flag
-            if (this.forceRefresh)
+            if (forceRefresh)
             {
-                this.forceRefresh = false;
+                forceRefresh = false;
             }
         }
     }
@@ -169,16 +169,16 @@ public class OneDriveService : IOneDriveService
     /// </summary>
     private async Task<AuthenticationResult> InteractiveAuthenticationAsync()
     {
-        this.logger.LogInformation("Initiating interactive browser authentication...");
+        logger.LogInformation("Initiating interactive browser authentication...");
         Console.WriteLine("A browser window will open for you to sign in to Microsoft Graph.");
 
         try
         {
-            var result = await this.msalApp!.AcquireTokenInteractive(this.scopes)
+            var result = await msalApp!.AcquireTokenInteractive(scopes)
                 .WithPrompt(Prompt.SelectAccount) // Force account selection for better user experience
                 .ExecuteAsync().ConfigureAwait(false);
 
-            this.logger.LogInformation(
+            logger.LogInformation(
                 "Interactive authentication successful for account: {Account}",
                 result.Account?.Username ?? "Unknown");
 
@@ -186,7 +186,7 @@ public class OneDriveService : IOneDriveService
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Interactive authentication failed");
+            logger.LogError(ex, "Interactive authentication failed");
             throw;
         }
     }
@@ -201,12 +201,12 @@ public class OneDriveService : IOneDriveService
             // Use token cache helpers from MSAL extensions                // Configure storage properties - simplified to work across platforms
             var storageProperties = new StorageCreationPropertiesBuilder(
                 "msal.cache",
-                this.tokenCacheFile)
+                tokenCacheFile)
                 .WithUnprotectedFile() // For simplicity - uses unprotected storage
                 .Build();
 
             // If token cache file exists, create parent directory
-            var cacheParentDir = Path.GetDirectoryName(this.tokenCacheFile);
+            var cacheParentDir = Path.GetDirectoryName(tokenCacheFile);
             if (cacheParentDir != null && !Directory.Exists(cacheParentDir))
             {
                 Directory.CreateDirectory(cacheParentDir);
@@ -214,13 +214,13 @@ public class OneDriveService : IOneDriveService
 
             // Setup the cache
             var cacheHelper = await MsalCacheHelper.CreateAsync(storageProperties).ConfigureAwait(false);
-            cacheHelper.RegisterCache(this.msalApp!.UserTokenCache);
+            cacheHelper.RegisterCache(msalApp!.UserTokenCache);
 
-            this.logger.LogDebug("Token cache configured successfully");
+            logger.LogDebug("Token cache configured successfully");
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to configure token cache - authentication will not be persisted");
+            logger.LogError(ex, "Failed to configure token cache - authentication will not be persisted");
         }
     }
 
@@ -231,7 +231,7 @@ public class OneDriveService : IOneDriveService
     public void SetForceRefresh(bool forceRefresh)
     {
         this.forceRefresh = forceRefresh;
-        this.logger.LogInformation("Force refresh set to: {ForceRefresh}", forceRefresh);
+        logger.LogInformation("Force refresh set to: {ForceRefresh}", forceRefresh);
     }
 
     /// <summary>
@@ -240,27 +240,27 @@ public class OneDriveService : IOneDriveService
     /// <returns>Task representing the async refresh operation.</returns>
     public async Task RefreshAuthenticationAsync()
     {
-        this.logger.LogInformation("Refreshing OneDrive authentication tokens");
+        logger.LogInformation("Refreshing OneDrive authentication tokens");
 
         try
         {
             // Clear existing authentication state
-            this.graphClient = null;
+            graphClient = null;
 
             // Force refresh the authentication
-            var originalForceRefresh = this.forceRefresh;
-            this.forceRefresh = true;
+            var originalForceRefresh = forceRefresh;
+            forceRefresh = true;
 
-            await this.AuthenticateAsync().ConfigureAwait(false);
+            await AuthenticateAsync().ConfigureAwait(false);
 
             // Restore original force refresh setting
-            this.forceRefresh = originalForceRefresh;
+            forceRefresh = originalForceRefresh;
 
-            this.logger.LogInformation("OneDrive authentication refreshed successfully");
+            logger.LogInformation("OneDrive authentication refreshed successfully");
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to refresh OneDrive authentication");
+            logger.LogError(ex, "Failed to refresh OneDrive authentication");
             throw;
         }
     }
@@ -271,16 +271,16 @@ public class OneDriveService : IOneDriveService
     /// <returns>Task representing the async authentication check.</returns>
     private async Task EnsureAuthenticatedAsync()
     {
-        if (this.graphClient == null || this.forceRefresh)
+        if (graphClient == null || forceRefresh)
         {
-            this.logger.LogInformation("Authentication required - initializing or refreshing OneDrive authentication");
-            if (this.forceRefresh)
+            logger.LogInformation("Authentication required - initializing or refreshing OneDrive authentication");
+            if (forceRefresh)
             {
-                await this.RefreshAuthenticationAsync().ConfigureAwait(false);
+                await RefreshAuthenticationAsync().ConfigureAwait(false);
             }
             else
             {
-                await this.AuthenticateAsync().ConfigureAwait(false);
+                await AuthenticateAsync().ConfigureAwait(false);
             }
         }
     }
@@ -293,7 +293,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task DownloadFileAsync(string oneDrivePath, string localPath, CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -306,10 +306,10 @@ public class OneDriveService : IOneDriveService
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}:/content",
                 PathParameters = new Dictionary<string, object> { { "itemPath", oneDrivePath } },
             };
-            var stream = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var stream = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (stream == null)
             {
-                this.logger.LogErrorWithPath("File not found in OneDrive: {FilePath}", oneDrivePath);
+                logger.LogErrorWithPath("File not found in OneDrive: {FilePath}", oneDrivePath);
                 return;
             }
 
@@ -318,16 +318,16 @@ public class OneDriveService : IOneDriveService
                 await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
-            this.logger.LogInformationWithPath("Downloaded OneDrive file: {FilePath}", oneDrivePath);
+            logger.LogInformationWithPath("Downloaded OneDrive file: {FilePath}", oneDrivePath);
         }
         catch (ServiceException ex)
         {
-            this.logger.LogErrorWithPath(ex, "Graph API error downloading file: {FilePath}", oneDrivePath);
+            logger.LogErrorWithPath(ex, "Graph API error downloading file: {FilePath}", oneDrivePath);
             throw;
         }
         catch (Exception ex)
         {
-            this.logger.LogErrorWithPath(ex, "Failed to download file from OneDrive: {FilePath}", oneDrivePath);
+            logger.LogErrorWithPath(ex, "Failed to download file from OneDrive: {FilePath}", oneDrivePath);
             throw;
         }
     }
@@ -339,7 +339,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>List of file names.</returns>
     public async Task<List<string>> ListFilesAsync(string oneDriveFolder, CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -352,7 +352,7 @@ public class OneDriveService : IOneDriveService
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}:/children",
                 PathParameters = new Dictionary<string, object> { { "itemPath", oneDriveFolder } },
             };
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (response == null)
             {
                 return [];
@@ -373,12 +373,12 @@ public class OneDriveService : IOneDriveService
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error listing files in OneDrive folder: {Folder}", oneDriveFolder);
+            logger.LogError(ex, "Graph API error listing files in OneDrive folder: {Folder}", oneDriveFolder);
             return [];
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to list files in OneDrive folder: {Folder}", oneDriveFolder);
+            logger.LogError(ex, "Failed to list files in OneDrive folder: {Folder}", oneDriveFolder);
             return [];
         }
     }
@@ -391,7 +391,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task UploadFileAsync(string localPath, string oneDrivePath, CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -406,17 +406,17 @@ public class OneDriveService : IOneDriveService
                 PathParameters = new Dictionary<string, object> { { "itemPath", oneDrivePath } },
             };
             requestInfo.SetStreamContent(stream, "application/octet-stream");
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false) ?? throw new Exception($"Upload failed for {oneDrivePath}");
-            this.logger.LogInformation("Uploaded file to OneDrive: {Path}", oneDrivePath);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false) ?? throw new Exception($"Upload failed for {oneDrivePath}");
+            logger.LogInformation("Uploaded file to OneDrive: {Path}", oneDrivePath);
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error uploading file to OneDrive: {Path}", oneDrivePath);
+            logger.LogError(ex, "Graph API error uploading file to OneDrive: {Path}", oneDrivePath);
             throw;
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to upload file to OneDrive: {Path}", oneDrivePath);
+            logger.LogError(ex, "Failed to upload file to OneDrive: {Path}", oneDrivePath);
             throw;
         }
     }
@@ -432,7 +432,7 @@ public class OneDriveService : IOneDriveService
     public async Task<string?> CreateShareLinkAsync(string filePath, string linkType = "view", string scope = "anonymous", CancellationToken cancellationToken = default)
     {
         // Ensure we're authenticated before proceeding
-        await this.EnsureAuthenticatedAsync().ConfigureAwait(false);            // Declare oneDrivePath outside try block so it's accessible in catch blocks
+        await EnsureAuthenticatedAsync().ConfigureAwait(false);            // Declare oneDrivePath outside try block so it's accessible in catch blocks
         string oneDrivePath = filePath;              // Initialize with original path
         try
         {
@@ -440,8 +440,8 @@ public class OneDriveService : IOneDriveService
             if (Path.IsPathRooted(filePath))
             {
                 // This is a local file path, convert it to OneDrive path
-                oneDrivePath = this.MapLocalToOneDrivePath(filePath);
-                this.logger.LogDebug("Converted local path '{LocalPath}' to OneDrive path '{OneDrivePath}'", filePath, oneDrivePath);
+                oneDrivePath = MapLocalToOneDrivePath(filePath);
+                logger.LogDebug("Converted local path '{LocalPath}' to OneDrive path '{OneDrivePath}'", filePath, oneDrivePath);
             }
             else
             {
@@ -456,7 +456,7 @@ public class OneDriveService : IOneDriveService
                 oneDrivePath = oneDrivePath[1..];
             }
 
-            this.logger.LogInformationWithPath(oneDrivePath, "Creating sharing link for OneDrive file");
+            logger.LogInformationWithPath(oneDrivePath, "Creating sharing link for OneDrive file");
 
             // Prepare the request
             var requestInfo = new RequestInformation
@@ -472,16 +472,16 @@ public class OneDriveService : IOneDriveService
             requestInfo.Content = new MemoryStream(Encoding.UTF8.GetBytes(jsonContent));
 
             // Send the request and parse the response
-            if (this.graphClient?.RequestAdapter == null)
+            if (graphClient?.RequestAdapter == null)
             {
-                this.logger.LogErrorWithPath(oneDrivePath, "Graph client or request adapter is null when creating sharing link for OneDrive file");
+                logger.LogErrorWithPath(oneDrivePath, "Graph client or request adapter is null when creating sharing link for OneDrive file");
                 return null;
             }
 
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (response == null)
             {
-                this.logger.LogErrorWithPath(oneDrivePath, "Received null response when creating sharing link for OneDrive file");
+                logger.LogErrorWithPath(oneDrivePath, "Received null response when creating sharing link for OneDrive file");
                 return null;
             }
 
@@ -494,30 +494,30 @@ public class OneDriveService : IOneDriveService
                 string? sharingLink = webUrlElement.GetString();
                 if (!string.IsNullOrEmpty(sharingLink))
                 {
-                    this.logger.LogInformationWithPath(oneDrivePath, $"Sharing link created successfully for OneDrive file (original: {filePath})");
+                    logger.LogInformationWithPath(oneDrivePath, $"Sharing link created successfully for OneDrive file (original: {filePath})");
                     return sharingLink;
                 }
             }
 
-            this.logger.LogError("Sharing link not found in response for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
-            this.logger.LogErrorWithPath(oneDrivePath, $"Sharing link not found in response for OneDrive file (original: {filePath})");
+            logger.LogError("Sharing link not found in response for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
+            logger.LogErrorWithPath(oneDrivePath, $"Sharing link not found in response for OneDrive file (original: {filePath})");
             return null;
         }
         catch (ServiceException ex)
         {
-            this.logger.LogErrorWithPath(oneDrivePath, $"Failed to create sharing link for OneDrive file (original: {filePath}). Exception: {ex.Message}");
+            logger.LogErrorWithPath(oneDrivePath, $"Failed to create sharing link for OneDrive file (original: {filePath}). Exception: {ex.Message}");
 
             // Check if the exception message contains 404 error code
             if (ex.Message.Contains("404") || ex.Message.Contains("not found"))
             {
-                this.logger.LogWarningWithPath(oneDrivePath, "The file might not exist. Check the file path and try again.");
+                logger.LogWarningWithPath(oneDrivePath, "The file might not exist. Check the file path and try again.");
             }
 
             return null;
         }
         catch (Exception ex)
         {
-            this.logger.LogErrorWithPath(oneDrivePath, $"Failed to create sharing link for OneDrive file (original: {filePath}). Exception: {ex.Message}");
+            logger.LogErrorWithPath(oneDrivePath, $"Failed to create sharing link for OneDrive file (original: {filePath}). Exception: {ex.Message}");
             return null;
         }
     }
@@ -529,7 +529,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>List of file/folder metadata matching the query.</returns>
     public async Task<List<Dictionary<string, object>>> SearchFilesAsync(string query, CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -542,7 +542,7 @@ public class OneDriveService : IOneDriveService
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root/search(q='{q}')",
                 PathParameters = new Dictionary<string, object> { { "q", query } },
             };
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             var results = new List<Dictionary<string, object>>();
             if (response == null)
             {
@@ -568,12 +568,12 @@ public class OneDriveService : IOneDriveService
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error searching OneDrive for query: {Query}", query);
+            logger.LogError(ex, "Graph API error searching OneDrive for query: {Query}", query);
             return [];
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to search OneDrive for query: {Query}", query);
+            logger.LogError(ex, "Failed to search OneDrive for query: {Query}", query);
             return [];
         }
     }
@@ -585,7 +585,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>Dictionary of file/folder metadata, or null if not found.</returns>
     public async Task<Dictionary<string, object>?> GetFileByIdAsync(string itemId, CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -598,7 +598,7 @@ public class OneDriveService : IOneDriveService
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/items/{itemId}",
                 PathParameters = new Dictionary<string, object> { { "itemId", itemId } },
             };
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (response == null)
             {
                 return null;
@@ -615,12 +615,12 @@ public class OneDriveService : IOneDriveService
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error getting OneDrive item by ID: {Id}", itemId);
+            logger.LogError(ex, "Graph API error getting OneDrive item by ID: {Id}", itemId);
             return null;
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to get OneDrive item by ID: {Id}", itemId);
+            logger.LogError(ex, "Failed to get OneDrive item by ID: {Id}", itemId);
             return null;
         }
     }
@@ -632,7 +632,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>List of matching file/folder names.</returns>
     public async Task<List<string>> SearchAsync(string searchPattern, CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -645,7 +645,7 @@ public class OneDriveService : IOneDriveService
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/search(q='{searchPattern}')",
                 PathParameters = new Dictionary<string, object> { { "searchPattern", searchPattern } },
             };
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (response == null)
             {
                 return [];
@@ -662,17 +662,17 @@ public class OneDriveService : IOneDriveService
                 }
             }
 
-            this.logger.LogInformation("Search completed for pattern: {Pattern}, found: {Count} items", searchPattern, result.Count);
+            logger.LogInformation("Search completed for pattern: {Pattern}, found: {Count} items", searchPattern, result.Count);
             return result;
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error searching files/folders in OneDrive: {Pattern}", searchPattern);
+            logger.LogError(ex, "Graph API error searching files/folders in OneDrive: {Pattern}", searchPattern);
             return [];
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to search files/folders in OneDrive: {Pattern}", searchPattern);
+            logger.LogError(ex, "Failed to search files/folders in OneDrive: {Pattern}", searchPattern);
             return [];
         }
     }
@@ -684,7 +684,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>The file or folder name, or null if not found.</returns>
     public async Task<string?> GetItemByIdAsync(string itemId, CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -697,7 +697,7 @@ public class OneDriveService : IOneDriveService
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/items/{itemId}",
                 PathParameters = new Dictionary<string, object> { { "itemId", itemId } },
             };
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (response == null)
             {
                 return null;
@@ -707,21 +707,21 @@ public class OneDriveService : IOneDriveService
             if (doc.RootElement.TryGetProperty("name", out var nameProp))
             {
                 var name = nameProp.GetString();
-                this.logger.LogInformation("Retrieved item by ID: {Id}, Name: {Name}", itemId, name);
+                logger.LogInformation("Retrieved item by ID: {Id}, Name: {Name}", itemId, name);
                 return name;
             }
 
-            this.logger.LogWarning("Item ID not found: {Id}", itemId);
+            logger.LogWarning("Item ID not found: {Id}", itemId);
             return null;
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error getting item by ID from OneDrive: {Id}", itemId);
+            logger.LogError(ex, "Graph API error getting item by ID from OneDrive: {Id}", itemId);
             return null;
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to get item by ID from OneDrive: {Id}", itemId);
+            logger.LogError(ex, "Failed to get item by ID from OneDrive: {Id}", itemId);
             return null;
         }
     }
@@ -732,7 +732,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>List of drive metadata dictionaries.</returns>
     public async Task<List<Dictionary<string, object>>> ListDrivesAsync(CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -744,7 +744,7 @@ public class OneDriveService : IOneDriveService
                 HttpMethod = Method.GET,
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drives",
             };
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             var results = new List<Dictionary<string, object>>();
             if (response == null)
             {
@@ -770,12 +770,12 @@ public class OneDriveService : IOneDriveService
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error listing drives");
+            logger.LogError(ex, "Graph API error listing drives");
             return [];
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to list drives");
+            logger.LogError(ex, "Failed to list drives");
             return [];
         }
     }
@@ -786,7 +786,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>List of file/folder metadata dictionaries in the root folder.</returns>
     public async Task<List<Dictionary<string, object>>> ListRootItemsAsync(CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -798,7 +798,7 @@ public class OneDriveService : IOneDriveService
                 HttpMethod = Method.GET,
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root/children",
             };
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             var results = new List<Dictionary<string, object>>();
             if (response == null)
             {
@@ -824,12 +824,12 @@ public class OneDriveService : IOneDriveService
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error listing root folder items");
+            logger.LogError(ex, "Graph API error listing root folder items");
             return [];
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to list root folder items");
+            logger.LogError(ex, "Failed to list root folder items");
             return [];
         }
     }
@@ -845,7 +845,7 @@ public class OneDriveService : IOneDriveService
         var results = new List<Dictionary<string, object>>();
         async Task TraverseAsync(string folderPath)
         {
-            var items = await this.ListFilesWithMetadataAsync(folderPath, cancellationToken).ConfigureAwait(false);
+            var items = await ListFilesWithMetadataAsync(folderPath, cancellationToken).ConfigureAwait(false);
             foreach (var item in items)
             {
                 if (item.TryGetValue("folder", out _))
@@ -875,7 +875,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>List of file/folder metadata dictionaries.</returns>
     public async Task<List<Dictionary<string, object>>> ListFilesWithMetadataAsync(string oneDriveFolder, CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -888,7 +888,7 @@ public class OneDriveService : IOneDriveService
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}:/children",
                 PathParameters = new Dictionary<string, object> { { "itemPath", oneDriveFolder } },
             };
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             var results = new List<Dictionary<string, object>>();
             if (response == null)
             {
@@ -914,12 +914,12 @@ public class OneDriveService : IOneDriveService
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error listing files with metadata in OneDrive folder: {Folder}", oneDriveFolder);
+            logger.LogError(ex, "Graph API error listing files with metadata in OneDrive folder: {Folder}", oneDriveFolder);
             return [];
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to list files with metadata in OneDrive folder: {Folder}", oneDriveFolder);
+            logger.LogError(ex, "Failed to list files with metadata in OneDrive folder: {Folder}", oneDriveFolder);
             return [];
         }
     }
@@ -950,7 +950,7 @@ public class OneDriveService : IOneDriveService
         {
             try
             {
-                var meta = await this.GetFileByPathAsync(candidate, cancellationToken).ConfigureAwait(false);
+                var meta = await GetFileByPathAsync(candidate, cancellationToken).ConfigureAwait(false);
                 if (meta != null)
                 {
                     return candidate;
@@ -958,22 +958,22 @@ public class OneDriveService : IOneDriveService
             }
             catch (Exception ex)
             {
-                this.logger.LogDebug(ex, "Path format candidate failed: {Path}", candidate);
+                logger.LogDebug(ex, "Path format candidate failed: {Path}", candidate);
             }
         }
 
         // Fuzzy search for similar files/folders in the parent directory
         var parent = Path.GetDirectoryName(oneDrivePath.Replace("\\", "/")) ?? string.Empty;
         var baseName = Path.GetFileName(oneDrivePath.Replace("\\", "/"));
-        var siblings = await this.ListFilesWithMetadataAsync(parent, cancellationToken).ConfigureAwait(false);
+        var siblings = await ListFilesWithMetadataAsync(parent, cancellationToken).ConfigureAwait(false);
         var suggestions = FindSimilarNames(baseName, [.. siblings.Select(d => d.TryGetValue("name", out object? value) ? value?.ToString() ?? string.Empty : string.Empty)]);
         if (suggestions.Count > 0)
         {
-            this.logger.LogWarning("Path not found: {Path}. Did you mean: {Suggestions}", oneDrivePath, string.Join(", ", suggestions));
+            logger.LogWarning("Path not found: {Path}. Did you mean: {Suggestions}", oneDrivePath, string.Join(", ", suggestions));
         }
         else
         {
-            this.logger.LogWarning("All alternative path format attempts failed for: {Path}", oneDrivePath);
+            logger.LogWarning("All alternative path format attempts failed for: {Path}", oneDrivePath);
         }
 
         return null;
@@ -1042,7 +1042,7 @@ public class OneDriveService : IOneDriveService
     /// <returns>Dictionary of metadata, or null if not found.</returns>
     public async Task<Dictionary<string, object>?> GetFileByPathAsync(string oneDrivePath, CancellationToken cancellationToken = default)
     {
-        if (this.graphClient == null)
+        if (graphClient == null)
         {
             throw new InvalidOperationException("Not authenticated. Call AuthenticateAsync first.");
         }
@@ -1055,7 +1055,7 @@ public class OneDriveService : IOneDriveService
                 UrlTemplate = "https://graph.microsoft.com/v1.0/me/drive/root:/{itemPath}",
                 PathParameters = new Dictionary<string, object> { { "itemPath", oneDrivePath } },
             };
-            var response = await this.graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
+            var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (response == null)
             {
                 return null;
@@ -1072,12 +1072,12 @@ public class OneDriveService : IOneDriveService
         }
         catch (ServiceException ex)
         {
-            this.logger.LogError(ex, "Graph API error getting OneDrive item by path: {Path}", oneDrivePath);
+            logger.LogError(ex, "Graph API error getting OneDrive item by path: {Path}", oneDrivePath);
             return null;
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to get OneDrive item by path: {Path}", oneDrivePath);
+            logger.LogError(ex, "Failed to get OneDrive item by path: {Path}", oneDrivePath);
             return null;
         }
     }
@@ -1102,20 +1102,20 @@ public class OneDriveService : IOneDriveService
     /// <returns>Corresponding OneDrive path.</returns>
     public string MapLocalToOneDrivePath(string localPath)
     {
-        if (string.IsNullOrEmpty(this.localVaultRoot) || string.IsNullOrEmpty(this.oneDriveVaultRoot))
+        if (string.IsNullOrEmpty(localVaultRoot) || string.IsNullOrEmpty(oneDriveVaultRoot))
         {
             throw new InvalidOperationException("Vault roots not configured. Call ConfigureVaultRoots first.");
         }
 
         var fullLocalPath = Path.GetFullPath(localPath);
-        var fullVaultRoot = Path.GetFullPath(this.localVaultRoot);
+        var fullVaultRoot = Path.GetFullPath(localVaultRoot);
         if (!fullLocalPath.StartsWith(fullVaultRoot, StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException($"Local path '{localPath}' is not under the configured vault root '{this.localVaultRoot}'.");
+            throw new ArgumentException($"Local path '{localPath}' is not under the configured vault root '{localVaultRoot}'.");
         }
 
         var relative = Path.GetRelativePath(fullVaultRoot, fullLocalPath);
-        var oneDrivePath = this.oneDriveVaultRoot + "/" + relative.Replace(Path.DirectorySeparatorChar, '/');
+        var oneDrivePath = oneDriveVaultRoot + "/" + relative.Replace(Path.DirectorySeparatorChar, '/');
         return oneDrivePath;
     }
 
@@ -1126,19 +1126,19 @@ public class OneDriveService : IOneDriveService
     /// <returns>Corresponding local path.</returns>
     public string MapOneDriveToLocalPath(string oneDrivePath)
     {
-        if (string.IsNullOrEmpty(this.localVaultRoot) || string.IsNullOrEmpty(this.oneDriveVaultRoot))
+        if (string.IsNullOrEmpty(localVaultRoot) || string.IsNullOrEmpty(oneDriveVaultRoot))
         {
             throw new InvalidOperationException("Vault roots not configured. Call ConfigureVaultRoots first.");
         }
 
         var normOneDrivePath = oneDrivePath.Replace("\\", "/");
-        if (!normOneDrivePath.StartsWith(this.oneDriveVaultRoot, StringComparison.OrdinalIgnoreCase))
+        if (!normOneDrivePath.StartsWith(oneDriveVaultRoot, StringComparison.OrdinalIgnoreCase))
         {
-            throw new ArgumentException($"OneDrive path '{oneDrivePath}' is not under the configured OneDrive vault root '{this.oneDriveVaultRoot}'.");
+            throw new ArgumentException($"OneDrive path '{oneDrivePath}' is not under the configured OneDrive vault root '{oneDriveVaultRoot}'.");
         }
 
-        var relative = normOneDrivePath[this.oneDriveVaultRoot.Length..].TrimStart('/');
-        var localPath = Path.Combine(this.localVaultRoot, relative.Replace('/', Path.DirectorySeparatorChar));
+        var relative = normOneDrivePath[oneDriveVaultRoot.Length..].TrimStart('/');
+        var localPath = Path.Combine(localVaultRoot, relative.Replace('/', Path.DirectorySeparatorChar));
         return localPath;
     }
 
@@ -1153,20 +1153,20 @@ public class OneDriveService : IOneDriveService
     {
         try
         {
-            await this.AuthenticateAsync().ConfigureAwait(false);
+            await AuthenticateAsync().ConfigureAwait(false);
 
-            if (this.graphClient == null)
+            if (graphClient == null)
             {
                 throw new InvalidOperationException("Graph client not initialized. Authentication failed.");
             }
 
             // For now, just return the same result as CreateShareLinkAsync
-            string? shareLink = await this.CreateShareLinkAsync(filePath, "view", "anonymous", cancellationToken).ConfigureAwait(false);
+            string? shareLink = await CreateShareLinkAsync(filePath, "view", "anonymous", cancellationToken).ConfigureAwait(false);
             return shareLink ?? "{}";
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Error getting share link for file: {FilePath}", filePath);
+            logger.LogError(ex, "Error getting share link for file: {FilePath}", filePath);
             throw;
         }
     }
@@ -1176,7 +1176,7 @@ public class OneDriveService : IOneDriveService
     /// </summary>
     public void SetCliOptions(OneDriveCliOptions options)
     {
-        this.cliOptions = options ?? new OneDriveCliOptions();
+        cliOptions = options ?? new OneDriveCliOptions();
     }
 
     // --- Test Coverage and Documentation ---        // TODO: Add unit and integration tests for all new methods, including error scenarios and edge cases.
@@ -1216,7 +1216,7 @@ internal class TokenProvider(IPublicClientApplication msalApp, string[] scopes, 
         try
         {
             // Get all accounts
-            var accounts = await this.msalApp.GetAccountsAsync().ConfigureAwait(false);
+            var accounts = await msalApp.GetAccountsAsync().ConfigureAwait(false);
             AuthenticationResult? result = null;
 
             // Try silent authentication first with any available account
@@ -1224,15 +1224,15 @@ internal class TokenProvider(IPublicClientApplication msalApp, string[] scopes, 
             {
                 try
                 {
-                    this.logger.LogDebug("Attempting silent token acquisition for Graph request");
-                    result = await this.msalApp.AcquireTokenSilent(this.scopes, accounts.FirstOrDefault())
+                    logger.LogDebug("Attempting silent token acquisition for Graph request");
+                    result = await msalApp.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
                         .ExecuteAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch (MsalUiRequiredException)
                 {
                     // Token expired or requires interaction
-                    this.logger.LogInformation("Silent token acquisition failed, falling back to interactive");
-                    result = await this.msalApp.AcquireTokenInteractive(this.scopes)
+                    logger.LogInformation("Silent token acquisition failed, falling back to interactive");
+                    result = await msalApp.AcquireTokenInteractive(scopes)
                         .WithPrompt(Prompt.SelectAccount)
                         .ExecuteAsync(cancellationToken).ConfigureAwait(false);
                 }
@@ -1240,8 +1240,8 @@ internal class TokenProvider(IPublicClientApplication msalApp, string[] scopes, 
             else
             {
                 // No accounts, must do interactive auth
-                this.logger.LogInformation("No accounts found, performing interactive authentication");
-                result = await this.msalApp.AcquireTokenInteractive(this.scopes)
+                logger.LogInformation("No accounts found, performing interactive authentication");
+                result = await msalApp.AcquireTokenInteractive(scopes)
                     .WithPrompt(Prompt.SelectAccount)
                     .ExecuteAsync(cancellationToken).ConfigureAwait(false);
             }
@@ -1255,7 +1255,7 @@ internal class TokenProvider(IPublicClientApplication msalApp, string[] scopes, 
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Error obtaining access token");
+            logger.LogError(ex, "Error obtaining access token");
             throw;
         }
     }

@@ -1,4 +1,4 @@
-// <copyright file="MockPromptTemplateService.cs" company="PlaceholderCompany">
+﻿// <copyright file="MockPromptTemplateService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -67,14 +67,14 @@ internal class MockPromptTemplateService : IPromptService
     /// <exception cref="Exception">Throws the configured exception if ThrowExceptionOnLoad is true.</exception>
     public Task<string> LoadTemplateAsync(string templateName)
     {
-        this.LastTemplateName = templateName;
+        LastTemplateName = templateName;
 
-        if (this.ThrowExceptionOnLoad)
+        if (ThrowExceptionOnLoad)
         {
-            throw this.ExceptionToThrow ?? new InvalidOperationException($"Failed to load template {templateName}");
+            throw ExceptionToThrow ?? new InvalidOperationException($"Failed to load template {templateName}");
         }
 
-        return Task.FromResult(this.Template);
+        return Task.FromResult(Template);
     }
 
     /// <summary>
@@ -85,12 +85,12 @@ internal class MockPromptTemplateService : IPromptService
     /// <returns>The processed template with variables substituted.</returns>
     public string SubstituteVariables(string template, Dictionary<string, string>? variables)
     {
-        this.LastVariables = variables != null ? new Dictionary<string, string>(variables) : null;
+        LastVariables = variables != null ? new Dictionary<string, string>(variables) : null;
 
         // If ExpectedSubstitution is set, return that directly for testing
-        if (!string.IsNullOrEmpty(this.ExpectedSubstitution))
+        if (!string.IsNullOrEmpty(ExpectedSubstitution))
         {
-            return this.ExpectedSubstitution;
+            return ExpectedSubstitution;
         }
 
         // Simple placeholder substitution logic
@@ -116,8 +116,8 @@ internal class MockPromptTemplateService : IPromptService
     /// <returns>The processed template with variables substituted.</returns>
     public async Task<string> GetPromptAsync(string templateName, Dictionary<string, string>? variables)
     {
-        string template = await this.LoadTemplateAsync(templateName).ConfigureAwait(false);
-        return this.SubstituteVariables(template, variables);
+        string template = await LoadTemplateAsync(templateName).ConfigureAwait(false);
+        return SubstituteVariables(template, variables);
     }
 
     /// <summary>
@@ -126,7 +126,7 @@ internal class MockPromptTemplateService : IPromptService
     /// <param name="template">The template string with placeholders.</param>
     /// <param name="variables">Dictionary of variable names and values.</param>
     /// <returns>The template with variables substituted.</returns>
-    public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(this.SubstituteVariables(template, variables));
+    public Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables) => Task.FromResult(SubstituteVariables(template, variables));
 
     /// <summary>
     /// Verifies that a specific variable was substituted in the template.
@@ -137,7 +137,7 @@ internal class MockPromptTemplateService : IPromptService
     /// <remarks>This method is used to verify YAML frontmatter substitution in tests.</remarks>
     public bool VerifySubstitution(string variableName, string expectedValue)
     {
-        if (this.LastVariables != null && this.LastVariables.TryGetValue(variableName, out var actualValue))
+        if (LastVariables != null && LastVariables.TryGetValue(variableName, out var actualValue))
         {
             return actualValue == expectedValue;
         }

@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests;
 /// Unit tests for ConfigValidation static helpers.
 /// </summary>
 [TestClass]
-internal class ConfigValidationTests
+public class ConfigValidationTests
 {
     [TestMethod]
     public void RequireOpenAi_ReturnsFalse_WhenApiKeyMissing()

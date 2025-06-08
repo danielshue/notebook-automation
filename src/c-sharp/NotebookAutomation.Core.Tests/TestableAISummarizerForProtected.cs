@@ -1,4 +1,4 @@
-// <copyright file="TestableAISummarizerForProtected.cs" company="PlaceholderCompany">
+﻿// <copyright file="TestableAISummarizerForProtected.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -52,19 +52,19 @@ internal class TestableAISummarizerForProtected : AISummarizer
         string inputText,
         string? prompt,
         Dictionary<string, string>? variables,
-        CancellationToken cancellationToken) => await this.SummarizeWithChunkingAsync(inputText, prompt, variables, cancellationToken).ConfigureAwait(false);
+        CancellationToken cancellationToken) => await SummarizeWithChunkingAsync(inputText, prompt, variables, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
     /// Exposes the protected LoadChunkPromptAsync method for testing.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    public async Task<string?> CallLoadChunkPromptAsync() => await this.LoadChunkPromptAsync().ConfigureAwait(false);
+    public async Task<string?> CallLoadChunkPromptAsync() => await LoadChunkPromptAsync().ConfigureAwait(false);
 
     /// <summary>
     /// Exposes the protected LoadFinalPromptAsync method for testing.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-    public async Task<string?> CallLoadFinalPromptAsync() => await this.LoadFinalPromptAsync().ConfigureAwait(false);
+    public async Task<string?> CallLoadFinalPromptAsync() => await LoadFinalPromptAsync().ConfigureAwait(false);
 
     /// <summary>
     /// Exposes the protected ProcessPromptTemplateAsync method for testing.
@@ -73,7 +73,7 @@ internal class TestableAISummarizerForProtected : AISummarizer
     public async Task<(string? processedPrompt, string processedInputText)> CallProcessPromptTemplateAsync(
         string inputText,
         string? prompt,
-        string promptFileName) => await this.ProcessPromptTemplateAsync(inputText, prompt ?? string.Empty, promptFileName).ConfigureAwait(false);
+        string promptFileName) => await ProcessPromptTemplateAsync(inputText, prompt ?? string.Empty, promptFileName).ConfigureAwait(false);
 
     /// <summary>
     /// Exposes the protected SummarizeWithSemanticKernelAsync method for testing.
@@ -82,7 +82,7 @@ internal class TestableAISummarizerForProtected : AISummarizer
     public async Task<string?> CallSummarizeWithSemanticKernelAsync(
         string inputText,
         string prompt,
-        CancellationToken cancellationToken) => await this.SummarizeWithSemanticKernelAsync(inputText, prompt, cancellationToken).ConfigureAwait(false);        // Override to always return [Simulated AI summary] for tests
+        CancellationToken cancellationToken) => await SummarizeWithSemanticKernelAsync(inputText, prompt, cancellationToken).ConfigureAwait(false);        // Override to always return [Simulated AI summary] for tests
 
     protected override async Task<string?> SummarizeWithChunkingAsync(
         string inputText,
@@ -94,7 +94,7 @@ internal class TestableAISummarizerForProtected : AISummarizer
         cancellationToken.ThrowIfCancellationRequested();
 
         // Always call the chunking service for test verification
-        ITextChunkingService chunkingService = this.GetTextChunkingService();
+        ITextChunkingService chunkingService = GetTextChunkingService();
 
         // Add an await to make it properly async
         await Task.Delay(1, cancellationToken).ConfigureAwait(false);

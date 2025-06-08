@@ -1,4 +1,4 @@
-// <copyright file="DocumentNoteProcessorBase.cs" company="PlaceholderCompany">
+﻿// <copyright file="DocumentNoteProcessorBase.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -43,72 +43,72 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
     /// <returns>The summary text, or a simulated summary if unavailable.</returns>
     public virtual async Task<string> GenerateAiSummaryAsync(string? text, Dictionary<string, string>? variables = null, string? promptFileName = null)
     {
-        this.Logger.LogDebug("Using AISummarizer to generate summary.");
+        Logger.LogDebug("Using AISummarizer to generate summary.");
 
         // Check for null text
         if (text == null)
         {
-            this.Logger.LogWarning("Null text provided to summarizer");
+            Logger.LogWarning("Null text provided to summarizer");
             return "[No content to summarize]";
         }
 
         // Log content size
         int textSize = text.Length;
         int estimatedTokens = textSize / 4; // Rough estimate: ~4 characters per token
-        this.Logger.LogInformation(
+        Logger.LogInformation(
             "Text to summarize: {CharCount:N0} characters (~{TokenCount:N0} estimated tokens)",
             textSize, estimatedTokens);
 
         // Enhanced debug logging for yaml-frontmatter
         if (variables != null)
         {
-            this.Logger.LogInformation("Preparing {Count} variables for prompt template", variables.Count);
+            Logger.LogInformation("Preparing {Count} variables for prompt template", variables.Count);
             foreach (var kvp in variables)
             {
                 var preview = kvp.Value?.Length > 50 ? kvp.Value[..50] + "..." : kvp.Value;
-                this.Logger.LogInformation(
+                Logger.LogInformation(
                     "  Variable {Key}: {Length:N0} chars - {ValuePreview}",
                     kvp.Key, kvp.Value?.Length ?? 0, preview);
             }
 
             if (variables.TryGetValue("yamlfrontmatter", out var yamlValue))
             {
-                this.Logger.LogInformation(
+                Logger.LogInformation(
                     "Found yamlfrontmatter ({Length:N0} chars): {ValuePreview}",
                     yamlValue?.Length ?? 0,
                     yamlValue?.Length > 100 ? yamlValue[..100] + "..." : yamlValue ?? "null");
             }
             else
             {
-                this.Logger.LogWarning("YAML frontmatter variable not found in variables dictionary!");
+                Logger.LogWarning("YAML frontmatter variable not found in variables dictionary!");
             }
         }
         else
         {
-            this.Logger.LogWarning("No variables provided to summarizer, yaml-frontmatter will not be substituted!");
+            Logger.LogWarning("No variables provided to summarizer, yaml-frontmatter will not be substituted!");
         }
 
-        if (this.Summarizer == null)
+        if (Summarizer == null)
         {
-            this.Logger.LogWarning("AI summarizer not available - returning simulated summary");
+            Logger.LogWarning("AI summarizer not available - returning simulated summary");
             return "[Simulated AI summary]";
         }
 
-        this.Logger.LogInformation(
+        Logger.LogInformation(
             "Sending content to AI service for summarization (prompt: {PromptFile})",
             promptFileName ?? "default");
 
-        var summary = await this.Summarizer.SummarizeWithVariablesAsync(text, variables, promptFileName).ConfigureAwait(false);
+        var summary = await Summarizer.SummarizeWithVariablesAsync(text, variables, promptFileName).ConfigureAwait(false);
 
         if (string.IsNullOrWhiteSpace(summary))
         {
-            this.Logger.LogWarning("AISummarizer returned an empty summary. Using simulated summary.");
+            Logger.LogWarning("AISummarizer returned an empty summary. Using simulated summary.");
             return "[Simulated AI summary]";
         }
 
         int summaryLength = summary.Length;
         int summaryEstimatedTokens = summaryLength / 4;
-        this.Logger.LogInformation(
+        Logger.LogInformation(
             "Successfully generated AI summary: {CharCount:N0} characters (~{TokenCount:N0} estimated tokens)",
             summaryLength, summaryEstimatedTokens);
 
@@ -132,7 +132,7 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
         bool includeNoteTypeTitle = false)
     {
         var frontmatter = metadata ?? new Dictionary<string, object> { { "title", $"Untitled {noteType}" } };
-        var builder = new MarkdownNoteBuilder(this.Logger);
+        var builder = new MarkdownNoteBuilder(Logger);
         if (suppressBody)
         {
             return builder.CreateMarkdownWithFrontmatter(frontmatter);
@@ -145,17 +145,17 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
         {
             string title = titleObj.ToString() ?? noteType;
             markdownBody = $"# {title}\n\n{bodyText}";
-            this.Logger?.LogDebug("Using frontmatter title for heading: {Title}", title);
+            Logger?.LogDebug("Using frontmatter title for heading: {Title}", title);
         }
         else if (includeNoteTypeTitle)
         {
             markdownBody = $"# {noteType}\n\n{bodyText}";
-            this.Logger?.LogDebug("No frontmatter title found, using note type: {NoteType}", noteType);
+            Logger?.LogDebug("No frontmatter title found, using note type: {NoteType}", noteType);
         }
         else
         {
             markdownBody = bodyText;
-            this.Logger?.LogDebug("No title added to markdown body");
+            Logger?.LogDebug("No title added to markdown body");
         }
 
         return builder.BuildNote(frontmatter, markdownBody);

@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Unit tests for VideoCommands.
 /// </summary>
 [TestClass]
-internal class VideoCommandsTests
+public class VideoCommandsTests
 {
     private readonly Mock<ILogger<VideoCommands>> mockLogger = new();
 
@@ -29,7 +29,7 @@ internal class VideoCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        _ = new VideoCommands(this.mockLogger.Object);
+        _ = new VideoCommands(mockLogger.Object);
         VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Ensure DI is initialized for handler
@@ -59,7 +59,7 @@ internal class VideoCommandsTests
     public void VideoCommand_Initialization_ShouldSucceed()
     {
         // Arrange
-        var command = new VideoCommands(this.mockLogger.Object);
+        var command = new VideoCommands(mockLogger.Object);
 
         // Act & Assert
         Assert.IsNotNull(command);
@@ -77,7 +77,7 @@ internal class VideoCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var videoCommands = new VideoCommands(this.mockLogger.Object);
+        var videoCommands = new VideoCommands(mockLogger.Object);
 
         // Act
         VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

@@ -10,7 +10,7 @@
 namespace NotebookAutomation.Core.Tests;
 
 [TestClass]
-internal class OneDriveServicePathMappingTests
+public class OneDriveServicePathMappingTests
 {
     [TestMethod]
     public void MapLocalToOneDrivePath_MapsCorrectly()

@@ -1,4 +1,4 @@
-// <copyright file="MarkdownNoteProcessor.cs" company="PlaceholderCompany">
+﻿// <copyright file="MarkdownNoteProcessor.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -40,15 +40,16 @@ namespace NotebookAutomation.Core.Tools.MarkdownGeneration;
 /// </example>
 public partial class MarkdownNoteProcessor
 {
-    private readonly ILogger<MarkdownNoteProcessor> logger;
-    private readonly MarkdownNoteBuilder noteBuilder;
-    private readonly AISummarizer aiSummarizer;
-    private readonly MetadataHierarchyDetector hierarchyDetector;
-    private readonly AppConfig? appConfig;
+    private readonly ILogger<MarkdownNoteProcessor> _logger;
+    private readonly MarkdownNoteBuilder _noteBuilder;
+    private readonly AISummarizer _aiSummarizer;
+    private readonly MetadataHierarchyDetector _hierarchyDetector;
+    private readonly AppConfig? _appConfig;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MarkdownNoteProcessor"/> class.
-    /// </summary>    /// <param name="logger">The logger instance.</param>
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
     /// <param name="aiSummarizer">The AI summarizer instance.</param>
     /// <param name="hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
     /// <param name="appConfig">Optional application configuration for advanced hierarchy detection.</param>
@@ -66,12 +67,12 @@ public partial class MarkdownNoteProcessor
     {
         if (logger is ILogger<MarkdownNoteProcessor> genericLogger)
         {
-            this.logger = genericLogger;
+            _logger = genericLogger;
         }
         else
         {
             // Allow any ILogger for testing/mocking, but warn if not the expected type
-            this.logger = logger as ILogger<MarkdownNoteProcessor> ?? throw new ArgumentException("Logger must be ILogger<MarkdownNoteProcessor> or compatible mock");
+            _logger = logger as ILogger<MarkdownNoteProcessor> ?? throw new ArgumentException("Logger must be ILogger<MarkdownNoteProcessor> or compatible mock");
             if (logger.GetType().Name.Contains("Mock") || logger.GetType().Name.Contains("Proxy"))
             {
                 // Allow for test mocks
@@ -82,10 +83,10 @@ public partial class MarkdownNoteProcessor
             }
         }
 
-        this.noteBuilder = new MarkdownNoteBuilder(logger);
-        this.aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
-        this.hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
-        this.appConfig = appConfig;
+        _noteBuilder = new MarkdownNoteBuilder(logger);
+        _aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
+        _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
+        _appConfig = appConfig;
     }
 
     /// <summary>
@@ -118,7 +119,7 @@ public partial class MarkdownNoteProcessor
     {
         if (!File.Exists(inputPath))
         {
-            this.logger.LogError("Input file not found: {InputPath}", inputPath);
+            _logger.LogError($"Input file not found: {inputPath}");
             return string.Empty;
         }
 
@@ -159,13 +160,13 @@ public partial class MarkdownNoteProcessor
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "Failed to parse EPUB file: {InputPath}", inputPath);
+                _logger.LogError(ex, $"Failed to parse EPUB file: {inputPath}");
                 return string.Empty;
             }
         }
         else
         {
-            this.logger.LogError("Unsupported file type: {Ext}", ext);
+            _logger.LogError($"Unsupported file type: {ext}");
             return string.Empty;
         }
 
@@ -174,7 +175,7 @@ public partial class MarkdownNoteProcessor
         {
             // Use the new method name to avoid ambiguity
             Dictionary<string, string>? noVariables = null;
-            aiSummary = await this.aiSummarizer.SummarizeWithVariablesAsync(rawText, noVariables, promptFileName).ConfigureAwait(false) ?? rawText;
+            aiSummary = await _aiSummarizer.SummarizeWithVariablesAsync(rawText, noVariables, promptFileName).ConfigureAwait(false) ?? rawText;
         }
 
         var metadata = new Dictionary<string, object>
@@ -185,11 +186,11 @@ public partial class MarkdownNoteProcessor
         };
 
         // Extract hierarchy information using injected MetadataHierarchyDetector
-        this.logger.LogDebug("Extracting hierarchy information from file path: {FilePath}", inputPath);
-        var hierarchyInfo = this.hierarchyDetector.FindHierarchyInfo(inputPath);
-        MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "module");
+        _logger.LogDebug($"Extracting hierarchy information from file path: {inputPath}");
+        var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(inputPath);
+        _hierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "module");
 
-        return this.noteBuilder.BuildNote(metadata, aiSummary);
+        return _noteBuilder.BuildNote(metadata, aiSummary);
     }
 
     /// <summary>

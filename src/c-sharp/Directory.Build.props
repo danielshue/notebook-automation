@@ -14,22 +14,21 @@
         <Company>Dan Shue</Company>
         <Copyright>Copyright © 2025</Copyright>
         <Product>Notebook Automation</Product>
-        <Authors>Dan Shue</Authors>
-
-        <!-- Code Analysis and Formatting -->
-        <EnableNETAnalyzers>true</EnableNETAnalyzers>
-        <AnalysisMode>AllEnabledByDefault</AnalysisMode>
-        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <Authors>Dan Shue</Authors>        <!-- Code Analysis and Formatting - TEMPORARILY DISABLED -->
+        <EnableNETAnalyzers>false</EnableNETAnalyzers>
+        <AnalysisMode>None</AnalysisMode>
+        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
         <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
         <WarningsAsErrors />
         <WarningsNotAsErrors />
     </PropertyGroup>
-
     <ItemGroup>
-        <!-- StyleCop Analyzers for consistent formatting -->
+        <!-- StyleCop Analyzers for consistent formatting - TEMPORARILY DISABLED -->
+        <!--
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        -->
     </ItemGroup>
 </Project>

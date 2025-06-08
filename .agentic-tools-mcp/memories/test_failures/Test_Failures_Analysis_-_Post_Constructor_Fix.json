@@ -1,0 +1,8 @@
+{
+  "id": "e2e4c824-b35f-425b-af33-ff5e970de0e6",
+  "title": "Test Failures Analysis - Post Constructor Fix",
+  "details": "After fixing constructor signatures, we have 68 failing tests with these main categories:\n\n1. MetadataTemplateManager Configuration Issues (35+ tests):\n   - Error: \"Metadata file path is not configured in appConfig\"\n   - Solution: Set appConfig.Paths.MetadataFile in test setup\n\n2. Text Chunking Service NullReferenceExceptions (15+ tests):\n   - Files: MockTextChunkingServiceTests.cs, TextChunkingServiceTests.cs, RecursiveCharacterTextSplitterTests.cs\n   - Error: Object reference not set to an instance of an object\n   - Solution: Initialize service properly in test setup\n\n3. Mock Constructor Mismatches (2 tests):\n   - VideoNoteBatchProcessorOnedriveFullpathRootTests, VideoNoteBatchProcessorResourcesRootTests\n   - Error: Could not find a constructor that would match given arguments\n   - Solution: Update mock setup to match new VideoNoteProcessor constructor\n\n4. TagProcessor Test Issues (5+ tests):\n   - Mixed issues: NullReferenceException, Assert failures\n   - Solution: Review test setup and configuration\n\n5. MarkdownNoteProcessor Path Issues (5 tests):\n   - Error: ArgumentNullException: Value cannot be null. (Parameter 'path')\n   - Solution: Ensure test provides valid file paths\n\n6. MetadataHierarchyDetector Test Issues (1 test):\n   - Assert.IsFalse failed in UpdateMetadataWithHierarchy_RespectsTemplateTypeHierarchy\n\nFix Priority: Start with MetadataTemplateManager configuration since it affects the most tests.",
+  "category": "test_failures",
+  "dateCreated": "2025-06-08T04:09:55.622Z",
+  "dateUpdated": "2025-06-08T04:09:55.622Z"
+}

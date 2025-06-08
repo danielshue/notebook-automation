@@ -1,4 +1,4 @@
-﻿// <copyright file="VideoNoteProcessorTranscriptTests.cs" company="PlaceholderCompany">
+// <copyright file="VideoNoteProcessorTranscriptTests.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -16,11 +16,11 @@ namespace NotebookAutomation.Core.Tests;
 /// These tests validate the transcript finding functionality in various scenarios.
 /// </summary>
 [TestClass]
-internal class VideoNoteProcessorTranscriptTests
+public class VideoNoteProcessorTranscriptTests
 {
-    private string tempDirectory = string.Empty;
-    private ILogger<VideoNoteProcessor> logger = NullLogger<VideoNoteProcessor>.Instance;
-    private VideoNoteProcessor processor = null!;
+    private string _tempDirectory = string.Empty;
+    private ILogger<VideoNoteProcessor> _logger = NullLogger<VideoNoteProcessor>.Instance;
+    private VideoNoteProcessor _processor = null!;
 
     /// <summary>
     /// Sets up the test environment before each test.
@@ -28,9 +28,9 @@ internal class VideoNoteProcessorTranscriptTests
     [TestInitialize]
     public void Initialize()
     {
-        this.tempDirectory = Path.Combine(Path.GetTempPath(), $"VideoProcessorTests_{Guid.NewGuid()}");
-        Directory.CreateDirectory(this.tempDirectory);
-        this.logger = NullLogger<VideoNoteProcessor>.Instance;
+        _tempDirectory = Path.Combine(Path.GetTempPath(), $"VideoProcessorTests_{Guid.NewGuid()}");
+        Directory.CreateDirectory(_tempDirectory);
+        _logger = NullLogger<VideoNoteProcessor>.Instance;
         PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
             new YamlHelper(NullLogger<YamlHelper>.Instance),
@@ -60,17 +60,23 @@ internal class VideoNoteProcessorTranscriptTests
         yamlHelperMock.Setup(m => m.SerializeToYaml(It.IsAny<Dictionary<string, object>>()))
             .Returns("---\ntemplate-type: video-reference\ntitle: Test Video\n---\n");
         var mockYamlHelper = yamlHelperMock.Object;
-        var mockLogger = Mock.Of<ILogger<MetadataHierarchyDetector>>();
-        var mockAppConfig = Mock.Of<AppConfig>();
-        var mockHierarchyDetector = new MetadataHierarchyDetector(mockLogger, mockAppConfig);
-        this.processor = new VideoNoteProcessor(
-            this.logger,
+        var mockLogger = new Mock<ILogger<MetadataHierarchyDetector>>();
+        var appConfig = new AppConfig
+        {
+            Paths = new PathsConfig
+            {
+                NotebookVaultFullpathRoot = Path.Combine(Path.GetTempPath(), "TestVault"),
+                MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml"),
+            },
+        };
+        var mockHierarchyDetector = new MetadataHierarchyDetector(mockLogger.Object, appConfig) { Logger = mockLogger.Object };
+        var templateManager = new MetadataTemplateManager(mockLogger.Object, appConfig, mockYamlHelper);
+        _processor = new VideoNoteProcessor(
+            _logger,
             aiSummarizer,
-            mockYamlHelper,  // Required YamlHelper parameter
-            mockHierarchyDetector,  // Required MetadataHierarchyDetector parameter
-            null,  // Optional OneDriveService
-            null,  // Optional AppConfig
-            null); // Optional LoggingService
+            mockYamlHelper,
+            mockHierarchyDetector,
+            templateManager);
     }
 
     /// <summary>
@@ -79,11 +85,11 @@ internal class VideoNoteProcessorTranscriptTests
     [TestCleanup]
     public void Cleanup()
     {
-        if (Directory.Exists(this.tempDirectory))
+        if (Directory.Exists(_tempDirectory))
         {
             try
             {
-                Directory.Delete(this.tempDirectory, recursive: true);
+                Directory.Delete(_tempDirectory, recursive: true);
             }
             catch (IOException ex)
             {
@@ -126,11 +132,11 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_DirectMatch_ReturnsTranscript()
     {
         // Arrange
-        string videoPath = CreateTestVideoFile(this.tempDirectory);
-        _ = CreateTestTranscriptFile(this.tempDirectory, "test_video.txt");
+        string videoPath = CreateTestVideoFile(_tempDirectory);
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video.txt");
 
         // Act
-        string? result = this.processor.TryLoadTranscript(videoPath);
+        string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNotNull(result, "Failed to find direct matching transcript");
@@ -144,11 +150,11 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_MarkdownMatch_ReturnsTranscript()
     {
         // Arrange
-        string videoPath = CreateTestVideoFile(this.tempDirectory);
-        _ = CreateTestTranscriptFile(this.tempDirectory, "test_video.md");
+        string videoPath = CreateTestVideoFile(_tempDirectory);
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video.md");
 
         // Act
-        string? result = this.processor.TryLoadTranscript(videoPath);
+        string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNotNull(result, "Failed to find matching markdown transcript");
@@ -162,13 +168,13 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_TranscriptSubdirectory_ReturnsTranscript()
     {
         // Arrange
-        string videoPath = CreateTestVideoFile(this.tempDirectory);
-        string transcriptsDir = Path.Combine(this.tempDirectory, "Transcripts");
+        string videoPath = CreateTestVideoFile(_tempDirectory);
+        string transcriptsDir = Path.Combine(_tempDirectory, "Transcripts");
         Directory.CreateDirectory(transcriptsDir);
         _ = CreateTestTranscriptFile(transcriptsDir, "test_video.txt");
 
         // Act
-        string? result = this.processor.TryLoadTranscript(videoPath);
+        string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNotNull(result, "Failed to find transcript in subdirectory");
@@ -182,11 +188,11 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_LanguageSpecificTranscript_ReturnsTranscript()
     {
         // Arrange
-        string videoPath = CreateTestVideoFile(this.tempDirectory);
-        _ = CreateTestTranscriptFile(this.tempDirectory, "test_video.en.txt", "English transcript");
+        string videoPath = CreateTestVideoFile(_tempDirectory);
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video.en.txt", "English transcript");
 
         // Act
-        string? result = this.processor.TryLoadTranscript(videoPath);
+        string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNotNull(result, "Failed to find language-specific transcript");
@@ -200,11 +206,11 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_SpacesInFilename_ReturnsTranscript()
     {
         // Arrange
-        string videoPath = CreateTestVideoFile(this.tempDirectory, "test video with spaces.mp4");
-        _ = CreateTestTranscriptFile(this.tempDirectory, "test video with spaces.txt");
+        string videoPath = CreateTestVideoFile(_tempDirectory, "test video with spaces.mp4");
+        _ = CreateTestTranscriptFile(_tempDirectory, "test video with spaces.txt");
 
         // Act
-        string? result = this.processor.TryLoadTranscript(videoPath);
+        string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNotNull(result, "Failed to find transcript with spaces in name");
@@ -218,11 +224,11 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_NormalizedName_ReturnsTranscript()
     {
         // Arrange
-        string videoPath = CreateTestVideoFile(this.tempDirectory, "test-video-with-hyphens.mp4");
-        _ = CreateTestTranscriptFile(this.tempDirectory, "test_video_with_hyphens.txt");
+        string videoPath = CreateTestVideoFile(_tempDirectory, "test-video-with-hyphens.mp4");
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video_with_hyphens.txt");
 
         // Act
-        string? result = this.processor.TryLoadTranscript(videoPath);
+        string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNotNull(result, "Failed to find transcript with normalized name");
@@ -236,11 +242,11 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_LanguageSpecificNormalizedName_ReturnsTranscript()
     {
         // Arrange
-        string videoPath = CreateTestVideoFile(this.tempDirectory, "test-video.mp4");
-        _ = CreateTestTranscriptFile(this.tempDirectory, "test_video.en-us.txt", "English-US transcript");
+        string videoPath = CreateTestVideoFile(_tempDirectory, "test-video.mp4");
+        _ = CreateTestTranscriptFile(_tempDirectory, "test_video.en-us.txt", "English-US transcript");
 
         // Act
-        string? result = this.processor.TryLoadTranscript(videoPath);
+        string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNotNull(result, "Failed to find language-specific transcript with normalized name");
@@ -254,12 +260,12 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_NoTranscriptFound_ReturnsNull()
     {
         // Arrange
-        string videoPath = CreateTestVideoFile(this.tempDirectory);
+        string videoPath = CreateTestVideoFile(_tempDirectory);
 
         // Don't create any transcript files
 
         // Act
-        string? result = this.processor.TryLoadTranscript(videoPath);
+        string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNull(result, "Should return null when no transcript is found");
@@ -274,17 +280,17 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_VariousLanguageCodes_ReturnsCorrectTranscript()
     {
         // Arrange
-        string videoPath = CreateTestVideoFile(this.tempDirectory);
+        string videoPath = CreateTestVideoFile(_tempDirectory);
 
         // Create multiple language transcripts
-        CreateTestTranscriptFile(this.tempDirectory, "test_video.en.txt", "English transcript");
-        CreateTestTranscriptFile(this.tempDirectory, "test_video.fr.txt", "French transcript");
-        CreateTestTranscriptFile(this.tempDirectory, "test_video.zh-cn.txt", "Chinese transcript");
-        CreateTestTranscriptFile(this.tempDirectory, "test_video.deu.txt", "German transcript");
+        CreateTestTranscriptFile(_tempDirectory, "test_video.en.txt", "English transcript");
+        CreateTestTranscriptFile(_tempDirectory, "test_video.fr.txt", "French transcript");
+        CreateTestTranscriptFile(_tempDirectory, "test_video.zh-cn.txt", "Chinese transcript");
+        CreateTestTranscriptFile(_tempDirectory, "test_video.deu.txt", "German transcript");
 
         // Create an invalid one that should not be recognized
-        CreateTestTranscriptFile(this.tempDirectory, "test_video.invalid-language-code.txt", "Invalid transcript");            // Act
-        string? result = this.processor.TryLoadTranscript(videoPath);
+        CreateTestTranscriptFile(_tempDirectory, "test_video.invalid-language-code.txt", "Invalid transcript");            // Act
+        string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNotNull(result, "Failed to find language-specific transcript");
@@ -300,7 +306,7 @@ internal class VideoNoteProcessorTranscriptTests
     public void TryLoadTranscript_EmptyVideoPath_ReturnsNull()
     {
         // Act
-        string? result = this.processor.TryLoadTranscript(string.Empty);
+        string? result = _processor.TryLoadTranscript(string.Empty);
 
         // Assert
         Assert.IsNull(result, "Should return null for empty video path");
@@ -314,7 +320,7 @@ internal class VideoNoteProcessorTranscriptTests
     {
         // Act
 #pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-        string? result = this.processor.TryLoadTranscript(null);
+        string? result = _processor.TryLoadTranscript(null);
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
         // Assert
@@ -329,11 +335,11 @@ internal class VideoNoteProcessorTranscriptTests
     public async Task TranscriptPath_IsAddedToMetadata_WhenFound()
     {
         // Arrange
-        string videoPath = Path.Combine(this.tempDirectory, "test_video.mp4");
+        string videoPath = Path.Combine(_tempDirectory, "test_video.mp4");
         File.WriteAllText(videoPath, "Simulated video content");
 
-        string transcriptPath = CreateTestTranscriptFile(this.tempDirectory, "test_video.txt", "Sample transcript content");            // Act
-        Dictionary<string, object> metadata = await this.processor.ExtractMetadataAsync(videoPath).ConfigureAwait(false);
+        string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test_video.txt", "Sample transcript content");            // Act
+        Dictionary<string, object> metadata = await _processor.ExtractMetadataAsync(videoPath).ConfigureAwait(false);
 
         // Use reflection to call the private FindTranscriptPath method
         System.Reflection.MethodInfo? methodInfo = typeof(VideoNoteProcessor).GetMethod(
@@ -342,7 +348,7 @@ internal class VideoNoteProcessorTranscriptTests
         if (methodInfo != null)
         {
             // Find the transcript path separately
-            string? foundTranscriptPath = methodInfo.Invoke(this.processor, [videoPath]) as string;
+            string? foundTranscriptPath = methodInfo.Invoke(_processor, [videoPath]) as string;
 
             // If using reflection worked, manually add to metadata to test
             if (!string.IsNullOrEmpty(foundTranscriptPath))
@@ -353,7 +359,7 @@ internal class VideoNoteProcessorTranscriptTests
 
         // Create a GenerateVideoNoteAsync method wrapper to test both the metadata extraction
         // and the markdown note generation
-        string markdownNote = await this.processor.GenerateVideoNoteAsync(
+        string markdownNote = await _processor.GenerateVideoNoteAsync(
             videoPath,
             "dummy-api-key",
             "final_summary_prompt",

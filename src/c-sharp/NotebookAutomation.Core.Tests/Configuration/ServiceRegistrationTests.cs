@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Tests.Configuration;
 /// Unit tests for the ServiceRegistration class.
 /// </summary>
 [TestClass]
-internal class ServiceRegistrationTests
+public class ServiceRegistrationTests
 {
     [TestMethod]
     public void AddNotebookAutomationServices_RegistersCoreServices()

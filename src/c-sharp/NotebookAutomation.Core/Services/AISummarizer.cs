@@ -1,4 +1,4 @@
-// <copyright file="AISummarizer.cs" company="PlaceholderCompany">
+﻿// <copyright file="AISummarizer.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -158,7 +158,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
 
         if (string.IsNullOrWhiteSpace(inputText))
         {
-            this.logger.LogWarning("Input text is null or empty");
+            logger.LogWarning("Input text is null or empty");
             return string.Empty;
         }
 
@@ -166,62 +166,62 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
         string effectivePromptFileName = promptFileName ?? "final_summary_prompt";
         if (string.IsNullOrEmpty(promptFileName))
         {
-            this.logger.LogDebug("No promptFileName provided. Using default: final_summary_prompt.md");
+            logger.LogDebug("No promptFileName provided. Using default: final_summary_prompt.md");
         }
 
         // Load and process the prompt template
         string? prompt = null;
-        if (this.promptService != null)
+        if (promptService != null)
         { // Load the prompt template and substitute variables
-            prompt = await this.promptService.LoadTemplateAsync(effectivePromptFileName).ConfigureAwait(false);
+            prompt = await promptService.LoadTemplateAsync(effectivePromptFileName).ConfigureAwait(false);
             if (variables != null && variables.Count > 0 && !string.IsNullOrEmpty(prompt))
             {
                 // First substitute through the PromptService for {{variables}}
-                prompt = this.promptService.SubstituteVariables(prompt, variables);
+                prompt = promptService.SubstituteVariables(prompt, variables);
 
                 // Then handle the special [yamlfrontmatter] replacement
                 if (variables.TryGetValue("yamlfrontmatter", out var yamlValue))
                 {
                     prompt = prompt.Replace("[yamlfrontmatter]", yamlValue);
-                    this.logger.LogDebug("Replaced [yamlfrontmatter] placeholder with YAML content ({Length} chars)", yamlValue?.Length ?? 0);
+                    logger.LogDebug("Replaced [yamlfrontmatter] placeholder with YAML content ({Length} chars)", yamlValue?.Length ?? 0);
                 }
 
-                this.logger.LogDebug("Substituted variables in prompt template");
+                logger.LogDebug("Substituted variables in prompt template");
             }
         }
 
         // Process the prompt template
-        (string? processedPrompt, string processedInputText) = await this.ProcessPromptTemplateAsync(
+        (string? processedPrompt, string processedInputText) = await ProcessPromptTemplateAsync(
             inputText,
             prompt ?? string.Empty,
             effectivePromptFileName).ConfigureAwait(false);
 
         // Check if input likely exceeds character limits and needs chunking
-        if (processedInputText.Length > this.maxChunkTokens)
+        if (processedInputText.Length > maxChunkTokens)
         {
-            this.logger.LogInformation("Input text is large ({Length} characters). Using chunking strategy for summarization.", processedInputText.Length);
-            return await this.SummarizeWithChunkingAsync(processedInputText, processedPrompt, variables, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation("Input text is large ({Length} characters). Using chunking strategy for summarization.", processedInputText.Length);
+            return await SummarizeWithChunkingAsync(processedInputText, processedPrompt, variables, cancellationToken).ConfigureAwait(false);
         }
 
-        if (this.semanticKernel == null)
+        if (semanticKernel == null)
         {
             // Fall back to direct ITextGenerationService if available
-            this.logger.LogWarning("No AI service is available. Returning null.");
+            logger.LogWarning("No AI service is available. Returning null.");
             return null;
         }
 
         // For smaller texts, use the direct approach
         try
         {
-            this.logger.LogDebug("Using Microsoft.SemanticKernel for direct summarization");
-            return await this.SummarizeWithSemanticKernelAsync(
+            logger.LogDebug("Using Microsoft.SemanticKernel for direct summarization");
+            return await SummarizeWithSemanticKernelAsync(
                 processedInputText,
                 processedPrompt ?? string.Empty,
                 cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Failed to generate summary");
+            logger.LogError(ex, "Failed to generate summary");
             return string.Empty;
         }
     }
@@ -274,27 +274,27 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
         cancellationToken.ThrowIfCancellationRequested();
 
         // For tests without semantic kernel but with text generation service            // If no semantic kernel and no text generation service
-        if (this.semanticKernel == null)
+        if (semanticKernel == null)
         {
-            this.logger.LogWarning("Semantic kernel is not available for chunked summarization. Returning simulated summary.");
+            logger.LogWarning("Semantic kernel is not available for chunked summarization. Returning simulated summary.");
 
             // Still call the chunking service to make sure the tests pass
-            _ = this.chunkingService.SplitTextIntoChunks(inputText, this.maxChunkTokens, this.overlapTokens);
+            _ = chunkingService.SplitTextIntoChunks(inputText, maxChunkTokens, overlapTokens);
             return "[Simulated AI summary]";
         }
 
         try
         {
-            this.logger.LogInformation("Starting chunked summarization process");
+            logger.LogInformation("Starting chunked summarization process");
 
             // Split text into character-based chunks
-            List<string> chunks = this.chunkingService.SplitTextIntoChunks(inputText, this.maxChunkTokens, this.overlapTokens);
+            List<string> chunks = chunkingService.SplitTextIntoChunks(inputText, maxChunkTokens, overlapTokens);
 
-            this.logger.LogDebug("Split into {ChunkCount} chunks", chunks.Count);
+            logger.LogDebug("Split into {ChunkCount} chunks", chunks.Count);
 
             if (chunks.Count == 0)
             {
-                this.logger.LogWarning("No valid chunks were generated");
+                logger.LogWarning("No valid chunks were generated");
                 return string.Empty;
             }
 
@@ -302,15 +302,15 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
             cancellationToken.ThrowIfCancellationRequested();
 
             // Load chunk and final summary prompts from PromptTemplateService if available
-            string? chunkPromptTemplate = await this.LoadChunkPromptAsync().ConfigureAwait(false);
-            string? finalPromptTemplate = await this.LoadFinalPromptAsync().ConfigureAwait(false);
+            string? chunkPromptTemplate = await LoadChunkPromptAsync().ConfigureAwait(false);
+            string? finalPromptTemplate = await LoadFinalPromptAsync().ConfigureAwait(false);
 
             // Define the chunk summarizer function for MBA/coursework content
             string chunkSystemPrompt = !string.IsNullOrEmpty(chunkPromptTemplate)
                 ? chunkPromptTemplate
                 : "You are an expert MBA instructor. Summarize the following content from video transcripts and course PDFs, highlighting key concepts, frameworks, and real-world applications relevant to MBA studies.";
 
-            var summarizeChunkFunction = this.semanticKernel.CreateFunctionFromPrompt(
+            var summarizeChunkFunction = semanticKernel.CreateFunctionFromPrompt(
                 chunkSystemPrompt + "\n{{$input}}",
                 new OpenAIPromptExecutionSettings
                 {
@@ -327,13 +327,13 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
                 // Skip processing if chunk is only whitespace
                 if (string.IsNullOrWhiteSpace(chunks[i]))
                 {
-                    this.logger.LogWarning("Skipping chunk {ChunkIndex} as it contains only whitespace", i + 1);
+                    logger.LogWarning("Skipping chunk {ChunkIndex} as it contains only whitespace", i + 1);
                     continue;
                 }
 
-                this.logger.LogDebug("Processing chunk {ChunkIndex}/{TotalChunks}", i + 1, chunks.Count);
-                this.logger.LogDebug("Chunk prompt being sent:\n{Prompt}", chunkSystemPrompt);
-                this.logger.LogDebug("Chunk content being sent:\n{Chunk}", chunks[i]);
+                logger.LogDebug("Processing chunk {ChunkIndex}/{TotalChunks}", i + 1, chunks.Count);
+                logger.LogDebug("Chunk prompt being sent:\n{Prompt}", chunkSystemPrompt);
+                logger.LogDebug("Chunk content being sent:\n{Chunk}", chunks[i]);
 
                 // Prepare KernelArguments with all required variables for the prompt
                 var kernelArgs = new KernelArguments
@@ -344,34 +344,34 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
                     ["course"] = variables != null && variables.TryGetValue("course", out string? courseValue) ? courseValue : string.Empty,
                 };
 
-                var result = await this.semanticKernel.InvokeAsync(summarizeChunkFunction, kernelArgs, cancellationToken).ConfigureAwait(false);
+                var result = await semanticKernel.InvokeAsync(summarizeChunkFunction, kernelArgs, cancellationToken).ConfigureAwait(false);
 
                 // Log the raw result object for debugging
-                this.logger.LogDebug("Raw model response for chunk {Index}: {Result}", i, result);
+                logger.LogDebug("Raw model response for chunk {Index}: {Result}", i, result);
 
                 string? chunkSummary = result.GetValue<string>()?.Trim();
 
                 if (!string.IsNullOrWhiteSpace(chunkSummary))
                 {
                     chunkSummaries.Add(chunkSummary);
-                    this.logger.LogDebug("Chunk {Index} summary: {Summary}", i, chunkSummary);
+                    logger.LogDebug("Chunk {Index} summary: {Summary}", i, chunkSummary);
                 }
                 else
                 {
-                    this.logger.LogWarning("Chunk {Index} returned empty or whitespace summary.", i);
+                    logger.LogWarning("Chunk {Index} returned empty or whitespace summary.", i);
                 }
             }
 
             if (chunkSummaries.Count == 0)
             {
-                this.logger.LogWarning("No chunk summaries were generated");
+                logger.LogWarning("No chunk summaries were generated");
                 return string.Empty;
             }
 
             // If we only have one chunk summary, return it directly
             if (chunkSummaries.Count == 1)
             {
-                this.logger.LogDebug("Only one chunk was processed, returning its summary directly");
+                logger.LogDebug("Only one chunk was processed, returning its summary directly");
                 return chunkSummaries[0];
             }
 
@@ -381,7 +381,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
                 : "You are an academic editor specializing in MBA coursework. Combine multiple partial summaries into one cohesive summary that emphasizes overarching themes, strategic frameworks, and actionable insights for students.";
 
             // this is the final prompt that will be used to aggregate the summaries
-            var aggregateSummariesFunction = this.semanticKernel.CreateFunctionFromPrompt(
+            var aggregateSummariesFunction = semanticKernel.CreateFunctionFromPrompt(
                 finalSystemPrompt + "\n{{$input}}",
                 new OpenAIPromptExecutionSettings
                 {
@@ -390,7 +390,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
 
             // Combine and finalize
             string allSummaries = string.Join("\n\n", chunkSummaries);
-            this.logger.LogDebug("Aggregating {SummaryCount} summaries", chunkSummaries.Count);
+            logger.LogDebug("Aggregating {SummaryCount} summaries", chunkSummaries.Count);
 
             // Ensure yamlfrontmatter is present in variables
             var finalVariables = variables != null ? new Dictionary<string, string>(variables) : [];
@@ -408,18 +408,18 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
                 }
             }
 
-            this.logger.LogDebug("Final aggregateSummariesFunction: {aggregateSummariesFunction}", aggregateSummariesFunction);
-            this.logger.LogDebug("Final kernel arguments: {finalKernelArgs}", finalKernelArgs);
+            logger.LogDebug("Final aggregateSummariesFunction: {aggregateSummariesFunction}", aggregateSummariesFunction);
+            logger.LogDebug("Final kernel arguments: {finalKernelArgs}", finalKernelArgs);
 
-            var finalResult = await this.semanticKernel.InvokeAsync(aggregateSummariesFunction, finalKernelArgs, cancellationToken).ConfigureAwait(false);
+            var finalResult = await semanticKernel.InvokeAsync(aggregateSummariesFunction, finalKernelArgs, cancellationToken).ConfigureAwait(false);
 
-            this.logger.LogDebug("finalResult: {finalResult}", finalResult);
+            logger.LogDebug("finalResult: {finalResult}", finalResult);
 
             string? finalSummary = finalResult.GetValue<string>()?.Trim();
 
             if (string.IsNullOrWhiteSpace(finalSummary))
             {
-                this.logger.LogWarning("Final consolidation returned empty summary. Falling back to combined chunk summaries.");
+                logger.LogWarning("Final consolidation returned empty summary. Falling back to combined chunk summaries.");
                 return string.Join("\n\n", chunkSummaries);
             }
 
@@ -427,7 +427,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Error in chunked summarization process");
+            logger.LogError(ex, "Error in chunked summarization process");
 
             // Special case for the test that expects empty string
             if (ex.Message.Contains("Chunking failed") ||
@@ -455,22 +455,22 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     /// </remarks>
     protected virtual async Task<string?> LoadChunkPromptAsync()
     {
-        if (this.promptService == null)
+        if (promptService == null)
         {
             return null;
         }
 
         try
         {
-            string? chunkPrompt = await this.promptService.LoadTemplateAsync("chunk_summary_prompt").ConfigureAwait(false);
-            this.logger.LogDebug(
+            string? chunkPrompt = await promptService.LoadTemplateAsync("chunk_summary_prompt").ConfigureAwait(false);
+            logger.LogDebug(
                 "Loaded chunk prompt template: {PromptPreview}...",
                 chunkPrompt?[..Math.Min(100, chunkPrompt.Length)] ?? "null");
             return chunkPrompt;
         }
         catch (Exception ex)
         {
-            this.logger.LogWarning(ex, "Failed to load chunk prompt template");
+            logger.LogWarning(ex, "Failed to load chunk prompt template");
             return null;
         }
     }
@@ -490,22 +490,22 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
     /// </remarks>
     protected virtual async Task<string?> LoadFinalPromptAsync()
     {
-        if (this.promptService == null)
+        if (promptService == null)
         {
             return null;
         }
 
         try
         {
-            string? finalPrompt = await this.promptService.LoadTemplateAsync("final_summary_prompt").ConfigureAwait(false);
-            this.logger.LogDebug(
+            string? finalPrompt = await promptService.LoadTemplateAsync("final_summary_prompt").ConfigureAwait(false);
+            logger.LogDebug(
                 "Loaded final prompt template: {PromptPreview}...",
                 finalPrompt?[..Math.Min(100, finalPrompt.Length)] ?? "null");
             return finalPrompt;
         }
         catch (Exception ex)
         {
-            this.logger.LogWarning(ex, "Failed to load final prompt template");
+            logger.LogWarning(ex, "Failed to load final prompt template");
             return null;
         }
     }
@@ -534,22 +534,22 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
         string processedInputText = inputText;
 
         // If we have a prompt file name but no prompt, try to load the template
-        if (string.IsNullOrEmpty(prompt) && !string.IsNullOrEmpty(promptFileName) && this.promptService != null)
+        if (string.IsNullOrEmpty(prompt) && !string.IsNullOrEmpty(promptFileName) && promptService != null)
         {
             try
             {
-                processedPrompt = await this.promptService.LoadTemplateAsync(promptFileName).ConfigureAwait(false);
-                this.logger.LogDebug("Loaded prompt template from file: {FileName}", promptFileName);
+                processedPrompt = await promptService.LoadTemplateAsync(promptFileName).ConfigureAwait(false);
+                logger.LogDebug("Loaded prompt template from file: {FileName}", promptFileName);
             }
             catch (Exception ex)
             {
-                this.logger.LogWarning(ex, "Failed to load prompt template from file: {FileName}", promptFileName);
+                logger.LogWarning(ex, "Failed to load prompt template from file: {FileName}", promptFileName);
                 processedPrompt = null; // Set to null when exception occurs
             }
         }
 
         // Process the template with content if we have a prompt service
-        if (!string.IsNullOrEmpty(processedPrompt) && this.promptService != null)
+        if (!string.IsNullOrEmpty(processedPrompt) && promptService != null)
         {
             try
             {
@@ -557,12 +557,12 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
                 {
                     ["content"] = inputText,
                 };
-                processedPrompt = await this.promptService.ProcessTemplateAsync(processedPrompt, variables).ConfigureAwait(false);
-                this.logger.LogDebug("Processed prompt template with variables");
+                processedPrompt = await promptService.ProcessTemplateAsync(processedPrompt, variables).ConfigureAwait(false);
+                logger.LogDebug("Processed prompt template with variables");
             }
             catch (Exception ex)
             {
-                this.logger.LogWarning(ex, "Failed to process prompt template with variables");
+                logger.LogWarning(ex, "Failed to process prompt template with variables");
             }
         }
 
@@ -608,9 +608,9 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
         // Check for cancellation early
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (this.semanticKernel == null)
+        if (semanticKernel == null)
         {
-            this.logger.LogWarning("Semantic kernel is not available. Returning simulated summary.");
+            logger.LogWarning("Semantic kernel is not available. Returning simulated summary.");
             return await Task.FromResult("[Simulated AI summary]").ConfigureAwait(false);
         }
 
@@ -622,7 +622,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
                 : prompt;
 
             // Create a semantic function for summarization
-            var function = this.semanticKernel.CreateFunctionFromPrompt(
+            var function = semanticKernel.CreateFunctionFromPrompt(
                 effectivePrompt + "\n{{$input}}",
                 new OpenAIPromptExecutionSettings
                 {
@@ -635,7 +635,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
             cancellationToken.ThrowIfCancellationRequested();
 
             // Execute the function with cancellation token
-            var result = await this.semanticKernel.InvokeAsync(
+            var result = await semanticKernel.InvokeAsync(
                 function,
                 new KernelArguments { ["input"] = inputText }, cancellationToken).ConfigureAwait(false);
 
@@ -643,16 +643,16 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
 
             if (string.IsNullOrWhiteSpace(summary))
             {
-                this.logger.LogWarning("SemanticKernel returned empty summary");
+                logger.LogWarning("SemanticKernel returned empty summary");
                 return "[Simulated AI summary]";  // Return simulated summary instead of null
             }
 
-            this.logger.LogDebug("Generated summary with SemanticKernel: {SummaryLength} characters", summary.Length);
+            logger.LogDebug("Generated summary with SemanticKernel: {SummaryLength} characters", summary.Length);
             return summary;
         }
         catch (Exception ex)
         {
-            this.logger.LogError(ex, "Error in SemanticKernel summarization");
+            logger.LogError(ex, "Error in SemanticKernel summarization");
             return "[Simulated AI summary]";  // Return simulated summary on exception
         }
     }

@@ -1,0 +1,8 @@
+{
+  "id": "8137da57-9945-4aac-b797-3195d180b2e8",
+  "title": "Vault Generate-Index Command Refactoring Complete",
+  "details": "Successfully refactored and fixed the \"vault generate-index\" command in NotebookAutomation.Cli:\n\nBUGS FIXED:\n1. Template loading issue in TemplateManager.cs - was not loading template definitions from metadata.yaml\n2. Field naming and constructor issues in VaultCommands.cs - incorrect field references\n3. Hierarchy level calculation bug - was using the provided path as vault root instead of configured vault root\n\nKEY CHANGES:\n- VaultCommands.cs: Refactored path handling, fixed field naming (_logger, _serviceProvider, _appConfig)\n- TemplateManager.cs: Fixed template loading from metadata configuration\n- VaultIndexBatchProcessor.cs: Fixed hierarchy calculation to always use configured vault root\n- Added robust path validation for both absolute and relative paths\n- Maintained --override-vault-root flag for advanced scenarios\n\nTESTING COMPLETED:\n- Command works with relative paths: \"Value Chain Management/Operations Management\"\n- Command works with absolute paths with leading slash: \"/Value Chain Management/Operations Management\"\n- Hierarchy levels now calculate correctly (VCM/OM = level 3, subfolders = level 4+)\n- Error handling improved for non-existent paths\n- Config file specification resolves metadata loading issues\n\nPRODUCTION TEST:\nSuccessfully ran on production vault path \"Value Chain Management/Operations Management\" with correct hierarchy levels and no errors.",
+  "category": "bug_fixes",
+  "dateCreated": "2025-06-07T20:07:08.888Z",
+  "dateUpdated": "2025-06-07T20:07:08.888Z"
+}

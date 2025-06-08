@@ -13,7 +13,7 @@ namespace NotebookAutomation.Core.Tests.Services;
 /// Unit tests for the <see cref="OneDriveCliOptions"/> class.
 /// </summary>
 [TestClass]
-internal class OneDriveCliOptionsTests
+public class OneDriveCliOptionsTests
 {
     [TestMethod]
     public void Properties_DefaultValues_AreFalse()

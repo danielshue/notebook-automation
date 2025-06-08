@@ -15,7 +15,7 @@ namespace NotebookAutomation.Cli.Tests.Utilities;
 /// Unit tests for <see cref="AnsiConsoleHelper"/>.
 /// </summary>
 [TestClass]
-internal class AnsiConsoleHelperTests
+public class AnsiConsoleHelperTests
 {
     private StringWriter? stringWriter;
     private TextWriter? originalOut;
@@ -23,9 +23,9 @@ internal class AnsiConsoleHelperTests
     [TestInitialize]
     public void Setup()
     {
-        this.stringWriter = new StringWriter();
-        this.originalOut = Console.Out;
-        Console.SetOut(this.stringWriter);
+        stringWriter = new StringWriter();
+        originalOut = Console.Out;
+        Console.SetOut(stringWriter);
     }
 
     [TestCleanup]
@@ -33,11 +33,11 @@ internal class AnsiConsoleHelperTests
     {
         // Give Spectre.Console time to finish writing before disposing
         Thread.Sleep(100);
-        Console.SetOut(this.originalOut!);
+        Console.SetOut(originalOut!);
 
         // Don't dispose the StringWriter immediately - let GC handle it
         // This prevents ObjectDisposedException when Spectre.Console tries to write asynchronously
-        this.stringWriter = null;
+        stringWriter = null;
     }
 
     [TestMethod]
@@ -48,7 +48,7 @@ internal class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = this.stringWriter!.ToString();
+        var output = stringWriter!.ToString();
         Assert.IsTrue(output.Contains("usage"));
         Assert.IsTrue(output.Contains("desc"));
         Assert.IsTrue(output.Contains("opts"));
@@ -62,7 +62,7 @@ internal class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = this.stringWriter!.ToString();
+        var output = stringWriter!.ToString();
         Assert.IsTrue(output.Contains("info message"));
     }
 
@@ -74,7 +74,7 @@ internal class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = this.stringWriter!.ToString();
+        var output = stringWriter!.ToString();
         Assert.IsTrue(output.Contains("warn message"));
     }
 
@@ -86,7 +86,7 @@ internal class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = this.stringWriter!.ToString();
+        var output = stringWriter!.ToString();
         Assert.IsTrue(output.Contains("error message"));
     }
 
@@ -98,7 +98,7 @@ internal class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = this.stringWriter!.ToString();
+        var output = stringWriter!.ToString();
         Assert.IsTrue(output.Contains("success message"));
     }
 
@@ -110,7 +110,7 @@ internal class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = this.stringWriter!.ToString();
+        var output = stringWriter!.ToString();
         Assert.IsTrue(output.Contains("heading"));
     }
 
@@ -122,7 +122,7 @@ internal class AnsiConsoleHelperTests
         // Give Spectre.Console time to write
         Thread.Sleep(50);
 
-        var output = this.stringWriter!.ToString();
+        var output = stringWriter!.ToString();
         Assert.IsTrue(output.Contains("key:"));
         Assert.IsTrue(output.Contains("value"));
     }

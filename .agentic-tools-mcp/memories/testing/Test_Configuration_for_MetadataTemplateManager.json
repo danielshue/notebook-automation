@@ -1,0 +1,8 @@
+{
+  "id": "fdb586de-91d6-4712-bed8-50baf180d6ba",
+  "title": "Test Configuration for MetadataTemplateManager",
+  "details": "MetadataTemplateManager requires a valid metadata file path in AppConfig.Paths.MetadataFile. For tests, this requires:\n\n1. Create a temporary metadata file with valid YAML content\n2. Set AppConfig.Paths.MetadataFile to the temporary file path\n3. Clean up the temporary file in test cleanup\n\nExample test setup pattern:\n```csharp\nprivate string testMetadataFile;\n\n[TestInitialize] \npublic void Setup()\n{\n    testMetadataFile = Path.Combine(Path.GetTempPath(), \"test_metadata.yaml\");\n    \n    // Create test metadata file\n    var testMetadata = @\"\n---\ntemplate-type: \"\"video-note\"\"\ntags:\n  - video\nmetadata:\n  type: \"\"Video Note\"\"\n---\";\n    \n    File.WriteAllText(testMetadataFile, testMetadata);\n    \n    // Configure AppConfig with metadata file path\n    var appConfig = new AppConfig\n    {\n        Paths = new PathsConfig\n        {\n            MetadataFile = testMetadataFile,\n            // ... other required paths\n        }\n    };\n}\n\n[TestCleanup]\npublic void Cleanup()\n{\n    if (File.Exists(testMetadataFile))\n    {\n        File.Delete(testMetadataFile);\n    }\n}\n```\n\nThis is required for any test that constructs MetadataTemplateManager or VideoNoteProcessor (which depends on it).",
+  "category": "testing",
+  "dateCreated": "2025-06-08T04:07:11.518Z",
+  "dateUpdated": "2025-06-08T04:07:11.518Z"
+}

@@ -10,7 +10,7 @@
 namespace NotebookAutomation.Core.Tests.Utils;
 
 [TestClass]
-internal class CourseStructureExtractorTests
+public class CourseStructureExtractorTests
 {
     private Mock<ILogger<CourseStructureExtractor>> mockLogger;
     private CourseStructureExtractor extractor;
@@ -18,8 +18,8 @@ internal class CourseStructureExtractorTests
     [TestInitialize]
     public void Setup()
     {
-        this.mockLogger = new Mock<ILogger<CourseStructureExtractor>>();
-        this.extractor = new CourseStructureExtractor(this.mockLogger.Object);
+        mockLogger = new Mock<ILogger<CourseStructureExtractor>>();
+        extractor = new CourseStructureExtractor(mockLogger.Object);
     }
 
     [TestMethod]
@@ -31,7 +31,7 @@ internal class CourseStructureExtractorTests
         Dictionary<string, object> metadata = [];
 
         // Act
-        this.extractor.ExtractModuleAndLesson(filePath, metadata);
+        extractor.ExtractModuleAndLesson(filePath, metadata);
 
         // Assert
         if (expectedModule != null)
@@ -55,7 +55,7 @@ internal class CourseStructureExtractorTests
         string filePath = @"D:\Videos\01_course-orientation-operations-strategy\video.mp4";
 
         // Act
-        this.extractor.ExtractModuleAndLesson(filePath, metadata);
+        extractor.ExtractModuleAndLesson(filePath, metadata);
 
         // Assert
         Assert.IsTrue(metadata.ContainsKey("module"), "Module key should exist in metadata");
@@ -73,7 +73,7 @@ internal class CourseStructureExtractorTests
         Dictionary<string, object> metadata = [];
 
         // Act
-        this.extractor.ExtractModuleAndLesson(filePath, metadata);
+        extractor.ExtractModuleAndLesson(filePath, metadata);
 
         // Assert
         Assert.IsTrue(metadata.ContainsKey("module"), "Module key should exist in metadata");
@@ -111,7 +111,7 @@ internal class CourseStructureExtractorTests
         string testPath = $@"D:\TestCourse\{filename}";
 
         // Act
-        this.extractor.ExtractModuleAndLesson(testPath, metadata);
+        extractor.ExtractModuleAndLesson(testPath, metadata);
 
         // Assert
         if (expectedModule != null)
@@ -152,7 +152,7 @@ internal class CourseStructureExtractorTests
         Dictionary<string, object> metadata = [];
 
         // Act
-        this.extractor.ExtractModuleAndLesson(filePath, metadata);
+        extractor.ExtractModuleAndLesson(filePath, metadata);
 
         // Assert
         if (expectedModule != null)
@@ -176,7 +176,7 @@ internal class CourseStructureExtractorTests
         string filePath = @"D:\Course\Case Studies\Strategic Analysis\analysis.pdf";
 
         // Act
-        this.extractor.ExtractModuleAndLesson(filePath, metadata);
+        extractor.ExtractModuleAndLesson(filePath, metadata);
 
         // Assert
         // Case studies should not extract lesson information
@@ -208,9 +208,9 @@ internal class CourseStructureExtractorTests
         string filePath3 = @"D:\Course\Week 5\Session 3\slides.pptx";
 
         // Act
-        this.extractor.ExtractModuleAndLesson(filePath1, metadata1);
-        this.extractor.ExtractModuleAndLesson(filePath2, metadata2);
-        this.extractor.ExtractModuleAndLesson(filePath3, metadata3);
+        extractor.ExtractModuleAndLesson(filePath1, metadata1);
+        extractor.ExtractModuleAndLesson(filePath2, metadata2);
+        extractor.ExtractModuleAndLesson(filePath3, metadata3);
 
         // Assert
         Assert.IsTrue(metadata1.ContainsKey("module"), "Should extract module from filename");

@@ -1,4 +1,4 @@
-// <copyright file="MockTextChunkingService.cs" company="PlaceholderCompany">
+﻿// <copyright file="MockTextChunkingService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -69,10 +69,10 @@ internal class MockTextChunkingService : ITextChunkingService
     public List<string> SplitTextIntoChunks(string text, int chunkSize = 8000, int overlap = 500)
     {
         // Always record the method was called
-        this.SplitTextWasCalled = true;
-        this.LastInputText = text;
-        this.LastChunkSize = chunkSize;
-        this.LastOverlap = overlap;
+        SplitTextWasCalled = true;
+        LastInputText = text;
+        LastChunkSize = chunkSize;
+        LastOverlap = overlap;
 
         // Check for null text
         if (text == null)
@@ -103,9 +103,9 @@ internal class MockTextChunkingService : ITextChunkingService
         }
 
         // Return predefined chunks if available
-        if (this.PredefinedChunks.Count > 0)
+        if (PredefinedChunks.Count > 0)
         {
-            return this.PredefinedChunks;
+            return PredefinedChunks;
         }
 
         // Otherwise create a simple chunking
@@ -132,15 +132,15 @@ internal class MockTextChunkingService : ITextChunkingService
     /// <returns>The estimated token count.</returns>
     public int EstimateTokenCount(string text)
     {
-        this.EstimateTokenWasCalled = true;
+        EstimateTokenWasCalled = true;
 
         if (string.IsNullOrWhiteSpace(text))
         {
             return 0;
         }
 
-        return this.TokenCountToReturn > 0
-            ? this.TokenCountToReturn
+        return TokenCountToReturn > 0
+            ? TokenCountToReturn
             : (int)Math.Ceiling(text.Length / 4.0); // Default behavior
     }
 }

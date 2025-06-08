@@ -1,4 +1,4 @@
-// <copyright file="VaultRootContextService.cs" company="PlaceholderCompany">
+﻿// <copyright file="VaultRootContextService.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -33,5 +33,5 @@ public class VaultRootContextService
     /// <value>
     /// True if a vault root override is set, false otherwise.
     /// </value>
-    public bool HasVaultRootOverride => !string.IsNullOrEmpty(this.VaultRootOverride);
+    public bool HasVaultRootOverride => !string.IsNullOrEmpty(VaultRootOverride);
 }

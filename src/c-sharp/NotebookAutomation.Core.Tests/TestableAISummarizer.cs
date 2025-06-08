@@ -1,4 +1,4 @@
-// <copyright file="TestableAISummarizer.cs" company="PlaceholderCompany">
+﻿// <copyright file="TestableAISummarizer.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -31,7 +31,7 @@ internal class TestableAISummarizer(ILogger<AISummarizer> logger) : AISummarizer
     /// Sets up a predefined result to be returned by SummarizeAsync method.
     /// </summary>
     /// <param name="result">The result string to return from SummarizeAsync.</param>
-    public void SetupSummarizeAsyncResult(string result) => this.summarizeAsyncResult = result;
+    public void SetupSummarizeAsyncResult(string result) => summarizeAsyncResult = result;
 
     /// <summary>
     /// Override the SummarizeWithVariablesAsync method to return the predefined result in tests.
@@ -48,7 +48,7 @@ internal class TestableAISummarizer(ILogger<AISummarizer> logger) : AISummarizer
         CancellationToken cancellationToken = default)
     {
         // Return the configured test result, optionally including some variable information
-        string result = this.summarizeAsyncResult;
+        string result = summarizeAsyncResult;
         if (variables != null && variables.Count > 0)
         {
             // Append variable info to show substitution worked

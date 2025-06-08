@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Unit tests for VersionCommands.
 /// </summary>
 [TestClass]
-internal class VersionCommandsTests
+public class VersionCommandsTests
 {
     [TestMethod]
     public void VersionCommand_Initialization_ShouldSucceed()

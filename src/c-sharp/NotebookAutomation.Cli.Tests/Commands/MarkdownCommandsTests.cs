@@ -13,7 +13,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 /// Unit tests for MarkdownCommands.
 /// </summary>
 [TestClass]
-internal class MarkdownCommandsTests
+public class MarkdownCommandsTests
 {
     private readonly Mock<ILogger<MarkdownCommands>> mockLogger = new();
     private readonly Mock<AppConfig> mockAppConfig = new();
@@ -31,7 +31,7 @@ internal class MarkdownCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var markdownCommands = new MarkdownCommands(this.mockLogger.Object, this.mockAppConfig.Object, this.mockServiceProvider.Object);
+        var markdownCommands = new MarkdownCommands(mockLogger.Object, mockAppConfig.Object, mockServiceProvider.Object);
         markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Ensure DI is initialized for handler
@@ -61,7 +61,7 @@ internal class MarkdownCommandsTests
     public void MarkdownCommand_Initialization_ShouldSucceed()
     {
         // Arrange
-        var command = new MarkdownCommands(this.mockLogger.Object, this.mockAppConfig.Object, this.mockServiceProvider.Object);
+        var command = new MarkdownCommands(mockLogger.Object, mockAppConfig.Object, mockServiceProvider.Object);
 
         // Act & Assert
         Assert.IsNotNull(command);
@@ -79,7 +79,7 @@ internal class MarkdownCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var markdownCommands = new MarkdownCommands(this.mockLogger.Object, this.mockAppConfig.Object, this.mockServiceProvider.Object);
+        var markdownCommands = new MarkdownCommands(mockLogger.Object, mockAppConfig.Object, mockServiceProvider.Object);
 
         // Act
         markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
@@ -103,7 +103,5 @@ internal class MarkdownCommandsTests
     [TestInitialize]
     public void Setup()
     {
-        // Mock the logger extensions for information, error, and debug logging
-        // No logger method setups; just pass the mock to the command.
     }
 }

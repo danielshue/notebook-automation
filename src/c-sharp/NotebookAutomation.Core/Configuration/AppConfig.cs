@@ -1,4 +1,4 @@
-// <copyright file="AppConfig.cs" company="PlaceholderCompany">
+﻿// <copyright file="AppConfig.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -92,13 +92,13 @@ public class AppConfig : IConfiguration
     /// <param name="debugEnabled">Whether debug mode is enabled.</param>
     public AppConfig(IConfiguration configuration, ILogger<AppConfig> logger, string? configFilePath = null, bool debugEnabled = false)
     {
-        this.underlyingConfiguration = configuration;
+        underlyingConfiguration = configuration;
         this.logger = logger;
-        this.ConfigFilePath = configFilePath;
-        this.DebugEnabled = debugEnabled;
+        ConfigFilePath = configFilePath;
+        DebugEnabled = debugEnabled;
 
         // Load configuration sections
-        this.LoadConfiguration();
+        LoadConfiguration();
     }
 
     /// <summary>
@@ -114,13 +114,13 @@ public class AppConfig : IConfiguration
         try
         {
             // First, try to load from underlying configuration if available
-            if (this.underlyingConfiguration != null)
+            if (underlyingConfiguration != null)
             {
                 // Load paths configuration
-                var pathsSection = this.underlyingConfiguration.GetSection("paths");
+                var pathsSection = underlyingConfiguration.GetSection("paths");
                 if (pathsSection.Exists())
                 {
-                    this.Paths = new PathsConfig
+                    Paths = new PathsConfig
                     {
                         NotebookVaultFullpathRoot = pathsSection["notebook_vault_fullpath_root"] ?? string.Empty,
                         OnedriveResourcesBasepath = pathsSection["onedrive_resources_basepath"] ?? string.Empty,
@@ -130,10 +130,10 @@ public class AppConfig : IConfiguration
                     };
                 } // Load Microsoft Graph configuration
 
-                var graphSection = this.underlyingConfiguration.GetSection("microsoft_graph");
+                var graphSection = underlyingConfiguration.GetSection("microsoft_graph");
                 if (graphSection.Exists())
                 {
-                    this.MicrosoftGraph = new MicrosoftGraphConfig
+                    MicrosoftGraph = new MicrosoftGraphConfig
                     {
                         ClientId = graphSection["client_id"] ?? string.Empty,
                         ApiEndpoint = graphSection["api_endpoint"] ?? string.Empty,
@@ -150,10 +150,10 @@ public class AppConfig : IConfiguration
                 }
 
                 // Load OpenAI configuration
-                var aiSection = this.underlyingConfiguration.GetSection("aiservice");
+                var aiSection = underlyingConfiguration.GetSection("aiservice");
                 if (aiSection.Exists())
                 {
-                    this.AiService = new AIServiceConfig
+                    AiService = new AIServiceConfig
                     {
                         Provider = aiSection["provider"] ?? "openai",
                         OpenAI = new OpenAiProviderConfig
@@ -175,10 +175,10 @@ public class AppConfig : IConfiguration
                     };
                 } // Load video extensions
 
-                var videoExtensionsSection = this.underlyingConfiguration.GetSection("video_extensions");
+                var videoExtensionsSection = underlyingConfiguration.GetSection("video_extensions");
                 if (videoExtensionsSection.Exists())
                 {
-                    this.VideoExtensions = [.. videoExtensionsSection
+                    VideoExtensions = [.. videoExtensionsSection
                         .GetChildren()
                         .Select(x => x.Value)
                         .Where(x => !string.IsNullOrEmpty(x))
@@ -186,10 +186,10 @@ public class AppConfig : IConfiguration
                 }
 
                 // Load PDF extensions
-                var pdfExtensionsSection = this.underlyingConfiguration.GetSection("pdf_extensions");
+                var pdfExtensionsSection = underlyingConfiguration.GetSection("pdf_extensions");
                 if (pdfExtensionsSection.Exists())
                 {
-                    this.PdfExtensions = [.. pdfExtensionsSection
+                    PdfExtensions = [.. pdfExtensionsSection
                         .GetChildren()
                         .Select(x => x.Value)
                         .Where(x => !string.IsNullOrEmpty(x))
@@ -211,27 +211,27 @@ public class AppConfig : IConfiguration
                     var loaded = JsonSerializer.Deserialize<AppConfig>(json, options);
                     if (loaded != null)
                     {
-                        this.Paths = loaded.Paths;
-                        this.MicrosoftGraph = loaded.MicrosoftGraph;
-                        this.AiService = loaded.AiService;
-                        this.VideoExtensions = loaded.VideoExtensions;
-                        this.PdfExtensions = loaded.PdfExtensions;
+                        Paths = loaded.Paths;
+                        MicrosoftGraph = loaded.MicrosoftGraph;
+                        AiService = loaded.AiService;
+                        VideoExtensions = loaded.VideoExtensions;
+                        PdfExtensions = loaded.PdfExtensions;
                     }
                 }
                 else
                 {
-                    this.logger?.LogWarning($"Config file not found at {configFilePath}");
+                    logger?.LogWarning($"Config file not found at {configFilePath}");
                 }
             }
 
             // Prefer the explicit ConfigFilePath property, then loadedConfigPath, then environment variable, then unknown
             string configPathHint = Environment.GetEnvironmentVariable("NOTEBOOKAUTOMATION_CONFIG_PATH") ?? string.Empty;
-            string configPathToLog = this.ConfigFilePath ?? loadedConfigPath ?? (!string.IsNullOrEmpty(configPathHint) ? configPathHint : "unknown");
-            this.logger?.LogInformation($"Configuration loaded successfully - {configPathToLog}, Debug: {this.DebugEnabled}");
+            string configPathToLog = ConfigFilePath ?? loadedConfigPath ?? (!string.IsNullOrEmpty(configPathHint) ? configPathHint : "unknown");
+            logger?.LogInformation($"Configuration loaded successfully - {configPathToLog}, Debug: {DebugEnabled}");
         }
         catch (Exception ex)
         {
-            this.logger?.LogError(ex, "Error loading configuration");
+            logger?.LogError(ex, "Error loading configuration");
             throw;
         }
     }
@@ -355,7 +355,7 @@ public class AppConfig : IConfiguration
     /// <exception cref="IOException">Thrown when the file cannot be written to.</exception>
     public void SaveToJsonFile(string configPath)
     {
-        this.logger?.LogInformation($"Saving configuration to {configPath}");
+        logger?.LogInformation($"Saving configuration to {configPath}");
 
         try
         {
@@ -383,11 +383,11 @@ public class AppConfig : IConfiguration
             var json = JsonSerializer.Serialize(this, options);
             File.WriteAllText(configPath, json);
 
-            this.logger?.LogInformation($"Configuration successfully saved to {configPath}");
+            logger?.LogInformation($"Configuration successfully saved to {configPath}");
         }
         catch (Exception ex)
         {
-            this.logger?.LogError(ex, $"Error saving configuration to {configPath}");
+            logger?.LogError(ex, $"Error saving configuration to {configPath}");
             throw;
         }
     }
@@ -398,8 +398,8 @@ public class AppConfig : IConfiguration
     /// <param name="list">List of video file extensions.</param>
     public void SetVideoExtensions(List<string> list)
     {
-        this.logger?.LogInformation($"Setting video extensions: {string.Join(", ", list)}");
-        this.VideoExtensions = list ?? [];
+        logger?.LogInformation($"Setting video extensions: {string.Join(", ", list)}");
+        VideoExtensions = list ?? [];
     }
 
     /// <summary>
@@ -408,8 +408,8 @@ public class AppConfig : IConfiguration
     /// <param name="list">List of PDF file extensions.</param>
     public void SetPdfExtensions(List<string> list)
     {
-        this.logger?.LogInformation($"Setting PDF extensions: {string.Join(", ", list)}");
-        this.PdfExtensions = list ?? [".pdf"];
+        logger?.LogInformation($"Setting PDF extensions: {string.Join(", ", list)}");
+        PdfExtensions = list ?? [".pdf"];
     }
 
     /// <summary>
@@ -420,7 +420,7 @@ public class AppConfig : IConfiguration
     public bool Exists(string key)
     {
         // Check underlying configuration first
-        if (this.underlyingConfiguration != null && this.underlyingConfiguration.GetSection(key).Exists())
+        if (underlyingConfiguration != null && underlyingConfiguration.GetSection(key).Exists())
         {
             return true;
         }
@@ -464,7 +464,7 @@ public class AppConfig : IConfiguration
         }
 
         // Check direct property
-        var directProperty = this.GetType().GetProperties()
+        var directProperty = GetType().GetProperties()
             .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase));
 
         if (directProperty != null)
@@ -473,7 +473,7 @@ public class AppConfig : IConfiguration
         }
 
         // Check by JsonPropertyName attribute
-        directProperty = this.GetType().GetProperties()
+        directProperty = GetType().GetProperties()
             .FirstOrDefault(p =>
             {
                 return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
@@ -491,9 +491,9 @@ public class AppConfig : IConfiguration
     public IConfigurationSection GetSection(string key)
     {
         // If we have an underlying configuration, use it
-        if (this.underlyingConfiguration != null)
+        if (underlyingConfiguration != null)
         {
-            return this.underlyingConfiguration.GetSection(key);
+            return underlyingConfiguration.GetSection(key);
         }
 
         // Create a new ConfigurationSection using reflection based on our properties
@@ -507,14 +507,14 @@ public class AppConfig : IConfiguration
     public IEnumerable<IConfigurationSection> GetChildren()
     {
         // If we have an underlying configuration, use it
-        if (this.underlyingConfiguration != null)
+        if (underlyingConfiguration != null)
         {
-            return this.underlyingConfiguration.GetChildren();
+            return underlyingConfiguration.GetChildren();
         }
 
         // Create sections from our properties
         var sections = new List<IConfigurationSection>();
-        foreach (var property in this.GetType().GetProperties().Where(p => p.DeclaringType == typeof(AppConfig)))
+        foreach (var property in GetType().GetProperties().Where(p => p.DeclaringType == typeof(AppConfig)))
         {
             var section = new ConfigurationSection(this, property.Name);
             sections.Add(section);
@@ -530,9 +530,9 @@ public class AppConfig : IConfiguration
     public IChangeToken GetReloadToken()
     {
         // If we have an underlying configuration, use its reload token
-        if (this.underlyingConfiguration != null)
+        if (underlyingConfiguration != null)
         {
-            return this.underlyingConfiguration.GetReloadToken();
+            return underlyingConfiguration.GetReloadToken();
         }
 
         // Otherwise return a non-reloading token
@@ -549,9 +549,9 @@ public class AppConfig : IConfiguration
         get
         {
             // First try to get value from underlying configuration if available
-            if (this.underlyingConfiguration != null && this.underlyingConfiguration[key] != null)
+            if (underlyingConfiguration != null && underlyingConfiguration[key] != null)
             {
-                return this.underlyingConfiguration[key];
+                return underlyingConfiguration[key];
             }
 
             // If key contains sections (colon-separated), navigate through them
@@ -596,7 +596,7 @@ public class AppConfig : IConfiguration
             }
 
             // Direct property access
-            var directProperty = this.GetType().GetProperties()
+            var directProperty = GetType().GetProperties()
                 .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase));
 
             if (directProperty != null)
@@ -606,7 +606,7 @@ public class AppConfig : IConfiguration
             }
 
             // Try to get by JsonPropertyName attribute
-            directProperty = this.GetType().GetProperties()
+            directProperty = GetType().GetProperties()
                 .FirstOrDefault(p =>
                 {
                     return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
@@ -678,8 +678,8 @@ public class AppConfig : IConfiguration
             }
 
             // Direct property access
-            var directProperty = this.GetType().GetProperties()
-                .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase)) ?? this.GetType().GetProperties()
+            var directProperty = GetType().GetProperties()
+                .FirstOrDefault(p => string.Equals(p.Name, key, StringComparison.OrdinalIgnoreCase)) ?? GetType().GetProperties()
                     .FirstOrDefault(p =>
                     {
                         return p.GetCustomAttributes(typeof(JsonPropertyNameAttribute), true)
@@ -795,20 +795,20 @@ public class AppConfig : IConfiguration
         /// <summary>
         /// Gets the key of the configuration section.
         /// </summary>
-        public string Key => this.key;
+        public string Key => key;
 
         /// <summary>
         /// Gets the path of the configuration section.
         /// </summary>
-        public string Path => this.path;
+        public string Path => path;
 
         /// <summary>
         /// Gets or sets the value of the configuration section.
         /// </summary>
         public string? Value
         {
-            get => this.configuration[this.path];
-            set => this.configuration[this.path] = value;
+            get => configuration[path];
+            set => configuration[path] = value;
         }
 
         /// <summary>
@@ -818,8 +818,8 @@ public class AppConfig : IConfiguration
         /// <returns>The configuration value.</returns>
         public string? this[string key]
         {
-            get => this.configuration[$"{this.path}:{key}"];
-            set => this.configuration[$"{this.path}:{key}"] = value;
+            get => configuration[$"{path}:{key}"];
+            set => configuration[$"{path}:{key}"] = value;
         }
 
         /// <summary>
@@ -827,7 +827,7 @@ public class AppConfig : IConfiguration
         /// </summary>
         /// <param name="key">The key of the configuration section.</param>
         /// <returns>The configuration sub-section.</returns>
-        public IConfigurationSection GetSection(string key) => new ConfigurationSection(this.configuration, key, this.path);
+        public IConfigurationSection GetSection(string key) => new ConfigurationSection(configuration, key, path);
 
         /// <summary>
         /// Gets the immediate descendant configuration sub-sections.
@@ -841,7 +841,7 @@ public class AppConfig : IConfiguration
             // Check for properties related to this path
             foreach (var propKey in GetPropertyKeys())
             {
-                children.Add(new ConfigurationSection(this.configuration, propKey, this.path));
+                children.Add(new ConfigurationSection(configuration, propKey, path));
             }
 
             return children;
@@ -860,6 +860,6 @@ public class AppConfig : IConfiguration
         /// Gets a change token that can be used to observe when this configuration is reloaded.
         /// </summary>
         /// <returns>A change token.</returns>
-        public IChangeToken GetReloadToken() => this.configuration.GetReloadToken();
+        public IChangeToken GetReloadToken() => configuration.GetReloadToken();
     }
 }

@@ -1,4 +1,4 @@
-// <copyright file="MetadataEnsureProcessor.cs" company="PlaceholderCompany">
+﻿// <copyright file="MetadataEnsureProcessor.cs" company="PlaceholderCompany">
 // Copyright (c) PlaceholderCompany. All rights reserved.
 // </copyright>
 // <author>Dan Shue</author>
@@ -7,7 +7,7 @@
 // Purpose: [TODO: Add file purpose description]
 // Created: 2025-06-07
 // </summary>
-using NotebookAutomation.Core.Configuration;
+
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.Vault;
@@ -19,22 +19,20 @@ namespace NotebookAutomation.Core.Tools.Vault;
 /// <remarks>
 /// Initializes a new instance of the MetadataEnsureProcessor class.
 /// </remarks>
-/// <param name="logger">The logger instance.</param>
-/// <param name="appConfig">The application configuration.</param>
-/// <param name="yamlHelper">The YAML helper for frontmatter operations.</param>
-/// <param name="metadataDetector">The metadata hierarchy detector.</param>
-/// <param name="structureExtractor">The course structure extractor.</param>
+/// <param name="_logger">The _logger instance.</param>
+/// <param name="_yamlHelper">The YAML helper for frontmatter operations.</param>
+/// <param name="_metadataDetector">The metadata hierarchy detector.</param>
+/// <param name="_structureExtractor">The course structure extractor.</param>
 public class MetadataEnsureProcessor(
-    ILogger<MetadataEnsureProcessor> logger,
-    AppConfig appConfig,
-    IYamlHelper yamlHelper,
-    MetadataHierarchyDetector metadataDetector,
-    CourseStructureExtractor structureExtractor)
+    ILogger<MetadataEnsureProcessor> _logger,
+    IYamlHelper _yamlHelper,
+    MetadataHierarchyDetector _metadataDetector,
+    CourseStructureExtractor _structureExtractor)
 {
-    private readonly ILogger<MetadataEnsureProcessor> logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly IYamlHelper yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
-    private readonly MetadataHierarchyDetector metadataDetector = metadataDetector ?? throw new ArgumentNullException(nameof(metadataDetector));
-    private readonly CourseStructureExtractor structureExtractor = structureExtractor ?? throw new ArgumentNullException(nameof(structureExtractor));
+    private readonly ILogger<MetadataEnsureProcessor> _logger = _logger ?? throw new ArgumentNullException(nameof(_logger));
+    private readonly IYamlHelper _yamlHelper = _yamlHelper ?? throw new ArgumentNullException(nameof(_yamlHelper));
+    private readonly MetadataHierarchyDetector _metadataDetector = _metadataDetector ?? throw new ArgumentNullException(nameof(_metadataDetector));
+    private readonly CourseStructureExtractor _structureExtractor = _structureExtractor ?? throw new ArgumentNullException(nameof(_structureExtractor));
 
     /// <summary>
     /// Ensures metadata is properly set in a markdown file.
@@ -47,27 +45,27 @@ public class MetadataEnsureProcessor(
     {
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
-            this.logger.LogWarningWithPath("File not found: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogWarningWithPath("File not found: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
             return false;
         }
 
         if (!filePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
         {
-            this.logger.LogDebugWithPath("Skipping non-markdown file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogDebugWithPath("Skipping non-markdown file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
             return false;
         }
 
         try
         {
-            this.logger.LogDebugWithPath("Processing metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogDebugWithPath("Processing metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
 
             // Read the existing file content
             string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
             // Extract existing frontmatter
-            string? existingYaml = this.yamlHelper.ExtractFrontmatter(content);
+            string? existingYaml = _yamlHelper.ExtractFrontmatter(content);
             var metadata = existingYaml != null
-                ? this.yamlHelper.ParseYamlToDictionary(existingYaml)
+                ? _yamlHelper.ParseYamlToDictionary(existingYaml)
                 : new Dictionary<string, object>();
 
             // Store original metadata for comparison
@@ -77,44 +75,44 @@ public class MetadataEnsureProcessor(
             EnsureTemplateType(metadata, filePath);
 
             // Extract hierarchy information (program, course, class)
-            var hierarchyInfo = this.metadataDetector.FindHierarchyInfo(filePath);
+            var hierarchyInfo = _metadataDetector.FindHierarchyInfo(filePath);
 
             // Extract course structure information (module, lesson) into metadata directly
-            this.structureExtractor.ExtractModuleAndLesson(filePath, metadata);            // Determine the correct template-type based on existing metadata
+            _structureExtractor.ExtractModuleAndLesson(filePath, metadata);            // Determine the correct template-type based on existing metadata
             string? templateType = metadata.GetValueOrDefault("template-type", string.Empty)?.ToString();
 
             // Update metadata with hierarchy information based on template-type
-            MetadataHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, templateType);
+            _metadataDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, templateType);
 
             // Ensure required fields based on template type
-            this.EnsureRequiredFields(metadata);
+            EnsureRequiredFields(metadata);
 
             // Check if any changes were made
             bool hasChanges = HasMetadataChanged(originalMetadata, metadata, forceOverwrite);
 
             if (!hasChanges)
             {
-                this.logger.LogDebugWithPath("No metadata changes needed for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+                _logger.LogDebugWithPath("No metadata changes needed for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
                 return false;
             }
 
             if (dryRun)
             {
-                this.logger.LogInformationWithPath("DRY RUN: Would update metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
-                this.LogMetadataChanges(originalMetadata, metadata, filePath);
+                _logger.LogInformationWithPath("DRY RUN: Would update metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+                LogMetadataChanges(originalMetadata, metadata, filePath);
                 return true;
             }
 
             // Update the file with new frontmatter
-            string updatedContent = this.yamlHelper.UpdateFrontmatter(content, metadata);
+            string updatedContent = _yamlHelper.UpdateFrontmatter(content, metadata);
             await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
 
-            this.logger.LogInformationWithPath("Updated metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogInformationWithPath("Updated metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
             return true;
         }
         catch (Exception ex)
         {
-            this.logger.LogErrorWithPath(ex, "Failed to process metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogErrorWithPath(ex, "Failed to process metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
             return false;
         }
     }
@@ -507,12 +505,12 @@ public class MetadataEnsureProcessor(
                 }
             } // Log the detailed changes at debug level for the log file
 
-            this.logger.LogDebugFormatted(
+            _logger.LogDebugFormatted(
                 "Metadata changes for file:\n{DetailedChanges}",
                 metadataSummary.ToString());
 
             // Log a summary line at info level - elevated from debug so it appears in console with --verbose
-            this.logger.LogInformationFormatted(
+            _logger.LogInformationFormatted(
                 "Metadata change summary{FileContext}: +{Adds} ~{Modifies} -{Deletes}",
                 fileContext,
                 additions.Count,
@@ -522,7 +520,7 @@ public class MetadataEnsureProcessor(
             // Keep detailed key-value changes at debug level for log file
             if (additions.Count > 0)
             {
-                this.logger.LogDebugFormatted(
+                _logger.LogDebugFormatted(
                     "ADD operations{FileContext}: {AddedFields}",
                     fileContext,
                     string.Join(", ", additions));
@@ -530,7 +528,7 @@ public class MetadataEnsureProcessor(
 
             if (modifications.Count > 0)
             {
-                this.logger.LogDebugFormatted(
+                _logger.LogDebugFormatted(
                     "MODIFY operations{FileContext}: {ModifiedFields}",
                     fileContext,
                     string.Join(", ", modifications));
@@ -538,7 +536,7 @@ public class MetadataEnsureProcessor(
 
             if (deletions.Count > 0)
             {
-                this.logger.LogDebugFormatted(
+                _logger.LogDebugFormatted(
                     "DELETE operations{FileContext}: {DeletedFields}",
                     fileContext,
                     string.Join(", ", deletions));
@@ -585,7 +583,7 @@ public class MetadataEnsureProcessor(
         }
 
         // Get the vault root from the metadata detector
-        string vaultRoot = this.metadataDetector.VaultRoot;
+        string vaultRoot = _metadataDetector.VaultRoot;
 
         // Calculate the relative path from vault root
         string relativePath = Path.GetRelativePath(vaultRoot, filePath);
