@@ -1,12 +1,5 @@
-// <copyright file="VideoNoteProcessorNoSummaryTests.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Tools/VideoProcessing/VideoNoteProcessorNoSummaryTests.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 
 /// <summary>
@@ -15,11 +8,11 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 [TestClass]
 public class VideoNoteProcessorNoSummaryTests
 {
-    private ILogger<VideoNoteProcessor> logger;
-    private AISummarizer aiSummarizer;
-    private VideoNoteProcessor processor;
-    private string tempDir;
-    private string testVideoPath;
+    private ILogger<VideoNoteProcessor> _logger;
+    private AISummarizer _aiSummarizer;
+    private VideoNoteProcessor _processor;
+    private string _tempDir;
+    private string _testVideoPath;
 
     /// <summary>
     /// Initialize test resources before each test.
@@ -27,32 +20,34 @@ public class VideoNoteProcessorNoSummaryTests
     [TestInitialize]
     public void Setup()
     {
-        logger = new LoggerFactory().CreateLogger<VideoNoteProcessor>();
+        _logger = new LoggerFactory().CreateLogger<VideoNoteProcessor>();
 
         // Create a mock AI summarizer with required dependencies
         ILogger<AISummarizer> mockAiLogger = new LoggerFactory().CreateLogger<AISummarizer>();
         TestPromptTemplateService testPromptService = new();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
-        aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
-        var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>());
-        var appConfig = new AppConfig
+        _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
+        var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>()); var appConfig = new AppConfig
         {
             Paths = new PathsConfig
             {
                 MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml")
             }
         };
-        var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), appConfig) { Logger = new LoggerFactory().CreateLogger<MetadataHierarchyDetector>() };
+        var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), appConfig)
+        {
+            Logger = new LoggerFactory().CreateLogger<MetadataHierarchyDetector>()
+        };
         var templateManager = new MetadataTemplateManager(new LoggerFactory().CreateLogger<MetadataTemplateManager>(), appConfig, yamlHelper);
-        processor = new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager);
+        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper, hierarchyDetector, templateManager);
 
         // Create temporary directory and mock video file
-        tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        Directory.CreateDirectory(tempDir);
-        testVideoPath = Path.Combine(tempDir, "test-video.mp4");
+        _tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(_tempDir);
+        _testVideoPath = Path.Combine(_tempDir, "test-video.mp4");
 
         // Create a dummy video file (just an empty file for testing)
-        File.WriteAllText(testVideoPath, "dummy video content");
+        File.WriteAllText(_testVideoPath, "dummy video content");
     }
 
     /// <summary>
@@ -61,9 +56,9 @@ public class VideoNoteProcessorNoSummaryTests
     [TestCleanup]
     public void Cleanup()
     {
-        if (tempDir != null && Directory.Exists(tempDir))
+        if (_tempDir != null && Directory.Exists(_tempDir))
         {
-            Directory.Delete(tempDir, true);
+            Directory.Delete(_tempDir, true);
         }
     }
 
@@ -78,8 +73,8 @@ public class VideoNoteProcessorNoSummaryTests
         // No OpenAI API key provided to ensure we're not making actual API calls
 
         // Act
-        string markdown = await processor.GenerateVideoNoteAsync(
-            videoPath: testVideoPath,
+        string markdown = await _processor.GenerateVideoNoteAsync(
+            videoPath: _testVideoPath,
             openAiApiKey: null,
             promptFileName: null,
             noSummary: true,
@@ -105,8 +100,8 @@ public class VideoNoteProcessorNoSummaryTests
         // No OpenAI API key provided, so it should attempt but fail gracefully
 
         // Act
-        string markdown = await processor.GenerateVideoNoteAsync(
-            videoPath: testVideoPath,
+        string markdown = await _processor.GenerateVideoNoteAsync(
+            videoPath: _testVideoPath,
             openAiApiKey: null, // This will cause the summarizer to return empty or error
             promptFileName: null,
             noSummary: false,

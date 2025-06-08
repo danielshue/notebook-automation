@@ -1,38 +1,31 @@
-// <copyright file="VideoNoteProcessorMetadataTests.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Tools/VideoNoteProcessorMetadataTests.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 namespace NotebookAutomation.Core.Tests.Tools;
 
 [TestClass]
 public class VideoNoteProcessorMetadataTests
 {
-    private Mock<ILogger<VideoNoteProcessor>> loggerMock;
-    private TestAISummarizer aiSummarizer;
-    private Mock<IOneDriveService> oneDriveServiceMock;
-    private AppConfig appConfig;
-    private Mock<IYamlHelper> yamlHelperMock;
-    private string testMetadataFile;
-    private string testVaultRoot;
+    private Mock<ILogger<VideoNoteProcessor>> _loggerMock;
+    private TestAISummarizer _aiSummarizer;
+    private Mock<IOneDriveService> _oneDriveServiceMock;
+    private AppConfig _appConfig;
+    private Mock<IYamlHelper> _yamlHelperMock;
+    private string _testMetadataFile;
+    private string _testVaultRoot;
 
     [TestInitialize]
     public void Setup()
     {
-        loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
-        aiSummarizer = new TestAISummarizer();
-        oneDriveServiceMock = new Mock<IOneDriveService>();
-        yamlHelperMock = new Mock<IYamlHelper>();
+        _loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
+        _aiSummarizer = new TestAISummarizer();
+        _oneDriveServiceMock = new Mock<IOneDriveService>();
+        _yamlHelperMock = new Mock<IYamlHelper>();
 
         // Setup YamlHelper mock
-        yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
+        _yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
             .Returns<string>(markdown => markdown.Contains("---") ? markdown.Substring(markdown.IndexOf("---", 3) + 3) : markdown);
 
-        yamlHelperMock.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
+        _yamlHelperMock.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
             .Returns(new Dictionary<string, object>
             {
                 { "template-type", "video-reference" },
@@ -41,17 +34,17 @@ public class VideoNoteProcessorMetadataTests
                 { "tags", new[] { "video", "reference" } },
             });
 
-        yamlHelperMock.Setup(m => m.ExtractFrontmatter(It.IsAny<string>()))
+        _yamlHelperMock.Setup(m => m.ExtractFrontmatter(It.IsAny<string>()))
             .Returns("template-type: video-reference\ntitle: Test Video");
 
         // Create test directories and files
-        testVaultRoot = Path.Combine(Path.GetTempPath(), "TestVault");
-        Directory.CreateDirectory(testVaultRoot);
+        _testVaultRoot = Path.Combine(Path.GetTempPath(), "TestVault");
+        Directory.CreateDirectory(_testVaultRoot);
 
-        string programDir = Path.Combine(testVaultRoot, "MBA Program");
+        string programDir = Path.Combine(_testVaultRoot, "MBA Program");
         Directory.CreateDirectory(programDir);
 
-        string vcmDir = Path.Combine(testVaultRoot, "Value Chain Management");
+        string vcmDir = Path.Combine(_testVaultRoot, "Value Chain Management");
         string courseDir = Path.Combine(vcmDir, "Supply Chain");
         string classDir = Path.Combine(courseDir, "Class 1");
         Directory.CreateDirectory(classDir);
@@ -60,7 +53,7 @@ public class VideoNoteProcessorMetadataTests
         File.WriteAllText(
             Path.Combine(programDir, "program-index.md"),
             "---\ntitle: MBA Program\nindex-type: program-index\n---\nProgram content");            // Create metadata.yaml for testing
-        testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata.yaml");
+        _testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata.yaml");
         string testMetadata = @"---
 template-type: video-reference
 auto-generated-state: writable
@@ -87,15 +80,15 @@ video-resolution:
 video-size:
 video-uploaded:";
 
-        File.WriteAllText(testMetadataFile, testMetadata);
+        File.WriteAllText(_testMetadataFile, testMetadata);
 
         PathsConfig mockPaths = new()
         {
-            NotebookVaultFullpathRoot = testVaultRoot,
-            MetadataFile = testMetadataFile,
+            NotebookVaultFullpathRoot = _testVaultRoot,
+            MetadataFile = _testMetadataFile,
         };
 
-        appConfig = new AppConfig(null, null)
+        _appConfig = new AppConfig(null, null)
         {
             Paths = mockPaths,
         };
@@ -105,11 +98,11 @@ video-uploaded:";
     public void Cleanup()
     {
         // Delete test files and directories
-        if (Directory.Exists(testVaultRoot))
+        if (Directory.Exists(_testVaultRoot))
         {
             try
             {
-                Directory.Delete(testVaultRoot, true);
+                Directory.Delete(_testVaultRoot, true);
             }
             catch
             {
@@ -117,9 +110,9 @@ video-uploaded:";
             }
         }
 
-        if (File.Exists(testMetadataFile))
+        if (File.Exists(_testMetadataFile))
         {
-            File.Delete(testMetadataFile);
+            File.Delete(_testMetadataFile);
         }
     }
 
@@ -127,18 +120,18 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithPathBasedMetadata_AppliesHierarchyDetection()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelperMock.Object);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
         VideoNoteProcessor processor = new(
-            loggerMock.Object,
-            aiSummarizer,
-            yamlHelperMock.Object,
+            _loggerMock.Object,
+            _aiSummarizer,
+            _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
-            oneDriveServiceMock.Object,
-            appConfig);
+            _oneDriveServiceMock.Object,
+            _appConfig);
 
-        string videoPath = Path.Combine(testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
+        string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
 
         // Create test video file
         Directory.CreateDirectory(Path.GetDirectoryName(videoPath));
@@ -165,16 +158,16 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithTemplate_AppliesTemplateMetadata()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelperMock.Object);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
         VideoNoteProcessor processor = new(
-            loggerMock.Object,
-            aiSummarizer,
-            yamlHelperMock.Object,
+            _loggerMock.Object,
+            _aiSummarizer,
+            _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
-            oneDriveServiceMock.Object,
-            appConfig);
+            _oneDriveServiceMock.Object,
+            _appConfig);
         Dictionary<string, object> metadata = new()
         {
             { "title", "Test Video" },
@@ -199,18 +192,18 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithTemplateAndHierarchy_AppliesBoth()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelperMock.Object);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
         VideoNoteProcessor processor = new(
-            loggerMock.Object,
-            aiSummarizer,
-            yamlHelperMock.Object,
+            _loggerMock.Object,
+            _aiSummarizer,
+            _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
-            oneDriveServiceMock.Object,
-            appConfig);
+            _oneDriveServiceMock.Object,
+            _appConfig);
 
-        string videoPath = Path.Combine(testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
+        string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
 
         // Create test video file
         Directory.CreateDirectory(Path.GetDirectoryName(videoPath));
@@ -244,18 +237,18 @@ video-uploaded:";
     public async Task ProcessVideoAsync_AppliesPathBasedMetadataAndTemplate()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelperMock.Object);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
         VideoNoteProcessor processor = new(
-            loggerMock.Object,
-            aiSummarizer,
-            yamlHelperMock.Object,
+            _loggerMock.Object,
+            _aiSummarizer,
+            _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
-            oneDriveServiceMock.Object,
-            appConfig);
+            _oneDriveServiceMock.Object,
+            _appConfig);
 
-        string videoPath = Path.Combine(testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
+        string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
 
         // Create test video file
         Directory.CreateDirectory(Path.GetDirectoryName(videoPath));
@@ -286,18 +279,18 @@ video-uploaded:";
     public async Task GenerateVideoNoteAsync_WithNoSummary_SuppressesBodyOutputsOnlyFrontmatter()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelperMock.Object);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
         VideoNoteProcessor processor = new(
-            loggerMock.Object,
-            aiSummarizer,
-            yamlHelperMock.Object,
+            _loggerMock.Object,
+            _aiSummarizer,
+            _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
-            oneDriveServiceMock.Object,
-            appConfig);
+            _oneDriveServiceMock.Object,
+            _appConfig);
 
-        string videoPath = Path.Combine(testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
+        string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
         Directory.CreateDirectory(Path.GetDirectoryName(videoPath));
         File.WriteAllText(videoPath, "fake video content");
 
@@ -334,20 +327,20 @@ video-uploaded:";
     {
         // Arrange
         string testShareLink = "https://onedrive.live.com/view.aspx?test=example";
-        oneDriveServiceMock
+        _oneDriveServiceMock
                     .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(testShareLink);
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelperMock.Object);
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
         VideoNoteProcessor processor = new(
-            loggerMock.Object,
-            aiSummarizer,
-            yamlHelperMock.Object,
+            _loggerMock.Object,
+            _aiSummarizer,
+            _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
-            oneDriveServiceMock.Object,
-            appConfig);
+            _oneDriveServiceMock.Object,
+            _appConfig);
 
-        string videoPath = Path.Combine(testVaultRoot, "test-video.mp4");
+        string videoPath = Path.Combine(_testVaultRoot, "test-video.mp4");
         Directory.CreateDirectory(Path.GetDirectoryName(videoPath));
         File.WriteAllText(videoPath, "fake video content");
 

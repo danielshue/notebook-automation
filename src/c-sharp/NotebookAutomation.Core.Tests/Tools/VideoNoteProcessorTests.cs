@@ -1,12 +1,5 @@
-// <copyright file="VideoNoteProcessorTests.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core.Tests/Tools/VideoNoteProcessorTests.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 namespace NotebookAutomation.Core.Tests.Tools;
 
 [TestClass]
