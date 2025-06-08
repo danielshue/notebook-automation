@@ -88,26 +88,26 @@ public static partial class FriendlyTitleHelper
     /// Example: "01-Introduction" or "12_Module".
     /// </summary>
     [GeneratedRegex(@"^[0-9]+([_\-\s]+)", RegexOptions.IgnoreCase, "en-US")]
-    private static partial Regex LeadingNumberPattern();
+    internal static partial Regex LeadingNumberPattern();
 
     /// <summary>
     /// Matches one or more separator characters (underscore or dash) anywhere in the string.
     /// Example: "Lesson_One-Two".
     /// </summary>
     [GeneratedRegex("[_\\-]+")]
-    private static partial Regex SeparatorPattern();
+    internal static partial Regex SeparatorPattern();
 
     /// <summary>
     /// Matches one or more whitespace characters (spaces, tabs, etc.).
     /// Used to normalize and trim whitespace in titles.
     /// </summary>
     [GeneratedRegex("\\s+")]
-    private static partial Regex WhitespacePattern();
+    internal static partial Regex WhitespacePattern();
 
     /// <summary>
     /// Matches the word "Ii" as a standalone word (case-sensitive by default).
     /// Used to identify and replace Roman numeral II in titles.
     /// </summary>
     [GeneratedRegex(@"\bIi\b")]
-    private static partial Regex RomanNumeralIIPattern();
+    internal static partial Regex RomanNumeralIIPattern();
 }

@@ -1,0 +1,8 @@
+{
+  "id": "f6f2b4f4-1fdf-44c0-a433-e10cf6f04d9d",
+  "title": "Vault Hierarchy Level Mapping Corrected",
+  "details": "The MetadataHierarchyDetector hierarchy levels have been corrected and verified to work correctly:\n\n**Correct Hierarchy Mapping:**\n- **Depth 0 (Vault Root)**: NO hierarchy metadata (empty program, course, class)\n- **Depth 1 (Program Level)**: program only (e.g., \"MBA\", \"Executive Program\")\n- **Depth 2 (Course Level)**: program + course (e.g., \"MBA/Finance\")\n- **Depth 3 (Class Level)**: program + course + class (e.g., \"MBA/Finance/Investment\")\n- **Depth 4+ (Module Level)**: program + course + class + module (e.g., \"MBA/Finance/Investment/Fundamentals\")\n\n**User Scenario Verified:**\n- Vault Root: `\"c:/users/danshue.REDMOND/Vault/01_Projects/MBA/\"`\n- Given Path: `\"C:/Users/danshue.REDMOND/Vault/01_Projects/MBA/Value Chain Management/Operations Management\"`\n- Results: \"Value Chain Management\" = program (Level 1), \"Operations Management\" = course (Level 2)\n\n**Key Fixes Applied:**\n1. Corrected the depth calculation to treat vault root as Depth 0\n2. Fixed fallback logic to only apply when depthLevel > 0 (not at vault root)\n3. Added comprehensive test coverage for all depth levels and edge cases\n4. Verified the implementation works correctly with nested vault root paths\n\n**Test Coverage Added:**\n- All depth levels from 0-5+\n- Different vault root locations\n- Special characters in folder names\n- Non-existent paths (path-based analysis)\n- User-specific nested vault root scenario",
+  "category": "hierarchy_detection",
+  "dateCreated": "2025-06-08T04:50:24.464Z",
+  "dateUpdated": "2025-06-08T04:59:22.396Z"
+}

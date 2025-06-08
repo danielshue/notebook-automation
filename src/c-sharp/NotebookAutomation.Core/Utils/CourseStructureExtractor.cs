@@ -47,7 +47,7 @@ namespace NotebookAutomation.Core.Utils;
 public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> logger)
 {
     private readonly ILogger<CourseStructureExtractor> logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private static readonly Regex NumberPrefixRegex = MyRegex();
+    private static readonly Regex NumberPrefixRegex = NumberPrefixRegexPattern();
 
     /// <summary>
     /// Extracts module and lesson information from a file path and adds it to the provided metadata dictionary.
@@ -416,15 +416,14 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     /// </example>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="folderName"/> is null.</exception>
     public static string CleanModuleOrLessonName(string folderName)
-    {
-        // Remove numbering prefix (e.g., 01_, 02-, etc.), replace hyphens/underscores, title case
-        string clean = MyRegex1().Replace(folderName, string.Empty);
+    {        // Remove numbering prefix (e.g., 01_, 02-, etc.), replace hyphens/underscores, title case
+        string clean = LeadingNumberOptionalSeparatorRegexPattern().Replace(folderName, string.Empty);
 
         // Convert camelCase to spaced words before other processing
         clean = CamelCaseRegex().Replace(clean, " ");
 
         clean = clean.Replace("-", " ").Replace("_", " ");
-        clean = MyRegex2().Replace(clean, " ").Trim();
+        clean = WhitespaceRegexPattern().Replace(clean, " ").Trim();
         return System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(clean);
     }
 
@@ -544,51 +543,50 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
 
         return (module, lesson);
     }
-
     [GeneratedRegex(@"^(\d+)[_-]", RegexOptions.Compiled)]
-    private static partial Regex MyRegex();
+    internal static partial Regex NumberPrefixRegexPattern();
 
     [GeneratedRegex(@"^\d+[_-]?")]
-    private static partial Regex MyRegex1();
+    internal static partial Regex LeadingNumberOptionalSeparatorRegexPattern();
 
     [GeneratedRegex(@"\s+")]
-    private static partial Regex MyRegex2();        // Filename-based extraction patterns
+    internal static partial Regex WhitespaceRegexPattern();        // Filename-based extraction patterns
 
     [GeneratedRegex(@"(?i)module\s*[_-]?\s*(\d+)[_-]?\s*(.+?)(?:\.\w+)?$", RegexOptions.IgnoreCase)]
-    private static partial Regex ModuleFilenameRegex();
+    internal static partial Regex ModuleFilenameRegex();
 
     [GeneratedRegex(@"(?i)lesson\s*[_-]?\s*(\d+)[_-]?\s*(.+?)(?:\.\w+)?$", RegexOptions.IgnoreCase)]
-    private static partial Regex LessonFilenameRegex();
+    internal static partial Regex LessonFilenameRegex();
 
     [GeneratedRegex(@"(?i)(week|unit|session|class)\s*[_-]?\s*(\d+)[_-]?\s*(.+?)(?:\.\w+)?$", RegexOptions.IgnoreCase)]
-    private static partial Regex WeekUnitFilenameRegex();
+    internal static partial Regex WeekUnitFilenameRegex();
 
     [GeneratedRegex(@"(?i)module(\d+)([a-zA-Z]+.*)", RegexOptions.IgnoreCase)]
-    private static partial Regex CompactModuleRegex();
+    internal static partial Regex CompactModuleRegex();
 
     [GeneratedRegex(@"(?i)lesson(\d+)([a-zA-Z]+.*)", RegexOptions.IgnoreCase)]
-    private static partial Regex CompactLessonRegex();
+    internal static partial Regex CompactLessonRegex();
 
     [GeneratedRegex(@"(?i)module(\d+)", RegexOptions.IgnoreCase)]
-    private static partial Regex ModuleNumberSeparatorRegex();
+    internal static partial Regex ModuleNumberSeparatorRegex();
 
     [GeneratedRegex(@"(?i)lesson(\d+)", RegexOptions.IgnoreCase)]
-    private static partial Regex LessonNumberSeparatorRegex();
+    internal static partial Regex LessonNumberSeparatorRegex();
 
     [GeneratedRegex(@"^(\d+)[_-](.+)", RegexOptions.IgnoreCase)]
-    private static partial Regex NumberedContentRegex();
+    internal static partial Regex NumberedContentRegex();
 
     // Enhanced directory pattern recognition
     [GeneratedRegex(@"(week|unit)[_\s-]*\d+", RegexOptions.IgnoreCase)]
-    private static partial Regex WeekUnitRegex();
+    internal static partial Regex WeekUnitRegex();
 
     [GeneratedRegex(@"(module|lesson)[_\s-]*\d+", RegexOptions.IgnoreCase)]
-    private static partial Regex ModuleLessonNumberRegex();
+    internal static partial Regex ModuleLessonNumberRegex();
 
     [GeneratedRegex(@"(session|class)[_\s-]*\d+", RegexOptions.IgnoreCase)]
-    private static partial Regex SessionClassNumberRegex();
+    internal static partial Regex SessionClassNumberRegex();
 
     // Pattern for camelCase to space conversion
     [GeneratedRegex(@"(?<=[a-z])(?=[A-Z])")]
-    private static partial Regex CamelCaseRegex();
+    internal static partial Regex CamelCaseRegex();
 }

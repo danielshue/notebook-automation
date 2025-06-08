@@ -1,12 +1,5 @@
-﻿// <copyright file="YamlHelper.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
+﻿// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -615,7 +608,6 @@ public partial class YamlHelper : IYamlHelper
             return (false, $"Unexpected error during YAML diagnosis: {ex.Message}", null);
         }
     }
-
     /// <summary>
     /// Gets a compiled regex that matches YAML frontmatter blocks at the start of a markdown file.
     /// </summary>
@@ -625,5 +617,5 @@ public partial class YamlHelper : IYamlHelper
     /// </remarks>
     /// <returns>A compiled <see cref="Regex"/> for matching YAML frontmatter blocks.</returns>
     [GeneratedRegex(@"^\s*---\s*[\r\n]+(.+?)[\r\n]+\s*---\s*[\r\n]+", RegexOptions.Compiled | RegexOptions.Singleline)]
-    private static partial Regex FrontmatterBlockRegex();
+    internal static partial Regex FrontmatterBlockRegex();
 }

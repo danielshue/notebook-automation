@@ -148,7 +148,7 @@ public partial class MarkdownParser(ILogger logger)
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error writing markdown file: {FilePath}", filePath);
+            logger.LogError(ex, $"Error writing markdown file: {filePath}");
             return false;
         }
     }
@@ -237,9 +237,9 @@ public partial class MarkdownParser(ILogger logger)
     /// This regex is used to extract YAML frontmatter from markdown files. It matches blocks enclosed
     /// within triple dashes ("---") and captures the content between them.
     /// </para>
-    /// </remarks>
+    /// </remarks>    [GeneratedRegex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline)]
     [GeneratedRegex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline)]
-    private static partial Regex YamlFrontmatterRegex();
+    internal static partial Regex YamlFrontmatterRegex();
 
     /// <summary>
     /// Matches markdown headers (e.g., "# Header", "## Subheader") with levels 1 to 6.
@@ -249,7 +249,7 @@ public partial class MarkdownParser(ILogger logger)
     /// This regex is used to identify markdown headers in text and extract their level and content.
     /// It matches headers with leading hashes followed by a space and text.
     /// </para>
-    /// </remarks>
+    /// </remarks>    [GeneratedRegex(@"^(#+)\s+(.+)$")]
     [GeneratedRegex(@"^(#+)\s+(.+)$")]
-    private static partial Regex MarkdownHeaderRegex();
+    internal static partial Regex MarkdownHeaderRegex();
 }

@@ -412,5 +412,11 @@ public partial class MetadataTemplateManager
     /// </remarks>
     /// <returns>A compiled <see cref="Regex"/> for splitting YAML documents.</returns>
     [GeneratedRegex(@"^---\s*$", RegexOptions.Multiline)]
-    private static partial Regex YamlDocumentSeparatorRegex();
+    internal static partial Regex YamlDocumentSeparatorRegex();
+
+    /// <summary>
+    /// Gets the YAML document separator regex pattern for testing purposes.
+    /// </summary>
+    /// <returns>A compiled <see cref="Regex"/> for splitting YAML documents.</returns>
+    internal static Regex GetYamlDocumentSeparatorRegex() => YamlDocumentSeparatorRegex();
 }
