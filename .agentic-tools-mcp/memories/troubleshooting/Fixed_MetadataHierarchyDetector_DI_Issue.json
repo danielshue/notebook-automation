@@ -1,0 +1,8 @@
+{
+  "id": "3bd574c5-d340-46aa-adec-8a59032a42b3",
+  "title": "Fixed MetadataHierarchyDetector DI Issue",
+  "details": "Successfully fixed dependency injection issue in ServiceRegistration.cs where MetadataHierarchyDetector was registered as IMetadataHierarchyDetector interface but services were requesting the concrete class. Added a concrete class registration that returns the interface implementation. This fixed the \"No service for type 'NotebookAutomation.Core.Utils.MetadataHierarchyDetector' has been registered\" error.",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-09T14:43:35.964Z",
+  "dateUpdated": "2025-06-09T14:43:35.964Z"
+}

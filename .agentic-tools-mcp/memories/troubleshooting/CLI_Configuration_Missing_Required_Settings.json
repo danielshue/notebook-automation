@@ -1,0 +1,8 @@
+{
+  "id": "8975508b-05bf-4270-80bf-a8af4e8e3782",
+  "title": "CLI Configuration Missing Required Settings",
+  "details": "When running the C# CLI for metadata processing, getting \"Configuration is missing or incomplete\" error.\n\n## Issue\n- Command: `dotnet run --project \"src/c-sharp/NotebookAutomation.CLI\" -- tag metadata-check \"path\" --verbose`\n- Error: \"Configuration is missing or incomplete. Exiting.\"\n\n## Configuration File Location\n- Using: `D:\\source\\notebook-automation\\config\\config.json`\n- File exists and contains proper JSON structure\n\n## Potential Missing Settings\nBased on ConfigValidation.cs analysis:\n1. **Required Paths** (Collection):\n   - paths.onedrive_fullpath_root\n   - paths.notebook_vault_fullpath_root  \n   - paths.metadata_file\n   - paths.onedrive_resources_basepath\n   - paths.logging_dir\n\n2. **Environment Variables** (might be missing):\n   - OPENAI_API_KEY (for AI service)\n   - AZURE_OPENAI_API_KEY (for Azure AI)\n   - FOUNDRY_API_KEY (for Foundry AI)\n\n## Next Steps\n- Check if environment variables are set\n- Validate that all required paths exist in config\n- Consider using config validation commands first",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-09T14:40:13.030Z",
+  "dateUpdated": "2025-06-09T14:40:13.030Z"
+}
