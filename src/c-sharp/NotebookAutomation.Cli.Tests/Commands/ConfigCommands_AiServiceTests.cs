@@ -46,9 +46,8 @@ public class ConfigCommands_AiServiceTests
         var config = GetDefaultConfig();
         bool result = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-            !.Invoke(null, [config, "aiservice.openai.model", "gpt-4o"]) as bool? ?? false;
-        Assert.IsTrue(result);
-        Assert.AreEqual("gpt-4o", config.AiService.OpenAI.Model);
+            ?.Invoke(null, [config, "aiservice.openai.model", "gpt-4o"]) as bool? ?? false; Assert.IsTrue(result);
+        Assert.AreEqual("gpt-4o", config.AiService!.OpenAI!.Model);
     }
 
     /// <summary>
@@ -61,9 +60,8 @@ public class ConfigCommands_AiServiceTests
         var config = GetDefaultConfig();
         bool result = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-            !.Invoke(null, [config, "aiservice.openai.endpoint", "https://custom.openai.com"]) as bool? ?? false;
-        Assert.IsTrue(result);
-        Assert.AreEqual("https://custom.openai.com", config.AiService.OpenAI.Endpoint);
+            ?.Invoke(null, [config, "aiservice.openai.endpoint", "https://custom.openai.com"]) as bool? ?? false; Assert.IsTrue(result);
+        Assert.AreEqual("https://custom.openai.com", config.AiService!.OpenAI!.Endpoint);
     }
 
     /// <summary>
@@ -76,9 +74,8 @@ public class ConfigCommands_AiServiceTests
         var config = GetDefaultConfig();
         bool result = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-            !.Invoke(null, [config, "aiservice.azure.model", "azure-gpt"]) as bool? ?? false;
-        Assert.IsTrue(result);
-        Assert.AreEqual("azure-gpt", config.AiService.Azure.Model);
+            ?.Invoke(null, [config, "aiservice.azure.model", "azure-gpt"]) as bool? ?? false; Assert.IsTrue(result);
+        Assert.AreEqual("azure-gpt", config.AiService!.Azure!.Model);
     }
 
     /// <summary>
@@ -91,14 +88,13 @@ public class ConfigCommands_AiServiceTests
         var config = GetDefaultConfig();
         bool endpointResult = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-            !.Invoke(null, [config, "aiservice.azure.endpoint", "https://azure.openai.com"]) as bool? ?? false;
+            ?.Invoke(null, [config, "aiservice.azure.endpoint", "https://azure.openai.com"]) as bool? ?? false;
         bool deploymentResult = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-            !.Invoke(null, [config, "aiservice.azure.deployment", "my-deployment"]) as bool? ?? false;
-        Assert.IsTrue(endpointResult);
+            ?.Invoke(null, [config, "aiservice.azure.deployment", "my-deployment"]) as bool? ?? false; Assert.IsTrue(endpointResult);
         Assert.IsTrue(deploymentResult);
-        Assert.AreEqual("https://azure.openai.com", config.AiService.Azure.Endpoint);
-        Assert.AreEqual("my-deployment", config.AiService.Azure.Deployment);
+        Assert.AreEqual("https://azure.openai.com", config.AiService!.Azure!.Endpoint);
+        Assert.AreEqual("my-deployment", config.AiService!.Azure!.Deployment);
     }
 
     /// <summary>
@@ -111,13 +107,12 @@ public class ConfigCommands_AiServiceTests
         var config = GetDefaultConfig();
         bool modelResult = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-            !.Invoke(null, [config, "aiservice.foundry.model", "foundry-llm"]) as bool? ?? false;
+            ?.Invoke(null, [config, "aiservice.foundry.model", "foundry-llm"]) as bool? ?? false;
         bool endpointResult = typeof(ConfigCommands)
             .GetMethod("UpdateConfigKey", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)
-            !.Invoke(null, [config, "aiservice.foundry.endpoint", "https://foundry.ai"]) as bool? ?? false;
-        Assert.IsTrue(modelResult);
+            ?.Invoke(null, [config, "aiservice.foundry.endpoint", "https://foundry.ai"]) as bool? ?? false; Assert.IsTrue(modelResult);
         Assert.IsTrue(endpointResult);
-        Assert.AreEqual("foundry-llm", config.AiService.Foundry.Model);
-        Assert.AreEqual("https://foundry.ai", config.AiService.Foundry.Endpoint);
+        Assert.AreEqual("foundry-llm", config.AiService!.Foundry!.Model);
+        Assert.AreEqual("https://foundry.ai", config.AiService!.Foundry!.Endpoint);
     }
 }

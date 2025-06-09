@@ -54,11 +54,10 @@ public class ConfigValidationTests
         // Cleanup
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", original);
     }
-
     [TestMethod]
     public void RequireAllPaths_ReturnsFalse_WhenPathsIsNull()
     {
-        var config = new AppConfig { Paths = null };
+        var config = new AppConfig { Paths = null! };
         var result = ConfigValidation.RequireAllPaths(config, out var missing);
         Assert.IsFalse(result);
         Assert.IsTrue(missing.Count > 0);
@@ -72,9 +71,9 @@ public class ConfigValidationTests
             Paths = new PathsConfig
             {
                 OnedriveFullpathRoot = " ",
-                NotebookVaultFullpathRoot = null,
+                NotebookVaultFullpathRoot = null!,
                 MetadataFile = string.Empty,
-                OnedriveResourcesBasepath = null,
+                OnedriveResourcesBasepath = null!,
                 LoggingDir = string.Empty,
             },
         };
@@ -82,28 +81,25 @@ public class ConfigValidationTests
         Assert.IsFalse(result);
         Assert.AreEqual(5, missing.Count);
     }
-
     [TestMethod]
     public void RequireMicrosoftGraph_ReturnsFalse_WhenMicrosoftGraphIsNull()
     {
-        var config = new AppConfig { MicrosoftGraph = null };
+        var config = new AppConfig { MicrosoftGraph = null! };
         var result = ConfigValidation.RequireMicrosoftGraph(config);
         Assert.IsFalse(result);
     }
-
     [TestMethod]
     public void RequireMicrosoftGraph_ReturnsFalse_WhenScopesIsNullOrEmpty()
     {
-        var config1 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = null } };
+        var config1 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = null! } };
         var config2 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = [] } };
         Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config1));
         Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config2));
     }
-
     [TestMethod]
     public void RequireOpenAi_ReturnsFalse_WhenAiServiceIsNull()
     {
-        var config = new AppConfig { AiService = null };
+        var config = new AppConfig { AiService = null! };
         var result = ConfigValidation.RequireOpenAi(config);
         Assert.IsFalse(result);
     }
@@ -135,10 +131,10 @@ public class ConfigValidationTests
             Paths = new PathsConfig
             {
                 OnedriveFullpathRoot = string.Empty,
-                NotebookVaultFullpathRoot = null,
+                NotebookVaultFullpathRoot = null!,
                 MetadataFile = "meta.json",
                 OnedriveResourcesBasepath = "basepath",
-                LoggingDir = null,
+                LoggingDir = null!,
             },
         };
         var result = ConfigValidation.RequireAllPaths(config, out var missing);
@@ -157,9 +153,9 @@ public class ConfigValidationTests
         {
             MicrosoftGraph = new MicrosoftGraphConfig
             {
-                ClientId = null,
+                ClientId = null!,
                 ApiEndpoint = string.Empty,
-                Authority = null,
+                Authority = null!,
                 Scopes = [],
             },
         };

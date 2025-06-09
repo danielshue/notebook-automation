@@ -197,7 +197,7 @@ try {
         Write-Success "All tests passed"
     }
     else {
-        Write-Warning "Skipping tests"    
+        Write-Warning "Skipping tests"
     }    # Step 6: Test Publish Operations (mirrors CI publish steps)
     Write-Step "Step 6: Test Publish Operations"
     $cliProjectPath = Join-Path $RepositoryRoot "src\c-sharp\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj"
@@ -212,10 +212,8 @@ try {
         dotnet publish $cliProjectPath -c $Configuration -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$packageVersion /p:FileVersion=$fileVersion /p:AssemblyVersion=$assemblyVersion --output "$tempPublishDir\win-x64"
         if ($LASTEXITCODE -ne 0) {
             throw "win-x64 publish failed with exit code $LASTEXITCODE"
-        }
-
-        # Verify win-x64 binary
-        $winX64Binary = Join-Path "$tempPublishDir\win-x64" "NotebookAutomation.exe"
+        }        # Verify win-x64 binary
+        $winX64Binary = Join-Path "$tempPublishDir\win-x64" "na.exe"
         if (-not (Test-Path $winX64Binary)) {
             throw "win-x64 binary not found at $winX64Binary"
         }
@@ -235,9 +233,8 @@ try {
         dotnet publish $cliProjectPath -c $Configuration -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$packageVersion /p:FileVersion=$fileVersion /p:AssemblyVersion=$assemblyVersion --output "$tempPublishDir\win-arm64"
         if ($LASTEXITCODE -ne 0) {
             throw "win-arm64 publish failed with exit code $LASTEXITCODE"
-        }
-        # Verify win-arm64 binary
-        $winArm64Binary = Join-Path "$tempPublishDir\win-arm64" "NotebookAutomation.exe"
+        }        # Verify win-arm64 binary
+        $winArm64Binary = Join-Path "$tempPublishDir\win-arm64" "na.exe"
         if (-not (Test-Path $winArm64Binary)) {
             throw "win-arm64 binary not found at $winArm64Binary"
         }

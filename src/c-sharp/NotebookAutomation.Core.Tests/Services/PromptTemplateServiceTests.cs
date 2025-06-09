@@ -261,12 +261,11 @@ public class PromptTemplateServiceTests
 
         // Verify that the appropriate log message was written
         _loggerMock.Verify(
-            x => x.Log(
-            It.Is<LogLevel>(l => l == LogLevel.Warning),
+            x => x.Log(It.Is<LogLevel>(l => l == LogLevel.Warning),
             It.IsAny<EventId>(),
             It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.AtLeastOnce());
     }
 
@@ -330,7 +329,7 @@ public class PromptTemplateServiceTests
                 return testPromptsPath;
             }
 
-            currentDir = Directory.GetParent(currentDir)?.FullName;
+            currentDir = Directory.GetParent(currentDir)?.FullName ?? string.Empty;
             depth++;
         }
 
@@ -361,7 +360,7 @@ public class PromptTemplateServiceTests
                 return currentDir;
             }
 
-            currentDir = Directory.GetParent(currentDir)?.FullName;
+            currentDir = Directory.GetParent(currentDir)?.FullName ?? string.Empty;
         }
 
         throw new DirectoryNotFoundException("Could not find repository root directory");
@@ -536,7 +535,7 @@ public class PromptTemplateServiceTests
         // We need to use a path that will cause an exception
         // In this case, we'll use a path with invalid characters
         string invalidPath = Path.Combine(_testFolder, "Prompts", "invalid|file?.md");        // Use reflection to set the _promptsDirectory field to our test directory
-        System.Reflection.FieldInfo fieldInfo = typeof(PromptTemplateService).GetField(
+        System.Reflection.FieldInfo? fieldInfo = typeof(PromptTemplateService).GetField(
             "_promptsDirectory",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
@@ -545,10 +544,8 @@ public class PromptTemplateServiceTests
         {
             Assert.Inconclusive("Cannot access _promptsDirectory field via reflection in this environment");
             return;
-        }
-
-        // Check for null before calling SetValue
-        string directoryPath = Path.GetDirectoryName(invalidPath);
+        }        // Check for null before calling SetValue
+        string? directoryPath = Path.GetDirectoryName(invalidPath);
         if (directoryPath == null)
         {
             Assert.Inconclusive("Could not determine directory path for test");
@@ -565,13 +562,12 @@ public class PromptTemplateServiceTests
         Assert.IsFalse(string.IsNullOrEmpty(result));
 
         // Verify the warning was logged for using default template
-        _loggerMock.Verify(
-            x => x.Log(
+        _loggerMock.Verify(x => x.Log(
             It.Is<LogLevel>(l => l == LogLevel.Warning),
             It.IsAny<EventId>(),
             It.IsAny<It.IsAnyType>(),
-            It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.AtLeastOnce);
     }
 
