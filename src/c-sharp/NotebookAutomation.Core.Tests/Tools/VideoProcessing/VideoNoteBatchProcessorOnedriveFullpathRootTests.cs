@@ -80,10 +80,9 @@ metadata:
             testAISummarizer,
             mockYamlHelper,
             CreateMetadataHierarchyDetector(),
-            CreateTestMetadataTemplateManager(),
-            new MarkdownNoteBuilder(mockYamlHelper),
+            CreateTestMetadataTemplateManager(), new MarkdownNoteBuilder(mockYamlHelper),
             mockOneDriveService,
-            null);  // AppConfig
+            _testAppConfig);  // AppConfig
 
         // Create a custom batch processor that will directly create a file with the resourcesRoot
         // so we can test that the parameter is being passed correctly

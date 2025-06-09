@@ -1,0 +1,8 @@
+{
+  "id": "8b36c727-b8b9-46d5-be96-2514dffec818",
+  "title": "CI Build Fix - Executable Name Update",
+  "details": "## CI Build Fix Completed ✅\n\n**Issue**: Local CI build was failing because it was looking for `NotebookAutomation.exe` but the executable was renamed to `na.exe`.\n\n**Solution**: Updated `scripts/build-ci-local.ps1` to reference the correct executable name:\n- Line 218: Changed `NotebookAutomation.exe` to `na.exe` for win-x64 binary verification\n- Line 240: Changed `NotebookAutomation.exe` to `na.exe` for win-arm64 binary verification\n\n**Result**: \n- ✅ CI build now completes successfully\n- ✅ Both win-x64 and win-arm64 binaries are created and tested\n- ✅ Binary size verification working (win-x64: 130.98 MB, win-arm64: 139.21 MB)\n\n**Remaining Work**: \n- 23 build warnings still need to be addressed (8 in Core.Tests, 15 in Cli.Tests)\n- All warnings are null-related (CS8600, CS8620, CS8625, CS8602)",
+  "category": "build-fixes",
+  "dateCreated": "2025-06-09T06:25:52.844Z",
+  "dateUpdated": "2025-06-09T06:25:52.844Z"
+}

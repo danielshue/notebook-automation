@@ -191,10 +191,11 @@ metadata:
     }
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithFailedShareLink_DoesNotContainReferencesSection()
-    { // Arrange
+    {
+        // Arrange
         _oneDriveServiceMock
             .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((string)null); // Simulate failed share link generation
+            .ReturnsAsync((string?)null); // Simulate failed share link generation
 
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
