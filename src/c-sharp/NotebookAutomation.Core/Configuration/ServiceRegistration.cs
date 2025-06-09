@@ -413,14 +413,16 @@ public static class ServiceRegistration
             // Use vault root override if available, otherwise use config
             string? vaultRootOverride = vaultRootContext.HasVaultRootOverride
                 ? vaultRootContext.VaultRootOverride
-                : null;
-
-            return new MetadataHierarchyDetector(
+                : null; return new MetadataHierarchyDetector(
                 logger,
                 appConfig,
                 vaultRootOverride
             );
         });
+
+        // Register concrete MetadataHierarchyDetector for backward compatibility
+        services.AddScoped<MetadataHierarchyDetector>(provider =>
+            (MetadataHierarchyDetector)provider.GetRequiredService<IMetadataHierarchyDetector>());
 
         // Register ICourseStructureExtractor with factory
         services.AddScoped<ICourseStructureExtractor>(provider =>
