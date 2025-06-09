@@ -1,4 +1,5 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands;
@@ -413,11 +414,7 @@ internal class TagCommands
         }
         catch (Exception ex)
         {
-            AnsiConsoleHelper.WriteError($"Error processing tags: {ex.Message}");
-            if (debug)
-            {
-                AnsiConsoleHelper.WriteError(ex.ToString());
-            }
+            ExceptionHandler.HandleException(ex, $"tag {command}");
         }
     }
 
@@ -524,7 +521,7 @@ internal class TagCommands
         }
         catch (Exception ex)
         {
-            AnsiConsoleHelper.WriteError($"Error processing command: {ex.Message}");
+            ExceptionHandler.HandleException(ex, "tag update-frontmatter");
         }
     }
 
@@ -624,11 +621,7 @@ internal class TagCommands
         }
         catch (Exception ex)
         {
-            AnsiConsoleHelper.WriteError($"Error diagnosing YAML issues: {ex.Message}");
-            if (debug)
-            {
-                AnsiConsoleHelper.WriteError(ex.ToString());
-            }
+            ExceptionHandler.HandleException(ex, "tag diagnose-yaml");
         }
     }
 

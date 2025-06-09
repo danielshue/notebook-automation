@@ -1,4 +1,5 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 namespace NotebookAutomation.Cli;
 
 /// <summary>
@@ -21,13 +22,42 @@ internal class Program
     {
         get => serviceProvider ?? throw new InvalidOperationException("Service provider not initialized. Call SetupDependencyInjection first.");
     }
-
     /// <summary>
     /// Entry point for the application.
     /// </summary>
     /// <param name="args">Command-line arguments.</param>
     /// <returns>Exit code (0 for success, non-zero for error).</returns>
     public static async Task<int> Main(string[] args)
+    {
+        try
+        {
+            return await ExecuteMainAsync(args).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            // Fallback exception handling if ExceptionHandler isn't initialized yet
+            var isDebug = args.Contains("--debug") || args.Contains("-d");
+
+            if (isDebug)
+            {
+                AnsiConsoleHelper.WriteError($"Unhandled exception: {ex}");
+            }
+            else
+            {
+                AnsiConsoleHelper.WriteError($"A critical error occurred: {ex.Message}");
+                AnsiConsoleHelper.WriteInfo("Run with --debug flag for detailed error information.");
+            }
+
+            return 1;
+        }
+    }
+
+    /// <summary>
+    /// Main execution logic with proper exception handling.
+    /// </summary>
+    /// <param name="args">Command-line arguments.</param>
+    /// <returns>Exit code (0 for success, non-zero for error).</returns>
+    private static async Task<int> ExecuteMainAsync(string[] args)
     {
         // Create the root command with description
         var rootCommand = new RootCommand(
@@ -73,11 +103,15 @@ internal class Program
         //     AnsiConsoleHelper.WriteInfo("(c) 2025 Dan Shue");
         //     return 0;
         // }
-
         // Setup dependency injection with the parsed config path
         var serviceProvider = SetupDependencyInjection(configPath, args.Contains("--debug"));
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger<Program>();
+
+        // Initialize centralized exception handler
+        var isDebugMode = args.Contains("--debug") || args.Contains("-d");
+        ExceptionHandler.Initialize(logger, isDebugMode);
+
         logger.LogInformationWithPath("Application started", "Program.cs");
         var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>(), serviceProvider);
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

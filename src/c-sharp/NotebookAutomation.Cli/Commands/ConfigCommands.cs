@@ -138,7 +138,7 @@ internal class ConfigCommands
             }
             catch (FileNotFoundException ex)
             {
-                AnsiConsoleHelper.WriteError($"Configuration file not found: {ex.FileName ?? ex.Message}");
+                ExceptionHandler.HandleException(ex, "Loading configuration file");
             }
         });
 
@@ -170,9 +170,7 @@ internal class ConfigCommands
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to update key '{key}'. Key not found or invalid.");
-
-                    // Print available keys if update failed
+                    Console.WriteLine($"Failed to update key '{key}'. Key not found or invalid.");                    // Print available keys if update failed
                     ConfigCommands.PrintAvailableConfigKeys(context);
                 }
             }
@@ -207,7 +205,7 @@ internal class ConfigCommands
             }
             catch (Exception ex)
             {
-                AnsiConsoleHelper.WriteError($"Error displaying user secrets: {ex.Message}");
+                ExceptionHandler.HandleException(ex, "Displaying user secrets");
             }
         });
 
@@ -240,13 +238,12 @@ internal class ConfigCommands
                 Console.WriteLine();
                 AnsiConsoleHelper.WriteInfo("To manage user secrets, use the following commands:");
                 Console.WriteLine("  dotnet user-secrets set \"UserSecrets:OpenAI:ApiKey\" \"your-api-key\" --project src/c-sharp/NotebookAutomation.Cli");
-                Console.WriteLine("  dotnet user-secrets list --project src/c-sharp/NotebookAutomation.Cli");
-                Console.WriteLine();
+                Console.WriteLine("  dotnet user-secrets list --project src/c-sharp/NotebookAutomation.Cli"); Console.WriteLine();
                 AnsiConsoleHelper.WriteInfo("For more information, see: src/c-sharp/docs/UserSecrets.md");
             }
             catch (Exception ex)
             {
-                AnsiConsoleHelper.WriteError($"Error displaying user secrets: {ex.Message}");
+                ExceptionHandler.HandleException(ex, "Displaying user secrets information");
             }
         });
 
