@@ -1,4 +1,5 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands;
@@ -232,8 +233,7 @@ internal class VaultCommands
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "An error occurred during vault command execution.", "VaultCommands.cs");
-            _logger.LogErrorWithPath("Error in vault command", "VaultCommands.cs", ex);
+            ExceptionHandler.HandleException(ex, $"vault {command}");
         }
     }
 
@@ -332,8 +332,7 @@ internal class VaultCommands
         }
         catch (Exception ex)
         {
-            AnsiConsoleHelper.WriteError($"Failed to execute generate-index command: {ex.Message}");
-            _logger.LogErrorWithPath(ex, "Failed to execute generate-index command", "VaultCommands.cs");
+            ExceptionHandler.HandleException(ex, "generate-index command");
             throw;
         }
     }
@@ -441,8 +440,7 @@ internal class VaultCommands
         }
         catch (Exception ex)
         {
-            AnsiConsoleHelper.WriteError($"Failed to execute ensure-metadata command: {ex.Message}");
-            _logger.LogErrorWithPath(ex, "Failed to execute ensure-metadata command", "VaultCommands.cs");
+            ExceptionHandler.HandleException(ex, "ensure-metadata command");
             throw;
         }
     }

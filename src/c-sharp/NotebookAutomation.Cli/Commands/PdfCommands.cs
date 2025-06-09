@@ -177,7 +177,7 @@ internal class PdfCommands
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarningWithPath(ex, "Failed to set force refresh on OneDrive service", "PdfCommands.cs");
+                    ExceptionHandler.HandleException(ex, "Failed to set force refresh on OneDrive service");
                 }
             }
 
@@ -215,7 +215,7 @@ internal class PdfCommands
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarningWithPath(ex, "Failed to configure OneDrive vault roots", "PdfCommands.cs");
+                    ExceptionHandler.HandleException(ex, "Failed to configure OneDrive vault roots");
                 }
             }
 
@@ -350,8 +350,7 @@ internal class PdfCommands
             catch (Exception ex)
             {
                 // No need to stop spinner manually, WithStatusAsync handles this
-                AnsiConsoleHelper.WriteError($"Error processing PDF files: {ex.Message}");
-                logger.LogErrorWithPath(ex, "Error processing PDF files", "PdfCommands.cs");
+                ExceptionHandler.HandleException(ex, "Error processing PDF files");
             }
         });
 

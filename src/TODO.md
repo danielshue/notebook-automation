@@ -226,3 +226,19 @@ This document tracks our progress in migrating the Python codebase to C#. The or
 
 - Started migration planning
 - Created this tracking document
+
+# ServiceRegistration Testing and Dependency Injection
+
+## Outstanding Issues with ServiceRegistration
+
+- [ ] **Add comprehensive unit tests for ServiceRegistration.cs**: Current tests passed before the MetadataHierarchyDetector fix was applied, indicating that tests don't adequately cover the dependency injection scenarios that caused runtime failures.
+- [ ] **Create integration tests for service resolution**: Need tests that verify all registered services can be properly resolved without missing dependencies.
+- [ ] **Add tests for concrete class vs interface registration**: The recent fix where MetadataHierarchyDetector was registered as IMetadataHierarchyDetector but requested as concrete class should be caught by tests.
+- [ ] **Test service factory lambda functions**: Many services are registered with complex factory functions that should be tested individually.
+- [ ] **Add tests for VaultRootContextService override scenarios**: Test both with and without vault root overrides.
+- [ ] **Create dependency graph validation tests**: Ensure all service dependencies can be satisfied at build time.
+
+## Notes
+
+- The MetadataHierarchyDetector issue revealed that current unit tests don't catch service registration problems that only manifest at runtime.
+- Need to establish better testing patterns for dependency injection configuration.

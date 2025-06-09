@@ -190,7 +190,7 @@ internal class VideoCommands
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarningWithPath(ex, "Failed to set force refresh on OneDrive service", "VideoCommands.cs");
+                    ExceptionHandler.HandleException(ex, "setting force refresh on OneDrive service");
                 }
             } // Determine effective resources root (prioritize command line over config)
 

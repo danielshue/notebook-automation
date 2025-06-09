@@ -228,7 +228,7 @@ internal class MarkdownCommands
                     }
                     catch (Exception ex)
                     {
-                        logger.LogErrorWithPath(ex, "Failed to process file: {File}", file);
+                        ExceptionHandler.HandleException(ex, $"processing file {file}");
                         failedLogger?.LogError(ex, "Failed to process file: {File}", file);
                     }
                 }
@@ -238,8 +238,7 @@ internal class MarkdownCommands
         }
         catch (Exception ex)
         {
-            logger.LogErrorWithPath("Error in markdown command", "MarkdownCommands.cs", ex);
-            AnsiConsoleHelper.WriteError($"Error generating markdown: {ex.Message}");
+            ExceptionHandler.HandleException(ex, "markdown generation");
         }
     }
 }

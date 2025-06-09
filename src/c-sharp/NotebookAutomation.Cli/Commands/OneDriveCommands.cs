@@ -350,13 +350,7 @@ internal class OneDriveCommands
         }
         catch (Exception ex)
         {
-            AnsiConsoleHelper.WriteError($"Error processing OneDrive command: {ex.Message}");
-            if (debug)
-            {
-                AnsiConsoleHelper.WriteError(ex.ToString());
-            }
-
-            logger.LogErrorWithPath("Error in OneDrive command", "OneDriveCommands.cs", ex);
+            ExceptionHandler.HandleException(ex, "OneDrive command processing");
         }
     }
 
