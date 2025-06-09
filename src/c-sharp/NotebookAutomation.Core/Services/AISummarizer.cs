@@ -1,18 +1,4 @@
-﻿// <copyright file="AISummarizer.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-
-// Enable nullable reference type annotations
-#nullable enable
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Services;
 
 /// <summary>

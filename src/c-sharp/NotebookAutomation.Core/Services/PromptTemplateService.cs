@@ -1,7 +1,4 @@
-﻿// Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-using NotebookAutomation.Core.Utils;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Services;
 
 /// <summary>
@@ -56,7 +53,7 @@ public partial class PromptTemplateService : IPromptService
     /// </remarks>
     /// <example>
     /// <code>
-    /// var promptService = new PromptTemplateService(logger, yamlHelper, config);
+    /// var promptService = new PromptTemplateService(logger, _yamlHelper, config);
     /// </code>
     /// </example>
     public PromptTemplateService(ILogger<PromptTemplateService> logger, IYamlHelper yamlHelper, Configuration.AppConfig config)

@@ -1,15 +1,14 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Utils;
 
 [TestClass]
 public class MetadataTemplateManagerTests
 {
-    private Mock<ILogger> _loggerMock;
-    private Mock<AppConfig> _appConfigMock;
-    private AppConfig _testAppConfig;
-    private string _testMetadataFile;
-    private Mock<IYamlHelper> _yamlHelperMock;
+    private Mock<ILogger> _loggerMock = null!;
+    private Mock<AppConfig> _appConfigMock = null!;
+    private AppConfig _testAppConfig = null!;
+    private string _testMetadataFile = null!;
+    private Mock<IYamlHelper> _yamlHelperMock = null!;
 
     [TestInitialize]
     public void Setup()
@@ -109,7 +108,6 @@ date-created: 2025-04-19";
         Assert.IsTrue(templateTypes.Contains("video-reference"));
         Assert.IsTrue(templateTypes.Contains("pdf-reference"));
     }
-
     [TestMethod]
     public void GetTemplate_ExistingType_ReturnsTemplate()
     {
@@ -117,14 +115,13 @@ date-created: 2025-04-19";
         MetadataTemplateManager templateManager = new(_loggerMock.Object, _testAppConfig, _yamlHelperMock.Object);
 
         // Act
-        Dictionary<string, object> template = templateManager.GetTemplate("video-reference");
+        Dictionary<string, object>? template = templateManager.GetTemplate("video-reference");
 
         // Assert
         Assert.IsNotNull(template);
         Assert.AreEqual("video-reference", template["template-type"]);
         Assert.AreEqual("Video Note", template["title"]);
     }
-
     [TestMethod]
     public void GetTemplate_NonExistentType_ReturnsNull()
     {
@@ -132,7 +129,7 @@ date-created: 2025-04-19";
         MetadataTemplateManager templateManager = new(_loggerMock.Object, _testAppConfig, _yamlHelperMock.Object);
 
         // Act
-        Dictionary<string, object> template = templateManager.GetTemplate("non-existent-type");
+        Dictionary<string, object>? template = templateManager.GetTemplate("non-existent-type");
 
         // Assert
         Assert.IsNull(template);
@@ -150,7 +147,7 @@ date-created: 2025-04-19";
         };
 
         // Act
-        Dictionary<string, object> filledTemplate = templateManager.GetFilledTemplate("video-reference", values);
+        Dictionary<string, object>? filledTemplate = templateManager.GetFilledTemplate("video-reference", values);
 
         // Assert
         Assert.IsNotNull(filledTemplate);

@@ -1,7 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-// Duplicate using removed
-
 namespace NotebookAutomation.Core.Tests.Models;
 
 /// <summary>
@@ -10,13 +7,13 @@ namespace NotebookAutomation.Core.Tests.Models;
 [TestClass]
 public class BatchProcessResultTests
 {
-    private Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>> _loggerMock;
-    private PdfNoteBatchProcessor _processor;
-    private Mock<ILogger<PdfNoteProcessor>> _pdfLoggerMock;
-    private Mock<ILogger<AISummarizer>> _aiLoggerMock;
-    private Mock<AISummarizer> _aiSummarizerMock;
-    private string _testDir;
-    private string _outputDir;
+    private Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>>? _loggerMock;
+    private PdfNoteBatchProcessor? _processor;
+    private Mock<ILogger<PdfNoteProcessor>>? _pdfLoggerMock;
+    private Mock<ILogger<AISummarizer>>? _aiLoggerMock;
+    private Mock<AISummarizer>? _aiSummarizerMock;
+    private string? _testDir;
+    private string? _outputDir;
 
     [TestInitialize]
     public void Setup()
@@ -24,17 +21,16 @@ public class BatchProcessResultTests
         _loggerMock = new Mock<ILogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>>();
         _pdfLoggerMock = new Mock<ILogger<PdfNoteProcessor>>();
         _aiLoggerMock = new Mock<ILogger<AISummarizer>>();
-        _aiSummarizerMock = new Mock<AISummarizer>(_aiLoggerMock.Object, null, null, null);        // Create a mock AppConfig for MetadataHierarchyDetector
+        _aiSummarizerMock = new Mock<AISummarizer>(_aiLoggerMock!.Object, null!, null!, null!);        // Create a mock AppConfig for MetadataHierarchyDetector
         var mockAppConfig = new Mock<AppConfig>();
         mockAppConfig.Object.Paths = new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() };        // Create a real MetadataHierarchyDetector instead of mocking it
+        var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
         var hierarchyDetector = new MetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
-            mockAppConfig.Object)
-        {
-            Logger = Mock.Of<ILogger<MetadataHierarchyDetector>>()
-        };
+            mockAppConfig.Object);
 
-        PdfNoteProcessor pdfNoteProcessor = new(_pdfLoggerMock.Object, _aiSummarizerMock.Object, hierarchyDetector);
+        PdfNoteProcessor pdfNoteProcessor = new(_pdfLoggerMock.Object, _aiSummarizerMock.Object, hierarchyDetector, markdownNoteBuilder);
         DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor = new(_loggerMock.Object, pdfNoteProcessor, _aiSummarizerMock.Object);
         _processor = new PdfNoteBatchProcessor(batchProcessor);
         _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -58,19 +54,17 @@ public class BatchProcessResultTests
     }
 
     [TestMethod]
-
-    // Duplicate method removed. Only one definition of BatchProcessResult_ReportsTimingAndTokens remains.
     public async Task BatchProcessResult_ReportsTimingAndTokens()
     {
         // Arrange
-        string pdfPath = Path.Combine(_testDir, "test.pdf");
+        string pdfPath = Path.Combine(_testDir!, "test.pdf");
         File.WriteAllText(pdfPath, "fake pdf content");
         List<string> extensions = [".pdf"];
 
         // Act
-        BatchProcessResult result = await _processor.ProcessPdfsAsync(
+        BatchProcessResult result = await _processor!.ProcessPdfsAsync(
             pdfPath,
-            _outputDir,
+            _outputDir!,
             extensions,
             openAiApiKey: null,
             dryRun: true) // Use dry run to avoid actual PDF processing

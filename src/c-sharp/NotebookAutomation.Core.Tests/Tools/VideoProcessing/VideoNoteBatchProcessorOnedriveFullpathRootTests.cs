@@ -1,21 +1,20 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 
 [TestClass]
 public class VideoNoteBatchProcessorOnedriveFullpathRootTests
 {
-    private string _testDir;
-    private string _outputDir;
-    private string _testMetadataFile;
-    private AppConfig _testAppConfig;
-    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock;
+    private string _testDir = null!;
+    private string _outputDir = null!;
+    private string _testMetadataFile = null!;
+    private AppConfig _testAppConfig = null!;
+    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock = null!;
 
     // Removed unused field:
     // private Mock<AISummarizer> _aiSummarizerMock;
-    private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
-    private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-    private VideoNoteBatchProcessor _processor;
+    private Mock<VideoNoteProcessor> _videoNoteProcessorMock = null!;
+    private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor = null!;
+    private VideoNoteBatchProcessor _processor = null!;
 
     private MetadataTemplateManager CreateTestMetadataTemplateManager()
     {
@@ -26,16 +25,14 @@ public class VideoNoteBatchProcessorOnedriveFullpathRootTests
     }
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
-        return new MetadataHierarchyDetector(
-            NullLogger<MetadataHierarchyDetector>.Instance,
+        return new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance,
             new AppConfig
             {
                 Paths = new PathsConfig
                 {
                     MetadataFile = Path.Combine(Path.GetTempPath(), "temp_metadata.yaml")
                 }
-            })
-        { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+            });
     }
     [TestInitialize]
     public void Setup()
@@ -84,6 +81,7 @@ metadata:
             mockYamlHelper,
             CreateMetadataHierarchyDetector(),
             CreateTestMetadataTemplateManager(),
+            new MarkdownNoteBuilder(mockYamlHelper),
             mockOneDriveService,
             null);  // AppConfig
 
@@ -183,4 +181,3 @@ metadata:
         StringAssert.Contains(noteContent, customResourcesRoot);
     }
 }
-

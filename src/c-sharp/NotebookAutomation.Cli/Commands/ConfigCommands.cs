@@ -1,17 +1,4 @@
-﻿// <copyright file="ConfigCommands.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Cli/Commands/ConfigCommands.cs
-// Purpose: Provides CLI commands for configuration management including viewing, updating, and managing user secrets.
-// Created: 2025-06-07
-// </summary>
-using System.CommandLine.Invocation;
-
-using NotebookAutomation.Cli.Utilities;
-using NotebookAutomation.Core.Configuration;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Cli.Commands;
 
 /// <summary>

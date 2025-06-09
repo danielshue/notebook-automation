@@ -1,12 +1,11 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Tools;
 
 [TestClass]
 public class MarkdownParserTests
 {
-    private Mock<ILogger> _mockLogger;
-    private MarkdownParser _parser;
+    private Mock<ILogger> _mockLogger = null!;
+    private MarkdownParser _parser = null!;
 
     [TestInitialize]
     public void Setup()

@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Tools;
 
 /// <summary>
@@ -61,15 +60,15 @@ metadata:
         PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
             new YamlHelper(NullLogger<YamlHelper>.Instance),
-            appConfig);
-        AISummarizer aiSummarizer = new(
+            appConfig); AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
         var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelper);
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, null, appConfig);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, markdownNoteBuilder, null, appConfig);
 
         // Act - Using null OpenAI key should return simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);
@@ -96,15 +95,15 @@ metadata:
         PromptTemplateService promptService = new(
             NullLogger<PromptTemplateService>.Instance,
             new YamlHelper(NullLogger<YamlHelper>.Instance),
-            appConfig);
-        AISummarizer aiSummarizer = new(
+            appConfig); AISummarizer aiSummarizer = new(
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
         var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig) { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelper);
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, null, appConfig);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, markdownNoteBuilder, null, appConfig);
 
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);

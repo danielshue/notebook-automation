@@ -5,8 +5,8 @@ namespace NotebookAutomation.Core.Tests.Utilities;
 [TestClass]
 public class CourseStructureExtractorTests
 {
-    private Mock<ILogger<CourseStructureExtractor>> _mockLogger;
-    private CourseStructureExtractor _extractor;
+    private Mock<ILogger<CourseStructureExtractor>> _mockLogger = null!;
+    private CourseStructureExtractor _extractor = null!;
 
     [TestInitialize]
     public void Setup()
@@ -21,7 +21,7 @@ public class CourseStructureExtractorTests
     public void ExtractModuleAndLesson_VariousPathFormats_ExtractsCorrectly(string filePath, string expectedModule, string expectedLesson)
     {
         // Arrange
-        Dictionary<string, object> metadata = [];
+        Dictionary<string, object?> metadata = [];
 
         // Act
         _extractor.ExtractModuleAndLesson(filePath, metadata);
@@ -44,7 +44,7 @@ public class CourseStructureExtractorTests
     public void ExtractModuleAndLesson_SingleLevelCourse_ExtractsAsModule()
     {
         // Arrange
-        Dictionary<string, object> metadata = [];
+        Dictionary<string, object?> metadata = [];
         string filePath = @"D:\Videos\01_course-orientation-operations-strategy\video.mp4";
 
         // Act
@@ -63,7 +63,7 @@ public class CourseStructureExtractorTests
     public void CleanModuleOrLessonName_VariousFormats_FormatsCorrectly(string filePath, string expectedModule, string expectedLesson)
     {
         // Arrange
-        Dictionary<string, object> metadata = [];
+        Dictionary<string, object?> metadata = [];
 
         // Act
         _extractor.ExtractModuleAndLesson(filePath, metadata);
@@ -98,9 +98,8 @@ public class CourseStructureExtractorTests
     [DataRow("Week1-Introduction.pdf", "Week1 Introduction", null)]
     [DataRow("some-random-file.txt", null, null)]
     public void ExtractModuleAndLesson_FilenameExtraction_ExtractsCorrectly(string filename, string expectedModule, string expectedLesson)
-    {
-        // Arrange
-        Dictionary<string, object> metadata = [];
+    {        // Arrange
+        Dictionary<string, object?> metadata = [];
         string testPath = $@"D:\TestCourse\{filename}";
 
         // Act
@@ -142,7 +141,7 @@ public class CourseStructureExtractorTests
     public void ExtractModuleAndLesson_EnhancedDirectoryPatterns_ExtractsCorrectly(string filePath, string expectedModule, string expectedLesson)
     {
         // Arrange
-        Dictionary<string, object> metadata = [];
+        Dictionary<string, object?> metadata = [];
 
         // Act
         _extractor.ExtractModuleAndLesson(filePath, metadata);
@@ -163,9 +162,8 @@ public class CourseStructureExtractorTests
 
     [TestMethod]
     public void ExtractModuleAndLesson_CaseStudiesPattern_HandlesCorrectly()
-    {
-        // Arrange - Case studies typically won't have lessons, as mentioned in the user request
-        Dictionary<string, object> metadata = [];
+    {        // Arrange - Case studies typically won't have lessons, as mentioned in the user request
+        Dictionary<string, object?> metadata = [];
         string filePath = @"D:\Course\Case Studies\Strategic Analysis\analysis.pdf";
 
         // Act
@@ -187,9 +185,9 @@ public class CourseStructureExtractorTests
     public void ExtractModuleAndLesson_FallbackStrategies_WorksCorrectly()
     {
         // Arrange - Test multiple extraction strategies
-        Dictionary<string, object> metadata1 = [];
-        Dictionary<string, object> metadata2 = [];
-        Dictionary<string, object> metadata3 = [];
+        Dictionary<string, object?> metadata1 = [];
+        Dictionary<string, object?> metadata2 = [];
+        Dictionary<string, object?> metadata3 = [];
 
         // Test filename-based extraction when directory doesn't help
         string filePath1 = @"D:\SomeFolder\AnotherFolder\Module-3-Financial-Analysis.pdf";

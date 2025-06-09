@@ -1,9 +1,4 @@
-﻿// Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Utils;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Tools.MarkdownGeneration;
 
 /// <summary>
@@ -45,7 +40,7 @@ public partial class MarkdownNoteProcessor
     /// <param name="logger">The logger instance.</param>
     /// <param name="aiSummarizer">The AI summarizer instance.</param>
     /// <param name="hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
-    /// <param name="appConfig">Optional application configuration for advanced hierarchy detection.</param>
+    /// <param name="markdownNoteBuilder"></param>
     /// <remarks>
     /// <para>
     /// This constructor initializes the markdown note builder and AI summarizer, ensuring all dependencies are valid.
@@ -56,7 +51,8 @@ public partial class MarkdownNoteProcessor
     /// var processor = new MarkdownNoteProcessor(logger, aiSummarizer, hierarchyDetector);
     /// </code>
     /// </example>
-    public MarkdownNoteProcessor(ILogger logger, AISummarizer aiSummarizer, MetadataHierarchyDetector hierarchyDetector, AppConfig? appConfig = null)
+    /// <param name="appConfig">Optional application configuration for advanced hierarchy detection.</param>
+    public MarkdownNoteProcessor(ILogger logger, AISummarizer aiSummarizer, MetadataHierarchyDetector hierarchyDetector, MarkdownNoteBuilder markdownNoteBuilder, AppConfig? appConfig = null)
     {
         if (logger is ILogger<MarkdownNoteProcessor> genericLogger)
         {
@@ -76,11 +72,12 @@ public partial class MarkdownNoteProcessor
             }
         }
 
-        _noteBuilder = new MarkdownNoteBuilder(logger);
+        _noteBuilder = markdownNoteBuilder ?? throw new ArgumentNullException(nameof(markdownNoteBuilder));
         _aiSummarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer));
         _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(hierarchyDetector));
         _appConfig = appConfig;
     }
+
 
     /// <summary>
     /// Converts a TXT, HTML, or EPUB file to markdown, with optional AI-generated summary.
@@ -170,20 +167,19 @@ public partial class MarkdownNoteProcessor
             Dictionary<string, string>? noVariables = null;
             aiSummary = await _aiSummarizer.SummarizeWithVariablesAsync(rawText, noVariables, promptFileName).ConfigureAwait(false) ?? rawText;
         }
-
-        var metadata = new Dictionary<string, object>
+        var metadata = new Dictionary<string, object?>
         {
             { "title", Path.GetFileNameWithoutExtension(inputPath) },
             { "source_file", inputPath },
             { "generated", DateTime.UtcNow.ToString("u") },
-        };
-
-        // Extract hierarchy information using injected MetadataHierarchyDetector
+        };        // Extract hierarchy information using injected MetadataHierarchyDetector
         _logger.LogDebug($"Extracting hierarchy information from file path: {inputPath}");
         var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(inputPath);
-        _hierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "module");
+        var updatedMetadata = _hierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "module");
 
-        return _noteBuilder.BuildNote(metadata, aiSummary);
+        // Convert back to non-nullable dictionary for BuildNote method
+        var finalMetadata = updatedMetadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!);
+        return _noteBuilder.BuildNote(finalMetadata, aiSummary);
     }
 
     /// <summary>

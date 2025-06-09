@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Services;
 
 /// <summary>
@@ -9,9 +8,9 @@ namespace NotebookAutomation.Core.Tests.Services;
 [TestClass]
 public class PromptTemplateServiceTests
 {
-    private Mock<ILogger<PromptTemplateService>> _loggerMock;
-    private Mock<IYamlHelper> _yamlHelperMock;
-    private string _testFolder;
+    private Mock<ILogger<PromptTemplateService>> _loggerMock = null!;
+    private Mock<IYamlHelper> _yamlHelperMock = null!;
+    private string _testFolder = null!;
 
     /// <summary>
     /// Set up the test environment before each test.
@@ -232,11 +231,10 @@ public class PromptTemplateServiceTests
         Assert.AreEqual(string.Empty, result);
         _loggerMock.Verify(
             x => x.Log(
-            It.Is<LogLevel>(l => l == LogLevel.Error),
-            It.IsAny<EventId>(),
+            It.Is<LogLevel>(l => l == LogLevel.Error), It.IsAny<EventId>(),
             It.IsAny<It.IsAnyType>(),
             It.IsAny<Exception>(),
-            It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
 
@@ -632,12 +630,11 @@ internal class TestablePromptTemplateService(ILogger<PromptTemplateService> logg
     }
 
     public string GetDefaultTemplateForTest(string templateName)
-    {
-        // Use reflection to call the private method
-        System.Reflection.MethodInfo MethodInfo = typeof(PromptTemplateService).GetMethod(
+    {        // Use reflection to call the private method
+        System.Reflection.MethodInfo? methodInfo = typeof(PromptTemplateService).GetMethod(
             "GetDefaultTemplate",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
-        return (string)MethodInfo.Invoke(this, [templateName]);
+        return (string)(methodInfo?.Invoke(this, [templateName]) ?? string.Empty);
     }
 }

@@ -1,12 +1,4 @@
-﻿// <copyright file="QueueChangedEventArgs.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Models/QueueChangedEventArgs.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Models;
 
 /// <summary>
@@ -16,7 +8,7 @@ namespace NotebookAutomation.Core.Models;
 /// The <c>QueueChangedEventArgs</c> class provides information about changes to the processing queue,
 /// including the current state of the queue and the item that was changed, if applicable.
 /// </remarks>
-public class QueueChangedEventArgs(IReadOnlyList<QueueItem> queue, QueueItem? changedItem = null) : EventArgs
+public class QueueChangedEventArgs(IEnumerable<QueueItem> queue, QueueItem? changedItem = null) : EventArgs
 {
     /// <summary>
     /// Gets the current state of the processing queue.
@@ -24,7 +16,7 @@ public class QueueChangedEventArgs(IReadOnlyList<QueueItem> queue, QueueItem? ch
     /// <remarks>
     /// This property provides a snapshot of the queue's state at the time of the event.
     /// </remarks>
-    public IReadOnlyList<QueueItem> Queue { get; } = queue;
+    public IReadOnlyList<QueueItem> Queue { get; } = queue.ToList().AsReadOnly();
 
     /// <summary>
     /// Gets the item that changed, if applicable.

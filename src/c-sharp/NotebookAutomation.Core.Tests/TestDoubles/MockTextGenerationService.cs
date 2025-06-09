@@ -1,10 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-// Enable nullable reference types for this file
-#nullable enable
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.TextGeneration;
-
 namespace NotebookAutomation.Core.Tests.TestDoubles;
 
 /// <summary>

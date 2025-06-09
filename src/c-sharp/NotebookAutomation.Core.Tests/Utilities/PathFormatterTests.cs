@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Utils;
 
 [TestClass]
@@ -59,15 +58,14 @@ public class PathFormatterTests
         // Assert
         Assert.AreEqual(path, formatted); // Path is already short, shouldn't be changed
     }
-
     [TestMethod]
     public void Format_WithNullPath_ReturnsEmptyString()
     {
         // Arrange
-        string path = null;
+        string? path = null;
 
         // Act
-        string formatted = PathFormatter.Format(path, LogLevel.Information);
+        string formatted = PathFormatter.Format(path!, LogLevel.Information);
 
         // Assert
         Assert.AreEqual(string.Empty, formatted);
@@ -116,12 +114,11 @@ public class PathFormatterTests
         Assert.IsTrue(shortened.Length <= maxLength);
         Assert.IsTrue(shortened.StartsWith("...")); // Should start with ellipsis
     }
-
     [TestMethod]
     public void LoggerExtensions_LogWithFormattedPath_AppliesCorrectFormatting()
     {
         // Arrange
-        string logMessage = null;
+        string? logMessage = null;
         MockLogger<PathFormatterTests> logger = new((level, msg) => logMessage = msg);
         string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";            // Act
         NotebookAutomation.Core.Utils.LoggerExtensions.LogWithFormattedPath(
@@ -142,7 +139,7 @@ public class PathFormatterTests
     public void LoggerExtensions_LogWithFormattedPath_WithDebugLevel_ShowsFullPath()
     {
         // Arrange
-        string logMessage = null;
+        string? logMessage = null;
         MockLogger<PathFormatterTests> logger = new((level, msg) => logMessage = msg);
         string path = @"D:\very\long\path\to\some\deeply\nested\directory\structure\with\a\very\long\filename.txt";
 

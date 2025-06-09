@@ -1,23 +1,4 @@
-﻿// <copyright file="PdfNoteProcessor.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Tools/PdfProcessing/PdfNoteProcessor.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tools.Shared;
-using NotebookAutomation.Core.Utils;
-
-using UglyToad.PdfPig;
-using UglyToad.PdfPig.Content;
-
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Tools.PdfProcessing;
 
 /// <summary>
@@ -51,7 +32,7 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing;
 /// <param name="yamlHelper">The YAML helper for processing YAML frontmatter.</param>
 /// <param name="_hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
 /// <param name="appConfig">Optional application configuration for advanced hierarchy detection.</param>
-public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer, MetadataHierarchyDetector hierarchyDetector) : DocumentNoteProcessorBase(logger, aiSummarizer)
+public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer, MetadataHierarchyDetector hierarchyDetector, MarkdownNoteBuilder markdownNoteBuilder) : DocumentNoteProcessorBase(logger, aiSummarizer, markdownNoteBuilder)
 {
     private readonly MetadataHierarchyDetector _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(_hierarchyDetector));
     private string _yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter
@@ -85,11 +66,10 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
     /// </example>
     public override async Task<(string Text, Dictionary<string, object> Metadata)> ExtractTextAndMetadataAsync(string pdfPath)
     {
-        var metadata = new Dictionary<string, object>();
-        if (!File.Exists(pdfPath))
+        var metadata = new Dictionary<string, object?>(); if (!File.Exists(pdfPath))
         {
             Logger.LogErrorWithPath("PDF file not found: {FilePath}", pdfPath);
-            return (string.Empty, metadata);
+            return (string.Empty, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
         }
 
         string extractedText = string.Empty;
@@ -227,26 +207,23 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
             if (metadata.TryGetValue("authors", out var authors) && authors != null)
             {
                 metadata["authors"] = authors; // For consistency in output
-            }
-
-            // Build YAML frontmatter without the --- separators
-            string yamlContent = BuildYamlFrontmatter(metadata);
+            }            // Build YAML frontmatter without the --- separators
+            string yamlContent = BuildYamlFrontmatter(metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
 
             // Store in a temporary field for use by GeneratePdfSummaryAsync
             _yamlFrontmatter = yamlContent;
 
             // Remove any unwanted fields
-            metadata.Remove("aliases");
-            metadata.Remove("pdf-link");
+            metadata.Remove("aliases"); metadata.Remove("pdf-link");
             metadata.Remove("permalink");
             metadata.Remove("yaml-frontmatter"); // Prevent duplication
 
-            return (extractedText, metadata);
+            return (extractedText, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, $"Failed to extract text from PDF: {pdfPath}");
-            return (string.Empty, metadata);
+            return (string.Empty, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
         }
     }
 

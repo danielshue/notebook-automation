@@ -1,12 +1,4 @@
-﻿// Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-using System.Diagnostics;
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Models;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Utils;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Tools.Shared;
 
 /// <summary>

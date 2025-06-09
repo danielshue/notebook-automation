@@ -1,21 +1,30 @@
-﻿// <copyright file="GlobalUsings.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Cli/GlobalUsings.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-// Global usings for the NotebookAutomation.Cli project
-// These are commonly used throughout the CLI codebase
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 global using System;
 global using System.Collections.Generic;
 global using System.CommandLine;
+global using System.CommandLine.Invocation;
+global using System.Diagnostics;
 global using System.IO;
+global using System.Reflection;
+global using System.Runtime.CompilerServices;
+global using System.Runtime.InteropServices;
+global using System.Text;
 global using System.Threading;
 global using System.Threading.Tasks;
 
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
+
+global using NotebookAutomation.Cli.Commands;
+global using NotebookAutomation.Cli.Utilities;
+global using NotebookAutomation.Core.Configuration;
+global using NotebookAutomation.Core.Models;
+global using NotebookAutomation.Core.Services;
+global using NotebookAutomation.Core.Tools.MarkdownGeneration;
+global using NotebookAutomation.Core.Tools.PdfProcessing;
+global using NotebookAutomation.Core.Tools.TagManagement;
+global using NotebookAutomation.Core.Tools.Vault;
+global using NotebookAutomation.Core.Tools.VideoProcessing;
+global using NotebookAutomation.Core.Utils;
+
+global using Spectre.Console;

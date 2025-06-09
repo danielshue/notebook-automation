@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Services;
 
 /// <summary>
@@ -35,17 +34,15 @@ public class TokenProviderTests
         // Arrange
         ILogger logger = Mock.Of<ILogger>();
         Microsoft.Identity.Client.IPublicClientApplication msalApp = Mock.Of<Microsoft.Identity.Client.IPublicClientApplication>();
-        string[] scopes = ["scope"];
-
-        // Act & Assert
+        string[] scopes = ["scope"];        // Act & Assert
         Assert.ThrowsExactly<ArgumentNullException>(() =>
-            new TokenProvider(null, scopes, logger));
+            new TokenProvider(null!, scopes, logger));
 
         Assert.ThrowsExactly<ArgumentNullException>(() =>
-            new TokenProvider(msalApp, null, logger));
+            new TokenProvider(msalApp, null!, logger));
 
         Assert.ThrowsExactly<ArgumentNullException>(() =>
-            new TokenProvider(msalApp, scopes, null));
+            new TokenProvider(msalApp, scopes, null!));
     }
 
     // Additional tests for GetAuthorizationTokenAsync and AllowedHostsValidator would require

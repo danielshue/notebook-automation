@@ -1,0 +1,8 @@
+{
+  "id": "cbe5cfde-b258-4a24-8658-b3a38669df86",
+  "title": "Unit Test DI Constructor Patterns",
+  "details": "Key patterns for unit test constructor fixes in NotebookAutomation:\n\n1. MetadataHierarchyDetector:\n   - Constructor: MetadataHierarchyDetector(ILogger<MetadataHierarchyDetector> logger, AppConfig appConfig, string? vaultRootOverride = null)\n   - Logger property is read-only - cannot be assigned in tests\n   - Tests should use constructor injection only\n\n2. VideoNoteProcessor:\n   - Constructor: VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer, IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector, MetadataTemplateManager templateManager, MarkdownNoteBuilder markdownNoteBuilder, IOneDriveService? oneDriveService = null, AppConfig? appConfig = null)\n   - Key change: Added MarkdownNoteBuilder parameter (6th parameter)\n\n3. MarkdownNoteBuilder:\n   - Constructor: MarkdownNoteBuilder(IYamlHelper yamlHelper)\n   - NOT MarkdownNoteBuilder(ILogger<MarkdownNoteBuilder> logger) as some tests assume\n\n4. Test setup pattern needed:\n   - Create mock IYamlHelper for MarkdownNoteBuilder\n   - Create MarkdownNoteBuilder with yamlHelper\n   - Pass MarkdownNoteBuilder to VideoNoteProcessor\n   - Remove any Logger property assignments on MetadataHierarchyDetector",
+  "category": "testing",
+  "dateCreated": "2025-06-09T04:19:18.971Z",
+  "dateUpdated": "2025-06-09T04:19:18.971Z"
+}

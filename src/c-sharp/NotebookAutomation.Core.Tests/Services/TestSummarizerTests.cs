@@ -1,9 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.SemanticKernel.TextGeneration;
-
 namespace NotebookAutomation.Core.Tests.Services;
 
 /// <summary>
@@ -11,13 +6,12 @@ namespace NotebookAutomation.Core.Tests.Services;
 /// </summary>
 internal class TestTextGenerationService : ITextGenerationService
 {
-    public IReadOnlyDictionary<string, object> Attributes => new Dictionary<string, object>();
+    public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();
 
     public Task<IReadOnlyList<TextContent>> GetTextContentsAsync(
         string prompt,
-        PromptExecutionSettings executionSettings = null,
-
-        Kernel kernel = null,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default)
     {
         List<TextContent> result = [new("Mock summary")];
@@ -26,21 +20,21 @@ internal class TestTextGenerationService : ITextGenerationService
 
     public IAsyncEnumerable<StreamingTextContent> GetStreamingTextContentsAsync(
         string prompt,
-        PromptExecutionSettings executionSettings = null,
-        Kernel kernel = null,
+        PromptExecutionSettings? executionSettings = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default) => throw new NotImplementedException("Streaming is not used in this test");
 
     // This is the method that AISummarizer actually uses
     public static Task<TextContent> GetTextContentAsync(
         string prompt,
         OpenAIPromptExecutionSettings settings,
-        Kernel kernel = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default) => Task.FromResult(new TextContent("Mock summary"));
 
     public static Task<TextContent> GetTextContentAsync(
         string prompt,
-        PromptExecutionSettings settings = null,
-        Kernel kernel = null,
+        PromptExecutionSettings? settings = null,
+        Kernel? kernel = null,
         CancellationToken cancellationToken = default) => Task.FromResult(new TextContent("Mock summary"));
 }
 

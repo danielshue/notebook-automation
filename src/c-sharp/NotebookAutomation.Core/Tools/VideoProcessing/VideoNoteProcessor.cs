@@ -1,20 +1,4 @@
-// <copyright file="VideoNoteProcessor.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tools.Shared;
-using NotebookAutomation.Core.Utils;
-
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Tools.VideoProcessing;
 
 /// <summary>
@@ -58,7 +42,8 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer,
     IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector,
     MetadataTemplateManager templateManager,
-    IOneDriveService? oneDriveService = null, AppConfig? appConfig = null) : base(logger, aiSummarizer)
+    MarkdownNoteBuilder markdownNoteBuilder,
+    IOneDriveService? oneDriveService = null, AppConfig? appConfig = null) : base(logger, aiSummarizer, markdownNoteBuilder)
     {
         _oneDriveService = oneDriveService;
         _appConfig = appConfig;
@@ -93,9 +78,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// Console.WriteLine($"Video title: {metadata["title"]}");
     /// </code>
     /// </example>
-    public async Task<Dictionary<string, object>> ExtractMetadataAsync(string videoPath)
+    public async Task<Dictionary<string, object?>> ExtractMetadataAsync(string videoPath)
     {
-        var metadata = new Dictionary<string, object>
+        var metadata = new Dictionary<string, object?>
         {
                 // Friendly title: remove numbers, underscores, file extension, and trim
                 { "title", FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileNameWithoutExtension(videoPath)) },
@@ -253,13 +238,13 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 // Build basic YAML frontmatter for video notes
                 var basicMetadata = new Dictionary<string, object>
                 {
-                    ["title"] = variables.GetValueOrDefault("title", "Untitled Video"),
+                    ["title"] = variables.GetValueOrDefault("title", "Untitled Video")!,
                     ["template-type"] = "video-reference",
                     ["auto-generated-state"] = "writable",
                     ["type"] = "note/video",
                 };
 
-                string yamlContent = BuildYamlFrontmatter(basicMetadata);
+                string yamlContent = BuildYamlFrontmatter(basicMetadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
                 variables["yamlfrontmatter"] = yamlContent;
                 Logger.LogDebug("Built and added yamlfrontmatter variable ({Length:N0} chars) for AI summarizer", yamlContent.Length);
             }
@@ -284,7 +269,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         try
         {
             // Create a dictionary with the expected YAML frontmatter structure for videos
-            var yamlData = new Dictionary<string, object>
+            var yamlData = new Dictionary<string, object?>
             {
                 ["template-type"] = "video-reference",
                 ["auto-generated-state"] = "writable",
@@ -457,11 +442,12 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         // Extract any existing frontmatter from the AI summary
         string? summaryFrontmatter = _yamlHelper?.ExtractFrontmatter(bodyText);
 
-        Dictionary<string, object> summaryMetadata = [];
+        Dictionary<string, object?> summaryMetadata = [];
 
         if (!string.IsNullOrWhiteSpace(summaryFrontmatter) && _yamlHelper != null)
         {
-            summaryMetadata = _yamlHelper.ParseYamlToDictionary(summaryFrontmatter);
+            summaryMetadata = _yamlHelper.ParseYamlToDictionary(summaryFrontmatter)
+                .ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
             Logger.LogInformation("Extracted frontmatter from AI summary with {Count} fields", summaryMetadata.Count);
         }
         else
@@ -478,12 +464,12 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             cleanSummary.Length > 200 ? cleanSummary[..200] + "..." : cleanSummary);
 
         // Merge metadata: video metadata takes precedence, but preserve AI tags if they exist
-        var mergedMetadata = new Dictionary<string, object>(metadata);
+        var mergedMetadata = new Dictionary<string, object>(metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!) ?? new Dictionary<string, object>());
 
         // If AI summary has tags and video metadata doesn't, use AI tags
         if (summaryMetadata.TryGetValue("tags", out object? value) && !mergedMetadata.ContainsKey("tags"))
         {
-            mergedMetadata["tags"] = value;
+            mergedMetadata["tags"] = value!;
         }
 
         // Merge other non-conflicting AI metadata
@@ -491,12 +477,12 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         {
             if (kvp.Key != "tags" && !mergedMetadata.ContainsKey(kvp.Key))
             {
-                mergedMetadata[kvp.Key] = kvp.Value;
+                mergedMetadata[kvp.Key] = kvp.Value!;
             }
         } // Apply path-based hierarchy detection if file path is available
 
         // Note: We temporarily add the path to metadata just for hierarchy detection
-        var pathForHierarchy = metadata.TryGetValue("_internal_path", out object? pathValue) ? pathValue.ToString() : null;
+        var pathForHierarchy = metadata?.TryGetValue("_internal_path", out object? pathValue) == true ? pathValue?.ToString() : null;
         if (!string.IsNullOrEmpty(pathForHierarchy))
         {
             try
@@ -505,10 +491,11 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(pathForHierarchy);                // For videos, we want all hierarchy information regardless of level
 
                 // since videos are content files, not index files
-                mergedMetadata = _hierarchyDetector.UpdateMetadataWithHierarchy(
-                    mergedMetadata,
+                var updated = _hierarchyDetector.UpdateMetadataWithHierarchy(
+                    mergedMetadata.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value),
                     hierarchyInfo,
-                    "module"); // Use module to include all hierarchy levels
+                    "module");
+                mergedMetadata = updated.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!);
                 Logger.LogInformationWithPath(
                     "Added hierarchy metadata - Program: {Program}, Course: {Course}, Class: {Class}",
                     pathForHierarchy!,
@@ -1063,7 +1050,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 promptVariables["title"] = titleObj.ToString() ?? "Untitled Video";
             } // Add YAML frontmatter as a variable
 
-            string yamlContent = BuildYamlFrontmatter(metadata);
+            string yamlContent = BuildYamlFrontmatter(metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
             promptVariables["yamlfrontmatter"] = yamlContent;
             Logger.LogDebug($"Added yamlfrontmatter variable ({yamlContent.Length:N0} chars) for AI summarizer");
 
@@ -1072,7 +1059,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
 
         // Add internal path for hierarchy detection (will be removed in GenerateMarkdownNote)
         metadata["_internal_path"] = videoPath;            // Generate the basic markdown note - include title heading using friendly title from metadata
-        string markdownNote = GenerateMarkdownNote(aiSummary, metadata, "Video Note", includeNoteTypeTitle: true);
+        string markdownNote = GenerateMarkdownNote(aiSummary, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!), "Video Note", includeNoteTypeTitle: true);
 
         // Add OneDrive share link section to markdown content if share link was generated
         if (!string.IsNullOrEmpty(shareLink))
@@ -1101,7 +1088,8 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// <inheritdoc/>
     public override async Task<(string Text, Dictionary<string, object> Metadata)> ExtractTextAndMetadataAsync(string filePath)
     {
-        var metadata = await ExtractMetadataAsync(filePath).ConfigureAwait(false);
+        var metadataNullable = await ExtractMetadataAsync(filePath).ConfigureAwait(false);
+        var metadata = metadataNullable.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!);
         string? transcript = TryLoadTranscript(filePath);
         string text = transcript ?? string.Empty;
         return (text, metadata);

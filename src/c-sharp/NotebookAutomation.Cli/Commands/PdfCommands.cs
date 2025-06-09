@@ -1,20 +1,4 @@
-﻿// <copyright file="PdfCommands.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Cli/Commands/PdfCommands.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-using System.Runtime.CompilerServices;
-
-using NotebookAutomation.Cli.Utilities;
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Tools.PdfProcessing;
-using NotebookAutomation.Core.Utils;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands;

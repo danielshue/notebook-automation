@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Services.Text;
 
 /// <summary>
@@ -8,7 +7,7 @@ namespace NotebookAutomation.Core.Tests.Services.Text;
 [TestClass]
 public class MockTextChunkingServiceTests
 {
-    private MockTextChunkingService _mockChunkingService;
+    private MockTextChunkingService _mockChunkingService = null!;
 
     [TestInitialize]
     public void SetUp()
@@ -114,7 +113,7 @@ public class MockTextChunkingServiceTests
     public void SplitTextIntoChunks_NullText_ThrowsArgumentNullException() =>
 
         // Act
-        Assert.ThrowsExactly<ArgumentNullException>(() => _mockChunkingService.SplitTextIntoChunks(null, 100, 10));
+        Assert.ThrowsExactly<ArgumentNullException>(() => _mockChunkingService.SplitTextIntoChunks(null!, 100, 10));
 
     /// <summary>
     /// Tests that invalid chunk size throws ArgumentOutOfRangeException.
