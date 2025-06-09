@@ -1,14 +1,4 @@
-﻿// <copyright file="MarkdownNoteBuilder.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Utils/MarkdownNoteBuilder.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-using Microsoft.Extensions.Logging.Abstractions;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
@@ -27,9 +17,9 @@ namespace NotebookAutomation.Core.Utils;
 /// </code>
 /// </example>
 /// </remarks>
-public class MarkdownNoteBuilder(ILogger? logger = null)
+public class MarkdownNoteBuilder(IYamlHelper yamlHelper)
 {
-    private readonly YamlHelper yamlHelper = new(logger ?? NullLogger.Instance);
+    private readonly IYamlHelper _yamlHelper = yamlHelper;
 
     /// <summary>
     /// Builds a markdown note containing only YAML frontmatter (no content body).
@@ -49,7 +39,7 @@ public class MarkdownNoteBuilder(ILogger? logger = null)
     {
         frontmatter["banner"] = "gies-banner.png"; // Default banner if not specified
 
-        var yaml = yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
+        var yaml = _yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
 
         // Remove any trailing newlines or content after frontmatter
         int end = yaml.IndexOf("---", 3, StringComparison.Ordinal);

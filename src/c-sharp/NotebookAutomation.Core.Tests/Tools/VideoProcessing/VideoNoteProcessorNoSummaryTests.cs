@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 
 /// <summary>
@@ -8,11 +7,11 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 [TestClass]
 public class VideoNoteProcessorNoSummaryTests
 {
-    private ILogger<VideoNoteProcessor> _logger;
-    private AISummarizer _aiSummarizer;
-    private VideoNoteProcessor _processor;
-    private string _tempDir;
-    private string _testVideoPath;
+    private ILogger<VideoNoteProcessor> _logger = null!;
+    private AISummarizer _aiSummarizer = null!;
+    private VideoNoteProcessor _processor = null!;
+    private string _tempDir = null!;
+    private string _testVideoPath = null!;
 
     /// <summary>
     /// Initialize test resources before each test.
@@ -33,13 +32,10 @@ public class VideoNoteProcessorNoSummaryTests
             {
                 MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml")
             }
-        };
-        var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), appConfig)
-        {
-            Logger = new LoggerFactory().CreateLogger<MetadataHierarchyDetector>()
-        };
+        }; var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), appConfig);
         var templateManager = new MetadataTemplateManager(new LoggerFactory().CreateLogger<MetadataTemplateManager>(), appConfig, yamlHelper);
-        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper, hierarchyDetector, templateManager);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper, hierarchyDetector, templateManager, markdownNoteBuilder);
 
         // Create temporary directory and mock video file
         _tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -118,4 +114,3 @@ public class VideoNoteProcessorNoSummaryTests
         // Even if the AI summary fails, it should still generate content
     }
 }
-

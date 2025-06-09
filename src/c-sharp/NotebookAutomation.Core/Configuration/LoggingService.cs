@@ -1,33 +1,4 @@
-﻿// <copyright file="LoggingService.cs" company="Notebook Automation Project">
-// Copyright (c) 2025 Notebook Automation Project. All rights reserved.
-// Licensed under the MIT License. See LICENSE file in the project root for license information.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Configuration/LoggingService.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-// -----------------------------------------------------------------------------
-// LoggingService.cs
-// Centralized logging service for the Notebook Automation system.
-//
-// Example usage:
-//     var loggingService = provider.GetRequiredService<ILoggingService>();
-//     var logger = loggingService.GetLogger<SomeClass>();
-//     logger.LogInformation("Application started");
-// -----------------------------------------------------------------------------
-
-using System.Reflection;
-
-using Microsoft.Extensions.Logging.Console;
-
-using Serilog;
-using Serilog.Events;
-
-using ILogger = Microsoft.Extensions.Logging.ILogger;
-using SerilogILogger = Serilog.ILogger;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Configuration;
 
 /// <summary>
@@ -65,11 +36,11 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     private string? currentLogFilePath;
 
     // The initialized loggers and factory (null until ConfigureLogging is called)
-    private SerilogILogger? serilogLogger;
-    private SerilogILogger? serilogFailedLogger;
-    private ILoggerFactory? loggerFactory;
-    private ILogger? logger;
-    private ILogger? failedLogger;
+    private global::Serilog.ILogger? serilogLogger;
+    private global::Serilog.ILogger? serilogFailedLogger;
+    private Microsoft.Extensions.Logging.ILoggerFactory? loggerFactory;
+    private Microsoft.Extensions.Logging.ILogger? logger;
+    private Microsoft.Extensions.Logging.ILogger? failedLogger;
 
     // Synchronization object for thread safety
     private readonly Lock initLock = new();
@@ -78,12 +49,12 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// <summary>
     /// Gets the main Serilog logger instance used for general logging.
     /// </summary>
-    private SerilogILogger SerilogLogger => EnsureInitialized().serilogLogger!;
+    private global::Serilog.ILogger SerilogLogger => EnsureInitialized().serilogLogger!;
 
     /// <summary>
     /// Gets the specialized Serilog logger instance used for recording failed operations.
     /// </summary>
-    private SerilogILogger SerilogFailedLogger => EnsureInitialized().serilogFailedLogger!;
+    private global::Serilog.ILogger SerilogFailedLogger => EnsureInitialized().serilogFailedLogger!;
 
     /// <summary>
     /// Gets the logger factory used to create typed loggers.
@@ -93,12 +64,12 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// <summary>
     /// Gets the main logger instance used for general application logging.
     /// </summary>
-    public ILogger Logger => EnsureInitialized().logger!;
+    public Microsoft.Extensions.Logging.ILogger Logger => EnsureInitialized().logger!;
 
     /// <summary>
     /// Gets the specialized logger instance used for recording failed operations.
     /// </summary>
-    public ILogger FailedLogger => EnsureInitialized().failedLogger!;
+    public Microsoft.Extensions.Logging.ILogger FailedLogger => EnsureInitialized().failedLogger!;
 
     /// <summary>
     /// Gets the full path to the current log file.
@@ -156,7 +127,7 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
                 builder.AddSimpleConsole(options =>
                 {
                     options.SingleLine = false;
-                    options.ColorBehavior = LoggerColorBehavior.Enabled;
+                    options.ColorBehavior = Microsoft.Extensions.Logging.Console.LoggerColorBehavior.Enabled;
                 }));
 
             var fallbackLogger = fallbackFactory.CreateLogger("LoggingService.Fallback");
@@ -199,7 +170,7 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// <param name="loggingDir">Directory for log files.</param>
     /// <param name="debug">Whether debug logging is enabled.</param>
     /// <returns>A configured Serilog logger instance.</returns>
-    private SerilogILogger CreateSerilogLogger(string loggingDir, bool debug)
+    private global::Serilog.ILogger CreateSerilogLogger(string loggingDir, bool debug)
     {
         try
         {
@@ -260,7 +231,7 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// as the category name. This is the preferred way to create loggers for classes
     /// when you have a LoggingService instance.
     /// </remarks>
-    public virtual ILogger<T> GetLogger<T>()
+    public virtual Microsoft.Extensions.Logging.ILogger<T> GetLogger<T>()
     {
         return LoggerFactoryInternal.CreateLogger<T>();
     }

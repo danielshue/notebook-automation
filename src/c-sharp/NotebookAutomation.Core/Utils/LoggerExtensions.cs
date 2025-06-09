@@ -1,16 +1,4 @@
-﻿// <copyright file="LoggerExtensions.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Utils/LoggerExtensions.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-// Module: LoggerExtensions.cs
-// Provides OneDrive integration for file/folder sync and access using Microsoft Graph API.
-#nullable enable
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Utils;
 
 /// <summary>

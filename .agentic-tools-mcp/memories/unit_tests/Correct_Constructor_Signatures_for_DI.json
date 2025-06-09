@@ -1,0 +1,8 @@
+{
+  "id": "c1a5f941-0b7e-47b2-9c09-e04ac61c79ba",
+  "title": "Correct Constructor Signatures for DI",
+  "details": "Correct constructor signatures for dependency injection in NotebookAutomation:\n\n## VideoNoteProcessor\n```csharp\npublic VideoNoteProcessor(\n    ILogger<VideoNoteProcessor> logger,\n    AISummarizer aiSummarizer,\n    IYamlHelper yamlHelper,\n    MetadataHierarchyDetector hierarchyDetector,\n    MetadataTemplateManager templateManager,\n    MarkdownNoteBuilder markdownNoteBuilder,\n    IOneDriveService? oneDriveService = null,\n    AppConfig? appConfig = null\n) : base(logger, aiSummarizer, markdownNoteBuilder)\n```\n\n## MetadataHierarchyDetector\n```csharp\npublic MetadataHierarchyDetector(\n    ILogger<MetadataHierarchyDetector> logger,\n    AppConfig appConfig,\n    string? vaultRootOverride = null\n)\n```\n- Logger property is READ-ONLY, don't assign to it in tests\n- Use constructor parameter only\n\n## MarkdownNoteBuilder\n```csharp\npublic MarkdownNoteBuilder(IYamlHelper yamlHelper)\n```\n- Takes IYamlHelper, NOT ILogger\n\n## Common Test Pattern Issues:\n1. Don't assign to Logger property (it's read-only)\n2. VideoNoteProcessor parameter order: logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, markdownNoteBuilder, oneDriveService?, appConfig?\n3. MarkdownNoteBuilder needs IYamlHelper parameter\n4. All constructors take their dependencies as parameters, no property assignment needed",
+  "category": "unit_tests",
+  "dateCreated": "2025-06-09T04:29:09.047Z",
+  "dateUpdated": "2025-06-09T04:29:09.047Z"
+}

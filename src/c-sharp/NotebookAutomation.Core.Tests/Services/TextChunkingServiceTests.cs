@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Services;
 
 /// <summary>
@@ -8,7 +7,7 @@ namespace NotebookAutomation.Core.Tests.Services;
 [TestClass]
 public class TextChunkingServiceTests
 {
-    private ITextChunkingService _chunkingService;
+    private ITextChunkingService _chunkingService = null!;
 
     [TestInitialize]
     public void SetUp()
@@ -90,14 +89,13 @@ public class TextChunkingServiceTests
     /// </summary>
     [TestMethod]
     public void SplitTextIntoChunks_NullText_ThrowsArgumentNullException()
-    {
-        // Arrange
-        string text = null;
+    {        // Arrange
+        string? text = null;
         int chunkSize = 100;
         int overlap = 10;
 
         // Act
-        Assert.ThrowsExactly<ArgumentNullException>(() => _chunkingService.SplitTextIntoChunks(text, chunkSize, overlap));
+        Assert.ThrowsExactly<ArgumentNullException>(() => _chunkingService.SplitTextIntoChunks(text!, chunkSize, overlap));
     }
 
     /// <summary>
@@ -207,12 +205,11 @@ public class TextChunkingServiceTests
     /// </summary>
     [TestMethod]
     public void EstimateTokenCount_NullText_ReturnsZero()
-    {
-        // Arrange
-        string text = null;
+    {        // Arrange
+        string? text = null;
 
         // Act
-        int result = _chunkingService.EstimateTokenCount(text);
+        int result = _chunkingService.EstimateTokenCount(text!);
 
         // Assert
         Assert.AreEqual(0, result);

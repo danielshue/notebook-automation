@@ -1,7 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-using NotebookAutomation.Core.Services.Text;
-
 namespace NotebookAutomation.Core.Tests.Services.Text;
 
 /// <summary>
@@ -78,10 +75,8 @@ public class RecursiveCharacterTextSplitterTests
         // Act
         List<string> result = splitter.SplitText(markdown);
 
-        // Assert
-
-        // Find the chunk that has the code block
-        string codeChunk = result.FirstOrDefault(chunk => chunk.Contains("```csharp"));
+        // Assert        // Find the chunk that has the code block
+        string? codeChunk = result.FirstOrDefault(chunk => chunk.Contains("```csharp"));
 
         // Make sure the code block is kept together
         Assert.IsNotNull(codeChunk);

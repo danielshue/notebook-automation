@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Configuration;
 
 /// <summary>
@@ -25,15 +24,14 @@ public class ServiceRegistrationTests
         Assert.IsNotNull(provider.GetService<PromptTemplateService>());
         Assert.IsNotNull(provider.GetService<AISummarizer>());
     }
-
     [TestMethod]
     public void AddNotebookAutomationServices_ThrowsOnNullArguments()
     {
-        IServiceCollection services = null;
-        IConfiguration config = null;
+        IServiceCollection? services = null;
+        IConfiguration? config = null;
         Assert.ThrowsExactly<ArgumentNullException>(() =>
-            ServiceRegistration.AddNotebookAutomationServices(services, new ConfigurationBuilder().Build()));
+            ServiceRegistration.AddNotebookAutomationServices(services!, new ConfigurationBuilder().Build()));
         Assert.ThrowsExactly<ArgumentNullException>(() =>
-            ServiceRegistration.AddNotebookAutomationServices(new ServiceCollection(), config));
+            ServiceRegistration.AddNotebookAutomationServices(new ServiceCollection(), config!));
     }
 }

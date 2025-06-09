@@ -1,14 +1,4 @@
-// <copyright file="MetadataTemplateManager.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Utils/MetadataTemplateManager.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-using NotebookAutomation.Core.Configuration;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
@@ -27,7 +17,7 @@ namespace NotebookAutomation.Core.Utils;
 /// </code>
 /// </example>
 /// </remarks>
-public partial class MetadataTemplateManager
+public partial class MetadataTemplateManager : IMetadataTemplateManager
 {
     private readonly ILogger _logger;
     private readonly string _metadataFilePath;

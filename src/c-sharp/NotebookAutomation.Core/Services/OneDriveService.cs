@@ -1,21 +1,15 @@
-﻿// <copyright file="OneDriveService.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Services/OneDriveService.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-// Module: OneDriveService.cs
-// Provides OneDrive integration for file/folder sync and access using Microsoft Graph API.
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using System.Globalization;
+using System.Text.Json;
+
 using Microsoft.Graph;
+using Microsoft.Graph.Authentication;
 using Microsoft.Identity.Client;
 using Microsoft.Identity.Client.Extensions.Msal;
 using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Abstractions.Authentication;
 
-using NotebookAutomation.Core.Utils;
+using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Core.Services;
 
@@ -175,7 +169,7 @@ public class OneDriveService : IOneDriveService
         try
         {
             var result = await msalApp!.AcquireTokenInteractive(scopes)
-                .WithPrompt(Prompt.SelectAccount) // Force account selection for better user experience
+                .WithPrompt(Microsoft.Identity.Client.Prompt.SelectAccount) // Force account selection for better user experience
                 .ExecuteAsync().ConfigureAwait(false);
 
             logger.LogInformation(
@@ -1233,7 +1227,7 @@ internal class TokenProvider(IPublicClientApplication msalApp, string[] scopes, 
                     // Token expired or requires interaction
                     logger.LogInformation("Silent token acquisition failed, falling back to interactive");
                     result = await msalApp.AcquireTokenInteractive(scopes)
-                        .WithPrompt(Prompt.SelectAccount)
+                        .WithPrompt(Microsoft.Identity.Client.Prompt.SelectAccount)
                         .ExecuteAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
@@ -1242,7 +1236,7 @@ internal class TokenProvider(IPublicClientApplication msalApp, string[] scopes, 
                 // No accounts, must do interactive auth
                 logger.LogInformation("No accounts found, performing interactive authentication");
                 result = await msalApp.AcquireTokenInteractive(scopes)
-                    .WithPrompt(Prompt.SelectAccount)
+                    .WithPrompt(Microsoft.Identity.Client.Prompt.SelectAccount)
                     .ExecuteAsync(cancellationToken).ConfigureAwait(false);
             }
 

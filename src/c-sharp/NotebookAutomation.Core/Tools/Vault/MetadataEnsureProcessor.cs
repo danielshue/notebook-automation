@@ -1,7 +1,4 @@
-﻿// Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-using NotebookAutomation.Core.Utils;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Tools.Vault;
 
 /// <summary>
@@ -18,13 +15,13 @@ namespace NotebookAutomation.Core.Tools.Vault;
 public class MetadataEnsureProcessor(
     ILogger<MetadataEnsureProcessor> _logger,
     IYamlHelper _yamlHelper,
-    MetadataHierarchyDetector _metadataDetector,
-    CourseStructureExtractor _structureExtractor)
+    IMetadataHierarchyDetector _metadataDetector,
+    ICourseStructureExtractor _structureExtractor)
 {
     private readonly ILogger<MetadataEnsureProcessor> _logger = _logger ?? throw new ArgumentNullException(nameof(_logger));
     private readonly IYamlHelper _yamlHelper = _yamlHelper ?? throw new ArgumentNullException(nameof(_yamlHelper));
-    private readonly MetadataHierarchyDetector _metadataDetector = _metadataDetector ?? throw new ArgumentNullException(nameof(_metadataDetector));
-    private readonly CourseStructureExtractor _structureExtractor = _structureExtractor ?? throw new ArgumentNullException(nameof(_structureExtractor));
+    private readonly IMetadataHierarchyDetector _metadataDetector = _metadataDetector ?? throw new ArgumentNullException(nameof(_metadataDetector));
+    private readonly ICourseStructureExtractor _structureExtractor = _structureExtractor ?? throw new ArgumentNullException(nameof(_structureExtractor));
 
     /// <summary>
     /// Ensures metadata is properly set in a markdown file.
@@ -56,12 +53,14 @@ public class MetadataEnsureProcessor(
 
             // Extract existing frontmatter
             string? existingYaml = _yamlHelper.ExtractFrontmatter(content);
+
             var metadata = existingYaml != null
                 ? _yamlHelper.ParseYamlToDictionary(existingYaml)
-                : new Dictionary<string, object>();
+                    .ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value)
+                : new Dictionary<string, object?>();
 
             // Store original metadata for comparison
-            var originalMetadata = new Dictionary<string, object>(metadata);
+            var originalMetadata = new Dictionary<string, object?>(metadata);
 
             // Determine template type if not set
             EnsureTemplateType(metadata, filePath);
@@ -93,10 +92,8 @@ public class MetadataEnsureProcessor(
                 _logger.LogInformationWithPath("DRY RUN: Would update metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
                 LogMetadataChanges(originalMetadata, metadata, filePath);
                 return true;
-            }
-
-            // Update the file with new frontmatter
-            string updatedContent = _yamlHelper.UpdateFrontmatter(content, metadata);
+            }            // Update the file with new frontmatter
+            string updatedContent = _yamlHelper.UpdateFrontmatter(content, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
             await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
 
             _logger.LogInformationWithPath("Updated metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
@@ -114,7 +111,7 @@ public class MetadataEnsureProcessor(
     /// </summary>
     /// <param name="metadata">The metadata dictionary to update.</param>
     /// <param name="filePath">The file path to analyze.</param>
-    private static void EnsureTemplateType(Dictionary<string, object> metadata, string filePath)
+    private static void EnsureTemplateType(Dictionary<string, object?> metadata, string filePath)
     {
         // If template-type is already set, don't override it
         if (metadata.ContainsKey("template-type") && !string.IsNullOrEmpty(metadata["template-type"]?.ToString()))
@@ -180,7 +177,7 @@ public class MetadataEnsureProcessor(
     /// Ensures required fields are present based on the template type.
     /// </summary>
     /// <param name="metadata">The metadata dictionary to update.</param>
-    private void EnsureRequiredFields(Dictionary<string, object> metadata)
+    private void EnsureRequiredFields(Dictionary<string, object?> metadata)
     {
         string templateType = metadata.GetValueOrDefault("template-type", string.Empty)?.ToString() ?? string.Empty;
 
@@ -223,9 +220,9 @@ public class MetadataEnsureProcessor(
     /// <summary>
     /// Ensures required fields for PDF reference template.
     /// </summary>
-    private static void EnsurePdfReferenceFields(Dictionary<string, object> metadata)
+    private static void EnsurePdfReferenceFields(Dictionary<string, object?> metadata)
     {
-        var requiredFields = new Dictionary<string, object>
+        var requiredFields = new Dictionary<string, object?>
         {
             ["type"] = "note/case-study",
             ["comprehension"] = 0,
@@ -255,9 +252,9 @@ public class MetadataEnsureProcessor(
     /// <summary>
     /// Ensures required fields for video reference template.
     /// </summary>
-    private static void EnsureVideoReferenceFields(Dictionary<string, object> metadata)
+    private static void EnsureVideoReferenceFields(Dictionary<string, object?> metadata)
     {
-        var requiredFields = new Dictionary<string, object>
+        var requiredFields = new Dictionary<string, object?>
         {
             ["type"] = "note/video-note",
             ["comprehension"] = 0,
@@ -289,9 +286,9 @@ public class MetadataEnsureProcessor(
     /// <summary>
     /// Ensures required fields for resource reading template.
     /// </summary>
-    private static void EnsureResourceReadingFields(Dictionary<string, object> metadata)
+    private static void EnsureResourceReadingFields(Dictionary<string, object?> metadata)
     {
-        var requiredFields = new Dictionary<string, object>
+        var requiredFields = new Dictionary<string, object?>
         {
             ["type"] = "note/reading",
             ["comprehension"] = 0,
@@ -319,9 +316,9 @@ public class MetadataEnsureProcessor(
     /// <summary>
     /// Ensures basic required fields for general templates.
     /// </summary>
-    private static void EnsureBasicFields(Dictionary<string, object> metadata)
+    private static void EnsureBasicFields(Dictionary<string, object?> metadata)
     {
-        var requiredFields = new Dictionary<string, object>
+        var requiredFields = new Dictionary<string, object?>
         {
             ["tags"] = string.Empty,
         };
@@ -341,7 +338,7 @@ public class MetadataEnsureProcessor(
     /// <param name="original">Original metadata.</param>
     /// <param name="updated">Updated metadata.</param>
     /// <param name="forceOverwrite">Whether to force overwrite existing values.</param>    /// <returns>True if changes were made.</returns>
-    private static bool HasMetadataChanged(Dictionary<string, object> original, Dictionary<string, object> updated, bool forceOverwrite)
+    private static bool HasMetadataChanged(Dictionary<string, object?> original, Dictionary<string, object?> updated, bool forceOverwrite)
     {
         // If force overwrite is enabled, we consider changes if any fields in updated are different
         if (forceOverwrite)
@@ -388,7 +385,7 @@ public class MetadataEnsureProcessor(
     /// <summary>
     /// Checks if two dictionaries are equal.
     /// </summary>
-    private static bool DictionariesEqual(Dictionary<string, object> dict1, Dictionary<string, object> dict2)
+    private static bool DictionariesEqual(Dictionary<string, object?> dict1, Dictionary<string, object?> dict2)
     {
         if (dict1.Count != dict2.Count)
         {
@@ -420,7 +417,7 @@ public class MetadataEnsureProcessor(
     /// <param name="original">Original metadata.</param>
     /// <param name="updated">Updated metadata.</param>
     /// <param name="filePath">Optional file path for detailed logging.</param>
-    private void LogMetadataChanges(Dictionary<string, object> original, Dictionary<string, object> updated, string? filePath = null)
+    private void LogMetadataChanges(Dictionary<string, object?> original, Dictionary<string, object?> updated, string? filePath = null)
     {
         var changes = new List<string>();
         var additions = new List<string>();
@@ -542,7 +539,7 @@ public class MetadataEnsureProcessor(
     /// <param name="filePath">The path of the file.</param>
     /// <param name="metadata">The metadata dictionary.</param>
     /// <returns>The determined hierarchy level (e.g., "main", "program", "course"), or null if it cannot be determined.</returns>
-    private string? DetermineHierarchyLevelFromPath(string filePath, Dictionary<string, object> metadata)
+    private string? DetermineHierarchyLevelFromPath(string filePath, Dictionary<string, object?> metadata)
     {
         // First check if template-type is already set and extract hierarchy level from it
         if (metadata.TryGetValue("template-type", out var templateTypeObj) && templateTypeObj != null)
@@ -574,8 +571,14 @@ public class MetadataEnsureProcessor(
             return null;
         }
 
+
         // Get the vault root from the metadata detector
-        string vaultRoot = _metadataDetector.VaultRoot;
+        string? vaultRoot = _metadataDetector.VaultRoot;
+        if (string.IsNullOrWhiteSpace(vaultRoot))
+        {
+            // Cannot determine hierarchy without a valid vault root
+            return null;
+        }
 
         // Calculate the relative path from vault root
         string relativePath = Path.GetRelativePath(vaultRoot, filePath);

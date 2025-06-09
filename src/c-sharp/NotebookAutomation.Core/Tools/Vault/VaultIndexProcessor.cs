@@ -1,16 +1,4 @@
-﻿// <copyright file="VaultIndexProcessor.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Tools/Vault/VaultIndexProcessor.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Models;
-using NotebookAutomation.Core.Utils;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Tools.Vault;
 
 /// <summary>
@@ -23,18 +11,18 @@ namespace NotebookAutomation.Core.Tools.Vault;
 /// </remarks>
 public class VaultIndexProcessor(
     ILogger<VaultIndexProcessor> logger,
-    MetadataTemplateManager templateManager,
-    MetadataHierarchyDetector hierarchyDetector,
-    CourseStructureExtractor structureExtractor,
+    IMetadataTemplateManager templateManager,
+    IMetadataHierarchyDetector hierarchyDetector,
+    ICourseStructureExtractor structureExtractor,
     IYamlHelper yamlHelper,
     MarkdownNoteBuilder noteBuilder,
     AppConfig appConfig,
     string vaultRootPath = "")
 {
     private readonly ILogger<VaultIndexProcessor> _logger = logger;
-    private readonly MetadataTemplateManager _templateManager = templateManager;
-    private readonly MetadataHierarchyDetector _hierarchyDetector = hierarchyDetector;
-    private readonly CourseStructureExtractor _structureExtractor = structureExtractor;
+    private readonly IMetadataTemplateManager _templateManager = templateManager;
+    private readonly IMetadataHierarchyDetector _hierarchyDetector = hierarchyDetector;
+    private readonly ICourseStructureExtractor _structureExtractor = structureExtractor;
     private readonly IYamlHelper _yamlHelper = yamlHelper;
     private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder;
     private readonly string _defaultVaultRootPath = !string.IsNullOrEmpty(vaultRootPath)
@@ -312,7 +300,7 @@ public class VaultIndexProcessor(
             }
 
             // Extract module/lesson using CourseStructureExtractor
-            var metadata = new Dictionary<string, object>();
+            var metadata = new Dictionary<string, object?>();
             _structureExtractor.ExtractModuleAndLesson(filePath, metadata);
 
             if (metadata.TryGetValue("module", out var extractedModule))
@@ -401,7 +389,13 @@ public class VaultIndexProcessor(
             _logger.LogDebug($"Before - frontmatter contains class: {frontmatter["class"]}");
         }
 
-        frontmatter = _hierarchyDetector.UpdateMetadataWithHierarchy(frontmatter, hierarchyInfo, templateType);
+        var updatedFrontmatter = _hierarchyDetector.UpdateMetadataWithHierarchy(frontmatter.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value), hierarchyInfo, templateType);
+        frontmatter.Clear();
+        foreach (var kvp in updatedFrontmatter)
+        {
+            if (kvp.Value is not null)
+                frontmatter[kvp.Key] = kvp.Value;
+        }
 
         _logger.LogDebug($"After UpdateMetadataWithHierarchy - frontmatter keys: {string.Join(", ", frontmatter.Keys)}");
         if (frontmatter.ContainsKey("program"))

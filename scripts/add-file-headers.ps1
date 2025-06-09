@@ -80,25 +80,14 @@ function Get-FileHeader {
     $relativePath = $relativePath -replace "\\", "/"
 
     return @"
-// <copyright file="$fileName" company="$Company">
-// Copyright (c) $currentYear $Company. All rights reserved.
-// Licensed under the MIT License. See LICENSE file in the project root for license information.
-// </copyright>
-// <author>$Author</author>
-// <summary>
-// File: $relativePath
-// Purpose: [TODO: Add file purpose description]
-// Created: $(Get-Date -Format "yyyy-MM-dd")
-// </summary>
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 "@
 }
 
 function Test-HasFileHeader {
-    param([string]$FilePath)
-
-    $content = Get-Content $FilePath -Raw -ErrorAction SilentlyContinue
-    return $content -match "^\s*//\s*<copyright\s+file="
+    param([string]$FilePath)    $content = Get-Content $FilePath -Raw -ErrorAction SilentlyContinue
+    return $content -match "^\s*//\s*Licensed under the MIT License"
 }
 
 function Add-HeaderToFile {

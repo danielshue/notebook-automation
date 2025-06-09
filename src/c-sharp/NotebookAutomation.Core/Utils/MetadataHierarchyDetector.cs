@@ -1,14 +1,4 @@
-﻿// <copyright file="MetadataHierarchyDetector.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Utils/MetadataHierarchyDetector.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-using NotebookAutomation.Core.Configuration;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
@@ -49,31 +39,26 @@ namespace NotebookAutomation.Core.Utils;
 /// </code>
 /// </example>
 /// </remarks>
-public class MetadataHierarchyDetector()
-{
-    public required ILogger<MetadataHierarchyDetector> Logger { get; init; }
 
-    /// <summary>
-    /// Gets the root path of the notebook vault.
-    /// </summary>
-    /// <remarks>
-    /// The vault root is determined either from the application configuration or an override provided during initialization.
-    /// </remarks>
-    public string? VaultRoot { get; set; }
+public class MetadataHierarchyDetector : IMetadataHierarchyDetector
+{
+    public ILogger<MetadataHierarchyDetector> Logger { get; }
+    public string? VaultRoot { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataHierarchyDetector"/> class.
     /// </summary>
-    /// <param name="logger"></param>
-    /// <param name="appConfig"></param>
-    /// <param name="programOverride"></param>
-    /// <param name="verbose"></param>
-    /// <param name="vaultRootOverride"></param>
+    /// <param name="logger">Logger for diagnostic output.</param>
+    /// <param name="appConfig">Application configuration for vault root path.</param>
+    /// <param name="vaultRootOverride">Optional override for the vault root path.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public MetadataHierarchyDetector(ILogger<MetadataHierarchyDetector> logger, AppConfig appConfig, string? vaultRootOverride = null) : this()
+    public MetadataHierarchyDetector(ILogger<MetadataHierarchyDetector> logger, AppConfig appConfig, string? vaultRootOverride = null)
     {
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        VaultRoot = !string.IsNullOrEmpty(vaultRootOverride) ? vaultRootOverride : appConfig?.Paths?.NotebookVaultFullpathRoot ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
+        VaultRoot = !string.IsNullOrEmpty(vaultRootOverride)
+            ? vaultRootOverride
+            : appConfig?.Paths?.NotebookVaultFullpathRoot
+                ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
     }
 
     /// <summary>
@@ -262,7 +247,7 @@ public class MetadataHierarchyDetector()
     /// // Includes program, course, and class metadata
     /// </code>
     /// </example>
-    public Dictionary<string, object> UpdateMetadataWithHierarchy(Dictionary<string, object> metadata, Dictionary<string, string> hierarchyInfo, string? templateType = null)
+    public Dictionary<string, object?> UpdateMetadataWithHierarchy(Dictionary<string, object?> metadata, Dictionary<string, string> hierarchyInfo, string? templateType = null)
     {
 
         // Determine which levels to include based on the index type

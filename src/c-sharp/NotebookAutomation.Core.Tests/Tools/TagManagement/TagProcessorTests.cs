@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Tools.TagManagement;
 
 /// <summary>
@@ -8,12 +7,12 @@ namespace NotebookAutomation.Core.Tests.Tools.TagManagement;
 [TestClass]
 public class TagProcessorTests
 {
-    private Mock<ILogger<TagProcessor>> _loggerMock;
-    private Mock<ILogger> _failedLoggerMock;
-    private TagProcessor _processor;
-    private YamlHelper _yamlHelper;
-    private string _fixturesPath;
-    private string _tempDir;
+    private Mock<ILogger<TagProcessor>> _loggerMock = null!;
+    private Mock<ILogger> _failedLoggerMock = null!;
+    private TagProcessor _processor = null!;
+    private YamlHelper _yamlHelper = null!;
+    private string _fixturesPath = null!;
+    private string _tempDir = null!;
 
     [TestInitialize]
     public void Setup()
@@ -162,15 +161,13 @@ public class TagProcessorTests
         // Assert
         Assert.AreEqual(0, result["FilesProcessed"]);
         Assert.AreEqual(0, result["FilesModified"]);
-        Assert.AreEqual(1, result["FilesWithErrors"]);
-
-        _failedLoggerMock.Verify(
+        Assert.AreEqual(1, result["FilesWithErrors"]); _failedLoggerMock.Verify(
             logger => logger.Log(
                 It.Is<LogLevel>(level => level == LogLevel.Error),
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("not found")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("not found")),
                 It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
 
@@ -189,19 +186,20 @@ public class TagProcessorTests
         // Act
         Dictionary<string, int> result = await dryRunProcessor.UpdateFrontmatterKeyAsync(filePath, "dryRunKey", "dryRunValue").ConfigureAwait(false);
 
-        // Assert
-        Assert.AreEqual(1, result["FilesProcessed"]);
+        // Assert        Assert.AreEqual(1, result["FilesProcessed"]);
         Assert.AreEqual(0, result["FilesModified"]); // Should not modify in dry run
 
         string newContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
-        Assert.AreEqual(originalContent, newContent, "The file content should remain unchanged in dry run mode.");        // Verify the log message for dry run
+        Assert.AreEqual(originalContent, newContent, "The file content should remain unchanged in dry run mode.");
+
+        // Verify the log message for dry run
         _loggerMock.Verify(
             logger => logger.Log(
                 It.Is<LogLevel>(level => level == LogLevel.Debug),
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("[DRY RUN]")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("[DRY RUN]")),
                 It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
 
@@ -316,7 +314,7 @@ public class TagProcessorTests
         Assert.AreEqual("leadership", TagProcessor.NormalizeTagValue("\"Leadership\""));
         Assert.AreEqual("ethics", TagProcessor.NormalizeTagValue("'Ethics'"));
         Assert.AreEqual(string.Empty, TagProcessor.NormalizeTagValue(string.Empty));
-        Assert.AreEqual(string.Empty, TagProcessor.NormalizeTagValue(null));
+        Assert.AreEqual(string.Empty, TagProcessor.NormalizeTagValue(null!));
     }
 
     /// <summary>
@@ -356,12 +354,11 @@ tags:
 ---
 # Index Page Content
 ";
-        await File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);        // Reset the processor stats for this test to isolate the test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        await File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);        // Reset the processor stats for this test to isolate the test        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
 
         // Read the file content and frontmatter for the test
-        string frontmatter = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+        string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter!);
 
         // Act
         bool result = await _processor.ClearTagsFromFileAsync(filePath, frontmatterDict, content).ConfigureAwait(false);
@@ -441,11 +438,9 @@ tags:
         string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
         Assert.IsTrue(content.Contains("messy-tag"));
         Assert.IsTrue(content.Contains("another-tag"));
-        Assert.IsTrue(content.Contains("duplicate"));
-
-        // Check that there's only one instance of "duplicate" after normalization
-        string yaml = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatter = _yamlHelper.ParseYamlToDictionary(yaml);
+        Assert.IsTrue(content.Contains("duplicate"));        // Check that there's only one instance of "duplicate" after normalization
+        string? yaml = _yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatter = _yamlHelper.ParseYamlToDictionary(yaml!);
         List<string> tags = TagProcessor.GetExistingTags(frontmatter);
         Assert.AreEqual(3, tags.Count);
         Assert.AreEqual(1, tags.Count(t => t == "duplicate"));
@@ -563,11 +558,9 @@ type: Lecture
         await File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);
 
         // Reset the processor stats for this test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
-
-        // Read the file contentand frontmatter for the test
-        string frontmatter = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);        // Read the file contentand frontmatter for the test
+        string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter!);
 
         // Act
         bool result = await _processor.AddNestedTagsToFileAsync(filePath, frontmatterDict, content).ConfigureAwait(false);
@@ -626,11 +619,9 @@ semester: Fall 2025
             _yamlHelper,
             false,
             true,
-            ["custom-field", "semester"]);
-
-        // Read the file content and frontmatter for the test
-        string frontmatter = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+            ["custom-field", "semester"]);        // Read the file content and frontmatter for the test
+        string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter!);
 
         // Act
         bool result = await customFieldsProcessor.AddNestedTagsToFileAsync(filePath, frontmatterDict, content).ConfigureAwait(false);
@@ -750,13 +741,12 @@ course: Overview
         Assert.IsFalse(result);
         Assert.AreEqual(1, _processor.Stats["FilesWithErrors"]);
 
-        _failedLoggerMock.Verify(
-            logger => logger.Log(
+        _failedLoggerMock.Verify(logger => logger.Log(
                 It.Is<LogLevel>(level => level == LogLevel.Error),
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("File not found")),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("File not found")),
                 It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
     }
 
@@ -956,11 +946,10 @@ course: Finance 101
 
         _loggerMock.Verify(
             logger => logger.Log(
-                It.Is<LogLevel>(level => level == LogLevel.Information),
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString().Contains("[DRY RUN]")),
+                It.Is<LogLevel>(level => level == LogLevel.Information), It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("[DRY RUN]")),
                 It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.AtLeastOnce);
     }
 
@@ -1027,12 +1016,10 @@ type: Lecture
         // Assert
         // The current implementation of TagProcessor doesn't handle nested properties directly,
         // but it does process the top-level "type" field
-        Assert.IsTrue(result, "ProcessFileAsync should process the file due to the non-nested 'type' field");
-
-        // Now let's manually extract the nested metadata and process it
+        Assert.IsTrue(result, "ProcessFileAsync should process the file due to the non-nested 'type' field");        // Now let's manually extract the nested metadata and process it
         string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
-        string frontmatter = _yamlHelper.ExtractFrontmatter(content);
-        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
+        string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
+        Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter!);
 
         // Check that we can extract the nested metadata
         Assert.IsTrue(frontmatterDict.ContainsKey("metadata"), "Frontmatter should contain 'metadata' key");

@@ -1,7 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-using System.Text;
-
 namespace NotebookAutomation.Core.Tests.Utils;
 
 /// <summary>
@@ -10,9 +7,9 @@ namespace NotebookAutomation.Core.Tests.Utils;
 [TestClass]
 public class YamlHelperReadOnlyTests
 {
-    private ILogger<YamlHelper> _logger;
-    private YamlHelper _yamlHelper;
-    private string _tempDir;
+    private ILogger<YamlHelper> _logger = null!;
+    private YamlHelper _yamlHelper = null!;
+    private string _tempDir = null!;
 
     /// <summary>
     /// Initialize test resources before each test.

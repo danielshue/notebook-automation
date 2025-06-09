@@ -1,10 +1,1 @@
-// <copyright file="{FILENAME}" company="Notebook Automation Project">
-// Copyright (c) {YEAR} Notebook Automation Project. All rights reserved.
-// Licensed under the MIT License. See LICENSE file in the project root for license information.
-// </copyright>
-// <author>{AUTHOR_NAME} <{AUTHOR_EMAIL}></author>
-// <summary>
-// File: {RELATIVE_PATH}
-// Purpose: {PURPOSE_DESCRIPTION}
-// Created: {CREATION_DATE}
-// </summary>
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.

@@ -1,25 +1,26 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 
 [TestClass]
 public class VideoNoteBatchProcessorResourcesRootTests
 {
-    private string _testDir;
-    private string _outputDir;
-    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock;
+    private string _testDir = null!;
+    private string _outputDir = null!;
+    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock = null!;
 
     // Removed unused field:
     // private Mock<AISummarizer> _aiSummarizerMock;
-    private Mock<VideoNoteProcessor> _videoNoteProcessorMock;
-    private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-    private VideoNoteBatchProcessor _processor; private string _tempMetadataFile;
-    private AppConfig _testAppConfig; private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
+    private Mock<VideoNoteProcessor> _videoNoteProcessorMock = null!;
+    private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor = null!;
+    private VideoNoteBatchProcessor _processor = null!;
+    private string _tempMetadataFile = null!;
+    private AppConfig _testAppConfig = null!;
+
+    private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
         return new MetadataHierarchyDetector(
             NullLogger<MetadataHierarchyDetector>.Instance,
-            new AppConfig())
-        { Logger = NullLogger<MetadataHierarchyDetector>.Instance };
+            new AppConfig());
     }
     private MetadataTemplateManager CreateTestMetadataTemplateManager()
     {
@@ -56,15 +57,14 @@ public class VideoNoteBatchProcessorResourcesRootTests
         IOneDriveService mockOneDriveService = Mock.Of<IOneDriveService>();
 
         // Create mock YamlHelper
-        var mockYamlHelper = Mock.Of<IYamlHelper>();
-
-        // Set up mock with test dependencies and updated constructor signature
+        var mockYamlHelper = Mock.Of<IYamlHelper>();        // Set up mock with test dependencies and updated constructor signature
         _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             testAISummarizer,
             mockYamlHelper, // Required YamlHelper parameter
             CreateMetadataHierarchyDetector(), // Required MetadataHierarchyDetector parameter
             CreateTestMetadataTemplateManager(), // Required MetadataTemplateManager parameter
+            new MarkdownNoteBuilder(mockYamlHelper), // Required MarkdownNoteBuilder parameter
             mockOneDriveService, // Optional OneDriveService
             _testAppConfig); // Optional AppConfig
 
@@ -169,4 +169,3 @@ public class VideoNoteBatchProcessorResourcesRootTests
         StringAssert.Contains(noteContent, customResourcesRoot);
     }
 }
-

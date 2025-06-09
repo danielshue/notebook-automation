@@ -1,12 +1,4 @@
-﻿// <copyright file="CourseStructureExtractor.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Utils/CourseStructureExtractor.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
@@ -44,7 +36,7 @@ namespace NotebookAutomation.Core.Utils;
 /// </example>
 /// <param name="logger">Logger for diagnostic and warning messages during extraction operations.</param>
 /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> is null.</exception>
-public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> logger)
+public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> logger) : ICourseStructureExtractor
 {
     private readonly ILogger<CourseStructureExtractor> logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private static readonly Regex NumberPrefixRegex = NumberPrefixRegexPattern();
@@ -79,7 +71,8 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     /// </code>
     /// </example>
     /// <exception cref="ArgumentException">Logged as warning if extraction fails due to invalid path structure.</exception>
-    public void ExtractModuleAndLesson(string filePath, Dictionary<string, object> metadata)
+    /// <inheritdoc/>
+    public void ExtractModuleAndLesson(string filePath, IDictionary<string, object?> metadata)
     {
         if (string.IsNullOrEmpty(filePath))
         {

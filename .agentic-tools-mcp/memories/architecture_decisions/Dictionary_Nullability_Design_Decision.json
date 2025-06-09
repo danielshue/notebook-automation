@@ -1,0 +1,8 @@
+{
+  "id": "0dbe729a-8aca-4054-817b-8eeaa4cc05bc",
+  "title": "Dictionary Nullability Design Decision",
+  "details": "DECISION: Keep production API using Dictionary&lt;string, object?&gt; and fix test code\n\nREASONING:\n1. The production API correctly uses Dictionary&lt;string, object?&gt; for metadata, which is semantically appropriate since metadata values can be null or missing\n2. Key APIs affected: MetadataHierarchyDetector.UpdateMetadataWithHierarchy, CourseStructureExtractor.ExtractModuleAndLesson  \n3. Test code should match the API contract, not the other way around\n4. Changing the API would be a breaking change and reduce type safety\n\nIMPLEMENTATION STATUS:\n- ✅ Fixed MetadataHierarchyDetectorTests.cs dictionary types and variable declaration errors\n- ✅ Build errors resolved, solution compiles successfully \n- ⚠️ 100+ nullable reference type warnings remain across multiple test files\n- 📋 Need to systematically update Dictionary&lt;string, object&gt; to Dictionary&lt;string, object?&gt; in ALL test files\n- 📋 Need to add null checks for Directory.CreateDirectory calls \n- 📋 Need to fix CS8620/CS8619 formatter signature warnings in logging tests\n\nPRIORITY FILES TO FIX:\n1. CourseStructureExtractorTests.cs (lines 105, 146, 170, 202-204) - Dictionary type mismatches\n2. VideoNoteProcessorTranscriptTests.cs (line 333) - Dictionary nullability mismatch  \n3. Multiple files with Directory.CreateDirectory null reference warnings\n4. Logger formatter signature warnings throughout test files (CS8620)\n\nPROGRESS: Fixed all build errors, actively working on warnings reduction",
+  "category": "architecture_decisions",
+  "dateCreated": "2025-06-09T05:59:09.430Z",
+  "dateUpdated": "2025-06-09T06:03:35.380Z"
+}

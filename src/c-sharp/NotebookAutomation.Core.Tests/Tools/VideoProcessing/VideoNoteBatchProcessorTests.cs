@@ -1,5 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 
 /// <summary>
@@ -7,16 +6,15 @@ namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 /// </summary>
 [TestClass]
 public class VideoNoteBatchProcessorTests
-{
-    // Add TestContext property for diagnostic logging
-    public TestContext TestContext { get; set; }
-    private string _testDir;
-    private string _outputDir;
-    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock;
-    private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor;
-    private VideoNoteBatchProcessor _processor;
-    private TestableAISummarizer _testAISummarizer;
-    private AppConfig _appConfig;
+{    // Add TestContext property for diagnostic logging
+    public TestContext TestContext { get; set; } = null!;
+    private string _testDir = null!;
+    private string _outputDir = null!;
+    private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock = null!;
+    private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor = null!;
+    private VideoNoteBatchProcessor _processor = null!;
+    private TestableAISummarizer _testAISummarizer = null!;
+    private AppConfig _appConfig = null!;
 
     [TestInitialize]
     public void Setup()
@@ -67,10 +65,12 @@ public class VideoNoteBatchProcessorTests
                 MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml"),
             },
         };        // Create a real MetadataHierarchyDetector instead of mocking it
-        var hierarchyDetector = new MetadataHierarchyDetector()
-        {
-            Logger = Mock.Of<ILogger<MetadataHierarchyDetector>>()
-        };
+
+        var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+        var hierarchyDetector = new MetadataHierarchyDetector(
+            Mock.Of<ILogger<MetadataHierarchyDetector>>(),
+            _appConfig);
 
         // Create MetadataTemplateManager
         var templateManager = new MetadataTemplateManager(
@@ -85,6 +85,7 @@ public class VideoNoteBatchProcessorTests
             mockYamlHelper.Object,
             hierarchyDetector,
             templateManager,
+            markdownNoteBuilder,
             mockOneDriveService.Object,
             _appConfig);
 

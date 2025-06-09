@@ -1,10 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-#nullable enable
-using Microsoft.SemanticKernel;
-
-using NotebookAutomation.Core.Tests.TestDoubles;
-
 namespace NotebookAutomation.Core.Tests.Services;
 
 /// <summary>

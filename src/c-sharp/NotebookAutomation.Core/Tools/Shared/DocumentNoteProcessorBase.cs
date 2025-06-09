@@ -1,15 +1,4 @@
-﻿// <copyright file="DocumentNoteProcessorBase.cs" company="PlaceholderCompany">
-// Copyright (c) PlaceholderCompany. All rights reserved.
-// </copyright>
-// <author>Dan Shue</author>
-// <summary>
-// File: ./src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteProcessorBase.cs
-// Purpose: [TODO: Add file purpose description]
-// Created: 2025-06-07
-// </summary>
-using NotebookAutomation.Core.Services;
-using NotebookAutomation.Core.Utils;
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Tools.Shared;
 
 /// <summary>
@@ -23,11 +12,11 @@ namespace NotebookAutomation.Core.Tools.Shared;
 /// </remarks>
 /// <param name="logger">The logger instance.</param>
 /// <param name="aiSummarizer">The AISummarizer instance for generating AI-powered summaries.</param>
-public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiSummarizer)
+public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiSummarizer, MarkdownNoteBuilder markdownNoteBuilder)
 {
     protected readonly ILogger Logger = logger ?? throw new ArgumentNullException(nameof(logger), "Logger must be provided via DI.");
     protected readonly AISummarizer Summarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer), "AISummarizer must be provided via DI.");
-
+    protected readonly MarkdownNoteBuilder Builder = markdownNoteBuilder ?? throw new ArgumentNullException(nameof(markdownNoteBuilder), "MarkdownNoteBuilder must be provided via DI.");
     /// <summary>
     /// Extracts the main text/content and metadata from the document.
     /// </summary>
@@ -132,10 +121,10 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
         bool includeNoteTypeTitle = false)
     {
         var frontmatter = metadata ?? new Dictionary<string, object> { { "title", $"Untitled {noteType}" } };
-        var builder = new MarkdownNoteBuilder(Logger);
+
         if (suppressBody)
         {
-            return builder.CreateMarkdownWithFrontmatter(frontmatter);
+            return Builder.CreateMarkdownWithFrontmatter(frontmatter);
         }
 
         string markdownBody;
@@ -158,6 +147,6 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
             Logger?.LogDebug("No title added to markdown body");
         }
 
-        return builder.BuildNote(frontmatter, markdownBody);
+        return Builder.BuildNote(frontmatter, markdownBody);
     }
 }

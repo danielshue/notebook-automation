@@ -1,7 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-
-#nullable enable
-
 namespace NotebookAutomation.Core.Tests.Tools.VideoProcessing;
 
 /// <summary>
@@ -61,15 +58,16 @@ public class VideoNoteProcessorTranscriptTests
                 NotebookVaultFullpathRoot = Path.Combine(Path.GetTempPath(), "TestVault"),
                 MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml"),
             },
-        };
-        var mockHierarchyDetector = new MetadataHierarchyDetector(mockLogger.Object, appConfig) { Logger = mockLogger.Object };
+        }; var mockHierarchyDetector = new MetadataHierarchyDetector(mockLogger.Object, appConfig);
         var templateManager = new MetadataTemplateManager(mockLogger.Object, appConfig, mockYamlHelper);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(mockYamlHelper);
         _processor = new VideoNoteProcessor(
             _logger,
             aiSummarizer,
             mockYamlHelper,
             mockHierarchyDetector,
-            templateManager);
+            templateManager,
+            markdownNoteBuilder);
     }
 
     /// <summary>
@@ -329,10 +327,10 @@ public class VideoNoteProcessorTranscriptTests
     {
         // Arrange
         string videoPath = Path.Combine(_tempDirectory, "test_video.mp4");
-        File.WriteAllText(videoPath, "Simulated video content");
+        File.WriteAllText(videoPath, "Simulated video content"); string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test_video.txt", "Sample transcript content");
 
-        string transcriptPath = CreateTestTranscriptFile(_tempDirectory, "test_video.txt", "Sample transcript content");            // Act
-        Dictionary<string, object> metadata = await _processor.ExtractMetadataAsync(videoPath).ConfigureAwait(false);        // Use reflection to call the private FindTranscriptPath method
+        // Act
+        Dictionary<string, object?> metadata = await _processor.ExtractMetadataAsync(videoPath).ConfigureAwait(false);// Use reflection to call the private FindTranscriptPath method
         System.Reflection.MethodInfo? methodInfo = typeof(VideoNoteProcessor).GetMethod(
             "FindTranscriptPath",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
