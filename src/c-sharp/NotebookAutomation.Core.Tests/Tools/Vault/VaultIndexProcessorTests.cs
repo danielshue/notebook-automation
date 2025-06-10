@@ -129,4 +129,56 @@ public class VaultIndexProcessorTests
         // Assert
         Assert.IsTrue(result);
     }
+
+    [TestMethod]
+    public void DetermineTemplateType_Level1_ReturnsMain()
+    {
+        // Arrange
+        // Processor already set up in Setup()
+
+        // Act
+        string result = _processor.DetermineTemplateType(1, "TestFolder");
+
+        // Assert
+        Assert.AreEqual("main", result);
+    }
+
+    [TestMethod]
+    public void DetermineTemplateType_Level2_ReturnsProgram()
+    {
+        // Arrange
+        // Processor already set up in Setup()
+
+        // Act
+        string result = _processor.DetermineTemplateType(2, "TestFolder");
+
+        // Assert
+        Assert.AreEqual("program", result);
+    }
+
+    [TestMethod]
+    public void DetermineTemplateType_Level5WithLessonFolder_ReturnsLesson()
+    {
+        // Arrange
+        // Processor already set up in Setup()
+
+        // Act
+        string result = _processor.DetermineTemplateType(5, "Lesson 1");
+
+        // Assert
+        Assert.AreEqual("lesson", result);
+    }
+
+    [TestMethod]
+    public void DetermineTemplateType_Level4WithModuleFolder_ReturnsModule()
+    {
+        // Arrange
+        // Processor already set up in Setup()
+
+        // Act
+        string result = _processor.DetermineTemplateType(4, "Module 1");
+
+        // Assert
+        Assert.AreEqual("module", result);
+    }
 }

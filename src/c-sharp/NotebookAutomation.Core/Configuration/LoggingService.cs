@@ -181,11 +181,8 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
             }
 
             var appAssemblyName = GetAssemblyName();
-            var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;
-
-            // Console should only show warnings and errors, regardless of debug mode
-            // Debug information should only go to log files
-            var consoleMinLevel = LogEventLevel.Warning;
+            var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;            // Console shows debug/info when debug mode is enabled, otherwise warnings and errors
+            var consoleMinLevel = debug ? LogEventLevel.Debug : LogEventLevel.Warning;
             var date = DateTime.Now.ToString("yyyyMMdd");
             var time = DateTime.Now.ToString("HHmmss");
 
@@ -200,7 +197,8 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
                 .MinimumLevel.Is(minLevel)
                 .WriteTo.Console(
                     restrictedToMinimumLevel: consoleMinLevel,
-                    outputTemplate: "{Message:lj}{NewLine}{Exception}")
+                    outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+                    theme: Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme.Code)
                 .WriteTo.File(
                     logFilePath,
                     rollingInterval: RollingInterval.Day,

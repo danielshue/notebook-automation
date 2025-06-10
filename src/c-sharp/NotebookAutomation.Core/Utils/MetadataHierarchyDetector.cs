@@ -408,4 +408,175 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
         // If not a subdirectory, return the full path (though this shouldn't happen)
         return normalizedFullPath;
     }
+
+    /// <summary>
+    /// Calculates the hierarchy level of a folder relative to the vault root.
+    /// </summary>
+    /// <param name="folderPath">The folder path to analyze.</param>
+    /// <param name="vaultPath">The vault root path. If null, uses the instance VaultRoot.</param>
+    /// <returns>The hierarchy level (0 = vault root, 1 = program, 2 = course, 3 = class, 4 = module, 5 = lesson, etc.).</returns>
+    /// <remarks>
+    /// Hierarchy levels:
+    /// - Level 0: Vault root
+    /// - Level 1: Program level (e.g., "Value Chain Management")
+    /// - Level 2: Course level (e.g., "Operations Management")
+    /// - Level 3: Class level (e.g., "Supply Chain Fundamentals")
+    /// - Level 4: Module level (e.g., "Week 1")
+    /// - Level 5: Lesson level (e.g., "Lesson 1")
+    /// - Level 6+: Content level (e.g., subdirectories within lessons)
+    /// </remarks>
+    public int CalculateHierarchyLevel(string folderPath, string? vaultPath = null)
+    {
+        // Use provided vault path or fall back to instance VaultRoot
+        string effectiveVaultPath = vaultPath ?? VaultRoot ?? throw new InvalidOperationException("Vault root path is required");
+
+        // Normalize and get full paths for consistent comparison
+        string fullVaultPath = Path.GetFullPath(effectiveVaultPath);
+
+        // Handle paths consistently - paths with leading slash are treated as relative to vault root
+        string normalizedFolderPath = folderPath;
+        if (folderPath.StartsWith('/') || folderPath.StartsWith('\\'))
+        {
+            // Remove leading slash and treat as relative path
+            normalizedFolderPath = folderPath.TrimStart('/', '\\');
+            Logger.LogDebug("CalculateHierarchyLevel - removed leading slash from '{Original}' -> '{Normalized}'", folderPath, normalizedFolderPath);
+        }
+
+        // Determine if the path should be treated as absolute or relative
+        string fullFolderPath;
+        if (Path.IsPathRooted(normalizedFolderPath) && !normalizedFolderPath.StartsWith('/') && !normalizedFolderPath.StartsWith('\\'))
+        {
+            // True absolute path (e.g., C:\path\to\folder)
+            fullFolderPath = Path.GetFullPath(normalizedFolderPath);
+            Logger.LogDebug("CalculateHierarchyLevel - treating as absolute path: '{NormalizedPath}' -> '{FullPath}'", normalizedFolderPath, fullFolderPath);
+        }
+        else
+        {
+            // Relative path - combine with vault root
+            fullFolderPath = Path.GetFullPath(Path.Combine(effectiveVaultPath, normalizedFolderPath));
+            Logger.LogDebug("CalculateHierarchyLevel - treating as relative path, combining with vault root: '{VaultRoot}' + '{RelPath}' -> '{FullPath}'",
+                effectiveVaultPath, normalizedFolderPath, fullFolderPath);
+        }
+
+        // Platform-appropriate path comparison strategy
+        StringComparison pathComparison = OperatingSystem.IsWindows()
+            ? StringComparison.OrdinalIgnoreCase
+            : StringComparison.Ordinal;
+
+        Logger.LogDebug("CalculateHierarchyLevel - folderPath: '{FolderPath}' -> normalized: '{NormalizedPath}' -> fullPath: '{FullFolderPath}'", folderPath, normalizedFolderPath, fullFolderPath);
+        Logger.LogDebug("CalculateHierarchyLevel - vaultPath: '{VaultPath}' -> fullPath: '{FullVaultPath}'", effectiveVaultPath, fullVaultPath);
+        Logger.LogDebug("CalculateHierarchyLevel - using {PathComparison} for path comparison", pathComparison);
+
+        // Check if folder is the vault root
+        if (string.Equals(fullFolderPath, fullVaultPath, pathComparison))
+        {
+            Logger.LogDebug("Folder equals vault root, returning level 0");
+            return 0; // Vault root
+        }
+
+        // Verify that the folder path is actually within the vault root
+        string relativePath = Path.GetRelativePath(fullVaultPath, fullFolderPath);
+        if (relativePath.StartsWith("..") || Path.IsPathRooted(relativePath))
+        {
+            Logger.LogWarning("Folder path '{FullFolderPath}' is not within vault root '{FullVaultPath}'. Relative path: '{RelativePath}'", fullFolderPath, fullVaultPath, relativePath);
+            return -1; // Invalid - not within vault
+        }
+
+        // Split path into segments and calculate hierarchy level
+        string[] segments = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+        int level = segments.Length;
+
+        Logger.LogDebug("relativePath: '{RelativePath}'", relativePath);
+        Logger.LogDebug("segments: [{Segments}]", string.Join(", ", segments));
+        Logger.LogDebug("calculated level: {Level}", level);
+
+        return level;
+    }
+
+    /// <summary>
+    /// Maps hierarchy level to template type string.
+    /// </summary>
+    /// <param name="level">The hierarchy level.</param>
+    /// <returns>The corresponding template type string.</returns>
+    /// <remarks>
+    /// Hierarchy levels align with vault structure:
+    /// - Level 0: Vault root (main) - though typically not used for index generation
+    /// - Level 1: Program level (program) - e.g., "Value Chain Management"
+    /// - Level 2: Course level (course) - e.g., "Operations Management"
+    /// - Level 3: Class level (class) - e.g., "Supply Chain Fundamentals"
+    /// - Level 4: Module level (module) - e.g., "Week 1"
+    /// - Level 5: Lesson level (lesson) - e.g., "Lesson 1" with Readings, Transcripts, Notes
+    /// - Level 6+: Content level (unknown) - subdirectories within lessons
+    /// </remarks>
+    public string GetTemplateTypeFromHierarchyLevel(int level)
+    {
+        return level switch
+        {
+            0 => "main",      // Vault root (should not occur in practice)
+            1 => "program",   // Program level (e.g., Value Chain Management)
+            2 => "course",    // Course level (e.g., Operations Management)
+            3 => "class",     // Class level (e.g., Supply Chain Fundamentals)
+            4 => "module",    // Module level (e.g., Week 1)
+            5 => "lesson",    // Lesson subdirectory (with Readings, Transcripts, Notes)
+            _ => "unknown",   // Content level (Level 6+)
+        };
+    }
+
+    /// <summary>
+    /// Calculates the hierarchy level of a folder relative to a base path, with optional level offset.
+    /// This is useful when using --override-vault-root to maintain correct hierarchy relationships.
+    /// </summary>
+    /// <param name="folderPath">The folder path to analyze.</param>
+    /// <param name="basePath">The base path to calculate relative to.</param>
+    /// <param name="baseHierarchyLevel">The hierarchy level of the base path (default: 0).</param>
+    /// <returns>The adjusted hierarchy level.</returns>
+    /// <example>
+    /// <code>
+    /// // If lesson directory is at level 5 in the real vault hierarchy:
+    /// var levelOffset = detector.CalculateHierarchyLevelWithOffset(
+    ///     "/vault/program/course/class/module/lesson/readings",
+    ///     "/vault/program/course/class/module/lesson",
+    ///     5); // Returns 6 (lesson content level)
+    /// </code>
+    /// </example>
+    public int CalculateHierarchyLevelWithOffset(string folderPath, string basePath, int baseHierarchyLevel = 0)
+    {
+        if (string.IsNullOrEmpty(folderPath) || string.IsNullOrEmpty(basePath))
+        {
+            Logger.LogWarning("CalculateHierarchyLevelWithOffset: Null or empty paths provided. Folder: '{FolderPath}', Base: '{BasePath}'",
+                folderPath ?? "null", basePath ?? "null");
+            return 0;
+        }
+
+        string normalizedFolderPath = Path.GetFullPath(folderPath).Replace('\\', '/');
+        string normalizedBasePath = Path.GetFullPath(basePath).Replace('\\', '/');
+
+        Logger.LogDebug("CalculateHierarchyLevelWithOffset: Folder='{FolderPath}', Base='{BasePath}', BaseLevel={BaseLevel}",
+            normalizedFolderPath, normalizedBasePath, baseHierarchyLevel);
+
+        // If folder path is the same as base path, return the base hierarchy level
+        if (string.Equals(normalizedFolderPath, normalizedBasePath, StringComparison.OrdinalIgnoreCase))
+        {
+            Logger.LogDebug("CalculateHierarchyLevelWithOffset: Paths are equal, returning base level {BaseLevel}", baseHierarchyLevel);
+            return baseHierarchyLevel;
+        }
+
+        // If folder path is not under base path, calculate relative to base path
+        if (!normalizedFolderPath.StartsWith(normalizedBasePath + "/", StringComparison.OrdinalIgnoreCase))
+        {
+            Logger.LogWarning("CalculateHierarchyLevelWithOffset: Folder '{FolderPath}' is not under base '{BasePath}', returning base level",
+                normalizedFolderPath, normalizedBasePath);
+            return baseHierarchyLevel;
+        }
+
+        // Calculate the relative depth from base path
+        string relativePath = normalizedFolderPath.Substring(normalizedBasePath.Length + 1); // +1 to skip the separator
+        int relativeDepth = relativePath.Split('/').Length;
+        int adjustedLevel = baseHierarchyLevel + relativeDepth;
+
+        Logger.LogDebug("CalculateHierarchyLevelWithOffset: RelativePath='{RelativePath}', RelativeDepth={RelativeDepth}, AdjustedLevel={AdjustedLevel}",
+            relativePath, relativeDepth, adjustedLevel);
+
+        return adjustedLevel;
+    }
 }

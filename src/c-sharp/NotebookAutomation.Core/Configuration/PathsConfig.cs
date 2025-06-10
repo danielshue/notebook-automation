@@ -18,18 +18,19 @@ public class PathsConfig
     /// This path is used to locate the local storage directory for OneDrive files.
     /// </remarks>
     [JsonPropertyName("onedrive_fullpath_root")]
-    public string OnedriveFullpathRoot { get; set; } = string.Empty;
+    public virtual string OnedriveFullpathRoot { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets full path to the root directory for the notebook vault.
     /// </summary>
     /// <remarks>
-    /// This path is used to locate the directory where notebook vault files are stored.    /// This property specifies the name of the folder that should be treated as the main program folder
+    /// This path is used to locate the directory where notebook vault files are stored.
+    /// This property specifies the name of the folder that should be treated as the main program folder
     /// when generating index files. This folder will have template-type: main and the index will be named
     /// whatever is the folder name.
     /// </remarks>
     [JsonPropertyName("notebook_vault_fullpath_root")]
-    public string NotebookVaultFullpathRoot { get; set; } = string.Empty;
+    public virtual string NotebookVaultFullpathRoot { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets path to the metadata file.
@@ -38,25 +39,23 @@ public class PathsConfig
     /// The metadata file contains structured information about the application's resources.
     /// </remarks>
     [JsonPropertyName("metadata_file")]
-    public string MetadataFile { get; set; } = string.Empty;
+    public virtual string MetadataFile { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Gets or sets base path for OneDrive resources.
+    /// <summary>    /// Gets or sets base path for OneDrive resources.
     /// </summary>
     /// <remarks>
     /// This path is used to locate the base directory for OneDrive-related resources.
     /// </remarks>
     [JsonPropertyName("onedrive_resources_basepath")]
-    public string OnedriveResourcesBasepath { get; set; } = string.Empty;
+    public virtual string OnedriveResourcesBasepath { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Gets or sets directory for log files.
+    /// <summary>    /// Gets or sets directory for log files.
     /// </summary>
     /// <remarks>
     /// This directory is used to store application log files for debugging and monitoring purposes.
     /// </remarks>
     [JsonPropertyName("logging_dir")]
-    public string LoggingDir { get; set; } = string.Empty;
+    public virtual string LoggingDir { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets directory containing prompt template files.
@@ -65,5 +64,5 @@ public class PathsConfig
     /// This directory is used to store template files for generating prompts in the application.
     /// </remarks>
     [JsonPropertyName("prompts_path")]
-    public string PromptsPath { get; set; } = string.Empty;
+    public virtual string PromptsPath { get; set; } = string.Empty;
 }

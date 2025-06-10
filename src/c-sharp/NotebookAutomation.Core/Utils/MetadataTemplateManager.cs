@@ -129,7 +129,7 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath("Failed to load _templates from {filePath}: {Exception}", _metadataFilePath, ex);
+            _logger.LogError(ex, $"Failed to load _templates from {_metadataFilePath}");
         }
     }    /// <summary>
          /// Gets a template by its type.

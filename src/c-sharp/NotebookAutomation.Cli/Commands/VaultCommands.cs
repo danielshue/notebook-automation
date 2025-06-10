@@ -27,7 +27,7 @@ internal class VaultCommands
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _appConfig = serviceProvider.GetRequiredService<AppConfig>();
-        _logger.LogInformationWithPath("Vault command initialized", "VaultCommands.cs");
+        _logger.LogDebug("Vault command initialized");
     }
 
     /// <summary>
@@ -168,19 +168,65 @@ internal class VaultCommands
     {
         if (_appConfig == null)
         {
-            _logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "VaultCommands.cs");
+            _logger.LogError("Configuration is missing or incomplete. Exiting.");
             return;
         }
-
         if (string.IsNullOrEmpty(path))
         {
-            _logger.LogErrorWithPath("Path is required: {FilePath}", "VaultCommands.cs", path ?? "unknown");
+            _logger.LogError($"Path is required: {path ?? "unknown"}");
             return;
         }
 
-        if (!Directory.Exists(path))
+        // Try to resolve path relative to vault root if it's not absolute
+        string effectivePath = path;
+
+        // Determine if path is rooted in a platform-independent way
+        bool isRooted = Path.IsPathRooted(path);
+
+        // On Windows, a path can be rooted but still relative to a drive (e.g., \folder\subfolder)
+        // These should still be combined with vault root
+        bool isWindowsDriveRelative = OperatingSystem.IsWindows() &&
+            isRooted &&
+            !Path.GetFullPath(path).Contains(":");
+
+        _logger.LogDebug($"Path analysis: IsRooted={isRooted}, IsWindowsDriveRelative={isWindowsDriveRelative}, Path={path}");
+
+        // Treat as relative if not rooted or if it's a Windows drive-relative path
+        if (!isRooted || isWindowsDriveRelative)
         {
-            _logger.LogErrorWithPath("Vault directory does not exist: {FilePath}", "VaultCommands.cs", path);
+            string? configuredVaultRoot = _appConfig.Paths?.NotebookVaultFullpathRoot;
+            if (!string.IsNullOrEmpty(configuredVaultRoot))
+            {
+                // Normalize slashes for consistent handling across platforms
+                string normalizedVaultRoot = configuredVaultRoot.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+                string normalizedPath = path.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+
+                // Ensure vault root doesn't end with a separator for proper combining
+                normalizedVaultRoot = normalizedVaultRoot.TrimEnd(Path.DirectorySeparatorChar);
+                // Remove any leading separators from the path for proper combining
+                normalizedPath = normalizedPath.TrimStart(Path.DirectorySeparatorChar);
+
+                string potentialPath = Path.Combine(normalizedVaultRoot, normalizedPath);
+                _logger.LogDebug($"Path needs to be combined with vault root: '{normalizedVaultRoot}' + '{normalizedPath}' = '{potentialPath}'");
+
+                // Always use the resolved path, but log appropriate messages based on existence
+                if (Directory.Exists(potentialPath))
+                {
+                    _logger.LogInformation($"Using path relative to vault root: '{potentialPath}'");
+                    effectivePath = potentialPath;
+                }
+                else
+                {
+                    // Even if the path doesn't exist, we'll still resolve it relative to the vault root
+                    // This is important for validation and ensuring new directories are created in correct location
+                    _logger.LogWarning($"Path '{potentialPath}' does not exist. Will continue with resolved path for consistency, but operation may fail if creating the directory is not part of the process.");
+                    effectivePath = potentialPath;
+                }
+            }
+        }
+        if (!Directory.Exists(effectivePath))
+        {
+            _logger.LogError($"Vault directory does not exist: {effectivePath}");
             return;
         }
 
@@ -190,46 +236,62 @@ internal class VaultCommands
             string? configuredVaultRoot = _appConfig.Paths?.NotebookVaultFullpathRoot;
             if (!string.IsNullOrEmpty(configuredVaultRoot))
             {
-                string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
-                string normalizedConfigRoot = Path.GetFullPath(configuredVaultRoot).Replace('\\', '/');
+                // Use platform-appropriate path comparison
+                StringComparison pathComparison = OperatingSystem.IsWindows()
+                    ? StringComparison.OrdinalIgnoreCase
+                    : StringComparison.Ordinal;
+                // Normalize and get the full canonical paths
+                string normalizedPath = Path.GetFullPath(effectivePath);
+                string normalizedConfigRoot = Path.GetFullPath(configuredVaultRoot);
 
-                if (!normalizedPath.StartsWith(normalizedConfigRoot, StringComparison.OrdinalIgnoreCase))
+                // Use consistent path separators for comparison across platforms
+                // Convert to URI format for more reliable path comparison
+                string normalizedPathUri = new Uri(normalizedPath).LocalPath;
+                string normalizedRootUri = new Uri(normalizedConfigRoot).LocalPath;
+
+                _logger.LogDebug($"Path comparison using URIs - Path: '{normalizedPathUri}', Root: '{normalizedRootUri}'");
+
+                // Use a more robust check for path containment
+                bool isExactMatchRoot = string.Equals(normalizedPathUri, normalizedRootUri, pathComparison);
+                bool isWithinRoot = normalizedPathUri.StartsWith(normalizedRootUri.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, pathComparison);
+
+                _logger.LogDebug($"Path containment check - ExactMatch: {isExactMatchRoot}, WithinRoot: {isWithinRoot}");
+
+                // If path either matches the root exactly or is within the root directory
+                bool isValidPath = isExactMatchRoot || isWithinRoot; if (!isValidPath)
                 {
-                    string errorMessage = $"Error: The specified path '{path}' is not within the configured vault root '{configuredVaultRoot}'.\n" +
+                    string errorMessage = $"Error: The specified path '{effectivePath}' is not within the configured vault root '{configuredVaultRoot}'.\n" +
                                          $"To process files outside the configured vault root, use the --override-vault-root flag:\n" +
-                                         $"  {command} \"{path}\" --override-vault-root \"{path}\"";
+                                         $"  {command} \"{effectivePath}\" --override-vault-root";
 
-                    AnsiConsoleHelper.WriteError(errorMessage);
-                    _logger.LogErrorWithPath(
-                        "Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
-                        "VaultCommands.cs", path, configuredVaultRoot);
+                    AnsiConsoleHelper.WriteError(errorMessage); _logger.LogError($"Path validation failed: {normalizedPath} is not within configured vault root {normalizedConfigRoot}");
+                    _logger.LogDebug($"Path comparison details: Checking if '{normalizedPathUri}' is within '{normalizedRootUri}' using {(OperatingSystem.IsWindows() ? "case-insensitive" : "case-sensitive")} comparison");
                     return;
                 }
             }
         }
-
-        _logger.LogInformationWithPath("Executing vault command: {Command} on path: {FilePath}", "VaultCommands.cs", command, path);
-        _logger.LogDebugWithPath("Debugging vault command", "VaultCommands.cs");
+        _logger.LogInformation($"Executing vault command: {command} on path: {effectivePath}");
+        _logger.LogDebug("Debugging vault command");
 
         try
         {
             switch (command)
             {
                 case "generate-index":
-                    await ExecuteGenerateIndexAsync(path, dryRun, force, vaultRoot, templateTypes).ConfigureAwait(false);
+                    await ExecuteGenerateIndexAsync(effectivePath, dryRun, force, vaultRoot, templateTypes).ConfigureAwait(false);
                     break;
                 case "ensure-metadata":
-                    await ExecuteEnsureMetadataAsync(path, dryRun, verbose, vaultRoot).ConfigureAwait(false);
+                    await ExecuteEnsureMetadataAsync(effectivePath, dryRun, verbose, vaultRoot).ConfigureAwait(false);
                     break;
                 case "clean-index":
-                    await ExecuteCleanIndexAsync(path, dryRun, vaultRoot).ConfigureAwait(false);
+                    await ExecuteCleanIndexAsync(effectivePath, dryRun, vaultRoot).ConfigureAwait(false);
                     break;
                 default:
-                    _logger.LogErrorWithPath("Unknown vault command: {Command}", "VaultCommands.cs", command);
+                    _logger.LogError($"Unknown vault command: {command}");
                     return;
             }
 
-            _logger.LogInformationWithPath("Vault command completed successfully.", "VaultCommands.cs");
+            _logger.LogInformation("Vault command completed successfully.");
         }
         catch (Exception ex)
         {
@@ -247,17 +309,35 @@ internal class VaultCommands
     {
         try
         {
-            _logger.LogInformationWithPath("Starting vault index generation process for vault: {VaultPath}", "VaultCommands.cs", path);
+            _logger.LogInformation($"Starting vault index generation process for vault: {path}");
 
             // Create a new scope to set vault root override
             using var scope = _serviceProvider.CreateScope();
-            var scopedServices = scope.ServiceProvider;            // Set up vault root override in scoped context
+            var scopedServices = scope.ServiceProvider;
+
+            // Set up vault root override in scoped context
             var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
 
             // Use explicit vault root if provided, otherwise use the provided path as vault root
-            string effectiveVaultRoot = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : Path.GetFullPath(path);
+            string effectiveVaultRoot;
+            if (!string.IsNullOrEmpty(vaultRoot))
+            {
+                // Use the explicitly provided vault root
+                effectiveVaultRoot = Path.GetFullPath(vaultRoot);
+            }
+            else
+            {
+                // If no vault root override is specified, normalize the path
+                effectiveVaultRoot = Path.GetFullPath(path);
+            }
+
+            // Ensure consistent path separators for the platform
+            effectiveVaultRoot = effectiveVaultRoot.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+            effectiveVaultRoot = effectiveVaultRoot.TrimEnd(Path.DirectorySeparatorChar);
+
             vaultRootContext.VaultRootOverride = effectiveVaultRoot;
-            _logger.LogInformationWithPath("Using vault root override: {VaultRoot}", "VaultCommands.cs", effectiveVaultRoot);
+            _logger.LogInformation($"Using vault root override: {effectiveVaultRoot}");
+            _logger.LogDebug($"Path passed to command: {path}, Effective vault root: {effectiveVaultRoot}");
 
             var batchProcessor = scopedServices.GetRequiredService<VaultIndexBatchProcessor>();
 
@@ -273,8 +353,8 @@ internal class VaultCommands
                         vaultPath: path,
                         dryRun: dryRun,
                         templateTypes: templateTypes?.ToList(), // Convert array to list
-                        forceOverwrite: force,      // Use the force parameter
-                        vaultRoot: vaultRoot) // Use the explicit vault root if provided
+                        forceOverwrite: force,
+                        vaultRoot: effectiveVaultRoot)
                     .ConfigureAwait(false);
                 },
                 $"Generating indexes for vault: {Path.GetFileName(path)}")
@@ -314,20 +394,18 @@ internal class VaultCommands
                     AnsiConsoleHelper.WriteInfo("\nTip: Use --verbose for more details about the index generation process.");
                 }
 
-                _logger.LogInformationWithPath(
-                    "{Prefix}Vault index generation completed: {Processed} processed, {Skipped} skipped, {Failed} failed out of {Total} total folders",
-                    "VaultCommands.cs",
-                    prefix, result.ProcessedFolders, result.SkippedFolders, result.FailedFolders, result.TotalFolders);
+                _logger.LogInformation(
+                    $"{prefix}Vault index generation completed: {result.ProcessedFolders} processed, {result.SkippedFolders} skipped, {result.FailedFolders} failed out of {result.TotalFolders} total folders");
 
                 if (result.FailedFolders > 0)
                 {
-                    _logger.LogWarningWithPath("Some folders failed to process. Check the logs for details.", "VaultCommands.cs");
+                    _logger.LogInformation("Some folders failed to process. Check the logs for details.");
                 }
             }
             else
             {
                 AnsiConsoleHelper.WriteError($"Vault index generation failed: {result.ErrorMessage ?? "Unknown error"}");
-                _logger.LogErrorWithPath("Vault index generation failed: {ErrorMessage}", "VaultCommands.cs", result.ErrorMessage ?? "Unknown error");
+                _logger.LogError($"Vault index generation failed: {result.ErrorMessage ?? "Unknown error"}");
             }
         }
         catch (Exception ex)
@@ -349,7 +427,7 @@ internal class VaultCommands
     {
         try
         {
-            _logger.LogInformationWithPath("Starting metadata ensure process for vault: {VaultPath}", "VaultCommands.cs", path);
+            _logger.LogInformation($"Starting metadata ensure process for vault: {path}");
 
             // Create a new scope to set vault root override
             using var scope = _serviceProvider.CreateScope();
@@ -361,7 +439,7 @@ internal class VaultCommands
             // Use explicit vault root if provided, otherwise use the provided path as vault root
             string effectiveVaultRoot = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : Path.GetFullPath(path);
             vaultRootContext.VaultRootOverride = effectiveVaultRoot;
-            _logger.LogInformationWithPath("Using vault root override: {VaultRoot}", "VaultCommands.cs", effectiveVaultRoot);
+            _logger.LogInformation($"Using vault root override: {effectiveVaultRoot}");
 
             var batchProcessor = scopedServices.GetRequiredService<MetadataEnsureBatchProcessor>();
 
@@ -422,20 +500,18 @@ internal class VaultCommands
                     }
                 }
 
-                _logger.LogInformationWithPath(
-                    "{Prefix}Metadata processing completed: {Processed} processed, {Skipped} skipped, {Failed} failed out of {Total} total files",
-                    "VaultCommands.cs",
-                    prefix, result.ProcessedFiles, result.SkippedFiles, result.FailedFiles, result.TotalFiles);
+                _logger.LogInformation(
+                    $"{prefix}Metadata processing completed: {result.ProcessedFiles} processed, {result.SkippedFiles} skipped, {result.FailedFiles} failed out of {result.TotalFiles} total files");
 
                 if (result.FailedFiles > 0)
                 {
-                    _logger.LogWarningWithPath("Some files failed to process. Check the logs and failed_metadata_files.txt for details.", "VaultCommands.cs");
+                    _logger.LogWarning("Some files failed to process. Check the logs and failed_metadata_files.txt for details.");
                 }
             }
             else
             {
                 AnsiConsoleHelper.WriteError($"Metadata processing failed: {result.ErrorMessage ?? "Unknown error"}");
-                _logger.LogErrorWithPath("Metadata processing failed: {ErrorMessage}", "VaultCommands.cs", result.ErrorMessage ?? "Unknown error");
+                _logger.LogError($"Metadata processing failed: {result.ErrorMessage ?? "Unknown error"}");
             }
         }
         catch (Exception ex)
@@ -479,11 +555,11 @@ internal class VaultCommands
                     }
 
                     deleted++;
-                    _logger.LogInformationWithPath($"Deleted index file: {file}", "VaultCommands.cs");
+                    _logger.LogInformation($"Deleted index file: {file}");
                 }
             }
         }
 
-        _logger.LogInformationWithPath($"Deleted {deleted} index files in {path}", "VaultCommands.cs");
+        _logger.LogInformation($"Deleted {deleted} index files in {path}");
     }
 }

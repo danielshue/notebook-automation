@@ -96,10 +96,10 @@ public static class LoggerExtensions
     /// <param name="filePath">The file path to be formatted and injected into the log message.</param>
     /// <param name="args">Additional arguments to be formatted into the message template.</param>
     /// <example>
-    /// <code>
-    /// logger.LogInformationWithPath("Imported file: {FilePath}", filePath);
+    /// <code>    /// logger.LogInformationWithPath("Imported file: {FilePath}", filePath);
     /// </code>
     /// </example>
+    [Obsolete("Use logger.LogInformation($\"message with {filePath}\") instead. This method will be removed in a future version.")]
     public static void LogInformationWithPath(
         this ILogger logger,
         string message,
@@ -209,10 +209,10 @@ public static class LoggerExtensions
     /// <summary>
     /// Logs a warning message with a formatted file path.
     /// </summary>
-    /// <param name="logger">The logger.</param>
-    /// <param name="message">The message template with {FilePath} placeholder.</param>
+    /// <param name="logger">The logger.</param>    /// <param name="message">The message template with {FilePath} placeholder.</param>
     /// <param name="filePath">The file path to format and log.</param>
     /// <param name="args">Additional arguments for the message template.</param>
+    [Obsolete("Use logger.LogWarning($\"message with {filePath}\") instead. This method will be removed in a future version.")]
     public static void LogWarningWithPath(
         this ILogger logger,
         string message,
@@ -225,11 +225,11 @@ public static class LoggerExtensions
     /// <summary>
     /// Logs an error message with a formatted file path.
     /// </summary>
-    /// <param name="logger">The logger.</param>
-    /// <param name="exception">The exception to log.</param>
+    /// <param name="logger">The logger.</param>    /// <param name="exception">The exception to log.</param>
     /// <param name="message">The message template with {FilePath} placeholder.</param>
     /// <param name="filePath">The file path to format and log.</param>
     /// <param name="args">Additional arguments for the message template.</param>
+    [Obsolete("Use logger.LogError(exception, $\"message with {filePath}\") instead. This method will be removed in a future version.")]
     public static void LogErrorWithPath(
         this ILogger logger,
         Exception exception,
@@ -242,11 +242,11 @@ public static class LoggerExtensions
 
     /// <summary>
     /// Logs an error message with a formatted file path.
-    /// </summary>
-    /// <param name="logger">The logger.</param>
+    /// </summary>    /// <param name="logger">The logger.</param>
     /// <param name="message">The message template with {FilePath} placeholder.</param>
     /// <param name="filePath">The file path to format and log.</param>
     /// <param name="args">Additional arguments for the message template.</param>
+    [Obsolete("Use logger.LogError($\"message with {filePath}\") instead. This method will be removed in a future version.")]
     public static void LogErrorWithPath(
         this ILogger logger,
         string message,
@@ -261,9 +261,9 @@ public static class LoggerExtensions
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="exception">The exception to log.</param>
-    /// <param name="message">The message template with {FilePath} placeholder.</param>
-    /// <param name="filePath">The file path to format and log.</param>
+    /// <param name="message">The message template with {FilePath} placeholder.</param>    /// <param name="filePath">The file path to format and log.</param>
     /// <param name="args">Additional arguments for the message template.</param>
+    [Obsolete("Use logger.LogWarning(exception, $\"message with {filePath}\") instead. This method will be removed in a future version.")]
     public static void LogWarningWithPath(
         this ILogger logger,
         Exception exception,
@@ -279,9 +279,9 @@ public static class LoggerExtensions
     /// </summary>
     /// <param name="logger">The logger.</param>
     /// <param name="exception">The exception to log.</param>
-    /// <param name="message">The message template with {FilePath} placeholder.</param>
-    /// <param name="filePath">The file path to format and log.</param>
+    /// <param name="message">The message template with {FilePath} placeholder.</param>    /// <param name="filePath">The file path to format and log.</param>
     /// <param name="args">Additional arguments for the message template.</param>
+    [Obsolete("Use logger.LogDebug(exception, $\"message with {filePath}\") instead. This method will be removed in a future version.")]
     public static void LogDebugWithPath(
         this ILogger logger,
         Exception? exception,
@@ -291,7 +291,7 @@ public static class LoggerExtensions
     {
         LogWithFormattedPath(logger, LogLevel.Debug, 0, exception, message, filePath, args);
     }
-
+    [Obsolete("Use logger.LogDebug($\"message with {filePath}\") instead. This method will be removed in a future version.")]
     public static void LogDebugWithPath(
         this ILogger logger,
         string message,
@@ -300,7 +300,7 @@ public static class LoggerExtensions
     {
         LogWithFormattedPath(logger, LogLevel.Debug, 0, null, message, filePath, args);
     }
-
+    [Obsolete("Use logger.LogError(exception, $\"message with {filePath}\") instead. This method will be removed in a future version.")]
     public static void LogErrorWithPath<T>(
         this ILogger<T> logger,
         Exception exception,
