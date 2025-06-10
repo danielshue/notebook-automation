@@ -303,7 +303,7 @@ public class OneDriveService : IOneDriveService
             var stream = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (stream == null)
             {
-                logger.LogErrorWithPath("File not found in OneDrive: {FilePath}", oneDrivePath);
+                logger.LogError($"File not found in OneDrive: {oneDrivePath}");
                 return;
             }
 
@@ -312,16 +312,16 @@ public class OneDriveService : IOneDriveService
                 await stream.CopyToAsync(fileStream, cancellationToken).ConfigureAwait(false);
             }
 
-            logger.LogInformationWithPath("Downloaded OneDrive file: {FilePath}", oneDrivePath);
+            logger.LogInformation($"Downloaded OneDrive file: {oneDrivePath}");
         }
         catch (ServiceException ex)
         {
-            logger.LogErrorWithPath(ex, "Graph API error downloading file: {FilePath}", oneDrivePath);
+            logger.LogError(ex, $"Graph API error downloading file: {oneDrivePath}");
             throw;
         }
         catch (Exception ex)
         {
-            logger.LogErrorWithPath(ex, "Failed to download file from OneDrive: {FilePath}", oneDrivePath);
+            logger.LogError(ex, $"Failed to download file from OneDrive: {oneDrivePath}");
             throw;
         }
     }
@@ -450,7 +450,7 @@ public class OneDriveService : IOneDriveService
                 oneDrivePath = oneDrivePath[1..];
             }
 
-            logger.LogInformationWithPath(oneDrivePath, "Creating sharing link for OneDrive file");
+            logger.LogInformation($"Creating sharing link for OneDrive file: {oneDrivePath}");
 
             // Prepare the request
             var requestInfo = new RequestInformation
@@ -468,14 +468,14 @@ public class OneDriveService : IOneDriveService
             // Send the request and parse the response
             if (graphClient?.RequestAdapter == null)
             {
-                logger.LogErrorWithPath(oneDrivePath, "Graph client or request adapter is null when creating sharing link for OneDrive file");
+                logger.LogError($"Graph client or request adapter is null when creating sharing link for OneDrive file: {oneDrivePath}");
                 return null;
             }
 
             var response = await graphClient.RequestAdapter.SendPrimitiveAsync<Stream>(requestInfo, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (response == null)
             {
-                logger.LogErrorWithPath(oneDrivePath, "Received null response when creating sharing link for OneDrive file");
+                logger.LogError($"Received null response when creating sharing link for OneDrive file: {oneDrivePath}");
                 return null;
             }
 
@@ -488,30 +488,28 @@ public class OneDriveService : IOneDriveService
                 string? sharingLink = webUrlElement.GetString();
                 if (!string.IsNullOrEmpty(sharingLink))
                 {
-                    logger.LogInformationWithPath(oneDrivePath, $"Sharing link created successfully for OneDrive file (original: {filePath})");
+                    logger.LogInformation($"Sharing link created successfully for OneDrive file: {oneDrivePath} (original: {filePath})");
                     return sharingLink;
                 }
             }
 
             logger.LogError("Sharing link not found in response for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
-            logger.LogErrorWithPath(oneDrivePath, $"Sharing link not found in response for OneDrive file (original: {filePath})");
+            logger.LogError($"Sharing link not found in response for OneDrive file: {oneDrivePath} (original: {filePath})");
             return null;
-        }
-        catch (ServiceException ex)
+        }        catch (ServiceException ex)
         {
-            logger.LogErrorWithPath(oneDrivePath, $"Failed to create sharing link for OneDrive file (original: {filePath}). Exception: {ex.Message}");
+            logger.LogError($"Failed to create sharing link for OneDrive file: {oneDrivePath} (original: {filePath}). Exception: {ex.Message}");
 
             // Check if the exception message contains 404 error code
             if (ex.Message.Contains("404") || ex.Message.Contains("not found"))
             {
-                logger.LogWarningWithPath(oneDrivePath, "The file might not exist. Check the file path and try again.");
+                logger.LogWarning($"The file might not exist. Check the file path and try again: {oneDrivePath}");
             }
 
             return null;
-        }
-        catch (Exception ex)
+        }        catch (Exception ex)
         {
-            logger.LogErrorWithPath(oneDrivePath, $"Failed to create sharing link for OneDrive file (original: {filePath}). Exception: {ex.Message}");
+            logger.LogError($"Failed to create sharing link for OneDrive file: {oneDrivePath} (original: {filePath}). Exception: {ex.Message}");
             return null;
         }
     }

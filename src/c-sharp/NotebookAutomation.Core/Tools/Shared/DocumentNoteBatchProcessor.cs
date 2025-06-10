@@ -333,7 +333,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                 if (errorMessage?.Contains("Skipped") == true)
                 {
                     // Don't count skipped files as processed
-                    logger.LogDebugWithPath("File skipped: {FilePath}", filePath);
+                    logger.LogDebug($"File skipped: {filePath}");
                 }
                 else
                 {
@@ -347,7 +347,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             }
 
             fileStopwatch.Stop();
-            logger.LogInformationWithPath("Processing file: {FilePath} took {ElapsedMs} ms", filePath, fileStopwatch.ElapsedMilliseconds);
+            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.ElapsedMilliseconds} ms");
 
             // Report progress after each file
             OnProcessingProgressChanged(filePath, "Processed", processed, files.Count);
@@ -360,7 +360,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         {
             var failedListPath = Path.Combine(effectiveOutput, failedFilesListName);
             File.WriteAllLines(failedListPath, failedFilesForRetry);
-            logger.LogInformationWithPath("Wrote failed file list to: {FilePath}", failedListPath);
+            logger.LogInformation($"Wrote failed file list to: {failedListPath}");
         }
 
         // Calculate total summary time and tokens from queue items
@@ -440,7 +440,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     {
         try
         {
-            logger.LogInformationWithPath("Processing file: {FilePath}", filePath);
+            logger.LogInformation($"Processing file: {filePath}");
             string outputDir = effectiveOutput;
             Directory.CreateDirectory(outputDir);
 
@@ -450,7 +450,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             // If not forceOverwrite and file exists, skip
             if (!forceOverwrite && File.Exists(outputPath))
             {
-                logger.LogWarningWithPath("Output file exists and --force not set, skipping: {FilePath}", outputPath);
+                logger.LogWarning($"Output file exists and --force not set, skipping: {outputPath}");
                 return (true, "Skipped - file exists");
             }
 
@@ -478,7 +478,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         catch (Exception ex)
         {
             var errorMessage = $"Failed to process: {ex.Message}";
-            logger.LogErrorWithPath(ex, "Failed to process file: {FilePath}", filePath);
+            logger.LogError(ex, $"Failed to process file: {filePath}");
 
             // Update queue status for failure
             if (queueItem != null)
@@ -552,7 +552,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         // Ensure markdown is initialized
         if (markdown == null)
         {
-            logger.LogErrorWithPath("Markdown generation failed for file: {FilePath}", filePath);
+            logger.LogError($"Markdown generation failed for file: {filePath}");
             markdown = "Error generating markdown content";
         }
 
@@ -564,7 +564,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             isReadOnly = yamlHelper.IsFileReadOnly(outputPath);
             if (isReadOnly)
             {
-                logger.LogInformationWithPath("Skipping file modification due to readonly auto-generated-state: {FilePath}", outputPath);
+                logger.LogInformation($"Skipping file modification due to readonly auto-generated-state: {outputPath}");
                 return; // Skip to next file
             }
         }
@@ -610,7 +610,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                 fileIndex,
                 totalFiles);
 
-            logger.LogInformationWithPath("Markdown note saved to: {FilePath}", outputPath);
+            logger.LogInformation($"Markdown note saved to: {outputPath}");
         }
         else
         {
@@ -624,7 +624,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                 OnQueueChanged(queueItem);
             }
 
-            logger.LogInformationWithPath("[DRY RUN] Markdown note would be generated for: {FilePath}", filePath);
+            logger.LogInformation($"[DRY RUN] Markdown note would be generated for: {filePath}");
         }
     }
 
@@ -1149,7 +1149,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                 files.AddRange(Directory.GetFiles(effectiveInput, "*" + ext, SearchOption.AllDirectories));
             }
 
-            logger.LogInformationWithPath("Found {Count} files in directory: {FilePath}", effectiveInput, files.Count);
+            logger.LogInformation($"Found {files.Count} files in directory: {effectiveInput}");
         }
         else if (File.Exists(effectiveInput) && fileExtensions.Exists(ext => effectiveInput.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
         {

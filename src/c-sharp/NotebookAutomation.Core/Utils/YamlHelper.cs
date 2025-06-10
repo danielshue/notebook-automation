@@ -409,7 +409,7 @@ public partial class YamlHelper : IYamlHelper
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "Failed to check if file is read-only: {filePath}", filePath);
+            _logger.LogError(ex, $"Failed to check if file is read-only: {filePath}");
             return false;
         }
     }
@@ -425,7 +425,7 @@ public partial class YamlHelper : IYamlHelper
         {
             if (!File.Exists(filePath))
             {
-                _logger.LogWarningWithPath("File not found: {filePath}", filePath);
+                _logger.LogWarning($"File not found: {filePath}");
                 return [];
             }
 
@@ -441,7 +441,7 @@ public partial class YamlHelper : IYamlHelper
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "Failed to load frontmatter from file: {filePath}", filePath);
+            _logger.LogError(ex, $"Failed to load frontmatter from file: {filePath}");
             return [];
         }
     }
@@ -463,7 +463,7 @@ public partial class YamlHelper : IYamlHelper
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "Failed to save markdown with updated frontmatter: {filePath}", filePath);
+            _logger.LogError(ex, $"Failed to save markdown with updated frontmatter: {filePath}");
             return false;
         }
     }

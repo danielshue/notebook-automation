@@ -68,20 +68,20 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
     {
         var metadata = new Dictionary<string, object?>(); if (!File.Exists(pdfPath))
         {
-            Logger.LogErrorWithPath("PDF file not found: {FilePath}", pdfPath);
+            Logger.LogError($"PDF file not found: {pdfPath}");
             return (string.Empty, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
         }
 
         string extractedText = string.Empty;
         try
         {
-            Logger.LogInformationWithPath("Starting PDF content extraction: {FilePath}", pdfPath);
+            Logger.LogInformation($"Starting PDF content extraction: {pdfPath}");
             extractedText = await Task.Run(() =>
             {
                 var sb = new StringBuilder();
                 using (PdfDocument document = PdfDocument.Open(pdfPath))
                 {
-                    Logger.LogDebugWithPath("Opened PDF document with {PageCount} pages", pdfPath, document.NumberOfPages);
+                    Logger.LogDebug($"Opened PDF document with {document.NumberOfPages} pages: {pdfPath}");
                     sb.AppendLine();
 
                     int pageCount = 0;
@@ -90,7 +90,7 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
                         pageCount++;
                         if (pageCount % 10 == 0 || pageCount == 1 || pageCount == document.NumberOfPages)
                         {
-                            Logger.LogDebugWithPath("Extracting text from page {CurrentPage}/{TotalPages}", pdfPath, pageCount, document.NumberOfPages);
+                            Logger.LogDebug($"Extracting text from page {pageCount}/{document.NumberOfPages} for {pdfPath}");
                         }
 
                         sb.AppendLine(page.Text);

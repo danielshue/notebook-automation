@@ -34,19 +34,19 @@ public class MetadataEnsureProcessor(
     {
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
         {
-            _logger.LogWarningWithPath("File not found: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogWarning($"File not found: {filePath}");
             return false;
         }
 
         if (!filePath.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
         {
-            _logger.LogDebugWithPath("Skipping non-markdown file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogDebug($"Skipping non-markdown file: {filePath}");
             return false;
         }
 
         try
         {
-            _logger.LogDebugWithPath("Processing metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogDebug($"Processing metadata for file: {filePath}");
 
             // Read the existing file content
             string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
@@ -83,25 +83,27 @@ public class MetadataEnsureProcessor(
 
             if (!hasChanges)
             {
-                _logger.LogDebugWithPath("No metadata changes needed for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+                _logger.LogDebug($"No metadata changes needed for: {filePath}");
                 return false;
             }
 
             if (dryRun)
             {
-                _logger.LogInformationWithPath("DRY RUN: Would update metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+                _logger.LogInformation($"DRY RUN: Would update metadata for: {filePath}");
                 LogMetadataChanges(originalMetadata, metadata, filePath);
                 return true;
-            }            // Update the file with new frontmatter
+            }
+
+            // Update the file with new frontmatter
             string updatedContent = _yamlHelper.UpdateFrontmatter(content, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
             await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
 
-            _logger.LogInformationWithPath("Updated metadata for: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogInformation($"Updated metadata for: {filePath}");
             return true;
         }
         catch (Exception ex)
         {
-            _logger.LogErrorWithPath(ex, "Failed to process metadata for file: {FilePath}", nameof(MetadataEnsureProcessor), filePath);
+            _logger.LogError(ex, $"Failed to process metadata for file: {filePath}");
             return false;
         }
     }
