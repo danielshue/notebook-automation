@@ -39,7 +39,7 @@ internal class VideoCommands
     public VideoCommands(ILogger<VideoCommands> logger)
     {
         this.logger = logger;
-        this.logger.LogInformationWithPath("Video command initialized", "VideoCommands.cs");
+        this.logger.LogDebug("Video command initialized");
     }
 
     /// <summary>
@@ -168,7 +168,7 @@ internal class VideoCommands
             // Set up vault root override in scoped context
             var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
             vaultRootContext.VaultRootOverride = effectiveOutputDir;
-            logger.LogInformationWithPath("Using vault root override for metadata hierarchy: {VaultRoot}", "VideoCommands.cs", effectiveOutputDir);
+            logger.LogInformation($"Using vault root override for metadata hierarchy: {effectiveOutputDir}");
 
             var batchProcessor = scopedServices.GetRequiredService<VideoNoteBatchProcessor>();
 
@@ -185,7 +185,7 @@ internal class VideoCommands
                     }
                     else
                     {
-                        logger.LogWarningWithPath("OneDrive service not available - --refresh-auth flag ignored", "VideoCommands.cs");
+                        logger.LogWarning("OneDrive service not available - --refresh-auth flag ignored");
                     }
                 }
                 catch (Exception ex)
@@ -222,12 +222,12 @@ internal class VideoCommands
 
                         // Configure vault roots: local resources folder -> OneDrive resources path
                         oneDriveService.ConfigureVaultRoots(localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
-                        logger.LogInformationWithPath("Configured OneDrive vault roots - Local: {LocalRoot}, OneDrive: {OneDriveRoot}", "VideoCommands.cs", localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
+                        logger.LogInformation($"Configured OneDrive vault roots - Local: {localResourcesPath}, OneDrive: {appConfig.Paths.OnedriveResourcesBasepath}");
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarningWithPath(ex, "Failed to configure OneDrive vault roots", "VideoCommands.cs");
+                    logger.LogWarning(ex, "Failed to configure OneDrive vault roots");
                 }
             }
 
@@ -286,7 +286,7 @@ internal class VideoCommands
             AnsiConsoleHelper.WriteInfo($"  Logging Dir: {appConfig?.Paths?.LoggingDir}");                // Validate OpenAI config before proceeding
             if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
             {
-                logger.LogErrorWithPath("OpenAI configuration is missing or incomplete. Exiting.", "VideoCommands.cs");
+                logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
                 return;
             }
 
@@ -300,7 +300,7 @@ internal class VideoCommands
             // Verify that we have an input source
             if (string.IsNullOrWhiteSpace(input))
             {
-                logger.LogErrorWithPath("Input source is required. Use --input/-i to specify a video file or folder.", "VideoCommands.cs");
+                logger.LogError("Input source is required. Use --input/-i to specify a video file or folder.");
                 return;
             }
 
@@ -310,7 +310,7 @@ internal class VideoCommands
 
             if (!isFile && !isDirectory)
             {
-                logger.LogErrorWithPath("Input path does not exist or is not accessible: {Path}", "VideoCommands.cs", input);
+                logger.LogError("Input path does not exist or is not accessible: {Path}", input);
                 return;
             }
 
@@ -318,7 +318,7 @@ internal class VideoCommands
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
                 input);
-            logger.LogInformationWithPath("Output will be written to: {OutputPath}", "VideoCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated");
+            logger.LogInformation($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
 
             try
             {
@@ -350,8 +350,7 @@ internal class VideoCommands
                     },
                     $"Processing video files from {(isFile ? "file" : "directory")}: {input}").ConfigureAwait(false);
 
-                logger.LogInformation("Video processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
-                logger.LogInformationWithPath("Video processing completed. Success: {Processed}, Failed: {Failed}", "VideoCommands.cs", result.Processed, result.Failed);
+                logger.LogInformation($"Video processing completed. Success: {result.Processed}, Failed: {result.Failed}");
                 if (!string.IsNullOrWhiteSpace(result.Summary))
                 {
                     AnsiConsoleHelper.WriteInfo(result.Summary);
@@ -361,7 +360,7 @@ internal class VideoCommands
             {
                 // No need to stop spinner manually, WithStatusAsync handles this
                 AnsiConsoleHelper.WriteError($"Error processing video files: {ex.Message}");
-                logger.LogErrorWithPath(ex, "Error processing video files", "VideoCommands.cs");
+                logger.LogError(ex, "Error processing video files");
             }
         });
 

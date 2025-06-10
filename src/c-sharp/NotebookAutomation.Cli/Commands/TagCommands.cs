@@ -299,19 +299,19 @@ internal class TagCommands
     {
         if (string.IsNullOrEmpty(configPath))
         {
-            logger.LogErrorWithPath("Configuration is missing or incomplete. Exiting.", "TagCommands.cs");
+            logger.LogError("Configuration is missing or incomplete. Exiting.");
             return;
         }
 
         if (string.IsNullOrEmpty(path))
         {
-            logger.LogErrorWithPath("Path is required: {FilePath}", "TagCommands.cs", path ?? "unknown");
+            logger.LogError("Path is required: {FilePath}", path ?? "unknown");
             return;
         }
 
         if (!Directory.Exists(path) && !File.Exists(path))
         {
-            logger.LogErrorWithPath("Path does not exist: {FilePath}", "TagCommands.cs", path);
+            logger.LogError("Path does not exist: {FilePath}", path);
             return;
         }
 
@@ -331,15 +331,13 @@ internal class TagCommands
                                          $"  tag {command} \"{path}\" --override-vault-root \"{path}\"";
 
                     AnsiConsoleHelper.WriteError(errorMessage);
-                    logger.LogErrorWithPath(
-                        "Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
-                        "TagCommands.cs", path, configuredVaultRoot);
+                    logger.LogError($"Path validation failed: {path} is not within configured vault root {configuredVaultRoot}");
                     return;
                 }
             }
         }
 
-        logger.LogInformationWithPath("Executing tag command: {Command} on path: {FilePath}", command, path, "TagCommands.cs");
+        logger.LogInformation($"Executing tag command: {command} on path: {path}");
 
         try
         {
@@ -383,13 +381,13 @@ internal class TagCommands
                     break;
 
                 case "clean-index":
-                    logger.LogInformationWithPath("Clean index functionality uses the same processor", "TagCommands.cs");
+                    logger.LogInformation("Clean index functionality uses the same processor");
                     stats = await tagProcessor.ProcessDirectoryAsync(path).ConfigureAwait(false);
                     LogStats(logger, stats);
                     break;
 
                 case "consolidate":
-                    logger.LogInformationWithPath("Consolidate tags functionality not yet implemented", "TagCommands.cs");
+                    logger.LogInformation("Consolidate tags functionality not yet implemented");
                     break;
 
                 case "restructure-tags":
@@ -399,7 +397,7 @@ internal class TagCommands
 
                 case "add-example-tags":
                     var success = await tagProcessor.AddExampleTagsToFileAsync(path).ConfigureAwait(false);
-                    logger.LogInformationWithPath(success ? "Example tags added." : "Failed to add example tags.", "TagCommands.cs");
+                    logger.LogInformation(success ? "Example tags added." : "Failed to add example tags.");
                     break;
 
                 case "metadata-check":
@@ -408,7 +406,7 @@ internal class TagCommands
                     break;
 
                 default:
-                    logger.LogErrorWithPath("Unknown command: {Command}", "TagCommands.cs", command);
+                    logger.LogError($"Unknown command: {command}");
                     break;
             }
         }
@@ -482,7 +480,7 @@ internal class TagCommands
                 }
             }
 
-            logger.LogInformation("Executing update-frontmatter command on path: {Path}, key: {Key}, value: {Value}", path, key, value); // Create a new TagProcessor with command-specific options
+            logger.LogInformation($"Executing update-frontmatter command on path: {path}, key: {key}, value: {value}"); // Create a new TagProcessor with command-specific options
             var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
             var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
             var tagProcessor = new TagProcessor(
@@ -530,7 +528,8 @@ internal class TagCommands
     /// </summary>
     /// <param name="path">Path to the directory to process.</param>
     /// <param name="configPath">Optional path to configuration file.</param>
-    /// <param name="debug">Whether to output debug information.</param>             /// <param name="verbose">Whether to output verbose information.</param>
+    /// <param name="debug">Whether to output debug information.</param>
+    /// <param name="verbose">Whether to output verbose information.</param>
     /// <param name="vaultRoot">Override vault root path.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
     private async Task DiagnoseYamlAsync(string path, string? configPath, bool debug, bool verbose, string? vaultRoot = null)

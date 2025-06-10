@@ -276,7 +276,8 @@ public static class ServiceRegistration
             var appConfig = provider.GetRequiredService<AppConfig>();
             return new VaultIndexProcessor(logger, templateManager, hierarchyDetector, structureExtractor, yamlHelper, noteBuilder, appConfig);
         }); services.AddScoped(provider =>
-        {            var loggingService = provider.GetRequiredService<ILoggingService>();
+        {
+            var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<VaultIndexBatchProcessor>();
             var indexProcessor = provider.GetRequiredService<IVaultIndexProcessor>();
             var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();

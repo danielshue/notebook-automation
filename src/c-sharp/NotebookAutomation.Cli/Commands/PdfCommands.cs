@@ -22,7 +22,7 @@ internal class PdfCommands
     public PdfCommands(ILogger<PdfCommands> logger)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.logger.LogInformationWithPath("PDF command initialized", "PdfCommands.cs");
+        this.logger.LogDebug("PDF command initialized");
     }
 
     /// <summary>
@@ -120,7 +120,7 @@ internal class PdfCommands
             if (string.IsNullOrEmpty(input))
             {
                 AnsiConsoleHelper.WriteUsage(
-                    "Usage: notebookautomation pdf-notes --input <file|dir> [options]",
+                    "Usage: na.exe pdf-notes --input <file|dir> [options]",
                     pdfCommand.Description ?? string.Empty,
                     string.Join("\n", pdfCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
@@ -155,7 +155,7 @@ internal class PdfCommands
             // Use explicit vault root override if provided, otherwise use effective output directory
             string finalVaultRoot = vaultRootOverride ?? effectiveOutputDir;
             vaultRootContext.VaultRootOverride = finalVaultRoot;
-            logger.LogInformationWithPath("Using vault root override for metadata hierarchy: {VaultRoot}", "PdfCommands.cs", finalVaultRoot);
+            logger.LogInformation($"Using vault root override for metadata hierarchy: {finalVaultRoot}");
 
             var batchProcessor = scopedServices.GetRequiredService<PdfNoteBatchProcessor>();
 
@@ -172,7 +172,7 @@ internal class PdfCommands
                     }
                     else
                     {
-                        logger.LogWarningWithPath("OneDrive service not available - --refresh-auth flag ignored", "PdfCommands.cs");
+                        logger.LogWarning("OneDrive service not available - --refresh-auth flag ignored");
                     }
                 }
                 catch (Exception ex)
@@ -210,7 +210,7 @@ internal class PdfCommands
 
                         // Configure vault roots: local resources folder -> OneDrive resources path
                         oneDriveService.ConfigureVaultRoots(localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
-                        logger.LogInformationWithPath("Configured OneDrive vault roots - Local: {LocalRoot}, OneDrive: {OneDriveRoot}", "PdfCommands.cs", localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
+                        logger.LogInformation($"Configured OneDrive vault roots - Local: {localResourcesPath}, OneDrive: {appConfig.Paths.OnedriveResourcesBasepath}");
                     }
                 }
                 catch (Exception ex)
@@ -276,7 +276,7 @@ internal class PdfCommands
             // Validate AI config before proceeding
             if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
             {
-                logger.LogErrorWithPath("AI configuration is missing or incomplete. Exiting.", "PdfCommands.cs");
+                logger.LogError("AI configuration is missing or incomplete. Exiting.");
                 return;
             }
 
@@ -290,7 +290,7 @@ internal class PdfCommands
             // Verify that we have an input source
             if (string.IsNullOrWhiteSpace(input))
             {
-                logger.LogErrorWithPath("Input source is required. Use --input/-i to specify a PDF file or folder.", "PdfCommands.cs");
+                logger.LogError("Input source is required. Use --input/-i to specify a PDF file or folder.");
                 return;
             }
 
@@ -300,7 +300,7 @@ internal class PdfCommands
 
             if (!isFile && !isDirectory)
             {
-                logger.LogErrorWithPath("Input path does not exist or is not accessible: {Path}", "PdfCommands.cs", input);
+                logger.LogError($"Input path does not exist or is not accessible: {input}");
                 return;
             }
 
@@ -308,7 +308,7 @@ internal class PdfCommands
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
                 input);
-            logger.LogInformationWithPath("Output will be written to: {OutputPath}", "PdfCommands.cs", overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated");
+            logger.LogInformation($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
 
             try
             {
@@ -340,8 +340,7 @@ internal class PdfCommands
                     },
                     $"Processing PDF files from {(isFile ? "file" : "directory")}: {input}").ConfigureAwait(false);
 
-                logger.LogInformation("PDF processing completed. Success: {Processed}, Failed: {Failed}", result.Processed, result.Failed);
-                logger.LogInformationWithPath("PDF processing completed. Success: {Processed}, Failed: {Failed}", "PdfCommands.cs", result.Processed, result.Failed);
+                logger.LogInformation($"PDF processing completed. Success: {result.Processed}, Failed: {result.Failed}");
                 if (!string.IsNullOrWhiteSpace(result.Summary))
                 {
                     AnsiConsoleHelper.WriteInfo(result.Summary);

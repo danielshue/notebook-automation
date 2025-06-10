@@ -112,7 +112,9 @@ internal class Program
         var isDebugMode = args.Contains("--debug") || args.Contains("-d");
         ExceptionHandler.Initialize(logger, isDebugMode);
 
-        logger.LogInformationWithPath("Application started", "Program.cs");
+        logger.LogDebug("Application started");
+
+        // Initialize the AppConfig instance
         var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>(), serviceProvider);
         tagCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
         var vaultCommands = new VaultCommands(loggerFactory.CreateLogger<VaultCommands>(), serviceProvider);
