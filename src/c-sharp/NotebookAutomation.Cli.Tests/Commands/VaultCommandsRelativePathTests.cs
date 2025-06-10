@@ -1,20 +1,23 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System.Collections.Generic;
+using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using Moq;
+
 using NotebookAutomation.Cli.Commands;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Models;
 using NotebookAutomation.Core.Services;
 using NotebookAutomation.Core.Tools.Vault;
 using NotebookAutomation.Core.Utils;
-using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
 
 namespace NotebookAutomation.Cli.Tests.Commands;
 

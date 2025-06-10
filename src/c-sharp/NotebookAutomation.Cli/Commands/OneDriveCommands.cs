@@ -39,7 +39,7 @@ internal class OneDriveCommands
     public OneDriveCommands(ILogger<OneDriveCommands> logger)
     {
         this.logger = logger;
-        this.logger.LogInformationWithPath("OneDrive command initialized", "OneDriveCommands.cs");
+        this.logger.LogDebug("OneDrive command initialized");
     }
 
     /// <summary>
@@ -272,27 +272,27 @@ internal class OneDriveCommands
             // Validate Microsoft Graph config before proceeding
             if (!ConfigValidation.RequireMicrosoftGraph(appConfig))
             {
-                logger.LogErrorWithPath("Microsoft Graph configuration is missing or incomplete. Exiting.", "OneDriveCommands.cs");
+                logger.LogError("Microsoft Graph configuration is missing or incomplete. Exiting.");
                 return;
             }
 
-            logger.LogInformationWithPath("Executing OneDrive command: {Command}", "OneDriveCommands.cs", command);
+            logger.LogInformation($"Executing OneDrive command: {command}");
 
             if (dryRun)
             {
-                logger.LogInformationWithPath("[DRY RUN] No changes will be made", "OneDriveCommands.cs");
+                logger.LogInformation("[DRY RUN] No changes will be made");
             }
 
             if (verbose)
             {
-                logger.LogInformationWithPath("Verbose output enabled", "OneDriveCommands.cs");
+                logger.LogInformation("Verbose output enabled");
             }
 
             // Execute the command with the relevant arguments
             switch (command.ToLowerInvariant())
             {
                 case "list":
-                    logger.LogInformationWithPath("Listing files at path: {FilePath}", arg1 ?? "root");
+                    logger.LogInformation($"Listing files at path: {arg1 ?? "root"}");
 
                     // TODO: Implement with oneDriveService.ListFilesAsync(arg1);
                     await Task.Delay(100).ConfigureAwait(false); // Placeholder for actual implementation
@@ -301,11 +301,11 @@ internal class OneDriveCommands
                 case "download":
                     if (arg1 == null || arg2 == null)
                     {
-                        logger.LogWarningWithPath("One or more arguments are null. Skipping logging.", "OneDriveCommands.cs");
+                        logger.LogWarning("One or more arguments are null. Skipping logging.");
                     }
                     else
                     {
-                        logger.LogInformationWithPath("Downloading from {FilePath} to {FilePath}", arg1, arg2);
+                        logger.LogInformation($"Downloading from {arg1} to {arg2}");
                     }
 
                     // TODO: Implement with oneDriveService.DownloadFileAsync(arg1, arg2);
@@ -315,11 +315,11 @@ internal class OneDriveCommands
                 case "upload":
                     if (arg1 == null || arg2 == null)
                     {
-                        logger.LogWarningWithPath("One or more arguments are null. Skipping logging.", "OneDriveCommands.cs");
+                        logger.LogWarning("One or more arguments are null. Skipping logging.");
                     }
                     else
                     {
-                        logger.LogInformationWithPath("Uploading from {FilePath} to {FilePath}", arg1, arg2);
+                        logger.LogInformation($"Uploading from {arg1} to {arg2}");
                     }
 
                     // TODO: Implement with oneDriveService.UploadFileAsync(arg1, arg2);
@@ -327,7 +327,7 @@ internal class OneDriveCommands
                     break;
 
                 case "search":
-                    logger.LogInformationWithPath("Searching for: {Query}", arg1 ?? string.Empty, "OneDriveCommands.cs");
+                    logger.LogInformation($"Searching for: {arg1 ?? string.Empty}");
 
                     // TODO: Implement with oneDriveService.SearchFilesAsync(arg1);
                     await Task.Delay(100).ConfigureAwait(false); // Placeholder for actual implementation
@@ -335,18 +335,18 @@ internal class OneDriveCommands
 
                 case "sync":
                     var direction = extraOptions.FirstOrDefault(o => o.Key == "direction").Value ?? "both";
-                    logger.LogInformationWithPath("Syncing between {LocalPath} and {RemotePath} (direction: {Direction})", arg1 ?? string.Empty, arg2 ?? string.Empty, direction);
+                    logger.LogInformation($"Syncing between {arg1 ?? string.Empty} and {arg2 ?? string.Empty} (direction: {direction})");
 
                     // TODO: Implement with oneDriveService.SyncFilesAsync(arg1, arg2, direction);
                     await Task.Delay(100).ConfigureAwait(false); // Placeholder for actual implementation
                     break;
 
                 default:
-                    logger.LogErrorWithPath("Unknown command: {Command}", "OneDriveCommands.cs", command);
+                    logger.LogError($"Unknown command: {command}");
                     break;
             }
 
-            logger.LogInformationWithPath("Command completed successfully", "OneDriveCommands.cs");
+            logger.LogInformation($"Command completed successfully");
         }
         catch (Exception ex)
         {
@@ -358,30 +358,30 @@ internal class OneDriveCommands
     {
         if (string.IsNullOrEmpty(config))
         {
-            logger.LogErrorWithPath("Microsoft Graph configuration is missing or incomplete. Exiting.", "OneDriveCommands.cs");
+            logger.LogError("Microsoft Graph configuration is missing or incomplete. Exiting.");
             return;
         }
 
-        logger.LogInformationWithPath("Executing OneDrive command: {Command}", "OneDriveCommands.cs", command);
+        logger.LogInformation($"Executing OneDrive command: {command}");
 
         if (dryRun)
         {
-            logger.LogInformationWithPath("[DRY RUN] No changes will be made", "OneDriveCommands.cs");
+            logger.LogInformation("[DRY RUN] No changes will be made");
         }
 
         if (verbose)
         {
-            logger.LogInformationWithPath("Verbose output enabled", "OneDriveCommands.cs");
+            logger.LogInformation("Verbose output enabled");
         }
 
-        logger.LogDebugWithPath("Debugging OneDrive command", "OneDriveCommands.cs");
+        logger.LogDebug("Debugging OneDrive command");
 
         switch (command.ToLower())
         {
             case "list":
                 if (!string.IsNullOrEmpty(arg1))
                 {
-                    logger.LogInformationWithPath("Listing files at path: {FilePath}", arg1);
+                    logger.LogInformation($"Listing files at path: {arg1}");
                 }
 
                 break;
@@ -389,11 +389,11 @@ internal class OneDriveCommands
             case "download":
                 if (arg1 == null || arg2 == null)
                 {
-                    logger.LogWarningWithPath("One or more arguments are null. Skipping logging.", "OneDriveCommands.cs");
+                    logger.LogWarning("One or more arguments are null. Skipping logging.");
                 }
                 else
                 {
-                    logger.LogInformationWithPath("Downloading from {FilePath} to {FilePath}", arg1, arg2);
+                    logger.LogInformation($"Downloading from {arg1} to {arg2}");
                 }
 
                 break;
@@ -405,7 +405,7 @@ internal class OneDriveCommands
                 }
                 else
                 {
-                    logger.LogInformationWithPath("Uploading from {FilePath} to {FilePath}", arg1, arg2);
+                    logger.LogInformation($"Uploading from {arg1} to {arg2}");
                 }
 
                 break;
@@ -413,7 +413,7 @@ internal class OneDriveCommands
             case "search":
                 if (!string.IsNullOrEmpty(arg1))
                 {
-                    logger.LogInformation("Searching for: {Query}", arg1);
+                    logger.LogInformation($"Searching for: {arg1}");
                 }
 
                 break;
@@ -421,15 +421,13 @@ internal class OneDriveCommands
             case "sync":
                 if (!string.IsNullOrEmpty(arg1) && !string.IsNullOrEmpty(arg2))
                 {
-                    logger.LogInformation(
-                        "Syncing between {LocalPath} and {RemotePath} (direction: {Direction})",
-                        arg1 ?? "unknown", arg2 ?? "unknown", "bidirectional");
+                    logger.LogInformation($"Syncing between {arg1} and {arg2}");
                 }
 
                 break;
 
             default:
-                logger.LogError("Unknown command: {Command}", command);
+                logger.LogError($"Unknown command: {command}");
                 break;
         }
 

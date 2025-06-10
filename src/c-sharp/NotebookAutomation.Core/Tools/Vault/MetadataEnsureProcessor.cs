@@ -496,41 +496,30 @@ public class MetadataEnsureProcessor(
                 }
             } // Log the detailed changes at debug level for the log file
 
-            _logger.LogDebugFormatted(
-                "Metadata changes for file:\n{DetailedChanges}",
-                metadataSummary.ToString());
+            _logger.LogDebug(
+                $"Metadata changes for file:\n{metadataSummary.ToString()}");
 
             // Log a summary line at info level - elevated from debug so it appears in console with --verbose
-            _logger.LogInformationFormatted(
-                "Metadata change summary{FileContext}: +{Adds} ~{Modifies} -{Deletes}",
-                fileContext,
-                additions.Count,
-                modifications.Count,
-                deletions.Count);
+            _logger.LogInformation(
+                $"Metadata change summary{fileContext}: +{additions.Count} ~{modifications.Count} -{deletions.Count}");
 
             // Keep detailed key-value changes at debug level for log file
             if (additions.Count > 0)
             {
-                _logger.LogDebugFormatted(
-                    "ADD operations{FileContext}: {AddedFields}",
-                    fileContext,
-                    string.Join(", ", additions));
+                _logger.LogDebug(
+                    $"ADD operations{fileContext}: {string.Join(", ", additions)}");
             }
 
             if (modifications.Count > 0)
             {
-                _logger.LogDebugFormatted(
-                    "MODIFY operations{FileContext}: {ModifiedFields}",
-                    fileContext,
-                    string.Join(", ", modifications));
+                _logger.LogDebug(
+                    $"MODIFY operations{fileContext}: {string.Join(", ", modifications)}");
             }
 
             if (deletions.Count > 0)
             {
-                _logger.LogDebugFormatted(
-                    "DELETE operations{FileContext}: {DeletedFields}",
-                    fileContext,
-                    string.Join(", ", deletions));
+                _logger.LogDebug(
+                    $"DELETE operations{fileContext}: {string.Join(", ", deletions)}");
             }
         }
     }

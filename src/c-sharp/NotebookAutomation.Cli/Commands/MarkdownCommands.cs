@@ -33,14 +33,12 @@ internal class MarkdownCommands
 {
     private readonly ILogger<MarkdownCommands> logger;
     private readonly AppConfig appConfig;
-    private readonly IServiceProvider serviceProvider;
-
-    public MarkdownCommands(ILogger<MarkdownCommands> logger, AppConfig appConfig, IServiceProvider serviceProvider)
+    private readonly IServiceProvider serviceProvider; public MarkdownCommands(ILogger<MarkdownCommands> logger, AppConfig appConfig, IServiceProvider serviceProvider)
     {
         this.logger = logger;
         this.appConfig = appConfig;
         this.serviceProvider = serviceProvider;
-        this.logger.LogInformationWithPath("Markdown command initialized", "MarkdownCommands.cs");
+        this.logger.LogDebug($"Markdown command initialized");
     }
 
     /// <summary>
@@ -163,13 +161,13 @@ internal class MarkdownCommands
             // Validate OpenAI config before proceeding
             if (!ConfigValidation.RequireOpenAi(appConfig))
             {
-                logger.LogErrorWithPath("OpenAI configuration is missing or incomplete. Exiting.", "MarkdownCommands.cs");
+                logger.LogError($"OpenAI configuration is missing or incomplete. Exiting.");
                 return;
             }
 
             if (sourceDirs == null || sourceDirs.Length == 0)
             {
-                logger.LogErrorWithPath("Source directories are required", "MarkdownCommands.cs");
+                logger.LogError($"Source directories are required.");
                 return;
             }
 
@@ -183,7 +181,7 @@ internal class MarkdownCommands
             // Use explicit vault root override if provided, otherwise use effective output directory
             string finalVaultRoot = vaultRootOverride ?? effectiveOutputDir;
             vaultRootContext.VaultRootOverride = finalVaultRoot;
-            logger.LogInformationWithPath("Using vault root override for metadata hierarchy: {VaultRoot}", "MarkdownCommands.cs", finalVaultRoot);
+            logger.LogInformation($"Using vault root override for metadata hierarchy: {finalVaultRoot}");
 
             string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
             if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
@@ -197,7 +195,7 @@ internal class MarkdownCommands
             {
                 if (!Directory.Exists(sourceDir))
                 {
-                    logger.LogWarningWithPath("Source directory not found: {Dir}", "MarkdownCommands.cs", sourceDir);
+                    logger.LogWarning($"Source directory not found: {sourceDir}");
                     continue;
                 }
 
@@ -212,29 +210,29 @@ internal class MarkdownCommands
 
                     try
                     {
-                        logger.LogInformationWithPath("Processing file: {File}", file);
+                        logger.LogInformation($"Processing file: {file}");
                         string markdown = await processor.ConvertToMarkdownAsync(file, openAiApiKey, "chunk_summary_prompt.md").ConfigureAwait(false);
                         if (!dryRun)
                         {
                             Directory.CreateDirectory(effectiveOutputDir);
                             string outputPath = Path.Combine(effectiveOutputDir, Path.GetFileNameWithoutExtension(file) + ".md");
                             await File.WriteAllTextAsync(outputPath, markdown).ConfigureAwait(false);
-                            logger.LogInformationWithPath("Markdown note saved to: {OutputPath}", outputPath);
+                            logger.LogInformation($"Markdown note saved to: {outputPath}");
                         }
                         else
                         {
-                            logger.LogInformationWithPath("[DRY RUN] Markdown note would be generated for: {File}", file);
+                            logger.LogInformation($"[DRY RUN] Markdown note would be generated for: {file}");
                         }
                     }
                     catch (Exception ex)
                     {
                         ExceptionHandler.HandleException(ex, $"processing file {file}");
-                        failedLogger?.LogError(ex, "Failed to process file: {File}", file);
+                        failedLogger?.LogError(ex, $"Failed to process file: {file}");
                     }
                 }
             }
 
-            logger.LogInformationWithPath("Markdown generation complete", "MarkdownCommands.cs");
+            logger.LogInformation($"Markdown generation complete");
         }
         catch (Exception ex)
         {
