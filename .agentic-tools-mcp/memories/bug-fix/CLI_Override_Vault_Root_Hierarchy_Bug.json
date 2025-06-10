@@ -1,0 +1,8 @@
+{
+  "id": "fbd2d427-c319-44dd-9b02-613b55f2e15a",
+  "title": "CLI Override Vault Root Hierarchy Bug",
+  "details": "## Issue Summary\n\nThe `--override-vault-root` flag is incorrectly implemented, causing hierarchy levels to be calculated incorrectly when running CLI commands on lower-level directories.\n\n## Current Behavior (Broken)\n\nWhen running: `vault generate-index \"lesson-path\" --override-vault-root --template-types lesson`\n\n1. `vaultRoot` is set to the lesson path itself\n2. The lesson directory becomes level 0 (\"main\" template)\n3. Its subdirectories become level 1 (\"program\" template) \n4. No folders are mapped to \"lesson\" template (should be level 5)\n5. The `--template-types lesson` filter excludes all folders\n\n## Expected Behavior (Correct)\n\nWhen running with `--override-vault-root`:\n\n1. Use the real vault root for hierarchy calculation\n2. Calculate the base hierarchy level of the target directory (e.g., lesson = level 5)\n3. Adjust all subdirectory calculations by this base level\n4. Allow lesson-level detection and filtering to work correctly\n\n## Files Needing Changes\n\n1. `VaultCommands.cs` - Fix vault root override logic\n2. `VaultIndexBatchProcessor.cs` - Adjust hierarchy calculation logic\n3. `MetadataHierarchyDetector.cs` - Support hierarchy level offset calculations\n\n## Technical Solution\n\nImplement hierarchy level offset logic:\n- When target is a lesson (level 5), its subdirectories should be level 6+\n- Preserve the ability to filter by template types correctly\n- Allow CLI to work from any directory level while maintaining correct hierarchy",
+  "category": "bug-fix",
+  "dateCreated": "2025-06-09T19:07:57.838Z",
+  "dateUpdated": "2025-06-09T19:07:57.838Z"
+}

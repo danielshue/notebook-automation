@@ -1,0 +1,8 @@
+{
+  "id": "36567560-4651-4a24-b946-eaf2ffe52dd9",
+  "title": "Lesson-Level Hierarchy Detection Testing",
+  "details": "Testing lesson-level hierarchy detection after moving CalculateHierarchyLevel to MetadataHierarchyDetector and updating interface:\n\nKEY CHANGES MADE:\n1. Moved CalculateHierarchyLevel method from VaultIndexBatchProcessor to MetadataHierarchyDetector\n2. Updated IMetadataHierarchyDetector interface to include CalculateHierarchyLevel and GetTemplateTypeFromHierarchyLevel methods\n3. Made GetTemplateTypeFromHierarchyLevel an instance method (was static)\n4. Updated VaultIndexBatchProcessor to use _hierarchyDetector.GetTemplateTypeFromHierarchyLevel() instead of static call\n5. Removed duplicate static method from VaultIndexBatchProcessor\n6. Build is now successful\n\nHIERARCHY LEVELS:\n- Level 0: Vault root (main)\n- Level 1: Program (program) - e.g., \"Value Chain Management\"\n- Level 2: Course (course) - e.g., \"Operations Management\"\n- Level 3: Class (class) - e.g., \"Supply Chain Fundamentals\"\n- Level 4: Module (module) - e.g., \"Week 1\"\n- Level 5: Lesson (lesson) - e.g., \"Lesson 1\" - should include Readings, Transcripts, Notes\n- Level 6+: Content (unknown)\n\nLESSON TEMPLATE EXPECTATION:\nThe lesson template should show sections for Readings, Transcripts, and Notes, allowing easy organization of lesson-level content.\n\nNEXT TESTS:\n- Test generate-index with --template-types lesson to verify lesson folders are detected\n- Check if lesson template is applied correctly\n- Verify lesson content organization includes expected sections",
+  "category": "debugging",
+  "dateCreated": "2025-06-09T18:18:06.943Z",
+  "dateUpdated": "2025-06-09T18:18:06.943Z"
+}

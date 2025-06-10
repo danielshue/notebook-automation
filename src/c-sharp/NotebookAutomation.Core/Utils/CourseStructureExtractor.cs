@@ -85,13 +85,10 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
             var fileInfo = new FileInfo(filePath);
             var dir = fileInfo.Directory;
             string? module = null;
-            string? lesson = null;
-
-            // First attempt: Extract from filename itself
+            string? lesson = null;            // First attempt: Extract from filename itself
             (module, lesson) = ExtractFromFilename(fileInfo.Name);
-            logger.LogDebugWithPath(
-                "Filename extraction result - Module: {Module}, Lesson: {Lesson}",
-                nameof(CourseStructureExtractor), module ?? "null", lesson ?? "null", filePath);
+            logger.LogDebug(
+                $"Filename extraction result - Module: {module ?? "null"}, Lesson: {lesson ?? "null"} for file: {filePath}");
 
             if (dir != null)
             {
@@ -101,20 +98,16 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
                     var (dirModule, dirLesson) = ExtractByKeywords(dir);
                     module ??= dirModule;
                     lesson ??= dirLesson;
-                    logger.LogDebugWithPath(
-                        "Keyword extraction result - Module: {Module}, Lesson: {Lesson}",
-                        nameof(CourseStructureExtractor), module ?? "null", lesson ?? "null", filePath);
-                }
-
-                // Third attempt: If we still don't have both, try numbered directory structure
+                    logger.LogDebug(
+                        $"Keyword extraction result - Module: {module ?? "null"}, Lesson: {lesson ?? "null"} for file: {filePath}");
+                }                // Third attempt: If we still don't have both, try numbered directory structure
                 if (module == null || lesson == null)
                 {
                     var (numModule, numLesson) = ExtractByNumberedPattern(dir);
                     module ??= numModule;
                     lesson ??= numLesson;
-                    logger.LogDebugWithPath(
-                        "Numbered pattern extraction result - Module: {Module}, Lesson: {Lesson}",
-                        nameof(CourseStructureExtractor), module ?? "null", lesson ?? "null", filePath);
+                    logger.LogDebug(
+                        $"Numbered pattern extraction result - Module: {module ?? "null"}, Lesson: {lesson ?? "null"} for file: {filePath}");
                 }
             }
 
@@ -122,30 +115,29 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
             if (!string.IsNullOrEmpty(module))
             {
                 metadata["module"] = module;
-                logger.LogDebugWithPath("Set module metadata: {Module}", nameof(CourseStructureExtractor), module, filePath);
+                logger.LogDebug($"Set module metadata: {module} for file: {filePath}");
             }
 
             if (!string.IsNullOrEmpty(lesson))
             {
                 metadata["lesson"] = lesson;
-                logger.LogDebugWithPath("Set lesson metadata: {Lesson}", nameof(CourseStructureExtractor), lesson, filePath);
+                logger.LogDebug($"Set lesson metadata: {lesson} for file: {filePath}");
             }
 
             // Log summary if we found any information
             if (!string.IsNullOrEmpty(module) || !string.IsNullOrEmpty(lesson))
             {
-                logger.LogDebugWithPath(
-                    "Successfully extracted - Module: '{Module}', Lesson: '{Lesson}'",
-                    nameof(CourseStructureExtractor), module ?? "not found", lesson ?? "not found", filePath);
+                logger.LogDebug(
+                    $"Successfully extracted - Module: '{module ?? "not found"}', Lesson: '{lesson ?? "not found"}' for file: {filePath}");
             }
             else
             {
-                logger.LogDebugWithPath("No module or lesson information could be extracted", nameof(CourseStructureExtractor), filePath);
+                logger.LogDebug($"No module or lesson information could be extracted for file: {filePath}");
             }
         }
         catch (Exception ex)
         {
-            logger.LogWarningWithPath(ex, "Failed to extract module/lesson from directory structure for file: {filePath}", filePath);
+            logger.LogWarning(ex, $"Failed to extract module/lesson from directory structure for file: {filePath}");
         }
     }
 

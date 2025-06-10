@@ -1,0 +1,8 @@
+{
+  "id": "80aaeb7b-4582-453c-b4ac-bb9ca7702f80",
+  "title": "VaultIndexBatchProcessor Interface Refactoring",
+  "details": "Refactored VaultIndexBatchProcessor to use the IMetadataHierarchyDetector interface instead of the concrete MetadataHierarchyDetector class.\n\nChanges made:\n1. Updated the VaultIndexBatchProcessor constructor to accept IMetadataHierarchyDetector instead of the concrete implementation\n2. Updated the field declaration to store IMetadataHierarchyDetector instead of the concrete type\n3. Updated ServiceRegistration.cs to inject the interface rather than the concrete type\n4. Verified changes by successfully building the project and running all Core tests (which passed successfully)\n\nThe change improves the code's adherence to dependency inversion principle by depending on abstractions rather than concrete implementations. This aligns with the earlier refactoring that was done for VaultIndexProcessor.\n\nNote: The CLI tests project has some failing tests in VaultCommandsRelativePathTests.cs that need separate fixing, but these are unrelated to the core functionality changes we made.",
+  "category": "refactoring",
+  "dateCreated": "2025-06-10T01:39:49.298Z",
+  "dateUpdated": "2025-06-10T01:39:49.298Z"
+}

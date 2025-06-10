@@ -19,10 +19,12 @@ namespace NotebookAutomation.Core.Tools.Vault;
 /// - Supports dry-run mode for previewing changes.
 /// </remarks>
 public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
-    VaultIndexProcessor processor)
+    IVaultIndexProcessor processor,
+    IMetadataHierarchyDetector hierarchyDetector)
 {
     private readonly ILogger<VaultIndexBatchProcessor> _logger = _logger;
-    private readonly VaultIndexProcessor _indexProcessor = processor;
+    private readonly IVaultIndexProcessor _indexProcessor = processor;
+    private readonly IMetadataHierarchyDetector _hierarchyDetector = hierarchyDetector;
 
     // Queue-related fields
     private readonly List<QueueItem> _processingQueue = [];
@@ -74,14 +76,13 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
         {
             QueueChanged?.Invoke(this, new QueueChangedEventArgs(_processingQueue.AsReadOnly(), changedItem));
         }
-    }
-
-    /// <summary>
-    /// Initializes the processing queue with folders from the specified vault directory.
-    /// </summary>
-    /// <param name="vaultPath">Path to the vault directory to scan for folders.</param>
-    /// <param name="indexTypes">Optional filter for specific index types to generate.</param>
-    protected virtual void InitializeProcessingQueue(string vaultPath, List<string>? templateTypes = null)
+    }    /// <summary>
+         /// Initializes the processing queue with folders from the specified vault directory.
+         /// </summary>
+         /// <param name="vaultPath">Path to the vault directory to scan for folders.</param>
+         /// <param name="templateTypes">Optional filter for specific template types to generate.</param>
+         /// <param name="vaultRoot">Optional vault root for hierarchy calculation. If null, uses vaultPath.</param>
+    protected virtual void InitializeProcessingQueue(string vaultPath, List<string>? templateTypes = null, string? vaultRoot = null)
     { // Get all directories in the vault, including the vault root itself
         var directories = new List<string> { vaultPath }; // Start with vault root
         directories.AddRange(Directory.GetDirectories(vaultPath, "*", SearchOption.AllDirectories)
@@ -89,26 +90,46 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
 
         directories = directories
             .OrderBy(d => d) // Process in consistent order
-            .ToList();
-
-        // Note: The vault root itself should get a main index file at level 1.
+            .ToList();        // Note: The vault root itself should get a main index file at level 1.
         lock (_queueLock)
         {
             _processingQueue.Clear();
 
             foreach (string folderPath in directories)
-            { // Determine if this folder should be processed based on templateTypes filter
+            {                // Determine if this folder should be processed based on templateTypes filter
                 if (templateTypes != null && templateTypes.Count > 0)
                 {
-                    var hierarchyLevel = CalculateHierarchyLevel(folderPath, vaultPath);
-                    string templateType = GetTemplateTypeFromHierarchyLevel(hierarchyLevel);
+
+                    // CRITICAL: Always use the actual vault root for hierarchy calculation (not the path being processed)
+                    // vaultRoot should contain the correct vault root path:
+                    //   1. For standard operation: The configured vault root (from AppConfig)
+                    //   2. For --override-vault-root: The provided path becomes the new vault root (level 0)
+                    // This ensures that hierarchy levels are calculated consistently based on the vault structure,
+                    // even when starting processing from a subdirectory
+
+                    // Enhanced debug logging for hierarchy calculation
+                    _logger.LogDebug("InitializeProcessingQueue - Calculating hierarchy for '{FolderPath}' (relative to vault root '{VaultRoot}')",
+                        folderPath, vaultRoot ?? "(null - using default)");
+
+                    var hierarchyLevel = _hierarchyDetector.CalculateHierarchyLevel(folderPath, vaultRoot);
+                    string templateType = _hierarchyDetector.GetTemplateTypeFromHierarchyLevel(hierarchyLevel);
+
+                    // Log calculated hierarchy information
+                    _logger.LogDebug("InitializeProcessingQueue - Hierarchy result: Level {Level} = '{TemplateType}'", hierarchyLevel, templateType);
+
+                    _logger.LogDebug("InitializeProcessingQueue - Folder: '{FolderPath}' -> HierarchyLevel: {HierarchyLevel} -> TemplateType: '{TemplateType}' (Required: {RequiredTypes})",
+                        folderPath, hierarchyLevel, templateType, string.Join(", ", templateTypes));
 
                     if (!templateTypes.Contains(templateType))
                     {
+                        _logger.LogDebug("InitializeProcessingQueue - Skipping folder '{FolderPath}' - TemplateType '{TemplateType}' not in required types",
+                            folderPath, templateType);
                         continue; // Skip this folder
                     }
-                }
 
+                    _logger.LogDebug("InitializeProcessingQueue - Including folder '{FolderPath}' - TemplateType '{TemplateType}' matches required types",
+                        folderPath, templateType);
+                }
                 var queueItem = new QueueItem(folderPath, "INDEX")
                 {
                     Status = DocumentProcessingStatus.Waiting,
@@ -133,28 +154,9 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
 
         // Skip hidden directories and common ignored folders
         return dirName.StartsWith('.') ||
-               dirName.Equals("templates", StringComparison.OrdinalIgnoreCase) ||
-               dirName.Equals("attachments", StringComparison.OrdinalIgnoreCase) ||
+               dirName.Equals("templates", StringComparison.OrdinalIgnoreCase) || dirName.Equals("attachments", StringComparison.OrdinalIgnoreCase) ||
                dirName.Equals("resources", StringComparison.OrdinalIgnoreCase) ||
                dirName.Equals("_templates", StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Maps hierarchy level to index type string.
-    /// </summary>
-    /// <param name="level">The hierarchy level.</param>    /// <returns>The corresponding template type string.</returns>
-    private static string GetTemplateTypeFromHierarchyLevel(int level)
-    {
-        return level switch
-        {
-            1 => "main",      // Main program folder (e.g., MBA)
-            2 => "program",   // Program subdivision (e.g., Program)
-            3 => "course",    // Course (e.g., Finance)
-            4 => "class",     // Class (e.g., Corporate-Finance)
-            5 => "module",    // Module (e.g., Week1)
-            6 => "lesson",    // Lesson subdirectory
-            _ => "unknown",
-        };
     }
 
     /// <summary>
@@ -204,8 +206,29 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     /// <param name="dryRun">If true, simulates processing without making actual changes.</param>
     /// <param name="templateTypes">Optional filter for specific template types to generate.</param>
     /// <param name="forceOverwrite">If true, regenerates index files even if they already exist.</param>
-    /// <returns>A summary of processing results.</returns>
-    public async Task<VaultIndexBatchResult> GenerateIndexesAsync(
+    /// <returns>A summary of processing results.</returns>    /// <summary>
+    /// Generates index files for a vault directory structure.
+    /// </summary>
+    /// <param name="vaultPath">The path to start processing from (can be the vault root or any subdirectory)</param>
+    /// <param name="dryRun">When true, simulates processing without making changes</param>
+    /// <param name="templateTypes">Optional list of template types to filter by (e.g., "program", "course", "class", "module", "lesson")</param>
+    /// <param name="forceOverwrite">When true, regenerates indices even if they already exist</param>
+    /// <param name="vaultRoot">
+    ///   The vault root path to use for hierarchy calculation. This is CRITICAL for correct template selection.
+    ///   When null: Uses configured vault root from AppConfig
+    ///   When "OVERRIDE" string: Uses the vaultPath as the vault root (level 0)
+    ///   When explicit path: Uses that path as the vault root
+    /// </param>
+    /// <returns>A result containing processing statistics and error information</returns>    /// <remarks>
+    /// It's important to understand the difference between vaultPath and vaultRoot parameters:
+    /// - vaultPath: Where to START processing - can be any subdirectory within the vault
+    /// - vaultRoot: What to use as the BASE for hierarchy level calculation
+    ///
+    /// In most cases, vaultRoot should be the actual configured vault root from AppConfig,
+    /// ensuring that hierarchy levels are calculated consistently regardless of where
+    /// processing starts (e.g., a lesson dir is still level 5 even when starting from there).
+    /// </remarks>
+    public virtual async Task<VaultIndexBatchResult> GenerateIndexesAsync(
         string vaultPath,
         bool dryRun = false,
         List<string>? templateTypes = null,
@@ -236,7 +259,7 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
             }
 
             // Initialize the processing queue
-            InitializeProcessingQueue(vaultPath, templateTypes);
+            InitializeProcessingQueue(vaultPath, templateTypes, vaultRoot);
 
             var queueCopy = Queue.ToList();
             if (!queueCopy.Any())
@@ -262,8 +285,23 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
                         $"Generating index for folder {folderIndex + 1}/{queueCopy.Count}: {Path.GetFileName(folderPath)}",
                         folderIndex + 1, queueCopy.Count);
 
-                    var stopwatch = Stopwatch.StartNew();                    // Use the explicit vaultRoot if provided, otherwise use vaultPath
-                    string effectiveVaultPath = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : vaultPath;
+                    var stopwatch = Stopwatch.StartNew();                    // IMPORTANT: Always use the explicitly provided vaultRoot for hierarchy calculation
+                    // This ensures consistency when running from subdirectories within the vault
+                    string effectiveVaultPath = vaultRoot ?? vaultPath; // Fallback to vaultPath if vaultRoot is null
+
+                    _logger.LogDebug($"Using vault root '{effectiveVaultPath}' for index generation on folder '{folderPath}'");
+                    _logger.LogDebug($"Hierarchy levels will be calculated relative to: {effectiveVaultPath}");
+
+                    // Log path relationships for debugging
+                    string fullFolderPath = Path.GetFullPath(folderPath);
+                    string fullVaultPath = Path.GetFullPath(effectiveVaultPath);
+                    string relPath = Path.GetRelativePath(fullVaultPath, fullFolderPath);
+                    _logger.LogDebug($"Folder relationship - Path: {fullFolderPath}, VaultRoot: {fullVaultPath}, RelativePath: {relPath}");
+
+                    // Calculate expected hierarchy level for verification
+                    int expectedLevel = relPath == "." ? 1 : relPath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Length + 1;
+                    _logger.LogDebug($"Expected hierarchy level: {expectedLevel} (template: {_hierarchyDetector.GetTemplateTypeFromHierarchyLevel(expectedLevel)})");
+
                     bool wasGenerated = await _indexProcessor.GenerateIndexAsync(
                         folderPath,
                         effectiveVaultPath,
@@ -406,23 +444,6 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
         {
             _logger.LogError(ex, "Failed to save failed folders list");
         }
-    }
-
-    /// <summary>
-    /// Calculates the hierarchy level of a folder relative to the vault root.
-    /// </summary>
-    /// <param name="folderPath">The folder path to analyze.</param>
-    /// <param name="vaultPath">The vault root path.</param>
-    /// <returns>The hierarchy level (0 = vault root, 1 = program, 2 = course, etc.).</returns>
-    private static int CalculateHierarchyLevel(string folderPath, string vaultPath)
-    {
-        if (string.Equals(Path.GetFullPath(folderPath), Path.GetFullPath(vaultPath), StringComparison.OrdinalIgnoreCase))
-        {
-            return 0; // Vault root
-        }
-
-        string relativePath = Path.GetRelativePath(vaultPath, folderPath);
-        return relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries).Length;
     }
 }
 

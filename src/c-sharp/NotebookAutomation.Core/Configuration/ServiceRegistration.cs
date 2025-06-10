@@ -263,10 +263,8 @@ public static class ServiceRegistration
             var logger = loggingService.GetLogger<MetadataEnsureBatchProcessor>();
             var metadataProcessor = provider.GetRequiredService<MetadataEnsureProcessor>();
             return new MetadataEnsureBatchProcessor(logger, metadataProcessor);
-        });
-
-        // Register Vault Index processors
-        services.AddScoped(provider =>
+        });        // Register Vault Index processors
+        services.AddScoped<IVaultIndexProcessor, VaultIndexProcessor>(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<VaultIndexProcessor>();
@@ -277,14 +275,12 @@ public static class ServiceRegistration
             var noteBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
             var appConfig = provider.GetRequiredService<AppConfig>();
             return new VaultIndexProcessor(logger, templateManager, hierarchyDetector, structureExtractor, yamlHelper, noteBuilder, appConfig);
-        });
-
-        services.AddScoped(provider =>
-        {
-            var loggingService = provider.GetRequiredService<ILoggingService>();
+        }); services.AddScoped(provider =>
+        {            var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<VaultIndexBatchProcessor>();
-            var indexProcessor = provider.GetRequiredService<VaultIndexProcessor>();
-            return new VaultIndexBatchProcessor(logger, indexProcessor);
+            var indexProcessor = provider.GetRequiredService<IVaultIndexProcessor>();
+            var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
+            return new VaultIndexBatchProcessor(logger, indexProcessor, hierarchyDetector);
         });
 
         return services;

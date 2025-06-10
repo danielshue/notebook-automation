@@ -24,42 +24,40 @@ public class AppConfig : IConfiguration
     /// <summary>
     /// Gets or sets the path to the configuration file used to load this AppConfig.
     /// </summary>
-    public string? ConfigFilePath { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether debug mode is enabled for this configuration.
-    /// </summary>
-    public bool DebugEnabled { get; set; }
+    public virtual string? ConfigFilePath { get; set; }    /// <summary>
+                                                           /// Gets or sets a value indicating whether debug mode is enabled for this configuration.
+                                                           /// </summary>
+    public virtual bool DebugEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets the paths configuration section.
     /// </summary>
     [JsonPropertyName("paths")]
-    public PathsConfig Paths { get; set; } = new PathsConfig();
+    public virtual PathsConfig Paths { get; set; } = new PathsConfig();
 
     /// <summary>
     /// Gets or sets the Microsoft Graph API configuration section.
     /// </summary>
     [JsonPropertyName("microsoft_graph")]
-    public MicrosoftGraphConfig MicrosoftGraph { get; set; } = new MicrosoftGraphConfig();
+    public virtual MicrosoftGraphConfig MicrosoftGraph { get; set; } = new MicrosoftGraphConfig();
 
     /// <summary>
     /// Gets or sets the AI Service configuration section.
     /// </summary>
     [JsonPropertyName("aiservice")]
-    public AIServiceConfig AiService { get; set; } = new AIServiceConfig();
+    public virtual AIServiceConfig AiService { get; set; } = new AIServiceConfig();
 
     /// <summary>
     /// Gets or sets the list of video file extensions to process.
     /// </summary>
     [JsonPropertyName("video_extensions")]
-    public List<string> VideoExtensions { get; set; } = [];
+    public virtual List<string> VideoExtensions { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the list of PDF file extensions to process.
     /// </summary>
     [JsonPropertyName("pdf_extensions")]
-    public List<string> PdfExtensions { get; set; } = [".pdf"];
+    public virtual List<string> PdfExtensions { get; set; } = [".pdf"];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppConfig"/> class.
@@ -96,7 +94,7 @@ public class AppConfig : IConfiguration
     /// This method attempts to load configuration settings from the underlying configuration provider.
     /// If the provider is unavailable, it falls back to file-based configuration loading.
     /// </remarks>
-    private void LoadConfiguration()
+    internal virtual void LoadConfiguration()
     {
         string? loadedConfigPath = null;
         try
@@ -341,7 +339,7 @@ public class AppConfig : IConfiguration
     /// </summary>
     /// <param name="configPath">Path where the configuration should be saved.</param>
     /// <exception cref="IOException">Thrown when the file cannot be written to.</exception>
-    public void SaveToJsonFile(string configPath)
+    public virtual void SaveToJsonFile(string configPath)
     {
         logger?.LogInformation($"Saving configuration to {configPath}");
 
