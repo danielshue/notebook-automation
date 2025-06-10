@@ -97,12 +97,12 @@ public partial class PromptTemplateService : IPromptService
             if (Directory.Exists(configPromptsDir))
             {
                 promptsDirectory = configPromptsDir;
-                logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from config");
+                logger.LogInformation($"Using prompts directory from config: {promptsDirectory}");
                 return;
             }
             else
             {
-                logger.LogWarningWithPath(configPromptsDir, "Configured prompts directory not found");
+                logger.LogWarning($"Configured prompts directory not found: {configPromptsDir}");
             }
         }
 
@@ -116,7 +116,7 @@ public partial class PromptTemplateService : IPromptService
         {
             promptsDirectory = projectPromptsDir;
 
-            logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from output directory");
+            logger.LogInformation($"Using prompts directory from output directory: {promptsDirectory}");
 
             return;
         }
@@ -128,7 +128,7 @@ public partial class PromptTemplateService : IPromptService
         if (Directory.Exists(corePromptsDir))
         {
             promptsDirectory = corePromptsDir;
-            logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from Core project");
+            logger.LogInformation($"Using prompts directory from Core project: {promptsDirectory}");
             return;
         }
 
@@ -139,7 +139,7 @@ public partial class PromptTemplateService : IPromptService
         if (Directory.Exists(rootPromptsDir))
         {
             promptsDirectory = rootPromptsDir;
-            logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from repository root");
+            logger.LogInformation($"Using prompts directory from repository root: {promptsDirectory}");
             return;
         }
 
@@ -150,13 +150,13 @@ public partial class PromptTemplateService : IPromptService
         if (Directory.Exists(parentRootPromptsDir))
         {
             promptsDirectory = parentRootPromptsDir;
-            logger.LogInformationWithPath(promptsDirectory, "Using prompts directory from parent repository root");
+            logger.LogInformation($"Using prompts directory from parent repository root: {promptsDirectory}");
             return;
         }
 
         // If all else fails, use the current directory
         promptsDirectory = baseDirectory;
-        logger.LogWarningWithPath(baseDirectory, "Could not find prompts directory. Using base directory");
+        logger.LogWarning($"Could not find prompts directory. Using base directory: {baseDirectory}");
     }
 
     /// <summary>
@@ -174,7 +174,7 @@ public partial class PromptTemplateService : IPromptService
     {
         if (!File.Exists(templatePath))
         {
-            logger.LogErrorWithPath(templatePath, "Prompt template not found");
+            logger.LogError($"Prompt template not found: {templatePath}");
             return string.Empty;
         }
 
@@ -231,7 +231,7 @@ public partial class PromptTemplateService : IPromptService
 
                 // Strip frontmatter if present
                 content = yamlHelper.RemoveFrontmatter(content);
-                logger.LogInformationWithPath(templatePath, $"Loaded template: {templateName}");
+                logger.LogInformation($"Loaded template '{templateName}' from: {templatePath}");
                 return content;
             } // Look in project Prompts directory too
 
@@ -242,7 +242,7 @@ public partial class PromptTemplateService : IPromptService
 
                 // Strip frontmatter if present
                 content = yamlHelper.RemoveFrontmatter(content);
-                logger.LogInformationWithPath(projectPromptPath, $"Loaded template from project: {templateName}");
+                logger.LogInformation($"Loaded template '{templateName}' from project: {projectPromptPath}");
                 return content;
             }
 
@@ -250,7 +250,7 @@ public partial class PromptTemplateService : IPromptService
         }
         catch (Exception ex)
         {
-            logger.LogErrorWithPath(templateName, $"Error loading template: {templateName}. Exception: {ex.Message}");
+            logger.LogError($"Error loading template '{templateName}': {ex.Message}");
             return GetDefaultTemplate(templateName);
         }
     }
@@ -262,7 +262,7 @@ public partial class PromptTemplateService : IPromptService
     /// <returns>The default template content.</returns>
     private string GetDefaultTemplate(string templateName)
     {
-        logger.LogWarningWithPath(templateName, "Using default template for");
+        logger.LogWarning($"Using default template for: {templateName}");
 
         return templateName switch
         {

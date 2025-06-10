@@ -109,12 +109,12 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 // Add the file size in a human-readable format
                 long fileSizeBytes = fileInfo.Length;
                 metadata["video-size"] = FileSizeFormatter.FormatFileSizeToString(fileSizeBytes);
-                Logger.LogDebug("Added video size to metadata: {VideoSize}", metadata["video-size"]);
+                Logger.LogDebug($"Added video size to metadata: {metadata["video-size"]}");
             }
         }
         catch (Exception ex)
         {
-            Logger.LogWarningWithPath(ex, "Failed to extract file system metadata for video: {filePath}", videoPath);
+            Logger.LogWarning(ex, $"Failed to extract file system metadata for video: {videoPath}");
         }
 
         try
@@ -432,12 +432,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     public override string GenerateMarkdownNote(string bodyText, Dictionary<string, object>? metadata = null, string noteType = "Document Note", bool suppressBody = false, bool includeNoteTypeTitle = false)
     { // For video notes, we need special handling to extract and merge frontmatter using the injected helper
         // Use the injected YAML helper        // Use default metadata if none provided
-        metadata ??= [];
-
-        // Debug: Log the original summary
-        Logger.LogInformation(
-            "VideoNoteProcessor.GenerateMarkdownNote called - Original AI summary (first 200 chars): {Summary}",
-            bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText);
+        metadata ??= [];        // Debug: Log the original summary
+        string truncatedBody = bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText;
+        Logger.LogInformation($"VideoNoteProcessor.GenerateMarkdownNote called - Original AI summary (first 200 chars): {truncatedBody}");
 
         // Extract any existing frontmatter from the AI summary
         string? summaryFrontmatter = _yamlHelper?.ExtractFrontmatter(bodyText);
@@ -448,7 +445,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         {
             summaryMetadata = _yamlHelper.ParseYamlToDictionary(summaryFrontmatter)
                 .ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
-            Logger.LogInformation("Extracted frontmatter from AI summary with {Count} fields", summaryMetadata.Count);
+            Logger.LogInformation($"Extracted frontmatter from AI summary with {summaryMetadata.Count} fields");
         }
         else
         {
@@ -456,12 +453,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         }
 
         // Remove frontmatter from the summary content using _yamlHelper
-        string cleanSummary = _yamlHelper?.RemoveFrontmatter(bodyText) ?? bodyText;
-
-        // Debug: Log the cleaned summary
-        Logger.LogInformation(
-            "Cleaned summary (first 200 chars): {CleanSummary}",
-            cleanSummary.Length > 200 ? cleanSummary[..200] + "..." : cleanSummary);
+        string cleanSummary = _yamlHelper?.RemoveFrontmatter(bodyText) ?? bodyText;        // Debug: Log the cleaned summary
+        string truncatedCleanSummary = cleanSummary.Length > 200 ? cleanSummary[..200] + "..." : cleanSummary;
+        Logger.LogInformation($"Cleaned summary (first 200 chars): {truncatedCleanSummary}");
 
         // Merge metadata: video metadata takes precedence, but preserve AI tags if they exist
         var mergedMetadata = new Dictionary<string, object>(metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!) ?? new Dictionary<string, object>());
@@ -487,25 +481,20 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         {
             try
             {
-                Logger.LogDebugWithPath("Detecting hierarchy information from path: {FilePath}", pathForHierarchy);
+                Logger.LogDebug($"Detecting hierarchy information from path: {pathForHierarchy}");
                 var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(pathForHierarchy);                // For videos, we want all hierarchy information regardless of level
 
                 // since videos are content files, not index files
                 var updated = _hierarchyDetector.UpdateMetadataWithHierarchy(
                     mergedMetadata.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value),
                     hierarchyInfo,
-                    "module");
-                mergedMetadata = updated.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!);
-                Logger.LogInformationWithPath(
-                    "Added hierarchy metadata - Program: {Program}, Course: {Course}, Class: {Class}",
-                    pathForHierarchy!,
-                    hierarchyInfo["program"],
-                    hierarchyInfo["course"],
-                    hierarchyInfo["class"]);
+                    "module"); mergedMetadata = updated.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!);
+                Logger.LogInformation(
+                    $"Added hierarchy metadata for path {pathForHierarchy!} - Program: {hierarchyInfo["program"]}, Course: {hierarchyInfo["course"]}, Class: {hierarchyInfo["class"]}");
             }
             catch (Exception ex)
             {
-                Logger.LogWarningWithPath(ex, "Error detecting hierarchy information from path: {FilePath}", pathForHierarchy);
+                Logger.LogWarning(ex, $"Error detecting hierarchy information from path: {pathForHierarchy}");
             }
         }
 
@@ -530,14 +519,14 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         foreach (var dateField in dateFieldsToRemove)
         {
             mergedMetadata.Remove(dateField);
-            Logger.LogDebug("Removed date field {DateField} from metadata", dateField);
+            Logger.LogDebug($"Removed date field {dateField} from metadata");
         }
 
         // Log mergedMetadata keys and values once before serialization (for debug)
         Logger.LogDebug("Final mergedMetadata before serialization:");
         foreach (var kvp in mergedMetadata)
         {
-            Logger.LogDebug("{Key}: {Value}", kvp.Key, kvp.Value);
+            Logger.LogDebug($"{{Key}}: {{Value}}", kvp.Key, kvp.Value);
         } // Use base implementation with cleaned summary and merged metadata
 
         // Include a title but use the friendly title from frontmatter instead of the note type
@@ -685,7 +674,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             }
         }
 
-        Logger.LogInformationWithPath("No transcript found for video: {FilePath}", videoPath);
+        Logger.LogInformation($"No transcript found for video: {videoPath}");
         return null;
     }
 
