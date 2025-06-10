@@ -496,7 +496,8 @@ public class OneDriveService : IOneDriveService
             logger.LogError("Sharing link not found in response for OneDrive file: {OneDrivePath} (original: {OriginalPath})", oneDrivePath, filePath);
             logger.LogError($"Sharing link not found in response for OneDrive file: {oneDrivePath} (original: {filePath})");
             return null;
-        }        catch (ServiceException ex)
+        }
+        catch (ServiceException ex)
         {
             logger.LogError($"Failed to create sharing link for OneDrive file: {oneDrivePath} (original: {filePath}). Exception: {ex.Message}");
 
@@ -507,7 +508,8 @@ public class OneDriveService : IOneDriveService
             }
 
             return null;
-        }        catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             logger.LogError($"Failed to create sharing link for OneDrive file: {oneDrivePath} (original: {filePath}). Exception: {ex.Message}");
             return null;
