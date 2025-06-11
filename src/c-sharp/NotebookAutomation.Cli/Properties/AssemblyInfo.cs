@@ -8,54 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("NotebookAutomation.Cli.Tests")]
 
 /// <summary>
-/// Specifies the title of the assembly.
-/// </summary>
-[assembly: AssemblyTitle("Notebook Automation")]
-
-/// <summary>
 /// Provides a short description of the assembly.
 /// </summary>
 [assembly: AssemblyDescription("Command-line interface for managing course-related content.")]
-
-/// <summary>
-/// Specifies the build configuration (e.g., Debug or Release).
-/// </summary>
-[assembly: AssemblyConfiguration("Release")]
-
-/// <summary>
-/// Specifies the company that produced the assembly.
-/// </summary>
-[assembly: AssemblyCompany("Dan Shue")]
-
-/// <summary>
-/// Specifies the product name.
-/// </summary>
-[assembly: AssemblyProduct("Notebook Automation")]
-
-/// <summary>
-/// Specifies copyright information.
-/// </summary>
-[assembly: AssemblyCopyright("© 2025 Dan Shue")]
-
-/// <summary>
-/// Specifies trademark information.
-/// </summary>
-[assembly: AssemblyTrademark("")]
-
-/// <summary>
-/// Specifies the version of the assembly.
-/// </summary>
-[assembly: AssemblyVersion("1.0.0.0")]
-
-/// <summary>
-/// Specifies the file version of the assembly.
-/// </summary>
-[assembly: AssemblyFileVersion("1.0.0.0")]
-
-/// <summary>
-/// Specifies additional version information, such as pre-release or build metadata.
-/// </summary>
-[assembly: AssemblyInformationalVersion("1.0.0-beta")]
 
 /// <summary>
 /// Specifies whether the assembly is visible to COM components.
