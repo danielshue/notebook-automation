@@ -99,7 +99,7 @@ jobs:
         shell: pwsh
 
       - name: Build solution
-        run: dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }}
+        run: dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} /p:InformationalVersion=${{ env.FILE_VERSION }}
 
       - name: Run tests with coverage
         run: |
@@ -121,17 +121,15 @@ jobs:
         with:
           name: coverage-windows
           path: src/c-sharp/NotebookAutomation.Core.Tests/TestResults/**/*.xml
-          retention-days: 7 # Keep coverage reports for 7 days
-
-      - name: Publish single-file EXE (win-x64)
+          retention-days: 7 # Keep coverage reports for 7 days      - name: Publish single-file EXE (win-x64)
         run: |
           cd ${{ github.workspace }}
-          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} --output publish/win-x64
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} /p:InformationalVersion=${{ env.FILE_VERSION }} --output publish/win-x64
 
       - name: Publish single-file EXE (win-arm64)
         run: |
           cd ${{ github.workspace }}
-          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} --output publish/win-arm64
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} /p:InformationalVersion=${{ env.FILE_VERSION }} --output publish/win-arm64
 
       - name: Upload published single-file executables
         if: always()
