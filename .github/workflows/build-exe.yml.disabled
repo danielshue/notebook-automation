@@ -1,0 +1,62 @@
+# .github/workflows/build-exe.yml
+
+name: Build CLI EXEs
+
+on:
+  push:
+    branches: [ main, master ]
+    paths-ignore:
+      - '.agentic-tools-mcp/**'
+  pull_request:
+    branches: [ main, master ]
+    paths-ignore:
+      - '.agentic-tools-mcp/**'
+  workflow_dispatch:
+
+# Control workflow execution retention - deletes workflow runs after 14 days
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Controls automatic cleanup of workflow runs
+# Keeps only the 10 most recent workflow runs and deletes older runs
+permissions:
+  actions: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Set version information
+        id: version
+        run: |
+          BUILD_ID=$GITHUB_RUN_NUMBER
+          echo "BUILD_VERSION=1.0.0.$BUILD_ID" >> $GITHUB_ENV
+          echo "Setting version to 1.0.0.$BUILD_ID"
+
+      - name: Install dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install -e .
+          pip install pyinstaller
+
+      - name: Build all EXEs from .spec files
+        run: |
+          # Pass version to pyinstaller using --version-file option
+          for spec in *.spec; do
+            pyinstaller "$spec" --version-file="<(echo \"FileVersion=${{ env.BUILD_VERSION }}\nProductVersion=${{ env.BUILD_VERSION }}\")"
+          done      
+      - name: Upload EXEs as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cli-executables
+          path: dist/*
+          retention-days: 14 # Keep executables for 14 days
