@@ -43,6 +43,6 @@ global using NotebookAutomation.Core.Tools.MarkdownGeneration;
 global using NotebookAutomation.Core.Tools.PdfProcessing;
 global using NotebookAutomation.Core.Tools.Shared;
 global using NotebookAutomation.Core.Tools.TagManagement;
+global using NotebookAutomation.Core.Tools.Vault;
 global using NotebookAutomation.Core.Tools.VideoProcessing;
 global using NotebookAutomation.Core.Utils;
-global using NotebookAutomation.Core.Tools.Vault;
