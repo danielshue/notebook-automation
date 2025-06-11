@@ -7,13 +7,14 @@ param(
 )
 
 # Ensure dist folder exists
-if (-not (Test-Path dist)) {
-    New-Item -ItemType Directory -Path dist
+$DistPath = "../dist"
+if (-not (Test-Path $DistPath)) {
+    New-Item -ItemType Directory -Path $DistPath
 }
 
 # Delete contents of dist folder first
 Write-Host "Cleaning dist folder..."
-Get-ChildItem -Path dist -Recurse | Remove-Item -Recurse -Force
+Get-ChildItem -Path $DistPath -Recurse | Remove-Item -Recurse -Force
 
 # Get the current branch name
 $branch = git rev-parse --abbrev-ref HEAD
@@ -23,25 +24,26 @@ $run = gh run list --workflow $Workflow --branch $branch --limit 1 --json databa
 
 if ($run -and $run[0].databaseId) {
     Write-Host "Downloading artifact '$ArtifactName' from run $($run[0].databaseId) to dist/..."
-    gh run download $run[0].databaseId --name $ArtifactName --dir dist
-    
-    # Copy config.json to dist/win-x64 and dist/win-arm64
+    gh run download $run[0].databaseId --name $ArtifactName --dir dist    # Copy config.json to dist/win-x64 and dist/win-arm64
     $winX64Path = Join-Path -Path "dist" -ChildPath "win-x64"
     $winArm64Path = Join-Path -Path "dist" -ChildPath "win-arm64"
-    
+
     if (Test-Path $winX64Path) {
         Write-Host "Copying config.json to $winX64Path..."
-        Copy-Item -Path ".\config.json" -Destination "$winX64Path\config.json" -Force
-    } else {
+        Copy-Item -Path "..\config\config.json" -Destination "$winX64Path\config.json" -Force
+    }
+    else {
         Write-Host "Warning: $winX64Path folder not found"
     }
-    
+
     if (Test-Path $winArm64Path) {
         Write-Host "Copying config.json to $winArm64Path..."
-        Copy-Item -Path ".\config.json" -Destination "$winArm64Path\config.json" -Force
-    } else {
+        Copy-Item -Path "..\config\config.json" -Destination "$winArm64Path\config.json" -Force
+    }
+    else {
         Write-Host "Warning: $winArm64Path folder not found"
     }
-} else {
+}
+else {
     Write-Host "No workflow run found for $Workflow on branch $branch."
 }
