@@ -56,6 +56,9 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore src/c-sharp/NotebookAutomation.sln
 
+      - name: Verify code formatting (fail fast)
+        run: dotnet format src/c-sharp/NotebookAutomation.sln --verify-no-changes --severity error
+
       - name: Format code (optional)
         if: github.event_name == 'push' || contains(github.event.pull_request.labels.*.name, 'auto-format')
         run: dotnet format src/c-sharp/NotebookAutomation.sln --include src/c-sharp/ --severity info
@@ -138,8 +141,4 @@ jobs:
           name: published-executables
           path: |
             publish/win-x64/
-            publish/win-arm64/
-          retention-days: 14 # Keep executables for 14 days (longer than test artifacts)
-
-      - name: Run static code analysis
-        run: dotnet format src/c-sharp/NotebookAutomation.sln --verify-no-changes --severity error
+            publish/win-arm64/          retention-days: 14 # Keep executables for 14 days (longer than test artifacts)
