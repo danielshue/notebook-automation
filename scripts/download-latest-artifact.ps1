@@ -24,24 +24,27 @@ $run = gh run list --workflow $Workflow --branch $branch --limit 1 --json databa
 
 if ($run -and $run[0].databaseId) {
     Write-Host "Downloading artifact '$ArtifactName' from run $($run[0].databaseId) to ../dist/..."
-    gh run download $run[0].databaseId --name $ArtifactName --dir ../dist    # Copy entire config directory to both win-x64 and win-arm64 directories
+    gh run download $run[0].databaseId --name $ArtifactName --dir ../dist
+
+    # List what was downloaded
+    Write-Host "Downloaded artifact contents:"
+    Get-ChildItem -Path "../dist" -Recurse | ForEach-Object {
+        Write-Host "  $($_.FullName.Replace((Resolve-Path '../dist').Path, ''))"
+    }
+
+    # Check which architectures were downloaded
     $winX64Path = Join-Path -Path "../dist" -ChildPath "win-x64"
     $winArm64Path = Join-Path -Path "../dist" -ChildPath "win-arm64"
 
     if (Test-Path $winX64Path) {
-        Write-Host "Copying config directory to $winX64Path..."
-        Copy-Item -Path "config" -Destination "$winX64Path\config" -Recurse -Force
-    }
-    else {
-        Write-Host "Warning: $winX64Path folder not found"
+        Write-Host "✓ win-x64 build available"
     }
 
     if (Test-Path $winArm64Path) {
-        Write-Host "Copying config directory to $winArm64Path..."
-        Copy-Item -Path "config" -Destination "$winArm64Path\config" -Recurse -Force
+        Write-Host "✓ win-arm64 build available"
     }
     else {
-        Write-Host "Warning: $winArm64Path folder not found"
+        Write-Host "! win-arm64 build not found in artifact"
     }
 }
 else {

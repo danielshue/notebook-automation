@@ -50,9 +50,8 @@
         <None Update="Prompts\*.md">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>
-
-    <!-- Copy prompts from repository root if they exist -->
+    </ItemGroup>    <!--
+    Copy prompts from repository root if they exist -->
     <Target Name="CopyPrompts" BeforeTargets="Build">
         <!-- Copy prompts from Core project directory -->
         <ItemGroup>
@@ -68,6 +67,19 @@
 
         <!-- Log info about prompt files -->
         <Message Text="Copying prompt files to output directory: $(OutDir)Prompts\"
+            Importance="high" />
+    </Target>
+
+    <!-- Copy config files from repository root -->
+    <Target Name="CopyConfig" BeforeTargets="Build">
+        <ItemGroup>
+            <RepoConfigFiles Include="$(MSBuildThisFileDirectory)..\..\..\config\*.*" />
+        </ItemGroup>
+        <Copy SourceFiles="@(RepoConfigFiles)" DestinationFolder="$(OutDir)config\"
+            SkipUnchangedFiles="true" />
+
+        <!-- Log info about config files -->
+        <Message Text="Copying config files to output directory: $(OutDir)config\"
             Importance="high" />
     </Target>
 
