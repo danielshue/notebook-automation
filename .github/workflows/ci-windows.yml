@@ -84,10 +84,10 @@ jobs:
           $packageVersion = "$major.$minor.0"
 
           # For assembly version - must be a specific version for NuGet restore
-          $assemblyVersion = "$major.$minor.0.0"
+          $assemblyVersion = "$major.$minor.0.0"          # For file version - use MS recommended format
+          $fileVersion = "$major.$minor.$daysSinceBase.$revision"
 
-          # For file version - use MS recommended format
-          $fileVersion = "$major.$minor.$daysSinceBase.$revision"          echo "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
+          echo "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
           echo "FILE_VERSION=$fileVersion" >> $env:GITHUB_ENV
           echo "ASSEMBLY_VERSION=$assemblyVersion" >> $env:GITHUB_ENV
 
