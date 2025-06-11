@@ -30,7 +30,7 @@ if ($run -and $run[0].databaseId) {
 
     if (Test-Path $winX64Path) {
         Write-Host "Copying config directory to $winX64Path..."
-        Copy-Item -Path "..\config" -Destination "$winX64Path\config" -Recurse -Force
+        Copy-Item -Path "config" -Destination "$winX64Path\config" -Recurse -Force
     }
     else {
         Write-Host "Warning: $winX64Path folder not found"
@@ -38,7 +38,7 @@ if ($run -and $run[0].databaseId) {
 
     if (Test-Path $winArm64Path) {
         Write-Host "Copying config directory to $winArm64Path..."
-        Copy-Item -Path "..\config" -Destination "$winArm64Path\config" -Recurse -Force
+        Copy-Item -Path "config" -Destination "$winArm64Path\config" -Recurse -Force
     }
     else {
         Write-Host "Warning: $winArm64Path folder not found"
