@@ -23,22 +23,22 @@ $branch = git rev-parse --abbrev-ref HEAD
 $run = gh run list --workflow $Workflow --branch $branch --limit 1 --json databaseId | ConvertFrom-Json
 
 if ($run -and $run[0].databaseId) {
-    Write-Host "Downloading artifact '$ArtifactName' from run $($run[0].databaseId) to dist/..."
-    gh run download $run[0].databaseId --name $ArtifactName --dir dist    # Copy config.json to dist/win-x64 and dist/win-arm64
-    $winX64Path = Join-Path -Path "dist" -ChildPath "win-x64"
-    $winArm64Path = Join-Path -Path "dist" -ChildPath "win-arm64"
+    Write-Host "Downloading artifact '$ArtifactName' from run $($run[0].databaseId) to ../dist/..."
+    gh run download $run[0].databaseId --name $ArtifactName --dir ../dist    # Copy entire config directory to both win-x64 and win-arm64 directories
+    $winX64Path = Join-Path -Path "../dist" -ChildPath "win-x64"
+    $winArm64Path = Join-Path -Path "../dist" -ChildPath "win-arm64"
 
     if (Test-Path $winX64Path) {
-        Write-Host "Copying config.json to $winX64Path..."
-        Copy-Item -Path "..\config\config.json" -Destination "$winX64Path\config.json" -Force
+        Write-Host "Copying config directory to $winX64Path..."
+        Copy-Item -Path "..\config" -Destination "$winX64Path\config" -Recurse -Force
     }
     else {
         Write-Host "Warning: $winX64Path folder not found"
     }
 
     if (Test-Path $winArm64Path) {
-        Write-Host "Copying config.json to $winArm64Path..."
-        Copy-Item -Path "..\config\config.json" -Destination "$winArm64Path\config.json" -Force
+        Write-Host "Copying config directory to $winArm64Path..."
+        Copy-Item -Path "..\config" -Destination "$winArm64Path\config" -Recurse -Force
     }
     else {
         Write-Host "Warning: $winArm64Path folder not found"
