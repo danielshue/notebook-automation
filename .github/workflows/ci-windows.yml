@@ -116,7 +116,9 @@ jobs:
         with:
           name: test-results-windows
           path: src/c-sharp/NotebookAutomation.Core.Tests/TestResults/*.trx
-          retention-days: 7 # Keep test results for 7 days      - name: Upload coverage results
+          retention-days: 7 # Keep test results for 7 days
+
+      - name: Upload coverage results
         if: always()
         uses: actions/upload-artifact@v4
         with:
