@@ -210,13 +210,12 @@ internal class Program
         var services = new ServiceCollection();
 
         // Register configuration
-        services.AddSingleton(configuration);
-
-        // Add notebook automation services using ServiceRegistration
+        services.AddSingleton(configuration);        // Add notebook automation services using ServiceRegistration
         services.AddNotebookAutomationServices(configuration, debug, configPath);
 
         // Build service provider
         serviceProvider = services.BuildServiceProvider();
+
         return serviceProvider;
     }
-}// Force workflow trigger
+}
