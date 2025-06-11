@@ -87,11 +87,11 @@ jobs:
           $assemblyVersion = "$major.$minor.0.0"
 
           # For file version - use MS recommended format
-          $fileVersion = "$major.$minor.$daysSinceBase.$revision"
-
-          echo "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
+          $fileVersion = "$major.$minor.$daysSinceBase.$revision"          echo "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
           echo "FILE_VERSION=$fileVersion" >> $env:GITHUB_ENV
-          echo "ASSEMBLY_VERSION=$assemblyVersion" >> $env:GITHUB_ENV          echo "Package Version: $packageVersion"
+          echo "ASSEMBLY_VERSION=$assemblyVersion" >> $env:GITHUB_ENV
+
+          echo "Package Version: $packageVersion"
           echo "File Version: $fileVersion"
           echo "Assembly Version: $assemblyVersion"
         shell: pwsh
