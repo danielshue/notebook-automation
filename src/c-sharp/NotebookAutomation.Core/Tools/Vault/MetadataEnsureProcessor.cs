@@ -2,16 +2,88 @@
 namespace NotebookAutomation.Core.Tools.Vault;
 
 /// <summary>
-/// Processor for ensuring metadata in markdown files based on directory structure.
-/// Extracts program/course/class/module/lesson metadata and updates YAML frontmatter.
+/// Processor for ensuring metadata in markdown files based on directory structure and file characteristics.
+/// This class automatically analyzes markdown files to extract and populate YAML frontmatter metadata
+/// including hierarchy information (program/course/class/module/lesson), template types, and required fields.
 /// </summary>
 /// <remarks>
-/// Initializes a new instance of the MetadataEnsureProcessor class.
+/// <para>
+/// The MetadataEnsureProcessor is designed to intelligently analyze markdown files within a structured
+/// educational content directory hierarchy and ensure they contain appropriate metadata. It performs
+/// several key operations:
+/// </para>
+/// <list type="bullet">
+/// <item><description>Automatic template type detection based on filename patterns and directory structure</description></item>
+/// <item><description>Hierarchy extraction from directory paths (program, course, class, module, lesson)</description></item>
+/// <item><description>Population of template-specific required fields</description></item>
+/// <item><description>Smart change detection to avoid unnecessary file modifications</description></item>
+/// <item><description>Comprehensive logging for debugging and auditing</description></item>
+/// </list>
+/// <para>
+/// The processor supports various template types including PDF references, video references,
+/// reading materials, and instruction files. Each template type has specific metadata requirements
+/// that are automatically enforced.
+/// </para>
+/// <para>
+/// Template Type Detection Patterns:
+/// </para>
+/// <list type="table">
+/// <listheader>
+/// <term>Pattern</term>
+/// <description>Template Type</description>
+/// </listheader>
+/// <item>
+/// <term>Files ending with "-instructions.md"</term>
+/// <description>note/instruction</description>
+/// </item>
+/// <item>
+/// <term>Files in "reading" directories or containing "reading"</term>
+/// <description>resource-reading</description>
+/// </item>
+/// <item>
+/// <term>Files in "case studies" directories or case study patterns</term>
+/// <description>pdf-reference</description>
+/// </item>
+/// <item>
+/// <term>Files with associated PDF files</term>
+/// <description>pdf-reference</description>
+/// </item>
+/// <item>
+/// <term>Files with associated video files (.mp4, .mov, .avi)</term>
+/// <description>video-reference</description>
+/// </item>
+/// </list>
+/// <para>
+/// Change Detection Logic:
+/// When forceOverwrite is false (default), the processor only updates empty or missing fields,
+/// preserving existing user-entered values. When forceOverwrite is true, all fields are updated
+/// to match template requirements, potentially overwriting existing values.
+/// </para>
+/// <para>
+/// Error Handling:
+/// The processor includes comprehensive error handling with graceful degradation. Failures in
+/// processing individual files are logged but do not prevent processing of other files.
+/// </para>
 /// </remarks>
-/// <param name="_logger">The _logger instance.</param>
-/// <param name="_yamlHelper">The YAML helper for frontmatter operations.</param>
-/// <param name="_metadataDetector">The metadata hierarchy detector.</param>
-/// <param name="_structureExtractor">The course structure extractor.</param>
+/// <example>
+/// <code>
+/// // Basic usage with dependency injection
+/// var processor = serviceProvider.GetService&lt;MetadataEnsureProcessor&gt;();
+///
+/// // Process a single file
+/// bool wasUpdated = await processor.EnsureMetadataAsync("/path/to/file.md");
+///
+/// // Dry run to preview changes
+/// bool wouldUpdate = await processor.EnsureMetadataAsync("/path/to/file.md", dryRun: true);
+///
+/// // Force overwrite existing metadata
+/// bool wasUpdated = await processor.EnsureMetadataAsync("/path/to/file.md", forceOverwrite: true);
+/// </code>
+/// </example>
+/// <param name="_logger">Logger instance for diagnostic and error reporting.</param>
+/// <param name="_yamlHelper">YAML helper service for parsing and manipulating frontmatter.</param>
+/// <param name="_metadataDetector">Metadata hierarchy detector for extracting directory structure information.</param>
+/// <param name="_structureExtractor">Course structure extractor for module and lesson identification.</param>
 public class MetadataEnsureProcessor(
     ILogger<MetadataEnsureProcessor> _logger,
     IYamlHelper _yamlHelper,
@@ -24,12 +96,97 @@ public class MetadataEnsureProcessor(
     private readonly ICourseStructureExtractor _structureExtractor = _structureExtractor ?? throw new ArgumentNullException(nameof(_structureExtractor));
 
     /// <summary>
-    /// Ensures metadata is properly set in a markdown file.
+    /// Ensures metadata is properly set in a markdown file based on its location and characteristics.
     /// </summary>
-    /// <param name="filePath">The path to the markdown file to process.</param>
-    /// <param name="forceOverwrite">Whether to overwrite existing metadata values.</param>
-    /// <param name="dryRun">Whether to simulate the operation without making changes.</param>
-    /// <returns>True if the file was updated (or would be updated in dry run), false otherwise.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method performs a comprehensive analysis of the specified markdown file to ensure it contains
+    /// appropriate YAML frontmatter metadata. The process includes:
+    /// </para>
+    /// <list type="number">
+    /// <item><description>File validation (exists, is markdown file)</description></item>
+    /// <item><description>Reading existing content and extracting current frontmatter</description></item>
+    /// <item><description>Template type determination based on filename and directory patterns</description></item>
+    /// <item><description>Hierarchy information extraction (program, course, class, module, lesson)</description></item>
+    /// <item><description>Population of template-specific required fields</description></item>
+    /// <item><description>Change detection and conditional file updates</description></item>
+    /// </list>
+    /// <para>
+    /// The method respects existing metadata values unless forceOverwrite is true. In normal operation,
+    /// only empty or missing fields are populated, preserving any user-entered content.
+    /// </para>
+    /// <para>
+    /// Dry run mode allows previewing changes without modifying files, which is useful for validation
+    /// and bulk operation planning.
+    /// </para>
+    /// </remarks>
+    /// <param name="filePath">
+    /// The absolute path to the markdown file to process. The file must exist and have a .md extension.
+    /// The path is used for hierarchy extraction and file validation.
+    /// </param>
+    /// <param name="forceOverwrite">
+    /// When false (default), only empty or missing metadata fields are populated, preserving existing values.
+    /// When true, all metadata fields are updated to match template requirements, potentially overwriting
+    /// existing user content. Use with caution in automated scenarios.
+    /// </param>
+    /// <param name="dryRun">
+    /// When true, the method simulates the operation without making actual file changes. This mode is
+    /// useful for previewing changes, validation, and determining which files would be modified in
+    /// a bulk operation. All logging and change detection still occurs.
+    /// </param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains:
+    /// <list type="bullet">
+    /// <item><description>true if the file was updated (or would be updated in dry run mode)</description></item>
+    /// <item><description>false if no changes were needed or if an error occurred</description></item>
+    /// </list>
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when filePath is null, empty, or points to a non-markdown file.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">
+    /// Thrown when the specified file does not exist.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// Thrown when file I/O operations fail (insufficient permissions, file locked, etc.).
+    /// </exception>
+    /// <exception cref="YamlException">
+    /// Thrown when existing YAML frontmatter is malformed and cannot be parsed.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// // Basic processing
+    /// bool updated = await processor.EnsureMetadataAsync(@"C:\course\module1\lesson.md");
+    ///
+    /// // Dry run to preview changes
+    /// bool wouldUpdate = await processor.EnsureMetadataAsync(
+    ///     @"C:\course\module1\lesson.md",
+    ///     dryRun: true);
+    ///
+    /// // Force update all metadata
+    /// bool updated = await processor.EnsureMetadataAsync(
+    ///     @"C:\course\module1\lesson.md",
+    ///     forceOverwrite: true);
+    ///
+    /// // Error handling
+    /// try
+    /// {
+    ///     bool result = await processor.EnsureMetadataAsync(filePath);
+    ///     if (result)
+    ///     {
+    ///         Console.WriteLine("File updated successfully");
+    ///     }
+    /// }
+    /// catch (FileNotFoundException)
+    /// {
+    ///     Console.WriteLine("File not found");
+    /// }
+    /// catch (IOException ex)
+    /// {
+    ///     Console.WriteLine($"I/O error: {ex.Message}");
+    /// }
+    /// </code>
+    /// </example>
     public async Task<bool> EnsureMetadataAsync(string filePath, bool forceOverwrite = false, bool dryRun = false)
     {
         if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
@@ -109,11 +266,42 @@ public class MetadataEnsureProcessor(
     }
 
     /// <summary>
-    /// Determines and sets the template-type based on the filename if not already set.
+    /// Determines and sets the template-type metadata field based on filename patterns and directory structure.
     /// </summary>
-    /// <param name="metadata">The metadata dictionary to update.</param>
-    /// <param name="filePath">The file path to analyze.</param>
-    private static void EnsureTemplateType(Dictionary<string, object?> metadata, string filePath)
+    /// <remarks>
+    /// <para>
+    /// This method analyzes the file path to automatically determine the appropriate template type if one
+    /// is not already set. It respects existing template-type values and only sets the field when it's
+    /// empty or missing.
+    /// </para>
+    /// <para>
+    /// The template type determination affects which metadata fields are considered required and how
+    /// the content should be structured. Different template types have different metadata schemas.
+    /// </para>
+    /// </remarks>
+    /// <param name="metadata">
+    /// The metadata dictionary to update. If the dictionary already contains a non-empty "template-type"
+    /// key, no changes are made. Otherwise, the determined template type is added to this dictionary.
+    /// </param>
+    /// <param name="filePath">
+    /// The full file path to analyze. Both the filename and directory structure are examined to
+    /// determine the appropriate template type based on established patterns.
+    /// </param>
+    /// <example>
+    /// <code>
+    /// var metadata = new Dictionary&lt;string, object?&gt;();
+    /// processor.EnsureTemplateType(metadata, @"C:\course\readings\chapter1.md");
+    /// // Result: metadata["template-type"] = "resource-reading"
+    ///
+    /// var existingMetadata = new Dictionary&lt;string, object?&gt;
+    /// {
+    ///     ["template-type"] = "custom-type"
+    /// };
+    /// processor.EnsureTemplateType(existingMetadata, @"C:\course\readings\chapter1.md");
+    /// // Result: metadata["template-type"] remains "custom-type" (no change)
+    /// </code>
+    /// </example>
+    private void EnsureTemplateType(Dictionary<string, object?> metadata, string filePath)
     {
         // If template-type is already set, don't override it
         if (metadata.ContainsKey("template-type") && !string.IsNullOrEmpty(metadata["template-type"]?.ToString()))
@@ -134,25 +322,110 @@ public class MetadataEnsureProcessor(
     }
 
     /// <summary>
-    /// Determines the appropriate template type based on filename and associated files.
+    /// Determines the appropriate template type based on filename patterns and directory structure analysis.
     /// </summary>
-    /// <param name="fileName">The filename to analyze.</param>
-    /// <param name="directory">The directory containing the file.</param>
-    /// <returns>The appropriate template type, or empty string if cannot be determined.</returns>
-    private static string DetermineTemplateType(string fileName, string directory)
+    /// <remarks>
+    /// <para>
+    /// This method implements the core logic for automatic template type detection. It analyzes both
+    /// the filename and directory path to identify patterns that indicate specific content types.
+    /// The detection is performed in priority order, with more specific patterns checked first.
+    /// </para>
+    /// <para>
+    /// Detection Priority Order:
+    /// </para>
+    /// <list type="number">
+    /// <item><description>Instruction files (highest priority)</description></item>
+    /// <item><description>Reading materials</description></item>
+    /// <item><description>Case studies</description></item>
+    /// <item><description>Associated file types (PDF, video)</description></item>
+    /// <item><description>Index files (require manual classification)</description></item>
+    /// </list>
+    /// <para>
+    /// The method performs case-insensitive pattern matching and checks for file associations
+    /// in the same directory (e.g., looking for PDF files with the same base name).
+    /// </para>
+    /// </remarks>
+    /// <param name="fileName">
+    /// The filename (without path) to analyze for patterns. Common patterns include suffixes
+    /// like "-instructions.md" or keywords like "reading" or "case-study".
+    /// </param>
+    /// <param name="directory">
+    /// The directory path containing the file. Directory names are analyzed for keywords
+    /// like "readings", "case studies", etc. that indicate content organization.
+    /// </param>
+    /// <returns>
+    /// The determined template type string, or empty string if no specific pattern is detected.
+    /// Common return values include:
+    /// <list type="bullet">
+    /// <item><description>"note/instruction" - for instruction files</description></item>
+    /// <item><description>"resource-reading" - for reading materials</description></item>
+    /// <item><description>"pdf-reference" - for PDF-associated content or case studies</description></item>
+    /// <item><description>"video-reference" - for video-associated content</description></item>
+    /// <item><description>Empty string - for files requiring manual classification</description></item>
+    /// </list>
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// // Instruction file detection
+    /// string type1 = processor.DetermineTemplateType("setup-instructions.md", @"C:\course\module1");
+    /// // Returns: "note/instruction"
+    ///
+    /// // Reading material detection
+    /// string type2 = processor.DetermineTemplateType("chapter1.md", @"C:\course\readings");
+    /// // Returns: "resource-reading"
+    ///
+    /// // Case study detection
+    /// string type3 = processor.DetermineTemplateType("analysis.md", @"C:\course\case studies");
+    /// // Returns: "pdf-reference"
+    ///
+    /// // PDF association detection (requires PDF file to exist)
+    /// string type4 = processor.DetermineTemplateType("report.md", @"C:\course\docs");
+    /// // Returns: "pdf-reference" if "report.pdf" exists in same directory
+    ///
+    /// // No pattern detected
+    /// string type5 = processor.DetermineTemplateType("notes.md", @"C:\course\misc");
+    /// // Returns: "" (empty string)
+    /// </code>
+    /// </example>
+    private string DetermineTemplateType(string fileName, string directory)
     {
+        string baseName = Path.GetFileNameWithoutExtension(fileName);
+        string lowerFileName = fileName.ToLowerInvariant();
+        string lowerDirectory = directory.ToLowerInvariant();
+
+        _logger.LogDebug($"DetermineTemplateType - fileName: '{fileName}', directory: '{directory}', lowerDirectory: '{lowerDirectory}'");
         // Check for specific filename patterns first
-        if (fileName.EndsWith("-instructions.md", StringComparison.OrdinalIgnoreCase))
+        if (lowerFileName.EndsWith("-instructions.md", StringComparison.OrdinalIgnoreCase) ||
+            lowerFileName.Contains("instruction", StringComparison.OrdinalIgnoreCase))
         {
+            _logger.LogDebug($"Detected instruction file: {fileName}");
+            return "note/instruction";
+        }
+
+        // Check for reading materials
+        if (lowerFileName.Contains("reading", StringComparison.OrdinalIgnoreCase) ||
+            lowerDirectory.Contains("reading", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogDebug($"Detected reading file: {fileName}");
             return "resource-reading";
         }
 
-        // Check for associated file types (assuming the markdown references these files)
-        string baseName = Path.GetFileNameWithoutExtension(fileName);
+        // Check for case studies based on directory or filename
+        if (lowerDirectory.Contains("case studies") ||
+            lowerDirectory.Contains("case-studies") ||
+            lowerDirectory.Contains("case_studies") ||
+            lowerFileName.Contains("case-stud", StringComparison.OrdinalIgnoreCase) ||
+            lowerFileName.Contains("case_stud", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogDebug($"Detected case study file: {fileName}");
+            return "pdf-reference"; // Case studies are typically PDF references
+        }
 
+        // Check for associated file types (assuming the markdown references these files)
         // Look for associated PDF or video files in the same directory
         if (File.Exists(Path.Combine(directory, baseName + ".pdf")))
         {
+            _logger.LogDebug($"Detected PDF reference file: {fileName}");
             return "pdf-reference";
         }
 
@@ -160,6 +433,7 @@ public class MetadataEnsureProcessor(
             File.Exists(Path.Combine(directory, baseName + ".mov")) ||
             File.Exists(Path.Combine(directory, baseName + ".avi")))
         {
+            _logger.LogDebug($"Detected video reference file: {fileName}");
             return "video-reference";
         }
 
@@ -168,17 +442,59 @@ public class MetadataEnsureProcessor(
         {
             // This would need more sophisticated logic to determine the index type
             // For now, return empty and let manual assignment handle it
+            _logger.LogDebug($"Detected index file, returning empty: {fileName}");
             return string.Empty;
         }
 
         // Default fallback - could be a general note
+        _logger.LogDebug($"No specific template type detected for: {fileName}");
         return string.Empty;
     }
 
     /// <summary>
-    /// Ensures required fields are present based on the template type.
+    /// Ensures required metadata fields are present based on the template type and system requirements.
     /// </summary>
-    /// <param name="metadata">The metadata dictionary to update.</param>
+    /// <remarks>
+    /// <para>
+    /// This method populates missing metadata fields according to template-specific requirements and
+    /// system-wide standards. It operates in two phases:
+    /// </para>
+    /// <list type="number">
+    /// <item><description>Universal fields - applied to all template types</description></item>
+    /// <item><description>Template-specific fields - based on the template-type value</description></item>
+    /// </list>
+    /// <para>
+    /// Universal Fields:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>auto-generated-state: "writable"</description></item>
+    /// <item><description>date-created: Current date in YYYY-MM-DD format</description></item>
+    /// <item><description>publisher: "University of Illinois at Urbana-Champaign"</description></item>
+    /// </list>
+    /// <para>
+    /// Template-specific field sets are applied based on the template-type value. Each template
+    /// type has a predefined schema that ensures consistency across similar content types.
+    /// Fields are only added if they don't already exist, preserving any existing values.
+    /// </para>
+    /// </remarks>
+    /// <param name="metadata">
+    /// The metadata dictionary to update with required fields. Existing fields are preserved
+    /// and only missing fields are added. The dictionary is modified in place.
+    /// </param>
+    /// <example>
+    /// <code>
+    /// var metadata = new Dictionary&lt;string, object?&gt;
+    /// {
+    ///     ["template-type"] = "pdf-reference",
+    ///     ["title"] = "Existing Title" // This will be preserved
+    /// };
+    ///
+    /// processor.EnsureRequiredFields(metadata);
+    ///
+    /// // Result: metadata now contains all PDF reference required fields
+    /// // plus the existing title, auto-generated-state, date-created, etc.
+    /// </code>
+    /// </example>
     private void EnsureRequiredFields(Dictionary<string, object?> metadata)
     {
         string templateType = metadata.GetValueOrDefault("template-type", string.Empty)?.ToString() ?? string.Empty;
@@ -220,8 +536,29 @@ public class MetadataEnsureProcessor(
     }
 
     /// <summary>
-    /// Ensures required fields for PDF reference template.
+    /// Ensures required fields for PDF reference template are present in the metadata dictionary.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method adds PDF-specific metadata fields that are required for proper PDF reference handling.
+    /// The fields include tracking information for reading status, OneDrive integration, and PDF properties.
+    /// </para>
+    /// <para>
+    /// Fields added by this method include:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>type: "note/case-study" - Categorizes as case study content</description></item>
+    /// <item><description>comprehension: 0 - Initial comprehension rating</description></item>
+    /// <item><description>status: "unread" - Reading status tracking</description></item>
+    /// <item><description>completion-date, date-modified, date-review: Date tracking fields</description></item>
+    /// <item><description>onedrive-shared-link, onedrive_fullpath_file_reference: OneDrive integration</description></item>
+    /// <item><description>pdf-size, pdf-uploaded, page-count, pages: PDF metadata</description></item>
+    /// <item><description>authors, tags: Content classification fields</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="metadata">
+    /// The metadata dictionary to update. Only missing fields are added; existing values are preserved.
+    /// </param>
     private static void EnsurePdfReferenceFields(Dictionary<string, object?> metadata)
     {
         var requiredFields = new Dictionary<string, object?>
@@ -252,8 +589,31 @@ public class MetadataEnsureProcessor(
     }
 
     /// <summary>
-    /// Ensures required fields for video reference template.
+    /// Ensures required fields for video reference template are present in the metadata dictionary.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method adds video-specific metadata fields that are required for proper video reference handling.
+    /// The fields include tracking information for viewing status, OneDrive integration, and video properties.
+    /// </para>
+    /// <para>
+    /// Fields added by this method include:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>type: "note/video-note" - Categorizes as video content</description></item>
+    /// <item><description>comprehension: 0 - Initial comprehension rating</description></item>
+    /// <item><description>status: "unwatched" - Viewing status tracking</description></item>
+    /// <item><description>completion-date, date-modified, date-review: Date tracking fields</description></item>
+    /// <item><description>onedrive-shared-link, onedrive_fullpath_file_reference: OneDrive integration</description></item>
+    /// <item><description>video-duration: "00:00:00" - Video length in HH:MM:SS format</description></item>
+    /// <item><description>video-codec, video-resolution, video-size: Technical video properties</description></item>
+    /// <item><description>publication-year, video-uploaded: Publication metadata</description></item>
+    /// <item><description>author, tags: Content classification fields</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="metadata">
+    /// The metadata dictionary to update. Only missing fields are added; existing values are preserved.
+    /// </param>
     private static void EnsureVideoReferenceFields(Dictionary<string, object?> metadata)
     {
         var requiredFields = new Dictionary<string, object?>
@@ -286,8 +646,29 @@ public class MetadataEnsureProcessor(
     }
 
     /// <summary>
-    /// Ensures required fields for resource reading template.
+    /// Ensures required fields for resource reading template are present in the metadata dictionary.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method adds reading-specific metadata fields that are required for proper reading material handling.
+    /// The fields include tracking information for reading status, OneDrive integration, and document properties.
+    /// </para>
+    /// <para>
+    /// Fields added by this method include:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>type: "note/reading" - Categorizes as reading material</description></item>
+    /// <item><description>comprehension: 0 - Initial comprehension rating</description></item>
+    /// <item><description>status: "unread" - Reading status tracking</description></item>
+    /// <item><description>completion-date, date-modified, date-review: Date tracking fields</description></item>
+    /// <item><description>onedrive-shared-link, onedrive_fullpath_file_reference: OneDrive integration</description></item>
+    /// <item><description>page-count, pages: Document structure information</description></item>
+    /// <item><description>authors, tags: Content classification fields</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="metadata">
+    /// The metadata dictionary to update. Only missing fields are added; existing values are preserved.
+    /// </param>
     private static void EnsureResourceReadingFields(Dictionary<string, object?> metadata)
     {
         var requiredFields = new Dictionary<string, object?>
@@ -316,8 +697,22 @@ public class MetadataEnsureProcessor(
     }
 
     /// <summary>
-    /// Ensures basic required fields for general templates.
+    /// Ensures basic required fields for general templates that don't have specific field requirements.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method provides minimal field requirements for templates that don't fall into specific
+    /// categories like PDF reference, video reference, or resource reading. It serves as a fallback
+    /// to ensure even generic content has basic metadata structure.
+    /// </para>
+    /// <para>
+    /// Currently only adds the "tags" field, which is considered essential for content organization
+    /// and searchability across all template types.
+    /// </para>
+    /// </remarks>
+    /// <param name="metadata">
+    /// The metadata dictionary to update. Only missing fields are added; existing values are preserved.
+    /// </param>
     private static void EnsureBasicFields(Dictionary<string, object?> metadata)
     {
         var requiredFields = new Dictionary<string, object?>
@@ -335,11 +730,40 @@ public class MetadataEnsureProcessor(
     }
 
     /// <summary>
-    /// Checks if metadata has changed, considering force overwrite option.
+    /// Determines whether metadata has changed by comparing original and updated dictionaries,
+    /// considering the force overwrite option for change detection logic.
     /// </summary>
-    /// <param name="original">Original metadata.</param>
-    /// <param name="updated">Updated metadata.</param>
-    /// <param name="forceOverwrite">Whether to force overwrite existing values.</param>    /// <returns>True if changes were made.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method implements intelligent change detection that respects the forceOverwrite parameter:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>When forceOverwrite is true: Any difference between dictionaries is considered a change</description></item>
+    /// <item><description>When forceOverwrite is false: Only new fields or population of empty fields counts as changes</description></item>
+    /// </list>
+    /// <para>
+    /// The method performs comprehensive comparison including:
+    /// </para>
+    /// <list type="number">
+    /// <item><description>Field additions (new keys in updated dictionary)</description></item>
+    /// <item><description>Field deletions (keys present in original but missing in updated)</description></item>
+    /// <item><description>Value changes (different values for existing keys)</description></item>
+    /// <item><description>Empty field population (original empty/null, updated has value)</description></item>
+    /// </list>
+    /// </remarks>
+    /// <param name="original">
+    /// The original metadata dictionary before processing. Used as baseline for comparison.
+    /// </param>
+    /// <param name="updated">
+    /// The updated metadata dictionary after processing. Compared against original to detect changes.
+    /// </param>
+    /// <param name="forceOverwrite">
+    /// When true, all differences are considered changes. When false, only additions and
+    /// empty field population are considered changes, preserving existing user values.
+    /// </param>
+    /// <returns>
+    /// true if changes were detected according to the specified logic; false if no changes detected.
+    /// </returns>
     private static bool HasMetadataChanged(Dictionary<string, object?> original, Dictionary<string, object?> updated, bool forceOverwrite)
     {
         // If force overwrite is enabled, we consider changes if any fields in updated are different
@@ -385,8 +809,29 @@ public class MetadataEnsureProcessor(
     }
 
     /// <summary>
-    /// Checks if two dictionaries are equal.
+    /// Performs deep equality comparison between two metadata dictionaries by comparing all key-value pairs.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method provides comprehensive dictionary comparison that:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>Compares dictionary sizes first for quick inequality detection</description></item>
+    /// <item><description>Validates all keys are present in both dictionaries</description></item>
+    /// <item><description>Compares string representations of values for content equality</description></item>
+    /// <item><description>Handles null values safely by converting to empty strings</description></item>
+    /// </list>
+    /// <para>
+    /// The comparison is performed using string representation to handle various object types
+    /// consistently and avoid type-specific comparison issues.
+    /// </para>
+    /// </remarks>
+    /// <param name="dict1">First dictionary to compare.</param>
+    /// <param name="dict2">Second dictionary to compare.</param>
+    /// <returns>
+    /// true if dictionaries contain exactly the same keys with identical string representations of values;
+    /// false otherwise.
+    /// </returns>
     private static bool DictionariesEqual(Dictionary<string, object?> dict1, Dictionary<string, object?> dict2)
     {
         if (dict1.Count != dict2.Count)
@@ -414,11 +859,39 @@ public class MetadataEnsureProcessor(
     }
 
     /// <summary>
-    /// Logs the changes made to metadata for debugging.
+    /// Logs detailed information about metadata changes for debugging and audit purposes.
     /// </summary>
-    /// <param name="original">Original metadata.</param>
-    /// <param name="updated">Updated metadata.</param>
-    /// <param name="filePath">Optional file path for detailed logging.</param>
+    /// <remarks>
+    /// <para>
+    /// This method provides comprehensive change logging that categorizes modifications into:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>Additions: New fields added to metadata</description></item>
+    /// <item><description>Modifications: Existing fields with changed values</description></item>
+    /// <item><description>Deletions: Fields removed from metadata</description></item>
+    /// </list>
+    /// <para>
+    /// The logging occurs at multiple levels:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>Debug level: Detailed change information for log files</description></item>
+    /// <item><description>Information level: Summary counts for console output with --verbose</description></item>
+    /// </list>
+    /// <para>
+    /// The method formats changes in a human-readable format showing old → new values
+    /// for modifications and clear indicators (+, *, -) for different operation types.
+    /// </para>
+    /// </remarks>
+    /// <param name="original">
+    /// The original metadata dictionary before changes. Used to detect deletions and modifications.
+    /// </param>
+    /// <param name="updated">
+    /// The updated metadata dictionary after changes. Used to detect additions and modifications.
+    /// </param>
+    /// <param name="filePath">
+    /// Optional file path for contextual logging. When provided, includes filename in log messages
+    /// for easier identification in bulk operations. Can be null for generic change logging.
+    /// </param>
     private void LogMetadataChanges(Dictionary<string, object?> original, Dictionary<string, object?> updated, string? filePath = null)
     {
         var changes = new List<string>();
@@ -523,128 +996,62 @@ public class MetadataEnsureProcessor(
             }
         }
     }
-
-    /// <summary>    ///. <summary>
-    /// Determines the hierarchy level based on the file's template-type or position in the hierarchy.
-    /// </summary>
-    /// <param name="filePath">The path of the file.</param>
-    /// <param name="metadata">The metadata dictionary.</param>
-    /// <returns>The determined hierarchy level (e.g., "main", "program", "course"), or null if it cannot be determined.</returns>
-    private string? DetermineHierarchyLevelFromPath(string filePath, Dictionary<string, object?> metadata)
-    {
-        // First check if template-type is already set and extract hierarchy level from it
-        if (metadata.TryGetValue("template-type", out var templateTypeObj) && templateTypeObj != null)
-        {
-            string templateType = templateTypeObj.ToString() ?? string.Empty;
-            if (!string.IsNullOrEmpty(templateType))
-            {
-                // Extract hierarchy level from template-type (e.g., "course-index" -> "course")
-                string? hierarchyLevel = ExtractHierarchyLevelFromTemplateType(templateType);
-                if (!string.IsNullOrEmpty(hierarchyLevel))
-                {
-                    return hierarchyLevel;
-                }
-            }
-        }
-
-        // If no template-type or it doesn't indicate hierarchy, determine from file position
-        string fileName = Path.GetFileName(filePath);
-        string folderName = Path.GetFileName(Path.GetDirectoryName(filePath) ?? string.Empty);
-
-        // Check if this is likely an index file (filename matches folder name)
-        string fileBaseName = Path.GetFileNameWithoutExtension(fileName);
-        bool isIndexFile = fileBaseName.Equals(folderName, StringComparison.OrdinalIgnoreCase) ||
-                          fileName.Equals("index.md", StringComparison.OrdinalIgnoreCase);
-
-        if (!isIndexFile)
-        {
-            // For non-index files, don't determine hierarchy level
-            return null;
-        }
-
-
-        // Get the vault root from the metadata detector
-        string? vaultRoot = _metadataDetector.VaultRoot;
-        if (string.IsNullOrWhiteSpace(vaultRoot))
-        {
-            // Cannot determine hierarchy without a valid vault root
-            return null;
-        }
-
-        // Calculate the relative path from vault root
-        string relativePath = Path.GetRelativePath(vaultRoot, filePath);
-
-        // Count the directory depth (number of path separators)
-        // Subtract 1 because the file itself doesn't count as a level
-        int pathDepth = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Length - 1;
-
-        // Determine hierarchy level based on directory depth:
-        // Depth 0: vault root -> main
-        // Depth 1: program level -> program
-        // Depth 2: course level -> course
-        // Depth 3: class level -> class
-        // Depth 4+: module level -> module
-        return pathDepth switch
-        {
-            0 => "main",      // Files at vault root
-            1 => "program",   // Files in program folder
-            2 => "course",    // Files in course folder
-            3 => "class",     // Files in class folder
-            _ => "module",     // Files at module level or deeper
-        };
-    }
-
-    /// <summary>
-    /// Extracts the hierarchy level from a template-type string.
-    /// </summary>
-    /// <param name="templateType">The template-type value (e.g., "course", "video-reference-note").</param>
-    /// <returns>The hierarchy level (e.g., "course") or null if not a hierarchy template.</returns>
-    private static string? ExtractHierarchyLevelFromTemplateType(string templateType)
-    {
-        if (string.IsNullOrEmpty(templateType))
-        {
-            return null;
-        }
-
-        // Handle new naming convention - index templates use simple names
-        return templateType switch
-        {
-            "main" => "main",
-            "program" => "program",
-            "course" => "course",
-            "class" => "class",
-            "module" => "module",
-            "lesson" => "lesson",
-            "case-studies" => "case-studies",
-            "readings" => "readings",
-            "resources" => "resources",
-            "case-study" => "case-study",
-
-            // Legacy support for old naming convention
-            "main-index" => "main",
-            "program-index" => "program",
-            "course-index" => "course",
-            "class-index" => "class",
-            "module-index" => "module",
-            "lesson-index" => "lesson",
-            "case-studies-index" => "case-studies",
-            "readings-index" => "readings",
-            "resources-index" => "resources",
-            "case-study-index" => "case-study",
-            _ => null, // Non-hierarchy templates like "video-reference-note", etc.
-        };
-    }
 }
 
 /// <summary>
-/// Extension methods for Dictionary operations.
+/// Extension methods for Dictionary operations that provide additional functionality for metadata processing.
 /// </summary>
+/// <remarks>
+/// These extension methods provide commonly used dictionary operations that are not available in the
+/// standard Dictionary class, particularly for safe value retrieval with fallback defaults.
+/// </remarks>
 public static class DictionaryExtensions
 {
     /// <summary>
-    /// Gets a value from dictionary or returns default if key doesn't exist.
+    /// Safely retrieves a value from the dictionary or returns a default value if the key doesn't exist.
     /// </summary>
-    /// <returns></returns>
+    /// <remarks>
+    /// <para>
+    /// This method provides safe dictionary access that prevents KeyNotFoundException when accessing
+    /// potentially missing keys. It's particularly useful when working with metadata dictionaries
+    /// where fields may or may not be present.
+    /// </para>
+    /// <para>
+    /// The method uses the TryGetValue pattern internally for optimal performance and returns
+    /// the specified default value (or type default) when the key is not found.
+    /// </para>
+    /// </remarks>
+    /// <typeparam name="TKey">The type of keys in the dictionary. Must be non-null.</typeparam>
+    /// <typeparam name="TValue">The type of values in the dictionary.</typeparam>
+    /// <param name="dictionary">The dictionary to search in.</param>
+    /// <param name="key">The key to look for in the dictionary.</param>
+    /// <param name="defaultValue">
+    /// The value to return if the key is not found. If not specified, uses the default value for TValue.
+    /// </param>
+    /// <returns>
+    /// The value associated with the key if found; otherwise the specified defaultValue or type default.
+    /// </returns>
+    /// <example>
+    /// <code>
+    /// var metadata = new Dictionary&lt;string, object?&gt;
+    /// {
+    ///     ["title"] = "Example Title",
+    ///     ["count"] = 42
+    /// };
+    ///
+    /// // Get existing value
+    /// string title = metadata.GetValueOrDefault("title", "No Title")?.ToString() ?? "No Title";
+    /// // Result: "Example Title"
+    ///
+    /// // Get missing value with default
+    /// string description = metadata.GetValueOrDefault("description", "No Description")?.ToString() ?? "No Description";
+    /// // Result: "No Description"
+    ///
+    /// // Get missing value with type default
+    /// object? status = metadata.GetValueOrDefault("status");
+    /// // Result: null (default for object?)
+    /// </code>
+    /// </example>
     public static TValue? GetValueOrDefault<TKey, TValue>(this Dictionary<TKey, TValue> dictionary, TKey key, TValue? defaultValue = default)
         where TKey : notnull
     {

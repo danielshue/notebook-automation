@@ -1,0 +1,8 @@
+{
+  "id": "14463963-b60e-471e-8f9a-bceba86b2a8a",
+  "title": "ensure-metadata moved files issue diagnosis",
+  "details": "## Issue Identified\n\nThe `ensure-metadata` command is not updating hierarchy metadata for moved files. \n\n**Example Case:**\n- File: `Green Supply Chains-Notes.md` \n- Current path: `.../operations-management-quality-and-supply-chain/Case Studies/`\n- Current metadata: `class: operations-management-organization-and-analysis` (OLD)\n- Expected metadata: `class: operations-management-quality-and-supply-chain` (NEW)\n\n**Problem:** File was moved from one class directory to another, but running `ensure-metadata` shows \"skipped (no changes needed)\" instead of updating the hierarchy metadata.\n\n**Root Cause Analysis Needed:**\n1. Check if `FindHierarchyInfo()` is correctly detecting the new hierarchy from the path\n2. Check if `UpdateMetadataWithHierarchy()` is properly applying the detected hierarchy \n3. Check if `HasMetadataChanged()` is correctly detecting the difference\n\n**File Structure Context:**\n```\n.../MBA/Value Chain Management/Operations Management/operations-management-quality-and-supply-chain/Case Studies/Green Supply Chains-Notes.md\n```\nShould result in:\n- program: MBA (or \"Value Chain Management\")  \n- course: Operations Management\n- class: operations-management-quality-and-supply-chain\n- module: Case Studies",
+  "category": "debugging",
+  "dateCreated": "2025-06-10T13:41:44.058Z",
+  "dateUpdated": "2025-06-10T13:41:44.058Z"
+}

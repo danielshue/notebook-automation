@@ -29,17 +29,43 @@ public class TagProcessor
         { "TagsAdded", 0 },
         { "IndexFilesCleared", 0 },
         { "FilesWithErrors", 0 },
-    };
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TagProcessor"/> class.
-    /// Initializes a new instance of the TagProcessor.
-    /// </summary>
-    /// <param name="logger">Logger for general diagnostics.</param>
-    /// <param name="failedLogger">Logger for recording failed operations.</param>
-    /// <param name="yamlHelper">Helper for YAML processing.</param>
-    /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
-    /// <param name="verbose">Whether to provide verbose output.</param>
+    };    /// <summary>
+          /// Initializes a new instance of the <see cref="TagProcessor"/> class with default field configuration.
+          /// </summary>
+          /// <param name="logger">Logger for general diagnostics and operational messages.</param>
+          /// <param name="failedLogger">Dedicated logger for recording failed operations and errors.</param>
+          /// <param name="yamlHelper">Helper utility for YAML frontmatter processing and manipulation.</param>
+          /// <param name="dryRun">When true, simulates operations without making actual file changes. Default is false.</param>
+          /// <param name="verbose">When true, provides detailed verbose output during processing. Default is false.</param>
+          /// <remarks>
+          /// <para>
+          /// This constructor initializes the TagProcessor with a default set of frontmatter fields
+          /// that will be processed for tag generation. The default fields include common academic
+          /// and content metadata: course, lecture, topic, subjects, professor, university, program,
+          /// assignment, type, and author.
+          /// </para>
+          ///
+          /// <para>
+          /// The processor supports both dry-run mode for testing changes and verbose mode for
+          /// detailed operational logging. Statistics are automatically tracked during processing
+          /// and can be accessed via the <see cref="Stats"/> property.
+          /// </para>
+          /// </remarks>
+          /// <exception cref="ArgumentNullException">
+          /// Thrown when <paramref name="logger"/>, <paramref name="failedLogger"/>,
+          /// or <paramref name="yamlHelper"/> is null.
+          /// </exception>
+          /// <example>
+          /// <code>
+          /// var processor = new TagProcessor(logger, failedLogger, yamlHelper);
+          ///
+          /// // With dry-run mode enabled
+          /// var dryRunProcessor = new TagProcessor(logger, failedLogger, yamlHelper, dryRun: true);
+          ///
+          /// // With verbose logging
+          /// var verboseProcessor = new TagProcessor(logger, failedLogger, yamlHelper, verbose: true);
+          /// </code>
+          /// </example>
     public TagProcessor(
         ILogger<TagProcessor> logger,
         ILogger failedLogger,
@@ -59,16 +85,56 @@ public class TagProcessor
             "course", "lecture", "topic", "subjects", "professor",
             "university", "program", "assignment", "type", "author"
         ];
-    }    /// <summary>
-         /// Initializes a new instance of the <see cref="TagProcessor"/> class.
-         /// Initializes a new instance of the TagProcessor with specified fields to process.
-         /// </summary>
-         /// <param name="logger">Logger for general diagnostics.</param>
-         /// <param name="failedLogger">Logger for recording failed operations.</param>
-         /// <param name="yamlHelper">Helper for YAML processing.</param>
-         /// <param name="dryRun">Whether to perform a dry run without making changes.</param>
-         /// <param name="verbose">Whether to provide verbose output.</param>
-         /// <param name="fieldsToProcess">Specific frontmatter fields to process for tag generation.</param>
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TagProcessor"/> class with custom field configuration.
+    /// </summary>
+    /// <param name="logger">Logger for general diagnostics and operational messages.</param>
+    /// <param name="failedLogger">Dedicated logger for recording failed operations and errors.</param>
+    /// <param name="yamlHelper">Helper utility for YAML frontmatter processing and manipulation.</param>
+    /// <param name="dryRun">When true, simulates operations without making actual file changes. Default is false.</param>
+    /// <param name="verbose">When true, provides detailed verbose output during processing. Default is false.</param>
+    /// <param name="fieldsToProcess">
+    /// Custom set of frontmatter field names to process for tag generation.
+    /// If null, uses the default set of fields (course, lecture, topic, subjects, professor, university, program, assignment, type, author).
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// This constructor allows customization of which frontmatter fields are processed
+    /// for automatic tag generation. This is useful when working with specific content
+    /// types or when you need to focus on particular metadata fields.
+    /// </para>
+    ///
+    /// <para>
+    /// Each field in <paramref name="fieldsToProcess"/> will be mapped to a tag prefix
+    /// using <see cref="GetTagPrefixForField"/> and the field's value will be normalized
+    /// using <see cref="NormalizeTagValue"/> to create consistent nested tags.
+    /// </para>
+    ///
+    /// <para>
+    /// The processor maintains statistics about operations performed, accessible
+    /// via the <see cref="Stats"/> property, including files processed, modified,
+    /// tags added, and any errors encountered.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="logger"/>, <paramref name="failedLogger"/>,
+    /// or <paramref name="yamlHelper"/> is null.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// // Custom fields for academic content
+    /// var academicFields = new HashSet&lt;string&gt; { "course", "professor", "university" };
+    /// var processor = new TagProcessor(logger, failedLogger, yamlHelper,
+    ///     fieldsToProcess: academicFields);
+    ///
+    /// // Custom fields for business content
+    /// var businessFields = new HashSet&lt;string&gt; { "department", "project", "author" };
+    /// var businessProcessor = new TagProcessor(logger, failedLogger, yamlHelper,
+    ///     dryRun: true, fieldsToProcess: businessFields);
+    /// </code>
+    /// </example>
     public TagProcessor(
         ILogger<TagProcessor> logger,
         ILogger failedLogger,
@@ -90,10 +156,51 @@ public class TagProcessor
     }
 
     /// <summary>
-    /// Processes a directory recursively to add or update nested tags.
+    /// Processes a directory recursively to add or update nested tags in all markdown files.
     /// </summary>
-    /// <param name="directory">The directory path to process.</param>
-    /// <returns>Dictionary with processing statistics.</returns>
+    /// <param name="directory">The directory path to process recursively for markdown files.</param>
+    /// <returns>
+    /// A dictionary containing processing statistics with keys: "FilesProcessed", "FilesModified",
+    /// "TagsAdded", "IndexFilesCleared", and "FilesWithErrors".
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method performs recursive directory traversal to find all markdown files (.md extension)
+    /// and processes each one using <see cref="ProcessFileAsync"/>. Index files (those starting
+    /// with "_index" or named "index.md") are automatically skipped during processing.
+    /// </para>
+    ///
+    /// <para>
+    /// The method is fault-tolerant and will continue processing other files even if individual
+    /// files encounter errors. All errors are logged to both the main logger and the failed
+    /// operations logger for comprehensive error tracking.
+    /// </para>
+    ///
+    /// <para>
+    /// Processing statistics are maintained throughout the operation and can be accessed
+    /// both from the return value and the <see cref="Stats"/> property. In dry-run mode,
+    /// the method will simulate all operations without making actual file changes.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="DirectoryNotFoundException">
+    /// Logged as an error if the specified directory does not exist. The method returns
+    /// current statistics rather than throwing an exception.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// // Process entire directory tree
+    /// var stats = await processor.ProcessDirectoryAsync("/path/to/content");
+    /// Console.WriteLine($"Processed {stats["FilesProcessed"]} files");
+    /// Console.WriteLine($"Modified {stats["FilesModified"]} files");
+    /// Console.WriteLine($"Added {stats["TagsAdded"]} tags");
+    ///
+    /// // Check for errors
+    /// if (stats["FilesWithErrors"] > 0)
+    /// {
+    ///     Console.WriteLine($"Encountered errors in {stats["FilesWithErrors"]} files");
+    /// }
+    /// </code>
+    /// </example>
     public async Task<Dictionary<string, int>> ProcessDirectoryAsync(string directory)
     {
         if (!Directory.Exists(directory))
@@ -131,10 +238,57 @@ public class TagProcessor
     }
 
     /// <summary>
-    /// Processes a single markdown file to add or update nested tags.
+    /// Processes a single markdown file to add or update nested tags based on frontmatter content.
     /// </summary>
-    /// <param name="filePath">Path to the markdown file.</param>
-    /// <returns>True if the file was modified, false otherwise.</returns>
+    /// <param name="filePath">The path to the markdown file to process.</param>
+    /// <returns>True if the file was modified with new tags, false otherwise.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method performs comprehensive tag processing on a single markdown file:
+    /// 1. Extracts and parses YAML frontmatter
+    /// 2. Generates nested tags from configured frontmatter fields
+    /// 3. Merges new tags with existing tags (avoiding duplicates)
+    /// 4. Updates the file with the enhanced tag collection
+    /// </para>
+    ///
+    /// <para>
+    /// Index files (starting with "_index" or named "index.md") are automatically skipped
+    /// to avoid interference with structural navigation files. Files without valid
+    /// frontmatter are also skipped with appropriate logging.
+    /// </para>
+    ///
+    /// <para>
+    /// The method uses <see cref="GenerateNestedTags"/> to create semantic tags from
+    /// frontmatter fields, applying consistent normalization and formatting. All new
+    /// tags are merged with existing tags and sorted alphabetically for consistency.
+    /// </para>
+    ///
+    /// <para>
+    /// In dry-run mode, the method simulates all operations and logs what would be changed
+    /// without actually modifying files. Statistics are updated regardless of dry-run status.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="FileNotFoundException">
+    /// Logged as an error if the specified file does not exist. The method returns false
+    /// rather than throwing an exception.
+    /// </exception>
+    /// <exception cref="IOException">
+    /// File access errors are caught, logged to both loggers, and result in a false return value.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// // Process a single file
+    /// bool modified = await processor.ProcessFileAsync("/path/to/document.md");
+    /// if (modified)
+    /// {
+    ///     Console.WriteLine("File was updated with new tags");
+    /// }
+    ///
+    /// // Check statistics after processing
+    /// var stats = processor.Stats;
+    /// Console.WriteLine($"Tags added: {stats["TagsAdded"]}");
+    /// </code>
+    /// </example>
     public async Task<bool> ProcessFileAsync(string filePath)
     {
         if (!File.Exists(filePath))
@@ -242,12 +396,49 @@ public class TagProcessor
     }
 
     /// <summary>
-    /// Clears tags from an index file.
+    /// Clears all tags from a markdown file's frontmatter.
     /// </summary>
-    /// <param name="filePath">Path to the markdown file.</param>
-    /// <param name="frontmatter">The parsed frontmatter dictionary.</param>
-    /// <param name="content">The full content of the file.</param>
-    /// <returns>True if the file was modified, false otherwise.</returns>
+    /// <param name="filePath">The path to the markdown file to modify.</param>
+    /// <param name="frontmatter">The parsed frontmatter dictionary containing current metadata.</param>
+    /// <param name="content">The complete file content including frontmatter and body.</param>
+    /// <returns>True if tags were found and cleared (or would be cleared in dry-run), false if no tags existed.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method removes all tag-related metadata from a file's frontmatter, including
+    /// both "tags" fields and case-insensitive variations. It's particularly useful for
+    /// cleaning up index files or resetting tag collections before regeneration.
+    /// </para>
+    ///
+    /// <para>
+    /// The method performs case-insensitive tag field detection to handle variations
+    /// in YAML field naming (e.g., "tags", "Tags", "TAGS"). All matching fields are
+    /// removed from the frontmatter dictionary.
+    /// </para>
+    ///
+    /// <para>
+    /// In dry-run mode, the method simulates the clearing operation and updates statistics
+    /// without actually modifying the file. This allows for testing and verification
+    /// of operations before applying changes.
+    /// </para>
+    ///
+    /// <para>
+    /// Statistics are automatically updated to track the number of index files cleared
+    /// and files modified during the operation.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Clear tags from a specific file
+    /// string content = await File.ReadAllTextAsync(filePath);
+    /// var frontmatter = yamlHelper.ParseYamlToDictionary(yamlHelper.ExtractFrontmatter(content));
+    /// bool cleared = await processor.ClearTagsFromFileAsync(filePath, frontmatter, content);
+    ///
+    /// if (cleared)
+    /// {
+    ///     Console.WriteLine("Tags were cleared from the file");
+    /// }
+    /// </code>
+    /// </example>
     public async Task<bool> ClearTagsFromFileAsync(
         string filePath,
         Dictionary<string, object> frontmatter,
@@ -290,12 +481,54 @@ public class TagProcessor
     }
 
     /// <summary>
-    /// Adds nested tags based on frontmatter fields to a file.
+    /// Adds nested tags to a markdown file based on frontmatter field values.
     /// </summary>
-    /// <param name="filePath">Path to the markdown file.</param>
-    /// <param name="frontmatter">The parsed frontmatter dictionary.</param>
-    /// <param name="content">The full content of the file.</param>
-    /// <returns>True if the file was modified, false otherwise.</returns>
+    /// <param name="filePath">The path to the markdown file to modify.</param>
+    /// <param name="frontmatter">The parsed frontmatter dictionary containing metadata fields.</param>
+    /// <param name="content">The complete file content including frontmatter and body.</param>
+    /// <returns>True if new tags were added to the file, false if no new tags were generated.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method processes configured frontmatter fields (specified in <c>_fieldsToProcess</c>)
+    /// to generate semantic nested tags. Each field value is transformed into a hierarchical
+    /// tag using the pattern: #{prefix}/{normalized-value}, where the prefix is determined
+    /// by <see cref="GetTagPrefixForField"/> and the value is normalized using <see cref="NormalizeTagValue"/>.
+    /// </para>
+    ///
+    /// <para>
+    /// The method preserves existing tags and only adds new ones, avoiding duplicates.
+    /// New tags are merged with the existing tag collection and the updated frontmatter
+    /// is written back to the file using the YAML helper.
+    /// </para>
+    ///
+    /// <para>
+    /// Tag generation supports both single-value and list-value frontmatter fields.
+    /// For list fields, each item in the list generates a separate tag with the same prefix.
+    /// All tag values are normalized for consistency (lowercase, hyphens for spaces, etc.).
+    /// </para>
+    ///
+    /// <para>
+    /// Statistics tracking includes counting the number of tags added and files modified.
+    /// In dry-run mode, the method simulates operations without making file changes.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Example frontmatter that would generate nested tags:
+    /// // course: "Finance 101"
+    /// // professor: "John Smith"
+    /// // subjects: ["investment", "portfolio management"]
+    ///
+    /// // Generated tags:
+    /// // - mba/course/finance-101
+    /// // - people/john-smith
+    /// // - subject/investment
+    /// // - subject/portfolio-management
+    ///
+    /// var frontmatterDict = yamlHelper.ParseYamlToDictionary(frontmatter);
+    /// bool added = await processor.AddNestedTagsToFileAsync(filePath, frontmatterDict, content);
+    /// </code>
+    /// </example>
     public async Task<bool> AddNestedTagsToFileAsync(
         string filePath,
         Dictionary<string, object> frontmatter,

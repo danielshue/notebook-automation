@@ -76,12 +76,35 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
         {
             QueueChanged?.Invoke(this, new QueueChangedEventArgs(_processingQueue.AsReadOnly(), changedItem));
         }
-    }    /// <summary>
-         /// Initializes the processing queue with folders from the specified vault directory.
-         /// </summary>
-         /// <param name="vaultPath">Path to the vault directory to scan for folders.</param>
-         /// <param name="templateTypes">Optional filter for specific template types to generate.</param>
-         /// <param name="vaultRoot">Optional vault root for hierarchy calculation. If null, uses vaultPath.</param>
+    }
+
+    /// <summary>
+    /// Initializes the processing queue with folders from the specified vault directory.
+    /// </summary>
+    /// <param name="vaultPath">Path to the vault directory to scan for folders.</param>
+    /// <param name="templateTypes">Optional filter for specific template types to generate. If specified, only folders matching these types will be queued.</param>
+    /// <param name="vaultRoot">Optional vault root for hierarchy calculation. If null, uses vaultPath as the reference point for hierarchy detection.</param>
+    /// <remarks>
+    /// This method scans the vault directory recursively to identify all folders that require index generation.
+    /// It applies filtering based on template types and ignores standard directories like hidden folders,
+    /// templates, attachments, and resources. Each qualifying folder is added to the processing queue
+    /// with an initial status of "Waiting".
+    ///
+    /// The method processes folders in a consistent alphabetical order to ensure predictable execution.
+    /// Hierarchy levels are calculated using the provided vault root or the vault path as a fallback,
+    /// which determines the appropriate template type for each folder.
+    /// </remarks>
+    /// <exception cref="DirectoryNotFoundException">Thrown when the vault path does not exist.</exception>
+    /// <example>
+    /// <code>
+    /// // Initialize queue for all template types
+    /// InitializeProcessingQueue("/path/to/vault");
+    ///
+    /// // Initialize queue for specific template types only
+    /// var templateTypes = new List&lt;string&gt; { "course", "module" };
+    /// InitializeProcessingQueue("/path/to/vault", templateTypes, "/vault/root");
+    /// </code>
+    /// </example>
     protected virtual void InitializeProcessingQueue(string vaultPath, List<string>? templateTypes = null, string? vaultRoot = null)
     { // Get all directories in the vault, including the vault root itself
         var directories = new List<string> { vaultPath }; // Start with vault root
@@ -146,8 +169,29 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     /// <summary>
     /// Determines if a directory should be ignored during processing.
     /// </summary>
-    /// <param name="directoryPath">The directory path to check.</param>
+    /// <param name="directoryPath">The directory path to check for exclusion criteria.</param>
     /// <returns>True if the directory should be ignored, false otherwise.</returns>
+    /// <remarks>
+    /// This method filters out directories that should not have index files generated:
+    /// - Hidden directories (starting with '.')
+    /// - Common resource directories: templates, attachments, resources, _templates
+    ///
+    /// The comparison is case-insensitive to handle various naming conventions.
+    /// This helps maintain a clean vault structure by avoiding index generation
+    /// in utility and resource directories.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // These would return true (ignored):
+    /// IsIgnoredDirectory("/vault/.obsidian");       // Hidden directory
+    /// IsIgnoredDirectory("/vault/templates");       // Template directory
+    /// IsIgnoredDirectory("/vault/Attachments");     // Attachments (case-insensitive)
+    ///
+    /// // These would return false (not ignored):
+    /// IsIgnoredDirectory("/vault/Course 1");        // Regular course folder
+    /// IsIgnoredDirectory("/vault/Module 1");        // Regular module folder
+    /// </code>
+    /// </example>
     private static bool IsIgnoredDirectory(string directoryPath)
     {
         string dirName = Path.GetFileName(directoryPath);
@@ -160,14 +204,43 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     }
 
     /// <summary>
-    /// Updates the status of a specific queue item and fires events.
+    /// Updates the status of a specific queue item and fires progress events.
     /// </summary>
-    /// <param name="folderPath">The folder path to update.</param>
-    /// <param name="status">The new processing status.</param>
-    /// <param name="stage">The new processing stage.</param>
-    /// <param name="statusMessage">The new status message.</param>
-    /// <param name="currentFolder">Current folder index for progress tracking.</param>
-    /// <param name="totalFolders">Total folders for progress tracking.</param>
+    /// <param name="folderPath">The folder path identifying the queue item to update.</param>
+    /// <param name="status">The new processing status to assign.</param>
+    /// <param name="stage">The new processing stage to assign.</param>
+    /// <param name="statusMessage">The new status message describing current operation.</param>
+    /// <param name="currentFolder">Current folder index for progress tracking (1-based).</param>
+    /// <param name="totalFolders">Total number of folders for progress tracking.</param>
+    /// <remarks>
+    /// This method provides thread-safe updates to queue item status and automatically
+    /// manages timing information:
+    /// - Sets ProcessingStartTime when status changes to Processing (if not already set)
+    /// - Sets ProcessingEndTime when status changes to Completed or Failed
+    ///
+    /// After updating the queue item, it fires both QueueChanged and ProcessingProgressChanged
+    /// events to notify subscribers of the status change. This enables real-time monitoring
+    /// and UI updates during batch processing operations.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Update status to indicate processing has started
+    /// UpdateQueueItemStatus(
+    ///     "/vault/Module 1",
+    ///     DocumentProcessingStatus.Processing,
+    ///     ProcessingStage.MarkdownCreation,
+    ///     "Generating index for Module 1",
+    ///     3, 10);
+    ///
+    /// // Update status to indicate completion
+    /// UpdateQueueItemStatus(
+    ///     "/vault/Module 1",
+    ///     DocumentProcessingStatus.Completed,
+    ///     ProcessingStage.Completed,
+    ///     "Successfully generated index for Module 1",
+    ///     3, 10);
+    /// </code>
+    /// </example>
     protected virtual void UpdateQueueItemStatus(string folderPath, DocumentProcessingStatus status, ProcessingStage stage, string statusMessage, int currentFolder, int totalFolders)
     {
         QueueItem? queueItem = null;
@@ -200,34 +273,72 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     }
 
     /// <summary>
-    /// Generates vault index files for folders in the specified directory.
+    /// Generates vault index files for all folders in the specified directory structure.
     /// </summary>
-    /// <param name="vaultPath">Path to the vault directory.</param>
-    /// <param name="dryRun">If true, simulates processing without making actual changes.</param>
-    /// <param name="templateTypes">Optional filter for specific template types to generate.</param>
-    /// <param name="forceOverwrite">If true, regenerates index files even if they already exist.</param>
-    /// <returns>A summary of processing results.</returns>    /// <summary>
-    /// Generates index files for a vault directory structure.
-    /// </summary>
-    /// <param name="vaultPath">The path to start processing from (can be the vault root or any subdirectory)</param>
-    /// <param name="dryRun">When true, simulates processing without making changes</param>
-    /// <param name="templateTypes">Optional list of template types to filter by (e.g., "program", "course", "class", "module", "lesson")</param>
-    /// <param name="forceOverwrite">When true, regenerates indices even if they already exist</param>
+    /// <param name="vaultPath">The path to start processing from (can be the vault root or any subdirectory).</param>
+    /// <param name="dryRun">When true, simulates processing without making actual file changes.</param>
+    /// <param name="templateTypes">Optional list of template types to filter by (e.g., "program", "course", "class", "module", "lesson"). If null, processes all folder types.</param>
+    /// <param name="forceOverwrite">When true, regenerates index files even if they already exist and are up-to-date.</param>
     /// <param name="vaultRoot">
-    ///   The vault root path to use for hierarchy calculation. This is CRITICAL for correct template selection.
-    ///   When null: Uses configured vault root from AppConfig
-    ///   When "OVERRIDE" string: Uses the vaultPath as the vault root (level 0)
-    ///   When explicit path: Uses that path as the vault root
+    /// The vault root path to use for hierarchy calculation. This is critical for correct template selection:
+    /// - When null: Uses configured vault root from AppConfig
+    /// - When "OVERRIDE" string: Uses the vaultPath as the vault root (level 0)
+    /// - When explicit path: Uses that path as the vault root for hierarchy calculations
     /// </param>
-    /// <returns>A result containing processing statistics and error information</returns>    /// <remarks>
-    /// It's important to understand the difference between vaultPath and vaultRoot parameters:
-    /// - vaultPath: Where to START processing - can be any subdirectory within the vault
-    /// - vaultRoot: What to use as the BASE for hierarchy level calculation
+    /// <returns>A <see cref="VaultIndexBatchResult"/> containing processing statistics and error information.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method is the main entry point for batch index generation. It performs the following operations:
+    /// 1. Validates input parameters and directory existence
+    /// 2. Optionally cleans up old index.md files
+    /// 3. Initializes the processing queue with discovered folders
+    /// 4. Processes each folder sequentially, generating appropriate index files
+    /// 5. Tracks progress and errors throughout the operation
+    /// 6. Saves a list of failed folders for retry purposes
+    /// </para>
     ///
+    /// <para>
+    /// It's important to understand the difference between vaultPath and vaultRoot parameters:
+    /// - <paramref name="vaultPath"/>: Where to START processing - can be any subdirectory within the vault
+    /// - <paramref name="vaultRoot"/>: What to use as the BASE for hierarchy level calculation
+    /// </para>
+    ///
+    /// <para>
     /// In most cases, vaultRoot should be the actual configured vault root from AppConfig,
     /// ensuring that hierarchy levels are calculated consistently regardless of where
-    /// processing starts (e.g., a lesson dir is still level 5 even when starting from there).
+    /// processing starts (e.g., a lesson directory is still level 5 even when starting from there).
+    /// </para>
+    ///
+    /// <para>
+    /// The method supports both full vault processing and partial processing with template type filters,
+    /// making it suitable for targeted regeneration of specific hierarchy levels.
+    /// </para>
     /// </remarks>
+    /// <exception cref="ArgumentException">Thrown when vaultPath is null or empty.</exception>
+    /// <exception cref="DirectoryNotFoundException">Thrown when the vault directory does not exist.</exception>
+    /// <example>
+    /// <code>
+    /// // Generate indexes for entire vault
+    /// var result = await processor.GenerateIndexesAsync("/path/to/vault");
+    ///
+    /// // Dry run with specific template types
+    /// var templateTypes = new List&lt;string&gt; { "course", "module" };
+    /// var result = await processor.GenerateIndexesAsync(
+    ///     "/path/to/vault",
+    ///     dryRun: true,
+    ///     templateTypes: templateTypes);
+    ///
+    /// // Force regeneration of all indexes
+    /// var result = await processor.GenerateIndexesAsync(
+    ///     "/path/to/vault",
+    ///     forceOverwrite: true);
+    ///
+    /// // Process subdirectory with explicit vault root
+    /// var result = await processor.GenerateIndexesAsync(
+    ///     "/path/to/vault/Course 1",
+    ///     vaultRoot: "/path/to/vault");
+    /// </code>
+    /// </example>
     public virtual async Task<VaultIndexBatchResult> GenerateIndexesAsync(
         string vaultPath,
         bool dryRun = false,
@@ -365,9 +476,29 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     }
 
     /// <summary>
-    /// Cleans up old index.md files throughout the vault.
+    /// Cleans up old index.md files throughout the vault directory structure.
     /// </summary>
-    /// <param name="vaultPath">Path to the vault directory.</param>
+    /// <param name="vaultPath">Path to the vault directory to clean recursively.</param>
+    /// <returns>A task representing the asynchronous cleanup operation.</returns>
+    /// <remarks>
+    /// This method recursively searches for and removes all existing "index.md" files
+    /// within the vault directory tree. This cleanup step ensures that the batch
+    /// index generation process starts with a clean slate, preventing conflicts
+    /// between old and new index files.
+    ///
+    /// The method is fault-tolerant and will continue cleaning even if individual
+    /// file deletions fail. Failed deletions are logged as warnings but do not
+    /// stop the overall cleanup process.
+    ///
+    /// This method is automatically called by <see cref="GenerateIndexesAsync"/> when
+    /// not running in dry-run mode.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Clean up old index files before regeneration
+    /// await CleanupOldIndexFilesAsync("/path/to/vault");
+    /// </code>
+    /// </example>
     private async Task CleanupOldIndexFilesAsync(string vaultPath)
     {
         try
@@ -379,17 +510,17 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
                 try
                 {
                     File.Delete(indexFile);
-                    _logger.LogDebug("Deleted old index file: {FilePath}", indexFile);
+                    _logger.LogDebug($"Deleted old index file: {indexFile}");
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Failed to delete old index file: {FilePath}", indexFile);
+                    _logger.LogWarning(ex, $"Failed to delete old index file: {indexFile}");
                 }
             }
 
             if (indexFiles.Length > 0)
             {
-                _logger.LogInformation("Cleaned up {Count} old index.md files", indexFiles.Length);
+                _logger.LogInformation($"Cleaned up {indexFiles.Length} old index.md files");
             }
         }
         catch (Exception ex)
@@ -401,8 +532,24 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     }
 
     /// <summary>
-    /// Creates an error result with the specified message.
+    /// Creates a standardized error result with the specified error message.
     /// </summary>
+    /// <param name="errorMessage">The error message to include in the result.</param>
+    /// <returns>A <see cref="VaultIndexBatchResult"/> with Success set to false and the provided error message.</returns>
+    /// <remarks>
+    /// This utility method provides a consistent way to create error results throughout
+    /// the class. It ensures that error results always have the Success flag set to false
+    /// and include descriptive error messages for debugging and user feedback.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Create an error result for invalid input
+    /// return CreateErrorResult("Vault path cannot be null or empty");
+    ///
+    /// // Create an error result for missing directory
+    /// return CreateErrorResult($"Vault directory does not exist: {vaultPath}");
+    /// </code>
+    /// </example>
     private static VaultIndexBatchResult CreateErrorResult(string errorMessage)
     {
         return new VaultIndexBatchResult
@@ -413,8 +560,30 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     }
 
     /// <summary>
-    /// Logs the batch processing results.
+    /// Logs a comprehensive summary of the batch processing results.
     /// </summary>
+    /// <param name="result">The batch result containing processing statistics.</param>
+    /// <param name="dryRun">Whether the operation was run in dry-run mode.</param>
+    /// <remarks>
+    /// This method provides standardized logging output for batch processing operations.
+    /// It logs key metrics including processed, skipped, and failed folder counts,
+    /// with special handling for dry-run mode indicators.
+    ///
+    /// When failures occur, additional warning-level logging is performed to highlight
+    /// issues that may require attention. This helps with monitoring and troubleshooting
+    /// batch operations in production environments.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Example logged output for normal operation:
+    /// // "Index generation completed: 15 processed, 3 skipped, 0 failed out of 18 total folders"
+    ///
+    /// // Example logged output for dry-run:
+    /// // "[DRY RUN] Index generation completed: 15 processed, 3 skipped, 0 failed out of 18 total folders"
+    ///
+    /// LogBatchResults(result, false);
+    /// </code>
+    /// </example>
     private void LogBatchResults(VaultIndexBatchResult result, bool dryRun)
     {
         string prefix = dryRun ? "[DRY RUN] " : string.Empty;
@@ -430,8 +599,38 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     }
 
     /// <summary>
-    /// Saves the list of failed folders to a text file for retry purposes.
+    /// Saves the list of failed folders to a text file for analysis and retry purposes.
     /// </summary>
+    /// <param name="vaultPath">The vault directory path where the failed folders file will be saved.</param>
+    /// <param name="failedFolders">The list of folder paths that failed to process.</param>
+    /// <returns>A task representing the asynchronous file save operation.</returns>
+    /// <remarks>
+    /// This method creates a "failed_index_folders.txt" file in the vault root directory
+    /// containing the full paths of all folders that failed to process during the batch
+    /// operation. This enables:
+    ///
+    /// - Easy identification of problematic folders for manual investigation
+    /// - Potential retry operations on just the failed folders
+    /// - Analysis of failure patterns across the vault structure
+    ///
+    /// The method is fault-tolerant and will log errors if the file cannot be written,
+    /// but will not throw exceptions that would disrupt the main batch operation.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var failedFolders = new List&lt;string&gt;
+    /// {
+    ///     "/vault/Course 1/Module 1",
+    ///     "/vault/Course 2/Module 3"
+    /// };
+    /// await SaveFailedFoldersList("/vault", failedFolders);
+    ///
+    /// // This creates: /vault/failed_index_folders.txt
+    /// // Content:
+    /// // /vault/Course 1/Module 1
+    /// // /vault/Course 2/Module 3
+    /// </code>
+    /// </example>
     private async Task SaveFailedFoldersList(string vaultPath, List<string> failedFolders)
     {
         try
@@ -445,40 +644,4 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
             _logger.LogError(ex, "Failed to save failed folders list");
         }
     }
-}
-
-/// <summary>
-/// Result of batch vault index generation operation.
-/// </summary>
-public class VaultIndexBatchResult
-{
-    /// <summary>
-    /// Gets or sets a value indicating whether gets or sets whether the operation was successful.
-    /// </summary>
-    public bool Success { get; set; } = true;
-
-    /// <summary>
-    /// Gets or sets the error message if the operation failed.
-    /// </summary>
-    public string? ErrorMessage { get; set; }
-
-    /// <summary>
-    /// Gets or sets the total number of folders found.
-    /// </summary>
-    public int TotalFolders { get; set; }
-
-    /// <summary>
-    /// Gets or sets the number of folders that were processed (index generated).
-    /// </summary>
-    public int ProcessedFolders { get; set; }
-
-    /// <summary>
-    /// Gets or sets the number of folders that were skipped (no changes needed).
-    /// </summary>
-    public int SkippedFolders { get; set; }
-
-    /// <summary>
-    /// Gets or sets the number of folders that failed to process.
-    /// </summary>
-    public int FailedFolders { get; set; }
 }

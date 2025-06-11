@@ -1,0 +1,8 @@
+{
+  "id": "dff09ce0-eb9d-4fe1-b3b0-19a14e736883",
+  "title": "Case Study Module Extraction Requirements",
+  "details": "Case Studies have special module extraction requirements based on their location in the vault hierarchy:\n\nREQUIREMENTS:\n1. Case studies at CLASS level (directly under class folder): Should NOT have module property\n2. Case studies under MODULE folders: Should have the module property extracted\n\nCURRENT ISSUE:\n- Case studies are currently treated as content files in contentKeywords array\n- This causes ALL case studies to get module extraction regardless of hierarchy\n- The example shows case studies at class level getting \"Projects\" as module, which is incorrect\n\nSOLUTION NEEDED:\n- Modify CourseStructureExtractor.IsContentFile() to handle case studies specially\n- Add logic to check if case study is under a module directory vs class directory\n- Only apply module extraction for case studies when they're actually under a module folder\n\nVAULT STRUCTURE CONTEXT:\n- Program > Course > Class > (Case Studies OR Module > Case Studies)\n- Case studies at class level should not have module\n- Case studies under module folders should have module extracted from parent",
+  "category": "requirements",
+  "dateCreated": "2025-06-10T22:26:44.275Z",
+  "dateUpdated": "2025-06-10T22:26:44.275Z"
+}

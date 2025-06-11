@@ -1,0 +1,8 @@
+{
+  "id": "28a7b7c1-c7a9-42fe-aa1e-f2a2cfaded46",
+  "title": "Analysis of failing tests",
+  "details": "Based on the test results, we have 4 remaining failing tests:\n\n1. ExtractModuleAndLesson_VariousPathFormats_ContentFiles_ExtractsCorrectly with \"module-1-intro\" for video.mp4\n   - Expected: \"1\", Actual: \"Module 1 Intro\"\n   - This is a content file that should get numeric-only module value\n\n2. ExtractModuleAndLesson_FilenameExtraction_NonContentFiles_ExtractsCorrectly with \"Week1-Introduction.md\"\n   - Expected: \"Week1 Introduction\", Actual: \"Week 1 Introduction\"  \n   - This is a non-content file test expecting exact match\n\n3. ExtractModuleAndLesson_EnhancedDirectoryPatterns_ExtractsCorrectly with \"Week 1\"/\"Session 2\"/\"material.pdf\"\n   - Expected: \"Week 1\", Actual: \"1\"\n   - The PDF file is being treated as content (numeric output) but test expects friendly name\n\n4. ExtractModuleAndLesson_FallbackStrategies_WorksCorrectly \n   - Expected: \"Module 3 Financial Analysis\", Actual: \"3\"\n   - Similar issue - likely a non-content file being treated as content\n\nThe main issues are:\n- PDF files are being treated as content files when they should sometimes be treated as non-content\n- Directory-based extraction is still not respecting the content vs non-content distinction properly\n- Filename-based extraction for non-content files needs refinement",
+  "category": "debugging",
+  "dateCreated": "2025-06-10T18:28:23.114Z",
+  "dateUpdated": "2025-06-10T18:28:23.114Z"
+}
