@@ -316,27 +316,29 @@ internal class VaultCommands
             var scopedServices = scope.ServiceProvider;
 
             // Set up vault root override in scoped context
-            var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
-
-            // Use explicit vault root if provided, otherwise use the provided path as vault root
+            var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();            // Use explicit vault root if provided, otherwise use configured vault root
             string effectiveVaultRoot;
             if (!string.IsNullOrEmpty(vaultRoot))
             {
-                // Use the explicitly provided vault root
+                // Use the explicitly provided vault root (from --override-vault-root)
                 effectiveVaultRoot = Path.GetFullPath(vaultRoot);
+                _logger.LogInformation($"Using explicit vault root override: {effectiveVaultRoot}");
             }
             else
             {
-                // If no vault root override is specified, normalize the path
-                effectiveVaultRoot = Path.GetFullPath(path);
-            }
-
-            // Ensure consistent path separators for the platform
+                // Use configured vault root from AppConfig
+                string? configuredVaultRoot = _appConfig?.Paths?.NotebookVaultFullpathRoot;
+                if (string.IsNullOrEmpty(configuredVaultRoot))
+                {
+                    throw new InvalidOperationException("No vault root configured and no override provided");
+                }
+                effectiveVaultRoot = Path.GetFullPath(configuredVaultRoot);
+                _logger.LogInformation($"Using configured vault root: {effectiveVaultRoot}");
+            }            // Ensure consistent path separators for the platform
             effectiveVaultRoot = effectiveVaultRoot.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
             effectiveVaultRoot = effectiveVaultRoot.TrimEnd(Path.DirectorySeparatorChar);
 
             vaultRootContext.VaultRootOverride = effectiveVaultRoot;
-            _logger.LogInformation($"Using vault root override: {effectiveVaultRoot}");
             _logger.LogDebug($"Path passed to command: {path}, Effective vault root: {effectiveVaultRoot}");
 
             var batchProcessor = scopedServices.GetRequiredService<VaultIndexBatchProcessor>();
@@ -434,12 +436,26 @@ internal class VaultCommands
             var scopedServices = scope.ServiceProvider;
 
             // Set up vault root override in scoped context
-            var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
-
-            // Use explicit vault root if provided, otherwise use the provided path as vault root
-            string effectiveVaultRoot = !string.IsNullOrEmpty(vaultRoot) ? vaultRoot : Path.GetFullPath(path);
+            var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();            // Use explicit vault root if provided, otherwise use configured vault root
+            string effectiveVaultRoot;
+            if (!string.IsNullOrEmpty(vaultRoot))
+            {
+                // Use the explicitly provided vault root (from --override-vault-root)
+                effectiveVaultRoot = Path.GetFullPath(vaultRoot);
+                _logger.LogInformation($"Using explicit vault root override: {effectiveVaultRoot}");
+            }
+            else
+            {
+                // Use configured vault root from AppConfig
+                string? configuredVaultRoot = _appConfig?.Paths?.NotebookVaultFullpathRoot;
+                if (string.IsNullOrEmpty(configuredVaultRoot))
+                {
+                    throw new InvalidOperationException("No vault root configured and no override provided");
+                }
+                effectiveVaultRoot = Path.GetFullPath(configuredVaultRoot);
+                _logger.LogInformation($"Using configured vault root: {effectiveVaultRoot}");
+            }
             vaultRootContext.VaultRootOverride = effectiveVaultRoot;
-            _logger.LogInformation($"Using vault root override: {effectiveVaultRoot}");
 
             var batchProcessor = scopedServices.GetRequiredService<MetadataEnsureBatchProcessor>();
 

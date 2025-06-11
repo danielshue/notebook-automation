@@ -232,6 +232,24 @@
       "completed": true,
       "createdAt": "2025-06-08T15:51:00.980Z",
       "updatedAt": "2025-06-08T16:15:00.698Z"
+    },
+    {
+      "id": "2cd39f61-c5e1-4d65-a994-4151a1d86314",
+      "name": "Verify Content File Module Preservation Fix on Real Data",
+      "details": "## Task Details\n\n1. Test the content file module field preservation fix on real data:\n   - Run `na.exe vault ensure-metadata` on a directory containing video and other content files\n   - Use the debug flag: `--debug` to verify the content file detection logic\n   - Check the updated YAML frontmatter of video files to confirm they have the `module` field preserved with number-only format (e.g., \"01\")\n   - Compare with instruction files to verify consistent behavior\n\n2. Verify with the following file types:\n   - Video files (should now keep module field with numeric value)\n   - Instruction files (should continue working as before)\n   - Reading materials (should keep module field with numeric value)\n   - Other content files (should keep module field with numeric value)\n\n3. Sample command to use:\n   ```\n   .\\na.exe vault ensure-metadata [PATH_TO_TEST_FILES] -c \"config.json\" --debug\n   ```\n\n4. Expected results:\n   - Debug logs should show \"Detected content file...\" messages\n   - Debug logs should show \"Preserving content file module value...\" messages\n   - YAML frontmatter in content files should have `module: 01` style entries preserved\n   - Regular files should continue to have friendly module titles\n\n5. If any issues are found:\n   - Check the content file detection logic in `UpdateMetadataWithHierarchy`\n   - Verify that all special cases are properly handled\n   - Consider adding additional detection patterns if needed",
+      "projectId": "15188081-529e-47f1-b685-c88d2ec54f6e",
+      "completed": false,
+      "createdAt": "2025-06-10T15:17:30.450Z",
+      "updatedAt": "2025-06-10T15:17:30.450Z"
+    },
+    {
+      "id": "5979b6ab-db32-494a-9e0e-65026fc9dcb7",
+      "name": "Fix Content File Module Extraction Logic",
+      "details": "## Task: Fix Module Number Extraction for Content Files\n\n**Issue**: Content files in nested module/lesson structures are extracting the lesson number instead of the module number.\n\n**Current Behavior**:\n- Structure: `01_module-introduction/02_lesson-overview/video.mp4`\n- Expected: `module: \"01\"` (from module directory)\n- Actual: `module: \"02\"` (from lesson directory)\n\n**Root Cause**: \nThe `ExtractModuleNumberFromParentDirectories` method walks up the directory tree and returns the first number it finds, which is often the lesson directory rather than the module directory.\n\n**Solution Needed**:\nEnhance the parent directory traversal logic to:\n1. Distinguish between module and lesson directories\n2. Prioritize module directories over lesson directories  \n3. Use the helper methods `FindModuleDirectory` and `FindLessonDirectory` to make intelligent decisions\n\n**Files to Update**:\n- `CourseStructureExtractor.cs` - `ExtractModuleNumberFromParentDirectories` method\n- `CourseStructureExtractorTests.cs` - Update test expectations if needed\n\n**Test Cases Failing**:\n- ExtractModuleAndLesson_VariousPathFormats_ContentFiles_ExtractsCorrectly\n- CleanModuleOrLessonName_VariousFormats_ContentFiles_FormatsCorrectly  \n- ExtractModuleAndLesson_ContentFiles_ExtractsNumericModuleOnly\n- ExtractModuleAndLesson_NestedContentFiles_ExtractsCorrectHierarchy\n\n**Validation**:\n- All CourseStructureExtractorTests should pass\n- Content files should always get number-only module values from the correct parent directory",
+      "projectId": "15188081-529e-47f1-b685-c88d2ec54f6e",
+      "completed": false,
+      "createdAt": "2025-06-10T19:12:48.659Z",
+      "updatedAt": "2025-06-10T19:12:48.659Z"
     }
   ],
   "subtasks": [

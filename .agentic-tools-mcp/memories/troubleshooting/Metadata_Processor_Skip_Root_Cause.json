@@ -1,0 +1,8 @@
+{
+  "id": "45db5ca1-7b0e-4e28-8035-12cd66c4a015",
+  "title": "Metadata Processor Skip Root Cause",
+  "details": "METADATA PROCESSOR SKIP REASON DISCOVERED:\n\nFiles are being skipped because the hierarchy detection is incorrect:\n\nEXPECTED:\n- Program: 'Value Chain Management' (or 'operations-management-organization-and-analysis')\n- Course: 'operations-management-organization-and-analysis' \n- Class: 'operations-management-organization-and-analysis'\n\nACTUAL (from logs):\n- Program: 'Case Studies' (WRONG - this should be the class)\n- Course: 'Three Jays Corporation-Notes.md' (WRONG - this should be a file)\n- Class: '' (EMPTY - this is what we need!)\n\nISSUE: The hierarchy detection logic is treating the Case Studies folder as the program level instead of recognizing the proper hierarchy:\n- Value Chain Management (program)\n- Operations Management (course) \n- operations-management-organization-and-analysis (class)\n- Case Studies (subfolder with case study files)\n\nThe processor concludes \"no metadata changes needed\" because it doesn't detect that the `class` field is missing and should be set to 'operations-management-organization-and-analysis'.\n\nNEXT: Need to fix hierarchy detection logic or force add the class field.",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-10T05:47:09.720Z",
+  "dateUpdated": "2025-06-10T05:47:09.720Z"
+}

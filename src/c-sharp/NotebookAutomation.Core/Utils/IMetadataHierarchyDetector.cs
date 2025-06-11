@@ -10,6 +10,7 @@ public interface IMetadataHierarchyDetector
     /// Gets the root path of the notebook vault.
     /// </summary>
     string? VaultRoot { get; }
+
     /// <summary>
     /// Updates the provided metadata dictionary with hierarchy information (program, course, class, etc.).
     /// </summary>

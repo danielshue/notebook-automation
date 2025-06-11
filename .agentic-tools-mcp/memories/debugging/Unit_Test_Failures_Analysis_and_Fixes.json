@@ -1,0 +1,8 @@
+{
+  "id": "8fc5de4d-8f57-4b30-8512-10375e11e945",
+  "title": "Unit Test Failures Analysis and Fixes",
+  "details": "Unit test failures in NotebookAutomation C# solution:\n\nMAIN ISSUES IDENTIFIED:\n1. CourseStructureExtractorTests - NullReferenceException when using reflection to call IsContentFile as static method (it's actually instance method)\n2. CourseStructureExtractorTests - Module extraction returns \"03\" instead of \"3\" (leading zeros not removed)\n3. CourseStructureExtractorTests - Case study detection logic not working correctly\n4. MetadataEnsureProcessorTests - Not setting correct type field for instruction files (should be \"note/instruction\")\n\nREQUIRED FIXES:\n- Fix reflection calls in tests to use instance method properly\n- Adjust module number extraction to remove leading zeros for content files\n- Update case study detection logic\n- Fix metadata type assignment for instruction files\n\nFILES TO MODIFY:\n- CourseStructureExtractorTests.cs\n- CourseStructureExtractor.cs  \n- MetadataEnsureProcessor.cs",
+  "category": "debugging",
+  "dateCreated": "2025-06-11T04:39:12.404Z",
+  "dateUpdated": "2025-06-11T04:39:12.404Z"
+}

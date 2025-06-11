@@ -1,0 +1,8 @@
+{
+  "id": "e51c8ce7-c2b9-48bf-bd28-e6e5ff1f3f98",
+  "title": "VaultCommands Override Issue",
+  "details": "**Issue with VaultCommands --override-vault-root flag**\n\nThe VaultCommands implementation differs from TagCommands in how it handles vault root override:\n\n1. **VaultCommands** uses `Option<bool>` for `--override-vault-root` and when true, sets vaultRoot to the same path being processed\n2. **TagCommands** uses `Option<string?>` and accepts a separate vault root path\n\nThis causes a problem when trying to debug the Case Studies folder:\n- When using `--override-vault-root` with path \"C:\\...\\Case Studies\"\n- The system sets vault root to \"C:\\...\\Case Studies\" \n- This makes hierarchy detection fail because files appear to be at vault root level\n- Each file gets detected as program=\"filename\" instead of proper hierarchy\n\n**Need to either:**\n1. Fix VaultCommands to accept a vault root path parameter like TagCommands\n2. Use a different approach for testing hierarchy detection\n3. Process from higher level directory (operations-management-organization-and-analysis)\n\n**Previous successful runs** (from conversation summary) used proper vault structure and worked correctly, so the issue is with the test approach, not the core functionality.",
+  "category": "debugging",
+  "dateCreated": "2025-06-10T13:17:55.974Z",
+  "dateUpdated": "2025-06-10T13:17:55.974Z"
+}

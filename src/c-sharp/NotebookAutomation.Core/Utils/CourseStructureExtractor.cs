@@ -35,11 +35,18 @@ namespace NotebookAutomation.Core.Utils;
 /// </code>
 /// </example>
 /// <param name="logger">Logger for diagnostic and warning messages during extraction operations.</param>
+/// <param name="appConfig">Optional application configuration containing vault root path for hierarchical analysis.</param>
 /// <exception cref="ArgumentNullException">Thrown when <paramref name="logger"/> is null.</exception>
-public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> logger) : ICourseStructureExtractor
+public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> logger, AppConfig? appConfig = null) : ICourseStructureExtractor
 {
     private readonly ILogger<CourseStructureExtractor> logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly AppConfig? _appConfig = appConfig;
     private static readonly Regex NumberPrefixRegex = NumberPrefixRegexPattern();
+
+    /// <summary>
+    /// Gets the vault root path for hierarchical analysis, or null if not configured.
+    /// </summary>
+    public string? VaultRoot => _appConfig?.Paths?.NotebookVaultFullpathRoot;
 
     /// <summary>
     /// Extracts module and lesson information from a file path and adds it to the provided metadata dictionary.
@@ -84,30 +91,190 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
         {
             var fileInfo = new FileInfo(filePath);
             var dir = fileInfo.Directory;
-            string? module = null;
-            string? lesson = null;            // First attempt: Extract from filename itself
-            (module, lesson) = ExtractFromFilename(fileInfo.Name);
-            logger.LogDebug(
-                $"Filename extraction result - Module: {module ?? "null"}, Lesson: {lesson ?? "null"} for file: {filePath}");
+            string? module = null; string? lesson = null;
 
-            if (dir != null)
+            // Check if this is a content file that should use number-only module extraction
+            // Content files (videos, readings, instructions, etc.) get module: "01", "02", etc.
+            // Non-content files get friendly titles like module: "Module 1 Introduction"
+            bool isContentFile = IsContentFile(filePath);
+            logger.LogDebug($"Content file detection for {filePath}: {isContentFile}");
+
+            // For content files, extract module number by walking up parent directories
+            // For non-content files, find the module directory and use friendly names
+            if (isContentFile)
             {
-                // Second attempt: Look for explicit "module" and "lesson" keywords in directories
-                if (module == null || lesson == null)
+                // Content file processing - extract module number by walking up parent directories
+                // Example: file "01_01_module-4-overview_instructions" in folder "01_module-4-overview"
+                // should extract "4" from "module-4" pattern in the parent directory
+                module = ExtractModuleNumberFromParentDirectories(dir);
+
+                // Check if this is a case study under a module - these should have leading zeros removed
+                bool isCaseStudyUnderModule = (filePath.ToLowerInvariant().Contains("case-study") ||
+                                              filePath.ToLowerInvariant().Contains("case studies")) &&
+                                              IsCaseStudyUnderModule(filePath);
+
+                // For case studies under modules, remove leading zeros from module numbers
+                if (isCaseStudyUnderModule && !string.IsNullOrEmpty(module) && int.TryParse(module, out int moduleInt))
+                {
+                    module = moduleInt.ToString(); // This removes leading zeros: "03" -> "3"
+                }
+
+                // If we still didn't find a module, try extracting from filename
+                if (module == null)
+                {
+                    var fileModuleNumber = ExtractModuleNumber(fileInfo.Name);
+                    if (!string.IsNullOrEmpty(fileModuleNumber))
+                    {
+                        // For case studies under modules, remove leading zeros
+                        if (isCaseStudyUnderModule && int.TryParse(fileModuleNumber, out int fileModuleInt))
+                        {
+                            module = fileModuleInt.ToString(); // This removes leading zeros: "03" -> "3"
+                        }
+                        else
+                        {
+                            module = fileModuleNumber;
+                        }
+                        logger.LogDebug($"Content file module number extraction from filename: {module}");
+                    }
+                }
+            }
+            else
+            {
+                // Check if this is a case study at class level - these should not extract any module information
+                bool isCaseStudyAtClassLevel = (filePath.ToLowerInvariant().Contains("case-study") ||
+                                               filePath.ToLowerInvariant().Contains("case studies")) &&
+                                               !IsCaseStudyUnderModule(filePath);
+
+                if (!isCaseStudyAtClassLevel)
+                {
+                    // Non-content file processing - use directory analysis for friendly module titles
+                    var directoryPartsForNonContent = GetDirectoryParts(dir);
+                    var moduleDirForNonContent = FindModuleDirectory(directoryPartsForNonContent);
+                    if (moduleDirForNonContent != null)
+                    {
+                        module = CleanModuleOrLessonName(moduleDirForNonContent);
+                        logger.LogDebug($"Non-content file: using friendly module name '{module}' from directory '{moduleDirForNonContent}'");
+                    }
+                }
+                else
+                {
+                    logger.LogDebug($"Case study at class level - skipping module extraction for: {filePath}");
+                }
+            }
+
+            // Find lesson information for all file types
+            var directoryParts = GetDirectoryParts(dir);
+            var moduleDir = isContentFile ? null : FindModuleDirectory(directoryParts);
+            var lessonDir = FindLessonDirectory(directoryParts, moduleDir);
+            if (lessonDir != null)
+            {
+                lesson = CleanModuleOrLessonName(lessonDir);
+                logger.LogDebug($"Extracted lesson '{lesson}' from directory '{lessonDir}'");
+            }
+
+            // Check if this is a case study at class level to prevent any module extraction in fallback logic
+            bool skipModuleExtractionForClassLevelCaseStudy = (filePath.ToLowerInvariant().Contains("case-study") ||
+                                           filePath.ToLowerInvariant().Contains("case studies")) &&
+                                           !IsCaseStudyUnderModule(filePath);
+
+            // Fallback extraction if primary methods failed (but skip for class-level case studies)
+            if (module == null && !skipModuleExtractionForClassLevelCaseStudy)
+            {
+                // Try filename-based extraction
+                (string? fileModule, string? fileLesson) = ExtractFromFilename(fileInfo.Name);
+
+                if (fileModule != null)
+                {
+                    if (isContentFile)
+                    {
+                        // For content files, try to extract only the number
+                        var moduleNumber = ExtractModuleNumber(fileModule);
+                        if (!string.IsNullOrEmpty(moduleNumber))
+                        {
+                            module = moduleNumber;
+                        }
+                        else
+                        {
+                            module = fileModule;
+                        }
+                    }
+                    else
+                    {
+                        module = fileModule;
+                    }
+                    logger.LogDebug($"Filename extraction result - Module: {module} for file: {filePath}");
+                }
+
+                if (lesson == null && fileLesson != null)
+                {
+                    lesson = fileLesson;
+                    logger.LogDebug($"Filename extraction result - Lesson: {lesson} for file: {filePath}");
+                }
+            }            // Last resort: look for additional context in directory structure (but skip for class-level case studies)
+            if (dir != null && (module == null || lesson == null) && !skipModuleExtractionForClassLevelCaseStudy)
+            {
+                // Only try keyword extraction for non-content files or if we still don't have a module
+                if (!isContentFile || module == null)
                 {
                     var (dirModule, dirLesson) = ExtractByKeywords(dir);
-                    module ??= dirModule;
-                    lesson ??= dirLesson;
-                    logger.LogDebug(
-                        $"Keyword extraction result - Module: {module ?? "null"}, Lesson: {lesson ?? "null"} for file: {filePath}");
-                }                // Third attempt: If we still don't have both, try numbered directory structure
+
+                    if (module == null && dirModule != null)
+                    {
+                        if (isContentFile)
+                        {
+                            // For content files, try to extract only the number
+                            var moduleNumber = ExtractModuleNumber(dirModule);
+                            if (!string.IsNullOrEmpty(moduleNumber))
+                            {
+                                module = moduleNumber;
+                            }
+                            else
+                            {
+                                module = dirModule;
+                            }
+                        }
+                        else
+                        {
+                            module = dirModule;
+                        }
+                    }
+
+                    if (lesson == null)
+                    {
+                        lesson = dirLesson;
+                    }
+                }
+
+                // Still nothing? Try numbered directory structure as last resort
                 if (module == null || lesson == null)
                 {
                     var (numModule, numLesson) = ExtractByNumberedPattern(dir);
-                    module ??= numModule;
-                    lesson ??= numLesson;
-                    logger.LogDebug(
-                        $"Numbered pattern extraction result - Module: {module ?? "null"}, Lesson: {lesson ?? "null"} for file: {filePath}");
+
+                    if (module == null && numModule != null)
+                    {
+                        if (isContentFile)
+                        {
+                            // For content files, try to extract only the number
+                            var moduleNumber = ExtractModuleNumber(numModule);
+                            if (!string.IsNullOrEmpty(moduleNumber))
+                            {
+                                module = moduleNumber;
+                            }
+                            else
+                            {
+                                module = numModule;
+                            }
+                        }
+                        else
+                        {
+                            module = numModule;
+                        }
+                    }
+
+                    if (lesson == null)
+                    {
+                        lesson = numLesson;
+                    }
                 }
             }
 
@@ -396,16 +563,17 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     /// string result1 = CleanModuleOrLessonName("01_module-introduction");     // Returns "Module Introduction"
     /// string result2 = CleanModuleOrLessonName("02-lesson_basics");          // Returns "Lesson Basics"
     /// string result3 = CleanModuleOrLessonName("sessionPlanningDetails");    // Returns "Session Planning Details"
-    /// string result4 = CleanModuleOrLessonName("Week-1-Overview");           // Returns "Week Overview"
-    /// </code>
+    /// string result4 = CleanModuleOrLessonName("Week-1-Overview");           // Returns "Week Overview"    /// </code>
     /// </example>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="folderName"/> is null.</exception>
     public static string CleanModuleOrLessonName(string folderName)
-    {        // Remove numbering prefix (e.g., 01_, 02-, etc.), replace hyphens/underscores, title case
+    {
+        // Remove numbering prefix (e.g., 01_, 02-, etc.), replace hyphens/underscores, title case
         string clean = LeadingNumberOptionalSeparatorRegexPattern().Replace(folderName, string.Empty);
 
-        // Convert camelCase to spaced words before other processing
-        clean = CamelCaseRegex().Replace(clean, " ");
+        // Convert camelCase to spaced words before other processing, but avoid breaking number-letter combinations
+        // like "Week1" -> "Week 1" (which should stay as "Week1")
+        clean = SmartCamelCaseRegex().Replace(clean, " ");
 
         clean = clean.Replace("-", " ").Replace("_", " ");
         clean = WhitespaceRegexPattern().Replace(clean, " ").Trim();
@@ -436,6 +604,10 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     /// <code>
     /// var result = ExtractFromFilename("Module-1-Introduction.md");
     /// // Returns: ("Module 1 Introduction", null)
+    ///    /// <example>
+    /// <code>
+    /// var result = ExtractFromFilename("Module-1-Introduction.txt");
+    /// // Returns: ("Module 1 Introduction", null)
     ///
     /// var result = ExtractFromFilename("Lesson-2-Basics.txt");
     /// // Returns: (null, "Lesson 2 Basics")
@@ -448,6 +620,7 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
 
         // Remove file extension for analysis
         string nameWithoutExt = Path.GetFileNameWithoutExtension(filename);
+        bool isContentFile = IsContentFileFromName(filename);
 
         // Pattern 1: "Module-X-Name" or "module_X_name" format
         var moduleMatch = ModuleFilenameRegex().Match(nameWithoutExt);
@@ -455,7 +628,9 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
         {
             var number = moduleMatch.Groups[1].Value;
             var title = moduleMatch.Groups[2].Value;
-            module = CleanModuleOrLessonName($"Module {number} {title}");
+
+            // For content files, use just the number; for non-content, use friendly title
+            module = isContentFile ? number : CleanModuleOrLessonName($"Module {number} {title}");
         }
 
         // Pattern 2: "Lesson-X-Name" or "lesson_X_name" format
@@ -465,8 +640,7 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
             var number = lessonMatch.Groups[1].Value;
             var title = lessonMatch.Groups[2].Value;
             lesson = CleanModuleOrLessonName($"Lesson {number} {title}");
-        } // Pattern 3: "Week-X-Name", "Unit-X-Name", "Session-X-Name", or "Class-X-Name" format
-
+        }        // Pattern 3: "Week-X-Name", "Unit-X-Name", "Session-X-Name", or "Class-X-Name" format
         if (module == null)
         {
             var weekUnitMatch = WeekUnitFilenameRegex().Match(nameWithoutExt);
@@ -475,7 +649,10 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
                 var type = weekUnitMatch.Groups[1].Value;
                 var number = weekUnitMatch.Groups[2].Value;
                 var title = weekUnitMatch.Groups[3].Value;
-                module = CleanModuleOrLessonName($"{type}{number} {title}");
+
+                // For content files, use just the number; for non-content, use friendly title
+                // For non-content files, preserve the original format (e.g., "Week1 Introduction" not "Week 1 Introduction")
+                module = isContentFile ? number : CleanModuleOrLessonName($"{type}{number} {title}");
             }
         }
 
@@ -487,7 +664,9 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
             {
                 var number = compactModuleMatch.Groups[1].Value;
                 var title = compactModuleMatch.Groups[2].Value;
-                module = CleanModuleOrLessonName($"Module {number} {title}");
+
+                // For content files, use just the number; for non-content, use friendly title
+                module = isContentFile ? number : CleanModuleOrLessonName($"Module {number} {title}");
             }
         }
 
@@ -511,12 +690,17 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
                 var number = numberedMatch.Groups[1].Value;
                 var content = numberedMatch.Groups[2].Value;
 
-                // Determine if this looks more like a module or lesson based on content
-                if (content.Contains("course", StringComparison.OrdinalIgnoreCase) ||
-                    content.Contains("introduction", StringComparison.OrdinalIgnoreCase) ||
-                    content.Contains("overview", StringComparison.OrdinalIgnoreCase))
+                // For content files, just use the number
+                if (isContentFile)
                 {
-                    module = CleanModuleOrLessonName($"{number} {content}");
+                    module = number;
+                }
+                // For non-content files, use friendly titles
+                else if (content.Contains("course", StringComparison.OrdinalIgnoreCase) ||
+                         content.Contains("introduction", StringComparison.OrdinalIgnoreCase) ||
+                         content.Contains("overview", StringComparison.OrdinalIgnoreCase))
+                {
+                    module = CleanModuleOrLessonName($"{content}");
                 }
                 else
                 {
@@ -552,10 +736,10 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     [GeneratedRegex(@"(?i)lesson(\d+)([a-zA-Z]+.*)", RegexOptions.IgnoreCase)]
     internal static partial Regex CompactLessonRegex();
 
-    [GeneratedRegex(@"(?i)module(\d+)", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"(?i)module[_\s-]*(\d+)", RegexOptions.IgnoreCase)]
     internal static partial Regex ModuleNumberSeparatorRegex();
 
-    [GeneratedRegex(@"(?i)lesson(\d+)", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"(?i)lesson[_\s-]*(\d+)", RegexOptions.IgnoreCase)]
     internal static partial Regex LessonNumberSeparatorRegex();
 
     [GeneratedRegex(@"^(\d+)[_-](.+)", RegexOptions.IgnoreCase)]
@@ -571,7 +755,582 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     [GeneratedRegex(@"(session|class)[_\s-]*\d+", RegexOptions.IgnoreCase)]
     internal static partial Regex SessionClassNumberRegex();
 
-    // Pattern for camelCase to space conversion
+    // Pattern for camelCase to space conversion (but avoid breaking number-letter combinations like Week1)
     [GeneratedRegex(@"(?<=[a-z])(?=[A-Z])")]
     internal static partial Regex CamelCaseRegex();
+
+    // Smart camelCase conversion that doesn't break number-letter combinations (e.g., Week1 stays Week1)
+    [GeneratedRegex(@"(?<=[a-z])(?=[A-Z])(?!\d)")]
+    internal static partial Regex SmartCamelCaseRegex();
+
+    /// <summary>
+    /// Extracts just the numeric module identifier from a directory or file name.
+    /// Used specifically for content files to populate YAML frontmatter with number-only module values.
+    /// </summary>
+    /// <param name="name">The directory or file name to extract the module number from.</param>
+    /// <returns>The numeric module identifier (e.g., "01", "02") or null if no number is found.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method is designed for content files (videos, readings, instructions, etc.) that need
+    /// consistent numerical module references in their YAML frontmatter, as opposed to friendly
+    /// display titles generated by CleanModuleOrLessonName.
+    /// </para>
+    /// <para>
+    /// Content files get: module: "01" (number only)
+    /// Regular files get: module: "Module 1 Introduction" (friendly title via CleanModuleOrLessonName)
+    /// </para>
+    /// <para>
+    /// The method recognizes patterns such as:
+    /// <list type="bullet">
+    /// <item><description>Leading numbers with separators: "01_", "02-", "03."</description></item>
+    /// <item><description>Module/lesson with numbers: "module01", "lesson02"</description></item>
+    /// <item><description>Week/unit with numbers: "week01", "unit02"</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // For content files (videos, readings, instructions):
+    /// string result1 = ExtractModuleNumber("01_video-content");        // Returns "01" -> module: "01"
+    /// string result2 = ExtractModuleNumber("module02_readings");       // Returns "02" -> module: "02"
+    /// string result3 = ExtractModuleNumber("lesson-03-instructions");  // Returns "03" -> module: "03"
+    /// string result4 = ExtractModuleNumber("week1-overview");          // Returns "1"  -> module: "1"
+    /// </code>
+    /// </example>
+    public static string? ExtractModuleNumber(string name)
+    {
+        if (string.IsNullOrEmpty(name))
+            return null;
+
+        // Extract just the numeric identifier, no cleaning or title formatting
+        // This ensures content files get simple module numbers like "01", "02" in YAML frontmatter
+        var lowerName = name.ToLowerInvariant();
+
+        // Pattern 1: Leading number with separator (01_, 02-, 03.) -> "01", "02", "03"
+        var leadingNumberMatch = NumberPrefixRegexPattern().Match(name);
+        if (leadingNumberMatch.Success)
+        {
+            return leadingNumberMatch.Groups[1].Value; // Return number as-is (e.g., "01")
+        }
+
+        // Pattern 2: "Module N -" format (Module 1 - Money and Finance) -> "1"
+        var moduleSpaceMatch = ModuleSpaceNumberRegex().Match(name);
+        if (moduleSpaceMatch.Success)
+        {
+            return moduleSpaceMatch.Groups[1].Value; // Return number as-is (e.g., "1")
+        }
+
+        // Pattern 3: Module/Lesson with number (module01, lesson02, module-4) -> "01", "02", "4"
+        var moduleMatch = ModuleNumberSeparatorRegex().Match(lowerName);
+        if (moduleMatch.Success)
+        {
+            return moduleMatch.Groups[1].Value; // Return number as-is (e.g., "01")
+        }
+        var lessonMatch = LessonNumberSeparatorRegex().Match(lowerName);
+        if (lessonMatch.Success)
+        {
+            return lessonMatch.Groups[1].Value; // Return number as-is (e.g., "02")
+        }
+
+        // Pattern 4: Week/Unit with number (week1, unit2) -> "1", "2"
+        var weekUnitMatch = WeekUnitNumberExtractRegex().Match(lowerName);
+        if (weekUnitMatch.Success)
+        {
+            return weekUnitMatch.Groups[2].Value; // Return number as-is (e.g., "1")
+        }
+
+        // Pattern 5: Session/Class with number (session1, class2) -> "1", "2"
+        var sessionClassMatch = SessionClassNumberExtractRegex().Match(lowerName);
+        if (sessionClassMatch.Success)
+        {
+            return sessionClassMatch.Groups[2].Value; // Return number as-is (e.g., "1")
+        }
+
+        // No numeric module identifier found
+        return null;
+    }    // Regex patterns for extracting just the numbers from various naming conventions
+    [GeneratedRegex(@"(week|unit)[_\s-]*(\d+)", RegexOptions.IgnoreCase)]
+    internal static partial Regex WeekUnitNumberExtractRegex();
+
+    [GeneratedRegex(@"(session|class)[_\s-]*(\d+)", RegexOptions.IgnoreCase)]
+    internal static partial Regex SessionClassNumberExtractRegex();
+
+    // Pattern for "Module N -" format (e.g., "Module 1 - Money and Finance")
+    [GeneratedRegex(@"(?i)module\s+(\d+)\s*-", RegexOptions.IgnoreCase)]
+    internal static partial Regex ModuleSpaceNumberRegex();
+
+    /// <summary>
+    /// Determines if a file is content-related (video, reading, instruction, etc.) that should use number-only module extraction.
+    /// Content files get number-only module values in YAML frontmatter for consistency.
+    /// </summary>
+    /// <param name="filePath">The file path to check.</param>
+    /// <returns>True if the file is content-related, false otherwise.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method distinguishes between two types of files for module metadata population:
+    /// </para>
+    /// <para>
+    /// <strong>Content Files (returns true):</strong> Videos, readings, instructions, assignments, quizzes, etc.
+    /// These get simple numeric module values like module: "01", module: "02" in YAML frontmatter.
+    /// </para>
+    /// <para>
+    /// <strong>Regular Files (returns false):</strong> Course structure files, documentation, etc.
+    /// These get friendly module titles like module: "Module 1 Introduction" via CleanModuleOrLessonName.
+    /// </para>
+    /// <para>
+    /// <summary>
+    /// Determines if a file is content-related (video, reading, instruction, etc.) that should use number-only module extraction.
+    /// Content files get number-only module values in YAML frontmatter for consistency.
+    /// </summary>
+    /// <param name="filePath">The file path to check.</param>
+    /// <returns>True if the file is content-related, false otherwise.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method distinguishes between two types of files for module metadata population:
+    /// </para>
+    /// <para>
+    /// <strong>Content Files (returns true):</strong> Videos, readings, instructions, assignments, quizzes, etc.
+    /// These get simple numeric module values like module: "01", module: "02" in YAML frontmatter.
+    /// </para>
+    /// <para>
+    /// <strong>Regular Files (returns false):</strong> Course structure files, documentation, etc.
+    /// These get friendly module titles like module: "Module 1 Introduction" via CleanModuleOrLessonName.
+    /// </para>
+    /// <para>
+    /// The distinction ensures content materials have consistent numerical references while
+    /// course structure files have descriptive, human-readable module names.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// IsContentFile("/course/01_module/videos/introduction.mp4");     // Returns true  -> module: "01"
+    /// IsContentFile("/course/01_module/readings/chapter1.pdf");       // Returns true  -> module: "01"
+    /// IsContentFile("/course/01_module/01_module-overview.md");       // Returns false -> module: "Module 1 Overview"
+    /// </code>
+    /// </example>
+    private bool IsContentFile(string filePath)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(filePath).ToLowerInvariant();
+        var extension = Path.GetExtension(filePath).ToLowerInvariant();
+        var directoryName = Path.GetDirectoryName(filePath)?.ToLowerInvariant() ?? string.Empty;
+
+        // File extensions that typically indicate content files
+        var contentExtensions = new[]
+        {
+            ".mp4", ".mp3", ".pptx", ".xlsx", ".docx", ".png", ".jpg", ".jpeg", ".gif"
+        };
+
+        // Keywords that identify content files requiring number-only module extraction
+        // These files get module: "01", "02" instead of module: "Module 1 Introduction"
+        var contentKeywords = new[]
+        {
+            "video", "reading", "instruction", "assignment", "quiz", "exercise",
+            "activity", "discussion", "transcript", "slides", "presentation",
+            "lecture", "case-study", "project"
+        };
+
+        // Directory-based keywords that identify content files
+        var contentDirKeywords = new[]
+        {
+            "video", "reading", "content", "material", "transcript", "slide", "assignment"
+        };
+
+        // Check for content file extensions first (most reliable)
+        if (contentExtensions.Contains(extension))
+        {
+            return true;
+        }
+
+        // For PDF files, be more specific - only treat as content if they have content keywords
+        if (extension == ".pdf")
+        {
+            // Check if the filename or directory has content-specific keywords
+            if (fileName.Contains("instruction") || fileName.EndsWith("-instructions") ||
+                fileName.Contains("reading") || fileName.Contains("assignment") ||
+                fileName.Contains("exercise") || fileName.Contains("quiz") ||
+                fileName.Contains("activity"))
+            {
+                return true;
+            }
+
+            // Check if in a content-specific directory
+            if (contentDirKeywords.Any(keyword => directoryName.Contains(keyword)))
+            {
+                return true;
+            }
+
+            // Otherwise, treat PDFs as non-content files (e.g., course materials, notes)
+            return false;
+        }        // Special handling for case studies: only treat as content file if under a module
+        if (fileName.Contains("case-study") || directoryName.Contains("case-stud"))
+        {
+            return IsCaseStudyUnderModule(filePath);
+        }
+
+        // Check for instruction files explicitly
+        if (fileName.Contains("instruction") || fileName.Contains("instructions"))
+        {
+            return true;
+        }
+
+        // Check if the filename contains content-related keywords (excluding case-study which is handled above)
+        var nonCaseStudyKeywords = new[]
+        {
+            "video", "reading", "instruction", "assignment", "quiz", "exercise",
+            "activity", "discussion", "transcript", "slides", "presentation",
+            "lecture", "project"
+        };
+
+        if (nonCaseStudyKeywords.Any(keyword => fileName.Contains(keyword)))
+        {
+            return true;
+        }        // Check if any parent directory is explicitly for content
+        if (contentDirKeywords.Any(keyword => directoryName.Contains(keyword)))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Simple static method to determine if a filename suggests it's a content file.
+    /// Used for filename parsing where we don't have full path context.
+    /// </summary>
+    /// <param name="filename">The filename to check.</param>
+    /// <returns>True if the filename suggests it's a content file.</returns>
+    private static bool IsContentFileFromName(string filename)
+    {
+        var fileNameLower = Path.GetFileNameWithoutExtension(filename).ToLowerInvariant();
+        var extension = Path.GetExtension(filename).ToLowerInvariant();
+
+        // File extensions that typically indicate content files
+        var contentExtensions = new[]
+        {
+            ".mp4", ".mp3", ".pptx", ".xlsx", ".docx", ".png", ".jpg", ".jpeg", ".gif"
+        };
+
+        // Keywords that identify content files
+        var contentKeywords = new[]
+        {
+            "video", "reading", "instruction", "assignment", "quiz", "exercise",
+            "activity", "discussion", "transcript", "slides", "presentation",
+            "lecture", "project"
+        };
+
+        // Check for content file extensions
+        if (contentExtensions.Contains(extension))
+        {
+            return true;
+        }
+
+        // Check for instruction files explicitly
+        if (fileNameLower.Contains("instruction") || fileNameLower.Contains("instructions"))
+        {
+            return true;
+        }
+
+        // Check if the filename contains content-related keywords
+        if (contentKeywords.Any(keyword => fileNameLower.Contains(keyword)))
+        {
+            return true;
+        }
+
+        // For case studies, default to treating as content file for filename parsing
+        // The full path analysis will handle the proper logic
+        if (fileNameLower.Contains("case-study") || fileNameLower.Contains("case_study"))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Determines if a case study file is located under a module directory.
+    /// Case studies should only get module extraction if they're under a module folder.
+    /// </summary>
+    /// <param name="filePath">The file path to check.</param>
+    /// <param name="vaultRoot">The vault root path for hierarchical validation.</param>
+    /// <returns>True if the case study is under a module directory, false if it's at class level.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method walks up the directory hierarchy to determine if the case study is:
+    /// <list type="bullet">
+    /// <item><description>Under a module folder: Should get module extraction (content file behavior)</description></item>
+    /// <item><description>At class level: Should NOT get module extraction (non-content file behavior)</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// For case studies under a module, this method goes up two parent folders to the class level    /// and uses the vault root to validate the hierarchical level before extracting module information.
+    /// </para>
+    /// </remarks>
+    private bool IsCaseStudyUnderModule(string filePath)
+    {
+        try
+        {
+            var fileInfo = new FileInfo(filePath);
+            var directory = fileInfo.Directory;
+
+            if (directory == null)
+            {
+                return false;
+            }
+
+            // Go up two parent folders from the case study to reach the class level
+            // Structure: Class/Module/Case Studies/case-study-file.md
+            // We want to go from case-study-file.md -> Case Studies -> Module -> Class
+            var currentDir = directory;
+
+            // Go up to Case Studies folder (if we're in it)
+            if (currentDir.Name.ToLowerInvariant().Contains("case"))
+            {
+                currentDir = currentDir.Parent; // Now at Module or Class level
+            }
+
+            if (currentDir == null)
+            {
+                return false;
+            }
+
+            // Check if we're at a module level by looking for module patterns
+            if (HasNumberPrefix(currentDir.Name) ||
+                currentDir.Name.ToLowerInvariant().Contains("module") ||
+                currentDir.Name.ToLowerInvariant().Contains("week") ||
+                currentDir.Name.ToLowerInvariant().Contains("unit"))
+            {
+                // We're at module level - case study is under a module
+                return true;
+            }
+
+            return false; // Case study is at class level, don't treat as content file
+        }
+        catch (Exception)
+        {
+            return false; // Default to class level (no module extraction) on error
+        }
+    }
+
+    /// <summary>
+    /// Extracts module number for content files by walking up parent directories to find the first directory with a module pattern.
+    /// Uses intelligent directory analysis to distinguish between module and lesson directories.
+    /// </summary>
+    /// <param name="directory">The starting directory to examine.</param>
+    /// <returns>The module number (e.g., "4", "01", "02") if found, otherwise null.</returns>
+    private string? ExtractModuleNumberFromParentDirectories(DirectoryInfo? directory)
+    {
+        if (directory == null)
+        {
+            return null;
+        }
+
+        // Use VaultRoot to determine the relative hierarchy level for better module detection
+        string? vaultRoot = VaultRoot;
+        DirectoryInfo? rootDirectory = null;
+
+        if (!string.IsNullOrEmpty(vaultRoot) && Directory.Exists(vaultRoot))
+        {
+            rootDirectory = new DirectoryInfo(vaultRoot);
+            logger.LogDebug($"Using vault root for hierarchical analysis: {vaultRoot}");
+        }
+
+        // Use the existing directory analysis logic to find the module directory intelligently
+        var directoryParts = GetDirectoryParts(directory);
+
+        // If we have vault root context, filter directory parts to only include those relative to vault
+        if (rootDirectory != null && directory.FullName.StartsWith(rootDirectory.FullName, StringComparison.OrdinalIgnoreCase))
+        {
+            var relativePath = Path.GetRelativePath(rootDirectory.FullName, directory.FullName);
+            directoryParts = relativePath.Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries);
+            logger.LogDebug($"Using vault-relative directory parts for analysis: [{string.Join(", ", directoryParts)}]");
+        }
+
+        var moduleDir = FindModuleDirectory(directoryParts);
+
+        if (moduleDir != null)
+        {
+            logger.LogDebug($"Found module directory for content file: {moduleDir}");
+
+            // Extract the number from the identified module directory
+            var moduleNumber = ExtractModuleNumber(moduleDir);
+            if (!string.IsNullOrEmpty(moduleNumber))
+            {
+                logger.LogDebug($"Content file module number extracted: {moduleNumber} from module directory: {moduleDir}");
+                return moduleNumber;
+            }
+        }        // Fallback: If FindModuleDirectory didn't work, try the old approach but be more careful
+        var currentDir = directory;
+        var searchRoot = rootDirectory ?? directory; // Limit search to vault root if available
+        while (currentDir != null && (rootDirectory == null || currentDir.FullName.StartsWith(rootDirectory.FullName, StringComparison.OrdinalIgnoreCase)))
+        {
+            var dirName = currentDir.Name;
+            logger.LogDebug($"Examining directory for content file module extraction: {dirName}");
+
+            // Only consider directories that have clear module indicators (not lesson directories)
+            if (IsModuleDirectoryForContentFiles(dirName))
+            {
+                var moduleNumber = ExtractModuleNumber(dirName);
+                if (!string.IsNullOrEmpty(moduleNumber))
+                {
+                    logger.LogDebug($"Content file module number extracted: {moduleNumber} from directory: {dirName}");
+                    return moduleNumber;
+                }
+            }
+
+            // Move up to parent directory
+            currentDir = currentDir.Parent;
+        }
+
+        logger.LogDebug("No module number found in parent directory hierarchy");
+        return null;
+    }
+
+    /// <summary>
+    /// Determines if a directory name is likely a module name for content file processing.
+    /// More restrictive than general module detection to avoid lesson directories.
+    /// </summary>
+    /// <param name="dirName">The directory name to check.</param>
+    /// <returns>True if the directory name is likely a module name.</returns>
+    private static bool IsModuleDirectoryForContentFiles(string dirName)
+    {
+        if (!HasNumberPrefix(dirName))
+        {
+            return false;
+        }
+
+        var lowerName = dirName.ToLowerInvariant();
+
+        // Strong module indicators
+        if (lowerName.Contains("module") ||
+            lowerName.Contains("course") ||
+            lowerName.Contains("week") ||
+            lowerName.Contains("unit"))
+        {
+            return true;
+        }
+
+        // Operations Management specific module patterns
+        if (lowerName.Contains("orientation") ||
+            lowerName.Contains("configuration") ||
+            lowerName.Contains("concept") ||
+            lowerName.Contains("application") ||
+            lowerName.Contains("strategy"))
+        {
+            return true;
+        }
+
+        // Avoid lesson-like patterns
+        if (lowerName.Contains("lesson") ||
+            lowerName.Contains("about") ||
+            lowerName.Contains("defining") ||
+            lowerName.Contains("transcript"))
+        {
+            return false;
+        }
+
+        // For numbered directories, assume it's a module if it's higher in the hierarchy
+        // This is handled by the FindModuleDirectory logic above
+        return true; // If it has a number prefix and isn't explicitly a lesson, treat as module
+    }
+
+    /// <summary>
+    /// Finds the most likely module directory from a list of directory parts.
+    /// Prioritizes numbered directories over course directories to better identify modules.
+    /// </summary>
+    /// <param name="directoryParts">The directory parts to analyze.</param>
+    /// <returns>The name of the directory that most likely represents a module, or null if none found.</returns>
+    private static string? FindModuleDirectory(string[] directoryParts)
+    {
+        if (directoryParts.Length == 0)
+        {
+            return null;
+        }
+
+        // First pass: look for explicit module keywords
+        for (int i = directoryParts.Length - 1; i >= 0; i--)
+        {
+            var dirName = directoryParts[i].ToLowerInvariant();
+
+            if (dirName.Contains("module") ||
+                dirName.Contains("week") ||
+                dirName.Contains("unit"))
+            {
+                return directoryParts[i]; // Found an explicit module directory
+            }
+        }
+
+        // Second pass: look for numbered directories that might be modules (higher priority than course)
+        for (int i = directoryParts.Length - 1; i >= 0; i--)
+        {
+            // Check for numbered prefix patterns typical of module directories
+            if (NumberPrefixRegexPattern().IsMatch(directoryParts[i]))
+            {
+                return directoryParts[i]; // Found a numbered directory - prioritize this over course
+            }
+        }
+
+        // Third pass: look for course directories (lower priority than numbered directories)
+        for (int i = directoryParts.Length - 1; i >= 0; i--)
+        {
+            var dirName = directoryParts[i].ToLowerInvariant();
+
+            if (dirName.Contains("course"))
+            {
+                return directoryParts[i]; // Found a course directory
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Gets directory parts from a DirectoryInfo, filtering out empty parts.
+    /// </summary>
+    /// <param name="directory">The directory to get parts from.</param>
+    /// <returns>Array of directory part names.</returns>
+    private static string[] GetDirectoryParts(DirectoryInfo? directory)
+    {
+        if (directory == null)
+            return [];
+
+        var parts = new List<string>();
+        var current = directory;
+
+        while (current != null)
+        {
+            if (!string.IsNullOrEmpty(current.Name))
+            {
+                parts.Insert(0, current.Name);
+            }
+            current = current.Parent;
+        }
+
+        return [.. parts];
+    }
+
+    /// <summary>
+    /// Finds the most likely lesson directory from a list of directory parts.
+    /// </summary>
+    /// <param name="directoryParts">The directory parts to analyze.</param>
+    /// <param name="moduleDir">The identified module directory to help context.</param>
+    /// <returns>The name of the directory that most likely represents a lesson, or null if none found.</returns>
+    private static string? FindLessonDirectory(string[] directoryParts, string? moduleDir)
+    {
+        if (directoryParts.Length == 0)
+            return null;
+
+        // Look for directories with lesson-like names
+        for (int i = directoryParts.Length - 1; i >= 0; i--)
+        {
+            var dirName = directoryParts[i].ToLowerInvariant();
+
+            if (dirName.Contains("lesson") ||
+                dirName.Contains("session") ||
+                dirName.Contains("lecture") ||
+                dirName.Contains("class"))
+            {
+                return directoryParts[i];
+            }
+        }
+        return null;
+    }
 }

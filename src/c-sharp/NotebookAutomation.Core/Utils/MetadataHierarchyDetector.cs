@@ -108,9 +108,11 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
         int depthLevel = 0;
 
         try
-        {            // Get the path elements between vault root and the provided file/directory
+        {
+            // Get the path elements between vault root and the provided file/directory
             Logger.LogDebug($"DEBUG: FindHierarchyInfo - vault root: '{VaultRoot}', filePath: '{filePath}'");
             string relativePath = GetRelativePath(VaultRoot!, filePath);
+
             Logger.LogDebug($"DEBUG: FindHierarchyInfo - relativePath: '{relativePath}'");
             string[] pathSegments = [.. relativePath.Split(Path.DirectorySeparatorChar).Where(p => !string.IsNullOrEmpty(p)
             && !p.StartsWith("."))];
@@ -171,13 +173,21 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
             {
                 info["class"] = pathSegments[2];
                 Logger.LogDebug($"Setting class from third path segment: {info["class"]}");
-            }
-
-            // Only set module if we're at module level or deeper (depth >= 4)
+            }            // Only set module if we're at module level or deeper (depth >= 4)
             if (depthLevel >= 4)
             {
-                info["module"] = pathSegments[3];
-                Logger.LogDebug($"Setting module from fourth path segment: {info["module"]}");
+                // For content files, extract just the numeric part (e.g., "05_operations-resilience" -> "05")
+                if (IsPathLikelyContentFile(filePath))
+                {
+                    string numericModulePrefix = ExtractNumericModulePrefix(pathSegments[3]);
+                    info["module"] = numericModulePrefix;
+                    Logger.LogDebug($"Setting numeric-only module from fourth path segment: '{numericModulePrefix}' (original: '{pathSegments[3]}')");
+                }
+                else
+                {
+                    info["module"] = pathSegments[3];
+                    Logger.LogDebug($"Setting module from fourth path segment: {info["module"]}");
+                }
             }
 
             Logger.LogDebug($"Path-based hierarchy detection results: program='{info["program"]}', course='{info["course"]}', class='{info["class"]}', module='{(info.ContainsKey("module") ? info["module"] : string.Empty)}'");
@@ -295,11 +305,52 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
         }
 
         // List of hierarchy levels in order (top to bottom)
-        string[] hierarchyLevels = ["program", "course", "class", "module"];        // If maxLevel is 0, remove all hierarchy metadata
+        string[] hierarchyLevels = ["program", "course", "class", "module"];        // Special handling for content files - preserve module value regardless of template type
+        bool isContentFile = false;
+
+        // Method 1: Check templateType field for content keywords
+        if (metadata.ContainsKey("templateType"))
+        {
+            string? templateValue = metadata["templateType"]?.ToString();
+            if (!string.IsNullOrEmpty(templateValue))
+            {
+                // Check if this is a content-related template
+                string[] contentTemplatePatterns = { "video", "reading", "instruction", "resource", "content" };
+                foreach (var pattern in contentTemplatePatterns)
+                {
+                    if (templateValue.Contains(pattern, StringComparison.OrdinalIgnoreCase))
+                    {
+                        isContentFile = true;
+                        Logger.LogDebug($"Detected content file by templateType '{templateValue}', will preserve module value");
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Method 2: Check if module value is numeric-only (indicating a content file)
+        if (!isContentFile && metadata.ContainsKey("module"))
+        {
+            string? moduleValue = metadata["module"]?.ToString();
+            if (!string.IsNullOrEmpty(moduleValue) && Regex.IsMatch(moduleValue, @"^\d{1,2}$"))
+            {
+                isContentFile = true;
+                Logger.LogDebug($"Detected content file by numeric-only module value '{moduleValue}', will preserve module value");
+            }
+        }
+
+        // If maxLevel is 0, remove all hierarchy metadata (except module for content files)
         if (maxLevel == 0)
         {
             foreach (var level in hierarchyLevels)
             {
+                // Special handling for module field on content files - preserve it
+                if (level == "module" && isContentFile && metadata.ContainsKey("module"))
+                {
+                    Logger.LogDebug($"Preserving content file module value '{metadata["module"]}' despite maxLevel=0");
+                    continue;
+                }
+
                 if (metadata.ContainsKey(level))
                 {
                     Logger.LogDebug($"Removing hierarchy metadata '{level}' for maxLevel=0 (templateType={templateType})");
@@ -318,11 +369,17 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
         // Update each level in sequence, but only up to the maximum level for this index type
         foreach (var level in hierarchyLevels)
         {
-            currentLevel++;
-
-            // If we've exceeded the maximum level for this index type, remove any existing metadata
+            currentLevel++;            // If we've exceeded the maximum level for this index type, remove any existing metadata
+            // But preserve module value for content files regardless of maxLevel
             if (currentLevel > maxLevel)
             {
+                // Special handling for module field on content files
+                if (level == "module" && isContentFile && metadata.ContainsKey("module"))
+                {
+                    Logger.LogDebug($"Preserving content file module value '{metadata["module"]}' despite maxLevel={maxLevel}");
+                    continue;
+                }
+
                 if (metadata.ContainsKey(level))
                 {
                     Logger.LogDebug($"Removing hierarchy metadata '{level}' for maxLevel={maxLevel} (templateType={templateType})");
@@ -377,13 +434,51 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
     }
 
     /// <summary>
-    /// Gets the relative path from <paramref name="basePath"/> to <paramref name="fullPath"/>.
+    /// Gets the relative path from the base directory to the target path.
     /// </summary>
-    /// <param name="basePath">The base directory path.</param>
-    /// <param name="fullPath">The full file or directory path.</param>
+    /// <param name="basePath">The base directory path to calculate from.</param>
+    /// <param name="fullPath">The full file or directory path to calculate to.</param>
     /// <returns>The relative path from <paramref name="basePath"/> to <paramref name="fullPath"/>.</returns>
+    /// <remarks>
+    /// This method provides robust relative path calculation with proper normalization and edge case handling:
+    /// - Handles null or empty inputs gracefully
+    /// - Normalizes paths using <see cref="Path.GetFullPath"/> for consistent comparison
+    /// - Returns empty string when the paths are identical (vault root case)
+    /// - Ensures proper directory separator handling for cross-platform compatibility
+    /// - Returns the full path if it's not a subdirectory of the base path
+    ///
+    /// This is primarily used for calculating hierarchy levels by determining the path segments
+    /// between the vault root and a target file or directory.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Basic relative path calculation
+    /// string relative = GetRelativePath("/vault", "/vault/Program/Course");
+    /// // Returns: "Program/Course"
+    ///
+    /// // Same path handling
+    /// string relative = GetRelativePath("/vault", "/vault");
+    /// // Returns: "" (empty string)
+    ///
+    /// // Cross-platform path handling
+    /// string relative = GetRelativePath("C:\\vault", "C:\\vault\\Program\\Course");
+    /// // Returns: "Program\\Course" (on Windows)
+    /// </code>
+    /// </example>
     private static string GetRelativePath(string basePath, string fullPath)
     {
+        // Handle null or empty base path
+        if (string.IsNullOrEmpty(basePath))
+        {
+            return fullPath ?? string.Empty;
+        }
+
+        // Handle null or empty full path
+        if (string.IsNullOrEmpty(fullPath))
+        {
+            return string.Empty;
+        }
+
         // Normalize paths for comparison
         string normalizedBasePath = Path.GetFullPath(basePath);
         string normalizedFullPath = Path.GetFullPath(fullPath);
@@ -494,20 +589,49 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
     }
 
     /// <summary>
-    /// Maps hierarchy level to template type string.
+    /// Maps hierarchy level to the corresponding template type string.
     /// </summary>
-    /// <param name="level">The hierarchy level.</param>
-    /// <returns>The corresponding template type string.</returns>
+    /// <param name="level">The hierarchy level to convert to a template type.</param>
+    /// <returns>The corresponding template type string for the given hierarchy level.</returns>
     /// <remarks>
-    /// Hierarchy levels align with vault structure:
-    /// - Level 0: Vault root (main) - though typically not used for index generation
-    /// - Level 1: Program level (program) - e.g., "Value Chain Management"
-    /// - Level 2: Course level (course) - e.g., "Operations Management"
-    /// - Level 3: Class level (class) - e.g., "Supply Chain Fundamentals"
-    /// - Level 4: Module level (module) - e.g., "Week 1"
-    /// - Level 5: Lesson level (lesson) - e.g., "Lesson 1" with Readings, Transcripts, Notes
-    /// - Level 6+: Content level (unknown) - subdirectories within lessons
+    /// <para>
+    /// This method provides the canonical mapping between numerical hierarchy levels
+    /// and their semantic template types. The mapping aligns with the standard
+    /// vault structure and template naming conventions used throughout the system.
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Hierarchy Level Mapping:</b>
+    /// - Level 0: "main" - Vault root (typically not used for index generation)
+    /// - Level 1: "program" - Program level (e.g., "Value Chain Management", "MBA")
+    /// - Level 2: "course" - Course level (e.g., "Operations Management", "Finance")
+    /// - Level 3: "class" - Class level (e.g., "Supply Chain Fundamentals", "Accounting")
+    /// - Level 4: "module" - Module level (e.g., "Week 1", "Module 3")
+    /// - Level 5: "lesson" - Lesson level (e.g., "Lesson 1" with Readings, Transcripts, Notes)
+    /// - Level 6+: "unknown" - Content level (subdirectories within lessons)
+    /// </para>
+    ///
+    /// <para>
+    /// These template types are used by the template engine to select appropriate
+    /// templates for index generation, ensuring consistent formatting and structure
+    /// across different levels of the educational content hierarchy.
+    /// </para>
     /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Standard hierarchy mappings
+    /// string type1 = GetTemplateTypeFromHierarchyLevel(1); // Returns: "program"
+    /// string type2 = GetTemplateTypeFromHierarchyLevel(2); // Returns: "course"
+    /// string type3 = GetTemplateTypeFromHierarchyLevel(3); // Returns: "class"
+    /// string type4 = GetTemplateTypeFromHierarchyLevel(4); // Returns: "module"
+    /// string type5 = GetTemplateTypeFromHierarchyLevel(5); // Returns: "lesson"
+    ///
+    /// // Edge cases
+    /// string type0 = GetTemplateTypeFromHierarchyLevel(0); // Returns: "main"
+    /// string type6 = GetTemplateTypeFromHierarchyLevel(6); // Returns: "unknown"
+    /// string type99 = GetTemplateTypeFromHierarchyLevel(99); // Returns: "unknown"
+    /// </code>
+    /// </example>
     public string GetTemplateTypeFromHierarchyLevel(int level)
     {
         return level switch
@@ -524,19 +648,52 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
 
     /// <summary>
     /// Calculates the hierarchy level of a folder relative to a base path, with optional level offset.
-    /// This is useful when using --override-vault-root to maintain correct hierarchy relationships.
     /// </summary>
-    /// <param name="folderPath">The folder path to analyze.</param>
-    /// <param name="basePath">The base path to calculate relative to.</param>
-    /// <param name="baseHierarchyLevel">The hierarchy level of the base path (default: 0).</param>
-    /// <returns>The adjusted hierarchy level.</returns>
+    /// <param name="folderPath">The folder path to analyze for hierarchy level calculation.</param>
+    /// <param name="basePath">The base path to calculate relative positioning from.</param>
+    /// <param name="baseHierarchyLevel">The hierarchy level of the base path (default: 0 for vault root).</param>
+    /// <returns>The adjusted hierarchy level accounting for the base path's position in the hierarchy.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method is particularly useful when using --override-vault-root functionality,
+    /// where processing starts from a subdirectory but hierarchy levels need to be calculated
+    /// relative to the true vault structure. It maintains correct hierarchy relationships
+    /// even when the processing context changes.
+    /// </para>
+    ///
+    /// <para>
+    /// The method performs the following operations:
+    /// 1. Normalizes both paths for consistent comparison
+    /// 2. Checks if the folder path is under the base path
+    /// 3. Calculates the relative depth between the paths
+    /// 4. Adds the relative depth to the base hierarchy level
+    /// </para>
+    ///
+    /// <para>
+    /// This ensures that a lesson directory maintains its level 5 designation even when
+    /// processing starts from a module directory (level 4), preserving the semantic
+    /// meaning of hierarchy levels across different processing contexts.
+    /// </para>
+    /// </remarks>
     /// <example>
     /// <code>
-    /// // If lesson directory is at level 5 in the real vault hierarchy:
+    /// // Standard usage: lesson content relative to lesson directory
     /// var levelOffset = detector.CalculateHierarchyLevelWithOffset(
     ///     "/vault/program/course/class/module/lesson/readings",
     ///     "/vault/program/course/class/module/lesson",
     ///     5); // Returns 6 (lesson content level)
+    ///
+    /// // Override scenario: maintain hierarchy when starting from module
+    /// var levelOffset = detector.CalculateHierarchyLevelWithOffset(
+    ///     "/vault/program/course/class/module/lesson",
+    ///     "/vault/program/course/class/module",
+    ///     4); // Returns 5 (lesson level)
+    ///
+    /// // Same path scenario
+    /// var levelOffset = detector.CalculateHierarchyLevelWithOffset(
+    ///     "/vault/program/course",
+    ///     "/vault/program/course",
+    ///     2); // Returns 2 (same as base level)
     /// </code>
     /// </example>
     public int CalculateHierarchyLevelWithOffset(string folderPath, string basePath, int baseHierarchyLevel = 0)
@@ -578,5 +735,211 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
             relativePath, relativeDepth, adjustedLevel);
 
         return adjustedLevel;
+    }
+
+    /// <summary>
+    /// Detects if a file path is likely to be a content file based on filename and directory patterns.
+    /// </summary>
+    /// <param name="filePath">The file path to analyze for content file characteristics.</param>
+    /// <returns>True if the path appears to be a content file, false otherwise.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method uses multiple heuristics to identify content files versus structural files:
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Non-Content Patterns (return false):</b>
+    /// - Files containing "index", "readme", "template", "module-" in the name
+    /// - Standalone "overview.md" files (typically index files)
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Content Patterns (return true):</b>
+    /// - Filename keywords: video, reading, instruction, assignment, quiz, exercise, activity, discussion, transcript, slides, presentation, notes, summary, lecture, content, material
+    /// - Directory keywords: Same list applied to parent directory names
+    /// - File extensions: .mp4, .pdf, .pptx, .docx
+    /// - Path keywords: video, reading, resource, content, material anywhere in the full path
+    /// </para>
+    ///
+    /// <para>
+    /// This classification affects how module metadata is handled during hierarchy detection.
+    /// Content files may have their module values preserved or extracted differently to
+    /// maintain appropriate organizational context.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Content files (return true)
+    /// IsPathLikelyContentFile("/vault/course/module/video-introduction.mp4");
+    /// IsPathLikelyContentFile("/vault/course/module/readings/chapter1.pdf");
+    /// IsPathLikelyContentFile("/vault/course/module/assignments/homework1.md");
+    ///
+    /// // Non-content files (return false)
+    /// IsPathLikelyContentFile("/vault/course/module/index.md");
+    /// IsPathLikelyContentFile("/vault/course/module/overview.md");
+    /// IsPathLikelyContentFile("/vault/course/module/module-template.md");
+    /// </code>
+    /// </example>
+    private bool IsPathLikelyContentFile(string filePath)
+    {
+        if (string.IsNullOrEmpty(filePath))
+            return false;
+
+        // Get filename and extension
+        string fileName = Path.GetFileName(filePath).ToLowerInvariant();
+        string extension = Path.GetExtension(filePath).ToLowerInvariant();
+        string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath).ToLowerInvariant();
+        string directory = Path.GetDirectoryName(filePath)?.ToLowerInvariant() ?? string.Empty;
+
+        // Special cases: Common index or template files should never be considered content
+        string[] nonContentPatterns = { "index", "readme", "template", "module-" };
+        foreach (var pattern in nonContentPatterns)
+        {
+            if (fileNameWithoutExt.Contains(pattern))
+            {
+                Logger.LogDebug($"Detected non-content file by pattern '{pattern}': {filePath}");
+                return false;
+            }
+        }
+
+        // Standalone overview.md files are typically index files, not content files
+        if (fileNameWithoutExt == "overview")
+        {
+            Logger.LogDebug($"Detected standalone overview file (likely an index): {filePath}");
+            return false;
+        }
+
+        // Keywords that identify content files (same list as in CourseStructureExtractor)
+        var contentKeywords = new[]
+        {
+            "video", "reading", "instruction", "assignment", "quiz", "exercise",
+            "activity", "discussion", "transcript", "slides", "presentation",
+            "notes", "summary", "lecture", "content", "material"
+        };
+
+        // Check filename keywords
+        foreach (var keyword in contentKeywords)
+        {
+            if (fileNameWithoutExt.Contains(keyword))
+            {
+                Logger.LogDebug($"Detected content file by filename keyword '{keyword}': {filePath}");
+                return true;
+            }
+        }
+
+        // Check last directory name for keywords
+        if (!string.IsNullOrEmpty(directory))
+        {
+            string lastDirName = Path.GetFileName(directory);
+            foreach (var keyword in contentKeywords)
+            {
+                if (lastDirName.Contains(keyword))
+                {
+                    Logger.LogDebug($"Detected content file by directory keyword '{keyword}': {filePath}");
+                    return true;
+                }
+            }
+        }
+
+        // Check file extensions associated with content files
+        var contentExtensions = new[] { ".mp4", ".pdf", ".pptx", ".docx" };
+        if (contentExtensions.Contains(extension))
+        {
+            Logger.LogDebug($"Detected content file by extension '{extension}': {filePath}");
+            return true;
+        }
+
+        // Check for indicators in the full path
+        var fullPath = filePath.ToLowerInvariant();
+        foreach (var keyword in new[] { "video", "reading", "resource", "content", "material" })
+        {
+            if (fullPath.Contains(keyword))
+            {
+                Logger.LogDebug($"Detected content file by path keyword '{keyword}': {filePath}");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Extracts the numeric prefix from a module string for content file organization.
+    /// </summary>
+    /// <param name="moduleString">The module string to extract the numeric prefix from.</param>
+    /// <returns>The numeric prefix if found, or the original string if no numeric prefix is detected.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method is specifically designed for content files where module organization
+    /// follows numeric prefixing conventions. It handles common module naming patterns
+    /// used in educational content management:
+    /// </para>
+    ///
+    /// <para>
+    /// <b>Supported Patterns:</b>
+    /// - "01_module-name" → "01"
+    /// - "02-module-name" → "02"
+    /// - "module03_name" → "03"
+    /// - "week05_content" → "05"
+    /// - "03" → "03"
+    /// </para>
+    ///
+    /// <para>
+    /// The extraction uses regex patterns to identify numeric prefixes (1-2 digits)
+    /// with common separators (underscore, hyphen) or alphanumeric prefixes.
+    /// This enables consistent module organization for content files while preserving
+    /// semantic module names for structural elements.
+    /// </para>
+    ///
+    /// <para>
+    /// If no numeric prefix is found, the original string is returned unchanged,
+    /// ensuring graceful handling of non-standard naming conventions.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Standard patterns
+    /// string result1 = ExtractNumericModulePrefix("05_operations-resilience");
+    /// // Returns: "05"
+    ///
+    /// string result2 = ExtractNumericModulePrefix("module03_supply-chain");
+    /// // Returns: "03"
+    ///
+    /// string result3 = ExtractNumericModulePrefix("week07-logistics");
+    /// // Returns: "07"
+    ///
+    /// // Edge cases
+    /// string result4 = ExtractNumericModulePrefix("12");
+    /// // Returns: "12"
+    ///
+    /// string result5 = ExtractNumericModulePrefix("introduction");
+    /// // Returns: "introduction" (no numeric prefix found)
+    /// </code>
+    /// </example>
+    private string ExtractNumericModulePrefix(string moduleString)
+    {
+        if (string.IsNullOrEmpty(moduleString))
+            return moduleString;
+
+        // Look for common patterns like "01_xyz", "02-xyz", "module03_xyz"
+        var match = Regex.Match(moduleString, @"^(?:[a-zA-Z_-]*)?(\d{1,2})[\-_]");
+        if (match.Success)
+        {
+            string numericPart = match.Groups[1].Value;
+            Logger.LogDebug($"Extracted numeric module prefix: '{numericPart}' from '{moduleString}'");
+            return numericPart;
+        }
+
+        // Try numbers with no separator
+        match = Regex.Match(moduleString, @"^(\d{1,2})");
+        if (match.Success)
+        {
+            string numericPart = match.Groups[1].Value;
+            Logger.LogDebug($"Extracted numeric module prefix: '{numericPart}' from '{moduleString}'");
+            return numericPart;
+        }
+
+        // If no pattern matches, return the original string
+        return moduleString;
     }
 }

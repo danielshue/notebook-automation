@@ -419,14 +419,13 @@ public static class ServiceRegistration
 
         // Register concrete MetadataHierarchyDetector for backward compatibility
         services.AddScoped<MetadataHierarchyDetector>(provider =>
-            (MetadataHierarchyDetector)provider.GetRequiredService<IMetadataHierarchyDetector>());
-
-        // Register ICourseStructureExtractor with factory
+            (MetadataHierarchyDetector)provider.GetRequiredService<IMetadataHierarchyDetector>());        // Register ICourseStructureExtractor with factory
         services.AddScoped<ICourseStructureExtractor>(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<CourseStructureExtractor>();
-            return new CourseStructureExtractor(logger);
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            return new CourseStructureExtractor(logger, appConfig);
         });
 
         // Register MarkdownNoteBuilder with factory

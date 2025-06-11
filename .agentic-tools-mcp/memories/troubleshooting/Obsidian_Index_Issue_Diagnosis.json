@@ -1,0 +1,8 @@
+{
+  "id": "492388f8-5cdd-43bf-8235-c1f1293cab45",
+  "title": "Obsidian Index Issue Diagnosis",
+  "details": "PROBLEM: Non-video files are not appearing in Obsidian class index for \"Operations Management Organization Analysis\" despite metadata processing.\n\nROOT CAUSE IDENTIFIED:\nThe metadata processor is skipping all 137 files because the hierarchy detection is completely wrong and no metadata changes are being made.\n\nDETAILED ANALYSIS:\n1. **Hierarchy Detection Issues:**\n   - Program: 'Case Studies' (WRONG - should be class name)\n   - Course: 'filename.md' (WRONG - should be class name)  \n   - Class: '' (EMPTY - this is the critical missing field!)\n\n2. **UpdateMetadataWithHierarchy Not Working:**\n   - class field: 'MISSING' → 'MISSING' (no change)\n   - course field: 'MISSING' → 'MISSING' (no change)\n\n3. **Template Type Empty:**\n   - TEMPLATE TYPE: '' - might prevent hierarchy updates\n\n4. **File Skip Logic:**\n   - HasMetadataChanged() returns false because no fields are being added\n   - All 137 files skipped with \"no changes needed\"\n\nEXPECTED vs ACTUAL:\n- Expected class: 'operations-management-organization-and-analysis'\n- Actual class: 'MISSING'\n- Expected program: 'Value Chain Management' (keeps existing)\n- Actual program: 'Value Chain Management' (correct, but other levels wrong)\n\nNEXT STEPS:\n1. Fix hierarchy detection to properly identify class level\n2. Ensure UpdateMetadataWithHierarchy actually adds missing fields\n3. Verify template type detection for case study files\n4. Test that files are processed instead of skipped",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-10T05:39:33.474Z",
+  "dateUpdated": "2025-06-10T05:51:53.302Z"
+}

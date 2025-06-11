@@ -1,0 +1,8 @@
+{
+  "id": "d861da2e-a4da-4b20-9f44-a47f9dc03857",
+  "title": "Config File Path for Notebook Automation",
+  "details": "When running the notebook automation CLI commands, always use the config file located at: D:\\source\\notebook-automation\\config\\config.json\n\nThis config file contains the necessary configuration settings for the vault metadata operations and should be passed as a parameter to ensure proper operation of the tool.",
+  "category": "configuration",
+  "dateCreated": "2025-06-10T13:44:13.683Z",
+  "dateUpdated": "2025-06-10T13:44:13.683Z"
+}

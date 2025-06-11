@@ -1,0 +1,8 @@
+{
+  "id": "1f49a935-7f96-4411-a138-2577dff7c4d4",
+  "title": "Vault Index Generation Issue Resolution",
+  "details": "**Issue**: When running `na vault generate-index` command, all folders were being skipped.\n\n**Root Cause**: The folders already contained index files (directory-named .md files), and the system was correctly skipping them because the --force flag was not used.\n\n**Evidence from logs**: \n- Command: `na vault generate-index \"C:\\Users\\danshue.REDMOND\\Vault\\01_Projects\\MBA\\Value Chain Management\\Operations Management\"`\n- Log showed: \"Skipping index file (already exists, use --force to overwrite)\" for every folder\n- System processed 100 folders: \"0 processed, 100 skipped, 0 failed out of 100 total folders\"\n\n**Solution**: Add --force flag to regenerate existing index files:\n`na vault generate-index \"C:\\Users\\danshue.REDMOND\\Vault\\01_Projects\\MBA\\Value Chain Management\\Operations Management\" --force`\n\n**Alternative Solutions**:\n1. Use --dry-run first to preview what would be generated\n2. Use --force to overwrite existing files\n3. Delete existing index files first if you want to regenerate them from scratch\n\n**System Behavior Confirmed Working**:\n- Path resolution: ✓ Correct vault root detection\n- Hierarchy calculation: ✓ Correctly calculating levels (3 for course, 4 for class, etc.)\n- Template detection: ✓ Finding appropriate templates (course, class, module, etc.)\n- File existence checking: ✓ Properly detecting existing index files",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-10T05:03:59.325Z",
+  "dateUpdated": "2025-06-10T05:03:59.325Z"
+}
