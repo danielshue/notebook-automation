@@ -1,0 +1,8 @@
+{
+  "id": "39900071-3ebb-4601-accc-4f6fe97a9050",
+  "title": "na.exe Version Fix - RESOLVED",
+  "details": "## RESOLVED: na.exe Version Issue\n\n**Problem**: na.exe --version was showing \"1.0.0-beta\" instead of CI build version\n\n**Root Causes Identified**:\n1. InformationalVersion property was not being set during CI publish step\n2. Hardcoded version attributes in AssemblyInfo.cs were overriding build-time properties\n3. GenerateAssemblyInfo was disabled, preventing MSBuild property overrides\n\n**Solutions Implemented**:\n1. Added /p:InformationalVersion=%CI_VERSION% to both build and publish steps in ci-windows.yml\n2. Removed hardcoded version attributes from src/c-sharp/NotebookAutomation.Cli/Properties/AssemblyInfo.cs\n3. Set <GenerateAssemblyInfo>true</GenerateAssemblyInfo> in NotebookAutomation.Cli.csproj\n4. Fixed YAML and PowerShell formatting issues in CI workflow\n5. Moved formatting verification earlier in CI to fail fast\n6. Updated download script to use relative paths and copy config directory\n\n**Verification**:\n- Local build: 1.0.0-development+<git-hash>\n- CI build: 1.0.526.62+65512f4619aacbac86357fc6e6051f2c61d20d30\n- Downloaded CI artifact working correctly\n- CLI help and other commands functional\n\n**Status**: ✅ COMPLETED - All objectives achieved",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-11T22:13:02.102Z",
+  "dateUpdated": "2025-06-11T22:13:02.102Z"
+}
