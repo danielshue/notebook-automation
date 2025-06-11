@@ -1,0 +1,8 @@
+{
+  "id": "cad41073-95c4-4d56-a9b9-e1542be2538a",
+  "title": "GitHub Actions Repository Access Issue",
+  "details": "GitHub Actions is failing with \"Repository not found\" error when trying to access danielshue/notebook-automation. Possible causes:\n\n1. Repository visibility: Repo might be private and Actions lacks proper permissions\n2. Repository name/URL mismatch: Local repo might have different remote URL than expected\n3. Personal Access Token: PERSONAL_ACCESS_TOKEN secret might be invalid/expired\n4. Repository doesn't exist at that exact path on GitHub\n5. Organization vs personal account confusion\n\nError occurs during checkout step, preventing any builds from completing. This explains why user isn't seeing CI build versions - no builds are actually succeeding.\n\nNext steps: Check repository settings, verify remote URLs, and validate GitHub secrets configuration.",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-11T17:46:20.049Z",
+  "dateUpdated": "2025-06-11T17:46:20.049Z"
+}

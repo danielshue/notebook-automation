@@ -1,0 +1,8 @@
+{
+  "id": "a59a8a68-2580-48c1-843d-d94a06cfaaa2",
+  "title": "Notebook Automation Versioning System",
+  "details": "The Notebook Automation project uses a sophisticated versioning system:\n\n**Development Builds (Local)**:\n- Base version: 1.0.0-development (from Directory.Build.props)\n- Local builds use: 1.0.0 (package), 1.0.0.0 (assembly)\n- na.exe --version shows: 1.0.0-beta\n\n**CI/GitHub Actions Builds**:\n- Dynamic versioning based on build date and run number\n- Format: 1.0.{days-since-2024-01-01}.{github-run-number}\n- Uses Microsoft recommended versioning for assemblies\n- CI builds overwrite versions during build process\n\n**Version Sources**:\n- Directory.Build.props: Contains base versions for development\n- CI pipeline: Dynamically calculates versions for releases\n- InformationalVersion: Shows 1.0.0-development for local builds\n\n**Key Files**:\n- src/c-sharp/Directory.Build.props: Base version configuration\n- .github/workflows/ci-windows.yml: CI versioning logic\n- scripts/build-ci-local.ps1: Local build versioning (mirrors CI)\n\n**Version Comparison Strategy**:\n1. Local development: 1.0.0-beta/development\n2. CI builds: 1.0.{build}.{run} format\n3. Use download-latest-artifact.ps1 to get latest CI build\n4. Compare na.exe --version with expected version patterns",
+  "category": "project_context",
+  "dateCreated": "2025-06-11T17:44:23.617Z",
+  "dateUpdated": "2025-06-11T17:44:23.617Z"
+}
