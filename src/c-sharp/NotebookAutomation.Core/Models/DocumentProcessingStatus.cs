@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Models;
 /// <summary>
 /// Represents the status of a document in the processing queue.
 /// </summary>
+
 public enum DocumentProcessingStatus
 {
     /// <summary>

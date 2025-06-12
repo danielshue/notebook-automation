@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Tests.TestDoubles;
 /// <summary>
 /// A fake implementation of ITextGenerationService for testing AISummarizer.
 /// </summary>
+
 internal class FakeTextGenerationService : ITextGenerationService
 {
     // Implement IAIService.Attributes

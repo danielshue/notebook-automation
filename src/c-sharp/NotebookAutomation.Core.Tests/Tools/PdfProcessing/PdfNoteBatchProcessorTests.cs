@@ -16,6 +16,7 @@ public class PdfNoteBatchProcessorTests
     /// <summary>
     /// Test double for DocumentNoteBatchProcessor that overrides ProcessDocumentsAsync.
     /// </summary>
+
     private class TestBatchProcessor : DocumentNoteBatchProcessor<PdfNoteProcessor>
     {
         public TestBatchProcessor()

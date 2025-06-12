@@ -37,6 +37,7 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
     /// <summary>
     /// The generic batch processor that handles the actual batch processing logic.
     /// </summary>
+
     private readonly DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor = batchProcessor ?? throw new ArgumentNullException(nameof(batchProcessor));
 
     /// <summary>

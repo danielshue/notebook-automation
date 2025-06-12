@@ -12,6 +12,7 @@ public class ConfigurationExtensionsTests
     /// <summary>
     /// Test class for simple configuration object testing.
     /// </summary>
+
     private class SimpleTestConfig
     {
         public string? StringProperty { get; set; }
@@ -25,6 +26,7 @@ public class ConfigurationExtensionsTests
     /// <summary>
     /// Test class for complex nested configuration object testing.
     /// </summary>
+
     private class ComplexTestConfig
     {
         public string? Name { get; set; }
@@ -36,6 +38,7 @@ public class ConfigurationExtensionsTests
     /// <summary>
     /// Test enum for enum property testing.
     /// </summary>
+
     private enum TestEnum
     {
         Option1,

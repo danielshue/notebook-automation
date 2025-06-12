@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Tests.TestDoubles;
 /// <summary>
 /// A simple implementation of ITextGenerationService for testing.
 /// </summary>
+
 internal class SimpleTextGenerationService : ITextGenerationService
 {
     /// <summary>

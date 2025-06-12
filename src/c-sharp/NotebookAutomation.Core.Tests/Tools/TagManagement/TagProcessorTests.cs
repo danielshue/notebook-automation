@@ -1038,6 +1038,7 @@ type: Lecture
     /// <summary>
     /// Copy a directory and all its contents to another location.
     /// </summary>
+
     private static void CopyDirectory(string sourceDir, string destDir, bool recursive)
     {
         // Create the destination directory

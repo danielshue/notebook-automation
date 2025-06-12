@@ -764,6 +764,7 @@ public class MetadataEnsureProcessor(
     /// <returns>
     /// true if changes were detected according to the specified logic; false if no changes detected.
     /// </returns>
+
     private static bool HasMetadataChanged(Dictionary<string, object?> original, Dictionary<string, object?> updated, bool forceOverwrite)
     {
         // If force overwrite is enabled, we consider changes if any fields in updated are different
@@ -832,6 +833,7 @@ public class MetadataEnsureProcessor(
     /// true if dictionaries contain exactly the same keys with identical string representations of values;
     /// false otherwise.
     /// </returns>
+
     private static bool DictionariesEqual(Dictionary<string, object?> dict1, Dictionary<string, object?> dict2)
     {
         if (dict1.Count != dict2.Count)

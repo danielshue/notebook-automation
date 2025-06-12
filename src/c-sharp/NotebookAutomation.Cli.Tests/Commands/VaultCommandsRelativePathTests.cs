@@ -180,6 +180,7 @@ public class VaultCommandsRelativePathTests
     }    /// <summary>
          /// Modified VaultIndexBatchProcessor for testing purposes
          /// </summary>
+
     public class TestVaultIndexBatchProcessor : VaultIndexBatchProcessor
     {
         private readonly Func<string, string, bool, bool, string[]?, Task<BatchProcessingResult>> _processAsyncFunc;
@@ -197,6 +198,7 @@ public class VaultCommandsRelativePathTests
         /// <summary>
         /// Override the base class method to capture the path for testing
         /// </summary>
+
         public override async Task<VaultIndexBatchResult> GenerateIndexesAsync(
             string vaultPath,
             bool dryRun = false,

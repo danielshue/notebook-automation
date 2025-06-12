@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Utils;
 /// <summary>
 /// Provides functionality to generate Obsidian Base blocks from a YAML template with dynamic parameters.
 /// </summary>
+
 public static class BaseBlockGenerator
 {
     /// <summary>

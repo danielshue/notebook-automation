@@ -5,6 +5,7 @@ namespace NotebookAutomation.Core.Services;
 /// Defines the contract for text chunking operations used in AI summarization.
 /// Provides methods for splitting large texts into manageable chunks with intelligent overlap.
 /// </summary>
+
 public interface ITextChunkingService
 {
     /// <summary>
@@ -30,6 +31,7 @@ public interface ITextChunkingService
 /// Provides text chunking operations for AI summarization services.
 /// Implements intelligent text splitting with overlap to maintain context continuity.
 /// </summary>
+
 public class TextChunkingService : ITextChunkingService
 { /// <summary>
   /// Splits text into chunks with overlap for optimal processing.

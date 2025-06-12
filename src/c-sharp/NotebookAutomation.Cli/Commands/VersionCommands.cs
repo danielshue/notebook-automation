@@ -7,6 +7,7 @@ namespace NotebookAutomation.Cli.Commands;
 /// This class registers the 'version' command that shows the application version,
 /// the .NET runtime version, and copyright information.
 /// </summary>
+
 internal class VersionCommands
 {
     /// <summary>

@@ -22,6 +22,7 @@ internal class Program
     {
         get => serviceProvider ?? throw new InvalidOperationException("Service provider not initialized. Call SetupDependencyInjection first.");
     }
+
     /// <summary>
     /// Entry point for the application.
     /// </summary>

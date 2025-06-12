@@ -604,6 +604,7 @@ public partial class YamlHelper : IYamlHelper
             return (false, $"Unexpected error during YAML diagnosis: {ex.Message}", null);
         }
     }
+
     /// <summary>
     /// Gets a compiled regex that matches YAML frontmatter blocks at the start of a markdown file.
     /// </summary>

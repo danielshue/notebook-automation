@@ -157,6 +157,7 @@ internal static class AnsiConsoleHelper
     /// <summary>
     /// Stops the spinner animation and clears the line.
     /// </summary>
+
     public static void StopSpinner()
     {
         lock (SpinnerLock)
@@ -348,6 +349,7 @@ internal static class AnsiConsoleHelper
     /// <summary>
     /// Interface for batch progress reporting that integrates with our eventing system.
     /// </summary>
+
     internal interface IBatchProgressReporter : IDisposable
     {
         /// <summary>
@@ -378,6 +380,7 @@ internal static class AnsiConsoleHelper
     /// <summary>
     /// Internal implementation of batch progress reporter using Spectre.Console.
     /// </summary>
+
     private class SpectreConsoleBatchProgressReporter : IBatchProgressReporter
     {
         private readonly string description;

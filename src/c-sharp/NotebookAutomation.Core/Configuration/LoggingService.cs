@@ -49,26 +49,31 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// <summary>
     /// Gets the main Serilog logger instance used for general logging.
     /// </summary>
+
     private global::Serilog.ILogger SerilogLogger => EnsureInitialized().serilogLogger!;
 
     /// <summary>
     /// Gets the specialized Serilog logger instance used for recording failed operations.
     /// </summary>
+
     private global::Serilog.ILogger SerilogFailedLogger => EnsureInitialized().serilogFailedLogger!;
 
     /// <summary>
     /// Gets the logger factory used to create typed loggers.
     /// </summary>
+
     private ILoggerFactory LoggerFactoryInternal => EnsureInitialized().loggerFactory!;
 
     /// <summary>
     /// Gets the main logger instance used for general application logging.
     /// </summary>
+
     public Microsoft.Extensions.Logging.ILogger Logger => EnsureInitialized().logger!;
 
     /// <summary>
     /// Gets the specialized logger instance used for recording failed operations.
     /// </summary>
+
     public Microsoft.Extensions.Logging.ILogger FailedLogger => EnsureInitialized().failedLogger!;
 
     /// <summary>
@@ -103,6 +108,7 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     /// <summary>
     /// Initializes the logging infrastructure.
     /// </summary>
+
     protected virtual void InitializeLogging()
     {
         try

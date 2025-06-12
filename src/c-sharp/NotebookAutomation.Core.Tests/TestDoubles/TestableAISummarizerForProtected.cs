@@ -5,12 +5,14 @@ namespace NotebookAutomation.Core.Tests.TestDoubles;
 /// Test subclass that exposes protected virtual methods for direct testing.
 /// This implementation overrides the protected methods to ensure consistent test results.
 /// </summary>
+
 internal class TestableAISummarizerForProtected : AISummarizer
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TestableAISummarizerForProtected"/> class.
     /// Initializes a new instance for testing protected methods.
     /// </summary>
+
     public TestableAISummarizerForProtected(
         ILogger<AISummarizer> logger,
         IPromptService? promptService,
@@ -23,6 +25,7 @@ internal class TestableAISummarizerForProtected : AISummarizer
     /// Initializes a new instance of the <see cref="TestableAISummarizerForProtected"/> class.
     /// Initializes a new instance for testing protected methods with a custom ITextChunkingService.
     /// </summary>
+
     public TestableAISummarizerForProtected(
         ILogger<AISummarizer> logger,
         IPromptService? promptService,

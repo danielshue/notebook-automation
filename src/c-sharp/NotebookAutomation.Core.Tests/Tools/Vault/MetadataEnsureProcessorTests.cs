@@ -21,6 +21,7 @@ public class MetadataEnsureProcessorTests
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataEnsureProcessorTests"/> class.
     /// </summary>
+
     public MetadataEnsureProcessorTests()
     {
         var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());

@@ -44,6 +44,7 @@ internal class MockPromptTemplateService : IPromptService
     /// <summary>
     /// Initializes a new instance of the <see _cref="MockPromptTemplateService"/> class.
     /// </summary>
+
     public MockPromptTemplateService()
     {
         // No dependencies required in constructor

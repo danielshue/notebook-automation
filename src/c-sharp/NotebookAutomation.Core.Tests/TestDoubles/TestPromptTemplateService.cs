@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Tests.TestDoubles;
 /// <summary>
 /// A test implementation of PromptTemplateService that provides controlled templates for testing.
 /// </summary>
+
 internal class TestPromptTemplateService : PromptTemplateService
 {
     /// <summary>

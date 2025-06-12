@@ -1,0 +1,8 @@
+{
+  "id": "3baef6d3-fc5e-4d49-a575-ba04e28fe3f8",
+  "title": "CI Formatting Fix - FINALNEWLINE Errors",
+  "details": "Fixed 44 files with FINALNEWLINE errors that were preventing CI builds from passing. The errors were caused by extra characters (typically 2 extra characters) at the end of files. \n\nSolution: Run `dotnet format src/c-sharp/NotebookAutomation.sln` to automatically fix all FINALNEWLINE errors.\n\nFiles affected included:\n- AIServiceConfig.cs, AppConfig.cs, LoggingService.cs\n- Various model classes (DocumentProcessingStatus.cs, ProcessingStage.cs, etc.)\n- Service classes (OneDriveService.cs, TextChunkingService.cs)\n- Test files across all test projects\n- CLI command files (Program.cs, VersionCommands.cs, etc.)\n\nThe CI workflow was failing at \"Verify code formatting\" step due to these FINALNEWLINE errors. After running dotnet format, all files now pass formatting verification.",
+  "category": "ci_fixes",
+  "dateCreated": "2025-06-12T00:04:28.071Z",
+  "dateUpdated": "2025-06-12T00:04:28.071Z"
+}

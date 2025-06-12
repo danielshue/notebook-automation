@@ -9,6 +9,7 @@ namespace NotebookAutomation.Core.Utils;
 /// <summary>
 /// Custom YamlDotNet visitor to avoid quotes for the banner field.
 /// </summary>
+
 public class NoQuotesForBannerVisitor : ChainedObjectGraphVisitor
 {
     public NoQuotesForBannerVisitor(IObjectGraphVisitor<IEmitter> nextVisitor)

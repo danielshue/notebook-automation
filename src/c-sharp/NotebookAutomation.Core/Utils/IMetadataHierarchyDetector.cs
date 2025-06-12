@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Utils;
 /// <summary>
 /// Interface for detecting and updating metadata hierarchy information in vault files.
 /// </summary>
+
 public interface IMetadataHierarchyDetector
 {
     /// <summary>

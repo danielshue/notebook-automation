@@ -124,6 +124,7 @@ public class AppConfigTests
     /// <summary>
     /// Helper method to set up API key configuration for testing.
     /// </summary>
+
     private static void SetupApiKeyConfigurationForTesting(AppConfig config, string apiKey) =>
 
         // Set the environment variable directly for the provider
@@ -379,6 +380,7 @@ public class AppConfigTests
     /// <summary>
     /// Tests configuration with underlying IConfiguration.
     /// </summary>    [TestMethod]
+
     public void WithUnderlyingConfiguration_ShouldUseUnderlyingValues()
     {
         // Arrange
