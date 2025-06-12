@@ -216,12 +216,11 @@ try {
         $winX64Binary = Join-Path "$tempPublishDir\win-x64" "na.exe"
         if (-not (Test-Path $winX64Binary)) {
             throw "win-x64 binary not found at $winX64Binary"
-        }
-        # Test the win-x64 binary with version command
+        }        # Test the win-x64 binary with version command
         # Only test if not in CI environment and either TestAllArch is true or platform is x64
         if ((-not $env:CI) -and ($TestAllArch -or [Environment]::Is64BitOperatingSystem)) {
-            Write-Host "Testing win-x64 binary with version command..." -ForegroundColor $Yellow
-            & $winX64Binary version
+            Write-Host "Testing win-x64 binary with --version option..." -ForegroundColor $Yellow
+            & $winX64Binary --version
             if ($LASTEXITCODE -ne 0) {
                 throw "win-x64 binary test failed with exit code $LASTEXITCODE"
             }
@@ -237,15 +236,13 @@ try {
         $winArm64Binary = Join-Path "$tempPublishDir\win-arm64" "na.exe"
         if (-not (Test-Path $winArm64Binary)) {
             throw "win-arm64 binary not found at $winArm64Binary"
-        }
-
-        # Test the win-arm64 binary with version command if possible
+        }        # Test the win-arm64 binary with version command if possible
         # Only attempt this on ARM64 hardware or if explicitly testing all architectures
         $isArm64Hardware = (Get-CimInstance -Class Win32_ComputerSystem).SystemType -like "*ARM64*"
         if ((-not $env:CI) -and ($TestAllArch -or $isArm64Hardware)) {
-            Write-Host "Testing win-arm64 binary with version command..." -ForegroundColor $Yellow
+            Write-Host "Testing win-arm64 binary with --version option..." -ForegroundColor $Yellow
             try {
-                & $winArm64Binary version
+                & $winArm64Binary --version
                 if ($LASTEXITCODE -ne 0) {
                     throw "win-arm64 binary test failed with exit code $LASTEXITCODE"
                 }
