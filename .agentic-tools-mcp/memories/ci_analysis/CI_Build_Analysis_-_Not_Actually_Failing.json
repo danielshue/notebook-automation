@@ -1,0 +1,8 @@
+{
+  "id": "65d34151-8f6e-4465-afa4-df67765cf8f7",
+  "title": "CI Build Analysis - Not Actually Failing",
+  "details": "CI BUILD STATUS ANALYSIS - June 11, 2025\n\nISSUE REPORTED: \"Process completed with exit code 1\" in CI build\n\nACTUAL STATUS: The CI build is actually SUCCESSFUL ✅\n\nDETAILED ANALYSIS:\n1. The CI run 15598321585 shows as ✓ (successful) in GitHub Actions\n2. All critical steps completed successfully:\n   - ✅ Formatting verification passed\n   - ✅ Build completed successfully  \n   - ✅ Tests passed (489 tests, 3 skipped)\n   - ✅ Artifacts uploaded (test-results, coverage, published-executables)\n   - ✅ Both win-x64 and win-arm64 builds created\n\nANNOTATIONS EXPLAINED:\n1. ⚠️ \"Retention days cannot be greater than the maximum allowed retention set within the repository. Using 7 instead.\"\n   - This is just a warning about artifact retention policies\n   - Not a build failure\n\n2. ❌ \"Process completed with exit code 1.\"\n   - This comes from the \"Format code (optional)\" step\n   - The step has `continue-on-error: true` so it doesn't fail the build\n   - Error is: \"System.NotSupportedException: Changing document properties is not supported\"\n   - This appears to be a .NET 9 tooling issue with dotnet format trying to change project properties\n\nCONCLUSION:\nThe build is actually working correctly. The error annotation is from an optional step that's designed to not fail the build. All required functionality is working and all artifacts are being produced correctly.\n\nRECOMMENDED ACTION:\nNo immediate action required. The CI pipeline is functioning as designed.",
+  "category": "ci_analysis",
+  "dateCreated": "2025-06-12T00:17:13.354Z",
+  "dateUpdated": "2025-06-12T00:17:13.354Z"
+}

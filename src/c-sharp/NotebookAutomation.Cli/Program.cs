@@ -94,16 +94,12 @@ internal class Program
                 configPath = args[i + 1];
                 break;
             }
+        }        // Handle --version manually before building the CLI to avoid conflicts
+        if (args.Contains("--version"))
+        {
+            ShowVersionInfo();
+            return 0;
         }
-
-        // Handle --version manually before building the CLI to avoid conflicts
-        // if (args.Contains("--version") || args.Contains("-v"))
-        // {
-        //     AnsiConsoleHelper.WriteInfo($"Notebook Automation v1.0.0");
-        //     AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
-        //     AnsiConsoleHelper.WriteInfo("(c) 2025 Dan Shue");
-        //     return 0;
-        // }
         // Setup dependency injection with the parsed config path
         var serviceProvider = SetupDependencyInjection(configPath, args.Contains("--debug"));
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
@@ -167,11 +163,9 @@ internal class Program
         });
 
         // The root command no longer handles AI provider/model/endpoint options globally.
-        // These are now handled under the config command group only.
-
-        // Print config file path before any command except help/version
+        // These are now handled under the config command group only.        // Print config file path before any command except help/version
         var isHelp = args.Any(a => a == "--help" || a == "-h");
-        var isVersion = args.Any(a => a == "--version" || a == "-v");
+        var isVersion = args.Any(a => a == "--version") || (args.Length > 0 && args[0] == "version");
         var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";
         if (!isHelp && !isVersion && !isConfigView)
         {
@@ -218,5 +212,49 @@ internal class Program
         serviceProvider = services.BuildServiceProvider();
 
         return serviceProvider;
+    }    /// <summary>
+    /// Displays professional version information for the application.
+    /// </summary>
+    /// <remarks>
+    /// Shows version, runtime information, author, and copyright in a well-formatted style.
+    /// Used by both --version option and version command for consistency.
+    /// </remarks>
+    public static void ShowVersionInfo()
+    {
+        try
+        {
+            Assembly? entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly != null)
+            {
+                // Get version information from the executable
+                string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
+                var versionInfo = !string.IsNullOrEmpty(exePath)
+                    ? FileVersionInfo.GetVersionInfo(exePath)
+                    : null;
+
+                // Extract version details
+                var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
+                string fileVersion = versionInfo?.FileVersion ?? assemblyVersion?.ToString() ?? "1.0.0.0";
+                string productName = versionInfo?.ProductName ?? "Notebook Automation";
+                string companyName = versionInfo?.CompanyName ?? "Dan Shue";
+                string copyrightInfo = versionInfo?.LegalCopyright ?? "Copyright 2025";
+
+                // Display professional version information
+                Console.WriteLine();
+                Console.WriteLine($"{AnsiColors.BOLD}{productName}{AnsiColors.ENDC} {AnsiColors.OKGREEN}v{fileVersion}{AnsiColors.ENDC}");
+                Console.WriteLine($"Runtime: {AnsiColors.OKCYAN}.NET {Environment.Version}{AnsiColors.ENDC}");
+                Console.WriteLine($"Author:  {AnsiColors.GREY}{companyName}{AnsiColors.ENDC}");
+                Console.WriteLine($"{AnsiColors.GREY}{copyrightInfo}{AnsiColors.ENDC}");
+                Console.WriteLine();
+            }
+            else
+            {
+                AnsiConsoleHelper.WriteError("Unable to retrieve version information.");
+            }
+        }
+        catch (Exception ex)
+        {
+            AnsiConsoleHelper.WriteError($"Error retrieving version information: {ex.Message}");
+        }
     }
 }
