@@ -1,13 +1,15 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 namespace NotebookAutomation.Cli.Commands;
 
 /// <summary>
 /// Provides CLI commands for displaying version information about the application.
-///
-/// This class registers the 'version' command that shows the application version,
-/// the .NET runtime version, and copyright information.
 /// </summary>
-
+/// <remarks>
+/// This class registers the 'version' command that shows the application version,
+/// the .NET runtime version, and copyright information using the centralized
+/// ShowVersionInfo method from Program.cs.
+/// </remarks>
 internal class VersionCommands
 {
     /// <summary>
@@ -26,48 +28,9 @@ internal class VersionCommands
     {
         var versionCommand = new Command("version", "Display version information");
 
-        // Command for displaying detailed version info
-        var detailedCommand = new Command("detailed", "Display detailed version information");
-        versionCommand.Add(detailedCommand);
-
         versionCommand.SetHandler(() =>
         {
-            Assembly? entryAssembly = Assembly.GetEntryAssembly();
-            if (entryAssembly != null)
-            {
-                // In single-file publish, entryAssembly.Location is empty. Use MainModule.FileName.
-                string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
-                var versionInfo = !string.IsNullOrEmpty(exePath)
-                    ? FileVersionInfo.GetVersionInfo(exePath)
-                    : null;
-
-                var companyName = versionInfo?.CompanyName ?? "Notebook Automation";
-                var copyrightInfo = versionInfo?.LegalCopyright ?? "Copyright © 2025";                    // Get the more detailed file version if available, otherwise fall back to assembly version
-                var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
-                string fileVersion = versionInfo?.FileVersion ?? assemblyVersion?.ToString() ?? "1.0.0.0";
-
-                AnsiConsoleHelper.WriteInfo($"Notebook Automation v{fileVersion}");
-                AnsiConsoleHelper.WriteInfo($"Running on .NET {Environment.Version}");
-                AnsiConsoleHelper.WriteInfo($"{companyName}");
-                AnsiConsoleHelper.WriteInfo($"Copyright {copyrightInfo}");
-            }
-            else
-            {
-                AnsiConsoleHelper.WriteError("Unable to retrieve version information. Entry assembly is null.");
-            }
-        });
-
-        // Handler for detailed version command
-        detailedCommand.SetHandler(() =>
-        {
-            var versionInfo = VersionHelper.GetVersionInfo();
-
-            AnsiConsoleHelper.WriteHeading("Detailed Version Information");
-
-            foreach (var info in versionInfo)
-            {
-                AnsiConsoleHelper.WriteKeyValue(info.Key, info.Value);
-            }
+            Program.ShowVersionInfo();
         });
 
         rootCommand.Add(versionCommand);
