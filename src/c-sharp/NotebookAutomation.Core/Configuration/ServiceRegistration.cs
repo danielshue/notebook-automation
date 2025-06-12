@@ -63,6 +63,7 @@ public static class ServiceRegistration
     /// <param name="services">The service collection to configure.</param>
     /// <param name="configuration">The application configuration.</param>
     /// <param name="debug">Whether debug mode is enabled.</param>
+    /// <param name="configFilePath">Optional path to the configuration file.</param>
     /// <returns>The configured service collection.</returns>
     public static IServiceCollection AddNotebookAutomationServices(
         this IServiceCollection services,
@@ -76,6 +77,80 @@ public static class ServiceRegistration
         // Register and configure services by category
         RegisterLoggingServices(services, configuration, debug);
         RegisterConfigurationServices(services, configuration, configFilePath, debug);
+        RegisterMetadataServices(services);
+        RegisterCloudServices(services);
+        RegisterAIServices(services);
+        RegisterDocumentProcessors(services);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Adds core notebook automation services to the dependency injection container using the new ConfigManager.
+    /// </summary>
+    /// <param name="services">The service collection to configure.</param>
+    /// <param name="options">Configuration discovery options.</param>
+    /// <param name="debug">Whether debug mode is enabled.</param>
+    /// <returns>The configured service collection.</returns>
+    public static async Task<IServiceCollection> AddNotebookAutomationServicesAsync(
+        this IServiceCollection services,
+        ConfigDiscoveryOptions options,
+        bool debug = false)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(options);
+
+        // First register the basic infrastructure services
+        services.AddSingleton<IFileSystemWrapper, FileSystemWrapper>();
+        services.AddSingleton<IEnvironmentWrapper, EnvironmentWrapper>();
+
+        // Add basic logging (we'll enhance it later)
+        services.AddLogging(builder => builder.AddConsole());
+
+        // Create a temporary service provider to get the ConfigManager
+        using var tempProvider = services.BuildServiceProvider();
+        var logger = tempProvider.GetRequiredService<ILogger<ConfigManager>>();
+        var fileSystem = tempProvider.GetRequiredService<IFileSystemWrapper>();
+        var environment = tempProvider.GetRequiredService<IEnvironmentWrapper>();
+
+        var configManager = new ConfigManager(fileSystem, environment, logger);
+        services.AddSingleton<IConfigManager>(configManager);
+
+        // Use ConfigManager to discover and load configuration
+        var configResult = await configManager.LoadConfigurationAsync(options);
+        if (!configResult.IsSuccess || configResult.Configuration == null)
+        {
+            var exception = configResult.Exception != null
+                ? new ConfigurationException($"Failed to load configuration: {configResult.ErrorMessage}", configResult.Exception)
+                : new ConfigurationException($"Failed to load configuration: {configResult.ErrorMessage}");
+            throw exception;
+        }
+
+        // Build IConfiguration from the discovered AppConfig
+        var configurationBuilder = new ConfigurationBuilder();        // If we have a discovered config file, add it
+        if (configResult.IsSuccess && !string.IsNullOrEmpty(configResult.ConfigurationPath))
+        {
+            configurationBuilder.AddJsonFile(configResult.ConfigurationPath, optional: false, reloadOnChange: true);
+        }
+
+        // Add environment variables
+        configurationBuilder.AddEnvironmentVariables();
+
+        // Add user secrets in development
+        if (environment.IsDevelopment())
+        {
+            // This would need to be enhanced based on the specific assembly requirements
+            // configurationBuilder.AddUserSecrets<Program>();
+        }
+
+        var configuration = configurationBuilder.Build();
+        services.AddSingleton<IConfiguration>(configuration);
+
+        // Register the discovered AppConfig
+        services.AddSingleton(configResult.Configuration);
+
+        // Register remaining services
+        RegisterLoggingServices(services, configuration, debug);
         RegisterMetadataServices(services);
         RegisterCloudServices(services);
         RegisterAIServices(services);
@@ -354,6 +429,11 @@ public static class ServiceRegistration
         string? configFilePath,
         bool debug)
     {
+        // Register new configuration management interfaces and implementations
+        services.AddSingleton<IFileSystemWrapper, FileSystemWrapper>();
+        services.AddSingleton<IEnvironmentWrapper, EnvironmentWrapper>();
+        services.AddSingleton<IConfigManager, ConfigManager>();
+
         // Register the configuration as a singleton
         services.AddSingleton(provider =>
         {
