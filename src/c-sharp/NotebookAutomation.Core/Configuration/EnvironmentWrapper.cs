@@ -1,7 +1,5 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Reflection;
-
 namespace NotebookAutomation.Core.Configuration;
 
 /// <summary>
@@ -32,15 +30,17 @@ public class EnvironmentWrapper : IEnvironmentWrapper
     /// Gets the current working directory.
     /// </summary>
     /// <returns>The current working directory.</returns>
-    public string GetCurrentDirectory() => Environment.CurrentDirectory;    /// <summary>
-                                                                            /// Gets the directory containing the current executable.
-                                                                            /// </summary>
-                                                                            /// <returns>The directory containing the current executable.</returns>
+    public string GetCurrentDirectory() => Environment.CurrentDirectory;
+
+    /// <summary>
+    /// Gets the directory containing the current executable.
+    /// </summary>
+    /// <returns>The directory containing the current executable.</returns>
     public string GetExecutableDirectory()
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        var location = assembly.Location;
-        return Path.GetDirectoryName(location) ?? Environment.CurrentDirectory;
+        // Use AppContext.BaseDirectory for single-file deployment compatibility
+        // This works correctly in both regular and single-file deployments
+        return AppContext.BaseDirectory ?? Environment.CurrentDirectory;
     }
 
     /// <summary>

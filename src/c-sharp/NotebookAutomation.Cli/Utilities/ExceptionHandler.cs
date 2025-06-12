@@ -35,10 +35,17 @@ public static class ExceptionHandler
     public static int HandleException(Exception exception, string operation, int exitCode = 1)
     {
         ArgumentNullException.ThrowIfNull(exception);
-        ArgumentException.ThrowIfNullOrWhiteSpace(operation);
-
-        // Log the full exception details for internal tracking
-        _logger?.LogError(exception, "Failed to execute {Operation}: {Message}", operation, exception.Message);
+        ArgumentException.ThrowIfNullOrWhiteSpace(operation);        // Log the exception details based on debug mode
+        if (_debugMode)
+        {
+            // In debug mode, log the full exception details for internal tracking
+            _logger?.LogError(exception, "Failed to execute {Operation}: {Message}", operation, exception.Message);
+        }
+        else
+        {
+            // In normal mode, log only the message without stack trace
+            _logger?.LogError("Failed to execute {Operation}: {Message}", operation, exception.Message);
+        }
 
         if (_debugMode)
         {
@@ -110,7 +117,6 @@ public static class ExceptionHandler
             return defaultValue;
         }
     }
-
     /// <summary>
     /// Converts an exception to a user-friendly message.
     /// </summary>
@@ -124,10 +130,25 @@ public static class ExceptionHandler
             FileNotFoundException fnf => $"Required file not found: {fnf.FileName ?? "Unknown file"}",
             DirectoryNotFoundException => "Required directory not found",
             UnauthorizedAccessException => "Access denied. Check file permissions or run as administrator",
+            // Check more specific patterns first (Azure OpenAI, Foundry) before general OpenAI
+            InvalidOperationException ioe when ioe.Message.Contains("Azure OpenAI API key is missing") =>
+                "Azure OpenAI API key is missing. Please set the AZURE_OPENAI_KEY environment variable with your API key",
+            InvalidOperationException ioe when ioe.Message.Contains("Foundry API key is missing") =>
+                "Foundry API key is missing. Please set the FOUNDRY_API_KEY environment variable with your API key",
+            InvalidOperationException ioe when ioe.Message.Contains("OpenAI API key is missing") =>
+                "OpenAI API key is missing. Please set the OPENAI_API_KEY environment variable with your API key",
+            InvalidOperationException ioe when ioe.Message.Contains("endpoint is missing") =>
+                "AI service endpoint configuration is missing. Please check your configuration file",
+            InvalidOperationException ioe when ioe.Message.Contains("deployment name is missing") =>
+                "Azure OpenAI deployment name is missing. Please check your configuration file",
             InvalidOperationException ioe when ioe.Message.Contains("Configuration") =>
                 "Configuration error. Please check your config file and ensure all required settings are present",
             InvalidOperationException ioe when ioe.Message.Contains("service") =>
                 "Internal service configuration error. Please report this issue",
+            ArgumentException ae when ae.Message.Contains("apiKey") =>
+                "Missing or invalid API key. Please check your configuration file and ensure the API key is properly set",
+            ArgumentException ae when ae.Message.Contains("empty string") =>
+                "Configuration contains empty values. Please check your configuration file for missing required settings",
             ArgumentException ae => $"Invalid argument: {ae.Message}",
             TimeoutException => "Operation timed out. Please try again",
             TaskCanceledException => "Operation was cancelled",

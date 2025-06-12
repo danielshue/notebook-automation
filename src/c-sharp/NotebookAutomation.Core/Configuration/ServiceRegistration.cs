@@ -188,15 +188,20 @@ public static class ServiceRegistration
             // add logging to Semantic Kernel
             skbuilder.Services.AddSingleton(loggerFactory);
 
-            skbuilder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace));
-
-            var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
+            skbuilder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace)); var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
             if (providerType == "openai" && aiConfig.OpenAI != null)
             {
                 var openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
                 var endpoint = aiConfig.OpenAI.Endpoint ?? "https://api.openai.com/v1/chat/completions";
                 var model = aiConfig.OpenAI.Model ?? "gpt-4o";
-                skbuilder.AddOpenAIChatCompletion(model, openAiKey ?? string.Empty, endpoint);
+
+                // Validate OpenAI configuration before attempting to register
+                if (string.IsNullOrWhiteSpace(openAiKey))
+                {
+                    throw new InvalidOperationException("OpenAI API key is missing. Please set the OPENAI_API_KEY environment variable.");
+                }
+
+                skbuilder.AddOpenAIChatCompletion(model, openAiKey, endpoint);
             }
             else if (providerType == "azure" && aiConfig.Azure != null)
             {
@@ -204,6 +209,21 @@ public static class ServiceRegistration
                 var endpoint = aiConfig.Azure.Endpoint ?? string.Empty;
                 var deployment = aiConfig.Azure.Deployment ?? string.Empty;
                 var model = aiConfig.Azure.Model ?? string.Empty;
+
+                // Validate Azure configuration before attempting to register
+                if (string.IsNullOrWhiteSpace(azureKey))
+                {
+                    throw new InvalidOperationException("Azure OpenAI API key is missing. Please set the AZURE_OPENAI_KEY environment variable.");
+                }
+                if (string.IsNullOrWhiteSpace(endpoint))
+                {
+                    throw new InvalidOperationException("Azure OpenAI endpoint is missing. Please check your configuration file.");
+                }
+                if (string.IsNullOrWhiteSpace(deployment))
+                {
+                    throw new InvalidOperationException("Azure OpenAI deployment name is missing. Please check your configuration file.");
+                }
+
                 skbuilder.AddAzureOpenAIChatCompletion(deployment, endpoint, apiKey: azureKey, null, modelId: model ?? string.Empty);
             }
             else if (providerType == "foundry" && aiConfig.Foundry != null)
@@ -211,6 +231,17 @@ public static class ServiceRegistration
                 var foundryKey = Environment.GetEnvironmentVariable("FOUNDRY_API_KEY") ?? string.Empty;
                 var endpoint = aiConfig.Foundry.Endpoint ?? string.Empty;
                 var model = aiConfig.Foundry.Model ?? string.Empty;
+
+                // Validate Foundry configuration before attempting to register
+                if (string.IsNullOrWhiteSpace(foundryKey))
+                {
+                    throw new InvalidOperationException("Foundry API key is missing. Please set the FOUNDRY_API_KEY environment variable.");
+                }
+                if (string.IsNullOrWhiteSpace(endpoint))
+                {
+                    throw new InvalidOperationException("Foundry endpoint is missing. Please check your configuration file.");
+                }
+
                 skbuilder.AddOpenAIChatCompletion(model, foundryKey, endpoint);
             }
 
