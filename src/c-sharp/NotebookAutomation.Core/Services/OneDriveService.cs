@@ -16,6 +16,7 @@ namespace NotebookAutomation.Core.Services;
 /// <summary>
 /// Provides methods for authenticating and accessing OneDrive files/folders.
 /// </summary>
+
 public class OneDriveService : IOneDriveService
 {
     private readonly ILogger<OneDriveService> logger;
@@ -161,6 +162,7 @@ public class OneDriveService : IOneDriveService
     /// <summary>
     /// Performs interactive authentication with browser prompt.
     /// </summary>
+
     private async Task<AuthenticationResult> InteractiveAuthenticationAsync()
     {
         logger.LogInformation("Initiating interactive browser authentication...");
@@ -188,6 +190,7 @@ public class OneDriveService : IOneDriveService
     /// <summary>
     /// Configures the token cache serialization.
     /// </summary>
+
     private async Task ConfigureTokenCacheAsync()
     {
         try
@@ -976,6 +979,7 @@ public class OneDriveService : IOneDriveService
     /// <summary>
     /// Finds similar names to a target using Levenshtein distance.
     /// </summary>
+
     private static List<string> FindSimilarNames(string target, List<string> candidates, int maxSuggestions = 3)
     {
         var ranked = candidates
@@ -992,6 +996,7 @@ public class OneDriveService : IOneDriveService
     /// <summary>
     /// Computes the Levenshtein distance between two strings.
     /// </summary>
+
     private static int LevenshteinDistance(string a, string b)
     {
         if (string.IsNullOrEmpty(a))
@@ -1168,6 +1173,7 @@ public class OneDriveService : IOneDriveService
     /// <summary>
     /// Sets CLI options for dry-run, retry, force, and verbose/debug output.
     /// </summary>
+
     public void SetCliOptions(OneDriveCliOptions options)
     {
         cliOptions = options ?? new OneDriveCliOptions();

@@ -90,6 +90,7 @@ public class AIServiceConfig
 /// <summary>
 /// Represents the configuration for the OpenAI provider.
 /// </summary>
+
 public class OpenAiProviderConfig
 {
     /// <summary>
@@ -108,6 +109,7 @@ public class OpenAiProviderConfig
 /// <summary>
 /// Represents the configuration for the Azure provider.
 /// </summary>
+
 public class AzureProviderConfig
 {
     /// <summary>
@@ -132,6 +134,7 @@ public class AzureProviderConfig
 /// <summary>
 /// Represents the configuration for the Foundry provider.
 /// </summary>
+
 public class FoundryProviderConfig
 {
     /// <summary>

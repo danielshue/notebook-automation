@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Utils;
 /// <summary>
 /// Interface for YAML helper functionality used to process YAML frontmatter in markdown files.
 /// </summary>
+
 public interface IYamlHelper
 {
     /// <summary>

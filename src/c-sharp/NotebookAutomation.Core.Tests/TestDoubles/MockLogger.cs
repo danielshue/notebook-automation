@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Tests.TestDoubles;
 /// <summary>
 /// Simple mock logger for testing purposes.
 /// </summary>
+
 internal class MockLogger<T>(Action<LogLevel, string>? logAction = null) : ILogger<T>
 {
     private readonly Action<LogLevel, string> logAction = logAction ?? ((level, msg) => { });

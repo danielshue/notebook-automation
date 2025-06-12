@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Models;
 /// <summary>
 /// Represents information about a file within a vault for index generation.
 /// </summary>
+
 public class VaultFileInfo
 {
     /// <summary>

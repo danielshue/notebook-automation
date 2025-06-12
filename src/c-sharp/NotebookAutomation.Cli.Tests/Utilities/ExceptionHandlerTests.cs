@@ -416,6 +416,7 @@ public class ExceptionHandlerTests
     /// <summary>
     /// Helper method to create exceptions of different types for testing.
     /// </summary>
+
     private static Exception CreateException(Type exceptionType, string message)
     {
         return exceptionType.Name switch

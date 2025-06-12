@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Tests.Tools;
 /// <summary>
 /// Mock AISummarizer that implements IAISummarizer interface (created for testing).
 /// </summary>
+
 internal class MockAISummarizer
 {
     public string PredefinedSummary { get; set; } = "Test summary from injected AISummarizer";

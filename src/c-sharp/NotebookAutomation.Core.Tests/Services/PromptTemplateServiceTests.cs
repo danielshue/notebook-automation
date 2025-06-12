@@ -305,6 +305,7 @@ public class PromptTemplateServiceTests
     /// <summary>
     /// Finds the prompts directory using multiple strategies to avoid potential infinite loops.
     /// </summary>
+
     private static string FindPromptsDirectory()
     {
         // Strategy 1: Check if we can find it relative to the workspace root
@@ -349,6 +350,7 @@ public class PromptTemplateServiceTests
     /// <summary>
     /// Gets the repository root directory by walking up from the current directory.
     /// </summary>
+
     private static string GetRepositoryRoot()
     {
         string currentDir = AppContext.BaseDirectory;
@@ -369,6 +371,7 @@ public class PromptTemplateServiceTests
     /// <summary>
     /// Creates a test template file with the specified name and content.
     /// </summary>
+
     private async Task CreateTestTemplate(string templateName, string content)
     {
         string promptsDir = Path.Combine(_testFolder, "Prompts");
@@ -600,6 +603,7 @@ public class PromptTemplateServiceTests
 /// <summary>
 /// A testable version of PromptTemplateService that allows setting the prompts directory.
 /// </summary>
+
 internal class TestablePromptTemplateService(ILogger<PromptTemplateService> logger, IYamlHelper yamlHelper, string promptsDirectory) : PromptTemplateService(logger, yamlHelper, new AppConfig())
 {
     private readonly string _testPromptsDirectory = promptsDirectory;

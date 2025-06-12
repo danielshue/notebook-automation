@@ -5,6 +5,7 @@ namespace NotebookAutomation.Core.Tests.Helpers;
 /// Helper class for creating test kernels for AI summarization tests.
 /// This class replaces the previous MockTextGenerationServiceHelper which depended on ITextGenerationService.
 /// </summary>
+
 internal static class TestKernelHelper
 {
     /// <summary>

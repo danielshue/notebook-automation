@@ -4,6 +4,7 @@ namespace NotebookAutomation.Cli.Commands;
 /// <summary>
 /// Provides string resources for the ConfigCommands class to avoid StyleCop string literal warnings.
 /// </summary>
+
 internal static class ConfigCommandsResources
 {
     /// <summary>
@@ -49,5 +50,6 @@ internal static class ConfigCommandsResources
     /// <summary>
     /// Key description for Foundry API key.
     /// </summary>
+
     public const string FoundryKeyDescription = "  aiservice.foundry.key              - Foundry API key (if using Foundry)";
 }

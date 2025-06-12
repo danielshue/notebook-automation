@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Tests.TestDoubles;
 /// <summary>
 /// Minimal test double for AISummarizer for use in VideoNoteProcessor tests.
 /// </summary>
+
 internal class TestAISummarizer : AISummarizer
 {
     public TestAISummarizer()

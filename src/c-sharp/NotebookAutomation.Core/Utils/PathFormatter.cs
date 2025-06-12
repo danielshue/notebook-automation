@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Utils;
 /// <summary>
 /// Utility class for formatting file paths in log messages.
 /// </summary>
+
 public static class PathFormatter
 {
     /// <summary>

@@ -70,6 +70,7 @@ public class MetadataHierarchyDetectorPathTests
     /// <summary>
     /// Creates a test vault directory structure for testing hierarchies.
     /// </summary>
+
     private void CreateTestVaultStructure()
     {
         // Create nested directories representing common vault structure
@@ -536,6 +537,7 @@ public class MetadataHierarchyDetectorPathTests
         // Assert - should still calculate correctly even if path doesn't exist
         Assert.AreEqual(3, level, "Hierarchy level should be calculated based on path structure even if path doesn't exist");
     }
+
     /// <summary>
     /// Tests behavior with null path.
     /// </summary>

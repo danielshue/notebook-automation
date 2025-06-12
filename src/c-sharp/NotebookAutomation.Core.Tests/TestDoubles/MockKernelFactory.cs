@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Tests.TestDoubles;
 /// <summary>
 /// Helper class to create a Kernel with a mock ITextGenerationService for testing.
 /// </summary>
+
 internal static class MockKernelFactory
 { /// <summary>
   /// Creates a minimal kernel with a mock text generation service that returns a predefined response.

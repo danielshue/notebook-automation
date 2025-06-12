@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Utils;
 /// <summary>
 /// Interface for extracting course structure information from files and metadata.
 /// </summary>
+
 public interface ICourseStructureExtractor
 {
     /// <summary>

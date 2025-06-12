@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Tests.Services;
 /// <summary>
 /// A simple implementation of ITextGenerationService for testing.
 /// </summary>
+
 internal class TestTextGenerationService : ITextGenerationService
 {
     public IReadOnlyDictionary<string, object?> Attributes => new Dictionary<string, object?>();

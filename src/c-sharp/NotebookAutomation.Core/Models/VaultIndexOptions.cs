@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Models;
 /// <summary>
 /// Options for vault index generation.
 /// </summary>
+
 public class VaultIndexOptions
 {
     /// <summary>

@@ -737,6 +737,7 @@ public class MetadataEnsureBatchProcessor(
     /// <returns>
     /// A MetadataBatchResult object configured for error reporting with the specified message.
     /// </returns>
+
     private static MetadataBatchResult CreateErrorResult(string errorMessage)
     {
         return new MetadataBatchResult

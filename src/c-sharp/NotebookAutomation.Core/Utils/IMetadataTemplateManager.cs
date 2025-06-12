@@ -4,6 +4,7 @@ namespace NotebookAutomation.Core.Utils;
 /// <summary>
 /// Interface for managing loading, parsing, and application of metadata templates from the metadata.yaml file.
 /// </summary>
+
 public interface IMetadataTemplateManager
 {
     /// <summary>

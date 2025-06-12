@@ -63,6 +63,7 @@ public class AppConfig : IConfiguration
     /// Initializes a new instance of the <see cref="AppConfig"/> class.
     /// Default constructor for manual initialization.
     /// </summary>
+
     public AppConfig()
     {
         // Default constructor for when manual initialization is needed
@@ -681,6 +682,7 @@ public class AppConfig : IConfiguration
     /// <summary>
     /// Helper method to set a property value with proper type conversion.
     /// </summary>
+
     private static void SetPropertyValue(System.Reflection.PropertyInfo property, object target, string? value)
     {
         if (property == null || !property.CanWrite)
@@ -772,6 +774,7 @@ public class AppConfig : IConfiguration
     /// <summary>
     /// Helper class to implement ConfigurationSection.
     /// </summary>
+
     private class ConfigurationSection(IConfiguration configuration, string key, string? parentPath = null) : IConfigurationSection
     {
         private readonly IConfiguration configuration = configuration;
