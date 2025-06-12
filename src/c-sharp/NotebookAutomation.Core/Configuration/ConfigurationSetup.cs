@@ -98,4 +98,68 @@ public static class ConfigurationSetup
 
         return configurationBuilder.Build();
     }
+
+    /// <summary>
+    /// Creates a configuration using the new ConfigManager system with enhanced discovery capabilities.
+    /// </summary>
+    /// <typeparam name="T">The type from the assembly that has the UserSecretsId attribute.</typeparam>
+    /// <param name="environment">The current environment (development, production, etc.)</param>
+    /// <param name="configPath">Optional path to the config file. If null, will use ConfigManager for discovery.</param>
+    /// <param name="useNewConfigManager">Whether to use the new ConfigManager for discovery (default: true).</param>
+    /// <returns>A configured IConfiguration instance.</returns>
+    public static IConfiguration BuildConfigurationWithConfigManager<T>(
+        string environment = "Development",
+        string? configPath = null,
+        bool useNewConfigManager = true)
+    where T : class
+    {
+        if (useNewConfigManager)
+        {
+            // Use the new ConfigManager for discovery
+            var fileSystem = new FileSystemWrapper();
+            var environmentWrapper = new EnvironmentWrapper();
+            var logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<ConfigManager>();
+            var configManager = new ConfigManager(fileSystem, environmentWrapper, logger); var options = new ConfigDiscoveryOptions
+            {
+                ConfigPath = configPath,
+                Debug = false,
+                ExecutableDirectory = environmentWrapper.GetExecutableDirectory(),
+                WorkingDirectory = environmentWrapper.GetCurrentDirectory()
+            };            // Perform discovery synchronously (wrapping async call)
+            var discoveryTask = configManager.LoadConfigurationAsync(options);
+            discoveryTask.Wait();
+            var discoveryResult = discoveryTask.Result; if (discoveryResult.IsSuccess && !string.IsNullOrEmpty(discoveryResult.ConfigurationPath))
+            {
+                configPath = discoveryResult.ConfigurationPath;
+            }
+        }
+        else
+        {
+            // Fall back to legacy discovery if needed
+            if (string.IsNullOrEmpty(configPath))
+            {
+                configPath = AppConfig.FindConfigFile();
+            }
+        }
+
+        var configurationBuilder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory());
+
+        // Add JSON configuration if found
+        if (!string.IsNullOrEmpty(configPath) && File.Exists(configPath))
+        {
+            configurationBuilder.AddJsonFile(configPath, optional: false, reloadOnChange: true);
+        }
+
+        // Add environment variables
+        configurationBuilder.AddEnvironmentVariables();
+
+        // Add user secrets in development environment
+        if (environment.Equals("Development", StringComparison.OrdinalIgnoreCase))
+        {
+            configurationBuilder.AddUserSecrets<T>();
+        }
+
+        return configurationBuilder.Build();
+    }
 }

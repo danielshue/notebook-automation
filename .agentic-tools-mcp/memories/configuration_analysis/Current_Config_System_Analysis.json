@@ -1,0 +1,8 @@
+{
+  "id": "8c30680e-89d0-41ad-92eb-97a356f37b87",
+  "title": "Current Config System Analysis",
+  "details": "EXISTING CONFIGURATION SYSTEM ANALYSIS:\n\nKEY CLASSES FOUND:\n- AppConfig: Main configuration class (contains discovery logic)\n- PathsConfig: File/directory path configurations\n- AIServiceConfig: AI service settings with OpenAiProviderConfig, AzureProviderConfig, FoundryProviderConfig\n- MicrosoftGraphConfig: Microsoft Graph API settings\n- ConfigurationSetup: Static helper for building IConfiguration\n- ConfigurationExtensions: Extension methods for configuration\n- ILoggingService: Interface for logging services\n- LoggingService: Implementation of logging services\n\nMISSING INTERFACES:\n- No IConfigManager or similar interface exists\n- No IFileSystemWrapper or IEnvironmentWrapper interfaces \n- No dedicated config discovery manager classes\n\nCURRENT DISCOVERY LOGIC:\n- Located in AppConfig.FindConfigFile() method\n- Uses hardcoded paths and System.IO directly\n- Not easily testable due to static dependencies\n\nINTEGRATION POINTS:\n- Program.cs uses ConfigurationSetup.BuildConfiguration()\n- ConfigurationSetup calls AppConfig.FindConfigFile()\n- Services are registered via ServiceRegistration.RegisterServices()\n\nNEW SYSTEM DESIGN APPROACH:\n- Create IConfigManager interface with ConfigManager implementation\n- Create wrapper interfaces (IFileSystemWrapper, IEnvironmentWrapper) for testability\n- Keep existing config classes (AppConfig, PathsConfig, etc.) but remove discovery logic from AppConfig\n- Integrate new ConfigManager into existing ConfigurationSetup and DI system",
+  "category": "configuration_analysis",
+  "dateCreated": "2025-06-12T04:56:38.368Z",
+  "dateUpdated": "2025-06-12T04:56:38.368Z"
+}
