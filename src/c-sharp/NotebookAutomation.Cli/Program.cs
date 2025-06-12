@@ -129,13 +129,8 @@ internal class Program
         markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var configCommands = new ConfigCommands();
-        ConfigCommands.Register(rootCommand, configOption, debugOption);
-
-        var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>());
+        ConfigCommands.Register(rootCommand, configOption, debugOption);        var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>());
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-
-        var versionCommands = new VersionCommands();
-        VersionCommands.Register(rootCommand);
 
         // Print help if no subcommand or arguments are provided
         if (args.Length == 0)
@@ -165,7 +160,7 @@ internal class Program
         // The root command no longer handles AI provider/model/endpoint options globally.
         // These are now handled under the config command group only.        // Print config file path before any command except help/version
         var isHelp = args.Any(a => a == "--help" || a == "-h");
-        var isVersion = args.Any(a => a == "--version") || (args.Length > 0 && args[0] == "version");
+        var isVersion = args.Any(a => a == "--version");
         var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";
         if (!isHelp && !isVersion && !isConfigView)
         {
