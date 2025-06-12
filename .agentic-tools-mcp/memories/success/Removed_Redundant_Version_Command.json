@@ -1,0 +1,8 @@
+{
+  "id": "1b77c00b-b64e-4585-8119-fe0ed40df9fd",
+  "title": "Removed Redundant Version Command",
+  "details": "Successfully removed redundant version functionality from Notebook Automation CLI:\n\nPROBLEM:\n- CLI had both --version global option AND version subcommand\n- This created confusing duplicate functionality\n- Standard CLI convention is to use --version option only\n\nSOLUTION:\n1. Deleted src/c-sharp/NotebookAutomation.Cli/Commands/VersionCommands.cs\n2. Deleted src/c-sharp/NotebookAutomation.Cli.Tests/Commands/VersionCommandsTests.cs  \n3. Removed VersionCommands registration from Program.cs\n4. Updated configuration display logic to remove version command checks\n5. Kept ShowVersionInfo() method in Program.cs for --version option\n\nRESULTS:\n- Clean CLI interface with single version option: --version\n- Professional version output maintained\n- No build errors or test failures\n- Standard CLI convention followed\n- Help output no longer shows redundant version command\n- When user tries 'na version', gets helpful suggestion to use '--version'\n\nFINAL CLI BEHAVIOR:\n✅ na --version → Shows professional version info\n❌ na version → Error with helpful suggestion to use --version\n✅ Clean help output without duplicate version entry\n\nThis eliminates user confusion and follows standard CLI practices.",
+  "category": "success",
+  "dateCreated": "2025-06-12T00:57:08.060Z",
+  "dateUpdated": "2025-06-12T00:57:08.060Z"
+}

@@ -129,7 +129,7 @@ internal class Program
         markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var configCommands = new ConfigCommands();
-        ConfigCommands.Register(rootCommand, configOption, debugOption);        var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>());
+        ConfigCommands.Register(rootCommand, configOption, debugOption); var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>());
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Print help if no subcommand or arguments are provided
