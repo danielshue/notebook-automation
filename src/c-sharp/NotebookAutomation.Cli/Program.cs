@@ -213,12 +213,12 @@ internal class Program
 
         return serviceProvider;
     }    /// <summary>
-    /// Displays professional version information for the application.
-    /// </summary>
-    /// <remarks>
-    /// Shows version, runtime information, author, and copyright in a well-formatted style.
-    /// Used by both --version option and version command for consistency.
-    /// </remarks>
+         /// Displays professional version information for the application.
+         /// </summary>
+         /// <remarks>
+         /// Shows version, runtime information, author, and copyright in a well-formatted style.
+         /// Used by both --version option and version command for consistency.
+         /// </remarks>
     public static void ShowVersionInfo()
     {
         try

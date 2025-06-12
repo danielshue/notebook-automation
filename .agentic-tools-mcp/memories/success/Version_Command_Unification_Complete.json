@@ -1,0 +1,8 @@
+{
+  "id": "51254bac-c6d2-4eb9-8847-b25f1f7ebfcc",
+  "title": "Version Command Unification Complete",
+  "details": "Successfully unified the --version and version command outputs for the Notebook Automation CLI:\n\nCHANGES MADE:\n1. Made ShowVersionInfo() method public in Program.cs for shared access\n2. Removed duplicate ShowVersionInfo() method from VersionCommands.cs\n3. Updated VersionCommands.cs to call Program.ShowVersionInfo()\n4. Fixed configuration file display logic to exclude both --version and version commands\n5. Professional formatted output with colors and consistent styling\n\nRESULTS:\n- Both na.exe --version and na.exe version now show identical output\n- No configuration file message displayed for either version command\n- Only single command execution (no multiple version displays)\n- Professional output format with proper spacing and colors\n- Unified codebase with no duplication\n\nOUTPUT FORMAT:\n```\nNotebook Automation v1.0.527.67\nRuntime: .NET 9.0.5  \nAuthor:  Dan Shue\nCopyright 2025\n```\n\nCOMMITTED AND PUSHED:\n- Changes pushed to trigger new CI build with unified version display\n- New CI artifacts will have consistent version behavior\n- Ready for final testing once CI completes",
+  "category": "success",
+  "dateCreated": "2025-06-12T00:45:21.600Z",
+  "dateUpdated": "2025-06-12T00:45:21.600Z"
+}
