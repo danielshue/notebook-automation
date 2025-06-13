@@ -138,31 +138,34 @@ internal class VideoCommands
                     videoCommand.Description ?? string.Empty,
                     string.Join("\n", videoCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
-            }
-
-            // Initialize dependency injection if needed
-            if (config != null)
+            }            // Initialize dependency injection if needed
+            if (Program.ServiceProvider == null)
             {
-                if (!File.Exists(config))
+                if (config != null && !File.Exists(config))
                 {
                     AnsiConsoleHelper.WriteError($"Configuration file not found: {config}");
                     return;
                 }
 
                 Program.SetupDependencyInjection(config, debug);
-            } // Use DI container to get services and create scoped context for vault root override
-
+            }            // Use DI container to get services and create scoped context for vault root override
             var serviceProvider = Program.ServiceProvider;
+            if (serviceProvider == null)
+            {
+                AnsiConsoleHelper.WriteError("Failed to initialize dependency injection. Service provider is null.");
+                return;
+            }
+
             using var scope = serviceProvider.CreateScope();
             var scopedServices = scope.ServiceProvider;
 
             var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("VideoCommands");
             var loggingService = scopedServices.GetRequiredService<LoggingService>();
-            var appConfig = scopedServices.GetRequiredService<AppConfig>();
-
-            // Determine effective output directory for vault root context
-            string effectiveOutputDir = overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated";
+            var appConfig = scopedServices.GetRequiredService<AppConfig>();            // Determine effective output directory for vault root context
+            string effectiveOutputDir = overrideOutputDir ??
+                (!string.IsNullOrEmpty(appConfig.Paths?.NotebookVaultFullpathRoot) ? appConfig.Paths.NotebookVaultFullpathRoot : null) ??
+                "Generated";
             effectiveOutputDir = Path.GetFullPath(effectiveOutputDir);
 
             // Set up vault root override in scoped context
