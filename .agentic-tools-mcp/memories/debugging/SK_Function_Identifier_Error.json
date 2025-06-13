@@ -1,0 +1,8 @@
+{
+  "id": "60535d5c-62be-431a-9254-13b0b344cd02",
+  "title": "SK Function Identifier Error",
+  "details": "Found the root cause of the \"Function null-SummarizeChunk invoking\" and \"The function identifier is empty\" errors.\n\nISSUE: The prompt template files (chunk_summary_prompt.md and final_summary_prompt.md) contain YAML frontmatter with a `function:` field. This is conflicting with Semantic Kernel's CreateFunctionFromPrompt method when we also provide an explicit functionName parameter.\n\nYAML frontmatter in prompt:\n```yaml\nfunction: chunk_summary  # This conflicts with functionName: \"SummarizeChunk\"\n```\n\nSK is trying to parse this frontmatter and getting confused between the YAML function name and the explicit functionName parameter.\n\nSOLUTION: Remove the `function:` field from the YAML frontmatter in both prompt template files, or modify the prompt loading to strip the frontmatter before passing to SK.",
+  "category": "debugging",
+  "dateCreated": "2025-06-13T16:12:06.763Z",
+  "dateUpdated": "2025-06-13T16:12:06.763Z"
+}

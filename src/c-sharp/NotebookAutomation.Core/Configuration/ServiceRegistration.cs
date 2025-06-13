@@ -1,4 +1,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using OpenTelemetry;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+
 namespace NotebookAutomation.Core.Configuration;
 
 /// <summary>
@@ -182,13 +187,19 @@ public static class ServiceRegistration
             var appConfig = provider.GetRequiredService<AppConfig>();
             var aiConfig = appConfig.AiService;
             var loggingService = provider.GetRequiredService<LoggingService>();
-            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-            var skbuilder = Kernel.CreateBuilder();
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>(); var skbuilder = Kernel.CreateBuilder();            // add logging to Semantic Kernel - configure logging first with SK-specific filtering
+            skbuilder.Services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.AddConsole().SetMinimumLevel(LogLevel.Debug);
+                // Add specific filters for SK components
+                loggingBuilder.AddFilter("Microsoft", LogLevel.Warning);
+                loggingBuilder.AddFilter("Microsoft.SemanticKernel", LogLevel.Debug);
+                loggingBuilder.AddFilter("Microsoft.SemanticKernel.KernelFunction", LogLevel.Trace);
+                loggingBuilder.AddFilter("Microsoft.SemanticKernel.KernelPromptTemplate", LogLevel.Trace);
+            });
 
-            // add logging to Semantic Kernel
-            skbuilder.Services.AddSingleton(loggerFactory);
-
-            skbuilder.Services.AddLogging(services => services.AddConsole().SetMinimumLevel(LogLevel.Trace)); var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
+            // Add the existing logger factory from DI
+            skbuilder.Services.AddSingleton(loggerFactory); var providerType = aiConfig.Provider?.ToLowerInvariant() ?? "openai";
             if (providerType == "openai" && aiConfig.OpenAI != null)
             {
                 var openAiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
@@ -241,16 +252,18 @@ public static class ServiceRegistration
                 {
                     throw new InvalidOperationException("Foundry endpoint is missing. Please check your configuration file.");
                 }
-
                 skbuilder.AddOpenAIChatCompletion(model, foundryKey, endpoint);
             }
 
             // Build the kernel
             var kernel = skbuilder.Build();
-            return kernel;
-        });
 
-        // Register AISummarizer
+            // Get a logger to verify SK configuration
+            var skLogger = kernel.GetRequiredService<ILoggerFactory>().CreateLogger("SemanticKernel");
+            skLogger.LogInformation("Semantic Kernel configured successfully with {Provider} provider", providerType);
+
+            return kernel;
+        });        // Register AISummarizer
         services.AddScoped(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
@@ -259,10 +272,15 @@ public static class ServiceRegistration
             var promptService = provider.GetRequiredService<PromptTemplateService>();
             var semanticKernel = provider.GetRequiredService<Kernel>();
 
+            // Get timeout configuration from AI service config
+            var timeoutConfig = appConfig.AiService.Timeout ?? new TimeoutConfig();
+
             return new AISummarizer(
               logger,
               promptService,
-              semanticKernel);
+              semanticKernel,
+              null, // chunkingService - use default
+              timeoutConfig);
         });
 
         return services;
@@ -433,15 +451,30 @@ public static class ServiceRegistration
 
         // Register the LoggingService as a singleton early, before any other components
         services.AddSingleton<ILoggingService>(_ => new LoggingService(loggingDir, debug));
-        services.AddSingleton(provider => (LoggingService)provider.GetRequiredService<ILoggingService>());
-
-        // Now configure Microsoft.Extensions.Logging to use our LoggingService
+        services.AddSingleton(provider => (LoggingService)provider.GetRequiredService<ILoggingService>());        // Now configure Microsoft.Extensions.Logging to use our LoggingService
         services.AddLogging(builder =>
         {
             var provider = services.BuildServiceProvider();
             var loggingService = provider.GetRequiredService<ILoggingService>();
             loggingService.ConfigureLogging(builder);
-        });
+        });        // Configure OpenTelemetry for enhanced tracing and debugging
+        services.AddOpenTelemetry()
+            .WithTracing(traceBuilder =>
+            {
+                traceBuilder
+                    .SetResourceBuilder(ResourceBuilder.CreateDefault()
+                        .AddService("NotebookAutomation.Core", "1.0.0"))
+                    .AddSource("NotebookAutomation.Core") // Our custom ActivitySource
+                    .AddSource("Microsoft.SemanticKernel*") // SK internal traces (corrected pattern)
+                    .AddHttpClientInstrumentation() // Trace HTTP calls to AI providers
+                    .AddConsoleExporter(); // Export traces to console for debugging
+
+                // Enable more detailed tracing in debug mode
+                if (debug)
+                {
+                    traceBuilder.SetSampler(new AlwaysOnSampler());
+                }
+            });
 
         return services;
     }

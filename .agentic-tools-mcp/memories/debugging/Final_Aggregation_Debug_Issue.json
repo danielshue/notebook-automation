@@ -1,0 +1,8 @@
+{
+  "id": "4b7993ef-3c6f-4437-b986-c566b40db9ea",
+  "title": "Final Aggregation Debug Issue",
+  "details": "The NotebookAutomation CLI video-notes command is successfully processing videos and generating chunked AI summaries, but the final aggregation step (AggregateSummaries) is returning a generic message: \"Got it! Please provide the YAML frontmatter and source content, and I will synthesize it into the required output format.\" instead of the full aggregated summary. This causes the markdown output to be incomplete despite successful chunk processing. The issue appears to be in the final_summary_prompt.md template or how variables are being passed to the aggregation step.",
+  "category": "debugging",
+  "dateCreated": "2025-06-13T06:45:33.726Z",
+  "dateUpdated": "2025-06-13T06:45:33.726Z"
+}

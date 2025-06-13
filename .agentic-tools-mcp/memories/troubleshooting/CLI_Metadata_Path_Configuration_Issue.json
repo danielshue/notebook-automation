@@ -1,0 +1,8 @@
+{
+  "id": "1e3204c3-4cd8-4fda-a010-6db64d82260b",
+  "title": "CLI Metadata Path Configuration - RESOLVED",
+  "details": "RESOLVED: CLI video-notes command successfully processes video files.\n\nRoot Cause: The MetadataTemplateManager constructor was failing because configuration paths used forward slashes instead of Windows backslashes.\n\nSolution: Updated config.json file at D:\\source\\notebook-automation\\src\\c-sharp\\NotebookAutomation.Cli\\bin\\Debug\\net9.0\\config\\config.json to use proper Windows path format with backslashes:\n- \"metadata_file\": \"D:\\\\source\\\\notebook-automation\\\\config\\\\metadata.yaml\"\n- All other paths similarly updated\n\nTest Result: Successfully processed MBA Operations Management video:\n- Video: 738 MB, 1:29:22 duration, 1920x1080 resolution\n- Transcript: 70,166 characters extracted\n- Output: Generated video notes markdown file\n- OneDrive: Successfully generated sharing link\n- Processing time: 6.73 seconds\n\nCLI now works correctly with proper debug output and full functionality.",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-13T06:13:00.026Z",
+  "dateUpdated": "2025-06-13T06:14:14.819Z"
+}

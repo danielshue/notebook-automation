@@ -1,0 +1,8 @@
+{
+  "id": "bb758e43-04ad-4150-93fd-3c4ae233ad9e",
+  "title": "Banner Issue in Markdown Generation",
+  "details": "FIXED: The MarkdownNoteBuilder class automatically adds 'banner: gies-banner.png' to all generated markdown files, even when it's not desired. This caused unwanted YAML frontmatter fields in the final output.\n\nSOLUTION IMPLEMENTED:\n1. Added ShouldAddDefaultBanner() method that intelligently determines when to add banners\n2. Only adds banners for specific template types: \"main\", \"program\", \"course\" (index pages)\n3. Does NOT add banners for content types like \"video-reference\", \"pdf-reference\", etc.\n4. Respects explicit banner settings in frontmatter (including null/empty values)\n\nChanges made to MarkdownNoteBuilder.cs:\n- CreateMarkdownWithFrontmatter(): Now checks ShouldAddDefaultBanner() before adding banner\n- BuildNote(): Uses same logic instead of always adding banner if not present\n- Added ShouldAddDefaultBanner() helper method with smart template-type-based logic\n\nRESULT: \n- Video and PDF notes will no longer get unwanted banners\n- Index pages (main, program, course) will still get banners as intended\n- Users can explicitly control banner inclusion by setting the banner field\n- The build compiles successfully with no errors\n\nThis fixes the core issue where \"banner: gies-banner.png\" was appearing in all generated markdown files regardless of whether it was wanted.",
+  "category": "bug-fix",
+  "dateCreated": "2025-06-13T18:52:53.926Z",
+  "dateUpdated": "2025-06-13T18:54:44.357Z"
+}

@@ -41,6 +41,13 @@
       "description": "Enhance the metadata extraction logic in the C# NotebookAutomation project to ensure robust capture of module and lesson information from filenames and directory structures, improving the completeness of YAML frontmatter metadata for course-related files.",
       "createdAt": "2025-06-04T19:45:08.604Z",
       "updatedAt": "2025-06-04T19:45:08.604Z"
+    },
+    {
+      "id": "f335ae7d-59d7-4d24-a8e2-06ddee88433a",
+      "name": "Video Notes Pipeline Debug",
+      "description": "Debugging and fixing the video-notes summarization pipeline to ensure correct metadata detection and variable substitution in prompt templates.",
+      "createdAt": "2025-06-13T13:26:34.679Z",
+      "updatedAt": "2025-06-13T13:26:34.679Z"
     }
   ],
   "tasks": [
@@ -259,6 +266,15 @@
       "completed": true,
       "createdAt": "2025-06-13T00:38:45.929Z",
       "updatedAt": "2025-06-13T00:57:46.732Z"
+    },
+    {
+      "id": "e02afbff-b191-45fa-8ea5-33fe74e9f289",
+      "name": "Fix Video Summarization Pipeline Issues",
+      "details": "✅ COMPLETED - Successfully fixed all issues with the video-notes summarization pipeline:\n\n**Issues Resolved:**\n1. ✅ Fixed path conversion in `ConvertOneDriveToVaultPath` method\n2. ✅ Corrected hierarchy detection to use proper vault-relative paths  \n3. ✅ Fixed variable substitution in prompt templates ({{$variableName}} format)\n4. ✅ Updated chunk_summary_prompt.md to use {{$content}}\n5. ✅ Verified final_summary_prompt.md uses {{$input}}\n6. ✅ Enhanced debug logging for path conversion and hierarchy detection\n\n**Files Modified:**\n- `src/c-sharp/NotebookAutomation.Core/Tools/VideoProcessing/VideoNoteProcessor.cs`\n- `prompts/chunk_summary_prompt.md`\n- `prompts/final_summary_prompt.md`\n- `src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs`\n\n**Verification Results:**\n- ✅ Path conversion working: OneDrive → Vault path normalization\n- ✅ Hierarchy detection successful: Program=\"Value Chain Management\", Course=\"Operations Management\", Class=\"operations-management-organization-and-analysis\"\n- ✅ Variable substitution working: All template variables populated correctly\n- ✅ AI summarization successful: Generated 5,868 character comprehensive summary\n- ✅ Output markdown created with proper metadata and structured content\n\n**Test Command Used:**\n```bash\nna.exe video-notes \"C:\\Users\\danshue.REDMOND\\OneDrive\\Education\\MBA-Resources\\Value Chain Management\\Operations Management\\operations-management-organization-and-analysis\\01_course-orientation-operations-strategy\\03_defining-operations-management\\03_01_defining-operations-management.mp4\" --debug --force\n```\n\nThe pipeline now correctly detects and substitutes program, course, and class metadata, and variable substitution for both chunk and aggregation prompts is working as intended.",
+      "projectId": "f335ae7d-59d7-4d24-a8e2-06ddee88433a",
+      "completed": true,
+      "createdAt": "2025-06-13T13:26:45.348Z",
+      "updatedAt": "2025-06-13T13:27:05.880Z"
     }
   ],
   "subtasks": [
