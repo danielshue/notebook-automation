@@ -250,6 +250,15 @@
       "completed": false,
       "createdAt": "2025-06-10T19:12:48.659Z",
       "updatedAt": "2025-06-10T19:12:48.659Z"
+    },
+    {
+      "id": "c5c9792c-dbc8-4c10-add3-091092c17f12",
+      "name": "Fix Config Commands Discovery Inconsistency",
+      "details": "Fix inconsistent configuration discovery in CLI config commands.\n\nPROBLEM: The main CLI uses ConfigManager with proper executable directory discovery, but the config commands use the old AppConfig.FindConfigFile() method which looks in the current working directory. This causes the config commands to fail when run from a different directory than the executable.\n\nSOLUTION: Update ConfigCommands.cs to use the centralized ConfigManager discovery system instead of AppConfig.FindConfigFile().\n\nAFFECTED FILES:\n- NotebookAutomation.Cli\\Commands\\ConfigCommands.cs (primary fix)\n- Possibly other command files that use AppConfig.FindConfigFile()\n\nVALIDATION:\n- Ensure config view/update commands work when run from any directory\n- Ensure consistent behavior between main CLI and config commands\n- Test with debug mode to verify correct config path discovery",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-13T00:38:45.929Z",
+      "updatedAt": "2025-06-13T00:57:46.732Z"
     }
   ],
   "subtasks": [

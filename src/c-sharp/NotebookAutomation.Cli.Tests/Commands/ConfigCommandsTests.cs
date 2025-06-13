@@ -2,16 +2,130 @@
 namespace NotebookAutomation.Cli.Tests.Commands;
 
 /// <summary>
-/// Unit tests for ConfigCommands.
+/// Comprehensive unit tests for the ConfigCommands class functionality.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This test class provides extensive coverage of the ConfigCommands class, which is responsible
+/// for managing configuration-related CLI commands in the Notebook Automation CLI. The tests
+/// verify functionality across multiple categories:
+/// </para>
+/// <list type="bullet">
+/// <item><description><strong>Command Registration:</strong> Validates that config commands are properly registered in the CLI hierarchy</description></item>
+/// <item><description><strong>Configuration Display:</strong> Tests the 'config list-keys' and 'config view' commands for displaying configuration information</description></item>
+/// <item><description><strong>Configuration Updates:</strong> Verifies the 'config update-key' command for modifying configuration values</description></item>
+/// <item><description><strong>Security:</strong> Tests secret masking functionality to protect sensitive information in output</description></item>
+/// <item><description><strong>Error Handling:</strong> Validates proper behavior with invalid inputs and edge cases</description></item>
+/// <item><description><strong>AI Service Configuration:</strong> Tests specific configuration updates for AI service providers (OpenAI, Azure, Foundry)</description></item>
+/// </list>
+/// <para>
+/// The ConfigCommands class supports managing various configuration aspects including:
+/// paths, Microsoft Graph settings, AI service configuration, video extensions,
+/// and other application settings essential for the Notebook Automation workflow.
+/// </para>
+/// <para>
+/// All tests use mocked dependencies to isolate the ConfigCommands logic from external
+/// systems and ensure consistent, reliable test execution. The tests follow the AAA
+/// (Arrange-Act-Assert) pattern for clarity and maintainability.
+/// </para>
+/// </remarks>
+/// <example>
+/// <code>
+/// // Example commands tested by this class:
+/// // na config list-keys
+/// // na config view
+/// // na config update-key aiService.provider OpenAI
+/// // na config update-key videoExtensions ".mp4,.avi,.mov"
+/// </code>
+/// </example>
 [TestClass]
 public class ConfigCommandsTests
 {
     /// <summary>
-    /// Tests that the 'config list-keys' command prints all available configuration keys
-    /// including paths, Microsoft Graph settings, AI service configuration, and video extensions.
+    /// Mock logger for capturing and verifying log output from ConfigCommands operations.
     /// </summary>
-    /// <returns>A task representing the asynchronous test operation.</returns>
+    private Mock<ILogger<ConfigCommands>> mockLogger = null!;
+
+    /// <summary>
+    /// Service provider instance for dependency injection container used in testing.
+    /// </summary>
+    private IServiceProvider serviceProvider = null!;
+
+    /// <summary>
+    /// Mock configuration manager for testing configuration-related operations without external dependencies.
+    /// </summary>
+    private Mock<IConfigManager> mockConfigManager = null!;
+
+    /// <summary>
+    /// Initializes test dependencies and sets up the dependency injection container for each test.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method runs before each test and ensures a clean state by:
+    /// <list type="number">
+    /// <item><description>Creating fresh mock instances for ILogger and IConfigManager</description></item>
+    /// <item><description>Building a real ServiceProvider with mocked dependencies</description></item>
+    /// <item><description>Ensuring proper dependency injection behavior during testing</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// The use of a real ServiceProvider (rather than mocking it) ensures that the dependency
+    /// injection mechanics work correctly while still isolating external dependencies through mocking.
+    /// </para>    /// </remarks>
+    [TestInitialize]
+    public void Setup()
+    {
+        mockLogger = new Mock<ILogger<ConfigCommands>>();
+        mockConfigManager = new Mock<IConfigManager>();
+
+        // Create a real service collection for testing
+        var services = new ServiceCollection();
+        services.AddSingleton(mockConfigManager.Object);
+        serviceProvider = services.BuildServiceProvider();
+    }
+
+    /// <summary>
+    /// Factory method for creating ConfigCommands instances with properly configured test dependencies.
+    /// </summary>
+    /// <returns>A ConfigCommands instance ready for testing with mocked dependencies.</returns>
+    /// <remarks>
+    /// This method ensures consistent creation of ConfigCommands instances across all tests,
+    /// using the same mocked logger and service provider setup. This promotes test reliability
+    /// and reduces code duplication.
+    /// </remarks>
+    private ConfigCommands CreateConfigCommands()
+    {
+        return new ConfigCommands(mockLogger.Object, serviceProvider);
+    }    /// <summary>
+         /// Tests that the 'config list-keys' command prints all available configuration keys
+         /// including paths, Microsoft Graph settings, AI service configuration, and video extensions.
+         /// </summary>
+         /// <remarks>
+         /// <para>
+         /// This test verifies the core functionality of the 'config list-keys' command, which is
+         /// essential for users to discover what configuration options are available in the system.
+         /// The command should display a comprehensive list of all configurable keys organized by category.
+         /// </para>
+         /// <para>
+         /// The test captures console output to verify that key categories are properly displayed,
+         /// including:
+         /// <list type="bullet">
+         /// <item><description>Path configurations (oneDrivePath, obsidianVaultPath, etc.)</description></item>
+         /// <item><description>Microsoft Graph API settings</description></item>
+         /// <item><description>AI service provider configurations</description></item>
+         /// <item><description>Video file extension settings</description></item>
+         /// <item><description>Other application-specific configurations</description></item>
+         /// </list>
+         /// </para>
+         /// <para>
+         /// This is an integration-style test that exercises the full command execution pipeline
+         /// while using mocked dependencies to ensure deterministic behavior.
+         /// </para>
+         /// </remarks>
+         /// <returns>A task representing the asynchronous test operation.</returns>
+         /// <exception cref="AssertFailedException">
+         /// Thrown if expected configuration keys are not found in the command output.
+         /// </exception>
     [TestMethod]
     public async Task ListKeysCommand_PrintsAllAvailableConfigKeys()
     {
@@ -19,8 +133,8 @@ public class ConfigCommandsTests
         var rootCommand = new RootCommand();
         var configOption = new Option<string>("--config");
         var debugOption = new Option<bool>("--debug");
-        _ = new ConfigCommands();
-        ConfigCommands.Register(rootCommand, configOption, debugOption);
+        var configCommands = CreateConfigCommands();
+        configCommands.Register(rootCommand, configOption, debugOption);
 
         var consoleOut = new StringWriter();
         var originalOut = Console.Out;
@@ -42,16 +156,29 @@ public class ConfigCommandsTests
         Assert.IsTrue(output.Contains("microsoft_graph.client_id"));
         Assert.IsTrue(output.Contains("aiservice.provider"));
         Assert.IsTrue(output.Contains("video_extensions"));
-    }
-
-    /// <summary>
-    /// Tests that the PrintViewUsage method displays the expected usage information
-    /// for the 'config view' command, including usage syntax and description.
-    /// </summary>
+    }    /// <summary>
+         /// Tests that the PrintViewUsage method displays the expected usage information
+         /// for the 'config view' command, including usage syntax and description.
+         /// </summary>
+         /// <remarks>
+         /// <para>
+         /// This test verifies that the help/usage information for the 'config view' command
+         /// is properly formatted and contains the necessary information for users to understand
+         /// how to use the command effectively.
+         /// </para>
+         /// <para>
+         /// The test captures console output and validates that the usage text includes
+         /// proper command syntax and helpful descriptions. This ensures users receive
+         /// consistent and helpful guidance when they need assistance with the command.
+         /// </para>
+         /// </remarks>
+         /// <exception cref="AssertFailedException">
+         /// Thrown if the expected usage information is not found in the output.
+         /// </exception>
     [TestMethod]
     public void PrintViewUsage_PrintsExpectedUsage()
     {
-        _ = new ConfigCommands();
+        _ = CreateConfigCommands();
         var originalOut = Console.Out;
         var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
@@ -96,12 +223,33 @@ public class ConfigCommandsTests
         Assert.IsTrue(output.Contains("== Microsoft Graph API =="));
         Assert.IsTrue(output.Contains("== AI Service =="));
         Assert.IsTrue(output.Contains("== Video Extensions =="));
-    }
-
-    /// <summary>
-    /// Tests that UpdateConfigKey correctly parses and sets video extensions
-    /// from a comma-separated list, trimming whitespace and validating the result.
-    /// </summary>
+    }    /// <summary>
+         /// Tests that UpdateConfigKey correctly parses and sets video extensions
+         /// from a comma-separated list, trimming whitespace and validating the result.
+         /// </summary>
+         /// <remarks>
+         /// <para>
+         /// This test validates the configuration update functionality for video file extensions,
+         /// which is critical for the system to recognize and process different video file types
+         /// during notebook automation workflows.
+         /// </para>
+         /// <para>
+         /// The test specifically verifies:
+         /// <list type="bullet">
+         /// <item><description>Proper parsing of comma-separated extension values</description></item>
+         /// <item><description>Automatic whitespace trimming for user convenience</description></item>
+         /// <item><description>Successful update of the AppConfig.VideoExtensions property</description></item>
+         /// <item><description>Validation that all expected extensions are properly stored</description></item>
+         /// </list>
+         /// </para>
+         /// <para>
+         /// This test uses reflection to access the private UpdateConfigKey method, allowing
+         /// direct testing of the core update logic without requiring full command execution.
+         /// </para>
+         /// </remarks>
+         /// <exception cref="AssertFailedException">
+         /// Thrown if the configuration update fails or the parsed extensions don't match expectations.
+         /// </exception>
     [TestMethod]
     public void UpdateConfigKey_VideoExtensions_ParsesList()
     {
@@ -119,12 +267,33 @@ public class ConfigCommandsTests
         CollectionAssert.Contains(trimmed, "mp4", $"Actual: {string.Join(",", trimmed)}");
         CollectionAssert.Contains(trimmed, "webm", $"Actual: {string.Join(",", trimmed)}");
         CollectionAssert.Contains(trimmed, "avi", $"Actual: {string.Join(",", trimmed)}");
-    }
-
-    /// <summary>
-    /// Tests that UpdateConfigKey correctly updates the AI service provider setting
-    /// when given a valid "aiservice.provider" key-value pair.
-    /// </summary>
+    }    /// <summary>
+         /// Tests that UpdateConfigKey correctly updates the AI service provider setting
+         /// when given a valid "aiservice.provider" key-value pair.
+         /// </summary>
+         /// <remarks>
+         /// <para>
+         /// This test validates the configuration update functionality for AI service provider settings,
+         /// which is essential for the notebook automation system to interface with different AI services
+         /// for content processing and analysis.
+         /// </para>
+         /// <para>
+         /// The test verifies that the system can successfully:
+         /// <list type="bullet">
+         /// <item><description>Parse the nested configuration key "aiservice.provider"</description></item>
+         /// <item><description>Update the corresponding AppConfig.AiService.Provider property</description></item>
+         /// <item><description>Return success status for valid configuration updates</description></item>
+         /// <item><description>Support switching between different AI providers (OpenAI, Azure, Foundry)</description></item>
+         /// </list>
+         /// </para>
+         /// <para>
+         /// This functionality is critical for users who need to configure different AI service
+         /// providers based on their specific requirements, access permissions, or organizational policies.
+         /// </para>
+         /// </remarks>
+         /// <exception cref="AssertFailedException">
+         /// Thrown if the configuration update fails or the provider value is not set correctly.
+         /// </exception>
     [TestMethod]
     public void UpdateConfigKey_AiServiceProvider_UpdatesProvider()
     {
@@ -196,7 +365,7 @@ public class ConfigCommandsTests
     [TestMethod]
     public void MaskSecret_ReturnsMaskedOrNotSet()
     {
-        _ = new ConfigCommands();
+        _ = CreateConfigCommands();
         var maskSecretMethod = typeof(ConfigCommands)
             .GetMethod("MaskSecret", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
         Assert.IsNotNull(maskSecretMethod);
@@ -270,9 +439,8 @@ public class ConfigCommandsTests
     /// </summary>
     [TestMethod]
     public void ConfigShow_NoArgs_PrintsUsage()
-    {
-        // Arrange
-        _ = new ConfigCommands();
+    {        // Arrange
+        _ = CreateConfigCommands();
         var originalOut = Console.Out;
         var stringWriter = new StringWriter();
         Console.SetOut(stringWriter);
@@ -300,9 +468,8 @@ public class ConfigCommandsTests
         // Arrange
         var rootCommand = new RootCommand();
         var configOption = new Option<string>("--config");
-        var debugOption = new Option<bool>("--debug");
-        var configCommands = new ConfigCommands();
-        ConfigCommands.Register(rootCommand, configOption, debugOption);
+        var debugOption = new Option<bool>("--debug"); var configCommands = CreateConfigCommands();
+        configCommands.Register(rootCommand, configOption, debugOption);
 
         // Act
         var configCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config") as Command;
@@ -321,7 +488,7 @@ public class ConfigCommandsTests
     public void ConfigCommand_Initialization_ShouldSucceed()
     {
         // Arrange
-        var command = new ConfigCommands();
+        var command = CreateConfigCommands();
 
         // Act & Assert
         Assert.IsNotNull(command);
@@ -337,11 +504,10 @@ public class ConfigCommandsTests
         // Arrange
         var rootCommand = new RootCommand();
         var configOption = new Option<string>("--config");
-        var debugOption = new Option<bool>("--debug");
-        var configCommands = new ConfigCommands();
+        var debugOption = new Option<bool>("--debug"); var configCommands = CreateConfigCommands();
 
         // Act
-        ConfigCommands.Register(rootCommand, configOption, debugOption);
+        configCommands.Register(rootCommand, configOption, debugOption);
 
         // Assert
         var configCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "config");

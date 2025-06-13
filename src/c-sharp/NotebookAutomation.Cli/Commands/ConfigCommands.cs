@@ -1,31 +1,102 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using Microsoft.Extensions.Logging;
+
 namespace NotebookAutomation.Cli.Commands;
 
 /// <summary>
-/// Provides CLI commands for managing application configuration.
+/// Provides comprehensive CLI commands for managing application configuration in the Notebook Automation system.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This class registers the 'config' command group, including subcommands for:
+/// The ConfigCommands class is the central hub for all configuration management functionality
+/// in the Notebook Automation CLI. It provides users with powerful tools to inspect, modify,
+/// and manage their configuration settings without requiring manual file editing or deep
+/// technical knowledge of the configuration system.
+/// </para>
+/// <para>
+/// This class registers and implements the complete 'config' command group, including:
 /// <list type="bullet">
-/// <item><description>Displaying available configuration keys</description></item>
-/// <item><description>Updating configuration values</description></item>
+/// <item><description><strong>config list-keys</strong> - Displays all available configuration keys organized by category</description></item>
+/// <item><description><strong>config view</strong> - Shows current configuration values with proper formatting and secret masking</description></item>
+/// <item><description><strong>config update</strong> - Updates specific configuration values with validation and type safety</description></item>
+/// <item><description><strong>config secrets</strong> - Manages user secrets and sensitive configuration data</description></item>
+/// <item><description><strong>config display-secrets</strong> - Shows current secret configurations with appropriate masking</description></item>
 /// </list>
 /// </para>
 /// <para>
-/// The configuration keys include paths, Microsoft Graph API settings, video extensions,
-/// and AI service provider settings.
+/// The configuration system supports a wide range of settings essential for notebook automation:
+/// <list type="bullet">
+/// <item><description><strong>Path Settings:</strong> OneDrive paths, Obsidian vault locations, temporary directories</description></item>
+/// <item><description><strong>Microsoft Graph API:</strong> Client IDs, tenant settings, authentication parameters</description></item>
+/// <item><description><strong>AI Service Providers:</strong> OpenAI, Azure OpenAI, and Foundry service configurations</description></item>
+/// <item><description><strong>Media Processing:</strong> Video file extensions, processing parameters</description></item>
+/// <item><description><strong>Security:</strong> API keys, secrets, and sensitive authentication data</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// Key features of the configuration management system:
+/// <list type="bullet">
+/// <item><description><strong>Type Safety:</strong> Automatic validation and type conversion for configuration values</description></item>
+/// <item><description><strong>Secret Management:</strong> Secure handling of sensitive data with automatic masking in output</description></item>
+/// <item><description><strong>Hierarchical Keys:</strong> Support for nested configuration using dot notation (e.g., "aiService.provider")</description></item>
+/// <item><description><strong>User-Friendly Output:</strong> Formatted display with clear organization and helpful descriptions</description></item>
+/// <item><description><strong>Cross-Platform:</strong> Consistent behavior across Windows, macOS, and Linux environments</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The class uses dependency injection to access configuration management services,
+/// ensuring proper separation of concerns and testability. It integrates seamlessly
+/// with the broader CLI infrastructure and follows established patterns for command
+/// registration and execution.
 /// </para>
 /// </remarks>
 /// <example>
 /// <code>
-/// var rootCommand = new RootCommand();
-/// ConfigCommands.Register(rootCommand);
-/// rootCommand.Invoke("config list");
+/// // Basic usage in CLI setup
+/// var configCommands = new ConfigCommands(logger, serviceProvider);
+/// configCommands.Register(rootCommand, configOption, debugOption);
+///
+/// // Example CLI commands this class enables:
+/// // na config list-keys                           // Show all available configuration keys
+/// // na config view                                // Display current configuration
+/// // na config update aiService.provider OpenAI    // Update AI service provider
+/// // na config update videoExtensions ".mp4,.avi"  // Update video file extensions
+/// // na config secrets                             // Manage user secrets
+/// // na config display-secrets                     // Show secret configuration status
 /// </code>
 /// </example>
 internal class ConfigCommands
 {
+    /// <summary>
+    /// Logger instance for recording configuration operation events, errors, and debug information.
+    /// </summary>
+    private readonly ILogger<ConfigCommands> _logger;
+
+    /// <summary>
+    /// Service provider for dependency injection, enabling access to configuration services and other dependencies.
+    /// </summary>
+    private readonly IServiceProvider _serviceProvider;
+
+    /// <summary>
+    /// Configuration manager instance for centralized configuration file discovery, loading, and management operations.
+    /// </summary>
+    private readonly IConfigManager _configManager;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConfigCommands"/> class.
+    /// </summary>
+    /// <param name="logger">The logger instance for logging information and errors.</param>
+    /// <param name="serviceProvider">The service provider for dependency injection.</param>
+    public ConfigCommands(ILogger<ConfigCommands> logger, IServiceProvider serviceProvider)
+    {
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+        _configManager = serviceProvider.GetRequiredService<IConfigManager>();
+        _logger.LogDebug("Config command initialized");
+    }
+
+
     /// <summary>
     /// Prints the available configuration keys that can be updated.
     /// </summary>
@@ -80,7 +151,8 @@ internal class ConfigCommands
     /// <para>
     /// Displays the command-line usage syntax, description, and available options
     /// for the 'config view' command in a formatted, colorized style.
-    /// </para>    ///. </remarks>
+    /// </para>
+    /// </remarks>
     internal static void PrintViewUsage()
     {
         var optionsText = $"  {AnsiColors.OKGREEN}--config, -c <config>{AnsiColors.ENDC}    Path to the configuration file\n" +
@@ -98,7 +170,7 @@ internal class ConfigCommands
     /// <param name="rootCommand">The root command to add subcommands to.</param>
     /// <param name="configOption">The global config file option.</param>
     /// <param name="debugOption">The global debug option.</param>
-    public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption)
+    public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption)
     {
         // Config command group (no special AI options)
         var configCommand = new Command("config", "Configuration management commands");
@@ -109,11 +181,9 @@ internal class ConfigCommands
         {
             PrintAvailableConfigKeys(context);
         });
-        configCommand.AddCommand(listKeysCommand);
-
-        // config view
+        configCommand.AddCommand(listKeysCommand);        // config view
         var viewCommand = new Command("view", "Show the current configuration");
-        viewCommand.SetHandler(context =>
+        viewCommand.SetHandler(async context =>
         {
             // Check if any arguments were provided
             if (context.ParseResult.Tokens.Count == 0 && context.ParseResult.UnparsedTokens.Count == 0)
@@ -124,19 +194,30 @@ internal class ConfigCommands
 
             string? configPath = context.ParseResult.GetValueForOption(configOption);
             bool debug = context.ParseResult.GetValueForOption(debugOption);
+
             try
             {
-                // Always load config directly from JSON for display
-                var configFile = configPath ?? AppConfig.FindConfigFile();
-                if (!string.IsNullOrEmpty(configFile))
+                // Use ConfigManager for consistent configuration discovery
+                var discoveryOptions = new ConfigDiscoveryOptions
                 {
-                    Console.WriteLine($"\n{AnsiColors.OKCYAN}Using configuration file: {AnsiColors.BOLD}{configFile}{AnsiColors.ENDC}\n");
+                    ConfigPath = configPath,
+                    Debug = debug,
+                    ExecutableDirectory = AppContext.BaseDirectory ?? Environment.CurrentDirectory,
+                    WorkingDirectory = Environment.CurrentDirectory
+                }; var configResult = await _configManager.LoadConfigurationAsync(discoveryOptions);
+
+                if (!configResult.IsSuccess || string.IsNullOrEmpty(configResult.ConfigurationPath))
+                {
+                    Console.WriteLine("No configuration file found. Using defaults.");
+                    return;
                 }
 
-                var appConfig = AppConfig.LoadFromJsonFile(configFile);
+                Console.WriteLine($"\n{AnsiColors.OKCYAN}Using configuration file: {AnsiColors.BOLD}{configResult.ConfigurationPath}{AnsiColors.ENDC}\n");
+
+                var appConfig = AppConfig.LoadFromJsonFile(configResult.ConfigurationPath);
                 PrintConfigFormatted(appConfig);
             }
-            catch (FileNotFoundException ex)
+            catch (Exception ex)
             {
                 ExceptionHandler.HandleException(ex, "Loading configuration file");
             }
@@ -149,8 +230,7 @@ internal class ConfigCommands
         {
             keyArg,
             valueArg,
-        };
-        updateCommand.SetHandler(context =>
+        }; updateCommand.SetHandler(async context =>
         {
             try
             {
@@ -160,17 +240,32 @@ internal class ConfigCommands
                 string? configPath = context.ParseResult.GetValueForOption(configOption);
                 bool debug = context.ParseResult.GetValueForOption(debugOption);
 
-                // Always load config directly from JSON for update
-                var configFile = configPath ?? AppConfig.FindConfigFile();
-                var appConfig = AppConfig.LoadFromJsonFile(configFile);
+                // Use ConfigManager for consistent configuration discovery
+                var discoveryOptions = new ConfigDiscoveryOptions
+                {
+                    ConfigPath = configPath,
+                    Debug = debug,
+                    ExecutableDirectory = AppContext.BaseDirectory ?? Environment.CurrentDirectory,
+                    WorkingDirectory = Environment.CurrentDirectory
+                };
+
+                var configResult = await _configManager.LoadConfigurationAsync(discoveryOptions);
+
+                if (!configResult.IsSuccess || string.IsNullOrEmpty(configResult.ConfigurationPath))
+                {
+                    Console.WriteLine("No configuration file found. Cannot update configuration.");
+                    return;
+                }
+
+                var appConfig = AppConfig.LoadFromJsonFile(configResult.ConfigurationPath);
                 if (UpdateConfigKey(appConfig, key, value))
                 {
-                    appConfig.SaveToJsonFile(configFile);
+                    appConfig.SaveToJsonFile(configResult.ConfigurationPath);
                     Console.WriteLine($"Updated '{key}' to '{value}'.");
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to update key '{key}'. Key not found or invalid.");                    // Print available keys if update failed
+                    Console.WriteLine($"Failed to update key '{key}'. Key not found or invalid.");// Print available keys if update failed
                     ConfigCommands.PrintAvailableConfigKeys(context);
                 }
             }
@@ -286,7 +381,8 @@ internal class ConfigCommands
     /// This method sets up dependency injection using the specified configuration file path.
     /// If the configuration file doesn't exist at the specified path, an error message is displayed.
     /// </para>
-    /// </remarks>    /// <exception cref="FileNotFoundException">Thrown when the configuration file is not found at the specified path.</exception>
+    /// </remarks>
+    /// <exception cref="FileNotFoundException">Thrown when the configuration file is not found at the specified path.</exception>
     public static void Initialize(string? configPath, bool debug)
     {
         // Initialize dependency injection if needed
@@ -631,12 +727,42 @@ internal class ConfigCommands
         }
 
         Console.WriteLine($"\n{AnsiColors.GREY}Tip: Use '{AnsiColors.BOLD}config update <key> <value>{AnsiColors.ENDC}{AnsiColors.GREY}' to change a setting.{AnsiColors.ENDC}\n");
-    }
-
-    /// <summary>
-    /// Displays the status of user secrets in the configuration.
-    /// </summary>
-    /// <param name="userSecrets">The user secrets helper.</param>
+    }    /// <summary>
+         /// Displays the status of user secrets in the configuration system.
+         /// </summary>
+         /// <param name="userSecrets">The user secrets helper instance for checking secret availability.</param>
+         /// <remarks>
+         /// <para>
+         /// This method provides a formatted display of user secret status without revealing actual secret values.
+         /// It checks for the presence of commonly used secrets in the Notebook Automation system and displays
+         /// whether each secret is set or not set, along with helpful guidance for managing secrets.
+         /// </para>
+         /// <para>
+         /// The method checks the following common secrets:
+         /// <list type="bullet">
+         /// <item><description><strong>OpenAI:ApiKey</strong> - API key for OpenAI service integration</description></item>
+         /// <item><description><strong>Microsoft:ClientId</strong> - Client ID for Microsoft Graph API access</description></item>
+         /// <item><description><strong>Microsoft:TenantId</strong> - Tenant ID for Microsoft Graph API authentication</description></item>
+         /// </list>
+         /// </para>
+         /// <para>
+         /// For each secret, the display shows either "[Set]" or "[Not Set]" without revealing the actual values,
+         /// maintaining security while providing useful status information. The method also provides command-line
+         /// examples for managing secrets using the dotnet user-secrets tool.
+         /// </para>
+         /// </remarks>
+         /// <example>
+         /// <code>
+         /// var userSecrets = serviceProvider.GetRequiredService&lt;UserSecretsHelper&gt;();
+         /// DisplayUserSecrets(userSecrets);
+         ///
+         /// // Output example:
+         /// // User Secrets Status
+         /// // OpenAI API Key: [Set]
+         /// // Microsoft Graph Client ID: [Not Set]
+         /// // Microsoft Graph Tenant ID: [Set]
+         /// </code>
+         /// </example>
     private static void DisplayUserSecrets(UserSecretsHelper userSecrets)
     {
         AnsiConsoleHelper.WriteHeading("User Secrets Status");
@@ -658,13 +784,43 @@ internal class ConfigCommands
         Console.WriteLine("  dotnet user-secrets list --project src/c-sharp/NotebookAutomation.Cli");
         Console.WriteLine();
         AnsiConsoleHelper.WriteInfo("For more information, see: src/c-sharp/docs/UserSecrets.md");
-    }
-
-    /// <summary>
-    /// Masks a secret value for display.
-    /// </summary>
-    /// <param name="secret">The secret to mask.</param>
-    /// <returns>A masked version of the secret, or "[Not Set]" if it's null or empty.</returns>
+    }    /// <summary>
+         /// Masks a secret value for secure display in configuration output.
+         /// </summary>
+         /// <param name="secret">The secret string to mask for display purposes.</param>
+         /// <returns>
+         /// A masked version of the secret that preserves privacy while indicating presence.
+         /// Returns "[Not Set]" if the secret is null or empty, "[Set]" for short secrets,
+         /// or a partially masked version showing only the first and last few characters for longer secrets.
+         /// </returns>
+         /// <remarks>
+         /// <para>
+         /// This method implements a security-conscious approach to displaying secret values in configuration
+         /// output. It ensures that sensitive information like API keys, passwords, and tokens are never
+         /// displayed in full, while still providing useful feedback about their presence and basic structure.
+         /// </para>
+         /// <para>
+         /// The masking strategy varies based on the secret length:
+         /// <list type="bullet">
+         /// <item><description><strong>Null or empty:</strong> Returns "[Not Set]" to indicate no value is configured</description></item>
+         /// <item><description><strong>Short secrets (≤8 characters):</strong> Returns "[Set]" to indicate presence without revealing structure</description></item>
+         /// <item><description><strong>Long secrets (&gt;8 characters):</strong> Returns first 3 and last 3 characters with "..." in between</description></item>
+         /// </list>
+         /// </para>
+         /// <para>
+         /// This approach balances security with usability, allowing users to verify that their secrets
+         /// are properly configured without exposing sensitive data in logs, screenshots, or shared terminal output.
+         /// </para>
+         /// </remarks>
+         /// <example>
+         /// <code>
+         /// string result1 = MaskSecret(null);                    // Returns: "[Not Set]"
+         /// string result2 = MaskSecret("");                      // Returns: "[Not Set]"
+         /// string result3 = MaskSecret("short");                 // Returns: "[Set]"
+         /// string result4 = MaskSecret("sk-1234567890abcdef");   // Returns: "sk-...def"
+         /// string result5 = MaskSecret("very-long-api-key-here"); // Returns: "ver...ere"
+         /// </code>
+         /// </example>
     private static string MaskSecret(string? secret)
     {
         if (string.IsNullOrEmpty(secret))
