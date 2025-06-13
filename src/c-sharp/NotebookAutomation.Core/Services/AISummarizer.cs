@@ -295,13 +295,13 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
             string chunkSystemPrompt = !string.IsNullOrEmpty(chunkPromptTemplate)
                 ? chunkPromptTemplate
                 : "You are an expert MBA instructor. Summarize the following content from video transcripts and course PDFs, highlighting key concepts, frameworks, and real-world applications relevant to MBA studies.";
-
             var summarizeChunkFunction = semanticKernel.CreateFunctionFromPrompt(
                 chunkSystemPrompt + "\n{{$input}}",
                 new OpenAIPromptExecutionSettings
                 {
                     MaxTokens = 2048,
-                });
+                },
+                functionName: "SummarizeChunk");
 
             // Process each chunk individually
             var chunkSummaries = new List<string>();
@@ -364,15 +364,14 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
             // Define the aggregation function for final MBA summary
             string finalSystemPrompt = !string.IsNullOrEmpty(finalPromptTemplate)
                 ? finalPromptTemplate
-                : "You are an academic editor specializing in MBA coursework. Combine multiple partial summaries into one cohesive summary that emphasizes overarching themes, strategic frameworks, and actionable insights for students.";
-
-            // this is the final prompt that will be used to aggregate the summaries
+                : "You are an academic editor specializing in MBA coursework. Combine multiple partial summaries into one cohesive summary that emphasizes overarching themes, strategic frameworks, and actionable insights for students.";            // this is the final prompt that will be used to aggregate the summaries
             var aggregateSummariesFunction = semanticKernel.CreateFunctionFromPrompt(
                 finalSystemPrompt + "\n{{$input}}",
                 new OpenAIPromptExecutionSettings
                 {
                     MaxTokens = 2048,
-                });
+                },
+                functionName: "AggregateSummaries");
 
             // Combine and finalize
             string allSummaries = string.Join("\n\n", chunkSummaries);
@@ -605,9 +604,7 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
             // Use a default prompt if none provided
             string effectivePrompt = string.IsNullOrWhiteSpace(prompt)
                 ? "Provide a concise summary of the following text, highlighting key points and main ideas:"
-                : prompt;
-
-            // Create a semantic function for summarization
+                : prompt;            // Create a semantic function for summarization
             var function = semanticKernel.CreateFunctionFromPrompt(
                 effectivePrompt + "\n{{$input}}",
                 new OpenAIPromptExecutionSettings
@@ -615,7 +612,8 @@ public class AISummarizer(ILogger<AISummarizer> logger, IPromptService? promptSe
                     MaxTokens = 4000,
                     Temperature = 1.0f,
                     TopP = 1.0f,
-                });
+                },
+                functionName: "Summarize");
 
             // Check for cancellation before invoking
             cancellationToken.ThrowIfCancellationRequested();
