@@ -14,6 +14,7 @@ public class ConfigurationException : Exception
     /// <summary>
     /// Initializes a new instance of the <see cref="ConfigurationException"/> class.
     /// </summary>
+
     public ConfigurationException()
     {
     }
