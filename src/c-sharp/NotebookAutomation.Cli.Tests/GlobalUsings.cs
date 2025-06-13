@@ -8,6 +8,7 @@ global using System.Threading;
 global using System.Threading.Tasks;
 
 // Microsoft Extensions
+global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 
 // Microsoft Testing Framework

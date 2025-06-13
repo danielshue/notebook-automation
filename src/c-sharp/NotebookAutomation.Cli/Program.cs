@@ -79,15 +79,17 @@ internal class Program
             description: "Enable verbose output");
         var dryRunOption = new Option<bool>(
             aliases: ["--dry-run"],
-            description: "Simulate actions without making changes");
-        rootCommand.AddGlobalOption(configOption);
+            description: "Simulate actions without making changes"); rootCommand.AddGlobalOption(configOption);
         rootCommand.AddGlobalOption(debugOption);
         rootCommand.AddGlobalOption(verboseOption);
         rootCommand.AddGlobalOption(dryRunOption);
+
         if (args.Contains("--debug") || args.Contains("-d"))
         {
             AnsiConsoleHelper.WriteInfo($"Debug mode enabled");
-        } // Parse config option early to use it in dependency injection setup
+        }
+
+        // Parse config option early to use it in dependency injection setup
 
         string? configPath = null;
         for (int i = 0; i < args.Length - 1; i++)
@@ -156,16 +158,16 @@ internal class Program
         var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());
         VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
         var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
-        PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-
-        var markdownCommands = new MarkdownCommands(
+        PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption); var markdownCommands = new MarkdownCommands(
             loggerFactory.CreateLogger<MarkdownCommands>(),
             serviceProvider.GetRequiredService<AppConfig>(),
             serviceProvider);
         markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
-        var configCommands = new ConfigCommands();
-        ConfigCommands.Register(rootCommand, configOption, debugOption); var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>());
+        var configCommands = new ConfigCommands(loggerFactory.CreateLogger<ConfigCommands>(), serviceProvider);
+        configCommands.Register(rootCommand, configOption, debugOption);
+
+        var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>());
         oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Print help if no subcommand or arguments are provided
@@ -244,7 +246,8 @@ internal class Program
     /// <param name="debug">Whether debug mode is enabled.</param>
     /// <returns>An <see cref="IServiceProvider"/> instance configured with application services.</returns>
     public static IServiceProvider SetupDependencyInjection(string? configPath, bool debug)
-    {        // Determine environment
+    {
+        // Determine environment
         string environment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT") ??
                              Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ??
                              "Production";

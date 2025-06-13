@@ -39,12 +39,12 @@ public static class ExceptionHandler
         if (_debugMode)
         {
             // In debug mode, log the full exception details for internal tracking
-            _logger?.LogError(exception, "Failed to execute {Operation}: {Message}", operation, exception.Message);
+            _logger?.LogError(exception, $"Failed to execute {operation}: {exception.Message}");
         }
         else
         {
-            // In normal mode, log only the message without stack trace
-            _logger?.LogError("Failed to execute {Operation}: {Message}", operation, exception.Message);
+            // In normal mode, log with the exception for tracking but simpler message format
+            _logger?.LogError(exception, $"Failed to execute {operation}: {exception.Message}");
         }
 
         if (_debugMode)
