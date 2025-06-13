@@ -1,7 +1,6 @@
 ---
 schema: 1
 name: chunk_summary
-function: chunk_summary
 description: Summarize a chunk of transcript text for MBA course materials
 template_format: semantic-kernel
 auto-generated-state: writable

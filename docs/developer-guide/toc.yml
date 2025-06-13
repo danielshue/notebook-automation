@@ -2,6 +2,8 @@
   href: index.md
 - name: Architecture
   href: architecture.md
+- name: AI Summary Processing Flow
+  href: ai-summary-flow.md
 - name: Contributing
   href: contributing.md
 - name: Building from Source

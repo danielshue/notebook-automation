@@ -22,7 +22,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     private readonly IOneDriveService? _oneDriveService;
     private readonly AppConfig? _appConfig;
     private readonly MetadataTemplateManager _templateManager;
-    private readonly MetadataHierarchyDetector _hierarchyDetector;
+    private readonly IMetadataHierarchyDetector _hierarchyDetector;
     private readonly IYamlHelper? _yamlHelper;
 
     /// <summary>
@@ -30,8 +30,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// </summary>
     /// <param name="logger">The logger instance for logging diagnostic and error information.</param>
     /// <param name="aiSummarizer">The AI summarizer service for generating summaries.</param>
-    /// <param name="yamlHelper">The YAML helper for processing YAML frontmatter in markdown documents.</param>
-    /// <param name="hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
+    /// <param name="yamlHelper">The YAML helper for processing YAML frontmatter in markdown documents.</param>    /// <param name="hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
     /// <param name="templateManager">The metadata template manager for handling metadata templates.</param>
     /// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>
     /// <param name="appConfig">Optional application configuration for metadata management.</param>
@@ -40,7 +39,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// and hierarchical detection.
     /// </remarks>
     public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, AISummarizer aiSummarizer,
-    IYamlHelper yamlHelper, MetadataHierarchyDetector hierarchyDetector,
+    IYamlHelper yamlHelper, IMetadataHierarchyDetector hierarchyDetector,
     MetadataTemplateManager templateManager,
     MarkdownNoteBuilder markdownNoteBuilder,
     IOneDriveService? oneDriveService = null, AppConfig? appConfig = null) : base(logger, aiSummarizer, markdownNoteBuilder)
@@ -473,33 +472,29 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             {
                 mergedMetadata[kvp.Key] = kvp.Value!;
             }
-        } // Apply path-based hierarchy detection if file path is available
-
-        // Note: We temporarily add the path to metadata just for hierarchy detection
-        var pathForHierarchy = metadata?.TryGetValue("_internal_path", out object? pathValue) == true ? pathValue?.ToString() : null;
-        if (!string.IsNullOrEmpty(pathForHierarchy))
+        }        // Apply hierarchy detection if _internal_path is provided
+        if (mergedMetadata.TryGetValue("_internal_path", out var internalPathObj) && internalPathObj is string internalPath)
         {
             try
             {
-                Logger.LogDebug($"Detecting hierarchy information from path: {pathForHierarchy}");
-                var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(pathForHierarchy);                // For videos, we want all hierarchy information regardless of level
-
-                // since videos are content files, not index files
-                var updated = _hierarchyDetector.UpdateMetadataWithHierarchy(
-                    mergedMetadata.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value),
-                    hierarchyInfo,
-                    "module"); mergedMetadata = updated.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!);
-                Logger.LogInformation(
-                    $"Added hierarchy metadata for path {pathForHierarchy!} - Program: {hierarchyInfo["program"]}, Course: {hierarchyInfo["course"]}, Class: {hierarchyInfo["class"]}");
+                Logger.LogDebug("Applying hierarchy detection for path: {Path}", internalPath);
+                var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(internalPath);
+                var nullableMetadata = mergedMetadata.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
+                var updatedMetadata = _hierarchyDetector.UpdateMetadataWithHierarchy(nullableMetadata, hierarchyInfo, "video");
+                mergedMetadata = updatedMetadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value ?? new object());
+                Logger.LogDebug("Applied hierarchy detection - program: {Program}, course: {Course}, class: {Class}",
+                    hierarchyInfo.GetValueOrDefault("program", ""),
+                    hierarchyInfo.GetValueOrDefault("course", ""),
+                    hierarchyInfo.GetValueOrDefault("class", ""));
             }
             catch (Exception ex)
             {
-                Logger.LogWarning(ex, $"Error detecting hierarchy information from path: {pathForHierarchy}");
+                Logger.LogWarning(ex, "Error applying hierarchy detection for path: {Path}", internalPath);
             }
         }
 
         // Remove internal path field as it's only used for hierarchy detection
-        mergedMetadata.Remove("_internal_path");        // Apply template enhancements
+        mergedMetadata.Remove("_internal_path");// Apply template enhancements
         try
         {
             // Add template metadata (template-type, etc.)
@@ -965,10 +960,26 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         int? timeoutSeconds = null,
         string? resourcesRoot = null,
         bool noShareLinks = false)
-    {
+    {        // Extract metadata and transcript
+        var metadata = await ExtractMetadataAsync(videoPath).ConfigureAwait(false);        // Apply path-based hierarchy detection early so course info is available for AI prompts
+        try
+        {
+            // Convert OneDrive path to equivalent vault path for hierarchy detection
+            string vaultPath = ConvertOneDriveToVaultPath(videoPath);
+            Logger.LogDebug($"Detecting hierarchy information from vault path: {vaultPath} (converted from OneDrive path: {videoPath})");
+            var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(vaultPath);// Update metadata with hierarchy information for video content
+            metadata = _hierarchyDetector.UpdateMetadataWithHierarchy(
+                metadata.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value),
+                hierarchyInfo,
+                "video-note");
 
-        // Extract metadata and transcript
-        var metadata = await ExtractMetadataAsync(videoPath).ConfigureAwait(false);
+            Logger.LogInformation(
+                $"Added hierarchy metadata for path {videoPath} - Program: {hierarchyInfo.GetValueOrDefault("program", "")}, Course: {hierarchyInfo.GetValueOrDefault("course", "")}, Class: {hierarchyInfo.GetValueOrDefault("class", "")}");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, $"Error detecting hierarchy information from path: {videoPath}");
+        }
 
         // Find transcript file and store its path in metadata
         string? transcriptPath = FindTranscriptPath(videoPath);
@@ -1030,14 +1041,29 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         else
         {
             // Only call AI summarizer when summary is actually requested
-            Logger.LogInformation($"Generating AI summary for video: {videoPath}");
-
-            // Pass title and metadata for prompt variables
+            Logger.LogInformation($"Generating AI summary for video: {videoPath}");            // Pass title and metadata for prompt variables
             var promptVariables = new Dictionary<string, string>();
             if (metadata.TryGetValue("title", out var titleObj) && titleObj != null)
             {
                 promptVariables["title"] = titleObj.ToString() ?? "Untitled Video";
-            } // Add YAML frontmatter as a variable
+            }
+
+            // Add course information if available from metadata
+            if (metadata.TryGetValue("course", out var courseObj) && courseObj != null)
+            {
+                promptVariables["course"] = courseObj.ToString() ?? "";
+            }            // Add OneDrive path information
+            try
+            {
+                string onedrivePath = _oneDriveService?.MapLocalToOneDrivePath(videoPath) ?? "";
+                promptVariables["onedrivePath"] = onedrivePath;
+                Logger.LogDebug($"Added onedrivePath variable: {onedrivePath}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogDebug(ex, "Could not determine OneDrive path for video");
+                promptVariables["onedrivePath"] = "";
+            }// Add YAML frontmatter as a variable
 
             string yamlContent = BuildYamlFrontmatter(metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
             promptVariables["yamlfrontmatter"] = yamlContent;
@@ -1082,5 +1108,58 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         string? transcript = TryLoadTranscript(filePath);
         string text = transcript ?? string.Empty;
         return (text, metadata);
+    }
+
+    /// <summary>
+    /// Converts an OneDrive file path to the equivalent vault path for hierarchy detection.
+    /// </summary>
+    /// <param name="oneDrivePath">The OneDrive file path.</param>
+    /// <returns>The equivalent vault path.</returns>
+    private string ConvertOneDriveToVaultPath(string oneDrivePath)
+    {
+        try
+        {
+            // Get the configured OneDrive resources root and vault root
+            string onedriveRoot = _appConfig?.Paths?.OnedriveFullpathRoot ?? "";
+            string onedriveResourcesPath = _appConfig?.Paths?.OnedriveResourcesBasepath ?? "";
+            string vaultRoot = _appConfig?.Paths?.NotebookVaultFullpathRoot ?? "";
+
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - Input: {oneDrivePath}");
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - OnedriveRoot: {onedriveRoot}");
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - OnedriveResourcesPath: {onedriveResourcesPath}");
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - VaultRoot: {vaultRoot}");
+
+            if (string.IsNullOrEmpty(onedriveRoot) || string.IsNullOrEmpty(vaultRoot))
+            {
+                Logger.LogWarning("OneDrive or vault root not configured. Using original path for hierarchy detection.");
+                return oneDrivePath;
+            }            // Build the full OneDrive resources root path
+            string fullOnedriveResourcesRoot = Path.Combine(onedriveRoot, onedriveResourcesPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            // Normalize the path separators for comparison
+            fullOnedriveResourcesRoot = Path.GetFullPath(fullOnedriveResourcesRoot);
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - FullOnedriveResourcesRoot: {fullOnedriveResourcesRoot}");
+
+            // Check if the OneDrive path is under the resources root
+            if (oneDrivePath.StartsWith(fullOnedriveResourcesRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                // Get the relative path from the OneDrive resources root
+                string relativePath = Path.GetRelativePath(fullOnedriveResourcesRoot, oneDrivePath);
+                Logger.LogDebug($"ConvertOneDriveToVaultPath - RelativePath: {relativePath}");
+
+                // Combine with vault root to get the equivalent vault path
+                string vaultPath = Path.Combine(vaultRoot, relativePath);
+                Logger.LogDebug($"ConvertOneDriveToVaultPath - Output VaultPath: {vaultPath}");
+                return vaultPath;
+            }
+
+            // If not under resources root, return the original path
+            Logger.LogWarning($"OneDrive path is not under resources root. Using original path for hierarchy detection: {oneDrivePath}");
+            return oneDrivePath;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, $"Error converting OneDrive path to vault path. Using original path: {oneDrivePath}");
+            return oneDrivePath;
+        }
     }
 }

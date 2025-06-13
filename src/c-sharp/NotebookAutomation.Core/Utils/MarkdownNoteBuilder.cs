@@ -31,13 +31,16 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper)
     /// </remarks>
     /// <example>
     /// <code>
-    /// var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };
-    /// string note = builder.CreateMarkdownWithFrontmatter(frontmatter);
+    /// var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };    /// string note = builder.CreateMarkdownWithFrontmatter(frontmatter);
     /// </code>
     /// </example>
     public string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter)
     {
-        frontmatter["banner"] = "gies-banner.png"; // Default banner if not specified
+        // Only add banner if explicitly requested or if template includes one
+        if (ShouldAddDefaultBanner(frontmatter))
+        {
+            frontmatter["banner"] = "'[[gies-banner.png]]'";
+        }
 
         var yaml = _yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
 
@@ -58,18 +61,19 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper)
     /// <param name="body">The markdown content body to append after the frontmatter.</param>
     /// <returns>A markdown string containing the YAML frontmatter block followed by the content body.</returns>
     /// <remarks>
-    /// The frontmatter is always placed at the top of the note, followed by the markdown body.
-    /// </remarks>
-    /// <example>    ///. <code>
-    /// var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };    /// string note = builder.BuildNote(frontmatter, "# Heading\nContent");
+    /// The frontmatter is always placed at the top of the note, followed by the markdown body.    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };
+    /// string note = builder.BuildNote(frontmatter, "# Heading\nContent");
     /// </code>
     /// </example>
     public string BuildNote(Dictionary<string, object> frontmatter, string body)
     {
-        // Only set default banner if not already present
-        if (!frontmatter.ContainsKey("banner"))
+        // Only set default banner if explicitly requested by template type
+        if (ShouldAddDefaultBanner(frontmatter))
         {
-            frontmatter["banner"] = "gies-banner.png"; // Default banner if not specified
+            frontmatter["banner"] = "gies-banner.png";
         }
         // Note: We preserve the banner value exactly as it comes from the template
         // to maintain proper Obsidian wiki link syntax like '[[gies-banner.png]]'
@@ -101,5 +105,43 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper)
 
         var newFrontmatter = $"---\n{yaml}---\n\n";
         return newFrontmatter + body;
+    }
+
+
+    /// <summary>
+    /// Determines whether a default banner should be added to the frontmatter.
+    /// </summary>
+    /// <param name="frontmatter">The frontmatter dictionary to check.</param>
+    /// <returns>True if a default banner should be added, false otherwise.</returns>
+    /// <remarks>
+    /// This method checks if the frontmatter explicitly indicates whether a banner is wanted.
+    /// It only adds a banner if the template or configuration specifically requests one,
+    /// or if the frontmatter already contains a banner placeholder.
+    /// </remarks>
+    private static bool ShouldAddDefaultBanner(Dictionary<string, object> frontmatter)
+    {
+        // Don't add banner if already explicitly set (including empty/null values)
+        if (frontmatter.ContainsKey("banner"))
+        {
+            return false;
+        }
+
+        // Check if this is a template type that should have banners
+        if (frontmatter.TryGetValue("template-type", out var templateType))
+        {
+            var templateTypeStr = templateType?.ToString() ?? string.Empty;
+
+            // Only add banners for specific template types that are known to need them
+            return templateTypeStr switch
+            {
+                "main" => true,          // Main index pages
+                "program" => true,       // Program index pages
+                "course" => true,        // Course index pages
+                _ => false               // All other types (including video-reference, pdf-reference, etc.)
+            };
+        }
+
+        // Default: don't add banner unless explicitly requested
+        return false;
     }
 }

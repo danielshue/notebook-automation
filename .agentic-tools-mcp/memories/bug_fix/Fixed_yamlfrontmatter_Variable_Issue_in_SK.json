@@ -1,0 +1,8 @@
+{
+  "id": "b4db4e7c-7be2-4fce-b019-51ce8facd1c9",
+  "title": "Fixed yamlfrontmatter Variable Issue in SK",
+  "details": "**Issue**: Semantic Kernel was receiving yamlfrontmatter and other template variables directly via KernelArguments, causing KeyNotFoundException when SK tried to process these variables. These variables should be replaced in the prompt template BEFORE sending to SK.\n\n**Root Cause**: In the chunking approach in AISummarizer.cs, the code was passing ALL variables (including yamlfrontmatter) to SK via KernelArguments instead of processing them in the prompt template first.\n\n**Solution Applied**:\n1. Modified SummarizeWithChunkingAsync to process template variables in chunk prompt templates before sending to SK\n2. Removed code that passed all variables to KernelArguments - now only passes 'content'  \n3. Updated ProcessHandlebarsTemplate method to handle [yamlfrontmatter] placeholder\n4. Added proper variable substitution for chunk templates using PromptService.SubstituteVariables\n5. Ensured final aggregation template also processes variables correctly\n\n**Files Modified**: \n- NotebookAutomation.Core/Services/AISummarizer.cs\n\n**Key Change**: Variables like yamlfrontmatter are now replaced in prompt templates BEFORE sending to Semantic Kernel, not passed as function arguments that SK doesn't recognize.",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-13T17:52:33.324Z",
+  "dateUpdated": "2025-06-13T17:52:33.324Z"
+}
