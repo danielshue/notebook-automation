@@ -1,0 +1,8 @@
+{
+  "id": "fa956735-6714-4c73-aa7a-73d400f857c3",
+  "title": "Azure OpenAI API Key Variable Mismatch - RESOLVED",
+  "details": "RESOLVED: Fixed critical configuration mismatch in the Azure OpenAI API key environment variable names.\n\nOriginal Issue:\n1. AIServiceConfig.GetApiKey() method expected: AZURE_OPEN_AI_API_KEY\n2. ServiceRegistration.RegisterAIServices() method expected: AZURE_OPENAI_KEY\n\nThis discrepancy caused Azure OpenAI configuration to fail because the two parts of the system were looking for different environment variable names.\n\nFix Applied:\n- Updated AIServiceConfig.GetApiKey() method to use AZURE_OPENAI_KEY (matching ServiceRegistration.cs)\n- Updated documentation comments to reflect the correct environment variable name\n- Both parts of the system now consistently use AZURE_OPENAI_KEY\n\nThe error \"OpenAI configuration is missing or incomplete. Exiting.\" should now be resolved since both configuration validation and service registration use the same environment variable name.",
+  "category": "configuration_issues",
+  "dateCreated": "2025-06-13T03:59:46.772Z",
+  "dateUpdated": "2025-06-13T04:03:38.049Z"
+}
