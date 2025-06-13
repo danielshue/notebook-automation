@@ -5,7 +5,7 @@ template-type: main
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: '[[gies-banner.png]]'
+banner: "[[gies-banner.png]]"
 
 # template-description: Short description of the template purpose
 template-description: Top-level folder for the entire MBA program.
@@ -27,7 +27,7 @@ template-type: program
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: '[[gies-banner.png]]'
+banner: "[[gies-banner.png]]"
 
 # template-description: Short description of the template purpose
 template-description: Program area folder within the MBA curriculum.
@@ -51,7 +51,6 @@ date-created:
 # program: Program Name (populated automatically)
 program:
 
-
 ---
 # template-type: course (template for a single course index)
 template-type: course
@@ -60,7 +59,7 @@ template-type: course
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: '[[gies-banner.png]]'
+banner: "[[gies-banner.png]]"
 
 # template-description: Short description of the template purpose
 template-description: Top-level folder for a single course.
@@ -93,7 +92,7 @@ template-type: class
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: '[[gies-banner.png]]'
+banner: "[[gies-banner.png]]"
 
 # template-description: Short description of the template purpose
 template-description: Top-level folder for a single class.
@@ -128,7 +127,7 @@ template-type: module
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: '[[gies-banner.png]]'
+banner: "[[gies-banner.png]]"
 
 # template-description: Short description of the template purpose
 template-description: Groups together lessons or topics within a course.
@@ -163,7 +162,7 @@ template-type: lesson
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)
-banner: '[[gies-banner.png]]'
+banner: "[[gies-banner.png]]"
 
 # template-description: Short description of the template purpose
 template-description: A single lesson's landing page.
@@ -342,6 +341,112 @@ video-uploaded:
 
 ---
 # Description: Links to a video file stored in OneDrive for improved sharing and accessibility.
+
+# template-type: video-reference (simplified template for video references)
+template-type: video-reference
+
+# auto-generated-state: writable | read-only
+auto-generated-state: writable
+
+# type: note/video-note
+type: note/video-note
+
+# title: Video Title (populated automatically based off a friendly name of the video)
+title:
+
+# program, course, class, module, lesson (grouped together)
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
+# module: Module Name (populated automatically)
+module:
+
+# lesson: Lesson Name (populated automatically)
+lesson:
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
+# onedrive-shared-link: path/to/shared-link (populated automatically)
+onedrive-shared-link:
+
+# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
+onedrive_fullpath_file_reference:
+
+# status: unwatched | watched | in-progress
+status: unwatched
+
+# tags: line separated tags
+tags:
+
+# video-duration: 00:00:00
+video-duration:
+
+# video-resolution: 1920x1080
+video-resolution:
+
+# video-size: 0 MB
+video-size:
+
+---
+# template-type: pdf-reference (simplified template for PDF references)
+template-type: pdf-reference
+
+# auto-generated-state: writable | read-only
+auto-generated-state: writable
+
+# type: note/case-study
+type: note/case-study
+
+# title: PDF Title (populated automatically based off a friendly name of the PDF)
+title:
+
+# program, course, class, module, lesson (grouped together)
+
+# program: Program Name (populated automatically)
+program:
+
+# course: Course Name (populated automatically)
+course:
+
+# class: Class Name (populated automatically)
+class:
+
+# module: Module Name (populated automatically)
+module:
+
+# lesson: Lesson Name (populated automatically)
+lesson:
+
+# date-created: YYYY-MM-DD (populated automatically)
+date-created:
+
+# onedrive-shared-link: path/to/shared-link (populated automatically)
+onedrive-shared-link:
+
+# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.pdf (populated automatically)
+onedrive_fullpath_file_reference:
+
+# status: read | unread | in-progress
+status: unread
+
+# tags: line separated tags
+tags:
+
+# pdf-size: 0 MB
+pdf-size:
+
+# pdf-page-count: (populated automatically)
+page-count:
+
+---
 # template-type: video-reference-note | pdf-reference-note | case-studies | readings | resources | assignment-individual-note | assignment-group-note | assignment-quiz-note | note-case-study | resource-reading-note | pdf-reference-note
 template-type: pdf-reference-note
 
