@@ -117,6 +117,7 @@ public static class ExceptionHandler
             return defaultValue;
         }
     }
+
     /// <summary>
     /// Converts an exception to a user-friendly message.
     /// </summary>
