@@ -289,69 +289,14 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig != null)
         {
             effectiveResourcesRoot = appConfig.Paths?.OnedriveFullpathRoot;
-        }
+        }        // Process files with optional parallelization
+        var (processedCount, failedCount, failedFiles) = await ProcessFilesAsync(
+            files, effectiveOutput, effectiveResourcesRoot, forceOverwrite, dryRun,
+            openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType, appConfig).ConfigureAwait(false);
 
-        // Process each file
-        for (int fileIndex = 0; fileIndex < files.Count; fileIndex++)
-        {
-            var filePath = files[fileIndex];
-            var fileStopwatch = Stopwatch.StartNew();
-
-            // Get the queue item for this file
-            QueueItem? queueItem = null;
-            lock (queueLock)
-            {
-                queueItem = processingQueue.FirstOrDefault(q => q.FilePath == filePath);
-                if (queueItem != null)
-                {
-                    // Update queue item status
-                    queueItem.Status = DocumentProcessingStatus.Processing;
-                    queueItem.Stage = ProcessingStage.NotStarted;
-                    queueItem.StatusMessage = $"Processing {queueItem.DocumentType} file {fileIndex + 1}/{files.Count}: {Path.GetFileName(filePath)}";
-                    queueItem.ProcessingStartTime = DateTime.Now;
-                }
-            }
-
-            // Notify queue change and send progress event
-            if (queueItem != null)
-            {
-                OnQueueChanged(queueItem);
-            }
-
-            OnProcessingProgressChanged(
-                filePath,
-                queueItem?.StatusMessage ?? $"Processing file {fileIndex + 1}/{files.Count}: {Path.GetFileName(filePath)}",
-                fileIndex + 1,
-                files.Count);                // Process the single file using the refactored helper method
-            var (success, errorMessage) = await ProcessSingleFileAsync(
-                filePath, queueItem, fileIndex + 1, files.Count, effectiveOutput, effectiveResourcesRoot,
-                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false);
-
-            if (success)
-            {
-                // Check if the file was skipped due to existing file and forceOverwrite: false
-                if (errorMessage?.Contains("Skipped") == true)
-                {
-                    // Don't count skipped files as processed
-                    logger.LogDebug($"File skipped: {filePath}");
-                }
-                else
-                {
-                    processed++;
-                }
-            }
-            else
-            {
-                failed++;
-                failedFilesForRetry.Add(filePath);
-            }
-
-            fileStopwatch.Stop();
-            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.ElapsedMilliseconds} ms");
-
-            // Report progress after each file
-            OnProcessingProgressChanged(filePath, "Processed", processed, files.Count);
-        }
+        processed = processedCount;
+        failed = failedCount;
+        failedFilesForRetry.AddRange(failedFiles);
 
         batchStopwatch.Stop();
 
@@ -1212,5 +1157,331 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
 
         // Notify that the queue has been populated
         OnQueueChanged();
+    }
+
+    /// <summary>
+    /// Processes files with optional parallelization based on configuration.
+    /// </summary>
+    /// <param name="files">List of files to process.</param>
+    /// <param name="effectiveOutput">Output directory path.</param>
+    /// <param name="effectiveResourcesRoot">Resources root path.</param>
+    /// <param name="forceOverwrite">Whether to overwrite existing files.</param>
+    /// <param name="dryRun">Whether to perform a dry run.</param>
+    /// <param name="openAiApiKey">OpenAI API key.</param>
+    /// <param name="noSummary">Whether to skip AI summary generation.</param>
+    /// <param name="timeoutSeconds">Timeout in seconds.</param>
+    /// <param name="noShareLinks">Whether to skip share link creation.</param>
+    /// <param name="noteType">Type of note being generated.</param>
+    /// <param name="appConfig">Application configuration containing parallel processing settings.</param>
+    /// <returns>Tuple containing processed count, failed count, and list of failed files.</returns>
+    protected virtual async Task<(int processed, int failed, List<string> failedFiles)> ProcessFilesAsync(
+        List<string> files,
+        string effectiveOutput,
+        string? effectiveResourcesRoot,
+        bool forceOverwrite,
+        bool dryRun,
+        string? openAiApiKey,
+        bool noSummary,
+        int? timeoutSeconds,
+        bool noShareLinks,
+        string noteType,
+        AppConfig? appConfig)
+    {
+        var failedFiles = new List<string>();
+        int processed = 0;
+        int failed = 0;        // Get parallelization settings from configuration
+        var maxFileParallelism = appConfig?.AiService?.Timeout?.MaxFileParallelism ?? 1;
+        var fileRateLimitMs = appConfig?.AiService?.Timeout?.FileRateLimitMs ?? 200;
+
+        // Decide whether to use parallel or sequential processing
+        if (maxFileParallelism > 1 && files.Count > 1)
+        {
+            logger.LogInformation("Processing {FileCount} files with parallelism of {MaxParallelism} and rate limit of {RateLimit}ms",
+                files.Count, maxFileParallelism, fileRateLimitMs);
+
+            var (parallelProcessed, parallelFailed, parallelFailedFiles) = await ProcessFilesInParallelAsync(
+                files, effectiveOutput, effectiveResourcesRoot, forceOverwrite, dryRun,
+                openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType,
+                maxFileParallelism, fileRateLimitMs).ConfigureAwait(false);
+
+            processed = parallelProcessed;
+            failed = parallelFailed;
+            failedFiles.AddRange(parallelFailedFiles);
+        }
+        else
+        {
+            logger.LogInformation("Processing {FileCount} files sequentially", files.Count);
+
+            var (sequentialProcessed, sequentialFailed, sequentialFailedFiles) = await ProcessFilesSequentiallyAsync(
+                files, effectiveOutput, effectiveResourcesRoot, forceOverwrite, dryRun,
+                openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false);
+
+            processed = sequentialProcessed;
+            failed = sequentialFailed;
+            failedFiles.AddRange(sequentialFailedFiles);
+        }
+
+        return (processed, failed, failedFiles);
+    }
+
+
+    /// <summary>
+    /// Processes files sequentially (the original implementation).
+    /// </summary>
+    protected virtual async Task<(int processed, int failed, List<string> failedFiles)> ProcessFilesSequentiallyAsync(
+        List<string> files,
+        string effectiveOutput,
+        string? effectiveResourcesRoot,
+        bool forceOverwrite,
+        bool dryRun,
+        string? openAiApiKey,
+        bool noSummary,
+        int? timeoutSeconds,
+        bool noShareLinks,
+        string noteType)
+    {
+        var failedFiles = new List<string>();
+        int processed = 0;
+        int failed = 0;
+
+        // Process each file sequentially
+        for (int fileIndex = 0; fileIndex < files.Count; fileIndex++)
+        {
+            var filePath = files[fileIndex];
+            var fileStopwatch = Stopwatch.StartNew();
+
+            // Get the queue item for this file
+            QueueItem? queueItem = null;
+            lock (queueLock)
+            {
+                queueItem = processingQueue.FirstOrDefault(q => q.FilePath == filePath);
+                if (queueItem != null)
+                {
+                    // Update queue item status
+                    queueItem.Status = DocumentProcessingStatus.Processing;
+                    queueItem.Stage = ProcessingStage.NotStarted;
+                    queueItem.StatusMessage = $"Processing {queueItem.DocumentType} file {fileIndex + 1}/{files.Count}: {Path.GetFileName(filePath)}";
+                    queueItem.ProcessingStartTime = DateTime.Now;
+                }
+            }
+
+            // Notify queue change and send progress event
+            if (queueItem != null)
+            {
+                OnQueueChanged(queueItem);
+            }
+
+            OnProcessingProgressChanged(
+                filePath,
+                queueItem?.StatusMessage ?? $"Processing file {fileIndex + 1}/{files.Count}: {Path.GetFileName(filePath)}",
+                fileIndex + 1,
+                files.Count);
+
+            // Process the single file
+            var (success, errorMessage) = await ProcessSingleFileAsync(
+                filePath, queueItem, fileIndex + 1, files.Count, effectiveOutput, effectiveResourcesRoot,
+                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false);
+
+            if (success)
+            {
+                // Check if the file was skipped due to existing file and forceOverwrite: false
+                if (errorMessage?.Contains("Skipped") == true)
+                {
+                    // Don't count skipped files as processed
+                    logger.LogDebug($"File skipped: {filePath}");
+                }
+                else
+                {
+                    processed++;
+                }
+            }
+            else
+            {
+                failed++;
+                failedFiles.Add(filePath);
+            }
+
+            fileStopwatch.Stop();
+            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.ElapsedMilliseconds} ms");
+
+            // Report progress after each file
+            OnProcessingProgressChanged(filePath, "Processed", processed + failed, files.Count);
+        }
+
+        return (processed, failed, failedFiles);
+    }
+
+
+    /// <summary>
+    /// Processes files in parallel with concurrency control and rate limiting.
+    /// </summary>
+    protected virtual async Task<(int processed, int failed, List<string> failedFiles)> ProcessFilesInParallelAsync(
+        List<string> files,
+        string effectiveOutput,
+        string? effectiveResourcesRoot,
+        bool forceOverwrite,
+        bool dryRun,
+        string? openAiApiKey,
+        bool noSummary,
+        int? timeoutSeconds,
+        bool noShareLinks,
+        string noteType,
+        int maxParallelism,
+        int rateLimitMs)
+    {
+        var failedFiles = new ConcurrentBag<string>();
+        var processedCount = 0;
+        var failedCount = 0;
+
+        var maxConcurrency = Math.Min(maxParallelism, files.Count);
+        var rateLimitDelay = TimeSpan.FromMilliseconds(rateLimitMs);
+
+        // Create a semaphore to control concurrency
+        using var semaphore = new SemaphoreSlim(maxConcurrency, maxConcurrency);
+
+        // Create tasks for all files, maintaining order for progress reporting
+        var fileTasks = files.Select(async (filePath, fileIndex) =>
+        {
+            // Rate limiting - stagger the start of requests
+            if (rateLimitDelay > TimeSpan.Zero)
+            {
+                await Task.Delay(rateLimitDelay * fileIndex).ConfigureAwait(false);
+            }
+
+            // Wait for available slot
+            await semaphore.WaitAsync().ConfigureAwait(false);
+
+            try
+            {
+                return await ProcessSingleFileInParallelAsync(
+                    filePath,
+                    fileIndex,
+                    files.Count,
+                    effectiveOutput,
+                    effectiveResourcesRoot,
+                    forceOverwrite,
+                    dryRun,
+                    openAiApiKey,
+                    noSummary,
+                    timeoutSeconds,
+                    noShareLinks,
+                    noteType).ConfigureAwait(false);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        // Wait for all files to complete
+        var results = await Task.WhenAll(fileTasks).ConfigureAwait(false);
+
+        // Process results
+        foreach (var (success, errorMessage, filePath) in results)
+        {
+            if (success)
+            {
+                // Check if the file was skipped
+                if (errorMessage?.Contains("Skipped") == true)
+                {
+                    logger.LogDebug($"File skipped: {filePath}");
+                }
+                else
+                {
+                    Interlocked.Increment(ref processedCount);
+                }
+            }
+            else
+            {
+                Interlocked.Increment(ref failedCount);
+                failedFiles.Add(filePath);
+            }
+        }
+
+        logger.LogInformation("Completed parallel processing: {ProcessedCount} processed, {FailedCount} failed",
+            processedCount, failedCount);
+
+        return (processedCount, failedCount, failedFiles.ToList());
+    }
+
+
+    /// <summary>
+    /// Processes a single file in parallel context with thread-safe queue operations.
+    /// </summary>
+    protected virtual async Task<(bool success, string? errorMessage, string filePath)> ProcessSingleFileInParallelAsync(
+        string filePath,
+        int fileIndex,
+        int totalFiles,
+        string effectiveOutput,
+        string? effectiveResourcesRoot,
+        bool forceOverwrite,
+        bool dryRun,
+        string? openAiApiKey,
+        bool noSummary,
+        int? timeoutSeconds,
+        bool noShareLinks,
+        string noteType)
+    {
+        var fileStopwatch = Stopwatch.StartNew();
+
+        // Get the queue item for this file (thread-safe)
+        QueueItem? queueItem = null;
+        lock (queueLock)
+        {
+            queueItem = processingQueue.FirstOrDefault(q => q.FilePath == filePath);
+            if (queueItem != null)
+            {
+                // Update queue item status
+                queueItem.Status = DocumentProcessingStatus.Processing;
+                queueItem.Stage = ProcessingStage.NotStarted;
+                queueItem.StatusMessage = $"Processing {queueItem.DocumentType} file {fileIndex + 1}/{totalFiles}: {Path.GetFileName(filePath)}";
+                queueItem.ProcessingStartTime = DateTime.Now;
+            }
+        }
+
+        // Notify queue change and send progress event
+        if (queueItem != null)
+        {
+            OnQueueChanged(queueItem);
+        }
+
+        OnProcessingProgressChanged(
+            filePath,
+            queueItem?.StatusMessage ?? $"Processing file {fileIndex + 1}/{totalFiles}: {Path.GetFileName(filePath)}",
+            fileIndex + 1,
+            totalFiles);
+
+        try
+        {
+            // Process the single file
+            var (success, errorMessage) = await ProcessSingleFileAsync(
+                filePath, queueItem, fileIndex + 1, totalFiles, effectiveOutput, effectiveResourcesRoot,
+                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false);
+
+            fileStopwatch.Stop();
+            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.ElapsedMilliseconds} ms");
+
+            return (success, errorMessage, filePath);
+        }
+        catch (Exception ex)
+        {
+            fileStopwatch.Stop();
+            var errorMessage = $"Failed to process: {ex.Message}";
+            logger.LogError(ex, $"Failed to process file: {filePath}");
+
+            // Update queue item status for failure (thread-safe)
+            if (queueItem != null)
+            {
+                lock (queueLock)
+                {
+                    queueItem.Status = DocumentProcessingStatus.Failed;
+                    queueItem.StatusMessage = errorMessage;
+                    queueItem.ProcessingEndTime = DateTime.Now;
+                }
+                OnQueueChanged(queueItem);
+            }
+
+            return (false, errorMessage, filePath);
+        }
     }
 }

@@ -591,6 +591,39 @@ public class TimeoutConfig
     /// </remarks>
     [JsonPropertyName("chunk_rate_limit_ms")]
     public int ChunkRateLimitMs { get; set; } = 100;
+
+
+    /// <summary>
+    /// Gets or sets the maximum number of files to process in parallel during batch operations.
+    /// </summary>
+    /// <value>
+    /// The maximum number of concurrent file processing operations.
+    /// Defaults to 2 if not specified. Set to 1 to disable parallel processing.
+    /// </value>
+    /// <remarks>
+    /// This controls how many document files can be processed concurrently during
+    /// batch operations. Higher values can improve throughput but may increase
+    /// system resource usage and API rate limiting risks. Consider your system's
+    /// memory, CPU capacity, and AI service rate limits when configuring this value.
+    /// </remarks>
+    [JsonPropertyName("max_file_parallelism")]
+    public int MaxFileParallelism { get; set; } = 2;
+
+
+    /// <summary>
+    /// Gets or sets the rate limiting delay between file processing starts in milliseconds.
+    /// </summary>
+    /// <value>
+    /// The minimum delay in milliseconds between starting file processing operations.
+    /// Defaults to 200 milliseconds. Set to 0 to disable rate limiting.
+    /// </value>
+    /// <remarks>
+    /// This helps prevent overwhelming the system and AI services when processing
+    /// multiple files concurrently. Each file processing operation will be delayed
+    /// by at least this amount from the previous one when parallel processing is enabled.
+    /// </remarks>
+    [JsonPropertyName("file_rate_limit_ms")]
+    public int FileRateLimitMs { get; set; } = 200;
 }
 
 /// <summary>
