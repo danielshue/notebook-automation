@@ -1,0 +1,8 @@
+{
+  "id": "a22bd082-937e-498b-ba66-fe8e136fa505",
+  "title": "CLI Help Enhancement - Config Display",
+  "details": "Enhanced the Notebook Automation CLI to display configuration file information when run without arguments.\n\n## Problem:\nWhen running `na.exe` with no arguments, it showed help information but did not display the configuration file path like `na.exe --help` does.\n\n## Solution:\nModified Program.cs to:\n1. Detect when no arguments are provided (`isNoArgs = args.Length == 0`)\n2. Display configuration file path before invoking help\n3. Use the same configuration display logic for both `--help` and no arguments\n\n## Code Changes:\n- Added `isNoArgs` variable to track when no arguments are provided\n- Moved configuration display logic before help invocation\n- Updated condition to show config path for both `isHelp || isNoArgs`\n- Removed duplicate configuration display logic\n\n## Result:\nNow both `na.exe` and `na.exe --help` display identical output:\n- Configuration file path at the top\n- Complete help information with description, usage, options, and commands\n\n## Testing:\n✅ `na.exe` - Shows config path and help\n✅ `na.exe --help` - Shows config path and help  \n✅ `na.exe --config path` - Shows \"Using configuration file\" (normal command behavior)\n\n## Files Modified:\n- `src/c-sharp/NotebookAutomation.Cli/Program.cs`",
+  "category": "feature_enhancement",
+  "dateCreated": "2025-06-14T15:30:48.581Z",
+  "dateUpdated": "2025-06-14T15:30:48.581Z"
+}

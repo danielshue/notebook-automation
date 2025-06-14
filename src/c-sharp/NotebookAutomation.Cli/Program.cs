@@ -2,6 +2,7 @@
 
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
+using System.Text.Json;
 
 using NotebookAutomation.Core.Configuration;
 
@@ -84,9 +85,11 @@ internal class Program
             description: "Simulate actions without making changes"); rootCommand.AddGlobalOption(configOption);
         rootCommand.AddGlobalOption(debugOption);
         rootCommand.AddGlobalOption(verboseOption);
-        rootCommand.AddGlobalOption(dryRunOption);
+        rootCommand.AddGlobalOption(dryRunOption);        // Check for debug mode from environment or command line
+        var isDebugMode = IsDebugModeEnabled(args);
+        var isVerboseMode = IsVerboseModeEnabled(args);
 
-        if (args.Contains("--debug") || args.Contains("-d"))
+        if (isDebugMode)
         {
             AnsiConsoleHelper.WriteInfo($"Debug mode enabled");
         }
@@ -108,13 +111,11 @@ internal class Program
         {
             ShowVersionInfo();
             return 0;
-        }
-
-        // Setup dependency injection with the parsed config path
+        }        // Setup dependency injection with the parsed config path
         IServiceProvider serviceProvider;
         try
         {
-            serviceProvider = SetupDependencyInjection(configPath, args.Contains("--debug"));
+            serviceProvider = SetupDependencyInjection(configPath, isDebugMode);
         }
         catch (Exception ex)
         {
@@ -141,12 +142,10 @@ internal class Program
 
             return 1;
         }
-
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
         var logger = loggerFactory.CreateLogger<Program>();
 
         // Initialize centralized exception handler
-        var isDebugMode = args.Contains("--debug") || args.Contains("-d");
         ExceptionHandler.Initialize(logger, isDebugMode);
 
         logger.LogDebug("Application started");
@@ -163,17 +162,32 @@ internal class Program
         PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption); var markdownCommands = new MarkdownCommands(
             loggerFactory.CreateLogger<MarkdownCommands>(),
             serviceProvider.GetRequiredService<AppConfig>(),
-            serviceProvider);
-        markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-
-        var configCommands = new ConfigCommands(loggerFactory.CreateLogger<ConfigCommands>(), serviceProvider);
-        configCommands.Register(rootCommand, configOption, debugOption);
-
-        // Print help if no subcommand or arguments are provided
-        if (args.Length == 0)
+            serviceProvider); markdownCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption); var configCommands = new ConfigCommands(loggerFactory.CreateLogger<ConfigCommands>(), serviceProvider);
+        configCommands.Register(rootCommand, configOption, debugOption);// Print config file path for most commands, including help
+        var isHelp = args.Any(a => a == "--help" || a == "-h");
+        var isNoArgs = args.Length == 0;  // Add check for no arguments
+        var isConfigOnly = args.Length == 1 && (args[0] == "--config" || args[0] == "-c");  // Check for --config without value
+        var isVersion = args.Any(a => a == "--version");
+        var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";        // Show custom help for: no args, explicit help, or --config without value
+        if (isNoArgs || isHelp || isConfigOnly)
         {
-            await rootCommand.InvokeAsync("--help").ConfigureAwait(false);
+            await DisplayCustomHelpAsync(rootCommand, configPath, isDebugMode, args);
             return 0;
+        }
+
+        // Show config file path for other commands (exclude version and config view)
+        if (!isVersion && !isConfigView)
+        {
+            // Use ConfigManager for consistent config discovery
+            var finalConfigPath = await DiscoverConfigurationForDisplayAsync(configPath);
+            if (!string.IsNullOrEmpty(finalConfigPath))
+            {
+                AnsiConsoleHelper.WriteInfo($"Using configuration file: {finalConfigPath}");
+            }
+            else
+            {
+                AnsiConsoleHelper.WriteInfo($"No configuration file found. Using defaults.");
+            }
         }
 
         // Print available subcommands if no valid subcommand is provided
@@ -193,39 +207,8 @@ internal class Program
                 context.Console.WriteLine("\nRun 'notebookautomation.exe [command] --help' for more information on a specific command.");
             }
         });        // The root command no longer handles AI provider/model/endpoint options globally.
-        // These are now handled under the config command group only.        // Print config file path for most commands, including help
-        var isHelp = args.Any(a => a == "--help" || a == "-h");
-        var isVersion = args.Any(a => a == "--version");
-        var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";        // Show config file path for help and most other commands (exclude version and config view)
-        if (!isVersion && !isConfigView)
-        {
-            // Use ConfigManager for consistent config discovery
-            var finalConfigPath = await DiscoverConfigurationForDisplayAsync(configPath);
-            if (!string.IsNullOrEmpty(finalConfigPath))
-            {
-                if (isHelp)
-                {
-                    AnsiConsoleHelper.WriteInfo($"Configuration file: {finalConfigPath}");
-                }
-                else
-                {
-                    AnsiConsoleHelper.WriteInfo($"Using configuration file: {finalConfigPath}");
-                }
-            }
-            else
-            {
-                if (isHelp)
-                {
-                    AnsiConsoleHelper.WriteInfo($"Configuration: Using defaults (no config.json found)");
-                }
-                else
-                {
-                    AnsiConsoleHelper.WriteInfo($"No configuration file found. Using defaults.");
-                }
-            }
-        }
-        // Create command line builder with exception handling using our ExceptionHandler
-        var commandLineBuilder = new CommandLineBuilder(rootCommand);        // Configure exception handler to use our centralized ExceptionHandler
+        // These are now handled under the config command group only.        // Create command line builder with exception handling using our ExceptionHandler
+        var commandLineBuilder = new CommandLineBuilder(rootCommand);// Configure exception handler to use our centralized ExceptionHandler
         commandLineBuilder.UseExceptionHandler((exception, context) =>
         {
             // Use our centralized exception handler for consistent error reporting
@@ -374,5 +357,320 @@ internal class Program
 
         var result = await configManager.LoadConfigurationAsync(options);
         return result.IsSuccess ? result.ConfigurationPath : null;
+    }
+
+    /// <summary>
+    /// Displays custom help with current environment information.
+    /// </summary>
+    /// <param name="rootCommand">The root command to display help for.</param>
+    /// <param name="configPath">The configuration file path.</param>
+    /// <param name="isDebug">Whether debug mode is enabled.</param>
+    /// <param name="args">The original command line arguments.</param>
+    /// <returns>Task representing the async operation.</returns>
+    private static async Task DisplayCustomHelpAsync(RootCommand rootCommand, string? configPath, bool isDebug, string[] args)
+    {
+        // Get the configuration path for display
+        var finalConfigPath = await DiscoverConfigurationForDisplayAsync(configPath);
+
+        // Display description
+        Console.WriteLine($"{AnsiColors.BOLD}Description:{AnsiColors.ENDC}");
+        Console.WriteLine($"  {rootCommand.Description}");
+        Console.WriteLine();
+
+        // Display usage
+        Console.WriteLine($"{AnsiColors.BOLD}Usage:{AnsiColors.ENDC}");
+        Console.WriteLine($"  na [command] [options]");
+        Console.WriteLine();        // Display current environment
+        Console.WriteLine($"{AnsiColors.HEADER}Current Environment:{AnsiColors.ENDC}");
+        await DisplayEnvironmentSettingsAsync(finalConfigPath, isDebug, args);
+        Console.WriteLine();
+        // Get and display options
+        Console.WriteLine($"{AnsiColors.BOLD}Options:{AnsiColors.ENDC}");
+        foreach (var option in rootCommand.Options)
+        {
+            var aliases = string.Join(", ", option.Aliases);
+            var description = option.Description ?? "";
+            Console.WriteLine($"  {aliases,-25} {description}");
+        }
+        // Add help and version options that are built-in
+        Console.WriteLine($"  {"-?, -h, --help",-25} Show help and usage information");
+        Console.WriteLine($"  {"--version",-25} Show version information");
+        Console.WriteLine();
+
+        // Get and display commands
+        Console.WriteLine($"{AnsiColors.BOLD}Commands:{AnsiColors.ENDC}");
+        foreach (var command in rootCommand.Subcommands)
+        {
+            Console.WriteLine($"  {command.Name,-18} {command.Description}");
+        }
+    }    /// <summary>
+         /// Displays current environment settings with appropriate colors and masking.
+         /// </summary>
+         /// <param name="configPath">The configuration file path.</param>
+         /// <param name="isDebug">Whether debug mode is enabled.</param>
+         /// <param name="args">Command line arguments for determining mode sources.</param>
+         /// <returns>Task representing the async operation.</returns>
+    private static async Task DisplayEnvironmentSettingsAsync(string? configPath, bool isDebug, string[] args)
+    {
+        // Configuration file status
+        if (!string.IsNullOrEmpty(configPath))
+        {
+            Console.WriteLine($"  Configuration:    {AnsiColors.GREY}{configPath}{AnsiColors.ENDC} {AnsiColors.OKGREEN}✓{AnsiColors.ENDC}");
+        }
+        else
+        {
+            Console.WriteLine($"  Configuration:    {AnsiColors.WARNING}Using defaults (no config.json found) ⚠{AnsiColors.ENDC}");
+        }        // Debug mode status with source indication
+        var debugEnvVar = Environment.GetEnvironmentVariable("DEBUG");
+        var debugFromEnv = !string.IsNullOrEmpty(debugEnvVar) &&
+                          (debugEnvVar.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                           debugEnvVar.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+                           debugEnvVar.Equals("yes", StringComparison.OrdinalIgnoreCase));
+
+        if (isDebug)
+        {
+            if (debugFromEnv)
+            {
+                Console.WriteLine($"  Debug Mode:       {AnsiColors.WARNING}Enabled via ENV ⚡{AnsiColors.ENDC}");
+            }
+            else
+            {
+                Console.WriteLine($"  Debug Mode:       {AnsiColors.WARNING}Enabled ⚡{AnsiColors.ENDC}");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"  Debug Mode:       {AnsiColors.GREY}Disabled{AnsiColors.ENDC}");
+        }
+
+        // Verbose mode status with source indication
+        var isVerbose = IsVerboseModeEnabled(args);
+        var verboseEnvVar = Environment.GetEnvironmentVariable("VERBOSE");
+        var verboseFromEnv = !string.IsNullOrEmpty(verboseEnvVar) &&
+                            (verboseEnvVar.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                             verboseEnvVar.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+                             verboseEnvVar.Equals("yes", StringComparison.OrdinalIgnoreCase));
+
+        if (isVerbose)
+        {
+            if (verboseFromEnv)
+            {
+                Console.WriteLine($"  Verbose Mode:     {AnsiColors.OKCYAN}Enabled via ENV 📢{AnsiColors.ENDC}");
+            }
+            else
+            {
+                Console.WriteLine($"  Verbose Mode:     {AnsiColors.OKCYAN}Enabled 📢{AnsiColors.ENDC}");
+            }
+        }
+        else
+        {
+            Console.WriteLine($"  Verbose Mode:     {AnsiColors.GREY}Disabled{AnsiColors.ENDC}");
+        }
+
+        // Working directory
+        Console.WriteLine($"  Working Dir:      {AnsiColors.GREY}{Environment.CurrentDirectory}{AnsiColors.ENDC}");
+
+        // .NET Runtime
+        Console.WriteLine($"  .NET Runtime:     {AnsiColors.OKCYAN}{Environment.Version}{AnsiColors.ENDC}");
+
+        // Load and display configuration settings if available
+        if (!string.IsNullOrEmpty(configPath) && File.Exists(configPath))
+        {
+            try
+            {
+                await DisplayConfigurationSettingsAsync(configPath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"  Config Status:    {AnsiColors.WARNING}Error reading config: {ex.Message}{AnsiColors.ENDC}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Displays configuration settings from the config file, masking sensitive values.
+    /// </summary>
+    /// <param name="configPath">Path to the configuration file.</param>
+    /// <returns>Task representing the async operation.</returns>
+    private static async Task DisplayConfigurationSettingsAsync(string configPath)
+    {
+        try
+        {
+            var configJson = await File.ReadAllTextAsync(configPath);
+            var configDoc = JsonDocument.Parse(configJson);
+            var root = configDoc.RootElement;
+            // Display paths section
+            if (root.TryGetProperty("paths", out var paths))
+            {
+                if (paths.TryGetProperty("notebook_vault_fullpath_root", out var vaultPath))
+                {
+                    Console.WriteLine($"  Obsidian Vault Root: {AnsiColors.GREY}{vaultPath.GetString()}{AnsiColors.ENDC}");
+                }
+                if (paths.TryGetProperty("onedrive_fullpath_root", out var oneDrivePath))
+                {
+                    Console.WriteLine($"  OneDrive Root:    {AnsiColors.GREY}{oneDrivePath.GetString()}{AnsiColors.ENDC}");
+                }
+                if (paths.TryGetProperty("prompts_path", out var promptsPath))
+                {
+                    Console.WriteLine($"  Prompts Path:     {AnsiColors.GREY}{promptsPath.GetString()}{AnsiColors.ENDC}");
+                }
+            }// Display AI service configuration
+            if (root.TryGetProperty("aiservice", out var aiService))
+            {
+                if (aiService.TryGetProperty("provider", out var provider))
+                {
+                    Console.WriteLine($"  AI Provider:      {AnsiColors.OKCYAN}{provider.GetString()}{AnsiColors.ENDC}");
+                }
+
+                // Check for Azure configuration
+                if (aiService.TryGetProperty("azure", out var azure))
+                {
+                    if (azure.TryGetProperty("endpoint", out var endpoint))
+                    {
+                        Console.WriteLine($"  AI Endpoint:      {AnsiColors.GREY}{endpoint.GetString()}{AnsiColors.ENDC}");
+                    }
+                    if (azure.TryGetProperty("deployment", out var deployment))
+                    {
+                        Console.WriteLine($"  AI Deployment:    {AnsiColors.OKCYAN}{deployment.GetString()}{AnsiColors.ENDC}");
+                    }
+                    if (azure.TryGetProperty("model", out var model))
+                    {
+                        Console.WriteLine($"  AI Model:         {AnsiColors.OKCYAN}{model.GetString()}{AnsiColors.ENDC}");
+                    }
+
+                    // Check for API key in config (unlikely to be there, but check anyway)
+                    var hasApiKey = azure.TryGetProperty("api_key", out var apiKey) &&
+                                   !string.IsNullOrWhiteSpace(apiKey.GetString());
+                    if (hasApiKey)
+                    {
+                        Console.WriteLine($"  Azure API Key:    {AnsiColors.OKGREEN}[SET] ✓{AnsiColors.ENDC}");
+                    }
+                    else
+                    {
+                        // Check environment variable for Azure OpenAI key
+                        var envKey = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
+                        if (!string.IsNullOrWhiteSpace(envKey))
+                        {
+                            Console.WriteLine($"  Azure API Key:    {AnsiColors.OKGREEN}[SET via ENV] ✓{AnsiColors.ENDC}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"  Azure API Key:    {AnsiColors.WARNING}[NOT SET] ⚠{AnsiColors.ENDC}");
+                        }
+                    }
+                }
+
+                // Check for OpenAI configuration
+                if (aiService.TryGetProperty("openai", out var openAi))
+                {
+                    if (openAi.TryGetProperty("endpoint", out var endpoint))
+                    {
+                        Console.WriteLine($"  OpenAI Endpoint:  {AnsiColors.GREY}{endpoint.GetString()}{AnsiColors.ENDC}");
+                    }
+                    if (openAi.TryGetProperty("model", out var model))
+                    {
+                        Console.WriteLine($"  OpenAI Model:     {AnsiColors.OKCYAN}{model.GetString()}{AnsiColors.ENDC}");
+                    }
+
+                    var hasApiKey = openAi.TryGetProperty("api_key", out var apiKey) &&
+                                   !string.IsNullOrWhiteSpace(apiKey.GetString());
+                    if (hasApiKey)
+                    {
+                        Console.WriteLine($"  OpenAI API Key:   {AnsiColors.OKGREEN}[SET] ✓{AnsiColors.ENDC}");
+                    }
+                    else
+                    {
+                        // Check environment variable for OpenAI key
+                        var envKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+                        if (!string.IsNullOrWhiteSpace(envKey))
+                        {
+                            Console.WriteLine($"  OpenAI API Key:   {AnsiColors.OKGREEN}[SET via ENV] ✓{AnsiColors.ENDC}");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"  OpenAI API Key:   {AnsiColors.WARNING}[NOT SET] ⚠{AnsiColors.ENDC}");
+                        }
+                    }
+                }
+
+                // Check for Foundry configuration
+                if (aiService.TryGetProperty("foundry", out var foundry))
+                {
+                    if (foundry.TryGetProperty("endpoint", out var endpoint))
+                    {
+                        Console.WriteLine($"  Foundry Endpoint: {AnsiColors.GREY}{endpoint.GetString()}{AnsiColors.ENDC}");
+                    }
+                    if (foundry.TryGetProperty("model", out var model))
+                    {
+                        Console.WriteLine($"  Foundry Model:    {AnsiColors.OKCYAN}{model.GetString()}{AnsiColors.ENDC}");
+                    }
+
+                    // Check environment variable for Foundry key
+                    var envKey = Environment.GetEnvironmentVariable("FOUNDRY_API_KEY");
+                    if (!string.IsNullOrWhiteSpace(envKey))
+                    {
+                        Console.WriteLine($"  Foundry API Key:  {AnsiColors.OKGREEN}[SET via ENV] ✓{AnsiColors.ENDC}");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"  Foundry API Key:  {AnsiColors.WARNING}[NOT SET] ⚠{AnsiColors.ENDC}");
+                    }
+                }
+            }
+            // Check for Microsoft Graph configuration
+            if (root.TryGetProperty("microsoft_graph", out var msGraph))
+            {
+                if (msGraph.TryGetProperty("client_id", out var clientId))
+                {
+                    Console.WriteLine($"  OneDrive Graph Client ID: {AnsiColors.GREY}{clientId.GetString()}{AnsiColors.ENDC}");
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            Console.WriteLine($"  Config Status:    {AnsiColors.WARNING}Invalid JSON format ⚠{AnsiColors.ENDC}");
+        }
+    }
+
+    /// <summary>
+    /// Determines if debug mode is enabled from environment variable or command line arguments.
+    /// Environment variable takes precedence over command line arguments.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <returns>True if debug mode should be enabled.</returns>
+    private static bool IsDebugModeEnabled(string[] args)
+    {
+        // Check environment variable first
+        var envDebug = Environment.GetEnvironmentVariable("DEBUG");
+        if (!string.IsNullOrEmpty(envDebug))
+        {
+            return envDebug.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                   envDebug.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+                   envDebug.Equals("yes", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Fall back to command line arguments
+        return args.Contains("--debug") || args.Contains("-d");
+    }
+
+    /// <summary>
+    /// Determines if verbose mode is enabled from environment variable or command line arguments.
+    /// Environment variable takes precedence over command line arguments.
+    /// </summary>
+    /// <param name="args">Command line arguments.</param>
+    /// <returns>True if verbose mode should be enabled.</returns>
+    private static bool IsVerboseModeEnabled(string[] args)
+    {
+        // Check environment variable first
+        var envVerbose = Environment.GetEnvironmentVariable("VERBOSE");
+        if (!string.IsNullOrEmpty(envVerbose))
+        {
+            return envVerbose.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                   envVerbose.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+                   envVerbose.Equals("yes", StringComparison.OrdinalIgnoreCase);
+        }
+
+        // Fall back to command line arguments
+        return args.Contains("--verbose") || args.Contains("-v");
     }
 }
