@@ -193,24 +193,38 @@ internal class Program
 
                 context.Console.WriteLine("\nRun 'notebookautomation.exe [command] --help' for more information on a specific command.");
             }
-        });
-
-        // The root command no longer handles AI provider/model/endpoint options globally.
-        // These are now handled under the config command group only.        // Print config file path before any command except help/version
+        });        // The root command no longer handles AI provider/model/endpoint options globally.
+        // These are now handled under the config command group only.        // Print config file path for most commands, including help
         var isHelp = args.Any(a => a == "--help" || a == "-h");
         var isVersion = args.Any(a => a == "--version");
         var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";
-        if (!isHelp && !isVersion && !isConfigView)
+
+        // Show config file path for help and most other commands (exclude version and config view)
+        if (!isVersion && !isConfigView)
         {
             // Use the already parsed config path, else fallback
             var finalConfigPath = configPath ?? AppConfig.FindConfigFile();
             if (!string.IsNullOrEmpty(finalConfigPath))
             {
-                AnsiConsoleHelper.WriteInfo($"Using configuration file: {finalConfigPath}");
+                if (isHelp)
+                {
+                    AnsiConsoleHelper.WriteInfo($"Configuration file: {finalConfigPath}");
+                }
+                else
+                {
+                    AnsiConsoleHelper.WriteInfo($"Using configuration file: {finalConfigPath}");
+                }
             }
             else
             {
-                AnsiConsoleHelper.WriteInfo($"No configuration file found. Using defaults.");
+                if (isHelp)
+                {
+                    AnsiConsoleHelper.WriteInfo($"Configuration: Using defaults (no config.json found)");
+                }
+                else
+                {
+                    AnsiConsoleHelper.WriteInfo($"No configuration file found. Using defaults.");
+                }
             }
         }
         // Create command line builder with exception handling using our ExceptionHandler
