@@ -71,11 +71,13 @@ internal class TestableAISummarizerForProtected : AISummarizer
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task<string?> CallSummarizeWithSemanticKernelAsync(
-        string inputText,
-        string prompt,
-        CancellationToken cancellationToken) => await SummarizeWithSemanticKernelAsync(inputText, prompt, cancellationToken).ConfigureAwait(false);        // Override to always return [Simulated AI summary] for tests
+        string inputText, string prompt,
+        CancellationToken cancellationToken) => await SummarizeWithSemanticKernelAsync(inputText, prompt, cancellationToken).ConfigureAwait(false);
 
-    protected override async Task<string?> SummarizeWithChunkingAsync(
+    /// <summary>
+    /// Override to always return [Simulated AI summary] for tests
+    /// </summary>
+    internal override async Task<string?> SummarizeWithChunkingAsync(
         string inputText,
         string? prompt,
         Dictionary<string, string>? variables,

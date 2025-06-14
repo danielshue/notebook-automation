@@ -615,7 +615,7 @@ public class AISummarizer : IAISummarizer
     /// Each chunk is logged with its prompt, content, and resulting summary for troubleshooting.
     /// </para>
     /// </remarks>
-    protected virtual async Task<string?> SummarizeWithChunkingAsync(string inputText, string? prompt, Dictionary<string, string>? variables, CancellationToken cancellationToken)
+    internal virtual async Task<string?> SummarizeWithChunkingAsync(string inputText, string? prompt, Dictionary<string, string>? variables, CancellationToken cancellationToken)
     {
         // Check for cancellation early
         cancellationToken.ThrowIfCancellationRequested();
@@ -650,19 +650,56 @@ public class AISummarizer : IAISummarizer
 
             // Load chunk and final summary prompts from PromptTemplateService if available
             string? chunkPromptTemplate = await LoadChunkPromptAsync().ConfigureAwait(false);
-            string? finalPromptTemplate = await LoadFinalPromptAsync().ConfigureAwait(false);
-
-            // Define the chunk summarizer function for MBA/coursework content
+            string? finalPromptTemplate = await LoadFinalPromptAsync().ConfigureAwait(false);            // Define the chunk summarizer function for MBA/coursework content
             string chunkSystemPrompt = !string.IsNullOrEmpty(chunkPromptTemplate)
                 ? chunkPromptTemplate
                 : "You are an expert MBA instructor. Summarize the following content from video transcripts and course PDFs, highlighting key concepts, frameworks, and real-world applications relevant to MBA studies.";
-            var summarizeChunkFunction = semanticKernel.CreateFunctionFromPrompt(
-                chunkSystemPrompt + "\n{{$input}}",
-                new OpenAIPromptExecutionSettings
-                {
-                    MaxTokens = 2048,
-                },
-                functionName: "SummarizeChunk");            // Process chunks - use parallel processing if beneficial and configured
+
+            // Process the template to substitute known variables with placeholders compatible with chunking
+            if (!string.IsNullOrEmpty(chunkPromptTemplate))
+            {
+                // Replace template variables with chunking-compatible ones
+                chunkSystemPrompt = chunkSystemPrompt
+                    .Replace("{{$content}}", "{{$input}}")  // Replace content with input for chunking
+                    .Replace("{{$onedrivePath}}", variables?.GetValueOrDefault("onedrivePath", ""))
+                    .Replace("{{$course}}", variables?.GetValueOrDefault("course", ""));
+
+                logger.LogDebug("Processed chunk template with variable substitution");
+            }
+
+            logger.LogDebug("Creating chunk summarizer function with prompt length: {PromptLength}", chunkSystemPrompt.Length);
+            logger.LogDebug("Chunk prompt preview: {PromptPreview}", chunkSystemPrompt[..Math.Min(200, chunkSystemPrompt.Length)]);
+
+            KernelFunction summarizeChunkFunction;
+            try
+            {
+                summarizeChunkFunction = semanticKernel.CreateFunctionFromPrompt(
+                    chunkSystemPrompt,
+                    new OpenAIPromptExecutionSettings
+                    {
+                        MaxTokens = 2048,
+                    },
+                    functionName: "SummarizeChunk");
+
+                logger.LogDebug("Successfully created SummarizeChunk function");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to create SummarizeChunk function. Prompt template may be malformed. Using fallback.");
+
+                // Fallback to a simple prompt without template variables
+                string fallbackPrompt = "You are an expert MBA instructor. Summarize the following content from video transcripts and course PDFs, highlighting key concepts, frameworks, and real-world applications relevant to MBA studies.\n\n{{$input}}";
+
+                summarizeChunkFunction = semanticKernel.CreateFunctionFromPrompt(
+                    fallbackPrompt,
+                    new OpenAIPromptExecutionSettings
+                    {
+                        MaxTokens = 2048,
+                    },
+                    functionName: "SummarizeChunk");
+
+                logger.LogInformation("Successfully created fallback SummarizeChunk function");
+            }// Process chunks - use parallel processing if beneficial and configured
             List<string> chunkSummaries;
 
             if (timeoutConfig.MaxChunkParallelism > 1 && chunks.Count > 1)
@@ -700,19 +737,44 @@ public class AISummarizer : IAISummarizer
             {
                 logger.LogDebug("Only one chunk was processed, returning its summary directly");
                 return chunkSummaries[0];
-            }
-
-            // Define the aggregation function for final MBA summary
+            }            // Define the aggregation function for final MBA summary
             string finalSystemPrompt = !string.IsNullOrEmpty(finalPromptTemplate)
                 ? finalPromptTemplate
-                : "You are an academic editor specializing in MBA coursework. Combine multiple partial summaries into one cohesive summary that emphasizes overarching themes, strategic frameworks, and actionable insights for students.";            // this is the final prompt that will be used to aggregate the summaries
-            var aggregateSummariesFunction = semanticKernel.CreateFunctionFromPrompt(
-                finalSystemPrompt + "\n{{$input}}",
-                new OpenAIPromptExecutionSettings
-                {
-                    MaxTokens = 2048,
-                },
-                functionName: "AggregateSummaries");
+                : "You are an academic editor specializing in MBA coursework. Combine multiple partial summaries into one cohesive summary that emphasizes overarching themes, strategic frameworks, and actionable insights for students.";
+
+            logger.LogDebug("Creating aggregate summaries function with prompt length: {PromptLength}", finalSystemPrompt.Length);
+            logger.LogDebug("Final prompt preview: {PromptPreview}", finalSystemPrompt[..Math.Min(200, finalSystemPrompt.Length)]);
+
+            KernelFunction aggregateSummariesFunction;
+            try
+            {
+                aggregateSummariesFunction = semanticKernel.CreateFunctionFromPrompt(
+                    finalSystemPrompt + "\n{{$input}}",
+                    new OpenAIPromptExecutionSettings
+                    {
+                        MaxTokens = 2048,
+                    },
+                    functionName: "AggregateSummaries");
+
+                logger.LogDebug("Successfully created AggregateSummaries function");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to create AggregateSummaries function. Prompt template may be malformed. Using fallback.");
+
+                // Fallback to a simple prompt without template variables
+                string fallbackPrompt = "You are an academic editor specializing in MBA coursework. Combine multiple partial summaries into one cohesive summary that emphasizes overarching themes, strategic frameworks, and actionable insights for students.\n\n{{$input}}";
+
+                aggregateSummariesFunction = semanticKernel.CreateFunctionFromPrompt(
+                    fallbackPrompt,
+                    new OpenAIPromptExecutionSettings
+                    {
+                        MaxTokens = 2048,
+                    },
+                    functionName: "AggregateSummaries");
+
+                logger.LogInformation("Successfully created fallback AggregateSummaries function");
+            }
 
             // Combine and finalize
             string allSummaries = string.Join("\n\n", chunkSummaries);
