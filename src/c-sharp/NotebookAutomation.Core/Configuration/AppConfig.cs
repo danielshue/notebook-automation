@@ -184,9 +184,8 @@ public class AppConfig : IConfiguration
                 }
             }
             else
-            {
-                // Fall back to the original file-based configuration loading
-                var configFilePath = FindConfigFile();
+            {                // Fall back to the original file-based configuration loading
+                var configFilePath = ConfigurationSetup.DiscoverConfigurationFile();
                 loadedConfigPath = configFilePath;
                 if (!string.IsNullOrEmpty(configFilePath) && File.Exists(configFilePath))
                 {
@@ -287,13 +286,16 @@ public class AppConfig : IConfiguration
         var loaded = JsonSerializer.Deserialize<AppConfig>(json, options) ?? throw new InvalidOperationException($"Failed to deserialize configuration from: {configPath}");
         loaded.ConfigFilePath = configPath;
         return loaded;
-    }
-
-    /// <summary>
-    /// Attempts to find the configuration file in standard locations.
-    /// </summary>
-    /// <param name="configFileName">Name of the configuration file to find.</param>
-    /// <returns>Path to the configuration file if found, otherwise null.</returns>
+    }    /// <summary>
+         /// Attempts to find the configuration file in standard locations.
+         /// </summary>
+         /// <param name="configFileName">Name of the configuration file to find.</param>
+         /// <returns>Path to the configuration file if found, otherwise null.</returns>
+         /// <remarks>
+         /// This method is deprecated. Use ConfigurationSetup.DiscoverConfigurationFile()
+         /// or ConfigManager for consistent configuration discovery with the modern approach.
+         /// </remarks>
+    [Obsolete("Use ConfigurationSetup.DiscoverConfigurationFile() or ConfigManager for consistent configuration discovery. This method will be removed in a future version.")]
     public static string FindConfigFile(string configFileName = "config.json")
     {
         // Check for absolute path first

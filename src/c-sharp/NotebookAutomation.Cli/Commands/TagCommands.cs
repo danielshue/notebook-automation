@@ -28,8 +28,39 @@ internal class TagCommands
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        appConfig = serviceProvider.GetRequiredService<AppConfig>();
-        this.logger.LogDebug("Tag command initialized");
+        this.appConfig = serviceProvider.GetRequiredService<AppConfig>();
+    }    /// <summary>
+         /// Discovers the configuration file path using ConfigManager for consistent discovery logic.
+         /// </summary>
+         /// <param name="explicitConfigPath">Optional explicit configuration path from CLI.</param>
+         /// <returns>Path to the configuration file if found, otherwise "config.json" as fallback.</returns>
+    private static string DiscoverActiveConfigPath(string? explicitConfigPath)
+    {
+        try
+        {
+            var configManager = Program.ServiceProvider.GetRequiredService<IConfigManager>();
+            var environment = Program.ServiceProvider.GetRequiredService<IEnvironmentWrapper>();
+
+            var options = new ConfigDiscoveryOptions
+            {
+                ConfigPath = explicitConfigPath,
+                Debug = false,
+                ExecutableDirectory = environment.GetExecutableDirectory(),
+                WorkingDirectory = environment.GetCurrentDirectory()
+            };
+
+            var task = configManager.LoadConfigurationAsync(options);
+            task.Wait();
+            var result = task.Result;
+
+            return result.IsSuccess && !string.IsNullOrEmpty(result.ConfigurationPath)
+                ? result.ConfigurationPath
+                : "config.json";
+        }
+        catch
+        {
+            return explicitConfigPath ?? "config.json";
+        }
     }
 
     /// <summary>
@@ -356,11 +387,10 @@ internal class TagCommands
             var serviceProvider = Program.ServiceProvider;
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("TagCommands");
-            var loggingService = serviceProvider.GetRequiredService<LoggingService>();
-            var failedLogger = loggingService.FailedLogger;
+            var loggingService = serviceProvider.GetRequiredService<LoggingService>(); var failedLogger = loggingService.FailedLogger;
 
             // Always show the active config file being used
-            string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
+            string activeConfigPath = DiscoverActiveConfigPath(configPath);
             AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");                // Create a new TagProcessor with command-specific options
 
             // For TagProcessor we need to get the IYamlHelper from DI
@@ -446,11 +476,10 @@ internal class TagCommands
             var serviceProvider = Program.ServiceProvider;
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("TagCommands");
-            var loggingService = serviceProvider.GetRequiredService<LoggingService>();
-            var failedLogger = loggingService.FailedLogger;
+            var loggingService = serviceProvider.GetRequiredService<LoggingService>(); var failedLogger = loggingService.FailedLogger;
 
             // Always show the active config file being used
-            string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
+            string activeConfigPath = DiscoverActiveConfigPath(configPath);
             AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
 
             // Get AppConfig for vault validation
@@ -551,9 +580,8 @@ internal class TagCommands
             var serviceProvider = Program.ServiceProvider;
             var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("TagCommands");
-            var loggingService = serviceProvider.GetRequiredService<LoggingService>();
-            var failedLogger = loggingService.FailedLogger;            // Always show the active config file being used
-            string activeConfigPath = configPath ?? AppConfig.FindConfigFile() ?? "config.json";
+            var loggingService = serviceProvider.GetRequiredService<LoggingService>(); var failedLogger = loggingService.FailedLogger;            // Always show the active config file being used
+            string activeConfigPath = DiscoverActiveConfigPath(configPath);
             AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");
 
             // Get AppConfig for vault validation

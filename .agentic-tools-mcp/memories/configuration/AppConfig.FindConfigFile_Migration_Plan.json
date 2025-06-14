@@ -1,0 +1,8 @@
+{
+  "id": "38ec8832-80d4-4fa0-acc5-77bf777c7df2",
+  "title": "AppConfig.FindConfigFile Migration Plan",
+  "details": "Migration plan to replace AppConfig.FindConfigFile() with ConfigManager - PROGRESS UPDATE:\n\n**COMPLETED:**\n✅ Fixed Program.cs - Now uses ConfigManager for consistent discovery (fixed the original issue)\n✅ Created ConfigurationSetup.DiscoverConfigurationFile() as a static helper using ConfigManager\n✅ Updated ConfigurationSetup.cs - All 3 usages now use DiscoverConfigurationFile()\n✅ Updated TagCommands.cs - All 3 usages now use ConfigManager via new helper method\n✅ Updated AppConfig.cs internal usage - Now uses ConfigurationSetup.DiscoverConfigurationFile()\n✅ Marked FindConfigFile as [Obsolete] with helpful message\n✅ Build succeeds with only 1 warning (in test file, which is expected)\n\n**REMAINING (Optional):**\n- Update test files to test new methods instead of deprecated one\n- Eventually remove FindConfigFile method after sufficient deprecation period\n\n**SUCCESS:** The main inconsistency issue is FIXED! CLI now shows the same config file that's actually used.",
+  "category": "configuration",
+  "dateCreated": "2025-06-14T00:51:59.700Z",
+  "dateUpdated": "2025-06-14T00:59:02.060Z"
+}

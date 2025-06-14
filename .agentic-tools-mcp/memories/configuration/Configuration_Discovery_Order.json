@@ -1,0 +1,8 @@
+{
+  "id": "80cfced4-fa1d-4b34-a220-ac0d5c5a9ce3",
+  "title": "Configuration Discovery Order",
+  "details": "The Notebook Automation CLI searches for configuration files in the following priority order:\n\n1. **CLI option** (`--config` parameter) - Highest priority\n   - Explicitly specified via command line argument\n   - If specified but file doesn't exist, the search stops with error\n\n2. **Environment variable** (`NOTEBOOKAUTOMATION_CONFIG`)\n   - Environment variable containing path to config file\n   - If set but file doesn't exist, continues to next option\n\n3. **Current working directory** (`./config.json`)\n   - Looks for config.json in the directory where the command is run\n\n4. **Executable directory** (`<executable-dir>/config.json`)\n   - Looks for config.json in the same directory as the executable\n\n5. **Executable config subdirectory** (`<executable-dir>/config/config.json`)\n   - Looks for config.json in a config subdirectory relative to the executable\n\nThis order is implemented in the ConfigManager.DiscoverConfigurationPathAsync method and ensures that users can override configuration at multiple levels, with CLI arguments taking the highest priority.",
+  "category": "configuration",
+  "dateCreated": "2025-06-14T00:32:19.989Z",
+  "dateUpdated": "2025-06-14T00:32:19.989Z"
+}
