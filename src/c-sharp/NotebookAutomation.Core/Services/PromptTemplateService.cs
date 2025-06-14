@@ -32,13 +32,11 @@ public partial class PromptTemplateService : IPromptService
 {
     private readonly ILogger<PromptTemplateService> logger;
     private readonly IYamlHelper yamlHelper;
-    private string promptsDirectory = string.Empty;
-
-    // Default templates to use as fallbacks if files are not found
+    private string promptsDirectory = string.Empty;    // Default templates to use as fallbacks if files are not found
     public static string DefaultChunkPrompt { get; } =
-        "You are an educational content summarizer for MBA course materials. Generate a clear and insightful summary of the following chunk from the content \"{{onedrive-path}}\", part of the course \"{{course}}\"\n\n{{content}}";
+        "You are an educational content summarizer for MBA course materials. Generate a clear and insightful summary of the following chunk from the content \"{{$onedrivePath}}\", part of the course \"{{$course}}\"\n\n{{$content}}";
 
-    public static string DefaultFinalPrompt { get; } = "You are an educational content summarizer for MBA course materials. Your task is to synthesize multiple AI-generated summaries of content into a single, cohesive summary. You will receive YAML frontmatter below as placeholder that contains existing metadata - DO NOT modify this existing frontmatter structure except for tags.";
+    public static string DefaultFinalPrompt { get; } = "You are an educational content summarizer for MBA course materials. Your task is to synthesize multiple AI-generated summaries of content into a single, cohesive summary. You will receive YAML frontmatter below as placeholder that contains existing metadata - DO NOT modify this existing frontmatter structure except for tags.\n\n{{$input}}";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PromptTemplateService"/> class.
