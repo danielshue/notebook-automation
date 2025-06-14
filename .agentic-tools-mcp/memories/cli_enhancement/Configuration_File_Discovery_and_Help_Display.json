@@ -1,0 +1,8 @@
+{
+  "id": "c1980bb3-cfc3-4544-999a-adf91df6ae88",
+  "title": "Configuration File Discovery and Help Display",
+  "details": "The CLI application uses AppConfig.FindConfigFile() to discover configuration files in this order:\n1. Explicitly specified via --config\n2. Current directory (config.json)\n3. User profile ~/.notebook-automation/config.json\n4. Application directory\n5. Parent directory of application\n6. ./config/config.json\n7. ./src/c-sharp/config.json (dev environment)\n\nCurrently, the config file path is displayed before command execution, but not during --help. The user wants to see which config.json is being used when running na.exe --help.\n\nThe Program.cs checks for help commands and skips config display: `var isHelp = args.Any(a => a == \"--help\" || a == \"-h\");` and only shows config info if NOT help.\n\nNeed to modify this to show config file path during help display as well.",
+  "category": "cli_enhancement",
+  "dateCreated": "2025-06-14T00:03:48.440Z",
+  "dateUpdated": "2025-06-14T00:03:48.440Z"
+}
