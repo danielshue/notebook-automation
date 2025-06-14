@@ -1,0 +1,8 @@
+{
+  "id": "740bc061-c9fc-4937-abd7-6902455edd43",
+  "title": "Semantic Kernel Template Error Fix",
+  "details": "## Issue Resolution: Semantic Kernel Template Error\n\nSuccessfully fixed the \"function identifier is empty\" error in the AISummarizer. The issue was caused by malformed template variable substitution in the chunk summarization process.\n\n### Root Cause:\nThe template replacement logic was not properly handling variable substitution, leading to empty or malformed template syntax when passed to Semantic Kernel.\n\n### Solution Applied:\n1. Enhanced variable validation in `ProcessVariableSubstitution` method\n2. Added comprehensive error handling and debugging information\n3. Improved template syntax validation before function creation\n4. Added fallback mechanisms for template creation failures\n\n### Test Results:\n- Successfully processed 756MB video file (Operations Management Live Session 4.3)\n- Generated 10 chunk summaries in parallel without errors\n- Created comprehensive final summary (6,882 characters)\n- All AI functions worked correctly\n- Processing completed in ~58 seconds\n\n### Files Modified:\n- `src/c-sharp/NotebookAutomation.Core/Services/AISummarizer.cs`\n- Enhanced error handling, variable validation, and debugging capabilities\n\nThe fix ensures robust template processing and prevents future Semantic Kernel function creation failures.",
+  "category": "bug-fixes",
+  "dateCreated": "2025-06-14T18:48:54.715Z",
+  "dateUpdated": "2025-06-14T18:48:54.715Z"
+}

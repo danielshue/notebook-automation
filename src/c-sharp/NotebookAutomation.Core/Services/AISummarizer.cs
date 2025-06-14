@@ -653,22 +653,30 @@ public class AISummarizer : IAISummarizer
             string? finalPromptTemplate = await LoadFinalPromptAsync().ConfigureAwait(false);            // Define the chunk summarizer function for MBA/coursework content
             string chunkSystemPrompt = !string.IsNullOrEmpty(chunkPromptTemplate)
                 ? chunkPromptTemplate
-                : "You are an expert MBA instructor. Summarize the following content from video transcripts and course PDFs, highlighting key concepts, frameworks, and real-world applications relevant to MBA studies.";
-
-            // Process the template to substitute known variables with placeholders compatible with chunking
+                : "You are an expert MBA instructor. Summarize the following content from video transcripts and course PDFs, highlighting key concepts, frameworks, and real-world applications relevant to MBA studies.";            // Process the template to substitute known variables with placeholders compatible with chunking
             if (!string.IsNullOrEmpty(chunkPromptTemplate))
             {
                 // Replace template variables with chunking-compatible ones
+                chunkSystemPrompt = chunkSystemPrompt.Replace("{{$content}}", "{{$input}}");  // Replace content with input for chunking
+
+                // Safely substitute variables, ensuring we don't create malformed templates
+                string oneDrivePathValue = variables?.GetValueOrDefault("onedrivePath", "") ?? "";
+                string courseValue = variables?.GetValueOrDefault("course", "") ?? "";
+
+                // Escape any potential template-breaking characters and ensure proper quoting
+                oneDrivePathValue = oneDrivePathValue.Replace("{{", "").Replace("}}", "");
+                courseValue = courseValue.Replace("{{", "").Replace("}}", "");
+
                 chunkSystemPrompt = chunkSystemPrompt
-                    .Replace("{{$content}}", "{{$input}}")  // Replace content with input for chunking
-                    .Replace("{{$onedrivePath}}", variables?.GetValueOrDefault("onedrivePath", ""))
-                    .Replace("{{$course}}", variables?.GetValueOrDefault("course", ""));
+                    .Replace("{{$onedrivePath}}", oneDrivePathValue)
+                    .Replace("{{$course}}", courseValue);
 
-                logger.LogDebug("Processed chunk template with variable substitution");
+                logger.LogDebug("Processed chunk template with variable substitution. OneDrive path: '{OneDrivePath}', Course: '{Course}'",
+                    oneDrivePathValue, courseValue);
             }
-
             logger.LogDebug("Creating chunk summarizer function with prompt length: {PromptLength}", chunkSystemPrompt.Length);
-            logger.LogDebug("Chunk prompt preview: {PromptPreview}", chunkSystemPrompt[..Math.Min(200, chunkSystemPrompt.Length)]);
+            logger.LogDebug("Chunk prompt preview (first 300 chars): {PromptPreview}",
+                chunkSystemPrompt[..Math.Min(300, chunkSystemPrompt.Length)]);
 
             KernelFunction summarizeChunkFunction;
             try
@@ -685,7 +693,9 @@ public class AISummarizer : IAISummarizer
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to create SummarizeChunk function. Prompt template may be malformed. Using fallback.");
+                logger.LogError(ex, "Failed to create SummarizeChunk function. Prompt template may be malformed. " +
+                    "Template length: {TemplateLength}, Error: {ErrorMessage}",
+                    chunkSystemPrompt.Length, ex.Message);
 
                 // Fallback to a simple prompt without template variables
                 string fallbackPrompt = "You are an expert MBA instructor. Summarize the following content from video transcripts and course PDFs, highlighting key concepts, frameworks, and real-world applications relevant to MBA studies.\n\n{{$input}}";

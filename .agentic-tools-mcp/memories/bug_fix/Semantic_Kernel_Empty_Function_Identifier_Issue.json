@@ -1,0 +1,8 @@
+{
+  "id": "8e0ba1d6-d6d0-4d4a-b879-7cbcc5b2309d",
+  "title": "Semantic Kernel Empty Function Identifier Issue",
+  "details": "Found issue with Semantic Kernel function creation where \"The function identifier is empty\" error occurs. The problem is in AISummarizer.cs where chunk prompt template variables are being substituted but the resulting template may have malformed syntax.\n\nKey findings:\n1. The error occurs in CreateFunctionFromPrompt when processing chunk_summary_prompt.md\n2. Template contains: {{$onedrivePath}} and {{$course}} variables\n3. Variable substitution replaces these with actual values but may result in malformed template\n4. The issue appears to be that when substituting template variables, if the replacement value is empty or contains special characters, it can break the template parsing\n\nThe fix should ensure proper template variable handling and fallback to simple templates when variable substitution fails.",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-14T18:44:36.223Z",
+  "dateUpdated": "2025-06-14T18:44:36.223Z"
+}
