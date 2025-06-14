@@ -167,9 +167,6 @@ internal class Program
         var configCommands = new ConfigCommands(loggerFactory.CreateLogger<ConfigCommands>(), serviceProvider);
         configCommands.Register(rootCommand, configOption, debugOption);
 
-        var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>());
-        oneDriveCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-
         // Print help if no subcommand or arguments are provided
         if (args.Length == 0)
         {
