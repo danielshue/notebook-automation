@@ -1,0 +1,8 @@
+{
+  "id": "eb87a91c-fe85-4ffd-9abe-dc88303292cd",
+  "title": "Testing AISummarizer against Live Class folder",
+  "details": "Testing the AISummarizer fix against the Operations Management Live Class folder. The original error was \"The function identifier is empty\" when processing video files with Semantic Kernel template substitution.\n\nTest folder: C:\\Users\\danshue.REDMOND\\OneDrive\\Education\\MBA-Resources\\Value Chain Management\\Operations Management\\operations-management-organization-and-analysis\\04_inventory-management-applications\\Live Class\n\nExpected behavior: The AISummarizer should now handle template variable substitution correctly without leaving empty function identifiers that cause Semantic Kernel to fail.",
+  "category": "testing",
+  "dateCreated": "2025-06-14T18:46:59.444Z",
+  "dateUpdated": "2025-06-14T18:46:59.444Z"
+}
