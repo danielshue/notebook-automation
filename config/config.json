@@ -17,8 +17,7 @@
             "Files.ReadWrite.All",
             "Sites.Read.All"
         ]
-    },
-    "aiservice": {
+    },    "aiservice": {
         "provider": "azure",
         "openai": {
             "endpoint": "https://api.openai.com/v1/chat/completions",
@@ -32,6 +31,15 @@
         "foundry": {
             "endpoint": "http://localhost:8000/v1/chat/completions",
             "model": "foundry-llm-model-name"
+        },
+        "timeout": {
+            "timeout_milliseconds": 120000,
+            "max_file_parallelism": 4,
+            "file_rate_limit_ms": 200
+        },
+        "retry_policy": {
+            "max_retry_attempts": 3,
+            "delay_between_retries": 1000
         }
     },
     "video_extensions": [
