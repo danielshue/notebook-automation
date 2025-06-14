@@ -1,0 +1,8 @@
+{
+  "id": "e08b3f7c-b2a6-4381-944d-4d6b4f574136",
+  "title": "Stack Trace Logging Fix - Success Verification",
+  "details": "Successfully tested the stack trace logging fix in the Notebook Automation CLI:\n\n## Test Results:\n- **Without --debug flag**: Clean error messages are displayed without stack traces, even for ERR-level log messages\n- **With --debug flag**: Additional debug information is shown, but stack traces only appear for actual exceptions\n\n## Root Cause Confirmed Fixed:\nThe issue was in LoggingService.cs where the Serilog console output template included `{Exception}` for all log levels. This caused stack traces to appear even for simple error messages when not in debug mode.\n\n## Solution Implemented:\nModified LoggingService.cs to use different console output templates:\n- **Debug mode**: Includes `{Exception}` to show full stack traces\n- **Non-debug mode**: Excludes `{Exception}` to show clean error messages only\n\n## Test Commands Used:\n```bash\n# Without debug - clean errors\n.\\na.exe tag add-nested --config \"nonexistent.json\"\n\n# With debug - shows debug info but still clean errors\n.\\na.exe tag add-nested --config \"nonexistent.json\" --debug\n```\n\n## Status:\n✅ **COMPLETED** - Stack traces no longer appear in console output when not running in debug mode",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-14T03:14:55.920Z",
+  "dateUpdated": "2025-06-14T03:14:55.920Z"
+}

@@ -198,12 +198,19 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
             // Store the log file path for external access
             currentLogFilePath = logFilePath;
 
+            // Configure different console output templates based on debug mode
+            // Debug mode: Show full exception details including stack traces
+            // Non-debug mode: Show only the message to maintain user-friendly output
+            var consoleTemplate = debug
+                ? "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+                : "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}";
+
             // Configure and create Serilog logger
             var loggerConfig = new LoggerConfiguration()
                 .MinimumLevel.Is(minLevel)
                 .WriteTo.Console(
                     restrictedToMinimumLevel: consoleMinLevel,
-                    outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}",
+                    outputTemplate: consoleTemplate,
                     theme: Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme.Code)
                 .WriteTo.File(
                     logFilePath,
