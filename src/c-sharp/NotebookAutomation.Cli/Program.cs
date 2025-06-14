@@ -3,6 +3,8 @@
 using System.CommandLine.Builder;
 using System.CommandLine.Parsing;
 
+using NotebookAutomation.Core.Configuration;
+
 namespace NotebookAutomation.Cli;
 
 /// <summary>
@@ -194,13 +196,11 @@ internal class Program
         // These are now handled under the config command group only.        // Print config file path for most commands, including help
         var isHelp = args.Any(a => a == "--help" || a == "-h");
         var isVersion = args.Any(a => a == "--version");
-        var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";
-
-        // Show config file path for help and most other commands (exclude version and config view)
+        var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";        // Show config file path for help and most other commands (exclude version and config view)
         if (!isVersion && !isConfigView)
         {
-            // Use the already parsed config path, else fallback
-            var finalConfigPath = configPath ?? AppConfig.FindConfigFile();
+            // Use ConfigManager for consistent config discovery
+            var finalConfigPath = await DiscoverConfigurationForDisplayAsync(configPath);
             if (!string.IsNullOrEmpty(finalConfigPath))
             {
                 if (isHelp)
@@ -348,5 +348,31 @@ internal class Program
             DirectoryNotFoundException => "Required directory not found",
             _ => $"Failed to initialize services: {exception.Message}"
         };
+    }
+
+    /// <summary>
+    /// Discovers the configuration file path using the same logic as ConfigManager for consistent display.
+    /// </summary>
+    /// <param name="explicitConfigPath">Explicitly provided config path via CLI.</param>
+    /// <returns>Path to the configuration file if found, otherwise null.</returns>
+    private static async Task<string?> DiscoverConfigurationForDisplayAsync(string? explicitConfigPath)
+    {
+        var fileSystem = new FileSystemWrapper();
+        var environment = new EnvironmentWrapper();
+        var logger = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Warning))
+            .CreateLogger<ConfigManager>();
+
+        var configManager = new ConfigManager(fileSystem, environment, logger);
+
+        var options = new ConfigDiscoveryOptions
+        {
+            ConfigPath = explicitConfigPath,
+            Debug = false,
+            ExecutableDirectory = environment.GetExecutableDirectory(),
+            WorkingDirectory = environment.GetCurrentDirectory()
+        };
+
+        var result = await configManager.LoadConfigurationAsync(options);
+        return result.IsSuccess ? result.ConfigurationPath : null;
     }
 }

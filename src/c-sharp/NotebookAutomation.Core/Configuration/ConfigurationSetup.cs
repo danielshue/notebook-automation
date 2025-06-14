@@ -14,12 +14,66 @@ namespace NotebookAutomation.Core.Configuration;
 public static class ConfigurationSetup
 {
     /// <summary>
-    /// Creates a standard configuration with support for config files and user secrets.
+    /// Discovers the configuration file path using the modern ConfigManager approach.
+    /// This method replaces the legacy AppConfig.FindConfigFile() with consistent discovery logic.
     /// </summary>
-    /// <param name="environment">The current environment (development, production, etc.)</param>
-    /// <param name="userSecretsId">Optional user secrets ID. If null, will attempt to use assembly-defined ID.</param>
-    /// <param name="configPath">Optional path to the config file. If null, will search for config.json in standard locations.</param>
-    /// <returns>A configured IConfiguration instance.</returns>
+    /// <param name="explicitConfigPath">Optional explicit configuration path from CLI or other source.</param>
+    /// <param name="configFileName">Name of the configuration file to search for. Defaults to "config.json".</param>
+    /// <returns>Path to the configuration file if found, otherwise null.</returns>
+    /// <remarks>
+    /// This method uses the same discovery order as ConfigManager:
+    /// 1. CLI option (if provided via explicitConfigPath)
+    /// 2. Environment variable (NOTEBOOKAUTOMATION_CONFIG)
+    /// 3. Current working directory
+    /// 4. Executable directory
+    /// 5. Executable config subdirectory
+    /// </remarks>
+    public static async Task<string?> DiscoverConfigurationFileAsync(string? explicitConfigPath = null, string configFileName = "config.json")
+    {
+        var fileSystem = new FileSystemWrapper();
+        var environment = new EnvironmentWrapper();
+        var logger = LoggerFactory.Create(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Warning))
+            .CreateLogger<ConfigManager>();
+
+        var configManager = new ConfigManager(fileSystem, environment, logger);
+
+        var options = new ConfigDiscoveryOptions
+        {
+            ConfigPath = explicitConfigPath,
+            Debug = false,
+            ExecutableDirectory = environment.GetExecutableDirectory(),
+            WorkingDirectory = environment.GetCurrentDirectory()
+        };
+
+        var result = await configManager.LoadConfigurationAsync(options);
+        return result.IsSuccess ? result.ConfigurationPath : null;
+    }
+
+    /// <summary>
+    /// Synchronous wrapper for DiscoverConfigurationFileAsync to maintain compatibility with existing code.
+    /// </summary>
+    /// <param name="explicitConfigPath">Optional explicit configuration path from CLI or other source.</param>
+    /// <param name="configFileName">Name of the configuration file to search for. Defaults to "config.json".</param>
+    /// <returns>Path to the configuration file if found, otherwise empty string for compatibility.</returns>
+    public static string DiscoverConfigurationFile(string? explicitConfigPath = null, string configFileName = "config.json")
+    {
+        try
+        {
+            var task = DiscoverConfigurationFileAsync(explicitConfigPath, configFileName);
+            task.Wait();
+            return task.Result ?? string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }    /// <summary>
+         /// Creates a standard configuration with support for config files and user secrets.
+         /// </summary>
+         /// <param name="environment">The current environment (development, production, etc.)</param>
+         /// <param name="userSecretsId">Optional user secrets ID. If null, will attempt to use assembly-defined ID.</param>
+         /// <param name="configPath">Optional path to the config file. If null, will search for config.json in standard locations.</param>
+         /// <returns>A configured IConfiguration instance.</returns>
     public static IConfiguration BuildConfiguration(
         string environment = "Development",
         string? userSecretsId = null,
@@ -28,7 +82,7 @@ public static class ConfigurationSetup
         // Find the config file if not specified
         if (string.IsNullOrEmpty(configPath))
         {
-            configPath = AppConfig.FindConfigFile();
+            configPath = DiscoverConfigurationFile();
         }
 
         var configurationBuilder = new ConfigurationBuilder()
@@ -71,11 +125,10 @@ public static class ConfigurationSetup
         string environment = "Development",
         string? configPath = null)
     where T : class
-    {
-        // Find the config file if not specified
+    {        // Find the config file if not specified
         if (string.IsNullOrEmpty(configPath))
         {
-            configPath = AppConfig.FindConfigFile();
+            configPath = DiscoverConfigurationFile();
         }
 
         var configurationBuilder = new ConfigurationBuilder()
@@ -134,11 +187,10 @@ public static class ConfigurationSetup
             }
         }
         else
-        {
-            // Fall back to legacy discovery if needed
+        {            // Fall back to modern discovery instead of legacy method
             if (string.IsNullOrEmpty(configPath))
             {
-                configPath = AppConfig.FindConfigFile();
+                configPath = DiscoverConfigurationFile();
             }
         }
 
