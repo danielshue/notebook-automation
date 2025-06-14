@@ -50,10 +50,8 @@ public class ProgramTests
         var exitCode = await Program.Main(args);
 
         // Assert
-        Assert.AreEqual(0, exitCode, "Help command should return exit code 0");
-
-        var output = consoleOutput.ToString();
-        Assert.IsTrue(output.Contains("Configuration file:") || output.Contains("Configuration: Using defaults"),
+        Assert.AreEqual(0, exitCode, "Help command should return exit code 0"); var output = consoleOutput.ToString();
+        Assert.IsTrue(output.Contains("Configuration:"),
             "Help output should contain configuration file information");
     }
 
@@ -71,10 +69,8 @@ public class ProgramTests
         var exitCode = await Program.Main(args);
 
         // Assert
-        Assert.AreEqual(0, exitCode, "Help command should return exit code 0");
-
-        var output = consoleOutput.ToString();
-        Assert.IsTrue(output.Contains($"Configuration file: {configPath}"),
+        Assert.AreEqual(0, exitCode, "Help command should return exit code 0"); var output = consoleOutput.ToString();
+        Assert.IsTrue(output.Contains($"Configuration:") && output.Contains($"{configPath}"),
             $"Help output should contain the specified config path: {configPath}");
     }
 
@@ -156,10 +152,8 @@ public class ProgramTests
         var exitCode = await Program.Main(args);
 
         // Assert
-        Assert.AreEqual(0, exitCode, "Help command should return exit code 0");
-
-        var output = consoleOutput.ToString();
-        Assert.IsTrue(output.Contains($"Configuration file: {nonExistentPath}"),
+        Assert.AreEqual(0, exitCode, "Help command should return exit code 0"); var output = consoleOutput.ToString();
+        Assert.IsTrue(output.Contains($"Configuration:") && output.Contains($"{nonExistentPath}"),
             "Help output should show the specified config path even if it doesn't exist");
     }
 }

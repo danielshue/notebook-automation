@@ -2,20 +2,28 @@
 global using System;
 global using System.Collections.Generic;
 global using System.CommandLine;
+global using System.CommandLine.Builder;
 global using System.CommandLine.Invocation;
+global using System.CommandLine.Parsing;
 global using System.Diagnostics;
 global using System.IO;
 global using System.Reflection;
 global using System.Runtime.CompilerServices;
 global using System.Runtime.InteropServices;
 global using System.Text;
+global using System.Text.Json;
 global using System.Threading;
 global using System.Threading.Tasks;
 
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 
+global using NotebookAutomation.Cli.Cli;
 global using NotebookAutomation.Cli.Commands;
+global using NotebookAutomation.Cli.Configuration;
+global using NotebookAutomation.Cli.Models;
+global using NotebookAutomation.Cli.Startup;
+global using NotebookAutomation.Cli.UI;
 global using NotebookAutomation.Cli.Utilities;
 global using NotebookAutomation.Core.Configuration;
 global using NotebookAutomation.Core.Models;
