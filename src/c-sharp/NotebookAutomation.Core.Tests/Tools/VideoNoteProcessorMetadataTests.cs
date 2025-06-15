@@ -120,12 +120,14 @@ video-uploaded:";
         // Arrange
         var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             _appConfig); string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
@@ -160,12 +162,14 @@ video-uploaded:";
         // Arrange
         var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             _appConfig);
@@ -188,19 +192,20 @@ video-uploaded:";
         // Assert that the note body is present (not suppressed)
         Assert.IsTrue(markdownNote.Contains("This is a test summary."), "Missing summary body");
     }
-
     [TestMethod]
     public void GenerateMarkdownNote_WithTemplateAndHierarchy_AppliesBoth()
     {
         // Arrange
         var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             _appConfig);
@@ -234,19 +239,20 @@ video-uploaded:";
         // Assert that the note body is present (not suppressed)
         Assert.IsTrue(markdownNote.Contains("This is a test summary."), "Missing summary body");
     }
-
     [TestMethod]
     public async Task ProcessVideoAsync_AppliesPathBasedMetadataAndTemplate()
     {
         // Arrange
         var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             _appConfig);
@@ -277,19 +283,20 @@ video-uploaded:";
         // Assert that the note body is present (not suppressed)
         Assert.IsTrue(markdown.Contains("AI summary of the video content"), "Missing summary body");
     }
-
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithNoSummary_SuppressesBodyOutputsOnlyFrontmatter()
     {
         // Arrange
         var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             _appConfig);
@@ -334,12 +341,14 @@ video-uploaded:";
         _oneDriveServiceMock
                     .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(testShareLink); var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             hierarchyDetector,
             templateManager,
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             _appConfig);

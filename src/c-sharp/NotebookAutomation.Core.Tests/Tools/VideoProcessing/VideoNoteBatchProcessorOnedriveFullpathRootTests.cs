@@ -75,12 +75,15 @@ metadata:
 
         // Create a mock for IYamlHelper
         IYamlHelper mockYamlHelper = Mock.Of<IYamlHelper>();        // Set up mock with test dependencies
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             testAISummarizer,
             mockYamlHelper,
             CreateMetadataHierarchyDetector(),
-            CreateTestMetadataTemplateManager(), new MarkdownNoteBuilder(mockYamlHelper),
+            CreateTestMetadataTemplateManager(),
+            mockCourseStructureExtractor,
+            new MarkdownNoteBuilder(mockYamlHelper),
             mockOneDriveService,
             _testAppConfig);  // AppConfig
 

@@ -65,11 +65,11 @@ metadata:
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
-        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
+        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance); var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelper);
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, markdownNoteBuilder, null, appConfig);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder, null, appConfig);
 
         // Act - Using null OpenAI key should return simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);
@@ -100,11 +100,11 @@ metadata:
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
-        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance);
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
+        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance); var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelper);
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, markdownNoteBuilder, null, appConfig);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
+        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder, null, appConfig);
 
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);

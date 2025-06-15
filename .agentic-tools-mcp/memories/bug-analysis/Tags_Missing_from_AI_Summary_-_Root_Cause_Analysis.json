@@ -1,0 +1,8 @@
+{
+  "id": "0ef7f865-d3ac-4807-a1b1-c102d84cdc59",
+  "title": "Tags Missing from AI Summary - Root Cause Analysis",
+  "details": "Found the root cause of why tags are not appearing in the final markdown output despite being requested in the AI prompt:\n\n1. **Variable Name Mismatch**: PDF processor is using `_yamlFrontmatter` variable name in GeneratePdfSummaryAsync but the AISummarizer expects `yamlfrontmatter` (without underscore).\n\n2. **Missing Tags in YAML**: The BuildYamlFrontmatter method in PdfNoteProcessor does NOT include any tags field in the yamlData dictionary. It builds the YAML frontmatter with all metadata fields but never adds a \"tags\" field - not even an empty one.\n\n3. **Prompt Template Issue**: The final_summary_prompt.md template has `tags: ''` (empty string) in its own frontmatter, and the AI is instructed to only add tags if the field exists but is empty. However, since the BuildYamlFrontmatter doesn't include a tags field at all, the AI may not be adding tags.\n\n4. **No Tag Extraction**: There's no code in the pipeline that extracts tags from the AI response and merges them back into the frontmatter before building the final markdown.\n\nRequired fixes:\n1. Fix variable name mismatch (_yamlFrontmatter -> yamlfrontmatter)\n2. Add empty tags field to BuildYamlFrontmatter method\n3. Implement tag extraction from AI response and merge into final frontmatter\n4. Update MarkdownNoteBuilder to handle tag extraction if not already present",
+  "category": "bug-analysis",
+  "dateCreated": "2025-06-15T21:37:06.700Z",
+  "dateUpdated": "2025-06-15T21:37:06.700Z"
+}

@@ -58,12 +58,14 @@ public class VideoNoteBatchProcessorResourcesRootTests
 
         // Create mock YamlHelper
         var mockYamlHelper = Mock.Of<IYamlHelper>();        // Set up mock with test dependencies and updated constructor signature
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         _videoNoteProcessorMock = new Mock<VideoNoteProcessor>(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             testAISummarizer,
             mockYamlHelper, // Required YamlHelper parameter
             CreateMetadataHierarchyDetector(), // Required MetadataHierarchyDetector parameter
             CreateTestMetadataTemplateManager(), // Required MetadataTemplateManager parameter
+            mockCourseStructureExtractor, // Required ICourseStructureExtractor parameter
             new MarkdownNoteBuilder(mockYamlHelper), // Required MarkdownNoteBuilder parameter
             mockOneDriveService, // Optional OneDriveService
             _testAppConfig); // Optional AppConfig

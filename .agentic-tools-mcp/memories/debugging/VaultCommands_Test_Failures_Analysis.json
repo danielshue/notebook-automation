@@ -1,0 +1,8 @@
+{
+  "id": "1e84a06a-ea30-4541-b7ad-9fe725683907",
+  "title": "VaultCommands Test Failures Analysis",
+  "details": "Found 4 failing tests in VaultCommands:\n\n1. **GenerateIndexCommand_PrintsUsage_WhenNoArgs**: Tests expect commands like 'vault-generate-index' to be registered directly on root command, but current implementation creates them as subcommands under 'vault' parent.\n\n2. **Register_AddsVaultCommandToRoot**: Same issue - expects direct registration of vault-generate-index, vault-ensure-metadata, vault-clean-index commands.\n\n3. **CleanIndexCommand_DeletesAllIndexFiles**: Test expects actual deletion of index files based on YAML frontmatter (type: index or template-type ending with -index), but current implementation just shows TODO message.\n\n4. **ExecuteVaultCommand_WithRelativePath_ResolvesAgainstVaultRoot**: Test expects a private ExecuteVaultCommandAsync method that doesn't exist.\n\nKey findings:\n- Index files are identified by YAML frontmatter: `type: index` or `template-type` ending with `-index` (e.g., case-studies-index)\n- YamlHelper exists in Core.Utils for parsing frontmatter\n- Tests expect direct command registration pattern, not nested subcommands\n- Need to implement actual file deletion logic for clean-index command",
+  "category": "debugging",
+  "dateCreated": "2025-06-15T22:06:43.384Z",
+  "dateUpdated": "2025-06-15T22:06:43.384Z"
+}

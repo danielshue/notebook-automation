@@ -76,15 +76,15 @@ public class VideoNoteBatchProcessorTests
         var templateManager = new MetadataTemplateManager(
             Mock.Of<ILogger<MetadataTemplateManager>>(),
             _appConfig,
-            mockYamlHelper.Object);
-
-        // Create a real VideoNoteProcessor with all the necessary dependencies
+            mockYamlHelper.Object);        // Create a real VideoNoteProcessor with all the necessary dependencies
+        var courseStructureExtractor = new CourseStructureExtractor(Mock.Of<ILogger<CourseStructureExtractor>>());
         VideoNoteProcessor videoNoteProcessor = new(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             _testAISummarizer,
             mockYamlHelper.Object,
             hierarchyDetector,
             templateManager,
+            courseStructureExtractor,
             markdownNoteBuilder,
             mockOneDriveService.Object,
             _appConfig);
@@ -100,9 +100,21 @@ public class VideoNoteBatchProcessorTests
 
         // This avoids the issues with constructor parameters in mocks
         var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(
-            _loggerMock.Object,
-            videoNoteProcessor,
-            _testAISummarizer);        // Since we're using a real instance, we don't need to mock the method
+            new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>().Object,
+            new VideoNoteProcessor(new Mock<ILogger<VideoNoteProcessor>>().Object,
+                new AISummarizer(new Mock<ILogger<AISummarizer>>().Object, null, null),
+                new Mock<IYamlHelper>().Object,
+                new Mock<IMetadataHierarchyDetector>().Object,
+                new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, new Mock<IYamlHelper>().Object),
+                new CourseStructureExtractor(NullLogger<CourseStructureExtractor>.Instance, _appConfig),
+                new MarkdownNoteBuilder(new Mock<IYamlHelper>().Object),
+                new Mock<IOneDriveService>().Object),
+            new AISummarizer(new Mock<ILogger<AISummarizer>>().Object, null, null));
+
+        // Fix TestContext issue
+        File.WriteAllText(Path.Combine(_testDir, "test-output.txt"), "Test content");
+
+        // Since we're using a real instance, we don't need to mock the method
         // The real processor will handle the file output for us
         _batchProcessor = batchProcessor;
         _processor = new VideoNoteBatchProcessor(_batchProcessor);

@@ -264,7 +264,7 @@ public static class ServiceRegistration
 
             return kernel;
         });        // Register AISummarizer
-        services.AddScoped(provider =>
+        services.AddScoped<IAISummarizer>(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<AISummarizer>();
@@ -296,19 +296,18 @@ public static class ServiceRegistration
         services.AddScoped(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
-            var logger = loggingService.GetLogger<VideoNoteProcessor>();
-            var aiSummarizer = provider.GetRequiredService<AISummarizer>();
+            var logger = loggingService.GetLogger<VideoNoteProcessor>(); var aiSummarizer = provider.GetRequiredService<IAISummarizer>();
             var appConfig = provider.GetRequiredService<AppConfig>();
 
             // Use GetService instead of GetRequiredService since OneDriveService is optional
-            var oneDriveService = provider.GetService<IOneDriveService>();
-            var yamlHelper = provider.GetRequiredService<IYamlHelper>();
-            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
-            var templateManager = provider.GetRequiredService<MetadataTemplateManager>();
+            var oneDriveService = provider.GetService<IOneDriveService>(); var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+            var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
+            var templateManager = provider.GetRequiredService<IMetadataTemplateManager>();
+            var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
-            // Pass _yamlHelper, hierarchyDetector, templateManager, then the optional parameters
-            return new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, markdownBuilder, oneDriveService, appConfig);
+            // Pass parameters in correct order: logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig
+            return new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
         });
 
         // Register VideoNoteBatchProcessor
@@ -317,15 +316,15 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var batchLogger = loggingService.GetLogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>();
             var processorLogger = loggingService.GetLogger<VideoNoteProcessor>();
-            var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-            var appConfig = provider.GetRequiredService<AppConfig>();
-            var oneDriveService = provider.GetService<IOneDriveService>();
+            var aiSummarizer = provider.GetRequiredService<IAISummarizer>();
+            var appConfig = provider.GetRequiredService<AppConfig>(); var oneDriveService = provider.GetService<IOneDriveService>();
             var yamlHelper = provider.GetRequiredService<IYamlHelper>();
-            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
-            var templateManager = provider.GetRequiredService<MetadataTemplateManager>();
+            var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
+            var templateManager = provider.GetRequiredService<IMetadataTemplateManager>();
+            var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
-            var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, markdownBuilder, oneDriveService, appConfig);
+            var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
             var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(batchLogger, videoProcessor, aiSummarizer);
             return new VideoNoteBatchProcessor(batchProcessor);
         });
@@ -335,11 +334,15 @@ public static class ServiceRegistration
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<PdfNoteProcessor>();
-            var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            var aiSummarizer = provider.GetRequiredService<IAISummarizer>();
+            var appConfig = provider.GetRequiredService<AppConfig>(); var oneDriveService = provider.GetService<IOneDriveService>();
+            var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+            var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
+            var templateManager = provider.GetRequiredService<IMetadataTemplateManager>();
+            var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
-            return new PdfNoteProcessor(logger, aiSummarizer, hierarchyDetector, markdownBuilder);
+            return new PdfNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
         });
 
         // Register PDF Batch Processor
@@ -347,12 +350,16 @@ public static class ServiceRegistration
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var batchLogger = loggingService.GetLogger<DocumentNoteBatchProcessor<PdfNoteProcessor>>();
-            var processorLogger = loggingService.GetLogger<PdfNoteProcessor>();
-            var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            var processorLogger = loggingService.GetLogger<PdfNoteProcessor>(); var aiSummarizer = provider.GetRequiredService<IAISummarizer>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            var oneDriveService = provider.GetService<IOneDriveService>();
+            var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+            var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
+            var templateManager = provider.GetRequiredService<IMetadataTemplateManager>();
+            var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
-            var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer, hierarchyDetector, markdownBuilder);
+            var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
             var batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(batchLogger, pdfProcessor, aiSummarizer);
             return new PdfNoteBatchProcessor(batchProcessor);
         });
@@ -533,9 +540,8 @@ public static class ServiceRegistration
     /// <param name="services">The service collection to configure.</param>
     /// <returns>The configured service collection.</returns>
     private static IServiceCollection RegisterMetadataServices(IServiceCollection services)
-    {
-        // Register metadata-related services
-        services.AddScoped(provider =>
+    {        // Register metadata-related services
+        services.AddScoped<IMetadataTemplateManager>(provider =>
         {
             var logger = provider.GetRequiredService<ILoggingService>().GetLogger<MetadataTemplateManager>();
             var appConfig = provider.GetRequiredService<AppConfig>();
@@ -571,6 +577,10 @@ public static class ServiceRegistration
             var appConfig = provider.GetRequiredService<AppConfig>();
             return new CourseStructureExtractor(logger, appConfig);
         });
+
+        // Register CourseStructureExtractor (concrete class) for processors that expect it
+        services.AddScoped<CourseStructureExtractor>(provider =>
+            (CourseStructureExtractor)provider.GetRequiredService<ICourseStructureExtractor>());
 
         // Register MarkdownNoteBuilder with factory
         services.AddScoped(provider =>

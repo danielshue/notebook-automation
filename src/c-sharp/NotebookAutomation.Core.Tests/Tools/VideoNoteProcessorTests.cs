@@ -36,7 +36,8 @@ public class VideoNoteProcessorTests
             appConfig,
             yamlHelperMock.Object);
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelperMock.Object);
-        VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer, yamlHelperMock.Object, hierarchyDetector, templateManager, markdownNoteBuilder);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
+        VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer, yamlHelperMock.Object, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder);
 
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);

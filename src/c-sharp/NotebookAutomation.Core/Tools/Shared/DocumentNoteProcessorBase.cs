@@ -6,17 +6,33 @@ namespace NotebookAutomation.Core.Tools.Shared;
 /// </summary>
 /// <remarks>
 /// The <c>DocumentNoteProcessorBase</c> class provides shared logic for processing
-/// document notes, including AI summary generation, markdown creation, and logging.
-/// It serves as a foundation for specialized processors that handle specific document
-/// types, such as PDFs and videos.
+/// document notes, including AI summary generation, markdown creation, tag extraction,
+/// hierarchy detection, template enhancement, and logging. It serves as a foundation
+/// for specialized processors that handle specific document types, such as PDFs and videos.
 /// </remarks>
 /// <param name="logger">The logger instance.</param>
-/// <param name="aiSummarizer">The AISummarizer instance for generating AI-powered summaries.</param>
-public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiSummarizer, MarkdownNoteBuilder markdownNoteBuilder)
+/// <param name="aiSummarizer">The IAISummarizer instance for generating AI-powered summaries.</param>
+/// <param name="markdownNoteBuilder">The markdown note builder for generating markdown content.</param>
+/// <param name="appConfig">The application configuration.</param>
+/// <param name="yamlHelper">Optional YAML helper for processing YAML frontmatter.</param>
+/// <param name="hierarchyDetector">Optional hierarchy detector for metadata enhancement.</param>
+/// <param name="templateManager">Optional template manager for metadata enhancement.</param>
+public abstract class DocumentNoteProcessorBase(
+    ILogger logger,
+    IAISummarizer aiSummarizer,
+    MarkdownNoteBuilder markdownNoteBuilder,
+    AppConfig appConfig,
+    IYamlHelper? yamlHelper = null,
+    IMetadataHierarchyDetector? hierarchyDetector = null,
+    IMetadataTemplateManager? templateManager = null)
 {
     protected readonly ILogger Logger = logger ?? throw new ArgumentNullException(nameof(logger), "Logger must be provided via DI.");
-    protected readonly AISummarizer Summarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer), "AISummarizer must be provided via DI.");
+    protected readonly IAISummarizer Summarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer), "IAISummarizer must be provided via DI.");
     protected readonly MarkdownNoteBuilder Builder = markdownNoteBuilder ?? throw new ArgumentNullException(nameof(markdownNoteBuilder), "MarkdownNoteBuilder must be provided via DI.");
+    protected readonly AppConfig AppConfig = appConfig ?? throw new ArgumentNullException(nameof(appConfig), "AppConfig must be provided via DI.");
+    protected readonly IYamlHelper? YamlHelper = yamlHelper;
+    protected readonly IMetadataHierarchyDetector? HierarchyDetector = hierarchyDetector;
+    protected readonly IMetadataTemplateManager? TemplateManager = templateManager;
     /// <summary>
     /// Extracts the main text/content and metadata from the document.
     /// </summary>
@@ -105,14 +121,23 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
     }
 
     /// <summary>
-    /// Generates a markdown note from extracted text and metadata.
+    /// Generates a markdown note from extracted text and metadata with AI tag extraction and metadata enhancement.
     /// </summary>
-    /// <param name="bodyText">The extracted text/content.</param>
+    /// <param name="bodyText">The extracted text/content (may contain AI-generated frontmatter).</param>
     /// <param name="metadata">Optional metadata for the note.</param>
     /// <param name="noteType">Type of note (e.g., "PDF Note", "Video Note").</param>
     /// <param name="suppressBody">Whether to suppress the body text and only include frontmatter.</param>
     /// <param name="includeNoteTypeTitle">Whether to include the note type as a title in the markdown.</param>
     /// <returns>The generated markdown content.</returns>
+    /// <remarks>
+    /// This method performs comprehensive document processing including:
+    /// <list type="bullet">
+    /// <item><description>Extraction of AI-generated tags and frontmatter from body text</description></item>
+    /// <item><description>Hierarchy detection and metadata enhancement</description></item>
+    /// <item><description>Template-based metadata enrichment</description></item>
+    /// <item><description>Date field cleanup and normalization</description></item>
+    /// </list>
+    /// </remarks>
     public virtual string GenerateMarkdownNote(
         string bodyText,
         Dictionary<string, object>? metadata = null,
@@ -120,6 +145,118 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
         bool suppressBody = false,
         bool includeNoteTypeTitle = false)
     {
+        // Use default metadata if none provided
+        metadata ??= [];
+
+        // If YamlHelper is available, extract AI-generated tags and frontmatter
+        if (YamlHelper != null)
+        {
+            // Debug: Log the original content
+            string truncatedBody = bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText;
+            Logger.LogDebug($"GenerateMarkdownNote called - Original AI content (first 200 chars): {truncatedBody}");
+
+            // Extract any existing frontmatter from the AI content
+            string? contentFrontmatter = YamlHelper.ExtractFrontmatter(bodyText);
+            Dictionary<string, object?> contentMetadata = [];
+
+            if (!string.IsNullOrWhiteSpace(contentFrontmatter))
+            {
+                contentMetadata = YamlHelper.ParseYamlToDictionary(contentFrontmatter)
+                    .ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
+                Logger.LogInformation($"Extracted frontmatter from AI content with {contentMetadata.Count} fields");
+            }
+            else
+            {
+                Logger.LogInformation("No frontmatter found in AI content");
+            }
+
+            // Remove frontmatter from the content body
+            bodyText = YamlHelper.RemoveFrontmatter(bodyText);
+
+            // Debug: Log the cleaned content
+            string truncatedCleanBody = bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText;
+            Logger.LogDebug($"Cleaned content (first 200 chars): {truncatedCleanBody}");
+
+            // Merge metadata: existing metadata takes precedence, but preserve AI tags if they exist
+            var mergedMetadata = new Dictionary<string, object>(metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!) ?? new Dictionary<string, object>());
+
+            // If AI content has tags and existing metadata doesn't, use AI tags
+            if (contentMetadata.TryGetValue("tags", out object? value) && !mergedMetadata.ContainsKey("tags"))
+            {
+                mergedMetadata["tags"] = value!;
+                Logger.LogDebug("Using AI-generated tags from content frontmatter");
+            }
+
+            // Merge other non-conflicting AI metadata
+            foreach (var kvp in contentMetadata)
+            {
+                if (kvp.Key != "tags" && !mergedMetadata.ContainsKey(kvp.Key))
+                {
+                    mergedMetadata[kvp.Key] = kvp.Value!;
+                }
+            }
+
+            metadata = mergedMetadata;
+        }
+
+        // Apply hierarchy detection if available and _internal_path is provided
+        if (HierarchyDetector != null && metadata.TryGetValue("_internal_path", out var internalPathObj) && internalPathObj is string internalPath)
+        {
+            try
+            {
+                Logger.LogDebug($"Applying hierarchy detection for path: {internalPath}");
+                var hierarchyInfo = HierarchyDetector.FindHierarchyInfo(internalPath);
+                var nullableMetadata = metadata.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
+
+                // Extract document type from noteType (e.g., "PDF Note" -> "pdf", "Video Note" -> "video")
+                string documentType = noteType.Split(' ')[0].ToLowerInvariant();
+                var updatedMetadata = HierarchyDetector.UpdateMetadataWithHierarchy(nullableMetadata, hierarchyInfo, documentType);
+                metadata = updatedMetadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value ?? new object());
+                Logger.LogDebug($"Applied hierarchy detection - program: {hierarchyInfo.GetValueOrDefault("program", "")}, course: {hierarchyInfo.GetValueOrDefault("course", "")}, class: {hierarchyInfo.GetValueOrDefault("class", "")}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, $"Error applying hierarchy detection for path: {internalPath}");
+            }
+        }
+
+        // Remove internal path field as it's only used for hierarchy detection
+        metadata.Remove("_internal_path");
+
+        // Apply template enhancements if available
+        if (TemplateManager != null)
+        {
+            try
+            {
+                // Add template metadata (template-type, etc.)
+                metadata = TemplateManager.EnhanceMetadataWithTemplate(metadata, noteType);
+                Logger.LogDebug($"Enhanced metadata with template fields for note type: {noteType}");
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, "Error applying template metadata");
+            }
+        }
+
+        // Remove all date-related fields from metadata
+        var dateFieldsToRemove = metadata.Keys
+            .Where(k => k.StartsWith("date-") || k.EndsWith("-date"))
+            .ToList();
+
+        foreach (var dateField in dateFieldsToRemove)
+        {
+            metadata.Remove(dateField);
+            Logger.LogDebug($"Removed date field {dateField} from metadata");
+        }
+
+        // Log final metadata for debugging
+        Logger.LogDebug("Final metadata before markdown generation:");
+        foreach (var kvp in metadata)
+        {
+            Logger.LogDebug($"  {kvp.Key}: {kvp.Value}");
+        }
+
+        // Generate the final markdown using the original simple logic
         var frontmatter = metadata ?? new Dictionary<string, object> { { "title", $"Untitled {noteType}" } };
 
         if (suppressBody)
@@ -134,12 +271,12 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
         {
             string title = titleObj.ToString() ?? noteType;
             markdownBody = $"# {title}\n\n{bodyText}";
-            Logger?.LogDebug("Using frontmatter title for heading: {Title}", title);
+            Logger?.LogDebug($"Using frontmatter title for heading: {title}", title);
         }
         else if (includeNoteTypeTitle)
         {
             markdownBody = $"# {noteType}\n\n{bodyText}";
-            Logger?.LogDebug("No frontmatter title found, using note type: {NoteType}", noteType);
+            Logger?.LogDebug($"No frontmatter title found, using note type: {noteType}", noteType);
         }
         else
         {
@@ -147,6 +284,94 @@ public abstract class DocumentNoteProcessorBase(ILogger logger, AISummarizer aiS
             Logger?.LogDebug("No title added to markdown body");
         }
 
-        return Builder.BuildNote(frontmatter, markdownBody);
+        string markdownNote = Builder.BuildNote(frontmatter, markdownBody);
+
+        // Ensure all document notes have a consistent "## Notes" section
+        return EnsureNotesSection(markdownNote);
+    }
+
+    /// <summary>
+    /// Ensures that the generated markdown note contains a "## Notes" section at the end.
+    /// This section should never be modified and provides a consistent location for user notes.
+    /// </summary>
+    /// <param name="markdownNote">The markdown note content to process.</param>
+    /// <returns>The markdown note with guaranteed "## Notes" section at the end.</returns>
+    /// <remarks>
+    /// This method ensures consistency across all document types (PDF, Video, etc.) by
+    /// guaranteeing that a "## Notes" section is always present for user annotations.
+    /// If the section already exists, the content is preserved as-is.
+    /// </remarks>
+    protected string EnsureNotesSection(string markdownNote)
+    {
+        const string notesPattern = "## Notes";
+
+        // Check if Notes section already exists
+        if (markdownNote.Contains(notesPattern, StringComparison.OrdinalIgnoreCase))
+        {
+            Logger.LogDebug("Notes section already exists in markdown content");
+            return markdownNote;
+        }
+
+        // Add Notes section at the end
+        string notesSectionToAdd = markdownNote.EndsWith('\n') ? "\n## Notes\n" : "\n\n## Notes\n";
+        string result = markdownNote + notesSectionToAdd;
+
+        Logger.LogDebug("Added '## Notes' section to markdown content");
+        return result;
+    }
+
+    /// <summary>
+    /// Converts a OneDrive file path to the equivalent vault path for hierarchy detection.
+    /// </summary>
+    /// <param name="oneDrivePath">The original OneDrive file path.</param>
+    /// <returns>The converted vault path, or the original path if conversion is not possible.</returns>
+    protected string ConvertOneDriveToVaultPath(string oneDrivePath)
+    {
+        try
+        {
+            // Get the configured OneDrive resources root and vault root
+            string onedriveRoot = AppConfig?.Paths?.OnedriveFullpathRoot ?? "";
+            string onedriveResourcesPath = AppConfig?.Paths?.OnedriveResourcesBasepath ?? "";
+            string vaultRoot = AppConfig?.Paths?.NotebookVaultFullpathRoot ?? "";
+
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - Input: {oneDrivePath}");
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - OnedriveRoot: {onedriveRoot}");
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - OnedriveResourcesPath: {onedriveResourcesPath}");
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - VaultRoot: {vaultRoot}");
+
+            if (string.IsNullOrEmpty(onedriveRoot) || string.IsNullOrEmpty(vaultRoot))
+            {
+                Logger.LogWarning("OneDrive or vault root not configured. Using original path for hierarchy detection.");
+                return oneDrivePath;
+            }
+
+            // Build the full OneDrive resources root path
+            string fullOnedriveResourcesRoot = Path.Combine(onedriveRoot, onedriveResourcesPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            // Normalize the path separators for comparison
+            fullOnedriveResourcesRoot = Path.GetFullPath(fullOnedriveResourcesRoot);
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - FullOnedriveResourcesRoot: {fullOnedriveResourcesRoot}");
+
+            // Check if the OneDrive path is under the resources root
+            if (oneDrivePath.StartsWith(fullOnedriveResourcesRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                // Get the relative path from the OneDrive resources root
+                string relativePath = Path.GetRelativePath(fullOnedriveResourcesRoot, oneDrivePath);
+                Logger.LogDebug($"ConvertOneDriveToVaultPath - RelativePath: {relativePath}");
+
+                // Combine with vault root to get the equivalent vault path
+                string vaultPath = Path.Combine(vaultRoot, relativePath);
+                Logger.LogDebug($"ConvertOneDriveToVaultPath - Output VaultPath: {vaultPath}");
+                return vaultPath;
+            }
+
+            // If not under resources root, return the original path
+            Logger.LogWarning($"OneDrive path is not under resources root. Using original path for hierarchy detection: {oneDrivePath}");
+            return oneDrivePath;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Error converting OneDrive path to vault path: {oneDrivePath}");
+            return oneDrivePath;
+        }
     }
 }

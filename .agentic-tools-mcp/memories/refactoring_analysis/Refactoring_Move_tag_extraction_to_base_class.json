@@ -1,0 +1,8 @@
+{
+  "id": "8f1b23bd-63c6-4979-b60e-1941cf670bd4",
+  "title": "Refactoring: Move tag extraction to base class",
+  "details": "**Analysis: Moving tag extraction to DocumentNoteProcessorBase**\n\n**Current State:**\n- VideoNoteProcessor: HAS tag extraction logic (duplicated code)\n- PdfNoteProcessor: MISSING tag extraction logic (causing bug)  \n- MarkdownNoteProcessor: Unknown, but likely also missing\n\n**Benefits of pushing to base class:**\n1. **DRY Principle**: Eliminates code duplication between processors\n2. **Bug Prevention**: Ensures all processors get tag extraction automatically\n3. **Consistency**: Same tag handling behavior across all document types\n4. **Maintainability**: Single place to update tag extraction logic\n\n**Requirements for base class:**\n- Need IYamlHelper dependency in base class constructor\n- Make tag extraction behavior configurable (some processors may not need it)\n- Update all concrete processors to pass IYamlHelper to base\n\n**Implementation Strategy:**\n1. Add IYamlHelper to DocumentNoteProcessorBase constructor\n2. Add virtual ExtractAndMergeAiTags method in base class\n3. Call this method from GenerateMarkdownNote in base class\n4. Update all concrete classes to pass IYamlHelper to base\n5. Remove duplicate code from VideoNoteProcessor",
+  "category": "refactoring_analysis",
+  "dateCreated": "2025-06-15T21:42:20.575Z",
+  "dateUpdated": "2025-06-15T21:42:20.575Z"
+}

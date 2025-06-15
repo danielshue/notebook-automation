@@ -26,7 +26,6 @@ public class PdfNoteBatchProcessorTests
                 new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>()))
         {
         }
-
         private static PdfNoteProcessor CreatePdfNoteProcessor()
         {
             var mockAppConfig = new AppConfig();
@@ -36,11 +35,16 @@ public class PdfNoteBatchProcessorTests
             var hierarchyDetector = new MetadataHierarchyDetector(
                 Mock.Of<ILogger<MetadataHierarchyDetector>>(),
                 mockAppConfig);
+            var templateManager = Mock.Of<IMetadataTemplateManager>();
+            var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
 
             return new PdfNoteProcessor(
                 Mock.Of<ILogger<PdfNoteProcessor>>(),
                 new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>()),
+                yamlHelper,
                 hierarchyDetector,
+                templateManager,
+                mockCourseStructureExtractor,
                 markdownNoteBuilder);
         }
 
