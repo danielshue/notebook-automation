@@ -1195,7 +1195,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         var failedFiles = new List<string>();
         int processed = 0;
         int failed = 0;        // Get parallelization settings from configuration
-        var maxFileParallelism = appConfig?.AiService?.Timeout?.MaxFileParallelism ?? 1;
+        var maxFileParallelism = appConfig?.AiService?.Timeout?.MaxFileParallelism ?? 4;
         var fileRateLimitMs = appConfig?.AiService?.Timeout?.FileRateLimitMs ?? 200;
 
         // Decide whether to use parallel or sequential processing
