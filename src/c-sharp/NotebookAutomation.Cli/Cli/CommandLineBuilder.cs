@@ -70,11 +70,8 @@ internal class CommandLineBuilder
 
         // Register tag commands
         var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>(), serviceProvider);
-        tagCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
-
-        // Register vault commands
-        var vaultCommands = new VaultCommands(loggerFactory.CreateLogger<VaultCommands>(), serviceProvider);
-        vaultCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
+        tagCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);        // Register vault commands
+        VaultCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
 
         // Register video commands
         var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());

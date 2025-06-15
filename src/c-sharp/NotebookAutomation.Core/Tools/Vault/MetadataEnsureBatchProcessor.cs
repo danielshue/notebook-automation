@@ -950,8 +950,7 @@ public class MetadataEnsureBatchProcessor(
     /// //   │   └── .git\             ← Excluded (hidden)
     /// //   └── archive\              ← Included
     /// //       └── old-notes.md      ← Included
-    ///
-    /// var files = GetMarkdownFilesRecursive(@"C:\MyVault");
+    ///    /// var files = GetMarkdownFilesRecursive(@"C:\MyVault");
     /// // Results: notes.md, projects\project1.md, archive\old-notes.md
     /// </code>
     /// </example>
@@ -962,22 +961,26 @@ public class MetadataEnsureBatchProcessor(
             yield break;
         }
 
-        // Get markdown files in the current directory
-        foreach (string file in Directory.GetFiles(directoryPath, "*.md"))
+        // Get markdown files in the current directory and sort them for deterministic order
+        var markdownFiles = Directory.GetFiles(directoryPath, "*.md")
+            .OrderBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase);
+
+        foreach (string file in markdownFiles)
         {
             yield return file;
         }
 
-        // Get subdirectories and recurse, but skip directories that start with a period
-        foreach (string subDirectory in Directory.GetDirectories(directoryPath))
+        // Get subdirectories, sort them for deterministic order, and recurse
+        // Skip directories that start with a period
+        var subdirectories = Directory.GetDirectories(directoryPath)
+            .Where(d => !Path.GetFileName(d).StartsWith('.'))
+            .OrderBy(d => Path.GetFileName(d), StringComparer.OrdinalIgnoreCase);
+
+        foreach (string subDirectory in subdirectories)
         {
-            string dirName = Path.GetFileName(subDirectory);
-            if (!dirName.StartsWith('.'))
+            foreach (string file in GetMarkdownFilesRecursive(subDirectory))
             {
-                foreach (string file in GetMarkdownFilesRecursive(subDirectory))
-                {
-                    yield return file;
-                }
+                yield return file;
             }
         }
     }

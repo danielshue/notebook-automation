@@ -1,0 +1,8 @@
+{
+  "id": "1e186253-4e80-4fd1-b1b1-d85cda78774d",
+  "title": "Updated Prompt Templates in Distribution",
+  "details": "DEPLOYMENT UPDATE: Updated prompt templates in win-arm64 distribution\n\nACTIONS TAKEN:\n1. Copied updated prompts from src/c-sharp/NotebookAutomation.Core/Prompts/ to dist/win-arm64/Prompts/\n2. Copied prompts from root prompts/ directory to dist/win-arm64/Prompts/ \n3. Created new prompts directory in dist/win-arm64/config/prompts/\n4. Copied all prompts to config/prompts/ as backup location\n\nREASON: \n- Ensure the executable uses the fixed final_summary_prompt.md template without \"# {{title}}\"\n- Provide prompts in multiple locations (Prompts/ and config/prompts/) for redundancy\n- Address the double title bug fix by ensuring updated templates are available\n\nFILES UPDATED:\n- dist/win-arm64/Prompts/final_summary_prompt.md (fixed version without # {{title}})\n- dist/win-arm64/Prompts/chunk_summary_prompt.md \n- dist/win-arm64/config/prompts/final_summary_prompt.md (backup location)\n- dist/win-arm64/config/prompts/chunk_summary_prompt.md (backup location)\n\nSTATUS: Ready for testing. The executable now has access to the fixed prompt templates.",
+  "category": "deployment",
+  "dateCreated": "2025-06-15T17:11:46.223Z",
+  "dateUpdated": "2025-06-15T17:11:46.223Z"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "24c1761f-afd3-47ea-91d8-cc99e93b5107",
+  "title": "AI Summarizer Execution Context Issue",
+  "details": "User reported different AI Summarizer results when running via 'dotnet run' vs compiled executable (na.exe). Investigation confirmed significant functional differences:\n\n**Test Results with Valid Config:**\n- dotnet run: 2355 bytes output, processes many files with detailed progress\n- Executable from D:\\: 670 bytes output, processes only 35 files, skips 183\n- Executable from launch dir: 586 bytes output, similar limited processing\n\n**Root Cause Identified:**\nThe issue is NOT just environment variables or working directory settings from launchSettings.json, but appears to be a **path resolution or file discovery problem** in the compiled executable. The dotnet run version processes significantly more files and provides more detailed output, while the executable version processes fewer files and skips more.\n\n**Key Finding:** This is a functional bug affecting the core AI Summarizer metadata processing logic, not just cosmetic logging differences.",
+  "category": "debugging",
+  "dateCreated": "2025-06-15T15:07:10.854Z",
+  "dateUpdated": "2025-06-15T15:57:31.520Z"
+}
