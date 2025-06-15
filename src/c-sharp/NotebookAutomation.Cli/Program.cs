@@ -133,7 +133,8 @@ internal class Program
         var isNoArgs = args.Length == 0;
         var isConfigOnly = args.Length == 1 && (args[0] == "--config" || args[0] == "-c");
         var isVersion = args.Any(a => a == "--version");
-        var isConfigView = args.Length >= 2 && args[0] == "config" && args[1] == "view";
+        var isConfigView = args.Contains("config") && args.Contains("view") &&
+                          Array.IndexOf(args, "view") == Array.IndexOf(args, "config") + 1;
 
         // Show custom help for: no args, explicit help, or --config without value
         if (isNoArgs || isHelp || isConfigOnly)

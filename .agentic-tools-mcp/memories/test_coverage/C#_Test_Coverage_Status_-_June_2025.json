@@ -1,0 +1,8 @@
+{
+  "id": "df3915d8-59c1-4108-951a-36473f931cee",
+  "title": "C# Test Coverage Status - June 2025",
+  "details": "## C# Solution Test Coverage Report - June 14, 2025\n\n### Overall Coverage Summary\n- **Line Coverage**: 52.7% (18,634/35,328 lines covered)\n- **Branch Coverage**: 39.7% (7,488/18,828 branches covered)  \n- **Method Coverage**: 75.2% (2,268/3,013 methods covered)\n- **Full Method Coverage**: 33.7% (1,016/3,013 methods fully covered)\n\n### Test Results\n- **Total Tests**: 656\n- **Passed**: 653\n- **Failed**: 0\n- **Skipped**: 3\n\n### Project Coverage Breakdown\n\n#### NotebookAutomation.Core (52.9% coverage)\nKey areas with good coverage:\n- Configuration classes (65-100% coverage)\n- FileSystemWrapper (85.7%)\n- ServiceRegistration (86.2%)\n- Text processing utilities (60-75%)\n\nAreas needing improvement:\n- OneDriveService (6.6%)\n- TokenProvider (9.8%)\n- VaultIndexProcessor (21.9%)\n- VaultIndexBatchProcessor (1.8%)\n- Several utility classes under 50%\n\n#### NotebookAutomation.Cli (50.7% coverage)\n- ConfigValidation (100%)\n- ExceptionHandler (100%)\n- Most command classes between 40-75%\n- VersionHelper (0% - needs attention)\n- Program class (13.7% - needs attention)\n\n### Coverage Tools Used\n- Coverlet for coverage collection\n- ReportGenerator for report generation\n- MSTest framework for unit tests\n\n### Recommendations\n1. Focus on improving coverage for critical business logic classes\n2. Add tests for main Program class and CLI entry points\n3. Improve coverage for OneDrive and token provider services\n4. Target utility classes with low coverage percentages",
+  "category": "test_coverage",
+  "dateCreated": "2025-06-14T18:52:09.588Z",
+  "dateUpdated": "2025-06-14T18:52:09.588Z"
+}

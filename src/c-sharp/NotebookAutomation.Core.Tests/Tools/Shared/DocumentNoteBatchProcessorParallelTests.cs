@@ -36,16 +36,14 @@ public class DocumentNoteBatchProcessorParallelTests
             pdfProcessor,
             new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>()));
     }
-
-
     [TestMethod]
-    public void Configuration_DefaultParallelism_ShouldBe2()
+    public void Configuration_DefaultParallelism_ShouldBe4()
     {
         // Arrange
         var config = new TimeoutConfig();
 
         // Act & Assert
-        Assert.AreEqual(2, config.MaxFileParallelism);
+        Assert.AreEqual(4, config.MaxFileParallelism);
         Assert.AreEqual(200, config.FileRateLimitMs);
     }
 
