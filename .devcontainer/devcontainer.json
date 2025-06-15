@@ -1,0 +1,9 @@
+{
+  // Use the universal devcontainer image as a base (includes common dev tools)
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+
+  // After the container is created, update package lists and install .NET 9 SDK.
+  // Also update common .NET global tools for EF Core and code formatting.
+  // Install PowerShell for cross-platform scripting support.
+  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y dotnet-sdk-9.0 wget apt-transport-https software-properties-common && wget -q https://packages.microsoft.com/config/ubuntu/$(lsb_release -rs)/packages-microsoft-prod.deb && sudo dpkg -i packages-microsoft-prod.deb && sudo apt-get update && sudo apt-get install -y powershell && dotnet tool update --global dotnet-ef && dotnet tool update --global dotnet-format && code --install-extension ms-vscode.powershell && mkdir -p /root/.config/Code/User && echo '{\n  \"terminal.integrated.defaultProfile.linux\": \"pwsh\"\n}' > /root/.config/Code/User/settings.json"
+}
