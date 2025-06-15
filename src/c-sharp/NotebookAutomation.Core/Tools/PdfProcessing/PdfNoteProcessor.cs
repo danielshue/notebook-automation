@@ -30,12 +30,42 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing;
 /// <param name="logger">Logger for diagnostics.</param>
 /// <param name="aiSummarizer">The AISummarizer service for generating AI-powered summaries.</param>
 /// <param name="yamlHelper">The YAML helper for processing YAML frontmatter.</param>
-/// <param name="_hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
+/// <param name="hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
+/// <param name="templateManager">The metadata template manager for handling metadata templates.</param>
+/// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>
 /// <param name="appConfig">Optional application configuration for advanced hierarchy detection.</param>
-public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiSummarizer, MetadataHierarchyDetector hierarchyDetector, MarkdownNoteBuilder markdownNoteBuilder) : DocumentNoteProcessorBase(logger, aiSummarizer, markdownNoteBuilder)
+public class PdfNoteProcessor : DocumentNoteProcessorBase
 {
-    private readonly MetadataHierarchyDetector _hierarchyDetector = hierarchyDetector ?? throw new ArgumentNullException(nameof(_hierarchyDetector));
+    private readonly IOneDriveService? _oneDriveService;
+    private readonly AppConfig? _appConfig;
+    private readonly ICourseStructureExtractor _courseStructureExtractor;
     private string _yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class.
+    /// </summary>
+    /// <param name="logger">The logger instance for logging diagnostic and error information.</param>
+    /// <param name="aiSummarizer">The AI summarizer service for generating summaries.</param>
+    /// <param name="yamlHelper">The YAML helper for processing YAML frontmatter in markdown documents.</param>
+    /// <param name="hierarchyDetector">The metadata hierarchy detector for extracting metadata from directory structure.</param>
+    /// <param name="templateManager">The metadata template manager for handling metadata templates.</param>
+    /// <param name="courseStructureExtractor">The course structure extractor for extracting module and lesson information.</param>
+    /// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>
+    /// <param name="appConfig">Optional application configuration for metadata management.</param>    /// <remarks>
+    /// This constructor initializes the PDF note processor with optional services for metadata management
+    /// and hierarchical detection.
+    /// </remarks>
+    public PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, IAISummarizer aiSummarizer, IYamlHelper yamlHelper, IMetadataHierarchyDetector hierarchyDetector,
+        IMetadataTemplateManager templateManager,
+        ICourseStructureExtractor courseStructureExtractor,
+        MarkdownNoteBuilder markdownNoteBuilder,
+        IOneDriveService? oneDriveService = null, AppConfig? appConfig = null)
+        : base(logger, aiSummarizer, markdownNoteBuilder, appConfig ?? new AppConfig(), yamlHelper, hierarchyDetector, templateManager)
+    {
+        _oneDriveService = oneDriveService;
+        _appConfig = appConfig;
+        _courseStructureExtractor = courseStructureExtractor ?? throw new ArgumentNullException(nameof(courseStructureExtractor));
+    }
 
     /// <summary>
     /// Extracts text and metadata from a PDF file.
@@ -120,19 +150,18 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
                     {
                         metadata["keywords"] = info.Keywords;
                     }
-                }
-
-                // Extract module and lesson information
+                }                // Extract module and lesson information
                 Logger.LogDebug($"Extracting course structure information from file path {pdfPath}");
-                var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-                var courseLogger = loggerFactory.CreateLogger<CourseStructureExtractor>();
-                var courseStructureExtractor = new CourseStructureExtractor(courseLogger);
-                courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);
-
-                // Extract hierarchy information using injected MetadataHierarchyDetector
-                Logger.LogDebug($"Extracting hierarchy information from file path {pdfPath}");
-                var hierarchyInfo = _hierarchyDetector.FindHierarchyInfo(pdfPath);
-                _hierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo);
+                _courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);// Extract hierarchy information using injected MetadataHierarchyDetector
+                Logger.LogDebug($"Extracting hierarchy information from file path {pdfPath}");                // Convert OneDrive path to equivalent vault path for hierarchy detection
+                Logger.LogDebug($"BEFORE CONVERSION: OneDrive path = {pdfPath}");
+                string vaultPath = ConvertOneDriveToVaultPath(pdfPath);
+                Logger.LogDebug($"AFTER CONVERSION: Vault path = {vaultPath}");
+                Logger.LogDebug($"Detecting hierarchy information from vault path: {vaultPath} (converted from OneDrive path: {pdfPath})"); var hierarchyInfo = HierarchyDetector?.FindHierarchyInfo(vaultPath);
+                if (HierarchyDetector != null && hierarchyInfo != null)
+                {
+                    HierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo);
+                }
 
                 // Add file information for PDF
                 var fileInfo = new FileInfo(pdfPath);
@@ -207,7 +236,9 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
             if (metadata.TryGetValue("authors", out var authors) && authors != null)
             {
                 metadata["authors"] = authors; // For consistency in output
-            }            // Build YAML frontmatter without the --- separators
+            }
+
+            // Build YAML frontmatter without the --- separators
             string yamlContent = BuildYamlFrontmatter(metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
 
             // Store in a temporary field for use by GeneratePdfSummaryAsync
@@ -241,7 +272,7 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
             {
                 ["template-type"] = "pdf-reference",
                 ["auto-generated-state"] = "writable",
-                ["type"] = "note/case-study",
+                ["type"] = "note/case-study",  //TODO: Not every PDF is a case study
             };
 
             // Add title if available
@@ -334,11 +365,14 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
             // Set publisher if not already set
             if (!yamlData.ContainsKey("publisher"))
             {
-                yamlData["publisher"] = "University of Illinois at Urbana-Champaign";
+                yamlData["publisher"] = "University of Illinois at Urbana-Champaign"; //TODO: This should not be hardcoded but instad come from the metaedata.yaml file.
             }
 
             // Set status as unread by default
             yamlData["status"] = "unread";
+
+            // Add empty tags field for AI to populate
+            yamlData["tags"] = new string[] { };
 
             // Add resources_root if available
             if (metadata.TryGetValue("onedrive_fullpath_root", out var resourcesRoot) && resourcesRoot != null)
@@ -411,30 +445,26 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
         {
             variables["title"] = titleObj.ToString() ?? "Untitled PDF";
             Logger.LogDebug($"Added title to variables: {variables["title"]} effectivePrompt:{effectivePrompt}");
-        } // Add YAML frontmatter as a variable - but don't wrap it in --- separators
+        }
 
+        // Add YAML frontmatter as a variable - but don't wrap it in --- separators
         // as that will be handled by the template/prompt
         if (!string.IsNullOrEmpty(_yamlFrontmatter))
         {
             // The _yamlFrontmatter should now contain just the YAML content without separators
-            variables["_yamlFrontmatter"] = _yamlFrontmatter;
-            Logger.LogDebug(
-                $"Added _yamlFrontmatter variable ({_yamlFrontmatter.Length:N0} chars) for AI summarizer effectivePrompt:{effectivePrompt}:");
+            variables["yamlfrontmatter"] = _yamlFrontmatter;
+            Logger.LogDebug($"Added yamlfrontmatter variable ({_yamlFrontmatter.Length:N0} chars) for AI summarizer effectivePrompt:{effectivePrompt}:");
         }
         else
         {
             // Build it now if not already built - again without wrapping in --- separators
             string yamlContent = BuildYamlFrontmatter(metadata);
-            variables["_yamlFrontmatter"] = yamlContent;
-            Logger.LogDebug(
-                $"Built and added _yamlFrontmatter variable ({yamlContent.Length:N0} chars) for AI summarizer effectivePrompt:{effectivePrompt}:");
+            variables["yamlfrontmatter"] = yamlContent;
+            Logger.LogDebug($"Built and added yamlfrontmatter variable ({yamlContent.Length:N0} chars) for AI summarizer effectivePrompt:{effectivePrompt}:");
         }
 
         // Make a copy to avoid modifying the original metadata
-        _ = new
-
-        // Make a copy to avoid modifying the original metadata
-        Dictionary<string, object>(metadata);
+        _ = new Dictionary<string, object>(metadata);
 
         Logger.LogDebug(
             $"Starting AI summarization process with prompt template: {effectivePrompt}");
@@ -469,7 +499,6 @@ public class PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, AISummarizer aiS
             Logger.LogError(ex, "Error generating AI summary for PDF: {EffectivePrompt}", effectivePrompt);
             result = "[Error generating AI summary]";
         }
-
         return result ?? string.Empty;
     }
 }

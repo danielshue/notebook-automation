@@ -12,17 +12,27 @@ public class ServiceRegistrationTests
     {
         // Arrange
         ServiceCollection services = new();
-        IConfigurationRoot config = new ConfigurationBuilder().AddInMemoryCollection().Build();
-
-        // Act
+        var config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                {"paths:logging_dir", Path.GetTempPath()}
+            })
+            .Build();        // Act
         services.AddNotebookAutomationServices(config);
         ServiceProvider provider = services.BuildServiceProvider();
 
         // Assert: Key services should be resolvable
-        Assert.IsNotNull(provider.GetService<AppConfig>());
-        Assert.IsNotNull(provider.GetService<LoggingService>());
-        Assert.IsNotNull(provider.GetService<PromptTemplateService>());
-        Assert.IsNotNull(provider.GetService<AISummarizer>());
+        var appConfig = provider.GetService<AppConfig>();
+        Assert.IsNotNull(appConfig, "AppConfig should be registered and resolvable");
+
+        var loggingService = provider.GetService<LoggingService>();
+        Assert.IsNotNull(loggingService, "LoggingService should be registered and resolvable");
+
+        var promptService = provider.GetService<PromptTemplateService>();
+        Assert.IsNotNull(promptService, "PromptTemplateService should be registered and resolvable");
+
+        var aiSummarizer = provider.GetService<IAISummarizer>();
+        Assert.IsNotNull(aiSummarizer, "IAISummarizer should be registered and resolvable");
     }
     [TestMethod]
     public void AddNotebookAutomationServices_ThrowsOnNullArguments()

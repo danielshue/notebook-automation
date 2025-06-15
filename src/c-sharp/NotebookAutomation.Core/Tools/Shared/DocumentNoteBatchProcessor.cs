@@ -33,7 +33,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
 {
     private readonly ILogger<DocumentNoteBatchProcessor<TProcessor>> logger;
     private readonly TProcessor processor;
-    private readonly AISummarizer aiSummarizer;
+    private readonly IAISummarizer aiSummarizer;
 
     // Queue-related fields
     private readonly List<QueueItem> processingQueue = [];
@@ -190,9 +190,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// Initializes a new instance of the <see cref="DocumentNoteBatchProcessor{TProcessor}"/> class.
     /// </summary>
     /// <param name="logger">The logger instance.</param>
-    /// <param name="processor">The document note processor instance.</param>
-    /// <param name="aiSummarizer">The AI summarizer instance.</param>
-    public DocumentNoteBatchProcessor(ILogger logger, TProcessor processor, AISummarizer aiSummarizer)
+    /// <param name="processor">The document note processor instance.</param>    /// <param name="aiSummarizer">The AI summarizer instance.</param>
+    public DocumentNoteBatchProcessor(ILogger logger, TProcessor processor, IAISummarizer aiSummarizer)
     {
         if (logger is ILogger<DocumentNoteBatchProcessor<TProcessor>> genericLogger)
         {
@@ -390,7 +389,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             Directory.CreateDirectory(outputDir);
 
             // Generate output path based on processor type and directory structure
+            logger.LogInformation($"ABOUT TO CALL GenerateOutputPath with filePath={filePath}, outputDir={outputDir}, resourcesRoot={resourcesRoot ?? "null"}");
             string outputPath = GenerateOutputPath(filePath, outputDir, resourcesRoot);
+            logger.LogInformation($"GenerateOutputPath RETURNED: {outputPath}");
 
             // If not forceOverwrite and file exists, skip
             if (!forceOverwrite && File.Exists(outputPath))
@@ -590,8 +591,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         int totalTokens)
     {
         logger.LogInformation("Document processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);
-        logger.LogInformation("Total batch processing time: {ElapsedMs} ms", batchTime.TotalMilliseconds);
-        logger.LogInformation("Total summary time: {ElapsedMs} ms", totalSummaryTime.TotalMilliseconds);
+        logger.LogInformation("Total batch processing time: {ElapsedSeconds:F1}s", batchTime.TotalSeconds);
+        logger.LogInformation("Total summary time: {ElapsedSeconds:F1}s", totalSummaryTime.TotalSeconds);
         logger.LogInformation("Total tokens for all summaries: {TotalTokens}", totalTokens);
 
         double avgFileTime = processed > 0 ? batchTime.TotalMilliseconds / processed : 0;
@@ -709,75 +710,79 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             AverageSummaryTimeMs = avgSummaryTime,
             AverageTokens = avgTokens,
         };
-    }
-
-    /// <summary>
-    /// Generates the output path for a processed file, handling video-specific naming and directory structure.
-    /// </summary>
-    /// <param name="inputFilePath">The input file path.</param>
-    /// <param name="outputDir">The base output directory.</param>
-    /// <param name="resourcesRoot">The resources root directory for calculating relative paths.</param>
-    /// <returns>The output file path.</returns>
+    }    /// <summary>
+         /// Generates the output path for a processed file, handling video-specific naming and directory structure.
+         /// </summary>
+         /// <param name="inputFilePath">The input file path.</param>
+         /// <param name="outputDir">The base output directory.</param>
+         /// <param name="resourcesRoot">The resources root directory for calculating relative paths.</param>
+         /// <returns>The output file path.</returns>
     protected virtual string GenerateOutputPath(string inputFilePath, string outputDir, string? resourcesRoot)
     {
-        // Check if this is a video processor by checking the processor type
+        // Add detailed debug logging using LogInformation to ensure visibility
+        logger.LogInformation("GenerateOutputPath called with:");
+        logger.LogInformation($"  inputFilePath: {inputFilePath}");
+        logger.LogInformation($"  outputDir: {outputDir}");
+        logger.LogInformation($"  resourcesRoot: {resourcesRoot ?? "null"}");
+
+        // Check processor type to determine file suffix
         bool isVideoProcessor = typeof(TProcessor).Name.Contains("Video");
+        string fileSuffix = isVideoProcessor ? "-video.md" : ".md";
+        string fileName = Path.GetFileNameWithoutExtension(inputFilePath) + fileSuffix;
 
-        if (isVideoProcessor)
+        logger.LogInformation($"  isVideoProcessor: {isVideoProcessor}");
+        logger.LogInformation($"  fileName: {fileName}");
+
+        // If we have a resources root, preserve the directory structure for all processors
+        if (!string.IsNullOrWhiteSpace(resourcesRoot) && Path.IsPathRooted(resourcesRoot))
         {
-            // For video files, use -video.md suffix and preserve directory structure
-            string fileName = Path.GetFileNameWithoutExtension(inputFilePath) + "-video.md";
-
-            // If we have a resources root, preserve the directory structure
-            if (!string.IsNullOrWhiteSpace(resourcesRoot) && Path.IsPathRooted(resourcesRoot))
+            logger.LogDebug("Resources root is valid, preserving directory structure");
+            try
             {
-                try
+                // Calculate relative path from resources root
+                var inputFileInfo = new FileInfo(inputFilePath);
+                var resourcesRootInfo = new DirectoryInfo(resourcesRoot);                // Get the relative path from resources root to the input file's directory
+                string relativePath = Path.GetRelativePath(resourcesRootInfo.FullName, inputFileInfo.DirectoryName ?? string.Empty);
+
+                // Log the original relative path for debugging
+                logger.LogDebug("Original relative path from resources root: {RelativePath}", relativePath);
+
+                // If the relative path contains ".." or is an absolute path, it means the file is outside the resources root
+                // In that case, use flat structure (just the filename in output directory)
+                if (relativePath.Contains("..") || Path.IsPathRooted(relativePath))
                 {
-                    // Calculate relative path from resources root
-                    var inputFileInfo = new FileInfo(inputFilePath);
-                    var resourcesRootInfo = new DirectoryInfo(resourcesRoot);
-
-                    // Get the relative path from resources root to the input file's directory
-                    string relativePath = Path.GetRelativePath(resourcesRootInfo.FullName, inputFileInfo.DirectoryName ?? string.Empty);
-
-                    // Log the original relative path for debugging
-                    logger.LogDebug("Original relative path from resources root: {RelativePath}", relativePath);
-
-                    // If the relative path starts with "." it means the file is directly in the resources root
-                    // In that case, use empty path to put files directly in output directory
-                    if (relativePath == "." || relativePath == ".\\")
-                    {
-                        relativePath = string.Empty;
-                    }
-
-                    // Create the output directory structure
-                    string targetDir = string.IsNullOrEmpty(relativePath) ? outputDir : Path.Combine(outputDir, relativePath);
-                    Directory.CreateDirectory(targetDir);
-
-                    var outputPath = Path.Combine(targetDir, fileName);
-                    logger.LogDebug("Generated output path: {OutputPath}", outputPath);
-
-                    return outputPath;
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Failed to calculate relative path from resources root {ResourcesRoot} to {InputFile}, using flat structure",
-                        resourcesRoot, inputFilePath);
-
-                    // Fall back to flat structure
+                    logger.LogInformation("Input file is outside resources root, using flat structure");
                     return Path.Combine(outputDir, fileName);
                 }
+
+                // If the relative path starts with "." it means the file is directly in the resources root
+                // In that case, use empty path to put files directly in output directory
+                if (relativePath == "." || relativePath == ".\\")
+                {
+                    relativePath = string.Empty;
+                }
+
+                // Create the output directory structure
+                string targetDir = string.IsNullOrEmpty(relativePath) ? outputDir : Path.Combine(outputDir, relativePath);
+                Directory.CreateDirectory(targetDir);
+
+                var outputPath = Path.Combine(targetDir, fileName);
+                logger.LogDebug("Generated output path: {OutputPath}", outputPath);
+
+                return outputPath;
             }
-            else
+            catch (Exception ex)
             {
-                // No resources root specified, use flat structure with -video.md suffix
+                logger.LogWarning(ex, "Failed to calculate relative path from resources root {ResourcesRoot} to {InputFile}, using flat structure",
+                    resourcesRoot, inputFilePath);
+
+                // Fall back to flat structure
                 return Path.Combine(outputDir, fileName);
             }
         }
         else
         {
-            // For non-video files, use standard .md suffix and flat structure
-            string fileName = Path.GetFileNameWithoutExtension(inputFilePath) + ".md";
+            // No resources root specified, use flat structure
             return Path.Combine(outputDir, fileName);
         }
     }
@@ -1300,9 +1305,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                 failed++;
                 failedFiles.Add(filePath);
             }
-
             fileStopwatch.Stop();
-            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.ElapsedMilliseconds} ms");
+            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.Elapsed.TotalSeconds:F1}s");
 
             // Report progress after each file
             OnProcessingProgressChanged(filePath, "Processed", processed + failed, files.Count);
@@ -1456,10 +1460,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             // Process the single file
             var (success, errorMessage) = await ProcessSingleFileAsync(
                 filePath, queueItem, fileIndex + 1, totalFiles, effectiveOutput, effectiveResourcesRoot,
-                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false);
-
-            fileStopwatch.Stop();
-            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.ElapsedMilliseconds} ms");
+                forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false); fileStopwatch.Stop();
+            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.Elapsed.TotalSeconds:F1}s");
 
             return (success, errorMessage, filePath);
         }

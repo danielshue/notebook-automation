@@ -1,0 +1,8 @@
+{
+  "id": "7b47722a-8001-43d8-bcef-5120ac8a00a4",
+  "title": "Tag extraction comparison: Video vs PDF processors",
+  "details": "Found the root cause of missing tags in PDF processing:\n\n**VideoNoteProcessor (WORKS CORRECTLY):**\n- Extracts frontmatter from AI summary using `_yamlHelper?.ExtractFrontmatter(bodyText)`\n- Parses frontmatter to get metadata with tags\n- Removes frontmatter from body content\n- Merges AI-generated tags with existing metadata\n- Preserves AI tags if video metadata doesn't have tags\n\n**PdfNoteProcessor (MISSING TAG EXTRACTION):**\n- Does NOT extract frontmatter from AI summary\n- Passes AI summary directly as body text to base class\n- AI-generated tags are lost in the final markdown\n\n**Solution:** Implement the same tag extraction logic in PdfNoteProcessor as used in VideoNoteProcessor.",
+  "category": "bug_analysis",
+  "dateCreated": "2025-06-15T21:39:46.724Z",
+  "dateUpdated": "2025-06-15T21:39:46.724Z"
+}

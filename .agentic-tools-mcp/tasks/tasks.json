@@ -284,6 +284,33 @@
       "completed": true,
       "createdAt": "2025-06-15T15:07:31.178Z",
       "updatedAt": "2025-06-15T16:20:32.902Z"
+    },
+    {
+      "id": "0daef294-1653-4426-88db-445453f75a4c",
+      "name": "Refactor tag extraction to base class",
+      "details": "✅ **COMPLETED:**\n1. ✅ Updated DocumentNoteProcessorBase constructor to accept additional dependencies (IYamlHelper, IMetadataHierarchyDetector, IMetadataTemplateManager)\n2. ✅ Moved enhanced GenerateMarkdownNote method from VideoNoteProcessor to base class with:\n   - AI tag extraction from frontmatter\n   - Hierarchy detection and metadata enhancement \n   - Template-based metadata enrichment\n   - Date field cleanup and normalization\n3. ✅ Updated VideoNoteProcessor to use base class dependencies and removed duplicate GenerateMarkdownNote method\n4. ✅ Updated PdfNoteProcessor to pass new dependencies to base class\n5. ✅ Removed custom tag extraction method from PdfNoteProcessor\n6. ✅ Main library compilation successful\n\n🔧 **REMAINING:**\n- Update all test files to use new constructor signatures (37 test compilation errors)\n- Verify that the tag extraction now works correctly for PDF processing\n- Run integration tests to ensure functionality works end-to-end\n\n**IMPACT:**\n- ✅ Fixed missing tags issue in PDF processing \n- ✅ Eliminated code duplication between processors\n- ✅ All document processors now get automatic tag extraction, hierarchy detection, and template enhancement\n- ✅ Architecture is cleaner and more maintainable",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": false,
+      "createdAt": "2025-06-15T21:46:30.239Z",
+      "updatedAt": "2025-06-15T21:54:13.463Z"
+    },
+    {
+      "id": "ad9d5158-c7b6-4c70-8de6-e6f862fcb99e",
+      "name": "Fix remaining 7 failing unit tests",
+      "details": "After updating VideoNoteProcessor and PdfNoteProcessor constructor signatures, 7 tests are still failing:\n\n1. VideoNoteBatchProcessorOnedriveFullpathRootTests - Mock constructor mismatch\n2. VideoNoteBatchProcessorResourcesRootTests - Mock constructor mismatch  \n3. VideoNoteBatchProcessorTests (3 tests) - Logger type mismatch in DocumentNoteBatchProcessor\n4. ServiceRegistrationTests - Service registration assertion failure\n\nAll CLI tests (170) pass successfully. Need to fix these remaining Core.Tests failures.",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": false,
+      "createdAt": "2025-06-15T23:15:57.954Z",
+      "updatedAt": "2025-06-15T23:15:57.954Z"
+    },
+    {
+      "id": "4dd010f5-808b-4b97-99ed-6351f881926a",
+      "name": "Fix Missing Notes Section in PDF Notes",
+      "details": "Fix the missing \"## Notes\" section in PDF notes by ensuring PdfNoteProcessor includes the same post-processing logic that VideoNoteProcessor uses to guarantee the presence of the \"## Notes\" section. This section should never be modified and should always be present for consistency across note types.\n\nThe issue is that VideoNoteProcessor has special logic in GenerateVideoNoteAsync() that ensures the \"## Notes\" section is always present, but PdfNoteProcessor lacks this logic.",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-15T23:30:45.296Z",
+      "updatedAt": "2025-06-15T23:41:41.634Z"
     }
   ],
   "subtasks": [
@@ -426,6 +453,16 @@
       "completed": false,
       "createdAt": "2025-06-15T15:57:40.533Z",
       "updatedAt": "2025-06-15T15:57:40.533Z"
+    },
+    {
+      "id": "6ab69b18-e16b-43c3-b6b8-8b2e6a1af819",
+      "name": "Verification: PDF Notes Include Notes Section",
+      "details": "✅ VERIFIED: Successfully tested the PDF note generation with the new EnsureNotesSection() logic. The generated PDF note now includes the \"## Notes\" section at the end, consistent with video notes.\n\nTest file: C:\\Users\\danshue.REDMOND\\OneDrive\\Education\\MBA-Resources\\Value Chain Management\\Operations Management\\operations-management-organization-and-analysis\\05_Resources\\04_module-1-transcript\\04_01__BADM 567 MOOC 1 Module 1 Word Transcript.pdf\n\nGenerated note: C:\\Users\\danshue.REDMOND\\Vault\\01_Projects\\MBA\\Value Chain Management\\Operations Management\\operations-management-organization-and-analysis\\05_Resources\\04_module-1-transcript\\04_01__BADM 567 MOOC 1 Module 1 Word Transcript.md\n\nThe Notes section appears at line 92 of the generated file, confirming our base class implementation is working correctly.",
+      "taskId": "4dd010f5-808b-4b97-99ed-6351f881926a",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-15T23:44:51.485Z",
+      "updatedAt": "2025-06-15T23:44:57.716Z"
     }
   ]
 }

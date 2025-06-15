@@ -35,7 +35,8 @@ public class VideoNoteProcessorNoSummaryTests
         }; var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), appConfig);
         var templateManager = new MetadataTemplateManager(new LoggerFactory().CreateLogger<MetadataTemplateManager>(), appConfig, yamlHelper);
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
-        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper, hierarchyDetector, templateManager, markdownNoteBuilder);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
+        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder);
 
         // Create temporary directory and mock video file
         _tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());

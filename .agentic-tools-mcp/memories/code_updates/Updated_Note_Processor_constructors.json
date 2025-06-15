@@ -1,0 +1,8 @@
+{
+  "id": "d7a5ecbd-e4c3-4cf4-a192-f3dd655025bd",
+  "title": "Updated Note Processor constructors",
+  "details": "Both VideoNoteProcessor and PdfNoteProcessor constructors have been updated with new parameters:\n\nVideoNoteProcessor constructor:\n```csharp\npublic VideoNoteProcessor(\n    ILogger<VideoNoteProcessor> logger, \n    IAISummarizer aiSummarizer, \n    IYamlHelper yamlHelper, \n    IMetadataHierarchyDetector hierarchyDetector,\n    IMetadataTemplateManager templateManager,\n    ICourseStructureExtractor courseStructureExtractor,\n    MarkdownNoteBuilder markdownNoteBuilder,\n    IOneDriveService? oneDriveService = null, \n    AppConfig? appConfig = null)\n```\n\nPdfNoteProcessor constructor:\n```csharp\npublic PdfNoteProcessor(\n    ILogger<PdfNoteProcessor> logger, \n    IAISummarizer aiSummarizer, \n    IYamlHelper yamlHelper, \n    IMetadataHierarchyDetector hierarchyDetector,\n    IMetadataTemplateManager templateManager,\n    ICourseStructureExtractor courseStructureExtractor,\n    MarkdownNoteBuilder markdownNoteBuilder,\n    IOneDriveService? oneDriveService = null, \n    AppConfig? appConfig = null)\n\nKey changes from the old constructor:\n1. Added `ICourseStructureExtractor courseStructureExtractor` parameter (required)\n2. Added `MarkdownNoteBuilder markdownNoteBuilder` parameter (required)\n3. The order of parameters has changed - markdownNoteBuilder comes after courseStructureExtractor\n4. oneDriveService and appConfig remain optional parameters at the end\n\nTests need to be updated to provide mocks for these new required parameters.",
+  "category": "code_updates",
+  "dateCreated": "2025-06-15T22:14:36.937Z",
+  "dateUpdated": "2025-06-15T22:14:36.937Z"
+}

@@ -61,12 +61,14 @@ public class VideoNoteProcessorTranscriptTests
         }; var mockHierarchyDetector = new MetadataHierarchyDetector(mockLogger.Object, appConfig);
         var templateManager = new MetadataTemplateManager(mockLogger.Object, appConfig, mockYamlHelper);
         var markdownNoteBuilder = new MarkdownNoteBuilder(mockYamlHelper);
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         _processor = new VideoNoteProcessor(
             _logger,
             aiSummarizer,
             mockYamlHelper,
             mockHierarchyDetector,
             templateManager,
+            mockCourseStructureExtractor,
             markdownNoteBuilder);
     }
 

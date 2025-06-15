@@ -102,22 +102,16 @@ metadata:
             // Ignore cleanup errors
         }
     }
-
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithShareLink_AddsShareLinkToMarkdownContentAndMetadata()
     {
         // Arrange
-        string shareLink = "https://onedrive.live.com/view.aspx?cid=test123&page=view&resid=test456&parid=test789"; _oneDriveServiceMock
+        string shareLink = "https://onedrive.live.com/view.aspx?cid=test123&page=view&resid=test456&parid=test789";
+        _oneDriveServiceMock
         .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
-        .ReturnsAsync(shareLink); VideoNoteProcessor processor = new(
-            _loggerMock.Object,
-            _aiSummarizer,
-            _yamlHelperMock.Object,
-            CreateMetadataHierarchyDetector(),
-            new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
-            new MarkdownNoteBuilder(_yamlHelperMock.Object),
-            _oneDriveServiceMock.Object,
-            _testAppConfig);
+        .ReturnsAsync(shareLink);
+
+        VideoNoteProcessor processor = CreateVideoNoteProcessor();
 
         string videoPath = Path.Combine(_testDir, "test-video.mp4");
         File.WriteAllText(videoPath, "fake video content");
@@ -157,12 +151,14 @@ metadata:
     public async Task GenerateVideoNoteAsync_WithNoShareLinks_DoesNotContainReferencesSection()
     {
         // Arrange
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             CreateMetadataHierarchyDetector(),
             new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             null);
@@ -197,12 +193,14 @@ metadata:
             .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((string?)null); // Simulate failed share link generation
 
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             CreateMetadataHierarchyDetector(),
             new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             null);
@@ -235,17 +233,17 @@ metadata:
         // Arrange
         Directory.CreateDirectory(_testDir);
         string expectedShareLink = "https://example.com/share-link";
-        string shareLink = $"{{\"webUrl\": \"{expectedShareLink}\"}}";
-
-        _oneDriveServiceMock.Setup(m => m.GetShareLinkAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+        string shareLink = $"{{\"webUrl\": \"{expectedShareLink}\"}}"; _oneDriveServiceMock.Setup(m => m.GetShareLinkAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
         .ReturnsAsync(shareLink);
 
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             CreateMetadataHierarchyDetector(),
             new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             null);
@@ -274,6 +272,7 @@ metadata:
     {
         // Arrange
         Directory.CreateDirectory(_testDir);        // Use another instance to ensure we're not using the mock (OneDriveService is null)
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
@@ -283,6 +282,7 @@ metadata:
                 Mock.Of<ILogger<MetadataTemplateManager>>(),
                 _testAppConfig,
                 _yamlHelperMock.Object),
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             null, // OneDriveService is null to disable OneDrive functionality
             _testAppConfig); // AppConfig
@@ -311,20 +311,22 @@ metadata:
     {
         // Arrange
         Directory.CreateDirectory(_testDir);
-        string expectedShareLink = "https://example.com/share-link-in-note";
-
-        // Use CreateShareLinkAsync instead of GetShareLinkAsync since VideoNoteProcessor uses it
+        string expectedShareLink = "https://example.com/share-link-in-note";        // Use CreateShareLinkAsync instead of GetShareLinkAsync since VideoNoteProcessor uses it
         _oneDriveServiceMock.Setup(m => m.CreateShareLinkAsync(
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<string>(),
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(expectedShareLink); VideoNoteProcessor processor = new(
+            .ReturnsAsync(expectedShareLink);
+
+        var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
+        VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
             _yamlHelperMock.Object,
             CreateMetadataHierarchyDetector(),
             new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
+            mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object),
             _oneDriveServiceMock.Object,
             null);
@@ -354,5 +356,76 @@ metadata:
             NullLogger<MetadataHierarchyDetector>.Instance,
             _testAppConfig)
         ;
+    }
+
+    /// <summary>
+    /// Helper method to create VideoNoteProcessor with correct constructor parameters.
+    /// </summary>
+    private VideoNoteProcessor CreateVideoNoteProcessor()
+    {
+        var hierarchyDetector = new MetadataHierarchyDetector(
+            Mock.Of<ILogger<MetadataHierarchyDetector>>(),
+            _testAppConfig);
+        var templateManager = new MetadataTemplateManager(
+            Mock.Of<ILogger<MetadataTemplateManager>>(),
+            _testAppConfig,
+            _yamlHelperMock.Object);
+        var courseStructureExtractor = new CourseStructureExtractor(
+            Mock.Of<ILogger<CourseStructureExtractor>>());
+        var markdownNoteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object);
+
+        return new VideoNoteProcessor(
+            _loggerMock.Object,
+            _aiSummarizer,
+            _yamlHelperMock.Object,
+            hierarchyDetector,
+            templateManager,
+            courseStructureExtractor,
+            markdownNoteBuilder,
+            _oneDriveServiceMock.Object,
+            _testAppConfig);
+    }
+
+    [TestMethod]
+    public async Task GenerateVideoNoteAsync_WithShareLink_AddsShareLinkToMarkdownContentAndMetadata_UsingHelper()
+    {
+        // Arrange
+        string shareLink = "https://onedrive.live.com/view.aspx?cid=test123&page=view&resid=test456&parid=test789"; _oneDriveServiceMock
+        .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        .ReturnsAsync(shareLink); VideoNoteProcessor processor = CreateVideoNoteProcessor();
+
+        string videoPath = Path.Combine(_testDir, "test-video.mp4");
+        File.WriteAllText(videoPath, "fake video content");
+
+        // Act
+        string markdown = await processor.GenerateVideoNoteAsync(
+            videoPath,
+            "test-api-key",
+            null, // promptFileName
+            false, // noSummary
+            null, // timeoutSeconds
+            null, // resourcesRoot
+            false) // noShareLinks - Enable share links
+        .ConfigureAwait(false);
+
+        // Assert
+        Assert.IsNotNull(markdown);
+
+        // Verify share link appears in markdown content
+        Assert.IsTrue(markdown.Contains("## References"), "Should contain References section");
+        Assert.IsTrue(markdown.Contains($"[Video Recording]({shareLink})"), "Should contain share link in References section");
+
+        // Verify share link does NOT appear in YAML frontmatter
+        int frontmatterEnd = markdown.IndexOf("---", 4); // Find the closing ---
+        if (frontmatterEnd > 0)
+        {
+            string frontmatter = markdown[..frontmatterEnd];
+
+            // Assert that share link is now in the frontmatter metadata as onedrive-shared-link
+            Assert.IsTrue(frontmatter.Contains("onedrive-shared-link:"), "Should contain onedrive-shared-link field in metadata");
+            Assert.IsTrue(frontmatter.Contains(shareLink), "Share link should appear in YAML frontmatter");
+            Assert.IsFalse(frontmatter.Contains("onedrive-sharing-link"), "Should not contain onedrive-sharing-link field in metadata");
+            Assert.IsFalse(frontmatter.Contains("share_link"), "Should not contain share_link field in metadata");
+        }
     }
 }
