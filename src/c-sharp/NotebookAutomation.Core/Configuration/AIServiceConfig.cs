@@ -607,7 +607,7 @@ public class TimeoutConfig
     /// memory, CPU capacity, and AI service rate limits when configuring this value.
     /// </remarks>
     [JsonPropertyName("max_file_parallelism")]
-    public int MaxFileParallelism { get; set; } = 2;
+    public int MaxFileParallelism { get; set; } = 4;
 
 
     /// <summary>

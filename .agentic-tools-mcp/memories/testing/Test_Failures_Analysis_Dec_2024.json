@@ -1,0 +1,8 @@
+{
+  "id": "7cee68a5-5498-467e-9f62-25bb86e7253e",
+  "title": "Test Failures Analysis Dec 2024",
+  "details": "# Test Coverage Improvement Project - Test Failures Analysis\n\n## STATUS: Build successful, but tests failing\n\n## FAILING TESTS:\n1. VaultIndexBatchProcessorTests: \n   - Constructor validation tests are failing because primary constructor doesn't throw ArgumentNullException\n   - InitializeProcessingQueue test failing due to missing method or filtering logic\n   \n2. VaultIndexProcessorCoverageTests:\n   - Multiple reflection-based tests failing - method not found issues\n   - Template/mock setup issues\n   \n3. TokenProviderTests:\n   - Constructor validation tests failing with TargetInvocationException instead of ArgumentNullException\n   \n4. ProgramCoverageTests:\n   - Exit code tests failing - expecting 1 but getting 0\n   - Config view test failing\n   \n## SOLUTIONS NEEDED:\n1. Fix constructor validation approach for primary constructors\n2. Investigate missing methods in VaultIndexProcessor  \n3. Fix TokenProvider reflection-based test approach\n4. Fix Program test expectations around exit codes\n5. Run coverage analysis after fixes\n\n## TEST COVERAGE PROGRESS:\n- Successfully built solution with new test files\n- Created comprehensive test suites for all target classes\n- Need to fix test logic issues before measuring coverage improvement",
+  "category": "testing",
+  "dateCreated": "2025-06-14T19:30:53.512Z",
+  "dateUpdated": "2025-06-14T19:30:53.512Z"
+}
