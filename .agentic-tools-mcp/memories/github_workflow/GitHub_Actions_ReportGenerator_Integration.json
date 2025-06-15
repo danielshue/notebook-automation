@@ -1,0 +1,8 @@
+{
+  "id": "cd8c365d-6280-4af2-ae7f-9ef12bb661eb",
+  "title": "GitHub Actions ReportGenerator Integration",
+  "details": "Successfully integrated ReportGenerator GitHub Action into the CI workflow for automated code coverage reporting.\n\nKey Changes Made:\n1. Updated .github/workflows/ci-windows.yml to include ReportGenerator action\n2. Changed test execution to run entire solution (both Core and CLI tests) instead of just Core tests\n3. Added proper coverage collection with centralized TestResults directory\n4. Configured ReportGenerator with multiple output formats: HtmlInline, Cobertura, MarkdownSummaryGithub, TextSummary\n5. Set up automated artifact upload for both HTML coverage reports and raw coverage files\n6. Added automated PR comments with coverage summary for pull requests\n7. Configured build summary output to show coverage results in GitHub Actions summary\n\nConfiguration Details:\n- Reports input: 'TestResults/**/coverage.cobertura.xml'\n- Output directory: 'CoverageReport'\n- Assembly filters: Include NotebookAutomation.* assemblies, exclude test assemblies\n- Class filters: Include all classes, exclude test classes\n- Retention: 14 days for coverage reports, 7 days for raw coverage files\n\nBenefits:\n- Automated coverage reporting on every CI build\n- Visual HTML coverage reports available as artifacts\n- Coverage summaries in PR comments for better code review visibility\n- GitHub Actions build summary integration\n- Comprehensive coverage tracking for both Core and CLI projects",
+  "category": "github_workflow",
+  "dateCreated": "2025-06-15T05:21:20.406Z",
+  "dateUpdated": "2025-06-15T05:21:20.406Z"
+}
