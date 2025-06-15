@@ -1070,11 +1070,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             Logger.LogDebug($"Added yamlfrontmatter variable ({yamlContent.Length:N0} chars) for AI summarizer");
 
             aiSummary = await GenerateAiSummaryAsync(summaryInput, promptVariables, "final_summary_prompt").ConfigureAwait(false);
-        }
-
-        // Add internal path for hierarchy detection (will be removed in GenerateMarkdownNote)
-        metadata["_internal_path"] = videoPath;            // Generate the basic markdown note - include title heading using friendly title from metadata
-        string markdownNote = GenerateMarkdownNote(aiSummary, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!), "Video Note", includeNoteTypeTitle: true);
+        }        // Add internal path for hierarchy detection (will be removed in GenerateMarkdownNote)
+        metadata["_internal_path"] = videoPath;            // Generate the basic markdown note - don't include title heading since template already includes it
+        string markdownNote = GenerateMarkdownNote(aiSummary, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!), "Video Note", includeNoteTypeTitle: false);
 
         // Add OneDrive share link section to markdown content if share link was generated
         if (!string.IsNullOrEmpty(shareLink))

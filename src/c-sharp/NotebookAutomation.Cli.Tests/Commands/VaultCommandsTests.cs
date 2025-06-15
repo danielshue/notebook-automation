@@ -17,7 +17,6 @@ public class VaultCommandsTests
         mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
             .Returns(mockAppConfig.Object);
     }
-
     [TestMethod]
     public async Task GenerateIndexCommand_PrintsUsage_WhenNoArgs()
     {
@@ -27,8 +26,7 @@ public class VaultCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
-        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        VaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Capture console output
         var originalOut = Console.Out;
@@ -38,7 +36,7 @@ public class VaultCommandsTests
         {
             // Act: invoke with no args (should print usage)
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync("vault generate-index").ConfigureAwait(false);
+            await parser.InvokeAsync("vault-generate-index").ConfigureAwait(false);
         }
         finally
         {
@@ -64,24 +62,22 @@ public class VaultCommandsTests
     public void Register_AddsVaultCommandToRoot()
     {
         // Arrange
-        var rootCommand = new RootCommand();
-        var configOption = new Option<string>("--config");
+        var rootCommand = new RootCommand(); var configOption = new Option<string>("--config");
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
 
         // Act
-        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        VaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Assert
-        var vaultCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "vault");
-        Assert.IsNotNull(vaultCommand, "vault command should be registered on the root command.");
+        var vaultGenerateIndexCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "vault-generate-index");
+        var vaultEnsureMetadataCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "vault-ensure-metadata");
+        var vaultCleanIndexCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "vault-clean-index");
 
-        // Check subcommands
-        var subcommands = vaultCommand.Subcommands.Select(c => c.Name).ToList();
-        CollectionAssert.Contains(subcommands, "generate-index", "vault should have 'generate-index' subcommand");
-        CollectionAssert.Contains(subcommands, "ensure-metadata", "vault should have 'ensure-metadata' subcommand");
+        Assert.IsNotNull(vaultGenerateIndexCommand, "vault-generate-index command should be registered on the root command.");
+        Assert.IsNotNull(vaultEnsureMetadataCommand, "vault-ensure-metadata command should be registered on the root command.");
+        Assert.IsNotNull(vaultCleanIndexCommand, "vault-clean-index command should be registered on the root command.");
     }
 
     [TestMethod]
@@ -95,13 +91,11 @@ public class VaultCommandsTests
     public async Task CleanIndexCommand_DeletesAllIndexFiles()
     {
         // Arrange
-        var rootCommand = new RootCommand();
-        var configOption = new Option<string>("--config");
+        var rootCommand = new RootCommand(); var configOption = new Option<string>("--config");
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
-        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        VaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Create a temp directory with index and non-index files
         string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -122,7 +116,7 @@ public class VaultCommandsTests
 
             // Act
             var parser = new Parser(rootCommand);
-            await parser.InvokeAsync($"vault clean-index {tempDir}").ConfigureAwait(false);
+            await parser.InvokeAsync($"vault-clean-index {tempDir}").ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(File.Exists(indexFile), "Index file (type: index) should be deleted");

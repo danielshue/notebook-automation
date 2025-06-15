@@ -38,8 +38,6 @@ Your output structure must exactly follow this format:
 
 ---
 
-# {{title}}
-
 ## 🧠 Summary
 
 - Write a **1-paragraph synthesis** of the entire document
