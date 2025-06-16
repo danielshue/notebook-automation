@@ -1,0 +1,8 @@
+{
+  "id": "aa83206d-2c00-4620-8953-118f274efb0e",
+  "title": "vault ensure-metadata command hanging issue",
+  "details": "The `vault ensure-metadata` command is hanging because the C# implementation is incomplete:\n\n**ISSUE:** Line 167 in VaultCommands.cs contains a TODO comment and only logs the action without implementing actual functionality:\n```csharp\n// TODO: Implement vault ensure-metadata logic\nAnsiConsoleHelper.WriteInfo($\"Executing vault ensure-metadata for path: {pathValue}\");\n```\n\n**SYMPTOMS:**\n- Command starts execution but never completes\n- Debug logs show initialization but no completion\n- No processing results or errors returned\n- Command appears to hang indefinitely\n\n**ROOT CAUSE:** The command handler only logs a message and doesn't call any processing logic, so it never actually processes files or returns a result.\n\n**SOLUTION NEEDED:** Implement the proper batch metadata processing using the existing MetadataEnsureBatchProcessor service that's already available in the codebase.\n\n**EXISTING INFRASTRUCTURE:** The system has:\n- MetadataEnsureProcessor for individual file processing\n- MetadataEnsureBatchProcessor for batch operations  \n- Proper DI container setup with required services\n- Error handling and logging infrastructure\n\n**NEXT STEPS:** Replace the TODO with actual implementation that uses the batch processor service.",
+  "category": "bug_fixes",
+  "dateCreated": "2025-06-16T20:58:26.461Z",
+  "dateUpdated": "2025-06-16T20:58:26.461Z"
+}
