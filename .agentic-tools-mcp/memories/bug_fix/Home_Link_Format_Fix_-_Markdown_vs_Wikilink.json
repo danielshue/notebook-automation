@@ -1,0 +1,8 @@
+{
+  "id": "1371409d-a16f-42e4-9b31-8c744a3de2f1",
+  "title": "Home Link Format Fix - RESOLVED",
+  "details": "ISSUE: Home link formatting in VaultIndexContentGenerator navigation - RESOLVED\n\nPROBLEM:\nCurrently using Obsidian wikilink syntax: [[{rootIndex}|Home]]\nShould use standard markdown link syntax: [Home]({rootIndex})\n\nCONTEXT:\n- GetRootIndexFilename returns relative path like \"../../MBA\" \n- This should be used in markdown link format: [Home](../../MBA)\n- Path separators need to be forward slashes (/) for markdown links\n- Currently using Windows path separators (\\) which won't work properly\n\nCOMPLETED CHANGES:\n\n1. ✅ Updated CalculateRelativePath method:\n   - Removed conversion to Windows path separators\n   - Now returns paths with forward slashes for markdown compatibility\n   - Updated path combination logic to use forward slashes\n\n2. ✅ Updated navigation link format in AddNavigationSection:\n   - Changed from: [[{rootIndex}|Home]]\n   - Changed to: [Home]({rootIndex})\n   - Applied to both hierarchy level 1 and other levels\n\n3. ✅ Maintained other link formats:\n   - Back links still use wikilink syntax: [[{backLinkTarget}|{backLinkText}]]\n   - Dashboard and Classes Assignments still use wikilink syntax\n   - Only Home link uses markdown format for relative path navigation\n\nRESULT:\nHome links now generate as: \"🏠 [Home](../../MBA)\" where \"../../MBA\" is the relative path from current folder to the main index file, properly formatted for markdown links with forward slashes.\n\nAll tests pass and solution builds successfully.",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-16T16:55:49.280Z",
+  "dateUpdated": "2025-06-16T16:57:18.660Z"
+}

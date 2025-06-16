@@ -1,0 +1,8 @@
+{
+  "id": "dc0bb232-6a40-4015-91a4-c0c3bc4b7c2d",
+  "title": "GetRootIndexFilename Extension Update - COMPLETED",
+  "details": "TASK: Update GetRootIndexFilename to return relative path with .md extension - COMPLETED\n\nCHANGES MADE:\n\n1. ✅ Updated GetRootIndexFilename method:\n   - Now passes full filename (with .md extension) to CalculateRelativePath\n   - Removed Path.GetFileNameWithoutExtension() calls\n   - Used Path.GetFileName() for template-type: main fallback\n   - Changed final fallback from \"index\" to \"index.md\"\n\n2. ✅ Updated CalculateRelativePath method:\n   - Changed parameter name from indexFileName to indexFilename for clarity\n   - Updated documentation to reflect it now takes filename with extension\n   - Updated documentation description from \"Obsidian wikilink\" to \"markdown link\"\n\n3. ✅ Updated XML documentation examples:\n   - Changed example returns from \"../../../MBA\" to \"../../../MBA.md\"\n   - Changed example returns from \"../index\" to \"../index.md\"\n\nRESULT:\nThe method now returns the complete relative path with the .md extension, suitable for markdown links:\n- From nested folder: \"../../../MBA.md\"\n- From program level: \"../index.md\"\n- Same folder: \"MBA.md\" or \"index.md\"\n\nThis provides the complete path needed for markdown link syntax: [Home](../../MBA.md)\n\nAll tests pass and solution builds successfully.",
+  "category": "development_task",
+  "dateCreated": "2025-06-16T17:03:23.597Z",
+  "dateUpdated": "2025-06-16T17:03:23.597Z"
+}

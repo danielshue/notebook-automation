@@ -1,0 +1,8 @@
+{
+  "id": "14a260d3-ec93-4a0b-85b0-b7afb23f0b83",
+  "title": "GetRootIndexFilename Bug - Debug Added",
+  "details": "BUG: GetRootIndexFilename not returning filename properly - DEBUG ADDED\n\nISSUE REPORTED:\n- Method is returning only relative path + \".md\" \n- Missing the actual filename part\n- Expected: \"../../MBA.md\"\n- Actual: appears to be something like \"../../.md\"\n\nDEBUG LOGGING ADDED:\n1. GetRootIndexFilename: Logs discovered/cached filename and final result\n2. CalculateRelativePath: Logs input parameters and relative path calculation\n\nDEBUGGING STEPS:\n1. Check log output for \"Discovered and cached root index filename\"\n2. Check log output for \"CalculateRelativePath called with\"\n3. Check log output for \"CalculateRelativePath result\"\n\nPOSSIBLE ROOT CAUSES:\n1. DiscoverRootIndexFilename returning \".md\" instead of \"filename.md\"\n2. Path.GetFileName() returning unexpected results\n3. Template-type: main search returning empty filename\n4. File discovery logic not finding proper files\n\nNEXT STEPS:\n- Run actual vault generation with debug logging enabled\n- Examine log output to identify where filename is being lost\n- Check vault structure for proper index files",
+  "category": "bug_investigation",
+  "dateCreated": "2025-06-16T17:18:54.538Z",
+  "dateUpdated": "2025-06-16T17:21:02.493Z"
+}
