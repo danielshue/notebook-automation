@@ -214,9 +214,10 @@ public class VaultIndexContentGenerator(
         Dictionary<string, string> hierarchyInfo)
     {
         // Clone the template to avoid mutating the original
-        var frontmatter = new Dictionary<string, object>(template);
-
-        frontmatter["title"] = FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileName(folderPath) ?? "Index");
+        var frontmatter = new Dictionary<string, object>(template)
+        {
+            ["title"] = FriendlyTitleHelper.GetFriendlyTitleFromFileName(Path.GetFileName(folderPath) ?? "Index")
+        };
 
         // Apply hierarchy metadata based on template type using MetadataHierarchyDetector
         string? templateType = frontmatter.GetValueOrDefault("template-type")?.ToString();
@@ -431,15 +432,17 @@ public class VaultIndexContentGenerator(
     /// This method implements the core hierarchy-aware content generation strategy by selecting
     /// appropriate content structures based on the vault hierarchy level. Each level has distinct
     /// organizational patterns and content requirements tailored to its specific purpose.
-    /// </para>
-    /// <para>
+    /// </para>    /// <para>
     /// Hierarchy Level Behaviors:
     /// </para>
     /// <list type="bullet">
     /// <item><description><strong>Level 0 (Main)</strong>: Programs listing only</description></item>
     /// <item><description><strong>Level 1 (Program)</strong>: Courses listing only</description></item>
     /// <item><description><strong>Level 2 (Course)</strong>: Courses + course-specific content</description></item>
-    /// <item><description><strong>Level 3+ (Class/Module)</strong>: Module-specific organization with content categorization</description></item>
+    /// <item><description><strong>Level 3 (Class Index)</strong>: Classes listing</description></item>
+    /// <item><description><strong>Level 4 (Class Level)</strong>: Obsidian Bases integration only</description></item>
+    /// <item><description><strong>Level 5 (Module)</strong>: Module organization with content categorization</description></item>
+    /// <item><description><strong>Level 6+ (Lesson)</strong>: Lesson-focused content with videos and readings prioritized</description></item>
     /// </list>
     /// <para>
     /// The method uses a switch statement to ensure optimal performance and clear separation
@@ -477,8 +480,12 @@ public class VaultIndexContentGenerator(
                 // Bases integration will be added separately
                 break;
 
-            default: // Module level or below - show content by type
+            case 5: // Module level - show modules and content
                 AddModuleLevelContent(contentSections, subFolders, groupedFiles);
+                break;
+
+            default: // Lesson level (6+) - focus on content, minimal subfolders
+                AddLessonLevelContent(contentSections, subFolders, groupedFiles);
                 break;
         }
     }
@@ -766,6 +773,15 @@ public class VaultIndexContentGenerator(
     /// </example>
     internal void AddContentByType(List<string> contentSections, Dictionary<string, List<VaultFileInfo>> groupedFiles, string[] contentTypes)
     {
+        if (contentSections != null)
+        {
+            _logger.LogDebug($"Adding contentSections {contentSections.Count()} sections");
+        }
+        if (groupedFiles != null)
+        {
+            _logger.LogDebug($"Adding group files {groupedFiles.Count()} group files");
+        }
+
         foreach (var contentType in contentTypes)
         {
             if (groupedFiles.TryGetValue(contentType, out var typeFiles) && typeFiles.Count > 0)
@@ -781,9 +797,11 @@ public class VaultIndexContentGenerator(
                 contentSections.Add(string.Empty);
             }
         }
-    }    /// <summary>
-         /// Gets ordered list of subfolders, excluding hidden directories.
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Gets ordered list of subfolders, excluding hidden directories.
+    /// </summary>
     protected virtual List<string> GetOrderedSubfolders(string folderPath)
     {
         return Directory.GetDirectories(folderPath)
@@ -956,17 +974,19 @@ public class VaultIndexContentGenerator(
         _logger.LogDebug("GetRootIndexFilename result: '{Result}' (current: {Current}, vault: {Vault}, filename: {Filename})",
             result, currentFolderPath, searchPath, discoveredFilename);
         return result;
-    }    /// <summary>
-         /// Discovers the root index filename in the specified vault path through file system scanning.
-         /// </summary>
-         /// <param name="searchPath">The vault root path to search for index files.</param>
-         /// <returns>The discovered index filename with extension, or the expected filename based on folder name.</returns>
-         /// <remarks>
-         /// This method performs the expensive file system operations to identify the main index file.
-         /// It should only be called once per vault path, with results cached for subsequent calls.
-         /// When no existing index file is found, it returns the expected filename based on the folder name
-         /// to support initial index creation scenarios.
-         /// </remarks>
+    }
+
+    /// <summary>
+    /// Discovers the root index filename in the specified vault path through file system scanning.
+    /// </summary>
+    /// <param name="searchPath">The vault root path to search for index files.</param>
+    /// <returns>The discovered index filename with extension, or the expected filename based on folder name.</returns>
+    /// <remarks>
+    /// This method performs the expensive file system operations to identify the main index file.
+    /// It should only be called once per vault path, with results cached for subsequent calls.
+    /// When no existing index file is found, it returns the expected filename based on the folder name
+    /// to support initial index creation scenarios.
+    /// </remarks>
     private string DiscoverRootIndexFilename(string searchPath)
     {
         // Determine expected folder-named file first (even if it doesn't exist yet)
@@ -1244,5 +1264,54 @@ public class VaultIndexContentGenerator(
             "discussion" => "Discussions",
             _ => "Notes",
         };
+    }
+
+    /// <summary>
+    /// Adds lesson-level content with focus on videos and readings.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This method creates content organization specifically for lesson-level indices
+    /// (hierarchy level 6+). It prioritizes the display of actual lesson content
+    /// (videos, readings, transcripts) over subfolder navigation, making it ideal
+    /// for leaf-level content organization.
+    /// </para>
+    /// <para>
+    /// Content Structure:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description><strong>Content Priority</strong>: Videos and readings are highlighted as primary content</description></item>
+    /// <item><description><strong>Minimal Subfolders</strong>: Only shows subfolders if they exist, not prominently featured</description></item>
+    /// <item><description><strong>Comprehensive Types</strong>: Includes all relevant lesson content types</description></item>
+    /// <item><description><strong>Academic Focus</strong>: Optimized for individual lesson learning materials</description></item>
+    /// </list>
+    /// <para>
+    /// The method serves as the primary organization strategy for lesson levels,
+    /// emphasizing immediate access to learning materials rather than hierarchical navigation.
+    /// </para>
+    /// </remarks>
+    /// <param name="contentSections">The content sections list to which lesson-level content will be added.</param>
+    /// <param name="subFolders">List of subfolder names (shown minimally if any exist).</param>
+    /// <param name="groupedFiles">Dictionary of files grouped by content type for detailed organization.</param>
+    internal void AddLessonLevelContent(List<string> contentSections, List<string> subFolders, Dictionary<string, List<VaultFileInfo>> groupedFiles)
+    {
+
+        _logger.LogDebug($"Adding lesson-level content with {subFolders.Count} subfolders and {groupedFiles.Sum(kv => kv.Value.Count)} grouped files");
+
+        // For lesson level, prioritize content over subfolders
+        // Add content by type first with lesson-focused content types
+        AddContentByType(contentSections, groupedFiles, ["video", "reading", "transcript", "assignment", "discussion", "note"]);
+
+        // Add subfolders at the end if they exist (less prominent for lesson level)
+        if (subFolders.Any())
+        {
+            contentSections.Add("## Sub-sections");
+            foreach (var subFolder in subFolders)
+            {
+                string friendlyName = FriendlyTitleHelper.GetFriendlyTitleFromFileName(subFolder);
+                contentSections.Add($"- [[{subFolder}|{friendlyName}]]");
+            }
+            contentSections.Add(string.Empty);
+        }
     }
 }

@@ -1,0 +1,8 @@
+{
+  "id": "b48def87-db49-4a15-a074-9121b76a306e",
+  "title": "Vault Lesson Index Generation Issue",
+  "details": "User reported that lesson index pages in Obsidian vault are not showing expected content fields (Videos, Readings, etc.) in the body after implementing AddLessonLevelContent method. Vault root is at C:\\Users\\danshue.REDMOND\\Vault\\01_Projects\\MBA\\. Code changes were made to VaultIndexContentGenerator.cs to prioritize content over navigation for lesson-level folders (hierarchyLevel >= 6), but the generated output is not displaying as expected in Obsidian.",
+  "category": "debugging",
+  "dateCreated": "2025-06-16T18:14:03.466Z",
+  "dateUpdated": "2025-06-16T18:14:03.466Z"
+}

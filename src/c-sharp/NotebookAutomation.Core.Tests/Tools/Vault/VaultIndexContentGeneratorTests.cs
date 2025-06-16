@@ -1490,7 +1490,130 @@ public class VaultIndexContentGeneratorTests
             // Assert
             Assert.IsNotNull(result);
             Assert.IsTrue(result.Length > 0);
-        }
+        }    }
+
+    /// <summary>
+    /// Validates that AddLessonLevelContent prioritizes videos and readings over subfolders for lesson-focused content organization.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This test verifies the lesson-level content generation strategy, ensuring that educational content
+    /// (videos, readings, transcripts) is prominently featured over hierarchical navigation. This approach
+    /// optimizes lesson pages for immediate access to learning materials.
+    /// </para>
+    /// <para>
+    /// Test Scenario:
+    /// Uses a mix of educational content types (video, reading, transcript) along with subfolders
+    /// to validate that content appears before subfolder navigation and uses appropriate ordering.
+    /// </para>
+    /// <para>
+    /// Assertions:
+    /// Verifies that video and reading sections are created, content is properly categorized,    /// and subfolders are listed as "Sub-sections" after the main content.
+    /// </para>
+    /// </remarks>
+    [TestMethod]
+    public void AddLessonLevelContent_WithContentAndSubfolders_PrioritizesContent()
+    {
+        // Arrange
+        var contentSections = new List<string>();
+        var subFolders = new List<string> { "additional-resources", "supplementary-materials" };
+        var groupedFiles = new Dictionary<string, List<VaultFileInfo>>
+        {
+            ["video"] = new List<VaultFileInfo>
+            {
+                new() { Title = "Lesson Video", ContentType = "video" },
+                new() { Title = "Demo Video", ContentType = "video" }
+            },
+            ["reading"] = new List<VaultFileInfo>
+            {
+                new() { Title = "Chapter Reading", ContentType = "reading" }
+            },
+            ["transcript"] = new List<VaultFileInfo>
+            {
+                new() { Title = "Video Transcript", ContentType = "transcript" }
+            }
+        };
+
+        // Act
+        _generator.AddLessonLevelContent(contentSections, subFolders, groupedFiles);
+
+        // Assert
+        // Check that content sections are created with proper hierarchy
+        Assert.IsTrue(contentSections.Any(s => s.Contains("## 🎥 Videos")), "Should contain video section");
+        Assert.IsTrue(contentSections.Any(s => s.Contains("## 📖 Readings")), "Should contain reading section");
+        Assert.IsTrue(contentSections.Any(s => s.Contains("## 📝 Transcripts")), "Should contain transcript section");
+
+        // Check that videos and readings appear in content
+        Assert.IsTrue(contentSections.Any(s => s.Contains("[[Lesson Video]]")), "Should contain lesson video link");
+        Assert.IsTrue(contentSections.Any(s => s.Contains("[[Chapter Reading]]")), "Should contain chapter reading link");
+        Assert.IsTrue(contentSections.Any(s => s.Contains("[[Video Transcript]]")), "Should contain video transcript link");
+
+        // Check that subfolders are listed as Sub-sections (should appear after content)
+        Assert.IsTrue(contentSections.Any(s => s.Contains("## Sub-sections")), "Should contain sub-sections header");
+        Assert.IsTrue(contentSections.Any(s => s.Contains("[[additional-resources|Additional Resources]]")), "Should contain additional resources link");
+
+        // Verify content appears before subfolders in the list
+        var videoIndex = contentSections.FindIndex(s => s.Contains("## 🎥 Videos"));
+        var subsectionIndex = contentSections.FindIndex(s => s.Contains("## Sub-sections"));
+        Assert.IsTrue(videoIndex < subsectionIndex, "Videos should appear before Sub-sections");
+    }
+
+    /// <summary>
+    /// Validates that AddLessonLevelContent handles empty content gracefully while still showing subfolders.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This test ensures that lesson-level content generation remains functional when no educational
+    /// content is available, falling back to showing available subfolders for navigation.
+    /// </para>
+    /// <para>
+    /// Test Scenario:
+    /// Uses empty grouped files with only subfolders to validate fallback behavior
+    /// when lesson content is not available but navigation structure exists.
+    /// </para>
+    /// <para>
+    /// Assertions:
+    /// Verifies that subfolder navigation is properly generated when no content files
+    /// are available, ensuring the lesson page remains functional.
+    /// </para>
+    /// </remarks>
+    [TestMethod]
+    public void AddLessonLevelContent_WithEmptyContent_ShowsSubfolders()
+    {
+        // Arrange
+        var contentSections = new List<string>();
+        var subFolders = new List<string> { "homework", "quiz" };
+        var groupedFiles = new Dictionary<string, List<VaultFileInfo>>();
+
+        // Act
+        _generator.AddLessonLevelContent(contentSections, subFolders, groupedFiles);
+
+        // Assert
+        Assert.IsTrue(contentSections.Any(s => s.Contains("## Sub-sections")));
+        Assert.IsTrue(contentSections.Any(s => s.Contains("[[homework|Homework]]")));
+        Assert.IsTrue(contentSections.Any(s => s.Contains("[[quiz|Quiz]]")));
+    }
+
+    /// <summary>
+    /// Validates that AddLessonLevelContent produces no output when both content and subfolders are empty.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This test ensures efficient handling of completely empty lesson folders by verifying that
+    /// the method doesn't generate unnecessary sections when no content or navigation exists.
+    /// </para>
+    /// </remarks>
+    [TestMethod]
+    public void AddLessonLevelContent_WithEmptyInputs_ProducesNoSections()
+    {
+        // Arrange
+        var contentSections = new List<string>();
+        var subFolders = new List<string>();
+        var groupedFiles = new Dictionary<string, List<VaultFileInfo>>();
+
+        // Act
+        _generator.AddLessonLevelContent(contentSections, subFolders, groupedFiles);        // Assert
+        Assert.AreEqual(0, contentSections.Count);
     }
 
     #endregion

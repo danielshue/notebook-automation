@@ -1,0 +1,8 @@
+{
+  "id": "9a133192-6cba-4ca7-8973-06a6a89cc31a",
+  "title": "Lesson Index Content Generation Issue",
+  "details": "Issue: Lesson index pages are not showing Videos and Readings content in the body.\n\nRoot Cause Analysis:\n1. The VaultIndexContentGenerator.AddHierarchySpecificContent() method handles different hierarchy levels:\n   - Level 4 (Class): Only shows Bases blocks, no direct content\n   - Level 5+ (Module/Lesson): Uses AddModuleLevelContent() which calls AddContentByType()\n\n2. AddModuleLevelContent() correctly calls AddContentByType() with content types: [\"reading\", \"video\", \"transcript\", \"assignment\", \"discussion\", \"note\"]\n\n3. The issue is likely in the file detection/categorization at the lesson level, not in the content generation logic.\n\nSolution Direction:\n1. Need to ensure lesson-level files are being properly analyzed and categorized\n2. May need to add specific lesson-level content handling in AddHierarchySpecificContent()\n3. Consider adding debug logging to see what files are being detected at lesson level\n\nTemplate Types by Hierarchy:\n- Level 1: main\n- Level 2: program  \n- Level 3: course\n- Level 4: class (with Bases integration)\n- Level 5: module\n- Level 6+: lesson (but can be overridden by folder name patterns)\n\nFiles involved:\n- VaultIndexContentGenerator.cs: Content generation logic\n- VaultIndexProcessor.cs: Template type determination and file analysis",
+  "category": "debugging",
+  "dateCreated": "2025-06-16T17:47:02.729Z",
+  "dateUpdated": "2025-06-16T17:47:02.729Z"
+}

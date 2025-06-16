@@ -1,0 +1,8 @@
+{
+  "id": "3944b5b4-68bc-428e-8ae5-846b5261a6bf",
+  "title": "MBA Vault CLI Tool Verification Success",
+  "details": "Successfully verified the \"vault generate-index\" CLI tool behavior for the MBA Obsidian vault:\n\nVault Root: C:/Users/danshue.REDMOND/Vault/01_Projects/MBA\n\nKey Test Results:\n- With --dry-run --force: 546 lesson folders identified for processing\n- Without --force: 0 processed, 836 skipped (existing index files)\n- Debug output confirmed correct template selection and folder hierarchy detection\n\nTool correctly:\n- Identifies lesson-level folders vs module folders\n- Respects existing index files unless --force is used\n- Uses appropriate templates based on folder hierarchy\n- Handles special content folders (module overviews) appropriately\n\nCLI Command used: dotnet run --project \"src\\c-sharp\\NotebookAutomation.CLI\" -- vault generate-index --vault-root \"C:/Users/danshue.REDMOND/Vault/01_Projects/MBA\" --type lesson --dry-run --force --debug",
+  "category": "cli_testing",
+  "dateCreated": "2025-06-16T18:20:44.620Z",
+  "dateUpdated": "2025-06-16T18:20:44.620Z"
+}

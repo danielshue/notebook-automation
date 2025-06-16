@@ -57,7 +57,7 @@ public static partial class FriendlyTitleHelper
         titleCased = RomanNumeralIIPattern().Replace(titleCased, "II");
 
         // Fix known acronyms to all caps
-        string[] knownAcronyms = ["CVP", "ROI", "KPI", "MBA", "CEO", "CFO", "COO", "CTO", "CIO", "CMO"];
+        string[] knownAcronyms = ["CVP", "ROI", "KPI", "MBA", "CEO", "CFO", "COO", "CTO", "CIO", "CMO", "IPO"];
         foreach (var acronym in knownAcronyms)
         {
             titleCased = Regex.Replace(
