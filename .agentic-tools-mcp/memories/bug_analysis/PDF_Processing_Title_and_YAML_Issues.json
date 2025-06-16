@@ -1,0 +1,8 @@
+{
+  "id": "65ec372a-236c-4bf1-910a-d0da574b8897",
+  "title": "PDF Processing: Title and YAML Issues",
+  "details": "## Issues Identified from Log Analysis (2025-06-15)\n\n### 1. Missing Titles in Markdown Output\n- **Problem**: Multiple instances of \"No title added to markdown body\" in logs\n- **Pattern**: 18 occurrences between 11:18-15:13 on 2025-06-15\n- **Impact**: Generated markdown files lack friendly titles despite having title metadata\n\n### 2. YAML Merging Issues  \n- **Problem**: Tag YAML not being merged with document YAML as expected\n- **Evidence**: In logs, tag YAML (`[yamlfrontmatter, ]`) appears empty instead of containing expected tag data\n- **Expected**: Tag data should be merged into document YAML frontmatter\n\n### 3. Title Extraction Working but Not Applied\n- **Evidence**: Logs show extracted titles like \"Microsoft Word - BADM 567 MOOC 1 Module X Word Transcript.docx\"\n- **Problem**: Title extraction succeeds but friendly title not being added to markdown body\n\n### Key Log Patterns:\n- Final kernel arguments show full title extraction working\n- YAML frontmatter contains title field correctly\n- But \"No title added to markdown body\" suggests post-processing issue\n- Empty yamlfrontmatter array `[yamlfrontmatter, ]` indicates tag merge failure\n\n### Files Affected:\n- BADM 567 MOOC 1 Module 1-4 Word Transcript documents\n- Multiple processing runs showing consistent pattern\n- Both title and tag handling broken in output generation",
+  "category": "bug_analysis",
+  "dateCreated": "2025-06-16T00:09:16.950Z",
+  "dateUpdated": "2025-06-16T00:09:16.950Z"
+}

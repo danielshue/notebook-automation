@@ -295,7 +295,6 @@ public partial class YamlHelper : IYamlHelper
         // Add just one set of --- separators with proper newlines
         return $"---\n{yamlString}---\n\n";
     }
-
     /// <summary>
     /// Removes YAML frontmatter from markdown content if present.
     /// </summary>
@@ -305,17 +304,74 @@ public partial class YamlHelper : IYamlHelper
     {
         if (string.IsNullOrWhiteSpace(markdown))
         {
-            return markdown ?? string.Empty;
+            return string.Empty;
         }
 
+        // First try the standard frontmatter regex
         var match = _frontmatterRegex.Match(markdown);
-        if (!match.Success)
+        if (match.Success)
         {
-            return markdown;
+            // Return the content after the frontmatter block
+            return markdown[match.Length..].TrimStart();
         }
 
-        // Return the content after the frontmatter block
-        return markdown[match.Length..].TrimStart();
+        // Handle AI-generated YAML code blocks that appear at the beginning of content
+        // This matches the same patterns handled in ParseYamlToDictionary
+        if (markdown.TrimStart().StartsWith("```yaml") || markdown.TrimStart().StartsWith("```yml"))
+        {
+            _logger.LogDebug("Removing nested YAML code block from content");
+
+            var trimmedContent = markdown.TrimStart();
+            var startIndex = trimmedContent.Contains("```yaml")
+                ? trimmedContent.IndexOf("```yaml") + 7
+                : trimmedContent.IndexOf("```yml") + 6;
+            var endIndex = trimmedContent.IndexOf("```", startIndex);
+
+            if (endIndex > startIndex)
+            {
+                // Return content after the closing ```
+                var afterCodeBlock = trimmedContent[(endIndex + 3)..].TrimStart();
+                _logger.LogInformation("Successfully removed nested YAML code block from content");
+                return afterCodeBlock;
+            }
+        }
+        // Handle generic code blocks at the beginning that might contain YAML
+        else if (markdown.TrimStart().StartsWith("```"))
+        {
+            _logger.LogDebug("Checking generic code block at beginning of content");
+
+            var trimmedContent = markdown.TrimStart();
+            var startIndex = trimmedContent.IndexOf("```") + 3;
+
+            // Skip potential language identifier
+            if (trimmedContent.Length > startIndex && trimmedContent[startIndex] == '\n')
+            {
+                startIndex++; // Skip the newline
+            }
+            else if (trimmedContent.Length > startIndex && trimmedContent[startIndex] == '\r' &&
+                     trimmedContent.Length > startIndex + 1 && trimmedContent[startIndex + 1] == '\n')
+            {
+                startIndex += 2; // Skip CRLF
+            }
+
+            var endIndex = trimmedContent.IndexOf("```", startIndex);
+
+            if (endIndex > startIndex)
+            {
+                // Check if the content inside looks like YAML (contains : or -)
+                var codeBlockContent = trimmedContent[startIndex..endIndex];
+                if (codeBlockContent.Contains(':') || codeBlockContent.Contains('-'))
+                {
+                    _logger.LogDebug("Removing generic code block containing YAML-like content");
+                    var afterCodeBlock = trimmedContent[(endIndex + 3)..].TrimStart();
+                    _logger.LogInformation("Successfully removed generic code block with YAML-like content");
+                    return afterCodeBlock;
+                }
+            }
+        }
+
+        // No frontmatter or code blocks found, return original content
+        return markdown;
     }
 
     /// <summary>
