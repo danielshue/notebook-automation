@@ -782,9 +782,14 @@ public class VaultIndexContentGenerator(
             _logger.LogDebug($"Adding group files {groupedFiles.Count()} group files");
         }
 
+        if (groupedFiles == null || contentSections == null)
+        {
+            return;
+        }
+
         foreach (var contentType in contentTypes)
         {
-            if (groupedFiles.TryGetValue(contentType, out var typeFiles) && typeFiles.Count > 0)
+            if (groupedFiles.TryGetValue(contentType, out var typeFiles) && typeFiles?.Count > 0)
             {
                 string icon = GetContentTypeIcon(contentType);
                 string title = GetContentTypeTitle(contentType);
