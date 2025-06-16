@@ -286,10 +286,10 @@ public class MetadataHierarchyDetectorPathTests
         var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
 
         // We need all the dependencies to create the VaultIndexProcessor
-        var mockTemplateManager = new Mock<IMetadataTemplateManager>();
-        var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
+        var mockTemplateManager = new Mock<IMetadataTemplateManager>(); var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
         var mockYamlHelper = new Mock<IYamlHelper>();
         var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, null!);
+        var mockContentGenerator = new Mock<IVaultIndexContentGenerator>();
 
         IVaultIndexProcessor processor = new VaultIndexProcessor(
             mockProcessorLogger.Object,
@@ -298,7 +298,8 @@ public class MetadataHierarchyDetectorPathTests
             mockStructureExtractor.Object,
             mockYamlHelper.Object,
             mockNoteBuilder.Object,
-            _appConfig);
+            _appConfig,
+            mockContentGenerator.Object);
 
         // Create paths at different hierarchy levels
         string pathLevel1 = Path.Combine(_tempVaultRoot, "Program1");
@@ -345,13 +346,12 @@ public class MetadataHierarchyDetectorPathTests
     {
         // Arrange
         var detector = new MetadataHierarchyDetector(_mockLogger.Object, _appConfig);
-        var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
-
-        // We need all the dependencies to create the VaultIndexProcessor
+        var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();        // We need all the dependencies to create the VaultIndexProcessor
         var mockTemplateManager = new Mock<IMetadataTemplateManager>();
         var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
         var mockYamlHelper = new Mock<IYamlHelper>();
         var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, null!);
+        var mockContentGenerator = new Mock<IVaultIndexContentGenerator>();
 
         IVaultIndexProcessor processor = new VaultIndexProcessor(
             mockProcessorLogger.Object,
@@ -360,7 +360,8 @@ public class MetadataHierarchyDetectorPathTests
             mockStructureExtractor.Object,
             mockYamlHelper.Object,
             mockNoteBuilder.Object,
-            _appConfig);
+            _appConfig,
+            mockContentGenerator.Object);
 
         // Create a path that should be at hierarchy level 4 (course level)
         string coursePath = Path.Combine(_tempVaultRoot, "Program1", "Course1", "Class1");
@@ -485,12 +486,12 @@ public class MetadataHierarchyDetectorPathTests
     public void DetermineTemplateType_WithUnusualFolderPatterns_DetectsCorrectly()
     {
         // Arrange
-        var detector = new MetadataHierarchyDetector(_mockLogger.Object, _appConfig);
-        var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
+        var detector = new MetadataHierarchyDetector(_mockLogger.Object, _appConfig); var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
         var mockTemplateManager = new Mock<IMetadataTemplateManager>();
         var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
         var mockYamlHelper = new Mock<IYamlHelper>();
         var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, null!);
+        var mockContentGenerator = new Mock<IVaultIndexContentGenerator>();
 
         IVaultIndexProcessor processor = new VaultIndexProcessor(
             mockProcessorLogger.Object,
@@ -499,7 +500,8 @@ public class MetadataHierarchyDetectorPathTests
             mockStructureExtractor.Object,
             mockYamlHelper.Object,
             mockNoteBuilder.Object,
-            _appConfig);
+            _appConfig,
+            mockContentGenerator.Object);
         // Create unusual folder names
         string lessonFolder = Path.Combine(_tempVaultRoot, "Program1", "Course1", "Class1", "Lesson-01_Introduction");
         string moduleFolder = Path.Combine(_tempVaultRoot, "Program1", "Course1", "Class1", "MODULE-2_Advanced-Topics");

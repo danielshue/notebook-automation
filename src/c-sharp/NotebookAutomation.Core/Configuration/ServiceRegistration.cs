@@ -392,6 +392,15 @@ public static class ServiceRegistration
             var logger = loggingService.GetLogger<MetadataEnsureBatchProcessor>();
             var metadataProcessor = provider.GetRequiredService<MetadataEnsureProcessor>();
             return new MetadataEnsureBatchProcessor(logger, metadataProcessor);
+        });        // Register Vault Index Content Generator
+        services.AddScoped<IVaultIndexContentGenerator, VaultIndexContentGenerator>(provider =>
+        {
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var logger = loggingService.GetLogger<VaultIndexContentGenerator>();
+            var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
+            var noteBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            return new VaultIndexContentGenerator(logger, hierarchyDetector, noteBuilder, appConfig);
         });        // Register Vault Index processors
         services.AddScoped<IVaultIndexProcessor, VaultIndexProcessor>(provider =>
         {
@@ -403,7 +412,8 @@ public static class ServiceRegistration
             var yamlHelper = provider.GetRequiredService<IYamlHelper>();
             var noteBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
             var appConfig = provider.GetRequiredService<AppConfig>();
-            return new VaultIndexProcessor(logger, templateManager, hierarchyDetector, structureExtractor, yamlHelper, noteBuilder, appConfig);
+            var contentGenerator = provider.GetRequiredService<IVaultIndexContentGenerator>();
+            return new VaultIndexProcessor(logger, templateManager, hierarchyDetector, structureExtractor, yamlHelper, noteBuilder, appConfig, contentGenerator);
         }); services.AddScoped(provider =>
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
