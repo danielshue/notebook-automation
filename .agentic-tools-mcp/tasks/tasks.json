@@ -329,6 +329,15 @@
       "completed": false,
       "createdAt": "2025-06-16T16:03:20.958Z",
       "updatedAt": "2025-06-16T16:03:20.958Z"
+    },
+    {
+      "id": "40696f27-9884-4c2f-a658-962fc1faeb46",
+      "name": "Fix Vault Generate-Index Help Command",
+      "details": "Fixed the issue where `na vault generate-index --help` was showing the main application help instead of the specific subcommand help.\n\n**Problem**: \nThe Program.cs file was intercepting ANY `--help` flag globally and showing custom help instead of allowing System.CommandLine to handle subcommand help naturally.\n\n**Solution**: \n1. Modified the global help check in Program.cs to only apply to root-level help\n2. Added `IsRootLevelHelp()` method to distinguish between root-level help and subcommand help\n3. The method checks if the help flag appears before any known commands\n\n**Changes Made**:\n- Modified `ExecuteMainAsync()` method in Program.cs\n- Added `IsRootLevelHelp()` private method\n- Changed `var isHelp = args.Any(a => a == \"--help\" || a == \"-h\");` to `var isRootHelp = IsRootLevelHelp(args);`\n- Updated condition from `isHelp` to `isRootHelp`\n\n**Verification**:\n- ✅ `na --help` - Shows root application help\n- ✅ `na vault --help` - Shows vault subcommand help  \n- ✅ `na vault generate-index --help` - Shows generate-index specific help\n- ✅ `na vault ensure-metadata --help` - Shows ensure-metadata specific help\n- ✅ `na tag --help` - Shows tag subcommand help (verified other commands still work)\n\n**Status**: COMPLETED ✅",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-16T16:21:45.259Z",
+      "updatedAt": "2025-06-16T16:21:52.582Z"
     }
   ],
   "subtasks": [

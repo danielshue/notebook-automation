@@ -1,0 +1,8 @@
+{
+  "id": "998a50fc-d362-4071-aa60-f06cb400ff4a",
+  "title": "Vault Generate-Index Help Command Bug",
+  "details": "**Issue**: The `na vault generate-index --help` command shows the main application help instead of the specific subcommand help.\n\n**Root Cause**: In Program.cs, there's a global help check that intercepts ANY `--help` flag in the command line arguments:\n\n```csharp\nvar isHelp = args.Any(a => a == \"--help\" || a == \"-h\");\n...\nif (isNoArgs || isHelp || isConfigOnly)\n{\n    var helpDisplayService = serviceProvider.GetRequiredService<HelpDisplayService>();\n    await helpDisplayService.DisplayCustomHelpAsync(rootCommand, configPath, isDebugMode, args);\n    return 0;\n}\n```\n\nThis prevents System.CommandLine from naturally handling subcommand help.\n\n**Solution**: ✅ FIXED - Modified the help check to only apply to root-level help by implementing `IsRootLevelHelp()` method that distinguishes between root-level help and subcommand help.\n\n**Changes Made**:\n1. Replaced `var isHelp = args.Any(a => a == \"--help\" || a == \"-h\");` with `var isRootHelp = IsRootLevelHelp(args);`\n2. Added `IsRootLevelHelp()` method that checks if help flag appears before any known commands\n3. Updated condition to use `isRootHelp` instead of `isHelp`\n\n**Verification**:\n- ✅ `na --help` - Shows root application help\n- ✅ `na vault --help` - Shows vault subcommand help  \n- ✅ `na vault generate-index --help` - Shows generate-index specific help",
+  "category": "bug_fixes",
+  "dateCreated": "2025-06-16T16:19:09.703Z",
+  "dateUpdated": "2025-06-16T16:20:40.379Z"
+}

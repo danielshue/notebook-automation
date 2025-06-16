@@ -126,18 +126,16 @@ internal class Program
         ExceptionHandler.Initialize(logger, isDebugMode); logger.LogDebug("Application started");
 
         // Register commands with the command line builder
-        commandLineBuilder.RegisterCommands(rootCommand, options, serviceProvider);
-
-        // Check for help display scenarios
-        var isHelp = args.Any(a => a == "--help" || a == "-h");
+        commandLineBuilder.RegisterCommands(rootCommand, options, serviceProvider);        // Check for help display scenarios
+        var isRootHelp = IsRootLevelHelp(args);
         var isNoArgs = args.Length == 0;
         var isConfigOnly = args.Length == 1 && (args[0] == "--config" || args[0] == "-c");
         var isVersion = args.Any(a => a == "--version");
         var isConfigView = args.Contains("config") && args.Contains("view") &&
                           Array.IndexOf(args, "view") == Array.IndexOf(args, "config") + 1;
 
-        // Show custom help for: no args, explicit help, or --config without value
-        if (isNoArgs || isHelp || isConfigOnly)
+        // Show custom help for: no args, explicit root help, or --config without value
+        if (isNoArgs || isRootHelp || isConfigOnly)
         {
             var helpDisplayService = serviceProvider.GetRequiredService<HelpDisplayService>();
             await helpDisplayService.DisplayCustomHelpAsync(rootCommand, configPath, isDebugMode, args);
@@ -179,5 +177,58 @@ internal class Program
         var serviceProvider = bootstrapper.SetupDependencyInjection(configPath, debug);
         Program.serviceProvider = serviceProvider; // Set the static field
         return serviceProvider;
+    }
+
+    /// <summary>
+    /// Determines if the help flag is being used at the root level (not for a subcommand).
+    /// </summary>
+    /// <param name="args">Command-line arguments.</param>
+    /// <returns>True if this is root-level help, false if it's subcommand help.</returns>
+    private static bool IsRootLevelHelp(string[] args)
+    {
+        var helpIndex = -1;
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (args[i] == "--help" || args[i] == "-h")
+            {
+                helpIndex = i;
+                break;
+            }
+        }
+
+        // If no help flag found, it's not root help
+        if (helpIndex == -1)
+            return false;
+
+        // If help is the first argument or only preceded by global options, it's root help
+        var knownCommands = new[] { "tag", "vault", "video-notes", "pdf-notes", "generate-markdown", "config" };
+
+        for (int i = 0; i < helpIndex; i++)
+        {
+            var arg = args[i];
+
+            // Skip global options and their values
+            if (arg.StartsWith("--config") || arg == "-c" ||
+                arg.StartsWith("--debug") || arg == "-d" ||
+                arg.StartsWith("--verbose") || arg == "-v" ||
+                arg == "--dry-run")
+            {
+                // Skip option values that don't start with -
+                if (i + 1 < args.Length && !args[i + 1].StartsWith("-") &&
+                    (arg == "--config" || arg == "-c"))
+                {
+                    i++; // Skip the config value
+                }
+                continue;
+            }
+
+            // If we encounter a known command before help, it's subcommand help
+            if (knownCommands.Contains(arg))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
