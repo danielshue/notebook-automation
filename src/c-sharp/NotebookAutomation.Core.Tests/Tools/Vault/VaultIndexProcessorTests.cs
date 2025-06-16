@@ -25,10 +25,9 @@ public class VaultIndexProcessorTests
     private Mock<IYamlHelper> _yamlHelperMock = null!;
     private Mock<ILogger<MarkdownNoteBuilder>> _noteBuilderLoggerMock = null!;
     private MarkdownNoteBuilder _noteBuilder = null!;
+    private Mock<IVaultIndexContentGenerator> _contentGeneratorMock = null!;
     private VaultIndexProcessor _processor = null!;
-    private AppConfig _appConfig = null!;
-
-    [TestInitialize]
+    private AppConfig _appConfig = null!; [TestInitialize]
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<VaultIndexProcessor>>();
@@ -38,6 +37,7 @@ public class VaultIndexProcessorTests
         _yamlHelperMock = new Mock<IYamlHelper>();
         _noteBuilderLoggerMock = new Mock<ILogger<MarkdownNoteBuilder>>();
         _noteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object);
+        _contentGeneratorMock = new Mock<IVaultIndexContentGenerator>();
         _appConfig = new AppConfig
         {
             Paths = new PathsConfig
@@ -46,6 +46,17 @@ public class VaultIndexProcessorTests
             }
         };
         _hierarchyDetectorMock = new Mock<IMetadataHierarchyDetector>();
+
+        // Setup default content generator behavior
+        _contentGeneratorMock.Setup(x => x.GenerateIndexContentAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<Dictionary<string, object>>(),
+                It.IsAny<List<VaultFileInfo>>(),
+                It.IsAny<Dictionary<string, string>>(),
+                It.IsAny<int>()))
+            .ReturnsAsync("Generated index content");
+
         _processor = new VaultIndexProcessor(
             _loggerMock.Object,
             _templateManagerMock.Object,
@@ -54,6 +65,7 @@ public class VaultIndexProcessorTests
             _yamlHelperMock.Object,
             _noteBuilder,
             _appConfig,
+            _contentGeneratorMock.Object,
             "/vault/root");
     }
 
@@ -63,8 +75,7 @@ public class VaultIndexProcessorTests
         // Arrange
         var appConfig = new AppConfig { Paths = new PathsConfig { NotebookVaultFullpathRoot = string.Empty } };
         var structureLoggerMock = new Mock<ILogger<CourseStructureExtractor>>();
-        var structureExtractor = new CourseStructureExtractor(structureLoggerMock.Object);
-        var processor = new VaultIndexProcessor(
+        var structureExtractor = new CourseStructureExtractor(structureLoggerMock.Object); var processor = new VaultIndexProcessor(
             _loggerMock.Object,
             _templateManagerMock.Object,
             _hierarchyDetectorMock.Object,
@@ -72,6 +83,7 @@ public class VaultIndexProcessorTests
             _yamlHelperMock.Object,
             _noteBuilder,
             appConfig,
+            _contentGeneratorMock.Object,
             string.Empty);
 
         // Act

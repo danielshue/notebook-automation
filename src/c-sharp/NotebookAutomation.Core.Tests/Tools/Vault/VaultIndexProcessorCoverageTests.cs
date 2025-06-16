@@ -26,13 +26,12 @@ public class VaultIndexProcessorCoverageTests
     private Mock<ILogger<CourseStructureExtractor>> _structureLoggerMock = null!;
     private CourseStructureExtractor _structureExtractor = null!;
     private Mock<IYamlHelper> _yamlHelperMock = null!;
+    private Mock<IVaultIndexContentGenerator> _contentGeneratorMock = null!;
     private MarkdownNoteBuilder _noteBuilder = null!;
     private VaultIndexProcessor _processor = null!;
     private AppConfig _appConfig = null!;
     private string _testTempDir = null!;
-    private string _testVaultPath = null!;
-
-    [TestInitialize]
+    private string _testVaultPath = null!; [TestInitialize]
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<VaultIndexProcessor>>();
@@ -41,6 +40,7 @@ public class VaultIndexProcessorCoverageTests
         _structureExtractor = new CourseStructureExtractor(_structureLoggerMock.Object);
         _yamlHelperMock = new Mock<IYamlHelper>();
         _noteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object);
+        _contentGeneratorMock = new Mock<IVaultIndexContentGenerator>();
         _appConfig = new AppConfig
         {
             Paths = new PathsConfig
@@ -48,6 +48,16 @@ public class VaultIndexProcessorCoverageTests
                 NotebookVaultFullpathRoot = "/vault/root"
             }
         };
+
+        // Setup default content generator behavior
+        _contentGeneratorMock.Setup(x => x.GenerateIndexContentAsync(
+                It.IsAny<string>(),
+                It.IsAny<string>(),
+                It.IsAny<Dictionary<string, object>>(),
+                It.IsAny<List<VaultFileInfo>>(),
+                It.IsAny<Dictionary<string, string>>(),
+                It.IsAny<int>()))
+            .ReturnsAsync("Generated index content");
         _hierarchyDetectorMock = new Mock<IMetadataHierarchyDetector>();
 
         // Create test directory structure
@@ -63,16 +73,15 @@ public class VaultIndexProcessorCoverageTests
         // Create some test files
         File.WriteAllText(Path.Combine(_testVaultPath, "Course 1", "Module 1", "test.md"), "# Test Content");
         File.WriteAllText(Path.Combine(_testVaultPath, "Course 1", "Module 1", "video.mp4"), "fake video");
-        File.WriteAllText(Path.Combine(_testVaultPath, "Course 1", "Module 1", "assignment.pdf"), "fake pdf");
-
-        _processor = new VaultIndexProcessor(
+        File.WriteAllText(Path.Combine(_testVaultPath, "Course 1", "Module 1", "assignment.pdf"), "fake pdf"); _processor = new VaultIndexProcessor(
             _loggerMock.Object,
             _templateManagerMock.Object,
             _hierarchyDetectorMock.Object,
             _structureExtractor,
             _yamlHelperMock.Object,
             _noteBuilder,
-            _appConfig);
+            _appConfig,
+            _contentGeneratorMock.Object);
     }
 
     [TestCleanup]
@@ -88,9 +97,7 @@ public class VaultIndexProcessorCoverageTests
     [TestMethod]
     public void Constructor_WithCustomVaultRoot_UsesCustomPath()
     {        // Arrange
-        var customVaultRoot = "/custom/vault/root";
-
-        // Act
+        var customVaultRoot = "/custom/vault/root";        // Act
         var processor = new VaultIndexProcessor(
             _loggerMock.Object,
             _templateManagerMock.Object,
@@ -99,6 +106,7 @@ public class VaultIndexProcessorCoverageTests
             _yamlHelperMock.Object,
             _noteBuilder,
             _appConfig,
+            _contentGeneratorMock.Object,
             customVaultRoot);
 
         // Assert
@@ -114,8 +122,7 @@ public class VaultIndexProcessorCoverageTests
     }
 
     /// <summary>
-    /// Tests constructor with empty vault root path falls back to config.
-    /// </summary>
+    /// Tests constructor with empty vault root path falls back to config.    /// </summary>
     [TestMethod]
     public void Constructor_WithEmptyVaultRoot_FallsBackToConfig()
     {
@@ -128,6 +135,7 @@ public class VaultIndexProcessorCoverageTests
             _yamlHelperMock.Object,
             _noteBuilder,
             _appConfig,
+            _contentGeneratorMock.Object,
             ""); // Empty string should use config
 
         // Assert
@@ -356,9 +364,18 @@ public class VaultIndexProcessorCoverageTests
             ["title"] = "Class Template"
         };
         _templateManagerMock.Setup(t => t.GetTemplate("class"))
-            .Returns(template);
-        _yamlHelperMock.Setup(y => y.SerializeToYaml(It.IsAny<Dictionary<string, object>>()))
+            .Returns(template); _yamlHelperMock.Setup(y => y.SerializeToYaml(It.IsAny<Dictionary<string, object>>()))
             .Returns("title: Class Template");
+
+        // Setup content generator mock to return content containing "Course 1"
+        _contentGeneratorMock.Setup(c => c.GenerateIndexContentAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<Dictionary<string, object>>(),
+            It.IsAny<List<VaultFileInfo>>(),
+            It.IsAny<Dictionary<string, string>>(),
+            It.IsAny<int>()))
+            .ReturnsAsync("---\ntitle: Course 1\n---\n\n# Course 1\n\nTest content with Course 1 name");
 
         // Act
         var result = await _processor.GenerateIndexAsync(
@@ -388,8 +405,16 @@ public class VaultIndexProcessorCoverageTests
             .Returns(3);
         _templateManagerMock.Setup(t => t.GetTemplate("class"))
             .Returns(new Dictionary<string, object> { ["title"] = "Test Class" });
-        _yamlHelperMock.Setup(y => y.SerializeToYaml(It.IsAny<Dictionary<string, object>>()))
-            .Throws(new InvalidOperationException("YAML error"));
+
+        // Setup content generator to throw an exception to simulate content generation failure
+        _contentGeneratorMock.Setup(c => c.GenerateIndexContentAsync(
+            It.IsAny<string>(),
+            It.IsAny<string>(),
+            It.IsAny<Dictionary<string, object>>(),
+            It.IsAny<List<VaultFileInfo>>(),
+            It.IsAny<Dictionary<string, string>>(),
+            It.IsAny<int>()))
+            .ThrowsAsync(new InvalidOperationException("Content generation error"));
 
         // Act
         var result = await _processor.GenerateIndexAsync(
