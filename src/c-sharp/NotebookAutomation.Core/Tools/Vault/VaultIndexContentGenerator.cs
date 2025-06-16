@@ -94,9 +94,8 @@ public class VaultIndexContentGenerator(
     private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder;
     private readonly string _defaultVaultRootPath = appConfig.Paths.NotebookVaultFullpathRoot;
 
-    // Cache for root index filename to avoid expensive file system lookups
-    private string? _cachedRootIndexFilename;
-    private string? _cachedVaultPath;
+    // Cache for discovered root index filenames to avoid expensive file system lookups
+    private readonly Dictionary<string, string> _discoveredIndexFilenames = new();
 
     /// <summary>
     /// Generates comprehensive index content for a vault folder with intelligent hierarchy detection and content organization.
@@ -300,7 +299,9 @@ public class VaultIndexContentGenerator(
         Dictionary<string, string> hierarchyInfo,
         int hierarchyLevel)
     {
-        var contentSections = new List<string>();        // Add the title as an H1 heading
+        var contentSections = new List<string>();
+
+        // Add the title as an H1 heading
         string headerTitle = frontmatter.TryGetValue("title", out var titleValue) ? titleValue?.ToString() ?? "Index" : "Index";
         contentSections.Add($"# {headerTitle}");
         contentSections.Add(string.Empty);
@@ -366,17 +367,15 @@ public class VaultIndexContentGenerator(
         else
         {
             // Get the root index filename for the Home link
-            string rootIndex = GetRootIndexFilename(vaultPath);
-
-            if (hierarchyLevel == 1) // Program index - only show Home and other navigation, no back link
+            string rootIndex = GetRootIndexFilename(vaultPath, folderPath); if (hierarchyLevel == 1) // Program index - only show Home and other navigation, no back link
             {
-                contentSections.Add($"🏠 [[{rootIndex}|Home]] | 📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
+                contentSections.Add($"🏠 [Home]({rootIndex}) | 📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
             }
             else // Course, Class, Module, and other indices - show full navigation with back link
             {
                 string backLinkTarget = GetBackLinkTarget(folderPath, hierarchyLevel);
                 string backLinkText = FriendlyTitleHelper.GetFriendlyTitleFromFileName(backLinkTarget);
-                contentSections.Add($"🔙 [[{backLinkTarget}|{backLinkText}]] | 🏠 [[{rootIndex}|Home]] | 📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
+                contentSections.Add($"🔙 [[{backLinkTarget}|{backLinkText}]] | 🏠 [Home]({rootIndex}) | 📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
             }
 
             contentSections.Add(string.Empty);
@@ -886,144 +885,197 @@ public class VaultIndexContentGenerator(
                 return candidate;
             }
         }
-
         throw new FileNotFoundException("Base block template not found in any parent config folder.");
     }
 
     /// <summary>
-    /// Identifies and returns the filename of the main vault index for consistent home navigation across all indices.
+    /// Identifies and returns the relative path to the main vault index from the current folder for consistent home navigation across all indices.
     /// </summary>
     /// <remarks>
     /// <para>
     /// This method implements intelligent main index discovery to support consistent navigation linking
-    /// throughout the vault structure. It ensures that all generated indices can properly link back to
-    /// the vault's main entry point, regardless of their location in the hierarchy.
+    /// throughout the vault structure. It calculates the relative path from the current folder to the
+    /// vault's main entry point, enabling proper Obsidian wikilink navigation regardless of hierarchy level.
     /// </para>
     /// <para>
     /// Discovery Strategy:
     /// </para>
     /// <list type="number">
-    /// <item><description>Scans all markdown files in the vault directory tree</description></item>
-    /// <item><description>Examines frontmatter for template-type: main designation</description></item>
-    /// <item><description>Prioritizes files closer to vault root (shorter paths)</description></item>
-    /// <item><description>Falls back to vault root folder name if no main index found</description></item>
+    /// <item><description>Uses the configured vault root path as the search location</description></item>
+    /// <item><description>Searches for prioritized filenames (index.md, Index.md, README.md, Home.md, Main.md)</description></item>
+    /// <item><description>Falls back to scanning for files with template-type: main in frontmatter</description></item>
+    /// <item><description>Calculates relative path from current folder to found index file</description></item>
     /// </list>
     /// <para>
-    /// Main Index Identification:
-    /// Files are considered main indices if they contain YAML frontmatter with:
-    /// template-type: main
-    /// </para>
-    /// <para>
-    /// Prioritization Logic:
-    /// When multiple main indices exist, the method selects the one with the shortest path
-    /// (closest to vault root) to ensure optimal navigation hierarchy.
-    /// </para>
-    /// <para>
-    /// Fallback Mechanism:
-    /// If no main index is found, uses the vault root directory name as the default,
-    /// ensuring navigation links remain functional even in incomplete vault setups.
-    /// </para>
-    /// <para>
-    /// Error Resilience:
-    /// Handles file access errors, corrupted frontmatter, and filesystem issues gracefully
-    /// with comprehensive logging and fallback strategies.
+    /// Relative Path Calculation:
+    /// The method determines the relative path that allows Obsidian wikilinks to properly navigate
+    /// from the current folder to the root index, supporting nested folder structures at any depth.
     /// </para>
     /// </remarks>
     /// <param name="vaultPath">
     /// The absolute path to the vault root directory for main index discovery.
-    /// Used as the starting point for recursive file scanning and as fallback for filename generation.
     /// If empty, uses the configured default vault path.
     /// </param>
+    /// <param name="currentFolderPath">
+    /// The absolute path to the current folder where the index is being generated.
+    /// Used to calculate the relative path to the root index.
+    /// </param>
     /// <returns>
-    /// The filename (without extension) of the main vault index for navigation linking.
-    /// <list type="bullet">
-    /// <item><description>Primary: Filename of discovered main index file</description></item>
-    /// <item><description>Fallback: Vault root directory name</description></item>
-    /// <item><description>Default: "main-index" if all else fails</description></item>
-    /// </list>
+    /// The relative path from the current folder to the main vault index file (without extension).
+    /// Returns "index" as fallback if no main index is found.
     /// </returns>
     /// <example>
     /// <code>
-    /// // Discover main index in a structured vault
-    /// string mainIndex = processor.GetRootIndexFilename(@"C:\vault");
-    /// // Returns "MBA" if MBA.md has template-type: main
+    /// // From a nested folder to root index
+    /// string relativePath = processor.GetRootIndexFilename(@"C:\vault", @"C:\vault\program\course\class");
+    /// // Returns: "../../../MBA.md" if MBA.md is the main index
     ///
-    /// // Use in navigation link generation
-    /// string homeLink = $"🏠 [[{mainIndex}|Home]]";
-    /// // Results in: "🏠 [[MBA|Home]]"
-    ///
-    /// // Fallback scenario with no main index
-    /// string fallbackIndex = processor.GetRootIndexFilename(@"C:\MyVault");
-    /// // Returns "MyVault" (directory name) if no main index found
-    ///
-    /// // Navigation integration
-    /// var navigationLinks = new[]
-    /// {
-    ///     $"[[{backTarget}|Back]]",
-    ///     $"[[{GetRootIndexFilename(vaultPath)}|Home]]",
-    ///     "[[Dashboard]]",
-    ///     "[[Classes Assignments]]"
-    /// };
+    /// // From program level to root index
+    /// string relativePath = processor.GetRootIndexFilename(@"C:\vault", @"C:\vault\program");
+    /// // Returns: "../index.md" if index.md is the main index
     /// </code>
     /// </example>
-    protected virtual string GetRootIndexFilename(string vaultPath)
+    protected virtual string GetRootIndexFilename(string vaultPath, string currentFolderPath)
     {
-        // Check if we have a cached result for this vault path
-        if (_cachedVaultPath == vaultPath && !string.IsNullOrEmpty(_cachedRootIndexFilename))
+        // Use the vault root path or default if not provided
+        var searchPath = !string.IsNullOrEmpty(vaultPath) ? vaultPath : _defaultVaultRootPath;        // Check cache first to avoid expensive file system operations
+        if (!_discoveredIndexFilenames.TryGetValue(searchPath, out var discoveredFilename))
         {
-            return _cachedRootIndexFilename;
+            // Perform the expensive discovery operation only once per vault
+            discoveredFilename = DiscoverRootIndexFilename(searchPath);
+            _discoveredIndexFilenames[searchPath] = discoveredFilename;
+            _logger.LogDebug("Discovered and cached root index filename: '{Filename}' for path: {Path}", discoveredFilename, searchPath);
+        }
+        else
+        {
+            _logger.LogDebug("Using cached root index filename: '{Filename}' for path: {Path}", discoveredFilename, searchPath);
         }
 
-        // Perform the expensive lookup
-        var searchPath = !string.IsNullOrEmpty(vaultPath) ? vaultPath : _defaultVaultRootPath;
+        // Only calculate the relative path (this is what varies per call)
+        var result = CalculateRelativePath(currentFolderPath, searchPath, discoveredFilename);
+        _logger.LogDebug("GetRootIndexFilename result: '{Result}' (current: {Current}, vault: {Vault}, filename: {Filename})",
+            result, currentFolderPath, searchPath, discoveredFilename);
+        return result;
+    }    /// <summary>
+         /// Discovers the root index filename in the specified vault path through file system scanning.
+         /// </summary>
+         /// <param name="searchPath">The vault root path to search for index files.</param>
+         /// <returns>The discovered index filename with extension, or the expected filename based on folder name.</returns>
+         /// <remarks>
+         /// This method performs the expensive file system operations to identify the main index file.
+         /// It should only be called once per vault path, with results cached for subsequent calls.
+         /// When no existing index file is found, it returns the expected filename based on the folder name
+         /// to support initial index creation scenarios.
+         /// </remarks>
+    private string DiscoverRootIndexFilename(string searchPath)
+    {
+        // Determine expected folder-named file first (even if it doesn't exist yet)
+        var folderName = Path.GetFileName(searchPath);
+        var expectedFolderNamedFile = !string.IsNullOrEmpty(folderName) ? $"{folderName}.md" : "index.md";
 
+        // First priority: Check for file named after the folder (e.g., MBA/MBA.md)
+        if (!string.IsNullOrEmpty(folderName))
+        {
+            var fullPath = Path.Combine(searchPath, expectedFolderNamedFile);
+            if (File.Exists(fullPath))
+            {
+                _logger.LogDebug($"Found folder-named root index file: {expectedFolderNamedFile} in {searchPath}");
+                return expectedFolderNamedFile;
+            }
+        }
+
+        // Second priority: Look for standard prioritized filenames
         var prioritizedFilenames = new[] { "index.md", "Index.md", "README.md", "Home.md", "Main.md" };
-
         foreach (var filename in prioritizedFilenames)
         {
             var fullPath = Path.Combine(searchPath, filename);
             if (File.Exists(fullPath))
             {
-                var result = Path.GetFileNameWithoutExtension(filename);
-
-                // Cache the result
-                _cachedVaultPath = vaultPath;
-                _cachedRootIndexFilename = result;
-
-                return result;
+                _logger.LogDebug($"Found prioritized root index file: {filename} in {searchPath}");
+                return filename;
             }
         }
 
-        // Fallback: look for any .md file with template-type: main
-        var mdFiles = Directory.GetFiles(searchPath, "*.md");
-        foreach (var mdFile in mdFiles)
+        // Third priority: Look for any .md file with template-type: main
+        if (Directory.Exists(searchPath))
         {
-            try
+            var mdFiles = Directory.GetFiles(searchPath, "*.md");
+            foreach (var mdFile in mdFiles)
             {
-                var content = File.ReadAllText(mdFile);
-                if (content.Contains("template-type: main", StringComparison.OrdinalIgnoreCase))
+                try
                 {
-                    var result = Path.GetFileNameWithoutExtension(mdFile);
-
-                    // Cache the result
-                    _cachedVaultPath = vaultPath;
-                    _cachedRootIndexFilename = result;
-
-                    return result;
+                    var content = File.ReadAllText(mdFile);
+                    if (content.Contains("template-type: main", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var filename = Path.GetFileName(mdFile);
+                        _logger.LogDebug($"Found template-type: main root index file: {filename} in {searchPath}");
+                        return filename;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, $"Error reading file {mdFile} while searching for main index");
                 }
             }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Error reading file {File} while searching for main index", mdFile);
-            }
         }
 
-        // Final fallback
-        var fallback = "index";
-        _cachedVaultPath = vaultPath;
-        _cachedRootIndexFilename = fallback;
+        // Final decision: Return expected folder-named file (even if it doesn't exist yet)
+        // This supports initial index creation scenarios where we need to know what the filename SHOULD be
+        _logger.LogDebug($"No existing root index file found in {searchPath}, returning expected filename: {expectedFolderNamedFile}");
+        return expectedFolderNamedFile;
+    }
 
-        return fallback;
+    /// <summary>
+    /// Calculates the relative path from the current folder to the root index file for markdown link navigation.
+    /// </summary>
+    /// <param name="currentFolderPath">The absolute path to the current folder.</param>
+    /// <param name="vaultRootPath">The absolute path to the vault root.</param>
+    /// <param name="indexFilename">The filename (with extension) of the index file.</param>
+    /// <returns>The relative path that can be used in markdown links.</returns>
+    private string CalculateRelativePath(string currentFolderPath, string vaultRootPath, string indexFilename)
+    {
+        _logger.LogDebug($"CalculateRelativePath called with: current='{currentFolderPath}', vault='{vaultRootPath}', filename='{indexFilename}'");
+
+        try
+        {
+            // Normalize paths to handle different path separators
+            var normalizedCurrentPath = Path.GetFullPath(currentFolderPath);
+            var normalizedVaultPath = Path.GetFullPath(vaultRootPath);
+
+            // If current folder is the vault root, just return the index filename
+            if (string.Equals(normalizedCurrentPath, normalizedVaultPath, StringComparison.OrdinalIgnoreCase))
+            {
+                _logger.LogDebug("Current folder is vault root, returning filename directly: '{Filename}'", indexFilename);
+                return indexFilename;
+            }
+
+            // Calculate relative path using Uri class for reliable path calculation
+            var currentUri = new Uri(normalizedCurrentPath + Path.DirectorySeparatorChar);
+            var vaultUri = new Uri(normalizedVaultPath + Path.DirectorySeparatorChar);
+            var relativeUri = currentUri.MakeRelativeUri(vaultUri);
+            var relativePath = Uri.UnescapeDataString(relativeUri.ToString());
+
+            // Ensure forward slashes for markdown compatibility (don't convert to Windows separators)
+            // Remove trailing slash if present
+            if (relativePath.EndsWith("/"))
+            {
+                relativePath = relativePath.TrimEnd('/');
+            }
+
+            // Combine relative path with index filename using forward slash
+            var result = string.IsNullOrEmpty(relativePath) ? indexFilename : $"{relativePath}/{indexFilename}";
+            _logger.LogDebug("CalculateRelativePath result: '{Result}' (relativePath: '{RelativePath}', filename: '{Filename}')",
+                result, relativePath, indexFilename);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error calculating relative path from {CurrentPath} to {VaultPath}, using fallback",
+                currentFolderPath, vaultRootPath);
+
+            // Fallback: just return the index filename
+            return indexFilename;
+        }
     }
 
     /// <summary>

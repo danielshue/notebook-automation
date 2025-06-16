@@ -181,22 +181,35 @@ public class VaultIndexContentGeneratorTests
         protected override List<string> GetOrderedSubfolders(string folderPath)
         {
             return _mockSubfolders.TryGetValue(folderPath, out var subfolders) ? subfolders : [];
-        }
-
-        /// <summary>
-        /// Returns the configured mock root index filename for the specified vault path, or "index" as the default.
-        /// </summary>
-        /// <param name="vaultPath">The vault path for which to retrieve the mock root index filename.</param>
-        /// <returns>
-        /// The configured root index filename for the specified vault path, or "index" if no mock is configured.
-        /// </returns>
-        /// <remarks>
-        /// This override replaces the file system index discovery with predictable test data,
-        /// ensuring consistent behavior across different test environments and vault configurations.
-        /// </remarks>
-        protected override string GetRootIndexFilename(string vaultPath)
+        }        /// <summary>
+                 /// Returns the configured mock root index filename for the specified vault path, or "index" as the default.
+                 /// </summary>
+                 /// <param name="vaultPath">The vault path for which to retrieve the mock root index filename.</param>
+                 /// <param name="currentFolderPath">The current folder path (not used in mock implementation).</param>
+                 /// <returns>        /// <summary>
+                 /// Returns the configured mock root index filename for the specified vault path, or "index.md" as the default.
+                 /// </summary>
+                 /// <param name="vaultPath">The vault path for which to retrieve the mock root index filename.</param>
+                 /// <param name="currentFolderPath">The current folder path (not used in mock implementation).</param>
+                 /// <returns>
+                 /// The configured root index filename for the specified vault path, or "index.md" if no mock is configured.
+                 /// </returns>
+                 /// <remarks>
+                 /// This override replaces the file system index discovery with predictable test data,
+                 /// ensuring consistent behavior across different test environments and vault configurations.
+                 /// Note: This mock implementation returns the simple filename without relative path calculation.
+                 /// </remarks>
+        protected override string GetRootIndexFilename(string vaultPath, string currentFolderPath)
         {
-            return _mockRootIndexes.TryGetValue(vaultPath, out var indexName) ? indexName : "index";
+            // Get the mock filename and add .md extension if not present
+            var mockFilename = _mockRootIndexes.TryGetValue(vaultPath, out var indexName) ? indexName : "index";
+            if (!mockFilename.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            {
+                mockFilename += ".md";
+            }
+
+            // For test simplicity, return just the filename (no relative path calculation in tests)
+            return mockFilename;
         }
     }
 
