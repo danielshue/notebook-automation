@@ -25,10 +25,9 @@ public class PdfCommandsTests
         var rootCommand = new RootCommand();
         var configOption = new Option<string>("--config");
         var debugOption = new Option<bool>("--debug");
-        var verboseOption = new Option<bool>("--verbose");
-        var dryRunOption = new Option<bool>("--dry-run");
-        _ = new PdfCommands(mockLogger.Object);
-        PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var verboseOption = new Option<bool>("--verbose"); var dryRunOption = new Option<bool>("--dry-run");
+        var pdfCommands = new PdfCommands(mockLogger.Object);
+        pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         var originalOut = Console.Out;
         var stringWriter = new StringWriter();
@@ -71,9 +70,8 @@ public class PdfCommandsTests
         var configOption = new Option<string>("--config");
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
-        var dryRunOption = new Option<bool>("--dry-run");
-        var pdfCommands = new PdfCommands(mockLogger.Object);            // Act
-        PdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var dryRunOption = new Option<bool>("--dry-run"); var pdfCommands = new PdfCommands(mockLogger.Object);            // Act
+        pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Assert
         var pdfNotesCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "pdf-notes");

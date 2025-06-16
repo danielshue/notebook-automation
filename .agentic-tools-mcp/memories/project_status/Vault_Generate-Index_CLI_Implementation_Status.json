@@ -1,0 +1,8 @@
+{
+  "id": "44e25387-4a29-4b6e-8ba7-a2e6be0fa62f",
+  "title": "Vault Generate-Index CLI Implementation Status",
+  "details": "## Vault Generate-Index CLI Implementation Status\n\n### Current State\n- CLI command structure exists in VaultCommands.cs but has TODO placeholder\n- Core functionality exists in VaultIndexBatchProcessor.GenerateIndexesAsync\n- VaultIndexProcessor handles individual folder index generation  \n- Python version exists and is fully functional\n\n### Implementation Required\n1. Replace TODO placeholder in VaultCommands.cs with actual implementation\n2. Add --type option for filtering by template type\n3. Add --force option for overwriting existing indexes\n4. Use dependency injection to get VaultIndexBatchProcessor\n5. Handle configuration loading for vault root paths\n6. Add proper error handling and user feedback\n\n### Key Components\n- VaultIndexBatchProcessor: Main processing engine\n- VaultIndexProcessor: Individual folder processing\n- IMetadataHierarchyDetector: Determines template types\n- Template types: main-index, program-index, course-index, class-index, module-index, lesson-index\n\n### CLI Command Format\n`na vault generate-index <path> [--type <type>] [--force] [--override-vault-root] [--dry-run] [--verbose]`",
+  "category": "project_status",
+  "dateCreated": "2025-06-16T12:37:53.282Z",
+  "dateUpdated": "2025-06-16T12:37:53.282Z"
+}

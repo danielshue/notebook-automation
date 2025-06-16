@@ -489,10 +489,10 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                 filePath,
                 queueItem?.StatusMessage ?? $"Generating markdown content ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}",
                 fileIndex,
-                totalFiles);            // Generate markdown using processor
-            // For PDF files, include the normalized title as H1 heading to make friendly titles visible
-            bool includeTitleAsHeading = typeof(TProcessor).Name.Contains("Pdf");
-            markdown = processor.GenerateMarkdownNote(summaryText, metadata, noteType, includeNoteTypeTitle: includeTitleAsHeading);
+                totalFiles);
+
+            // Generate markdown using processor
+            markdown = processor.GenerateMarkdownNote(summaryText, metadata, noteType, includeNoteTypeTitle: false);
         }
 
         // Ensure markdown is initialized
@@ -590,10 +590,10 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         TimeSpan totalSummaryTime,
         int totalTokens)
     {
-        logger.LogInformation($"Document processing completed. Success: {processed}, Failed: {failed}");
-        logger.LogInformation($"Total batch processing time: {batchTime.TotalSeconds:F1}s");
-        logger.LogInformation($"Total summary time: {totalSummaryTime.TotalSeconds:F1}s");
-        logger.LogInformation($"Total tokens for all summaries: {totalTokens}");
+        logger.LogInformation("Document processing completed. Success: {Processed}, Failed: {Failed}", processed, failed);
+        logger.LogInformation("Total batch processing time: {ElapsedSeconds:F1}s", batchTime.TotalSeconds);
+        logger.LogInformation("Total summary time: {ElapsedSeconds:F1}s", totalSummaryTime.TotalSeconds);
+        logger.LogInformation("Total tokens for all summaries: {TotalTokens}", totalTokens);
 
         double avgFileTime = processed > 0 ? batchTime.TotalMilliseconds / processed : 0;
         double avgSummaryTime = processed > 0 ? totalSummaryTime.TotalMilliseconds / processed : 0;

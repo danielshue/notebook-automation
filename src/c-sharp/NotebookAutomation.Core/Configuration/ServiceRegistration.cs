@@ -1,6 +1,5 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
@@ -369,12 +368,11 @@ public static class ServiceRegistration
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<MarkdownNoteProcessor>();
-            var aiSummarizer = provider.GetRequiredService<AISummarizer>();
-            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            var aiSummarizer = provider.GetRequiredService<AISummarizer>(); var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
             var appConfig = provider.GetRequiredService<AppConfig>();
             var markdownNoteBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
-            return new MarkdownNoteProcessor(logger, aiSummarizer, hierarchyDetector, markdownNoteBuilder, appConfig);
+            return new MarkdownNoteProcessor(logger, aiSummarizer, (MetadataHierarchyDetector)hierarchyDetector, markdownNoteBuilder, appConfig);
         });
 
         // Register Vault Metadata processors
@@ -399,8 +397,8 @@ public static class ServiceRegistration
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<VaultIndexProcessor>();
-            var templateManager = provider.GetRequiredService<MetadataTemplateManager>();
-            var hierarchyDetector = provider.GetRequiredService<MetadataHierarchyDetector>();
+            var templateManager = provider.GetRequiredService<IMetadataTemplateManager>();
+            var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
             var structureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
             var yamlHelper = provider.GetRequiredService<IYamlHelper>();
             var noteBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
