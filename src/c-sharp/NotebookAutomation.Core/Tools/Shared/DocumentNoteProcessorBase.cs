@@ -1,4 +1,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using System.Text.RegularExpressions;
+
+using NotebookAutomation.Core.Utils;
+
 namespace NotebookAutomation.Core.Tools.Shared;
 
 /// <summary>
@@ -61,27 +65,23 @@ public abstract class DocumentNoteProcessorBase(
         int textSize = text.Length;
         int estimatedTokens = textSize / 4; // Rough estimate: ~4 characters per token
         Logger.LogInformation(
-            "Text to summarize: {CharCount:N0} characters (~{TokenCount:N0} estimated tokens)",
-            textSize, estimatedTokens);
+            $"Text to summarize: {textSize:N0} characters (~{estimatedTokens:N0} estimated tokens)");
 
         // Enhanced debug logging for yaml-frontmatter
         if (variables != null)
         {
-            Logger.LogInformation("Preparing {Count} variables for prompt template", variables.Count);
+            Logger.LogInformation($"Preparing {variables.Count} variables for prompt template");
             foreach (var kvp in variables)
             {
                 var preview = kvp.Value?.Length > 50 ? kvp.Value[..50] + "..." : kvp.Value;
                 Logger.LogInformation(
-                    "  Variable {Key}: {Length:N0} chars - {ValuePreview}",
-                    kvp.Key, kvp.Value?.Length ?? 0, preview);
+                    $"  Variable {kvp.Key}: {kvp.Value?.Length ?? 0} chars - {preview}");
             }
 
             if (variables.TryGetValue("yamlfrontmatter", out var yamlValue))
             {
                 Logger.LogInformation(
-                    "Found yamlfrontmatter ({Length:N0} chars): {ValuePreview}",
-                    yamlValue?.Length ?? 0,
-                    yamlValue?.Length > 100 ? yamlValue[..100] + "..." : yamlValue ?? "null");
+                    $"Found yamlfrontmatter ({yamlValue?.Length:N0} chars): {(yamlValue?.Length > 100 ? yamlValue[..100] + "..." : yamlValue ?? "null")}");
             }
             else
             {
@@ -114,8 +114,7 @@ public abstract class DocumentNoteProcessorBase(
         int summaryLength = summary.Length;
         int summaryEstimatedTokens = summaryLength / 4;
         Logger.LogInformation(
-            "Successfully generated AI summary: {CharCount:N0} characters (~{TokenCount:N0} estimated tokens)",
-            summaryLength, summaryEstimatedTokens);
+            $"Successfully generated AI summary: {summaryLength:N0} characters (~{summaryEstimatedTokens:N0} estimated tokens)");
 
         return summary;
     }
@@ -266,17 +265,17 @@ public abstract class DocumentNoteProcessorBase(
 
         string markdownBody;
 
-        // For the title, use the friendly title from the frontmatter if available
-        if (includeNoteTypeTitle && frontmatter.TryGetValue("title", out var titleObj) && titleObj != null)
+        // Extract and normalize the title for consistency between YAML and first heading
+        string normalizedTitle = ExtractAndNormalizeTitle(frontmatter, bodyText, noteType, includeNoteTypeTitle);
+
+        // Update the frontmatter title with the normalized version
+        frontmatter["title"] = normalizedTitle;
+
+        // For the title, use the normalized title consistently
+        if (includeNoteTypeTitle)
         {
-            string title = titleObj.ToString() ?? noteType;
-            markdownBody = $"# {title}\n\n{bodyText}";
-            Logger?.LogDebug($"Using frontmatter title for heading: {title}", title);
-        }
-        else if (includeNoteTypeTitle)
-        {
-            markdownBody = $"# {noteType}\n\n{bodyText}";
-            Logger?.LogDebug($"No frontmatter title found, using note type: {noteType}", noteType);
+            markdownBody = $"# {normalizedTitle}\n\n{bodyText}";
+            Logger?.LogDebug($"Using normalized title for heading: {normalizedTitle}");
         }
         else
         {
@@ -373,5 +372,123 @@ public abstract class DocumentNoteProcessorBase(
             Logger.LogError(ex, $"Error converting OneDrive path to vault path: {oneDrivePath}");
             return oneDrivePath;
         }
+    }
+
+    /// <summary>
+    /// Extracts and normalizes the title from frontmatter and body text to ensure consistency
+    /// between the YAML title and the first heading in the document.
+    /// Uses FriendlyTitleHelper for consistent title formatting.
+    /// </summary>
+    /// <param name="frontmatter">The frontmatter dictionary containing metadata.</param>
+    /// <param name="bodyText">The body text content that may contain headings.</param>
+    /// <param name="noteType">The default note type to use if no title is found.</param>
+    /// <param name="includeNoteTypeTitle">Whether to include the note type as a title.</param>
+    /// <returns>A normalized, friendly title string.</returns>
+    /// <remarks>
+    /// This method prioritizes titles in the following order:
+    /// 1. First H1 heading found in the body text (if AI-generated)
+    /// 2. Existing title from frontmatter (if valid)
+    /// 3. Generated friendly title from file name (if available in metadata)
+    /// 4. Default note type
+    ///
+    /// All titles are normalized using FriendlyTitleHelper for consistency.
+    /// </remarks>
+    protected virtual string ExtractAndNormalizeTitle(
+        Dictionary<string, object> frontmatter,
+        string bodyText,
+        string noteType,
+        bool includeNoteTypeTitle)
+    {
+        Logger.LogDebug("Extracting and normalizing title from frontmatter and body text");
+
+        // First, try to extract the first H1 heading from the body text (common in AI-generated content)
+        string? firstHeading = ExtractFirstHeading(bodyText);
+        if (!string.IsNullOrWhiteSpace(firstHeading))
+        {
+            string normalizedHeading = FriendlyTitleHelper.GetFriendlyTitleFromFileName(firstHeading);
+            Logger.LogDebug($"Found first heading in body: '{firstHeading}' -> normalized: '{normalizedHeading}'");
+            return normalizedHeading;
+        }
+
+        // Second, try to use the existing title from frontmatter
+        if (frontmatter.TryGetValue("title", out var titleObj) && titleObj != null)
+        {
+            string existingTitle = titleObj.ToString() ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(existingTitle) &&
+                !existingTitle.StartsWith("Untitled", StringComparison.OrdinalIgnoreCase))
+            {
+                string normalizedTitle = FriendlyTitleHelper.GetFriendlyTitleFromFileName(existingTitle);
+                Logger.LogDebug($"Using existing frontmatter title: '{existingTitle}' -> normalized: '{normalizedTitle}'");
+                return normalizedTitle;
+            }
+        }
+
+        // Third, try to generate a friendly title from the file name if available
+        if (frontmatter.TryGetValue("source", out var sourceObj) && sourceObj != null)
+        {
+            string sourcePath = sourceObj.ToString() ?? string.Empty;
+            if (!string.IsNullOrWhiteSpace(sourcePath))
+            {
+                string fileName = Path.GetFileNameWithoutExtension(sourcePath);
+                string friendlyTitle = FriendlyTitleHelper.GetFriendlyTitleFromFileName(fileName);
+                Logger.LogDebug($"Generated friendly title from source file: '{fileName}' -> '{friendlyTitle}'");
+                return friendlyTitle;
+            }
+        }
+
+        // Fourth, try other common metadata fields that might contain a usable title
+        string[] titleFields = ["name", "filename", "document_name"];
+        foreach (string field in titleFields)
+        {
+            if (frontmatter.TryGetValue(field, out var fieldObj) && fieldObj != null)
+            {
+                string fieldValue = fieldObj.ToString() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(fieldValue))
+                {
+                    string friendlyTitle = FriendlyTitleHelper.GetFriendlyTitleFromFileName(fieldValue);
+                    Logger.LogDebug($"Generated friendly title from {field}: '{fieldValue}' -> '{friendlyTitle}'");
+                    return friendlyTitle;
+                }
+            }
+        }
+
+        // Last resort: use the note type with friendly formatting
+        string normalizedNoteType = FriendlyTitleHelper.GetFriendlyTitleFromFileName(noteType);
+        Logger.LogDebug($"Using note type as fallback title: '{noteType}' -> '{normalizedNoteType}'");
+        return normalizedNoteType;
+    }
+
+
+    /// <summary>
+    /// Extracts the first H1 heading from markdown text.
+    /// </summary>
+    /// <param name="markdownText">The markdown text to search.</param>
+    /// <returns>The first H1 heading text without the # symbol, or null if none found.</returns>
+    /// <remarks>
+    /// This method looks for lines that start with a single # followed by a space,
+    /// which indicates an H1 heading in markdown. It returns the heading text without
+    /// the markdown syntax.
+    /// </remarks>
+    protected static string? ExtractFirstHeading(string markdownText)
+    {
+        if (string.IsNullOrWhiteSpace(markdownText))
+        {
+            return null;
+        }
+
+        var lines = markdownText.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (string line in lines)
+        {
+            string trimmedLine = line.Trim();
+
+            // Look for H1 headings (# followed by space)
+            if (trimmedLine.StartsWith("# ") && trimmedLine.Length > 2)
+            {
+                return trimmedLine[2..].Trim(); // Remove "# " and any trailing whitespace
+            }
+        }
+
+        return null;
     }
 }
