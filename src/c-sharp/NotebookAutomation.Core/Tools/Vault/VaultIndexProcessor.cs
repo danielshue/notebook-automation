@@ -87,7 +87,7 @@ public class VaultIndexProcessor(
     private readonly IMetadataHierarchyDetector _hierarchyDetector = hierarchyDetector;
     private readonly ICourseStructureExtractor _structureExtractor = structureExtractor;
     private readonly IYamlHelper _yamlHelper = yamlHelper;
-    private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder;    private readonly string _defaultVaultRootPath = !string.IsNullOrEmpty(vaultRootPath)
+    private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder; private readonly string _defaultVaultRootPath = !string.IsNullOrEmpty(vaultRootPath)
         ? vaultRootPath
         : appConfig.Paths.NotebookVaultFullpathRoot;
 
@@ -244,10 +244,13 @@ public class VaultIndexProcessor(
 
             // Create index file name based on folder name
             string folderName = Path.GetFileName(folderPath) ?? "Index";
+
             // Determine template type based on hierarchy level and folder name
             string templateType = DetermineTemplateType(hierarchyLevel, folderName);
             _logger.LogInformation($"Determined template type: {templateType} for folder: {folderName} at level: {hierarchyLevel}");
-            _logger.LogDebug($"Template type '{templateType}' determined for '{folderName}' at level {hierarchyLevel}"); // Get template using the actual available method
+            _logger.LogDebug($"Template type '{templateType}' determined for '{folderName}' at level {hierarchyLevel}");
+
+            // Get template using the actual available method
             var template = _templateManager.GetTemplate(templateType);
             if (template == null)
             {
@@ -1046,37 +1049,42 @@ public class VaultIndexProcessor(
         else
         {
             // Add top navigation bar for all non-main indices
-            string backLinkTarget;
-
-            if (hierarchyLevel == 1) // Program index
-            {
-                backLinkTarget = GetRootIndexFilename(vaultPath);
-            }
-            else if (hierarchyLevel == 2) // Course index
-            {
-                // Get program folder name (parent folder)
-                backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty);
-            }
-            else if (hierarchyLevel == 3) // Class index
-            {
-                // Get course folder name (parent folder)
-                backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty);
-            }
-            else // Module or other indices
-            {
-                // Get class folder name (parent folder)
-                backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty);
-            }
-
-            // Generate friendly back link text from the target name
-            string backLinkText = FriendlyTitleHelper.GetFriendlyTitleFromFileName(backLinkTarget);
-
             // Get the root index filename for the Home link
             string rootIndex = GetRootIndexFilename(vaultPath);
 
-            // Add top navigation links
-            contentSections.Add($"🔙 [[{backLinkTarget}|{backLinkText}]] | 🏠 [[{rootIndex}|Home]] | 📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
-            contentSections.Add(string.Empty);            // Add content based on hierarchy level
+            if (hierarchyLevel == 1) // Program index - only show Home and other navigation, no back link
+            {
+                // Add top navigation links without back link for Program level
+                contentSections.Add($"🏠 [[{rootIndex}|Home]] | 📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
+            }
+            else // Course, Class, Module, and other indices - show full navigation with back link
+            {
+                string backLinkTarget;
+
+                if (hierarchyLevel == 2) // Course index
+                {
+                    // Get program folder name (parent folder)
+                    backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty);
+                }
+                else if (hierarchyLevel == 3) // Class index
+                {
+                    // Get course folder name (parent folder)
+                    backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty);
+                }
+                else // Module or other indices
+                {
+                    // Get class folder name (parent folder)
+                    backLinkTarget = Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty);
+                }
+
+                // Generate friendly back link text from the target name
+                string backLinkText = FriendlyTitleHelper.GetFriendlyTitleFromFileName(backLinkTarget);
+
+                // Add top navigation links with back link
+                contentSections.Add($"🔙 [[{backLinkTarget}|{backLinkText}]] | 🏠 [[{rootIndex}|Home]] | 📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
+            }
+
+            contentSections.Add(string.Empty);// Add content based on hierarchy level
             var subFolders = Directory.GetDirectories(folderPath)
                 .Select(Path.GetFileName)
                 .Where(name => !string.IsNullOrEmpty(name) && !name.StartsWith(".")) // Exclude folders starting with a period
@@ -1509,7 +1517,8 @@ public class VaultIndexProcessor(
     ///     "[[Classes Assignments]]"
     /// };
     /// </code>
-    /// </example>    private string GetRootIndexFilename(string vaultPath)
+    /// </example>
+    private string GetRootIndexFilename(string vaultPath)
     {
         // Prefer the explicitly provided vault path over the default vault path
         // This allows for temporary overrides like test vaults
@@ -1527,8 +1536,10 @@ public class VaultIndexProcessor(
             _logger.LogDebug($"Using cached root index filename: {_cachedRootIndexFilename} for vault: {effectiveVaultPath}");
             return _cachedRootIndexFilename;
         }
+        _logger.LogDebug($"Root index filename not cached for vault: {effectiveVaultPath}, performing lookup");
 
-        _logger.LogDebug($"Root index filename not cached for vault: {effectiveVaultPath}, performing lookup");// Look for the first main index file in the vault structure
+        // Look for the first main index file in the vault structure
+        string rootIndexFilename;
         try
         {
             _logger.LogDebug($"Searching for main index files in vault: {effectiveVaultPath}");
@@ -1551,29 +1562,47 @@ public class VaultIndexProcessor(
             if (mainIndexFiles.Any())
             {
                 string mainIndexFile = mainIndexFiles.First();
-                string fileName = Path.GetFileNameWithoutExtension(mainIndexFile);
-                _logger.LogDebug($"Using main index file: {fileName} at {mainIndexFile}");
-                return fileName;
+                rootIndexFilename = Path.GetFileNameWithoutExtension(mainIndexFile);
+                _logger.LogDebug($"Using main index file: {rootIndexFilename} at {mainIndexFile}");
+            }
+            else
+            {
+                // Fallback: use the vault root folder name
+                rootIndexFilename = Path.GetFileName(effectiveVaultPath);
+                if (string.IsNullOrEmpty(rootIndexFilename))
+                {
+                    _logger.LogWarning($"Unable to determine vault root folder name, using 'main-index' as default");
+                    rootIndexFilename = "main-index";
+                }
+                else
+                {
+                    _logger.LogDebug($"Using vault root folder name: {rootIndexFilename} for index filename");
+                }
             }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, $"Error searching for main index file in vault");
+
+            // Fallback: use the vault root folder name
+            rootIndexFilename = Path.GetFileName(effectiveVaultPath);
+            if (string.IsNullOrEmpty(rootIndexFilename))
+            {
+                _logger.LogWarning($"Unable to determine vault root folder name, using 'main-index' as default");
+                rootIndexFilename = "main-index";
+            }
+            else
+            {
+                _logger.LogDebug($"Using vault root folder name: {rootIndexFilename} for index filename (fallback after error)");
+            }
         }
 
-        // Fallback: use the vault root folder name
-        string vaultRootFolder = Path.GetFileName(effectiveVaultPath);
-        if (string.IsNullOrEmpty(vaultRootFolder))
-        {
-            _logger.LogWarning($"Unable to determine vault root folder name, using 'main-index' as default");
-            vaultRootFolder = "main-index";
-        }
-        else
-        {
-            _logger.LogDebug($"Using vault root folder name: {vaultRootFolder} for index filename");
-        }
+        // Cache the result for future calls
+        _cachedVaultPath = effectiveVaultPath;
+        _cachedRootIndexFilename = rootIndexFilename;
+        _logger.LogDebug($"Cached root index filename: {rootIndexFilename} for vault: {effectiveVaultPath}");
 
-        return vaultRootFolder;
+        return rootIndexFilename;
     }
 
     /// <summary>
