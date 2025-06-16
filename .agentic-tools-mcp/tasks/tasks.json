@@ -320,6 +320,15 @@
       "completed": true,
       "createdAt": "2025-06-16T00:55:30.309Z",
       "updatedAt": "2025-06-16T01:04:57.684Z"
+    },
+    {
+      "id": "a0a3dc42-416a-4237-a657-e18e3136dd56",
+      "name": "Fix failing VaultIndexProcessor test and CI publish issue",
+      "details": "Fix the CI build failure which has two main issues:\n\n1. **Test Failure**: `GenerateIndexAsync_ReturnsFalse_WhenFileExistsAndNotForce` is failing in CI but passing locally\n   - Issue: The test uses `Path.GetTempPath()` which behaves differently in GitHub Actions environment\n   - Solution: Make the test more robust by using a controlled temp directory setup\n   \n2. **Missing Publish Directories**: The workflow expects `publish/win-x64/` and `publish/win-arm64/` directories but they don't exist\n   - Issue: The workflow has publish steps but they're missing from the actual workflow\n   - Solution: Add the missing publish steps to the GitHub Actions workflow\n\nPriority: High - blocking CI builds",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": false,
+      "createdAt": "2025-06-16T16:03:20.958Z",
+      "updatedAt": "2025-06-16T16:03:20.958Z"
     }
   ],
   "subtasks": [

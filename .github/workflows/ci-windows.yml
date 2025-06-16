@@ -161,14 +161,14 @@ jobs:
           } else {
             echo "Coverage markdown summary not found, skipping build summary"
           }
-        shell: pwsh
-
-      - name: Publish single-file EXE (win-x64)
+        shell: pwsh      - name: Publish single-file EXE (win-x64)
+        if: always()
         run: |
           cd ${{ github.workspace }}
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} /p:InformationalVersion=${{ env.FILE_VERSION }} --output publish/win-x64
 
       - name: Publish single-file EXE (win-arm64)
+        if: always()
         run: |
           cd ${{ github.workspace }}
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} /p:InformationalVersion=${{ env.FILE_VERSION }} --output publish/win-arm64
