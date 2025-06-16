@@ -103,16 +103,17 @@ public class VaultIndexProcessorTests
 
         // Assert
         Assert.IsFalse(result);
-    }    [TestMethod]
+    }
+    [TestMethod]
     public async Task GenerateIndexAsync_ReturnsFalse_WhenFileExistsAndNotForce()
     {
         // Arrange
         _templateManagerMock.Setup(t => t.GetTemplate(It.IsAny<string>())).Returns(new Dictionary<string, object>());
-        
+
         // Create a controlled test directory instead of using system temp path
         var testDir = Path.Combine(Path.GetTempPath(), "VaultIndexProcessorTest", Guid.NewGuid().ToString());
         Directory.CreateDirectory(testDir);
-        
+
         var folderName = Path.GetFileName(testDir);
         var fileName = folderName + ".md";
         var indexFilePath = Path.Combine(testDir, fileName);

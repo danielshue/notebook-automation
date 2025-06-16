@@ -161,7 +161,9 @@ jobs:
           } else {
             echo "Coverage markdown summary not found, skipping build summary"
           }
-        shell: pwsh      - name: Publish single-file EXE (win-x64)
+        shell: pwsh
+
+      - name: Publish single-file EXE (win-x64)
         if: always()
         run: |
           cd ${{ github.workspace }}
