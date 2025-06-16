@@ -1,0 +1,8 @@
+{
+  "id": "4c0a5c25-7157-4ea0-b68c-f3bece938381",
+  "title": "PDF Title Normalization Fix Successfully Applied",
+  "details": "Successfully fixed the issue where PDF note title normalization was not appearing in both YAML frontmatter and H1 headings in generated markdown notes.\n\n**Problem**: \n- PDF processing was normalizing titles correctly\n- Normalized titles appeared in frontmatter \n- But H1 headings were not being added to markdown body because DocumentNoteBatchProcessor always called GenerateMarkdownNote with includeNoteTypeTitle: false\n\n**Solution Applied**:\nModified DocumentNoteBatchProcessor.cs to conditionally set includeNoteTypeTitle: true for PDF processors:\n\n```csharp\nbool includeTitleAsHeading = typeof(TProcessor).Name.Contains(\"Pdf\");\nmarkdown = processor.GenerateMarkdownNote(summaryText, metadata, noteType, includeNoteTypeTitle: includeTitleAsHeading);\n```\n\n**Verification**:\n- Built and published updated CLI\n- Ran CLI on sample PDFs\n- Confirmed from logs that normalized titles are being used\n- Checked output markdown files and verified both:\n  1. Frontmatter contains normalized title (e.g., \"Microsoft Word BADM 567 MOOC 1 4 Word Transcript.Docx\")  \n  2. H1 heading contains same normalized title (e.g., \"# Microsoft Word BADM 567 MOOC 1 4 Word Transcript.Docx\")\n\n**Files Modified**:\n- src/c-sharp/NotebookAutomation.Core/Tools/Shared/DocumentNoteBatchProcessor.cs\n\n**Status**: Successfully implemented and verified working correctly.",
+  "category": "bug-fixes",
+  "dateCreated": "2025-06-16T03:46:10.754Z",
+  "dateUpdated": "2025-06-16T03:46:10.754Z"
+}

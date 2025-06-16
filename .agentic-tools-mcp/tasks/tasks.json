@@ -311,6 +311,15 @@
       "completed": true,
       "createdAt": "2025-06-15T23:30:45.296Z",
       "updatedAt": "2025-06-15T23:41:41.634Z"
+    },
+    {
+      "id": "0ac2d5ef-6668-4d3c-a33a-8e2fa5fe15c8",
+      "name": "Fix AISummarizer Concurrency Error",
+      "details": "Fix the concurrent collection access issue in AISummarizer that causes \"Operations that change non-concurrent collections must have exclusive access\" error during PDF note processing.\n\n✅ COMPLETED FIXES:\n1. Modified ProcessSingleChunkAsync to create thread-safe, independent KernelArguments instances\n2. Added proper locking around variables dictionary access in parallel processing\n3. Updated ProcessChunksSequentiallyAsync for consistency \n4. Fixed final aggregation phase to use thread-safe KernelArguments creation\n5. Enhanced ExtractFirstHeading to apply FriendlyTitleHelper to AI-generated content headings\n6. Added unit tests for title normalization behavior\n7. Rebuilt and published ARM64 version to dist folder\n\n✅ TESTING RESULTS:\n- PDF processing now completes successfully without concurrency errors (tested with 4 PDF files)\n- All unit tests pass including new title normalization tests\n- Friendly titles are now applied to AI-generated headings from filenames\n\nSTATUS: Both concurrency and friendly title display issues are resolved and deployed.",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-16T00:55:30.309Z",
+      "updatedAt": "2025-06-16T01:04:57.684Z"
     }
   ],
   "subtasks": [
