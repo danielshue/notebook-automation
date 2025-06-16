@@ -103,29 +103,36 @@ public class VaultIndexProcessorTests
 
         // Assert
         Assert.IsFalse(result);
-    }
-
-    [TestMethod]
+    }    [TestMethod]
     public async Task GenerateIndexAsync_ReturnsFalse_WhenFileExistsAndNotForce()
     {
         // Arrange
         _templateManagerMock.Setup(t => t.GetTemplate(It.IsAny<string>())).Returns(new Dictionary<string, object>());
-        var folderPath = Path.GetTempPath();
-        var fileName = Path.GetFileName(folderPath.TrimEnd(Path.DirectorySeparatorChar)) + ".md";
-        var indexFilePath = Path.Combine(folderPath, fileName);
+        
+        // Create a controlled test directory instead of using system temp path
+        var testDir = Path.Combine(Path.GetTempPath(), "VaultIndexProcessorTest", Guid.NewGuid().ToString());
+        Directory.CreateDirectory(testDir);
+        
+        var folderName = Path.GetFileName(testDir);
+        var fileName = folderName + ".md";
+        var indexFilePath = Path.Combine(testDir, fileName);
         File.WriteAllText(indexFilePath, "test");
 
         try
         {
             // Act
-            var result = await _processor.GenerateIndexAsync(folderPath, "/vault/root");
+            var result = await _processor.GenerateIndexAsync(testDir, "/vault/root");
 
             // Assert
-            Assert.IsFalse(result);
+            Assert.IsFalse(result, "Should return false when file exists and forceOverwrite is false");
         }
         finally
         {
-            File.Delete(indexFilePath);
+            // Clean up test directory and all its contents
+            if (Directory.Exists(testDir))
+            {
+                Directory.Delete(testDir, recursive: true);
+            }
         }
     }
 

@@ -1,0 +1,8 @@
+{
+  "id": "407cbba9-5744-4132-8c74-25fe44130358",
+  "title": "GitHub Actions CI Build Troubleshooting",
+  "details": "Common issues and solutions for GitHub Actions CI build failures in the notebook-automation project:\n\n1. **Local vs CI Environment Differences:**\n   - Local build passes but CI fails - usually environment-specific issues\n   - .NET version mismatches between local and CI\n   - Missing dependencies or different package versions\n   - Path separator differences (Windows vs Linux)\n\n2. **Authentication Issues:**\n   - PERSONAL_ACCESS_TOKEN secret may be expired or have insufficient permissions\n   - Repository access permissions for GitHub token\n   - NuGet package restore authentication failures\n\n3. **Workflow File Issues:**\n   - Workflow file syntax errors\n   - Wrong branch names or path filters\n   - Missing or incorrect environment variables\n\n4. **Common Fixes:**\n   - Check PERSONAL_ACCESS_TOKEN secret in repository settings\n   - Verify .NET SDK version matches between local and CI (currently 9.0.x)\n   - Check workflow file for syntax errors\n   - Ensure all project files compile cleanly\n   - Verify NuGet package sources are accessible\n\n5. **Debugging Steps:**\n   - Check GitHub Actions logs for specific error messages\n   - Run local CI build script to reproduce issues\n   - Verify git status is clean before push\n   - Check recent commits for breaking changes",
+  "category": "ci-troubleshooting",
+  "dateCreated": "2025-06-16T15:57:54.160Z",
+  "dateUpdated": "2025-06-16T15:57:54.160Z"
+}
