@@ -1,5 +1,12 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using System.CommandLine;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Tools.Vault;
+using NotebookAutomation.Cli.Utilities;
+
 namespace NotebookAutomation.Cli.Commands;
 
 /// <summary>
@@ -23,17 +30,15 @@ internal class VaultCommands
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-    }
-
-    /// <summary>
-    /// Registers all vault-related commands with the root command.
-    /// </summary>
-    /// <param name="rootCommand">The root command to add vault commands to.</param>
-    /// <param name="configOption">The global config file option.</param>
-    /// <param name="debugOption">The global debug option.</param>
-    /// <param name="verboseOption">The global verbose output option.</param>
-    /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
-    public static void Register(
+    }    /// <summary>
+         /// Registers all vault-related commands with the root command.
+         /// </summary>
+         /// <param name="rootCommand">The root command to add vault commands to.</param>
+         /// <param name="configOption">The global config file option.</param>
+         /// <param name="debugOption">The global debug option.</param>
+         /// <param name="verboseOption">The global verbose output option.</param>
+         /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
+    public void Register(
         RootCommand rootCommand,
         Option<string> configOption,
         Option<bool> debugOption,
@@ -44,31 +49,107 @@ internal class VaultCommands
         ArgumentNullException.ThrowIfNull(configOption);
         ArgumentNullException.ThrowIfNull(debugOption);
         ArgumentNullException.ThrowIfNull(verboseOption);
-        ArgumentNullException.ThrowIfNull(dryRunOption);
-
-        var pathArg = new Argument<string>("path", "Path to the vault directory to process");
-        var vaultRootOverrideOption = new Option<bool>("--override-vault-root", "Use the provided path as the vault root (overrides the config)");
-
-        // Create generate-index subcommand
+        ArgumentNullException.ThrowIfNull(dryRunOption); var pathArg = new Argument<string?>("path", "Path to the vault directory to process (defaults to vault root from config)")
+        {
+            Arity = ArgumentArity.ZeroOrOne
+        };
+        var vaultRootOverrideOption = new Option<bool>("--override-vault-root", "Use the provided path as the vault root (overrides the config)");// Create generate-index subcommand
         var generateIndexCommand = new Command("generate-index", "Generate index files for each directory in the vault");
         generateIndexCommand.AddArgument(pathArg);
         generateIndexCommand.AddOption(vaultRootOverrideOption);
-        generateIndexCommand.SetHandler(context =>
-        {
-            var pathValue = context.ParseResult.GetValueForArgument(pathArg);
-            if (string.IsNullOrEmpty(pathValue))
-            {
-                AnsiConsoleHelper.WriteUsage(
-                    "Usage: na vault generate-index <path> [options]",
-                    generateIndexCommand.Description ?? string.Empty,
-                    string.Join("\n", generateIndexCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", generateIndexCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
-                return;
-            }
 
-            // TODO: Implement vault generate-index logic
-            AnsiConsoleHelper.WriteInfo($"Executing vault generate-index for path: {pathValue}");
-        });
+        // Add --type option for filtering by template types
+        var typeOption = new Option<string[]>("--type", "Filter by template types (main, program, course, class, module, lesson)")
+        {
+            AllowMultipleArgumentsPerToken = true
+        };
+        generateIndexCommand.AddOption(typeOption);
+
+        // Add --force option for overwriting existing files
+        var forceOption = new Option<bool>("--force", "Force overwrite existing index files");
+        generateIndexCommand.AddOption(forceOption); generateIndexCommand.SetHandler(async (string? path, bool overrideVaultRoot, string[] types, bool force, bool dryRun, bool verbose) =>
+        {
+            try
+            {
+                // Get services from service provider
+                var batchProcessor = _serviceProvider.GetRequiredService<VaultIndexBatchProcessor>();
+                var appConfig = _serviceProvider.GetRequiredService<AppConfig>();
+                // Use vault root from config if no path provided
+                var targetPath = path ?? appConfig.Paths.NotebookVaultFullpathRoot;
+
+                if (string.IsNullOrEmpty(targetPath))
+                {
+                    AnsiConsoleHelper.WriteError("No path provided and no vault root configured. Please provide a path or configure vault root in config file.");
+                    return;
+                }
+                if (verbose)
+                {
+                    AnsiConsoleHelper.WriteInfo($"Starting vault index generation for: {targetPath}");
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        AnsiConsoleHelper.WriteInfo("Using vault root from configuration (no path provided)");
+                    }
+                    if (types.Length > 0)
+                    {
+                        AnsiConsoleHelper.WriteInfo($"Filtering by types: {string.Join(", ", types)}");
+                    }
+                    if (overrideVaultRoot)
+                    {
+                        AnsiConsoleHelper.WriteInfo("Using provided path as vault root override");
+                    }
+                    if (force)
+                    {
+                        AnsiConsoleHelper.WriteInfo("Force overwrite mode enabled");
+                    }
+                    if (dryRun)
+                    {
+                        AnsiConsoleHelper.WriteInfo("Dry run mode enabled - no files will be modified");
+                    }
+                }
+
+                // Output basic execution message for test compatibility
+                AnsiConsoleHelper.WriteInfo($"Executing vault generate-index for path: {targetPath}");
+
+                // Convert template types to list if provided
+                var templateTypes = types.Length > 0 ? types.ToList() : null;                // Set vault root override if requested
+                var vaultRoot = overrideVaultRoot ? targetPath : null;                // Execute the batch index generation with animated status
+                var result = await AnsiConsoleHelper.WithStatusAsync(
+                    async (updateStatus) =>
+                    {
+                        // Execute the batch index generation
+                        return await batchProcessor.GenerateIndexesAsync(
+                            vaultPath: targetPath,
+                            dryRun: dryRun,
+                            templateTypes: templateTypes,
+                            forceOverwrite: force,
+                            vaultRoot: vaultRoot);
+                    },
+                    $"Generating vault indexes for: {targetPath}").ConfigureAwait(false); if (result.Success)
+                {
+                    AnsiConsoleHelper.WriteSuccess($"Vault index generation completed successfully.");
+                    AnsiConsoleHelper.WriteInfo($"Processed {result.ProcessedFolders} folders out of {result.TotalFolders} total.");
+
+                    if (result.SkippedFolders > 0)
+                    {
+                        AnsiConsoleHelper.WriteWarning($"{result.SkippedFolders} folders were skipped.");
+                    }
+
+                    if (result.FailedFolders > 0)
+                    {
+                        AnsiConsoleHelper.WriteWarning($"{result.FailedFolders} folders failed to process.");
+                    }
+                }
+                else
+                {
+                    AnsiConsoleHelper.WriteError($"Vault index generation failed: {result.ErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing vault generate-index command");
+                AnsiConsoleHelper.WriteError($"An error occurred: {ex.Message}");
+            }
+        }, pathArg, vaultRootOverrideOption, typeOption, forceOption, dryRunOption, verboseOption);
 
         // Create ensure-metadata subcommand
         var ensureMetadataCommand = new Command("ensure-metadata", "Ensure metadata consistency across markdown files based on directory hierarchy");
@@ -132,3 +213,4 @@ internal class VaultCommands
         rootCommand.AddCommand(vaultCommand);
     }
 }
+

@@ -19,10 +19,9 @@ public class VideoCommandsTests
         var rootCommand = new RootCommand();
         var configOption = new Option<string>("--config");
         var debugOption = new Option<bool>("--debug");
-        var verboseOption = new Option<bool>("--verbose");
-        var dryRunOption = new Option<bool>("--dry-run");
-        _ = new VideoCommands(mockLogger.Object);
-        VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var verboseOption = new Option<bool>("--verbose"); var dryRunOption = new Option<bool>("--dry-run");
+        var videoCommands = new VideoCommands(mockLogger.Object);
+        videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Ensure DI is initialized for handler
         Program.SetupDependencyInjection(null, false);
@@ -69,10 +68,8 @@ public class VideoCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        var videoCommands = new VideoCommands(mockLogger.Object);
-
-        // Act
-        VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var videoCommands = new VideoCommands(mockLogger.Object);        // Act
+        videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Assert
         var videoNotesCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "video-notes");

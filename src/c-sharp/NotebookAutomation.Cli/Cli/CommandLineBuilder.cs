@@ -17,10 +17,8 @@ internal class CommandLineBuilder
     /// <returns>A configured RootCommand instance.</returns>
     public RootCommand CreateRootCommand()
     {
-        return new RootCommand(
-            description: "Comprehensive toolkit for managing course-related content between OneDrive and Obsidian notebooks.");
+        return new RootCommand(description: "Comprehensive toolkit for managing course-related content between OneDrive and Obsidian notebooks.");
     }
-
 
     /// <summary>
     /// Creates and configures global command line options.
@@ -47,11 +45,11 @@ internal class CommandLineBuilder
         return new CommandLineOptions(configOption, debugOption, verboseOption, dryRunOption);
     }
 
-
     /// <summary>
     /// Registers all command groups with the root command.
     /// </summary>
-    /// <param name="rootCommand">The root command to register commands with.</param>    /// <param name="options">Global command line options.</param>
+    /// <param name="rootCommand">The root command to register commands with.</param>
+    /// <param name="options">Global command line options.</param>
     /// <param name="serviceProvider">Service provider for dependency injection.</param>
     public void RegisterCommands(RootCommand rootCommand, CommandLineOptions options, IServiceProvider serviceProvider)
     {
@@ -70,16 +68,19 @@ internal class CommandLineBuilder
 
         // Register tag commands
         var tagCommands = new TagCommands(loggerFactory.CreateLogger<TagCommands>(), serviceProvider);
-        tagCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);        // Register vault commands
-        VaultCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
+        tagCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
+
+        // Register vault commands
+        var vaultCommands = new VaultCommands(loggerFactory.CreateLogger<VaultCommands>(), serviceProvider);
+        vaultCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
 
         // Register video commands
         var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());
-        VideoCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
+        videoCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
 
         // Register PDF commands
         var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
-        PdfCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
+        pdfCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
 
         // Register markdown commands
         var markdownCommands = new MarkdownCommands(
@@ -92,7 +93,6 @@ internal class CommandLineBuilder
         var configCommands = new ConfigCommands(loggerFactory.CreateLogger<ConfigCommands>(), serviceProvider);
         configCommands.Register(rootCommand, options.ConfigOption, options.DebugOption);
     }
-
 
     /// <summary>
     /// Builds the command line parser with middleware configuration.

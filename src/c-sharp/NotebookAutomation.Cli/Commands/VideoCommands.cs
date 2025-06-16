@@ -64,7 +64,7 @@ internal class VideoCommands
     /// rootCommand.Invoke("video-notes --input videos --output notes");
     /// </code>
     /// </example>
-    public static void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
+    public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
     {
         var inputOption = new Option<string?>(
             aliases: ["--input", "-i"],

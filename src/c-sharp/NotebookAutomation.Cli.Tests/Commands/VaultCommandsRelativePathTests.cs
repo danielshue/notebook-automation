@@ -16,7 +16,7 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 public class VaultCommandsRelativePathTests
 {
     private readonly Mock<ILogger<VaultCommands>> _mockLogger = new();
-    private readonly Mock<IServiceProvider> _mockServiceProvider = new();
+    private readonly TestServiceProvider _serviceProvider = new();
     private readonly Mock<AppConfig> _appConfig = new();
     private readonly Mock<PathsConfig> _pathsConfig = new();
     private string _tempDir = string.Empty;
@@ -36,17 +36,31 @@ public class VaultCommandsRelativePathTests
 
         // Create test nested structure in vault root
         var testStructure = Path.Combine(_vaultRoot, "Value Chain Management", "Operations Management");
-        Directory.CreateDirectory(testStructure);
-
-        // Set up AppConfig with proper vault root path
+        Directory.CreateDirectory(testStructure);        // Set up AppConfig with proper vault root path
         _pathsConfig.SetupGet(p => p.NotebookVaultFullpathRoot).Returns(_vaultRoot);
-        _appConfig.SetupGet(a => a.Paths).Returns(_pathsConfig.Object);        // Setup ServiceProvider to return AppConfig
-        _mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
-            .Returns(_appConfig.Object);
+        _appConfig.SetupGet(a => a.Paths).Returns(_pathsConfig.Object);
 
-        // Can't mock extension method directly
-        _mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
-            .Returns(_appConfig.Object);
+        // Create mocks for VaultIndexBatchProcessor dependencies
+        var mockBatchLogger = new Mock<ILogger<VaultIndexBatchProcessor>>();
+        var mockIndexProcessor = new Mock<IVaultIndexProcessor>();
+        var mockHierarchyDetector = new Mock<IMetadataHierarchyDetector>();
+
+        // Set up the index processor mock to return a successful result
+        var mockResult = new VaultIndexBatchResult
+        {
+            Success = true,
+            TotalFolders = 1,
+            ProcessedFolders = 1,
+            SkippedFolders = 0,
+            FailedFolders = 0
+        };
+        // Create a concrete VaultIndexBatchProcessor instance
+        var batchProcessor = new VaultIndexBatchProcessor(
+            mockBatchLogger.Object,
+            mockIndexProcessor.Object,
+            mockHierarchyDetector.Object);        // Setup the test service provider
+        _serviceProvider.AddService<AppConfig>(_appConfig.Object);
+        _serviceProvider.AddService<VaultIndexBatchProcessor>(batchProcessor);
     }
 
     /// <summary>
@@ -76,10 +90,10 @@ public class VaultCommandsRelativePathTests
         var rootCommand = new RootCommand();
         var configOption = new Option<string>("--config");
         var debugOption = new Option<bool>("--debug");
-        var verboseOption = new Option<bool>("--verbose");
-        var dryRunOption = new Option<bool>("--dry-run");
+        var verboseOption = new Option<bool>("--verbose"); var dryRunOption = new Option<bool>("--dry-run");
 
-        VaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var vaultCommands = new VaultCommands(_mockLogger.Object, _serviceProvider);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Define paths for testing
         string relativePath = "Value Chain Management\\Operations Management";
@@ -148,6 +162,24 @@ public class VaultCommandsRelativePathTests
                 SkippedFolders = 1,
                 TotalFolders = 1
             };
+        }
+    }
+
+    /// <summary>
+    /// Simple test service provider implementation
+    /// </summary>
+    public class TestServiceProvider : IServiceProvider
+    {
+        private readonly Dictionary<Type, object> _services = new();
+
+        public void AddService<T>(T service) where T : class
+        {
+            _services[typeof(T)] = service;
+        }
+
+        public object? GetService(Type serviceType)
+        {
+            return _services.TryGetValue(serviceType, out var service) ? service : null;
         }
     }
 }

@@ -26,7 +26,8 @@ public class VaultCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        VaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Capture console output
         var originalOut = Console.Out;
@@ -65,10 +66,9 @@ public class VaultCommandsTests
         var configOption = new Option<string>("--config");
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
-        var dryRunOption = new Option<bool>("--dry-run");
-
-        // Act
-        VaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var dryRunOption = new Option<bool>("--dry-run");        // Act
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Assert
         var vaultCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "vault");
@@ -98,7 +98,8 @@ public class VaultCommandsTests
         var debugOption = new Option<bool>("--debug");
         var verboseOption = new Option<bool>("--verbose");
         var dryRunOption = new Option<bool>("--dry-run");
-        VaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 
         // Create a temp directory with test files
         string tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

@@ -87,10 +87,13 @@ public class VaultIndexProcessor(
     private readonly IMetadataHierarchyDetector _hierarchyDetector = hierarchyDetector;
     private readonly ICourseStructureExtractor _structureExtractor = structureExtractor;
     private readonly IYamlHelper _yamlHelper = yamlHelper;
-    private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder;
-    private readonly string _defaultVaultRootPath = !string.IsNullOrEmpty(vaultRootPath)
+    private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder;    private readonly string _defaultVaultRootPath = !string.IsNullOrEmpty(vaultRootPath)
         ? vaultRootPath
         : appConfig.Paths.NotebookVaultFullpathRoot;
+
+    // Cache for root index filename to avoid expensive file system lookups
+    private string? _cachedRootIndexFilename;
+    private string? _cachedVaultPath;
 
     /// <summary>
     /// Generates a comprehensive index file for the specified folder with intelligent hierarchy detection and content organization.
@@ -1506,8 +1509,7 @@ public class VaultIndexProcessor(
     ///     "[[Classes Assignments]]"
     /// };
     /// </code>
-    /// </example>
-    private string GetRootIndexFilename(string vaultPath)
+    /// </example>    private string GetRootIndexFilename(string vaultPath)
     {
         // Prefer the explicitly provided vault path over the default vault path
         // This allows for temporary overrides like test vaults
@@ -1517,7 +1519,16 @@ public class VaultIndexProcessor(
 
         // Ensure the path has consistent formatting
         effectiveVaultPath = effectiveVaultPath.Replace('/', Path.DirectorySeparatorChar)
-                                              .TrimEnd(Path.DirectorySeparatorChar);        // Look for the first main index file in the vault structure
+                                              .TrimEnd(Path.DirectorySeparatorChar);
+
+        // Check cache first to avoid expensive file system operations
+        if (_cachedVaultPath == effectiveVaultPath && !string.IsNullOrEmpty(_cachedRootIndexFilename))
+        {
+            _logger.LogDebug($"Using cached root index filename: {_cachedRootIndexFilename} for vault: {effectiveVaultPath}");
+            return _cachedRootIndexFilename;
+        }
+
+        _logger.LogDebug($"Root index filename not cached for vault: {effectiveVaultPath}, performing lookup");// Look for the first main index file in the vault structure
         try
         {
             _logger.LogDebug($"Searching for main index files in vault: {effectiveVaultPath}");
