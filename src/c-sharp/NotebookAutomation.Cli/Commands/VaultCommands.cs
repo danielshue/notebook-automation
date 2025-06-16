@@ -149,28 +149,91 @@ internal class VaultCommands
                 _logger.LogError(ex, "Error executing vault generate-index command");
                 AnsiConsoleHelper.WriteError($"An error occurred: {ex.Message}");
             }
-        }, pathArg, vaultRootOverrideOption, typeOption, forceOption, dryRunOption, verboseOption);
-
-        // Create ensure-metadata subcommand
+        }, pathArg, vaultRootOverrideOption, typeOption, forceOption, dryRunOption, verboseOption);        // Create ensure-metadata subcommand
         var ensureMetadataCommand = new Command("ensure-metadata", "Ensure metadata consistency across markdown files based on directory hierarchy");
         ensureMetadataCommand.AddArgument(pathArg);
         ensureMetadataCommand.AddOption(vaultRootOverrideOption);
-        ensureMetadataCommand.SetHandler(context =>
+        var forceMetadataOption = new Option<bool>("--force", "Force overwrite existing metadata values");
+        ensureMetadataCommand.AddOption(forceMetadataOption);
+        ensureMetadataCommand.SetHandler(async (string? path, bool overrideVaultRoot, bool force, bool dryRun, bool verbose) =>
         {
-            var pathValue = context.ParseResult.GetValueForArgument(pathArg);
-            if (string.IsNullOrEmpty(pathValue))
+            try
             {
-                AnsiConsoleHelper.WriteUsage(
-                    "Usage: na vault ensure-metadata <path> [options]",
-                    ensureMetadataCommand.Description ?? string.Empty,
-                    string.Join("\n", ensureMetadataCommand.Arguments.Select(arg => $"  <{arg.Name}>\t{arg.Description}")) +
-                    "\n" + string.Join("\n", ensureMetadataCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
-                return;
-            }
+                // Get services from service provider
+                var batchProcessor = _serviceProvider.GetRequiredService<MetadataEnsureBatchProcessor>();
+                var appConfig = _serviceProvider.GetRequiredService<AppConfig>();
 
-            // TODO: Implement vault ensure-metadata logic
-            AnsiConsoleHelper.WriteInfo($"Executing vault ensure-metadata for path: {pathValue}");
-        });
+                // Use vault root from config if no path provided
+                var targetPath = path ?? appConfig.Paths.NotebookVaultFullpathRoot;
+
+                if (string.IsNullOrEmpty(targetPath))
+                {
+                    AnsiConsoleHelper.WriteError("No path provided and no vault root configured. Please provide a path or configure vault root in config file.");
+                    return;
+                }
+
+                if (verbose)
+                {
+                    AnsiConsoleHelper.WriteInfo($"Starting metadata ensure process for: {targetPath}");
+                    if (string.IsNullOrEmpty(path))
+                    {
+                        AnsiConsoleHelper.WriteInfo("Using vault root from configuration (no path provided)");
+                    }
+                    if (overrideVaultRoot)
+                    {
+                        AnsiConsoleHelper.WriteInfo("Using provided path as vault root override");
+                    }
+                    if (force)
+                    {
+                        AnsiConsoleHelper.WriteInfo("Force overwrite mode enabled");
+                    }
+                    if (dryRun)
+                    {
+                        AnsiConsoleHelper.WriteInfo("Dry run mode enabled - no files will be modified");
+                    }
+                }
+
+                // Output basic execution message for test compatibility
+                AnsiConsoleHelper.WriteInfo($"Executing vault ensure-metadata for path: {targetPath}");
+
+                // Execute the batch metadata processing with animated status
+                var result = await AnsiConsoleHelper.WithStatusAsync(
+                    async (updateStatus) =>
+                    {
+                        // Execute the batch metadata processing
+                        return await batchProcessor.EnsureMetadataAsync(
+                            vaultPath: targetPath,
+                            dryRun: dryRun,
+                            forceOverwrite: force);
+                    },
+                    $"Processing metadata for: {targetPath}").ConfigureAwait(false);
+
+                if (result.Success)
+                {
+                    AnsiConsoleHelper.WriteSuccess($"Metadata ensure process completed successfully.");
+                    AnsiConsoleHelper.WriteInfo($"Processed {result.ProcessedFiles} files out of {result.TotalFiles} total.");
+
+                    if (result.SkippedFiles > 0)
+                    {
+                        AnsiConsoleHelper.WriteWarning($"{result.SkippedFiles} files were skipped (no changes needed).");
+                    }
+
+                    if (result.FailedFiles > 0)
+                    {
+                        AnsiConsoleHelper.WriteWarning($"{result.FailedFiles} files failed to process.");
+                    }
+                }
+                else
+                {
+                    AnsiConsoleHelper.WriteError($"Metadata ensure process failed: {result.ErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing vault ensure-metadata command");
+                AnsiConsoleHelper.WriteError($"An error occurred: {ex.Message}");
+            }
+        }, pathArg, vaultRootOverrideOption, forceMetadataOption, dryRunOption, verboseOption);
 
         // Create clean-index subcommand
         var cleanIndexCommand = new Command("clean-index", "Delete all index markdown files in the vault");
