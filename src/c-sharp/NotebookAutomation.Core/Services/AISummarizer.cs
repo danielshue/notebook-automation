@@ -239,17 +239,28 @@ public class AISummarizer : IAISummarizer
                 logger.LogWarning("Skipping chunk {ChunkIndex} as it contains only whitespace", i + 1);
                 continue;
             }
-
             logger.LogDebug("Processing chunk {ChunkIndex}/{TotalChunks}", i + 1, chunks.Count);
 
-            // Prepare KernelArguments with all required variables for the prompt
-            var kernelArgs = new KernelArguments
+            // Create thread-safe, independent KernelArguments for each chunk
+            // This ensures consistency with parallel processing and prevents any potential issues
+            var kernelArgs = new KernelArguments();
+
+            // Safely add arguments one by one
+            kernelArgs.Add("input", chunks[i]);
+            kernelArgs.Add("content", chunks[i]);
+
+            // Safely extract variables with null checks and default values
+            var onedriveValue = string.Empty;
+            var courseValue = string.Empty;
+
+            if (variables != null)
             {
-                ["input"] = chunks[i],
-                ["content"] = chunks[i],
-                ["onedrivePath"] = variables?.TryGetValue("onedrivePath", out string? onedriveValue) == true ? onedriveValue : string.Empty,
-                ["course"] = variables?.TryGetValue("course", out string? courseValue) == true ? courseValue : string.Empty,
-            }; var result = await ExecuteWithRetryAsync(
+                variables.TryGetValue("onedrivePath", out onedriveValue);
+                variables.TryGetValue("course", out courseValue);
+            }
+
+            kernelArgs.Add("onedrivePath", onedriveValue ?? string.Empty);
+            kernelArgs.Add("course", courseValue ?? string.Empty); var result = await ExecuteWithRetryAsync(
                 summarizeChunkFunction,
                 kernelArgs,
                 $"chunk-summary-{i + 1}",
@@ -358,8 +369,6 @@ public class AISummarizer : IAISummarizer
 
         return chunkSummaries;
     }
-
-
     /// <summary>
     /// Processes a single chunk and returns the result with its original index.
     /// </summary>
@@ -390,14 +399,31 @@ public class AISummarizer : IAISummarizer
 
             logger.LogDebug("Processing chunk {ChunkIndex} in parallel", index + 1);
 
-            // Prepare KernelArguments with all required variables for the prompt
-            var kernelArgs = new KernelArguments
+            // Create thread-safe, independent KernelArguments for each parallel task
+            // This prevents concurrent collection access issues when multiple threads
+            // access the same KernelArguments instance
+            var kernelArgs = new KernelArguments();
+
+            // Safely add arguments one by one to avoid concurrent modification
+            kernelArgs.Add("input", chunk);
+            kernelArgs.Add("content", chunk);
+
+            // Safely extract variables with null checks and default values
+            var onedriveValue = string.Empty;
+            var courseValue = string.Empty;
+
+            if (variables != null)
             {
-                ["input"] = chunk,
-                ["content"] = chunk,
-                ["onedrivePath"] = variables?.TryGetValue("onedrivePath", out string? onedriveValue) == true ? onedriveValue : string.Empty,
-                ["course"] = variables?.TryGetValue("course", out string? courseValue) == true ? courseValue : string.Empty,
-            };
+                // Create a local copy to avoid concurrent access to the variables dictionary
+                lock (variables)
+                {
+                    variables.TryGetValue("onedrivePath", out onedriveValue);
+                    variables.TryGetValue("course", out courseValue);
+                }
+            }
+
+            kernelArgs.Add("onedrivePath", onedriveValue ?? string.Empty);
+            kernelArgs.Add("course", courseValue ?? string.Empty);
 
             var result = await ExecuteWithRetryAsync(
                 summarizeChunkFunction,
@@ -788,21 +814,23 @@ public class AISummarizer : IAISummarizer
 
             // Combine and finalize
             string allSummaries = string.Join("\n\n", chunkSummaries);
-            logger.LogDebug("Aggregating {SummaryCount} summaries", chunkSummaries.Count);
-
-            // Ensure yamlfrontmatter is present in variables
+            logger.LogDebug("Aggregating {SummaryCount} summaries", chunkSummaries.Count);            // Ensure yamlfrontmatter is present in variables
             var finalVariables = variables != null ? new Dictionary<string, string>(variables) : [];
             if (!finalVariables.ContainsKey("yamlfrontmatter"))
             {
                 finalVariables["yamlfrontmatter"] = string.Empty; // Or provide actual YAML frontmatter if available
             }
 
-            var finalKernelArgs = new KernelArguments { ["input"] = allSummaries };
+            // Create thread-safe KernelArguments for final aggregation
+            var finalKernelArgs = new KernelArguments();
+            finalKernelArgs.Add("input", allSummaries);
+
+            // Safely add all variables to avoid concurrent modification issues
             foreach (var kvp in finalVariables)
             {
                 if (!finalKernelArgs.ContainsKey(kvp.Key))
                 {
-                    finalKernelArgs[kvp.Key] = kvp.Value;
+                    finalKernelArgs.Add(kvp.Key, kvp.Value);
                 }
             }
 

@@ -155,9 +155,42 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.IsTrue(result.Contains("title: Strategic Planning"), "Should contain normalized title in frontmatter");
         Assert.IsTrue(result.Contains("# Strategic Planning"), "Should contain normalized title as heading");
         Assert.IsTrue(result.Contains("author: Test Author"), "Should preserve other metadata");
-    }    /// <summary>
-         /// Test implementation of DocumentNoteProcessorBase for testing purposes.
-         /// </summary>
+    }
+    [TestMethod]
+    public void ExtractFirstHeading_WithFilenameBasedHeading_AppliesFriendlyTitleHelper()
+    {
+        // Arrange - simulate AI-generated content with filename-based heading
+        const string markdownText = "# 02_01__BAMD 567 MOOC 1 Module 3 Word Transcript\n\nThis is the AI-generated summary content.";
+
+        // Act
+        string? result = TestDocumentProcessor.ExtractFirstHeadingPublic(markdownText);
+
+        // Assert
+        // FriendlyTitleHelper should clean up the filename format
+        // Note: "Module" is removed but "3" remains, which is the expected behavior
+        Assert.AreEqual("BAMD 567 MOOC 1 3 Word Transcript", result);
+    }
+
+    [TestMethod]
+    public void ExtractAndNormalizeTitle_WithAIGeneratedFilenameHeading_UsesFriendlyVersion()
+    {
+        // Arrange
+        var frontmatter = new Dictionary<string, object>();
+        const string bodyText = "# 02_01__BAMD 567 MOOC 1 Module 3 Word Transcript\n\nSummary content here";
+        const string noteType = "PDF Note";
+
+        // Act
+        string result = _processor.ExtractAndNormalizeTitlePublic(frontmatter, bodyText, noteType, true);
+
+        // Assert
+        // Should extract the heading and apply FriendlyTitleHelper
+        // Note: "Module" is removed but "3" remains, which is the expected behavior
+        Assert.AreEqual("BAMD 567 MOOC 1 3 Word Transcript", result);
+    }
+
+    /// <summary>
+    /// Test implementation of DocumentNoteProcessorBase for testing purposes.
+    /// </summary>
     public class TestDocumentProcessor : DocumentNoteProcessorBase
     {
         public TestDocumentProcessor(

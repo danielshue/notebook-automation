@@ -399,15 +399,13 @@ public abstract class DocumentNoteProcessorBase(
         string noteType,
         bool includeNoteTypeTitle)
     {
-        Logger.LogDebug("Extracting and normalizing title from frontmatter and body text");
-
-        // First, try to extract the first H1 heading from the body text (common in AI-generated content)
+        Logger.LogDebug("Extracting and normalizing title from frontmatter and body text");        // First, try to extract the first H1 heading from the body text (common in AI-generated content)
+        // ExtractFirstHeading now applies FriendlyTitleHelper internally
         string? firstHeading = ExtractFirstHeading(bodyText);
         if (!string.IsNullOrWhiteSpace(firstHeading))
         {
-            string normalizedHeading = FriendlyTitleHelper.GetFriendlyTitleFromFileName(firstHeading);
-            Logger.LogDebug($"Found first heading in body: '{firstHeading}' -> normalized: '{normalizedHeading}'");
-            return normalizedHeading;
+            Logger.LogDebug($"Found and normalized first heading in body: '{firstHeading}'");
+            return firstHeading;
         }
 
         // Second, try to use the existing title from frontmatter
@@ -457,17 +455,16 @@ public abstract class DocumentNoteProcessorBase(
         Logger.LogDebug($"Using note type as fallback title: '{noteType}' -> '{normalizedNoteType}'");
         return normalizedNoteType;
     }
-
-
     /// <summary>
-    /// Extracts the first H1 heading from markdown text.
+    /// Extracts the first H1 heading from markdown text and applies friendly title formatting.
     /// </summary>
     /// <param name="markdownText">The markdown text to search.</param>
-    /// <returns>The first H1 heading text without the # symbol, or null if none found.</returns>
+    /// <returns>The first H1 heading text without the # symbol and with friendly formatting applied, or null if none found.</returns>
     /// <remarks>
     /// This method looks for lines that start with a single # followed by a space,
     /// which indicates an H1 heading in markdown. It returns the heading text without
-    /// the markdown syntax.
+    /// the markdown syntax and applies FriendlyTitleHelper for consistent formatting.
+    /// This is particularly useful for AI-generated content that may contain raw filename-based headings.
     /// </remarks>
     protected static string? ExtractFirstHeading(string markdownText)
     {
@@ -485,7 +482,12 @@ public abstract class DocumentNoteProcessorBase(
             // Look for H1 headings (# followed by space)
             if (trimmedLine.StartsWith("# ") && trimmedLine.Length > 2)
             {
-                return trimmedLine[2..].Trim(); // Remove "# " and any trailing whitespace
+                string rawHeading = trimmedLine[2..].Trim(); // Remove "# " and any trailing whitespace
+
+                // Apply FriendlyTitleHelper to clean up the heading (especially useful for AI-generated content)
+                string friendlyHeading = FriendlyTitleHelper.GetFriendlyTitleFromFileName(rawHeading);
+
+                return friendlyHeading;
             }
         }
 

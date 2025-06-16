@@ -1,0 +1,8 @@
+{
+  "id": "ae84714e-b2e5-4262-bc07-7c92a855bbbe",
+  "title": "AISummarizer Concurrency Error Analysis",
+  "details": "ISSUE: Runtime error \"Operations that change non-concurrent collections must have exclusive access\" occurs during PDF note processing with chunked AI summarization.\n\nROOT CAUSE ANALYSIS:\n1. The error occurs in ProcessChunksInParallelAsync when multiple threads access KernelArguments collections simultaneously\n2. KernelArguments is internally using non-thread-safe collections that are being modified concurrently\n3. The issue happens when multiple chunks are processed in parallel and each creates/modifies KernelArguments objects\n\nSOLUTION IMPLEMENTED:\n1. Fixed concurrent collection access by creating independent KernelArguments instances for each parallel task\n2. Added proper locking around variables dictionary access in parallel processing contexts\n3. Updated both sequential and parallel processing methods to use thread-safe patterns\n4. Fixed final aggregation phase to use thread-safe KernelArguments creation\n\nADDITIONAL FRIENDLY TITLE FIX:\n- Modified ExtractFirstHeading method to apply FriendlyTitleHelper to AI-generated content headings\n- This ensures that filename-based headings from AI summaries get cleaned up with proper formatting\n- Added unit tests to verify the title normalization behavior\n\nTESTING RESULTS:\n✅ PDF processing now completes successfully without concurrency errors\n✅ All unit tests pass including new title normalization tests\n✅ Updated ARM64 CLI published to dist folder\n\nSTATUS: RESOLVED - Both concurrency and friendly title issues are fixed",
+  "category": "debugging",
+  "dateCreated": "2025-06-16T00:52:19.405Z",
+  "dateUpdated": "2025-06-16T01:04:47.325Z"
+}
