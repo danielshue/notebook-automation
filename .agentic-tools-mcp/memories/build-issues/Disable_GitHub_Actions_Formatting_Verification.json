@@ -1,0 +1,8 @@
+{
+  "id": "e59bee4e-6ee4-4186-92ce-9a00cd515e41",
+  "title": "GitHub Actions Formatting Verification Disabled",
+  "details": "The \"Verify code formatting\" step in the GitHub Actions CI workflow (ci-windows.yml) has been successfully removed. This step previously ran \"dotnet format --verify-no-changes\" which was too strict for the CI environment and frequently caused builds to fail. The user manually removed the step, which now allows the CI pipeline to proceed without being blocked by formatting issues. The optional formatting step for auto-formatting remains intact for when it's needed.",
+  "category": "build-issues",
+  "dateCreated": "2025-06-16T15:41:41.270Z",
+  "dateUpdated": "2025-06-16T15:43:46.618Z"
+}
