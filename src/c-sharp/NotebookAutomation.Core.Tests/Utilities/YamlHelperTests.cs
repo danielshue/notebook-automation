@@ -369,4 +369,177 @@ tags:
         Assert.IsTrue(result.Contains("- new"));
         Assert.IsTrue(result.Contains("# Just content without frontmatter"));
     }
+
+    /// <summary>
+    /// Test that RemoveFrontmatter correctly removes standard YAML frontmatter.
+    /// </summary>
+    [TestMethod]
+    public void RemoveFrontmatter_WithStandardFrontmatter_RemovesCorrectly()
+    {
+        // Arrange
+        string markdown = @"---
+title: Test Document
+tags: [test, yaml]
+---
+
+# Content starts here
+Some body content.";
+
+        string expected = @"# Content starts here
+Some body content.";
+
+        // Act
+        string result = _yamlHelper.RemoveFrontmatter(markdown);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Test that RemoveFrontmatter handles nested YAML code blocks correctly.
+    /// </summary>
+    [TestMethod]
+    public void RemoveFrontmatter_WithNestedYamlCodeBlock_RemovesCorrectly()
+    {
+        // Arrange
+        string markdown = @"```yaml
+tags: [module-2, operations-management, supply-chain]
+```
+
+# Module 2: Operations Management Overview
+
+This module covers the fundamentals of operations management.";
+
+        string expected = @"# Module 2: Operations Management Overview
+
+This module covers the fundamentals of operations management.";
+
+        // Act
+        string result = _yamlHelper.RemoveFrontmatter(markdown);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Test that RemoveFrontmatter handles yml code blocks correctly.
+    /// </summary>
+    [TestMethod]
+    public void RemoveFrontmatter_WithYmlCodeBlock_RemovesCorrectly()
+    {
+        // Arrange
+        string markdown = @"```yml
+title: Test Document
+tags:
+  - test
+  - yaml
+```
+
+# Content starts here
+Some body content.";
+
+        string expected = @"# Content starts here
+Some body content.";
+
+        // Act
+        string result = _yamlHelper.RemoveFrontmatter(markdown);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Test that RemoveFrontmatter handles generic code blocks with YAML content.
+    /// </summary>
+    [TestMethod]
+    public void RemoveFrontmatter_WithGenericCodeBlockContainingYaml_RemovesCorrectly()
+    {
+        // Arrange
+        string markdown = @"```
+tags: [test-tag]
+title: Test Document
+```
+
+# Main Content
+Body text here.";
+
+        string expected = @"# Main Content
+Body text here.";
+
+        // Act
+        string result = _yamlHelper.RemoveFrontmatter(markdown);
+
+        // Assert
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Test that RemoveFrontmatter leaves non-YAML code blocks intact.
+    /// </summary>
+    [TestMethod]
+    public void RemoveFrontmatter_WithNonYamlCodeBlock_LeavesIntact()
+    {
+        // Arrange
+        string markdown = @"```javascript
+console.log('Hello World');
+```
+
+# Content starts here
+Some body content.";
+
+        // Act
+        string result = _yamlHelper.RemoveFrontmatter(markdown);
+
+        // Assert
+        Assert.AreEqual(markdown, result); // Should be unchanged
+    }
+
+    /// <summary>
+    /// Test that RemoveFrontmatter handles content with no frontmatter.
+    /// </summary>
+    [TestMethod]
+    public void RemoveFrontmatter_WithNoFrontmatter_ReturnsOriginal()
+    {
+        // Arrange
+        string markdown = @"# Just a regular document
+No frontmatter here.";
+
+        // Act
+        string result = _yamlHelper.RemoveFrontmatter(markdown);
+
+        // Assert
+        Assert.AreEqual(markdown, result);
+    }
+
+    /// <summary>
+    /// Test that RemoveFrontmatter handles empty input correctly.
+    /// </summary>
+    [TestMethod]
+    public void RemoveFrontmatter_WithEmptyInput_ReturnsEmpty()
+    {
+        // Arrange
+        string markdown = string.Empty;
+
+        // Act
+        string result = _yamlHelper.RemoveFrontmatter(markdown);
+
+        // Assert
+        Assert.AreEqual(string.Empty, result);
+    }
+
+    /// <summary>
+    /// Test that RemoveFrontmatter handles whitespace-only input correctly.
+    /// </summary>
+    [TestMethod]
+    public void RemoveFrontmatter_WithWhitespaceOnly_ReturnsEmpty()
+    {
+        // Arrange
+        string markdown = "   \n\t  \r\n  ";
+
+        // Act
+        string result = _yamlHelper.RemoveFrontmatter(markdown);
+
+        // Assert
+        Assert.AreEqual(string.Empty, result);
+    }
 }

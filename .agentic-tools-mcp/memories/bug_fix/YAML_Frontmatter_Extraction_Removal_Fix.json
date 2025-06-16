@@ -1,0 +1,8 @@
+{
+  "id": "bd0c9dc4-19c2-42bc-8b23-d08b4fc89023",
+  "title": "YAML Frontmatter Extraction/Removal Fix",
+  "details": "Fixed a critical bug in the YamlHelper.RemoveFrontmatter method where AI-generated YAML content in code blocks was being successfully parsed for frontmatter but not removed from the markdown body.\n\n## Problem\nThe AI was generating content with YAML in code blocks like:\n```yaml\ntags: [some-tag]\n```\n\nThe ParseYamlToDictionary method could successfully extract this YAML, but RemoveFrontmatter only handled standard frontmatter format (---\\nYAML\\n---), leaving the YAML code block in the body text.\n\n## Root Cause\n- ParseYamlToDictionary handles nested YAML code blocks (```yaml...```)\n- RemoveFrontmatter only used standard frontmatter regex\n- Result: YAML extracted for frontmatter but not removed from body = duplicate YAML\n\n## Solution\nUpdated RemoveFrontmatter to:\n1. First try standard frontmatter regex (existing behavior)\n2. Handle ```yaml and ```yml code blocks at beginning of content\n3. Handle generic ``` code blocks containing YAML-like content (: or -)\n4. Add appropriate logging for debugging\n\n## Files Modified\n- src/c-sharp/NotebookAutomation.Core/Utils/YamlHelper.cs: Enhanced RemoveFrontmatter method\n\n## Test Case\nFile: \"03_01__BADM 567 MOOC 1 Module 2 Word Transcript.md\" was showing YAML tags in the body instead of only in frontmatter.",
+  "category": "bug_fix",
+  "dateCreated": "2025-06-16T00:18:25.767Z",
+  "dateUpdated": "2025-06-16T00:18:25.767Z"
+}
