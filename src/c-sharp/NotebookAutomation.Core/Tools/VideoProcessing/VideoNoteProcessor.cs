@@ -858,15 +858,13 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         {
             // Convert OneDrive path to equivalent vault path for hierarchy detection
             string vaultPath = ConvertOneDriveToVaultPath(videoPath);
-            Logger.LogDebug($"Detecting hierarchy information from vault path: {vaultPath} (converted from OneDrive path: {videoPath})");
-
-            var hierarchyInfo = HierarchyDetector?.FindHierarchyInfo(vaultPath);
+            Logger.LogDebug($"Detecting hierarchy information from vault path: {vaultPath} (converted from OneDrive path: {videoPath})"); var hierarchyInfo = HierarchyDetector?.FindHierarchyInfo(vaultPath);
             // Update metadata with hierarchy information for video content            if (HierarchyDetector != null && hierarchyInfo != null)
             {
                 var nullableMetadata = metadata.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
-                var updatedMetadata = HierarchyDetector.UpdateMetadataWithHierarchy(
+                var updatedMetadata = HierarchyDetector!.UpdateMetadataWithHierarchy(
                     nullableMetadata,
-                    hierarchyInfo,
+                    hierarchyInfo!,
                     "video-note");
 
                 // Convert back to non-nullable dictionary
@@ -874,9 +872,8 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 {
                     metadata[kvp.Key] = kvp.Value ?? new object();
                 }
-
                 Logger.LogInformation(
-                    $"Added hierarchy metadata for path {videoPath} - Program: {hierarchyInfo.GetValueOrDefault("program", "")}, Course: {hierarchyInfo.GetValueOrDefault("course", "")}, Class: {hierarchyInfo.GetValueOrDefault("class", "")}");
+                    $"Added hierarchy metadata for path {videoPath} - Program: {hierarchyInfo!.GetValueOrDefault("program", "")}, Course: {hierarchyInfo!.GetValueOrDefault("course", "")}, Class: {hierarchyInfo!.GetValueOrDefault("class", "")}");
             }
         }
         catch (Exception ex)
