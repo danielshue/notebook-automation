@@ -136,8 +136,7 @@ public class PdfNoteBatchProcessor(DocumentNoteBatchProcessor<PdfNoteProcessor> 
     /// <param name="openAiApiKey">Optional OpenAI API key for generating summaries.</param>
     /// <param name="dryRun">If true, simulates processing without writing output files.</param>
     /// <param name="noSummary">If true, disables OpenAI summary generation.</param>
-    /// <param name="forceOverwrite">If true, overwrites existing notes.</param>
-    /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
+    /// <param name="forceOverwrite">If true, overwrites existing notes.</param>    /// <param name="retryFailed">If true, retries only failed files from previous run.</param>
     /// <param name="timeoutSeconds">Optional API request timeout in seconds.</param>        /// <param name="resourcesRoot">Optional override for OneDrive fullpath root directory.</param>
     /// <param name="appConfig">The application configuration object.</param>
     /// <returns>A <see cref="BatchProcessResult"/> containing processing statistics and summary.</returns>

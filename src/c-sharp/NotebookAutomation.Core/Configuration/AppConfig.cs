@@ -51,13 +51,17 @@ public class AppConfig : IConfiguration
     /// Gets or sets the list of video file extensions to process.
     /// </summary>
     [JsonPropertyName("video_extensions")]
-    public virtual List<string> VideoExtensions { get; set; } = [];
-
-    /// <summary>
-    /// Gets or sets the list of PDF file extensions to process.
-    /// </summary>
+    public virtual List<string> VideoExtensions { get; set; } = [];    /// <summary>
+                                                                       /// Gets or sets the list of PDF file extensions to process.
+                                                                       /// </summary>
     [JsonPropertyName("pdf_extensions")]
     public virtual List<string> PdfExtensions { get; set; } = [".pdf"];
+
+    /// <summary>
+    /// Gets or sets a value indicating whether images should be extracted from PDFs by default.
+    /// </summary>
+    [JsonPropertyName("pdf_extract_images")]
+    public virtual bool PdfExtractImages { get; set; } = false;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AppConfig"/> class.

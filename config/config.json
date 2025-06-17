@@ -51,9 +51,9 @@
         ".wmv",
         ".mpg",
         ".mpeg",
-        ".m4v"
-    ],
+        ".m4v"    ],
     "pdf_extensions": [
         ".pdf"
-    ]
+    ],
+    "pdf_extract_images": false
 }
