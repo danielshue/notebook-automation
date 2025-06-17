@@ -82,13 +82,13 @@ internal class PdfCommands
 
         var refreshAuthOption = new Option<bool>(
             aliases: ["--refresh-auth"],
-            description: "Force refresh Microsoft Graph API authentication");
-
-        var noShareLinksOption = new Option<bool>(
+            description: "Force refresh Microsoft Graph API authentication"); var noShareLinksOption = new Option<bool>(
             aliases: ["--no-share-links"],
             description: "Skip OneDrive share link creation (links are created by default)");
 
-        var pdfCommand = new Command("pdf-notes", "PDF notes and metadata commands");
+        var extractImagesOption = new Option<bool>(
+            aliases: ["--extract-images"],
+            description: "Extract images from PDFs and include them in generated text and markdown files"); var pdfCommand = new Command("pdf-notes", "PDF notes and metadata commands");
         pdfCommand.AddOption(inputOption);
         pdfCommand.AddOption(outputOption);
         pdfCommand.AddOption(vaultRootOverrideOption);
@@ -99,6 +99,7 @@ internal class PdfCommands
         pdfCommand.AddOption(timeoutOption);
         pdfCommand.AddOption(refreshAuthOption);
         pdfCommand.AddOption(noShareLinksOption);
+        pdfCommand.AddOption(extractImagesOption);
         pdfCommand.SetHandler(async context =>
         {
             string? input = context.ParseResult.GetValueForOption(inputOption);
@@ -111,10 +112,10 @@ internal class PdfCommands
             string? resourcesRoot = context.ParseResult.GetValueForOption(resourcesRootOption);
             bool noSummary = context.ParseResult.GetValueForOption(noSummaryOption);
             bool retryFailed = context.ParseResult.GetValueForOption(retryFailedOption);
-            bool force = context.ParseResult.GetValueForOption(forceOption);
-            int? timeout = context.ParseResult.GetValueForOption(timeoutOption);
+            bool force = context.ParseResult.GetValueForOption(forceOption); int? timeout = context.ParseResult.GetValueForOption(timeoutOption);
             bool refreshAuth = context.ParseResult.GetValueForOption(refreshAuthOption);
             bool noShareLinks = context.ParseResult.GetValueForOption(noShareLinksOption);
+            bool extractImages = context.ParseResult.GetValueForOption(extractImagesOption);
 
             // Print usage/help if required argument is missing
             if (string.IsNullOrEmpty(input))
@@ -308,8 +309,15 @@ internal class PdfCommands
             logger.LogInformation(
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
-                input);
-            logger.LogInformation($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
+                input); logger.LogInformation($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
+
+            // Override image extraction setting from CLI if specified
+            bool originalExtractImages = appConfig.PdfExtractImages;
+            if (extractImages != appConfig.PdfExtractImages)
+            {
+                appConfig.PdfExtractImages = extractImages;
+                logger.LogInformation($"Overriding PDF image extraction setting from CLI: {extractImages}");
+            }
 
             try
             {
@@ -339,9 +347,7 @@ internal class PdfCommands
                             localResourcesPathForBatchProcessor,
                             appConfig).ConfigureAwait(false);
                     },
-                    $"Processing PDF files from {(isFile ? "file" : "directory")}: {input}").ConfigureAwait(false);
-
-                logger.LogInformation($"PDF processing completed. Success: {result.Processed}, Failed: {result.Failed}");
+                    $"Processing PDF files from {(isFile ? "file" : "directory")}: {input}").ConfigureAwait(false); logger.LogInformation($"PDF processing completed. Success: {result.Processed}, Failed: {result.Failed}");
                 if (!string.IsNullOrWhiteSpace(result.Summary))
                 {
                     AnsiConsoleHelper.WriteInfo(result.Summary);
@@ -351,6 +357,15 @@ internal class PdfCommands
             {
                 // No need to stop spinner manually, WithStatusAsync handles this
                 ExceptionHandler.HandleException(ex, "Error processing PDF files");
+            }
+            finally
+            {
+                // Restore original image extraction setting
+                if (extractImages != originalExtractImages)
+                {
+                    appConfig.PdfExtractImages = originalExtractImages;
+                    logger.LogDebug($"Restored original PDF image extraction setting: {originalExtractImages}");
+                }
             }
         });
 

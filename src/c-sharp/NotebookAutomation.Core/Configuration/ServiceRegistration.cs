@@ -341,7 +341,7 @@ public static class ServiceRegistration
             var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
-            return new PdfNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
+            return new PdfNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig, appConfig.PdfExtractImages);
         });
 
         // Register PDF Batch Processor
@@ -358,7 +358,7 @@ public static class ServiceRegistration
             var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
-            var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
+            var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig, appConfig.PdfExtractImages);
             var batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(batchLogger, pdfProcessor, aiSummarizer);
             return new PdfNoteBatchProcessor(batchProcessor);
         });

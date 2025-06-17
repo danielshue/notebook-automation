@@ -10,13 +10,19 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing;
 /// markdown notes. It supports:
 /// <list type="bullet">
 /// <item><description>Text extraction from PDF pages</description></item>
-/// <item><description>Metadata extraction (e.g., title, author, keywords)</description></item>
+/// <item><description>Image extraction from PDF pages with markdown references</description></item>
+/// <item><description>Metadata extraction (e.g., title, author, keywords, page count, image count)</description></item>
 /// <item><description>Course structure detection (module and lesson information)</description></item>
 /// <item><description>Markdown note generation with YAML frontmatter</description></item>
 /// </list>
 /// </para>
 /// <para>
 /// The class logs detailed diagnostic information during processing and handles errors gracefully.
+/// Images are extracted to a subdirectory named "{pdf_filename}_images" (with spaces replaced by underscores) and displayed inline
+/// within the extracted text using markdown image notation ![ImageName](filename.ext), creating
+/// a natural flow where images appear in roughly the same order as they occur on each page.
+/// The extracted text with image references is also saved as "{pdf_filename}.txt"
+/// in the same directory as the PDF file for use by downstream AI processing.
 /// </para>
 /// </remarks>
 /// <example>
@@ -39,9 +45,8 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     private readonly IOneDriveService? _oneDriveService;
     private readonly AppConfig? _appConfig;
     private readonly ICourseStructureExtractor _courseStructureExtractor;
-    private string _yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter
-
-    /// <summary>
+    private readonly bool _extractImages;
+    private string _yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter    /// <summary>
     /// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class.
     /// </summary>
     /// <param name="logger">The logger instance for logging diagnostic and error information.</param>
@@ -51,20 +56,28 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     /// <param name="templateManager">The metadata template manager for handling metadata templates.</param>
     /// <param name="courseStructureExtractor">The course structure extractor for extracting module and lesson information.</param>
     /// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>
-    /// <param name="appConfig">Optional application configuration for metadata management.</param>    /// <remarks>
+    /// <param name="appConfig">Optional application configuration for metadata management.</param>
+    /// <param name="extractImages">Whether to extract images from the PDF. Defaults to false.</param>
+    /// <remarks>
     /// This constructor initializes the PDF note processor with optional services for metadata management
     /// and hierarchical detection.
     /// </remarks>
-    public PdfNoteProcessor(ILogger<PdfNoteProcessor> logger, IAISummarizer aiSummarizer, IYamlHelper yamlHelper, IMetadataHierarchyDetector hierarchyDetector,
+    public PdfNoteProcessor(
+        ILogger<PdfNoteProcessor> logger,
+        IAISummarizer aiSummarizer,
+        IYamlHelper yamlHelper,
+        IMetadataHierarchyDetector hierarchyDetector,
         IMetadataTemplateManager templateManager,
         ICourseStructureExtractor courseStructureExtractor,
         MarkdownNoteBuilder markdownNoteBuilder,
-        IOneDriveService? oneDriveService = null, AppConfig? appConfig = null)
-        : base(logger, aiSummarizer, markdownNoteBuilder, appConfig ?? new AppConfig(), yamlHelper, hierarchyDetector, templateManager)
+        IOneDriveService? oneDriveService = null,
+        AppConfig? appConfig = null,
+        bool extractImages = false) : base(logger, aiSummarizer, markdownNoteBuilder, appConfig ?? new AppConfig(), yamlHelper, hierarchyDetector, templateManager)
     {
         _oneDriveService = oneDriveService;
         _appConfig = appConfig;
         _courseStructureExtractor = courseStructureExtractor ?? throw new ArgumentNullException(nameof(courseStructureExtractor));
+        _extractImages = extractImages;
     }
 
     /// <summary>
@@ -123,11 +136,36 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                             Logger.LogDebug($"Extracting text from page {pageCount}/{document.NumberOfPages} for {pdfPath}");
                         }
 
-                        sb.AppendLine(page.Text);
+                        // Extract text and images interleaved from page
+                        ExtractPageContentWithImages(page, pageCount, pdfPath, sb);
                     }
 
                     // Collect metadata after reading pages
-                    metadata["page_count"] = document.NumberOfPages;
+                    metadata["page_count"] = document.NumberOfPages;                    // Count total valid images across all pages (only if image extraction is enabled)
+                    int totalImages = 0;
+                    if (_extractImages)
+                    {
+                        try
+                        {
+                            foreach (Page page in document.GetPages())
+                            {
+                                var validImages = page.GetImages().Where(IsValidImage).Count();
+                                totalImages += validImages;
+                            }
+                            metadata["image_count"] = totalImages;
+                            Logger.LogDebug($"PDF contains {totalImages} valid images across {document.NumberOfPages} pages");
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.LogWarning(ex, $"Failed to count images in PDF: {pdfPath}");
+                            metadata["image_count"] = 0;
+                        }
+                    }
+                    else
+                    {
+                        metadata["image_count"] = 0;
+                        Logger.LogDebug($"Image extraction disabled, setting image count to 0");
+                    }
 
                     // "generated" field removed as requested
                     var info = document.Information;
@@ -152,12 +190,18 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                     }
                 }                // Extract module and lesson information
                 Logger.LogDebug($"Extracting course structure information from file path {pdfPath}");
-                _courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);// Extract hierarchy information using injected MetadataHierarchyDetector
-                Logger.LogDebug($"Extracting hierarchy information from file path {pdfPath}");                // Convert OneDrive path to equivalent vault path for hierarchy detection
+                _courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);
+
+                // Extract hierarchy information using injected MetadataHierarchyDetector
+                Logger.LogDebug($"Extracting hierarchy information from file path {pdfPath}");
+
+                // Convert OneDrive path to equivalent vault path for hierarchy detection
                 Logger.LogDebug($"BEFORE CONVERSION: OneDrive path = {pdfPath}");
                 string vaultPath = ConvertOneDriveToVaultPath(pdfPath);
                 Logger.LogDebug($"AFTER CONVERSION: Vault path = {vaultPath}");
-                Logger.LogDebug($"Detecting hierarchy information from vault path: {vaultPath} (converted from OneDrive path: {pdfPath})"); var hierarchyInfo = HierarchyDetector?.FindHierarchyInfo(vaultPath);
+                Logger.LogDebug($"Detecting hierarchy information from vault path: {vaultPath} (converted from OneDrive path: {pdfPath})");
+
+                var hierarchyInfo = HierarchyDetector?.FindHierarchyInfo(vaultPath);
                 if (HierarchyDetector != null && hierarchyInfo != null)
                 {
                     HierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo);
@@ -177,13 +221,35 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                 metadata["auto-generated-state"] = "writable";
 
                 // Add the file path for later use
-                metadata["onedrive_fullpath_file_reference"] = pdfPath;
-
-                return sb.ToString();
+                metadata["onedrive_fullpath_file_reference"] = pdfPath; return sb.ToString();
             }).ConfigureAwait(false);
 
             int extractedCharCount = extractedText.Length;
             Logger.LogInformation($"Extracted {extractedCharCount:N0} characters of text from PDF: {pdfPath}");
+
+            // Save extracted text with image references next to the PDF file
+            try
+            {
+                string pdfDirectory = Path.GetDirectoryName(pdfPath) ?? string.Empty;
+                string pdfFileName = Path.GetFileNameWithoutExtension(pdfPath);
+                string textFilePath = Path.Combine(pdfDirectory, $"{pdfFileName}.txt");
+                string markdownFilePath = Path.Combine(pdfDirectory, $"{pdfFileName}.md");
+
+                await File.WriteAllTextAsync(textFilePath, extractedText).ConfigureAwait(false);
+                Logger.LogInformation($"Saved extracted text to: {textFilePath}");
+
+                // Also save as markdown file
+                await File.WriteAllTextAsync(markdownFilePath, extractedText).ConfigureAwait(false);
+                Logger.LogInformation($"Saved extracted text as markdown to: {markdownFilePath}");
+
+                // Add the text file path to metadata for reference
+                metadata["extracted_text_file"] = textFilePath;
+                metadata["extracted_markdown_file"] = markdownFilePath;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning(ex, $"Failed to save extracted text file for PDF: {pdfPath}");
+            }
 
             // Ensure all required fields are in the metadata dictionary
             // These will be used both for frontmatter and for the AI summarizer
@@ -500,5 +566,291 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
             result = "[Error generating AI summary]";
         }
         return result ?? string.Empty;
+    }
+
+    /// <summary>    /// <summary>
+    /// Extracts text and images from a PDF page in the order they appear, creating an interleaved content flow with inline image display.
+    /// </summary>
+    /// <param name="page">The PDF page to extract content from.</param>
+    /// <param name="pageNumber">The current page number.</param>
+    /// <param name="pdfPath">The path to the PDF file.</param>
+    /// <param name="contentBuilder">The StringBuilder to append content to.</param>
+    private void ExtractPageContentWithImages(Page page, int pageNumber, string pdfPath, StringBuilder contentBuilder)
+    {
+        try
+        {
+            // Extract text content
+            string pageText = page.Text;
+
+            // If image extraction is disabled, just add the text
+            if (!_extractImages)
+            {
+                contentBuilder.AppendLine(pageText);
+                return;
+            }
+
+            // Get images from the page and filter out invalid ones
+            var allImages = page.GetImages().ToList();
+            var images = allImages.Where(IsValidImage).ToList();
+
+            Logger.LogDebug($"Found {allImages.Count} total images on page {pageNumber}, {images.Count} are valid");
+
+            if (!images.Any())
+            {
+                // No valid images, just add the text
+                contentBuilder.AppendLine(pageText);
+                return;
+            }
+            // Create directory for images if it doesn't exist
+            string pdfDirectory = Path.GetDirectoryName(pdfPath) ?? string.Empty;
+            string pdfFileName = Path.GetFileNameWithoutExtension(pdfPath);
+            string imageFolderName = $"{pdfFileName.Replace(" ", "_")}_images";
+            string imageDirectory = Path.Combine(pdfDirectory, imageFolderName);
+
+            if (!Directory.Exists(imageDirectory))
+            {
+                Directory.CreateDirectory(imageDirectory);
+                Logger.LogDebug($"Created image directory: {imageDirectory}");
+            }
+
+            // Split text into sections and interleave with images
+            var textLines = pageText.Split('\n');
+            int totalLines = textLines.Length;
+            int imageCount = 0;
+
+            // Calculate rough positions to insert images throughout the text
+            var imagePositions = CalculateImagePositions(totalLines, images.Count);
+
+            int currentImageIndex = 0;
+            for (int lineIndex = 0; lineIndex < textLines.Length; lineIndex++)
+            {
+                // Add the current line of text
+                contentBuilder.AppendLine(textLines[lineIndex]);
+
+                // Check if we should insert an image after this line
+                if (currentImageIndex < imagePositions.Count &&
+                    lineIndex >= imagePositions[currentImageIndex])
+                {
+                    imageCount++;
+                    try
+                    {
+                        var image = images[currentImageIndex];
+
+                        // Generate image filename
+                        string imageFileName = $"page_{pageNumber:D3}_image_{imageCount:D2}";
+                        string imageExtension = DetermineImageExtension(image);
+                        string fullImageFileName = $"{imageFileName}.{imageExtension}";
+                        string imagePath = Path.Combine(imageDirectory, fullImageFileName);
+
+                        // Save the image and only add reference if successful
+                        if (SaveImageBytes(image, imagePath))
+                        {
+                            // Add markdown image reference inline with text with folder path
+                            string relativeImagePath = $"{imageFolderName}/{fullImageFileName}";
+                            contentBuilder.AppendLine();
+                            contentBuilder.AppendLine($"![{imageFileName}]({relativeImagePath})");
+                            contentBuilder.AppendLine();
+
+                            Logger.LogDebug($"Extracted image: {fullImageFileName} from page {pageNumber} at line {lineIndex}");
+                        }
+                        else
+                        {
+                            Logger.LogWarning($"Failed to save image {imageCount} from page {pageNumber}, skipping reference");
+                        }
+
+                        currentImageIndex++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning(ex, $"Failed to extract image {imageCount} from page {pageNumber} of {pdfPath}");
+                        currentImageIndex++; // Still move to next image to avoid infinite loop
+                    }
+                }
+            }
+
+            // If there are remaining images that didn't get placed, add them at the end
+            while (currentImageIndex < images.Count)
+            {
+                imageCount++;
+                try
+                {
+                    var image = images[currentImageIndex];
+
+                    // Generate image filename
+                    string imageFileName = $"page_{pageNumber:D3}_image_{imageCount:D2}";
+                    string imageExtension = DetermineImageExtension(image);
+                    string fullImageFileName = $"{imageFileName}.{imageExtension}";
+                    string imagePath = Path.Combine(imageDirectory, fullImageFileName);
+
+                    // Save the image and only add reference if successful
+                    if (SaveImageBytes(image, imagePath))
+                    {
+                        // Add markdown image reference at the end with folder path
+                        string relativeImagePath = $"{imageFolderName}/{fullImageFileName}";
+                        contentBuilder.AppendLine();
+                        contentBuilder.AppendLine($"![{imageFileName}]({relativeImagePath})");
+                        contentBuilder.AppendLine();
+
+                        Logger.LogDebug($"Extracted remaining image: {fullImageFileName} from page {pageNumber}");
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"Failed to save remaining image {imageCount} from page {pageNumber}, skipping reference");
+                    }
+
+                    currentImageIndex++;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, $"Failed to extract remaining image {imageCount} from page {pageNumber} of {pdfPath}");
+                    currentImageIndex++; // Still move to next image to avoid infinite loop
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, $"Failed to extract content from page {pageNumber} of {pdfPath}");
+            // Fallback: just add the text without images
+            try
+            {
+                contentBuilder.AppendLine(page.Text);
+            }
+            catch (Exception textEx)
+            {
+                Logger.LogError(textEx, $"Failed to extract even basic text from page {pageNumber} of {pdfPath}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Calculates optimal positions to insert images throughout the text to create a natural flow.
+    /// </summary>
+    /// <param name="totalLines">Total number of text lines on the page.</param>
+    /// <param name="imageCount">Number of images to distribute.</param>
+    /// <returns>List of line indices where images should be inserted.</returns>
+    private static List<int> CalculateImagePositions(int totalLines, int imageCount)
+    {
+        var positions = new List<int>();
+
+        if (imageCount == 0 || totalLines == 0)
+        {
+            return positions;
+        }
+
+        if (imageCount == 1)
+        {
+            // Single image goes in the middle
+            positions.Add(totalLines / 2);
+        }
+        else
+        {
+            // Distribute images evenly throughout the text
+            double interval = (double)totalLines / (imageCount + 1);
+
+            for (int i = 1; i <= imageCount; i++)
+            {
+                int position = (int)(interval * i);
+                // Ensure position is within bounds
+                position = Math.Max(0, Math.Min(position, totalLines - 1));
+                positions.Add(position);
+            }
+        }
+
+        return positions.OrderBy(p => p).ToList();
+    }
+
+    /// <summary>
+    /// Determines the appropriate file extension for an image based on its format.
+    /// </summary>
+    /// <param name="image">The PDF image object.</param>
+    /// <returns>The file extension (without dot) for the image.</returns>
+    private static string DetermineImageExtension(IPdfImage image)
+    {
+        // Try to determine format based on the image properties
+        // PdfPig supports extracting as PNG which is more reliable
+        return "png";
+    }
+
+    /// <summary>
+    /// Saves image bytes to the specified file path using PdfPig's proper image extraction methods.
+    /// </summary>
+    /// <param name="image">The PDF image object.</param>
+    /// <param name="imagePath">The file path to save the image to.</param>
+    /// <returns>True if the image was successfully saved, false otherwise.</returns>
+    private bool SaveImageBytes(IPdfImage image, string imagePath)
+    {
+        try
+        {
+            byte[]? imageBytes = null;
+
+            // Try to get PNG bytes first (most reliable format from PdfPig)
+            if (image.TryGetPng(out var pngBytes))
+            {
+                imageBytes = pngBytes;
+                Logger.LogDebug($"Extracted image as PNG: {imagePath}");
+            }
+            // Fallback to raw bytes if PNG extraction fails
+            else if (image.RawBytes.Count > 0)
+            {
+                imageBytes = image.RawBytes.ToArray();
+                Logger.LogDebug($"Using raw bytes for image: {imagePath}");
+            }
+
+            if (imageBytes != null && imageBytes.Length > 0)
+            {
+                // Validate that we have a reasonable image size (at least 100 bytes)
+                if (imageBytes.Length >= 100)
+                {
+                    File.WriteAllBytes(imagePath, imageBytes);
+                    Logger.LogDebug($"Saved image: {imagePath} ({imageBytes.Length} bytes)");
+                    return true;
+                }
+                else
+                {
+                    Logger.LogWarning($"Image too small, likely invalid: {imagePath} ({imageBytes.Length} bytes)");
+                    return false;
+                }
+            }
+            else
+            {
+                Logger.LogWarning($"Image has no extractable bytes: {imagePath}");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, $"Failed to save image: {imagePath}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Validates whether an image from a PDF page is extractable and valid.
+    /// </summary>
+    /// <param name="image">The PDF image to validate.</param>
+    /// <returns>True if the image is valid and extractable, false otherwise.</returns>
+    private bool IsValidImage(IPdfImage image)
+    {
+        try
+        {
+            // Check if we can extract PNG bytes
+            if (image.TryGetPng(out var pngBytes) && pngBytes.Length >= 100)
+            {
+                return true;
+            }
+
+            // Check if raw bytes are available and reasonable size
+            if (image.RawBytes.Count >= 100)
+            {
+                return true;
+            }
+
+            return false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "Failed to validate image");
+            return false;
+        }
     }
 }

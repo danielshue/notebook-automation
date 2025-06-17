@@ -338,6 +338,15 @@
       "completed": true,
       "createdAt": "2025-06-16T16:21:45.259Z",
       "updatedAt": "2025-06-16T16:21:52.582Z"
+    },
+    {
+      "id": "9c38f07a-b1d3-4c23-80cf-2ce3721f3eb1",
+      "name": "Implement comprehensive PDF image extraction testing",
+      "details": "Create unit tests to verify PDF image extraction functionality:\n1. Test image detection and counting\n2. Test image file saving to correct directory structure\n3. Test markdown reference generation\n4. Test metadata inclusion of image count\n5. Test error handling for images that can't be extracted\n6. Verify image directory creation and naming conventions",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": false,
+      "createdAt": "2025-06-16T23:21:20.513Z",
+      "updatedAt": "2025-06-16T23:21:20.513Z"
     }
   ],
   "subtasks": [
