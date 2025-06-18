@@ -1,0 +1,8 @@
+{
+  "id": "0b628032-a43b-46dc-9218-04b15866dfd8",
+  "title": "PDF Notes Metadata Investigation",
+  "details": "Investigation of missing course and class metadata fields in PDF notes generation:\n\nPROBLEM: When generating markdown notes from PDF using `na pdf-notes`, the course and class fields are empty in the YAML frontmatter, despite the file being in the correct vault hierarchy.\n\nFINDINGS:\n- Vault root override is correctly set to the output directory when not explicitly provided\n- MetadataHierarchyDetector correctly identifies path segments and extracts program, course, class, and module from the relative path\n- Debug logs show correct hierarchy detection but final metadata has empty course/class fields\n- Issue appears to be in the metadata enhancement/template application phase where detected fields are being cleared or overwritten\n\nNEXT STEPS:\n- Investigate the metadata enhancement logic (likely EnhanceMetadataWithTemplate or similar)\n- Find where the hierarchy-detected metadata is being lost during template application\n- Implement fix to preserve all detected hierarchy fields in final output",
+  "category": "debugging",
+  "dateCreated": "2025-06-18T02:03:00.194Z",
+  "dateUpdated": "2025-06-18T02:03:00.194Z"
+}

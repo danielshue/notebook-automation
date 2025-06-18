@@ -1,0 +1,8 @@
+{
+  "id": "a83e2f4b-7a8b-4d03-9380-412f4ac0a446",
+  "title": "Course Class Missing Issue Investigation",
+  "details": "User reported missing course and class metadata when processing a PDF with na pdf-notes command.\n\nSource PDF path: C:\\Users\\danshue.REDMOND\\OneDrive\\Education\\MBA-Resources\\Value Chain Management\\Operations Management\\operations-management-quality-and-supply-chain\\Case Studies\\The Ritz-Carlton Hotel Company - The Quest for Service Excellence.pdf\n\nGenerated markdown path: C:\\Users\\danshue.REDMOND\\Vault\\01_Projects\\MBA\\Value Chain Management\\Operations Management\\operations-management-quality-and-supply-chain\\Case Studies\\The Ritz-Carlton Hotel Company - The Quest for Service Excellence.md\n\nIssue: Course and class fields in metadata are empty strings:\ncourse: ''\nclass: ''\n\nBut program is correctly extracted as \"Value Chain Management\"\n\nThe hierarchy in the output path should be:\nLevel 1 (Program): Value Chain Management  \nLevel 2 (Course): Operations Management\nLevel 3 (Class): operations-management-quality-and-supply-chain\n\nNeed to investigate why MetadataHierarchyDetector is not extracting course and class from the vault path hierarchy.",
+  "category": "bug_investigation",
+  "dateCreated": "2025-06-17T23:21:11.821Z",
+  "dateUpdated": "2025-06-17T23:21:11.821Z"
+}
