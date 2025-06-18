@@ -1490,7 +1490,8 @@ public class VaultIndexContentGeneratorTests
             // Assert
             Assert.IsNotNull(result);
             Assert.IsTrue(result.Length > 0);
-        }    }
+        }
+    }
 
     /// <summary>
     /// Validates that AddLessonLevelContent prioritizes videos and readings over subfolders for lesson-focused content organization.
