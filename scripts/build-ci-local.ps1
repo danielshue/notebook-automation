@@ -184,12 +184,11 @@ try {
     if (-not $SkipTests) {
         Write-Step "Step 5: Run Tests with Coverage"
         $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
-
         if ($VerboseOutput) {
-            dotnet test "$TestProjectPath" --configuration $Configuration --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --verbosity normal
+            dotnet test "$SolutionPath" --configuration $Configuration --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings "$RepositoryRoot\coverlet.runsettings" --verbosity normal
         }
         else {
-            dotnet test "$TestProjectPath" --configuration $Configuration --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+            dotnet test "$SolutionPath" --configuration $Configuration --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings "$RepositoryRoot\coverlet.runsettings"
         }
         if ($LASTEXITCODE -ne 0) {
             throw "Tests failed with exit code $LASTEXITCODE"
@@ -304,7 +303,7 @@ catch {
     # Display helpful commands
     Write-Host "`nHelpful Commands:" -ForegroundColor $Cyan
     Write-Host "  Fix formatting: dotnet format $SolutionPath" -ForegroundColor $Yellow
-    Write-Host "  Run tests only: dotnet test $TestProjectPath --configuration $Configuration" -ForegroundColor $Yellow
+    Write-Host "  Run tests only: dotnet test $SolutionPath --configuration $Configuration" -ForegroundColor $Yellow
     Write-Host "  Build only: dotnet build $SolutionPath --configuration $Configuration" -ForegroundColor $Yellow
 
     exit 1

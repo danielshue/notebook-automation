@@ -98,8 +98,8 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          # Run all tests in the solution with coverage collection
-          dotnet test src/c-sharp/NotebookAutomation.sln --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --results-directory TestResults/
+          # Run all tests in the solution with coverage collection using runsettings
+          dotnet test src/c-sharp/NotebookAutomation.sln --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults/
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
 

@@ -1,14 +1,15 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
-  <DataCollectionRunSettings>
-    <DataCollectors>
-      <DataCollector friendlyName="XPlat code coverage">
-        <Configuration>
-          <Format>cobertura,opencover</Format>
-          <Include>[NotebookAutomation.Core]*</Include>
-          <ExcludeByFile>**/Migrations/**/*.cs</ExcludeByFile>
-        </Configuration>
-      </DataCollector>
-    </DataCollectors>
-  </DataCollectionRunSettings>
+    <DataCollectionRunSettings>
+        <DataCollectors>
+            <DataCollector friendlyName="XPlat code coverage">
+                <Configuration>
+                    <Format>cobertura,opencover</Format>
+                    <Include>[NotebookAutomation.Core]*,[NotebookAutomation.Cli]*</Include>
+                    <ExcludeByFile>**/Migrations/**/*.cs</ExcludeByFile>
+                    <ExcludeByAttribute>GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+                </Configuration>
+            </DataCollector>
+        </DataCollectors>
+    </DataCollectionRunSettings>
 </RunSettings>
