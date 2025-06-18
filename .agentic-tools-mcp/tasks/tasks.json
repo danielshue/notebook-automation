@@ -347,6 +347,15 @@
       "completed": false,
       "createdAt": "2025-06-16T23:21:20.513Z",
       "updatedAt": "2025-06-16T23:21:20.513Z"
+    },
+    {
+      "id": "683828e3-2310-49b4-88c7-0eaa3d074f3e",
+      "name": "Configure Code Coverage for Both Core and CLI Projects",
+      "details": "Updated code coverage configuration to include both NotebookAutomation.Core and NotebookAutomation.Cli projects by modifying coverlet.runsettings, build scripts, and GitHub Actions workflow.\n\n## Changes Made:\n1. **coverlet.runsettings**: Updated Include pattern to `[NotebookAutomation.Core]*,[NotebookAutomation.Cli]*`\n2. **build-ci-local.ps1**: Added `--settings` parameter to use runsettings file\n3. **ci-windows.yml**: Added `--settings coverlet.runsettings` to GitHub Actions workflow\n\n## Current Status:\n- Configuration is correctly set up to include both projects\n- Build scripts and CI now use the runsettings file consistently\n- CLI tests run successfully but CLI coverage appears limited because:\n  - CLI tests primarily use dependency injection mocks\n  - Most CLI logic is in command classes that aren't directly executed\n  - Coverage is collected but CLI project may not have many code paths exercised by current tests\n\n## Next Steps:\n1. Verify coverage collection works properly in CI environment\n2. Consider adding integration tests that exercise CLI commands directly\n3. Review CLI test coverage to identify gaps where actual CLI code could be tested\n4. Generate coverage reports to confirm both projects are included\n\n## Files Modified:\n- coverlet.runsettings\n- scripts/build-ci-local.ps1\n- .github/workflows/ci-windows.yml",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": true,
+      "createdAt": "2025-06-18T05:18:55.724Z",
+      "updatedAt": "2025-06-18T05:19:02.284Z"
     }
   ],
   "subtasks": [
