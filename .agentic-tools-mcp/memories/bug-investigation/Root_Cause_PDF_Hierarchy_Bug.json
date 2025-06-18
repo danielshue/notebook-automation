@@ -1,0 +1,8 @@
+{
+  "id": "b67df089-da79-4e2c-96bd-49b111af2f89",
+  "title": "Root Cause: PDF Hierarchy Bug",
+  "details": "FOUND THE ROOT CAUSE OF MISSING COURSE/CLASS METADATA:\n\nBug Location: PdfNoteProcessor.cs line 207\n```csharp\nHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo);\n```\n\nProblem: The UpdateMetadataWithHierarchy call is missing the templateType parameter, which defaults to null/empty string. This causes the method to treat the file as a \"main-index\" and set maxLevel=1, only including program metadata and removing course/class.\n\nFix: Pass the correct template type:\n```csharp\nHierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, \"pdf-reference\");\n```\n\nOr alternatively, set the template-type before calling hierarchy detection instead of after.\n\nEvidence from logs:\n- Hierarchy is correctly detected: program='Value Chain Management', course='Operations Management', class='operations-management-quality-and-supply-chain'\n- UpdateMetadataWithHierarchy called with templateType='' (empty)\n- Method sets maxLevel=1 for main index, removing course and class fields\n- Final metadata shows empty course and class fields despite correct detection",
+  "category": "bug-investigation",
+  "dateCreated": "2025-06-18T02:10:58.916Z",
+  "dateUpdated": "2025-06-18T02:10:58.916Z"
+}

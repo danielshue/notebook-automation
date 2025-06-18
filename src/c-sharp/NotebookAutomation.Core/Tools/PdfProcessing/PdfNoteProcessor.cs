@@ -138,10 +138,8 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
 
                         // Extract text and images interleaved from page
                         ExtractPageContentWithImages(page, pageCount, pdfPath, sb);
-                    }
-
-                    // Collect metadata after reading pages
-                    metadata["page_count"] = document.NumberOfPages;                    // Count total valid images across all pages (only if image extraction is enabled)
+                    }                    // Collect metadata after reading pages
+                    metadata["page-count"] = document.NumberOfPages;// Count total valid images across all pages (only if image extraction is enabled)
                     int totalImages = 0;
                     if (_extractImages)
                     {
@@ -199,12 +197,10 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                 Logger.LogDebug($"BEFORE CONVERSION: OneDrive path = {pdfPath}");
                 string vaultPath = ConvertOneDriveToVaultPath(pdfPath);
                 Logger.LogDebug($"AFTER CONVERSION: Vault path = {vaultPath}");
-                Logger.LogDebug($"Detecting hierarchy information from vault path: {vaultPath} (converted from OneDrive path: {pdfPath})");
-
-                var hierarchyInfo = HierarchyDetector?.FindHierarchyInfo(vaultPath);
+                Logger.LogDebug($"Detecting hierarchy information from vault path: {vaultPath} (converted from OneDrive path: {pdfPath})"); var hierarchyInfo = HierarchyDetector?.FindHierarchyInfo(vaultPath);
                 if (HierarchyDetector != null && hierarchyInfo != null)
                 {
-                    HierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo);
+                    HierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "pdf-reference");
                 }
 
                 // Add file information for PDF
@@ -218,14 +214,39 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                 metadata["type"] = "note/case-study";
                 metadata["status"] = "unread";
                 metadata["comprehension"] = 0;
-                metadata["auto-generated-state"] = "writable";
-
-                // Add the file path for later use
+                metadata["auto-generated-state"] = "writable";                // Add the file path for later use
                 metadata["onedrive_fullpath_file_reference"] = pdfPath; return sb.ToString();
-            }).ConfigureAwait(false);
-
-            int extractedCharCount = extractedText.Length;
+            }).ConfigureAwait(false); int extractedCharCount = extractedText.Length;
             Logger.LogInformation($"Extracted {extractedCharCount:N0} characters of text from PDF: {pdfPath}");
+
+            // Generate OneDrive shared link if service is available
+            if (_oneDriveService != null)
+            {
+                try
+                {
+                    string? sharedLink = await _oneDriveService.GetShareLinkAsync(pdfPath);
+                    if (!string.IsNullOrEmpty(sharedLink))
+                    {
+                        metadata["onedrive-shared-link"] = sharedLink;
+                        Logger.LogDebug($"Generated OneDrive shared link for PDF: {pdfPath}");
+                    }
+                    else
+                    {
+                        metadata["onedrive-shared-link"] = string.Empty;
+                        Logger.LogDebug($"No OneDrive shared link generated for PDF: {pdfPath}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, $"Failed to generate OneDrive shared link for PDF: {pdfPath}");
+                    metadata["onedrive-shared-link"] = string.Empty;
+                }
+            }
+            else
+            {
+                metadata["onedrive-shared-link"] = string.Empty;
+                Logger.LogDebug("OneDrive service not available, setting empty shared link");
+            }
 
             // Save extracted text with image references next to the PDF file
             try
