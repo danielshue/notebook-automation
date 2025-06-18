@@ -1,5 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
+    <!-- MSTest configuration -->
+    <MSTest>
+        <!-- Force sequential execution by setting workers to 1 -->
+        <ParallelizeWorkers>false</ParallelizeWorkers>
+        <ParallelizeAssembly>false</ParallelizeAssembly>
+        <ExecutionThreadApartmentState>STA</ExecutionThreadApartmentState>
+        <SettingsFile></SettingsFile>
+    </MSTest>
+
+    <!-- Test execution timeout -->
+    <RunConfiguration>
+        <TestSessionTimeout>300000</TestSessionTimeout> <!-- 5 minutes -->
+        <MaxCpuCount>1</MaxCpuCount> <!-- Force single CPU usage -->
+    </RunConfiguration>
+
     <DataCollectionRunSettings>
         <DataCollectors>
             <DataCollector friendlyName="XPlat code coverage">

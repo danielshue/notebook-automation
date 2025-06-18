@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <LangVersion>preview</LangVersion>
+        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+        <Nullable>enable</Nullable>
+        <!-- Disable parallel test execution to prevent file access conflicts -->
+        <MSTestPlatformSettings>
+            <ExecutionThreadApartmentState>STA</ExecutionThreadApartmentState>
+            <ParallelizeWorkers>false</ParallelizeWorkers>
+            <ParallelizeAssembly>false</ParallelizeAssembly>
+        </MSTestPlatformSettings>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="coverlet.collector" Version="6.0.4">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="coverlet.msbuild" Version="6.0.4">
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.54.0" />
+        <PackageReference Include="Moq" Version="4.20.72" />
+        <PackageReference Include="MSTest.TestAdapter" Version="3.9.0" />
+        <PackageReference Include="MSTest.TestFramework" Version="3.9.0" />
+        <PackageReference Include="System.Linq" Version="4.3.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\NotebookAutomation.Core\NotebookAutomation.Core.csproj" />
+        <ProjectReference Include="..\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj" />
+    </ItemGroup>
+</Project>

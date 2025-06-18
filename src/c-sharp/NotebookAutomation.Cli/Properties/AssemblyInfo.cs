@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 /// <summary>
 /// Specifies that internal members of the CLI assembly are visible to the test assembly.
 /// </summary>
-[assembly: InternalsVisibleTo("NotebookAutomation.Cli.Tests")]
+[assembly: InternalsVisibleTo("NotebookAutomation.Tests")]
 
 /// <summary>
 /// Provides a short description of the assembly.
