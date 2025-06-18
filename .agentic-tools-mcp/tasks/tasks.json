@@ -83,9 +83,9 @@
       "name": "Implement Full PDF Command CLI Features",
       "details": "Update PdfCommands.cs to match VideoCommands.cs functionality:\n1. Add all missing command-line options (--no-summary, --force, --retry-failed, etc.)\n2. Implement proper dependency injection and service integration\n3. Add configuration validation and display\n4. Integrate with PdfNoteBatchProcessor properly\n5. Add OneDrive service integration\n6. Implement proper error handling and result reporting\n7. Update unit tests accordingly",
       "projectId": "8bb6e48b-bf3c-4bcc-a642-98983e551d13",
-      "completed": false,
+      "completed": true,
       "createdAt": "2025-06-02T19:18:46.555Z",
-      "updatedAt": "2025-06-02T19:18:46.555Z"
+      "updatedAt": "2025-06-18T19:59:42.211Z"
     },
     {
       "id": "ccef0131-a85c-41b0-ae64-3788fa77ef49",
@@ -155,9 +155,9 @@
       "name": "Fix remaining test files for standardized logging",
       "details": "We need to fix the remaining test files that are using the old constructor signatures for VideoNoteProcessor and MetadataTemplateManager. \n\nThe errors are in:\n1. VideoNoteProcessorTests.cs - FIXED ✅\n2. VideoNoteProcessorDITests.cs - FIXED ✅ \n3. VideoProcessing/VideoNoteProcessorNoSummaryTests.cs - FIXED ✅\n4. VideoNoteProcessorMetadataTests.cs - Partially fixed (added fields and initialization) ⚠️\n5. VideoProcessing/VideoNoteProcessorShareLinkContentTests.cs - Partially fixed (added fields and initialization) ⚠️\n6. Utils/MetadataTemplateManagerTests.cs - Not yet fixed ❌\n\nThe changes needed are:\n1. For VideoNoteProcessor: Add IYamlHelper as the third parameter (after AISummarizer)\n2. For MetadataTemplateManager: Add IYamlHelper as the third parameter (after AppConfig)\n\nWe've already successfully fixed TagCommands.cs and TagProcessorTests.cs.\n\nThe remaining work is tracked in subtask \"Fix constructor calls in VideoNoteProcessorMetadataTests and MetadataTemplateManagerTests\".",
       "projectId": "458da9e0-cec9-4fe9-80e1-699da968fb26",
-      "completed": false,
+      "completed": true,
       "createdAt": "2025-06-04T00:41:37.341Z",
-      "updatedAt": "2025-06-04T00:55:33.647Z"
+      "updatedAt": "2025-06-18T20:01:38.359Z"
     },
     {
       "id": "8fe99bf4-3748-4c78-8bec-bb1e78788367",
@@ -227,9 +227,9 @@
       "name": "Fix MetadataHierarchyDetector Level Mapping and Add Unit Tests",
       "details": "Fixed the MetadataHierarchyDetector hierarchy level mapping and added comprehensive unit tests:\n\n**Issues Fixed:**\n1. **Corrected hierarchy level mapping**: The detector was incorrectly treating vault root as Level 1, but tests showed it should be Depth 0 with no hierarchy metadata.\n2. **Fixed vault root fallback logic**: Added depth level check to prevent vault root name fallback when at depth 0.\n3. **Enabled non-existent path analysis**: Modified implementation to perform path-based analysis even for non-existent paths.\n\n**Hierarchy Levels Corrected:**\n- Depth 0 (Vault Root): NO hierarchy metadata\n- Depth 1 (Program Level): program only\n- Depth 2 (Course Level): program + course  \n- Depth 3 (Class Level): program + course + class\n- Depth 4+ (Module Level): program + course + class + module\n\n**New Unit Tests Added:**\n1. `FindHierarchyInfo_AllDepthLevels_DetectsCorrectHierarchy()` - Comprehensive test validating all hierarchy levels from vault root through deep module structures\n2. `FindHierarchyInfo_DifferentVaultRoots_ProducesConsistentResults()` - Validates consistent results across different vault root locations\n3. `FindHierarchyInfo_SpecialCharactersInPaths_DetectsCorrectHierarchy()` - Tests handling of special characters in folder names\n4. `FindHierarchyInfo_NonExistentPaths_HandlesGracefully()` - Validates path analysis for non-existent paths\n\n**Files Modified:**\n- `MetadataHierarchyDetector.cs`: Fixed hierarchy level logic and path analysis behavior\n- `MetadataHierarchyDetectorTests.cs`: Added comprehensive test coverage\n\nAll tests now pass successfully.",
       "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
-      "completed": false,
+      "completed": true,
       "createdAt": "2025-06-08T04:55:40.542Z",
-      "updatedAt": "2025-06-08T04:55:40.542Z"
+      "updatedAt": "2025-06-18T20:03:17.441Z"
     },
     {
       "id": "8d452cd8-0591-4059-b5e8-fd82d10cb893",
@@ -245,18 +245,18 @@
       "name": "Verify Content File Module Preservation Fix on Real Data",
       "details": "## Task Details\n\n1. Test the content file module field preservation fix on real data:\n   - Run `na.exe vault ensure-metadata` on a directory containing video and other content files\n   - Use the debug flag: `--debug` to verify the content file detection logic\n   - Check the updated YAML frontmatter of video files to confirm they have the `module` field preserved with number-only format (e.g., \"01\")\n   - Compare with instruction files to verify consistent behavior\n\n2. Verify with the following file types:\n   - Video files (should now keep module field with numeric value)\n   - Instruction files (should continue working as before)\n   - Reading materials (should keep module field with numeric value)\n   - Other content files (should keep module field with numeric value)\n\n3. Sample command to use:\n   ```\n   .\\na.exe vault ensure-metadata [PATH_TO_TEST_FILES] -c \"config.json\" --debug\n   ```\n\n4. Expected results:\n   - Debug logs should show \"Detected content file...\" messages\n   - Debug logs should show \"Preserving content file module value...\" messages\n   - YAML frontmatter in content files should have `module: 01` style entries preserved\n   - Regular files should continue to have friendly module titles\n\n5. If any issues are found:\n   - Check the content file detection logic in `UpdateMetadataWithHierarchy`\n   - Verify that all special cases are properly handled\n   - Consider adding additional detection patterns if needed",
       "projectId": "15188081-529e-47f1-b685-c88d2ec54f6e",
-      "completed": false,
+      "completed": true,
       "createdAt": "2025-06-10T15:17:30.450Z",
-      "updatedAt": "2025-06-10T15:17:30.450Z"
+      "updatedAt": "2025-06-18T19:59:16.491Z"
     },
     {
       "id": "5979b6ab-db32-494a-9e0e-65026fc9dcb7",
       "name": "Fix Content File Module Extraction Logic",
       "details": "## Task: Fix Module Number Extraction for Content Files\n\n**Issue**: Content files in nested module/lesson structures are extracting the lesson number instead of the module number.\n\n**Current Behavior**:\n- Structure: `01_module-introduction/02_lesson-overview/video.mp4`\n- Expected: `module: \"01\"` (from module directory)\n- Actual: `module: \"02\"` (from lesson directory)\n\n**Root Cause**: \nThe `ExtractModuleNumberFromParentDirectories` method walks up the directory tree and returns the first number it finds, which is often the lesson directory rather than the module directory.\n\n**Solution Needed**:\nEnhance the parent directory traversal logic to:\n1. Distinguish between module and lesson directories\n2. Prioritize module directories over lesson directories  \n3. Use the helper methods `FindModuleDirectory` and `FindLessonDirectory` to make intelligent decisions\n\n**Files to Update**:\n- `CourseStructureExtractor.cs` - `ExtractModuleNumberFromParentDirectories` method\n- `CourseStructureExtractorTests.cs` - Update test expectations if needed\n\n**Test Cases Failing**:\n- ExtractModuleAndLesson_VariousPathFormats_ContentFiles_ExtractsCorrectly\n- CleanModuleOrLessonName_VariousFormats_ContentFiles_FormatsCorrectly  \n- ExtractModuleAndLesson_ContentFiles_ExtractsNumericModuleOnly\n- ExtractModuleAndLesson_NestedContentFiles_ExtractsCorrectHierarchy\n\n**Validation**:\n- All CourseStructureExtractorTests should pass\n- Content files should always get number-only module values from the correct parent directory",
       "projectId": "15188081-529e-47f1-b685-c88d2ec54f6e",
-      "completed": false,
+      "completed": true,
       "createdAt": "2025-06-10T19:12:48.659Z",
-      "updatedAt": "2025-06-10T19:12:48.659Z"
+      "updatedAt": "2025-06-18T19:59:10.976Z"
     },
     {
       "id": "c5c9792c-dbc8-4c10-add3-091092c17f12",
@@ -290,9 +290,9 @@
       "name": "Refactor tag extraction to base class",
       "details": "✅ **COMPLETED:**\n1. ✅ Updated DocumentNoteProcessorBase constructor to accept additional dependencies (IYamlHelper, IMetadataHierarchyDetector, IMetadataTemplateManager)\n2. ✅ Moved enhanced GenerateMarkdownNote method from VideoNoteProcessor to base class with:\n   - AI tag extraction from frontmatter\n   - Hierarchy detection and metadata enhancement \n   - Template-based metadata enrichment\n   - Date field cleanup and normalization\n3. ✅ Updated VideoNoteProcessor to use base class dependencies and removed duplicate GenerateMarkdownNote method\n4. ✅ Updated PdfNoteProcessor to pass new dependencies to base class\n5. ✅ Removed custom tag extraction method from PdfNoteProcessor\n6. ✅ Main library compilation successful\n\n🔧 **REMAINING:**\n- Update all test files to use new constructor signatures (37 test compilation errors)\n- Verify that the tag extraction now works correctly for PDF processing\n- Run integration tests to ensure functionality works end-to-end\n\n**IMPACT:**\n- ✅ Fixed missing tags issue in PDF processing \n- ✅ Eliminated code duplication between processors\n- ✅ All document processors now get automatic tag extraction, hierarchy detection, and template enhancement\n- ✅ Architecture is cleaner and more maintainable",
       "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
-      "completed": false,
+      "completed": true,
       "createdAt": "2025-06-15T21:46:30.239Z",
-      "updatedAt": "2025-06-15T21:54:13.463Z"
+      "updatedAt": "2025-06-18T20:03:25.087Z"
     },
     {
       "id": "ad9d5158-c7b6-4c70-8de6-e6f862fcb99e",
@@ -301,7 +301,7 @@
       "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
       "completed": true,
       "createdAt": "2025-06-15T23:15:57.954Z",
-      "updatedAt": "2025-06-18T15:13:55.348Z"
+      "updatedAt": "2025-06-18T19:59:48.006Z"
     },
     {
       "id": "4dd010f5-808b-4b97-99ed-6351f881926a",
@@ -326,9 +326,9 @@
       "name": "Fix failing VaultIndexProcessor test and CI publish issue",
       "details": "Fix the CI build failure which has two main issues:\n\n1. **Test Failure**: `GenerateIndexAsync_ReturnsFalse_WhenFileExistsAndNotForce` is failing in CI but passing locally\n   - Issue: The test uses `Path.GetTempPath()` which behaves differently in GitHub Actions environment\n   - Solution: Make the test more robust by using a controlled temp directory setup\n   \n2. **Missing Publish Directories**: The workflow expects `publish/win-x64/` and `publish/win-arm64/` directories but they don't exist\n   - Issue: The workflow has publish steps but they're missing from the actual workflow\n   - Solution: Add the missing publish steps to the GitHub Actions workflow\n\nPriority: High - blocking CI builds",
       "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
-      "completed": false,
+      "completed": true,
       "createdAt": "2025-06-16T16:03:20.958Z",
-      "updatedAt": "2025-06-16T16:03:20.958Z"
+      "updatedAt": "2025-06-18T19:59:59.586Z"
     },
     {
       "id": "40696f27-9884-4c2f-a658-962fc1faeb46",
@@ -344,9 +344,9 @@
       "name": "Implement comprehensive PDF image extraction testing",
       "details": "Create unit tests to verify PDF image extraction functionality:\n1. Test image detection and counting\n2. Test image file saving to correct directory structure\n3. Test markdown reference generation\n4. Test metadata inclusion of image count\n5. Test error handling for images that can't be extracted\n6. Verify image directory creation and naming conventions",
       "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
-      "completed": false,
+      "completed": true,
       "createdAt": "2025-06-16T23:21:20.513Z",
-      "updatedAt": "2025-06-16T23:21:20.513Z"
+      "updatedAt": "2025-06-18T19:59:53.051Z"
     },
     {
       "id": "683828e3-2310-49b4-88c7-0eaa3d074f3e",
@@ -495,9 +495,9 @@
       "details": "The compiled executable is processing significantly fewer files (35) compared to dotnet run (appears to process many more). Need to investigate the file discovery/path resolution logic in the ensure-metadata command to identify why the executable version skips so many files that the dotnet run version processes. This is likely a path resolution issue affecting Directory.GetFiles, file globbing, or similar file system operations.",
       "taskId": "4e805558-d0c5-4d5a-80e5-3704b3194e5d",
       "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
-      "completed": false,
+      "completed": true,
       "createdAt": "2025-06-15T15:57:40.533Z",
-      "updatedAt": "2025-06-15T15:57:40.533Z"
+      "updatedAt": "2025-06-18T19:59:05.404Z"
     },
     {
       "id": "6ab69b18-e16b-43c3-b6b8-8b2e6a1af819",
