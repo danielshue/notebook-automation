@@ -195,13 +195,17 @@ internal class VideoCommands
                 {
                     ExceptionHandler.HandleException(ex, "setting force refresh on OneDrive service");
                 }
-            } // Determine effective resources root (prioritize command line over config)
-
+            }
+            // Determine effective resources root (prioritize command line over config)
             string? effectiveResourcesRoot = resourcesRoot;
             if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig?.Paths != null)
             {
                 effectiveResourcesRoot = appConfig.Paths.OnedriveFullpathRoot;
             }
+
+            // Resolve input path - if it's relative, prepend with OneDrive root
+            string resolvedInput = PathUtils.ResolveInputPath(input, effectiveResourcesRoot);
+            logger.LogDebug($"Input path resolution: '{input}' -> '{resolvedInput}' (OneDrive root: {effectiveResourcesRoot ?? "(none)"})");
 
             // Build the full local resources path for path calculations
             string? localResourcesPathForBatchProcessor = null;
@@ -302,28 +306,27 @@ internal class VideoCommands
             // Get OpenAI API key from environment or config
             string? openAiApiKey = appConfig.AiService?.GetApiKey();
 
-            // Process videos
-            // Verify that we have an input source
+            // Process videos            // Verify that we have an input source
             if (string.IsNullOrWhiteSpace(input))
             {
                 logger.LogError("Input source is required. Use --input/-i to specify a video file or folder.");
                 return;
             }
 
-            // Auto-detect if input is a file or folder
-            bool isFile = File.Exists(input);
-            bool isDirectory = Directory.Exists(input);
+            // Auto-detect if input is a file or folder using resolved path
+            bool isFile = File.Exists(resolvedInput);
+            bool isDirectory = Directory.Exists(resolvedInput);
 
             if (!isFile && !isDirectory)
             {
-                logger.LogError("Input path does not exist or is not accessible: {Path}", input);
+                logger.LogError("Input path does not exist or is not accessible: {ResolvedPath} (original: {OriginalPath})", resolvedInput, input);
                 return;
             }
 
             logger.LogInformation(
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
-                input);
+                resolvedInput);
             logger.LogInformation($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
 
             try
@@ -339,9 +342,8 @@ internal class VideoCommands
 
                             // The status already contains file count information, so we don't need to add it
                             updateStatus(safeStatus);
-                        };
-                        return await batchProcessor.ProcessVideosAsync(
-                            input,
+                        }; return await batchProcessor.ProcessVideosAsync(
+                            resolvedInput,
                             effectiveOutputDir,
                             videoExtensions,
                             openAiApiKey,
@@ -354,7 +356,7 @@ internal class VideoCommands
                             appConfig,
                             noShareLinks).ConfigureAwait(false);
                     },
-                    $"Processing video files from {(isFile ? "file" : "directory")}: {input}").ConfigureAwait(false);
+                    $"Processing video files from {(isFile ? "file" : "directory")}: {resolvedInput}").ConfigureAwait(false);
 
                 logger.LogInformation($"Video processing completed. Success: {result.Processed}, Failed: {result.Failed}");
                 if (!string.IsNullOrWhiteSpace(result.Summary))

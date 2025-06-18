@@ -1,4 +1,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using System.Runtime.InteropServices;
+
 namespace NotebookAutomation.Tests.Core.Utils;
 
 /// <summary>
@@ -146,5 +148,115 @@ public class PathUtilsTests
         string path = Path.Combine("C:", "Projects", "Test", "src", "a.txt");
         string expected = Path.GetDirectoryName(path) + Path.DirectorySeparatorChar;
         Assert.AreEqual(expected, PathUtils.GetCommonBasePath([path]));
+    }
+
+    [TestMethod]
+    public void ResolveInputPath_AbsolutePath_ReturnsUnchanged()
+    {
+        // Arrange
+        string absolutePath;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            absolutePath = @"C:\Users\test\OneDrive\folder";
+        }
+        else
+        {
+            absolutePath = "/home/test/OneDrive/folder";
+        }
+        string oneDriveRoot = @"C:\Users\test\OneDrive";
+
+        // Act
+        string result = PathUtils.ResolveInputPath(absolutePath, oneDriveRoot);
+
+        // Assert
+        Assert.AreEqual(absolutePath, result);
+    }
+
+    [TestMethod]
+    public void ResolveInputPath_RelativePathWithOneDriveRoot_ReturnsCombinedPath()
+    {
+        // Arrange
+        string relativePath = "Education/MBA-Resources";
+        string oneDriveRoot;
+        string expected;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            oneDriveRoot = @"C:\Users\test\OneDrive";
+            expected = @"C:\Users\test\OneDrive\Education\MBA-Resources";
+        }
+        else
+        {
+            oneDriveRoot = "/home/test/OneDrive";
+            expected = "/home/test/OneDrive/Education/MBA-Resources";
+        }
+
+        // Act
+        string result = PathUtils.ResolveInputPath(relativePath, oneDriveRoot);
+
+        // Assert
+        Assert.AreEqual(PathUtils.NormalizePath(expected), result);
+    }
+
+    [TestMethod]
+    public void ResolveInputPath_RelativePathWithoutOneDriveRoot_ReturnsOriginal()
+    {
+        // Arrange
+        string relativePath = "Education/MBA-Resources";
+
+        // Act
+        string result = PathUtils.ResolveInputPath(relativePath, null);
+
+        // Assert
+        Assert.AreEqual(relativePath, result);
+    }
+
+    [TestMethod]
+    public void ResolveInputPath_RelativePathWithEmptyOneDriveRoot_ReturnsOriginal()
+    {
+        // Arrange
+        string relativePath = "Education/MBA-Resources";
+
+        // Act
+        string result = PathUtils.ResolveInputPath(relativePath, string.Empty);
+
+        // Assert
+        Assert.AreEqual(relativePath, result);
+    }
+
+    [TestMethod]
+    public void ResolveInputPath_RelativePathWithWhitespaceOneDriveRoot_ReturnsOriginal()
+    {
+        // Arrange
+        string relativePath = "Education/MBA-Resources";
+
+        // Act
+        string result = PathUtils.ResolveInputPath(relativePath, "   ");
+
+        // Assert
+        Assert.AreEqual(relativePath, result);
+    }
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentNullException))]
+    public void ResolveInputPath_NullInputPath_ThrowsArgumentNullException()
+    {
+        // Act & Assert
+        PathUtils.ResolveInputPath(null!, @"C:\OneDrive");
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void ResolveInputPath_EmptyInputPath_ThrowsArgumentException()
+    {
+        // Act & Assert
+        PathUtils.ResolveInputPath(string.Empty, @"C:\OneDrive");
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(ArgumentException))]
+    public void ResolveInputPath_WhitespaceInputPath_ThrowsArgumentException()
+    {
+        // Act & Assert
+        PathUtils.ResolveInputPath("   ", @"C:\OneDrive");
     }
 }
