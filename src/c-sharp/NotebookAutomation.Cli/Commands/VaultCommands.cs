@@ -1,11 +1,13 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System.CommandLine;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+using NotebookAutomation.Cli.Utilities;
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Tools.Vault;
-using NotebookAutomation.Cli.Utilities;
 
 namespace NotebookAutomation.Cli.Commands;
 
