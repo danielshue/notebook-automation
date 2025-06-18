@@ -310,4 +310,57 @@ public static class PathUtils
 
         return string.Empty;
     }
+
+    /// <summary>
+    /// Resolves an input path by prepending OneDrive root if the path is relative.
+    /// </summary>
+    /// <param name="inputPath">The input path that may be relative or absolute.</param>
+    /// <param name="oneDriveRoot">The OneDrive root directory to prepend for relative paths.</param>
+    /// <returns>The resolved absolute path.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method handles path resolution for CLI commands that accept both relative and absolute paths.
+    /// If the input path is already absolute (rooted), it returns the path unchanged.
+    /// If the input path is relative and an OneDrive root is provided, it combines them to create
+    /// an absolute path.
+    /// </para>
+    /// <para>
+    /// This is particularly useful for video-notes and pdf-notes commands where users may want to
+    /// specify relative paths from their OneDrive root instead of full absolute paths.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Absolute path - returned unchanged
+    /// string resolved1 = PathUtils.ResolveInputPath(@"C:\Users\user\OneDrive\folder", null);
+    /// // Result: @"C:\Users\user\OneDrive\folder"
+    ///
+    /// // Relative path with OneDrive root
+    /// string resolved2 = PathUtils.ResolveInputPath("Education/MBA", @"C:\Users\user\OneDrive");
+    /// // Result: @"C:\Users\user\OneDrive\Education\MBA"
+    ///
+    /// // Relative path without OneDrive root - returned unchanged
+    /// string resolved3 = PathUtils.ResolveInputPath("folder", null);
+    /// // Result: "folder"
+    /// </code>
+    /// </example>
+    public static string ResolveInputPath(string inputPath, string? oneDriveRoot)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(inputPath);
+
+        // If already absolute, return as-is
+        if (Path.IsPathRooted(inputPath))
+        {
+            return inputPath;
+        }
+
+        // If no OneDrive root configured, return relative path as-is
+        if (string.IsNullOrWhiteSpace(oneDriveRoot))
+        {
+            return inputPath;
+        }
+
+        // Combine OneDrive root with relative path and normalize
+        return NormalizePath(Path.Combine(oneDriveRoot, inputPath));
+    }
 }

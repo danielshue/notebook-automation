@@ -181,13 +181,16 @@ internal class PdfCommands
                     ExceptionHandler.HandleException(ex, "Failed to set force refresh on OneDrive service");
                 }
             }
-
             // Determine effective resources root (prioritize command line over config)
             string? effectiveResourcesRoot = resourcesRoot;
             if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig?.Paths != null)
             {
                 effectiveResourcesRoot = appConfig.Paths.OnedriveFullpathRoot;
             }
+
+            // Resolve input path - if it's relative, prepend with OneDrive root
+            string resolvedInput = PathUtils.ResolveInputPath(input, effectiveResourcesRoot);
+            logger.LogDebug($"Input path resolution: '{input}' -> '{resolvedInput}' (OneDrive root: {effectiveResourcesRoot ?? "(none)"})");
 
             // Build the full local resources path for path calculations
             string? localResourcesPathForBatchProcessor = null;
@@ -288,28 +291,27 @@ internal class PdfCommands
             // Get AI API key from environment or config
             string? openAiApiKey = appConfig.AiService?.GetApiKey();
 
-            // Process PDFs
-            // Verify that we have an input source
+            // Process PDFs            // Verify that we have an input source
             if (string.IsNullOrWhiteSpace(input))
             {
                 logger.LogError("Input source is required. Use --input/-i to specify a PDF file or folder.");
                 return;
             }
 
-            // Auto-detect if input is a file or folder
-            bool isFile = File.Exists(input);
-            bool isDirectory = Directory.Exists(input);
+            // Auto-detect if input is a file or folder using resolved path
+            bool isFile = File.Exists(resolvedInput);
+            bool isDirectory = Directory.Exists(resolvedInput);
 
             if (!isFile && !isDirectory)
             {
-                logger.LogError($"Input path does not exist or is not accessible: {input}");
+                logger.LogError($"Input path does not exist or is not accessible: {resolvedInput} (original: {input})");
                 return;
             }
 
             logger.LogInformation(
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
-                input); logger.LogInformation($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
+                resolvedInput); logger.LogInformation($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
 
             // Override image extraction setting from CLI if specified
             bool originalExtractImages = appConfig.PdfExtractImages;
@@ -333,9 +335,8 @@ internal class PdfCommands
 
                             // The status already contains file count information, so we don't need to add it
                             updateStatus(safeStatus);
-                        };
-                        return await batchProcessor.ProcessPdfsAsync(
-                            input,
+                        }; return await batchProcessor.ProcessPdfsAsync(
+                            resolvedInput,
                             effectiveOutputDir,
                             pdfExtensions,
                             openAiApiKey,
@@ -347,7 +348,7 @@ internal class PdfCommands
                             localResourcesPathForBatchProcessor,
                             appConfig).ConfigureAwait(false);
                     },
-                    $"Processing PDF files from {(isFile ? "file" : "directory")}: {input}").ConfigureAwait(false); logger.LogInformation($"PDF processing completed. Success: {result.Processed}, Failed: {result.Failed}");
+                    $"Processing PDF files from {(isFile ? "file" : "directory")}: {resolvedInput}").ConfigureAwait(false); logger.LogInformation($"PDF processing completed. Success: {result.Processed}, Failed: {result.Failed}");
                 if (!string.IsNullOrWhiteSpace(result.Summary))
                 {
                     AnsiConsoleHelper.WriteInfo(result.Summary);
