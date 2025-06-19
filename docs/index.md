@@ -1,13 +1,37 @@
-# Notebook Automation Documentation
+# Documentation
 
-Welcome to the comprehensive documentation for **Notebook Automation** - a powerful toolkit for managing educational content in Obsidian vaults.
+Welcome to the Notebook Automation documentation! This site provides comprehensive guides for using and contributing to the Notebook Automation toolkit.
 
-## 🚀 Quick Navigation
+## Quick Navigation
 
 ### For Users
-- **[Getting Started](getting-started/)** - Installation, setup, and basic usage
-- **[User Guide](user-guide/)** - Comprehensive usage documentation
-- **[Configuration](configuration/)** - System configuration and setup
+- **[Getting Started](getting-started/index.md)** - Installation and setup
+- **[User Guide](user-guide/index.md)** - File processing and workflows  
+- **[Configuration](configuration/index.md)** - Settings and customization
+- **[Tutorials](tutorials/index.md)** - Step-by-step examples
+- **[Troubleshooting](troubleshooting/index.md)** - Common issues and solutions
+
+### For Developers
+- **[Developer Guide](developer-guide/building.md)** - Development setup and contributing
+- **[API Reference](api/index.html)** - Complete API documentation
+
+## What is Notebook Automation?
+
+Notebook Automation is a powerful C# toolkit that transforms educational content from various sources (PDFs, videos, OneDrive) into structured, AI-enhanced Obsidian notes. It's designed for students, educators, and knowledge workers who want to streamline their note-taking workflow.
+
+## Key Features
+
+- **Multi-format processing** - PDFs, videos, and OneDrive content
+- **AI-powered enhancement** - Smart summarization and metadata extraction
+- **Obsidian integration** - Generate properly formatted notes with frontmatter
+- **Batch processing** - Handle multiple documents efficiently
+- **Flexible configuration** - JSON-based settings with environment variable support
+
+## Getting Help
+
+- Check the [Troubleshooting Guide](troubleshooting/index.md) for common issues
+- Visit our [GitHub Issues](https://github.com/danielshue/notebook-automation/issues) for bug reports
+- Join the discussion at [GitHub Discussions](https://github.com/danielshue/notebook-automation/discussions)
 
 ### For Developers
 - **[Developer Guide](developer-guide/)** - Building from source and contributing
