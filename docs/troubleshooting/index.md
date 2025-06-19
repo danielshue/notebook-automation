@@ -11,7 +11,7 @@ Solutions to common issues and debugging guidance.
 **Problem:** `dotnet` command not recognized or wrong version installed.
 
 **Solution:**
-1. Download and install [.NET 8.0 SDK](https://dotnet.microsoft.com/download)
+1. Download and install [.NET 9.0 SDK](https://dotnet.microsoft.com/download)
 2. Restart your terminal/command prompt
 3. Verify installation: `dotnet --version`
 

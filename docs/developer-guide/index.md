@@ -52,7 +52,7 @@ Testing strategies, test organization, and guidelines for writing effective unit
 
 ## Key Technologies
 
-- **.NET 8**: Target framework
+- **.NET 9**: Target framework
 - **Microsoft Semantic Kernel**: AI integration
 - **Xabe.FFmpeg**: Video metadata extraction
 - **YamlDotNet**: YAML processing
