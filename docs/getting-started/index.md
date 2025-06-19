@@ -1,12 +1,92 @@
 # Getting Started
 
-Welcome to Notebook Automation! This section will help you get up and running quickly.
+This guide will help you get Notebook Automation up and running quickly.
 
-## Quick Navigation
+## Prerequisites
 
-- **[Installation](installation.md)** - Download and install the application
-- **[Basic Commands](basic-commands.md)** - Essential commands and usage examples
-- **[FAQ](faq.md)** - Frequently asked questions and common issues
+Before installing Notebook Automation, ensure you have:
+
+- **.NET 8.0 SDK** or later ([Download here](https://dotnet.microsoft.com/download))
+- **Windows OS** (primary support), Linux/macOS (experimental)
+- **OpenAI API Key** or **Azure OpenAI** access for AI features
+- **Git** for cloning the repository
+
+## Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/danielshue/notebook-automation.git
+cd notebook-automation
+```
+
+### 2. Build the Solution
+
+```bash
+dotnet build src/c-sharp/NotebookAutomation.sln
+```
+
+### 3. Configure the Application
+
+Copy the example configuration:
+
+```bash
+cp config/config.json config/my-config.json
+```
+
+Edit `config/my-config.json` and update:
+
+```json
+{
+  "AIService": {
+    "Provider": "OpenAI",
+    "ApiKey": "your-openai-api-key",
+    "Model": "gpt-4",
+    "Temperature": 0.3
+  },
+  "Paths": {
+    "VaultPath": "C:\\path\\to\\your\\obsidian\\vault",
+    "OutputPath": "C:\\path\\to\\output"
+  }
+}
+```
+
+### 4. Test the Installation
+
+```bash
+dotnet run --project src/c-sharp/NotebookAutomation.Console -- --help
+```
+
+## First Steps
+
+### Process Your First PDF
+
+```bash
+dotnet run --project src/c-sharp/NotebookAutomation.Console -- process-pdf "path/to/document.pdf"
+```
+
+### Set up OneDrive Integration
+
+1. Configure OneDrive credentials in your config file
+2. Test the connection:
+
+```bash
+dotnet run --project src/c-sharp/NotebookAutomation.Console -- onedrive-test
+```
+
+## Next Steps
+
+- Read the [User Guide](../user-guide/index.md) for detailed usage instructions
+- See [Configuration](../configuration/index.md) for advanced settings
+- Try the [Tutorials](../tutorials/index.md) for hands-on examples
+
+## Getting Help
+
+If you encounter issues:
+
+1. Check the [Troubleshooting Guide](../troubleshooting/index.md)
+2. Review the logs in your configured log directory
+3. Open an issue on [GitHub](https://github.com/danielshue/notebook-automation/issues)
 
 ## Overview
 
