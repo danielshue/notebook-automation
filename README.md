@@ -2,9 +2,9 @@
 
 A powerful C# toolkit for processing and organizing Jupyter notebooks with AI-powered analysis and automated workflows.
 
-[![Build Status](https://github.com/danielshue/notebook-automation/workflows/CI/badge.svg)](https://github.com/danielshue/notebook-automation/actions)
+[![Build Status](https://github.com/danielshue/notebook-automation/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/danielshue/notebook-automation/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
+[![.NET](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/8.0)
 
 ## 🚀 Quick Start
 
@@ -43,7 +43,7 @@ dotnet run --project src/c-sharp/NotebookAutomation.CLI
 
 ## 🛠️ System Requirements
 
-- **.NET 9.0 SDK** or later
+- **.NET 8.0 SDK** or later
 - **Windows 10/11**, **Linux**, or **macOS**
 - **PowerShell** (for build scripts)
 - **8GB RAM** recommended for large notebook processing
