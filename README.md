@@ -18,17 +18,15 @@ Inspired by these projects but needing broader functionality beyond just downloa
 ## ✨ Key Features
 
 - **📊 Intelligent Processing** - AI-powered content analysis and summarization
-- **🏷️ Smart Tagging** - Automatic categorization and metadata extraction
+- **🗂️ Obsidian Integration** - Hierarchical course structures with rich metadata
+- **📈 Progress Tracking** - Real-time processing status and logging of course content
 - **❓ Question Generation** - AI-powered Q&A creation for study materials
 - **📚 Anki Integration** - Export flashcards for spaced repetition learning
-- **🗂️ Obsidian Integration** - Hierarchical course structures with rich metadata
-- **📄 PDF Annotation Extraction** - Preserve highlights and comments from documents
 - **🎥 Video Transcript Processing** - Generate summaries from video content
+- **📄 PDF Annotation Extraction** - Preserve highlights and comments from documents
 - **📝 Vocabulary Management** - Extract and organize key terms and definitions
-- **📁 Batch Operations** - Process multiple notebooks efficiently
-- **⚙️ Flexible Configuration** - JSON, environment variables, and CLI options
+- **📁 Batch Operations** - Process multiple content for note efficiently
 - **🔧 Extensible Architecture** - Plugin system for custom processors
-- **📈 Progress Tracking** - Real-time processing status and logging
 
 ## 📸 Screenshots & Features
 
@@ -49,9 +47,17 @@ These Questions and Answers can be used to seamlessly export the generated quest
 
 ![Anki Review System](docs/images/AnkiReview.png)
 
-### Obsidian Class Overview with Hierarchical Structure
+### Obsidian Content Indexes and Class View
 
-View your course content in a beautifully organized hierarchical structure within Obsidian. The base template system provides a clear overview of programs, modules, and lessons for easy navigation.
+#### Navigation Through Indexes
+
+Demonstrate here is the hierarchical navigation system within Obsidian. Using the Bases template system, users can easily explore their course content through structured indexes. These indexes provide a clear overview of programs, courses, modules, and lessons, enabling seamless navigation and quick access to specific sections of the educational material.
+
+![Obsidian Content Indexes for easy navigation](docs/images/Obsidian-Hierarchical-Indexes.png)
+
+#### Class-Level Page Tracking
+
+Highlighting the class-level page view, which tracks individual notes and document statuses. This view allows users to monitor the progress of their course materials, ensuring that all notes and documents are properly organized and up-to-date. It provides a centralized location to manage and review class-specific content efficiently.
 
 ![Obsidian Class View Using Bases](docs/images/ObsidianClassViewUsingBases.png)
 
