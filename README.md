@@ -1,8 +1,8 @@
 # Notebook Automation
 
-A powerful C# toolkit for processing and organizing notebooks with AI-powered analysis and automated workflows.
+A comprehensive toolkit that transforms educational content into intelligent, searchable knowledge bases. It processes PDFs, extracts annotations, generates AI-powered summaries from videos (with transcripts) and questions/answers, creates hierarchical course structures, and seamlessly integrates with popular tools like Obsidian and Anki for enhanced learning workflows.
 
-## 💡 The Story Behind This Project
+## 💡 The Story Behind this Project
 
 Like many students and lifelong learners, I found myself manually collecting course content from various online platforms—downloading PDFs, saving lecture notes, organizing video files, and trying to keep track of assignments across multiple courses. This tedious process consumed hours that could have been spent actually learning.
 
@@ -19,10 +19,65 @@ Inspired by these projects but needing broader functionality beyond just downloa
 
 - **📊 Intelligent Processing** - AI-powered content analysis and summarization
 - **🏷️ Smart Tagging** - Automatic categorization and metadata extraction
+- **❓ Question Generation** - AI-powered Q&A creation for study materials
+- **📚 Anki Integration** - Export flashcards for spaced repetition learning
+- **🗂️ Obsidian Integration** - Hierarchical course structures with rich metadata
+- **📄 PDF Annotation Extraction** - Preserve highlights and comments from documents
+- **🎥 Video Transcript Processing** - Generate summaries from video content
+- **📝 Vocabulary Management** - Extract and organize key terms and definitions
 - **📁 Batch Operations** - Process multiple notebooks efficiently
 - **⚙️ Flexible Configuration** - JSON, environment variables, and CLI options
 - **🔧 Extensible Architecture** - Plugin system for custom processors
 - **📈 Progress Tracking** - Real-time processing status and logging
+
+## 📸 Screenshots & Features
+
+### AI-Generated Page Summaries
+
+Each processed document receives an intelligent summary that captures key points, main themes, and actionable insights. These summaries help you quickly review and recall important content.
+![Obsidian Page Summary View](docs/images/ObsidianPageSummaryView.png)
+
+### AI-Powered Question Generation
+
+The system automatically generates intelligent questions and answers from your course content, perfect for creating study materials and spaced repetition systems. This feature leverages AI to identify key concepts and create meaningful assessment questions.
+
+![AI Question Generation](docs/images/AI-Question-Generation.png)
+
+### Anki Integration for Spaced Repetition
+
+These Questions and Answers can be used to seamlessly export the generated questions to Anki for optimized learning through spaced repetition. The tool creates properly formatted flashcards that integrate with your existing study workflow.
+
+![Anki Review System](docs/images/AnkiReview.png)
+
+### Obsidian Class Overview with Hierarchical Structure
+
+View your course content in a beautifully organized hierarchical structure within Obsidian. The base template system provides a clear overview of programs, modules, and lessons for easy navigation.
+
+![Obsidian Class View Using Bases](docs/images/ObsidianClassViewUsingBases.png)
+
+### Case Study Analysis Views
+
+Detailed case study notes with structured analysis, key insights, and cross-references. The system automatically formats complex business cases into digestible, searchable content.
+
+![Obsidian Notes Case Study View](docs/images/ObsidianNotesCaseStudyView.png)
+
+### PDF Annotation Processing
+
+Automatically extract and process annotations from PDF documents, preserving highlights, comments, and notes in your knowledge base while maintaining proper attribution and context.
+
+![PDF Annotations Processing](docs/images/PDF-Annotations.png)
+
+### Rich YAML Frontmatter
+
+Comprehensive metadata extraction creates rich YAML frontmatter with course information, tags, relationships, and custom properties that enhance searchability and organization.
+
+![Rich YAML Frontmatter](docs/images/RichYamlFrontmatter.png)
+
+### Vocabulary and Definition Management
+
+Automatically identify and extract key terms and definitions from course materials, creating a searchable vocabulary database with contextual usage examples that can also imported into Anki.
+
+![Vocabulary Definitions](docs/images/VocabularyDefinitions.png)
 
 ## 📖 Documentation
 

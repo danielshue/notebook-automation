@@ -7,12 +7,14 @@ on:
     paths:
       - "src/c-sharp/**"
       - ".github/workflows/**"
+      - "docs/**"
       - "!.agentic-tools-mcp/**"
   pull_request:
     branches:
       - master
     paths:
       - "src/c-sharp/**"
+      - "docs/**"
       - ".github/workflows/**"
       - "!.agentic-tools-mcp/**"
 
