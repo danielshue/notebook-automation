@@ -1,3 +1,8 @@
+# DocFX generated files
+docs/_site/
+docs/api/
+docs/obj/
+
 # Python bytecode
 __pycache__/
 *.py[cod]
