@@ -6,7 +6,7 @@ Instructions for building, testing, and packaging Notebook Automation.
 
 ### Required Software
 
-- **.NET 8.0 SDK** - Download from [Microsoft .NET](https://dotnet.microsoft.com/download)
+- **.NET 9.0 SDK** - Download from [Microsoft .NET](https://dotnet.microsoft.com/download)
 - **Git** - For version control
 - **PowerShell** - For build scripts (included with Windows)
 
@@ -107,7 +107,7 @@ dotnet build --configuration Release --no-restore
 ### Target Frameworks
 
 The project targets multiple frameworks:
-- **.NET 8.0** - Primary target
+- **.NET 9.0** - Primary target
 - **.NET Standard 2.1** - For library compatibility
 
 ## Testing
@@ -256,7 +256,7 @@ dotnet restore --verbosity detailed
 dotnet test --logger "console;verbosity=detailed"
 
 # Run tests for specific framework
-dotnet test --framework net8.0
+dotnet test --framework net9.0
 ```
 
 **Format issues:**
@@ -316,7 +316,7 @@ dotnet publish --runtime osx-x64 --self-contained
 Build using Docker for consistent environments:
 
 ```dockerfile
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 COPY . .
 RUN dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release

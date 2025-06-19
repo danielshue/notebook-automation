@@ -34,7 +34,7 @@ Before creating an issue, please:
 
 #### Prerequisites
 
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download)
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download)
 - [Git](https://git-scm.com/)
 - [PowerShell](https://docs.microsoft.com/powershell/) (for build scripts)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) or [VS Code](https://code.visualstudio.com/) (recommended)

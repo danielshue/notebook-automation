@@ -6,6 +6,20 @@ A powerful C# toolkit for processing and organizing Jupyter notebooks with AI-po
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
 
+## 🚀 Quick Start
+
+```bash
+# Clone the repository
+git clone https://github.com/danielshue/notebook-automation.git
+cd notebook-automation
+
+# Build the project
+dotnet build src/c-sharp/NotebookAutomation.sln
+
+# Run with default configuration
+dotnet run --project src/c-sharp/NotebookAutomation.CLI
+```
+
 ## ✨ Key Features
 
 - **📊 Intelligent Processing** - AI-powered content analysis and summarization

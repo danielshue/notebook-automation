@@ -6,7 +6,7 @@ This guide will help you get Notebook Automation up and running quickly.
 
 Before installing Notebook Automation, ensure you have:
 
-- **.NET 8.0 SDK** or later ([Download here](https://dotnet.microsoft.com/download))
+- **.NET 9.0 SDK** or later ([Download here](https://dotnet.microsoft.com/download))
 - **Windows OS** (primary support), Linux/macOS (experimental)
 - **OpenAI API Key** or **Azure OpenAI** access for AI features
 - **Git** for cloning the repository
