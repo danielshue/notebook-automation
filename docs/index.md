@@ -6,7 +6,7 @@ Welcome to the Notebook Automation documentation! This site provides comprehensi
 
 ### For Users
 - **[Getting Started](getting-started/index.md)** - Installation and setup
-- **[User Guide](user-guide/index.md)** - File processing and workflows  
+- **[User Guide](user-guide/index.md)** - File processing and workflows
 - **[Configuration](configuration/index.md)** - Settings and customization
 - **[Tutorials](tutorials/index.md)** - Step-by-step examples
 - **[Troubleshooting](troubleshooting/index.md)** - Common issues and solutions

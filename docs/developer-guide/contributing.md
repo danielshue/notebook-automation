@@ -200,9 +200,9 @@ public class NotebookProcessor(ILogger<NotebookProcessor> logger)
     public async Task<ProcessingResult> ProcessAsync(string filePath)
     {
         ArgumentException.ThrowIfNullOrEmpty(filePath);
-        
+
         _logger.LogInformation("Processing notebook: {FilePath}", filePath);
-        
+
         // Implementation
         return new ProcessingResult();
     }
@@ -236,10 +236,10 @@ public async Task ProcessAsync_WithValidFile_ReturnsSuccess()
     // Arrange
     var processor = new NotebookProcessor(Mock.Of<ILogger<NotebookProcessor>>());
     var filePath = "test.ipynb";
-    
+
     // Act
     var result = await processor.ProcessAsync(filePath);
-    
+
     // Assert
     Assert.IsTrue(result.IsSuccess);
 }
