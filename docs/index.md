@@ -34,6 +34,7 @@ Notebook Automation is a powerful C# toolkit that transforms educational content
 - Join the discussion at [GitHub Discussions](https://github.com/danielshue/notebook-automation/discussions)
 
 ### For Developers
+
 - **[Developer Guide](developer-guide/)** - Building from source and contributing
 - **[API Reference](api/)** - Complete API documentation
 - **[Troubleshooting](troubleshooting/)** - Common issues and solutions
@@ -46,12 +47,61 @@ Notebook Automation transforms the way you manage course materials, whether for 
 
 - **🤖 Intelligent Content Processing** - Automatically converts PDFs, videos, HTML, and other formats to structured Markdown notes
 - **📊 Metadata Extraction** - Smart detection of course hierarchy, programs, modules, and lessons
-- **🏷️ Advanced Tag Management** - Hierarchical tag generation and consolidation for enhanced content discovery
+- **🏷️ Advanced Tag Management ** - Hierarchical tag generation and consolidation for enhanced content discovery
 - **☁️ OneDrive Integration** - Seamless file access, sharing, and synchronization via Microsoft Graph API
 - **🧠 AI-Powered Summaries** - OpenAI and Azure AI integration for generating content summaries and insights
 - **❓ AI Question Generation** - Automatically creates questions and answers for spaced repetition systems
 - **📚 Index Generation** - Automated creation of navigation structures and dashboards
 - **🔄 Cross-Platform Support** - Modern C# CLI application with .NET 9.0 runtime
+
+## 📸 Screenshots & Features
+
+### AI-Generated Page Summaries
+
+Each processed document receives an intelligent summary that captures key points, main themes, and actionable insights. These summaries help you quickly review and recall important content.
+![Obsidian Page Summary View](images/ObsidianPageSummaryView.png)
+
+### AI-Powered Question Generation
+
+The system automatically generates intelligent questions and answers from your course content, perfect for creating study materials and spaced repetition systems. This feature leverages AI to identify key concepts and create meaningful assessment questions.
+
+![AI Question Generation](images/AI-Question-Generation.png)
+
+### Anki Integration for Spaced Repetition
+
+These Questions and Answers can be used to seamlessly export the generated questions to Anki for optimized learning through spaced repetition. The tool creates properly formatted flashcards that integrate with your existing study workflow.
+
+![Anki Review System](images/AnkiReview.png)
+
+### Obsidian Class Overview with Hierarchical Structure
+
+View your course content in a beautifully organized hierarchical structure within Obsidian. The base template system provides a clear overview of programs, modules, and lessons for easy navigation.
+
+![Obsidian Class View Using Bases](images/ObsidianClassViewUsingBases.png)
+
+### Case Study Analysis Views
+
+Detailed case study notes with structured analysis, key insights, and cross-references. The system automatically formats complex business cases into digestible, searchable content.
+
+![Obsidian Notes Case Study View](images/ObsidianNotesCaseStudyView.png)
+
+### PDF Annotation Processing
+
+Automatically extract and process annotations from PDF documents, preserving highlights, comments, and notes in your knowledge base while maintaining proper attribution and context.
+
+![PDF Annotations Processing](images/PDF-Annotations.png)
+
+### Rich YAML Frontmatter
+
+Comprehensive metadata extraction creates rich YAML frontmatter with course information, tags, relationships, and custom properties that enhance searchability and organization.
+
+![Rich YAML Frontmatter](images/RichYamlFrontmatter.png)
+
+### Vocabulary and Definition Management
+
+Automatically identify and extract key terms and definitions from course materials, creating a searchable vocabulary database with contextual usage examples that can also imported into Anki.
+
+![Vocabulary Definitions](images/VocabularyDefinitions.png)
 
 ## 🏗️ Architecture
 
