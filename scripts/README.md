@@ -1,10 +1,3 @@
----
-auto-generated-state: writable
-date-created: 2025-06-06
-publisher: University of Illinois at Urbana-Champaign
-tags: ''
----
-
 # Build and Utility Scripts
 
 This directory contains various scripts for building, testing, and maintaining the Notebook Automation project.
@@ -41,23 +34,6 @@ A comprehensive local CI build script that mirrors the GitHub Actions CI pipelin
 6. Test Publish Operations
 7. Static Code Analysis
 
-### `build-ci-local.sh` (Bash - Linux/macOS)
-
-Cross-platform equivalent of the PowerShell build script with the same functionality.
-
-**Usage:**
-
-```bash
-# Full build with all steps
-./scripts/build-ci-local.sh
-
-# Skip tests for faster builds
-./scripts/build-ci-local.sh --skip-tests
-
-# Skip both tests and formatting
-./scripts/build-ci-local.sh --skip-tests --skip-format
-```
-
 ## Utility Scripts
 
 ### `download-latest-artifact.ps1`
@@ -82,6 +58,5 @@ These scripts are integrated with VS Code tasks. Use `Ctrl+Shift+P` and search f
 ## Requirements
 
 - **PowerShell Scripts**: PowerShell 7+ (Windows/Linux/macOS)
-- **Bash Scripts**: Bash shell (Linux/macOS)
 - **.NET SDK**: .NET 9.0 or later
 - **Git**: For source control operations
