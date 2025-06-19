@@ -11,22 +11,9 @@ After spending countless evenings manually organizing course materials, I discov
 Inspired by these projects but needing broader functionality beyond just downloading, I set out to create a comprehensive toolkit that could not only organize content but also analyze, tag, and enhance it with AI-powered insights. The result is Notebook Automation—a project born from the frustration of manual organization and the inspiration of seeing what thoughtful automation could achieve in the educational space.
 
 [![Build Status](https://github.com/danielshue/notebook-automation/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/danielshue/notebook-automation/actions)
+[![Latest Release](https://img.shields.io/github/v/release/danielshue/notebook-automation?label=Download&color=brightgreen)](https://github.com/danielshue/notebook-automation/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
-
-## 🚀 Quick Start
-
-```bash
-# Clone the repository
-git clone https://github.com/danielshue/notebook-automation.git
-cd notebook-automation
-
-# Build the project
-dotnet build src/c-sharp/NotebookAutomation.sln
-
-# Run with default configuration
-dotnet run --project src/c-sharp/NotebookAutomation.CLI
-```
 
 ## ✨ Key Features
 
