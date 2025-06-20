@@ -14,7 +14,7 @@ internal static class AnsiConsoleHelper
     private static int spinnerIndex = 0;
     private static bool spinnerActive = false;
     private static CancellationTokenSource? spinnerCancellation;
-    private static readonly object SpinnerLock = new object();
+    private static readonly object SpinnerLock = new();
     private static string currentSpinnerMessage = string.Empty;
 
     /// <summary>

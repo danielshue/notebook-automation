@@ -20,8 +20,8 @@ namespace NotebookAutomation.Tests.Core.Utils;
 [TestClass]
 public class MetadataHierarchyDetectorPathTests
 {
-    private readonly Mock<ILogger<MetadataHierarchyDetector>> _mockLogger = new object();
-    private AppConfig _appConfig = new object();
+    private readonly Mock<ILogger<MetadataHierarchyDetector>> _mockLogger = new();
+    private AppConfig _appConfig = new();
     private string _tempVaultRoot = string.Empty;
 
     /// <summary>

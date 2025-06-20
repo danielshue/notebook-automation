@@ -28,7 +28,7 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
 
     // Queue-related fields
     private readonly List<QueueItem> _processingQueue = [];
-    private readonly object _queueLock = new object();
+    private readonly object _queueLock = new();
 
     /// <summary>
     /// Event triggered when processing progress changes.

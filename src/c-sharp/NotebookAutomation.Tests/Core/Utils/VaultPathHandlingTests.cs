@@ -24,8 +24,8 @@ namespace NotebookAutomation.Tests.Core.Utils;
 [TestClass]
 public class VaultPathHandlingTests
 {
-    private readonly Mock<ILogger<MetadataHierarchyDetector>> _mockLogger = new object();
-    private readonly AppConfig _appConfig = new object();
+    private readonly Mock<ILogger<MetadataHierarchyDetector>> _mockLogger = new();
+    private readonly AppConfig _appConfig = new();
     private string _tempVaultRoot = string.Empty;
 
     /// <summary>
