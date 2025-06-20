@@ -17,8 +17,8 @@ public class VideoNoteProcessorMetadataTests
     {
         _loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
         _aiSummarizer = new TestAISummarizer();
-        _oneDriveServiceMock = new();
-        _yamlHelperMock = new();
+        _oneDriveServiceMock = new Mock<IOneDriveService>();
+        _yamlHelperMock = new Mock<IYamlHelper>();
 
         // Setup YamlHelper mock
         _yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))

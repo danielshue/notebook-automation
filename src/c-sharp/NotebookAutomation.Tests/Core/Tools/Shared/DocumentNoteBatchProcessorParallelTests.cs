@@ -20,7 +20,7 @@ public class DocumentNoteBatchProcessorParallelTests
         // Create real instances with minimal dependencies for testing
         var mockAppConfig = new AppConfig();
         mockAppConfig.Paths = new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() }; var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
-        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, mockAppConfig);
         var hierarchyDetector = new MetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             mockAppConfig);

@@ -68,7 +68,7 @@ public class VideoNoteBatchProcessorResourcesRootTests
             CreateMetadataHierarchyDetector(), // Required MetadataHierarchyDetector parameter
             CreateTestMetadataTemplateManager(), // Required MetadataTemplateManager parameter
             mockCourseStructureExtractor, // Required ICourseStructureExtractor parameter
-            new MarkdownNoteBuilder(mockYamlHelper), // Required MarkdownNoteBuilder parameter
+            new MarkdownNoteBuilder(mockYamlHelper, _testAppConfig), // Required MarkdownNoteBuilder parameter
             mockOneDriveService, // Optional OneDriveService
             _testAppConfig); // Optional AppConfig
 

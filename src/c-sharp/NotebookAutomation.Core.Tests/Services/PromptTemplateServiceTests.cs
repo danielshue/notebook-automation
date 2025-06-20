@@ -19,7 +19,7 @@ public class PromptTemplateServiceTests
     public void TestInitialize()
     {
         _loggerMock = new Mock<ILogger<PromptTemplateService>>();
-        _yamlHelperMock = new();
+        _yamlHelperMock = new Mock<IYamlHelper>();
 
         // Set up yamlHelper to simulate frontmatter removal
         _yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))

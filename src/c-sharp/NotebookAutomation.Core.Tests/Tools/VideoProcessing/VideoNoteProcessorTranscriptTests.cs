@@ -29,7 +29,7 @@ public class VideoNoteProcessorTranscriptTests
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);        // Create mock YamlHelper
-        var yamlHelperMock = new();
+        var yamlHelperMock = new Mock<IYamlHelper>();
 
         // Setup mock YamlHelper
         yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))

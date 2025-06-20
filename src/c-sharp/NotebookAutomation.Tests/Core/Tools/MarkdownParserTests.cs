@@ -10,7 +10,7 @@ public class MarkdownParserTests
     [TestInitialize]
     public void Setup()
     {
-        _mockLogger = new();
+        _mockLogger = new Mock<ILogger>();
         _parser = new MarkdownParser(_mockLogger.Object);
     }
 

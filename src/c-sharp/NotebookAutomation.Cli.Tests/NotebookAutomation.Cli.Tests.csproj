@@ -3,7 +3,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <LangVersion>13</LangVersion>
+        <LangVersion>preview</LangVersion>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <Nullable>enable</Nullable>
     </PropertyGroup>

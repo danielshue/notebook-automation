@@ -73,8 +73,11 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
     /// </example>
     public string BuildNote(Dictionary<string, object> frontmatter, string body, string? filename = null)
     {
-        // Apply banner configuration
-        ApplyBannerConfiguration(frontmatter, filename);
+        // Defensive: Only apply banner configuration if Banners config is present
+        if (_appConfig.Banners != null)
+        {
+            ApplyBannerConfiguration(frontmatter, filename);
+        }
 
         var serializer = new YamlDotNet.Serialization.SerializerBuilder()
             .WithEmissionPhaseObjectGraphVisitor(args => new NoQuotesForBannerVisitor(args.InnerVisitor))
@@ -101,8 +104,14 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
             }
         }
 
-        var newFrontmatter = $"---\n{yaml}---\n\n";
-        return newFrontmatter + body;
+        // Always output YAML frontmatter block, with or without body
+        var newFrontmatterBlock = $"---\n{yaml}---\n\n";
+        if (string.IsNullOrWhiteSpace(body))
+        {
+            // Ensure exactly two newlines after frontmatter, no extra whitespace
+            return newFrontmatterBlock + "\n";
+        }
+        return newFrontmatterBlock + body;
     }
 
 
@@ -157,8 +166,8 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
     /// </remarks>
     private void ApplyBannerConfiguration(Dictionary<string, object> frontmatter, string? filename)
     {
-        // Don't add banner if globally disabled
-        if (!_appConfig.Banners.Enabled)
+        // Defensive: If Banners config is missing, do not apply any banners
+        if (_appConfig.Banners == null || !_appConfig.Banners.Enabled)
         {
             return;
         }
@@ -254,7 +263,7 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
             .Replace("*", ".*")
             .Replace("?", ".")
             + "$";
-        
+
         return System.Text.RegularExpressions.Regex.IsMatch(filename, regexPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     }
 }

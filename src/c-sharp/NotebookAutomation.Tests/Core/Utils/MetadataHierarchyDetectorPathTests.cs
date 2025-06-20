@@ -286,10 +286,13 @@ public class MetadataHierarchyDetectorPathTests
         var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
 
         // We need all the dependencies to create the VaultIndexProcessor
-        var mockTemplateManager = new(); var mockStructureExtractor = new();
-        var mockYamlHelper = new();
-        var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, null!);
-        var mockContentGenerator = new();
+        var mockTemplateManager = new Mock<IMetadataTemplateManager>();
+        var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
+        var mockYamlHelper = new Mock<IYamlHelper>();
+        // Use a real MarkdownNoteBuilder with minimal dependencies
+        var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
+        var noteBuilder = new MarkdownNoteBuilder(yamlHelper, _appConfig);
+        var mockContentGenerator = new Mock<IVaultIndexContentGenerator>();
 
         IVaultIndexProcessor processor = new VaultIndexProcessor(
             mockProcessorLogger.Object,
@@ -297,7 +300,7 @@ public class MetadataHierarchyDetectorPathTests
             detector,
             mockStructureExtractor.Object,
             mockYamlHelper.Object,
-            mockNoteBuilder.Object,
+            noteBuilder,
             _appConfig,
             mockContentGenerator.Object);
 
@@ -346,12 +349,15 @@ public class MetadataHierarchyDetectorPathTests
     {
         // Arrange
         var detector = new MetadataHierarchyDetector(_mockLogger.Object, _appConfig);
-        var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();        // We need all the dependencies to create the VaultIndexProcessor
-        var mockTemplateManager = new();
-        var mockStructureExtractor = new();
-        var mockYamlHelper = new();
-        var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, null!);
-        var mockContentGenerator = new();
+        var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
+        // We need all the dependencies to create the VaultIndexProcessor
+        var mockTemplateManager = new Mock<IMetadataTemplateManager>();
+        var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
+        var mockYamlHelper = new Mock<IYamlHelper>();
+        // Use a real MarkdownNoteBuilder with minimal dependencies
+        var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
+        var noteBuilder = new MarkdownNoteBuilder(yamlHelper, _appConfig);
+        var mockContentGenerator = new Mock<IVaultIndexContentGenerator>();
 
         IVaultIndexProcessor processor = new VaultIndexProcessor(
             mockProcessorLogger.Object,
@@ -359,7 +365,7 @@ public class MetadataHierarchyDetectorPathTests
             detector,
             mockStructureExtractor.Object,
             mockYamlHelper.Object,
-            mockNoteBuilder.Object,
+            noteBuilder,
             _appConfig,
             mockContentGenerator.Object);
 
@@ -486,12 +492,15 @@ public class MetadataHierarchyDetectorPathTests
     public void DetermineTemplateType_WithUnusualFolderPatterns_DetectsCorrectly()
     {
         // Arrange
-        var detector = new MetadataHierarchyDetector(_mockLogger.Object, _appConfig); var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
-        var mockTemplateManager = new();
-        var mockStructureExtractor = new();
-        var mockYamlHelper = new();
-        var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, null!);
-        var mockContentGenerator = new();
+        var detector = new MetadataHierarchyDetector(_mockLogger.Object, _appConfig);
+        var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
+        var mockTemplateManager = new Mock<IMetadataTemplateManager>();
+        var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
+        var mockYamlHelper = new Mock<IYamlHelper>();
+        // Use a real MarkdownNoteBuilder with minimal dependencies (fix: do not mock)
+        var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
+        var noteBuilder = new MarkdownNoteBuilder(yamlHelper, _appConfig);
+        var mockContentGenerator = new Mock<IVaultIndexContentGenerator>();
 
         IVaultIndexProcessor processor = new VaultIndexProcessor(
             mockProcessorLogger.Object,
@@ -499,7 +508,7 @@ public class MetadataHierarchyDetectorPathTests
             detector,
             mockStructureExtractor.Object,
             mockYamlHelper.Object,
-            mockNoteBuilder.Object,
+            noteBuilder,
             _appConfig,
             mockContentGenerator.Object);
         // Create unusual folder names

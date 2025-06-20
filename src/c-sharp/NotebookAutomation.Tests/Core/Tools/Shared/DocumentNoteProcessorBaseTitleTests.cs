@@ -24,7 +24,8 @@ public class DocumentNoteProcessorBaseTitleTests
                 return $"---\n{yaml}\n---\n{content}";
             });
 
-        _markdownNoteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object);
+
+        _markdownNoteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object, _appConfig);
 
         _processor = new TestDocumentProcessor(
             _loggerMock.Object,
@@ -76,7 +77,7 @@ public class DocumentNoteProcessorBaseTitleTests
     public void ExtractAndNormalizeTitle_WithBodyHeading_UsesFriendlyVersionOfHeading()
     {
         // Arrange
-        var frontmatter = new();
+        var frontmatter = new Dictionary<string, object>();
         const string bodyText = "# 01-Introduction to Strategic Management\nContent here";
         const string noteType = "PDF Note";
 
@@ -125,7 +126,7 @@ public class DocumentNoteProcessorBaseTitleTests
     public void ExtractAndNormalizeTitle_WithNoValidTitle_UsesNoteTypeFallback()
     {
         // Arrange
-        var frontmatter = new();
+        var frontmatter = new Dictionary<string, object>();
         const string bodyText = "Content without headings or useful metadata";
         const string noteType = "Video Note";
 
@@ -175,7 +176,7 @@ public class DocumentNoteProcessorBaseTitleTests
     public void ExtractAndNormalizeTitle_WithAIGeneratedFilenameHeading_UsesFriendlyVersion()
     {
         // Arrange
-        var frontmatter = new();
+        var frontmatter = new Dictionary<string, object>();
         const string bodyText = "# 02_01__BAMD 567 MOOC 1 Module 3 Word Transcript\n\nSummary content here";
         const string noteType = "PDF Note";
 

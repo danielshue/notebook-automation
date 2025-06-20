@@ -14,8 +14,9 @@ public class MarkdownNoteProcessorTests
 
     public MarkdownNoteProcessorTests()
     {
-        var mockYamlHelper = new();
-        _markdownNoteBuilder = new MarkdownNoteBuilder(mockYamlHelper.Object);
+        var mockYamlHelper = new Mock<IYamlHelper>();
+        var mockAppConfig = new Mock<AppConfig>();
+        _markdownNoteBuilder = new MarkdownNoteBuilder(mockYamlHelper.Object, mockAppConfig.Object);
     }
 
     /// <summary>
@@ -45,12 +46,18 @@ public class MarkdownNoteProcessorTests
         string testFile = "test.txt";
         await File.WriteAllTextAsync(testFile, "Hello world!").ConfigureAwait(false);
 
-        // Act
-        string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
+        try
+        {
+            // Act
+            string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
 
-        // Assert
-        Assert.IsTrue(result.Contains("Hello world!"));
-        File.Delete(testFile);
+            // Assert
+            Assert.IsTrue(result.Contains("Hello world!"));
+        }
+        finally
+        {
+            File.Delete(testFile);
+        }
     }
 
     /// <summary>
@@ -66,11 +73,17 @@ public class MarkdownNoteProcessorTests
         MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector(), _markdownNoteBuilder);
         string testFile = "test.html";
         await File.WriteAllTextAsync(testFile, "<h1>Header</h1><p>Paragraph</p>").ConfigureAwait(false);
-        string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
-        Assert.IsTrue(result.Contains("Header"));
-        Assert.IsTrue(result.Contains("Paragraph"));
-        Assert.IsFalse(result.Contains("<h1>"));
-        File.Delete(testFile);
+        try
+        {
+            string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
+            Assert.IsTrue(result.Contains("Header"));
+            Assert.IsTrue(result.Contains("Paragraph"));
+            Assert.IsFalse(result.Contains("<h1>"));
+        }
+        finally
+        {
+            File.Delete(testFile);
+        }
     }
 
     /// <summary>
@@ -86,8 +99,24 @@ public class MarkdownNoteProcessorTests
         MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector(), _markdownNoteBuilder);
         string testFile = "empty.html";
         await File.WriteAllTextAsync(testFile, string.Empty).ConfigureAwait(false);
-        string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
-        Assert.IsTrue(result.Contains("generated")); // Metadata present        File.Delete(testFile);
+        try
+        {
+            string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
+
+            // Assert: Should contain YAML frontmatter and no HTML tags, body should be empty or minimal
+            Assert.IsFalse(string.IsNullOrWhiteSpace(result), "Result should not be null or empty.");
+            Assert.IsTrue(result.TrimStart().StartsWith("---"), "Result should start with YAML frontmatter.");
+            Assert.IsFalse(result.Contains("<"), "Result should not contain HTML tags.");
+            // Optionally, check that the body is the simulated AI summary after frontmatter
+            var parts = result.Split("---");
+            Assert.IsTrue(parts.Length >= 2, "YAML frontmatter should be present.");
+            string markdownBody = parts[^1].Trim();
+            Assert.AreEqual("[Simulated AI summary]", markdownBody, "Markdown body should match the simulated AI summary returned by the mock summarizer.");
+        }
+        finally
+        {
+            File.Delete(testFile);
+        }
     }
 
     /// <summary>
@@ -103,9 +132,15 @@ public class MarkdownNoteProcessorTests
         MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector(), _markdownNoteBuilder);
         string testFile = "test.unsupported";
         await File.WriteAllTextAsync(testFile, "data").ConfigureAwait(false);
-        string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
-        Assert.AreEqual(string.Empty, result);
-        File.Delete(testFile);
+        try
+        {
+            string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
+            Assert.AreEqual(string.Empty, result);
+        }
+        finally
+        {
+            File.Delete(testFile);
+        }
     }
 
     /// <summary>
@@ -137,9 +172,15 @@ public class MarkdownNoteProcessorTests
         MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector(), _markdownNoteBuilder);
         string testFile = "tags.html";
         await File.WriteAllTextAsync(testFile, "<div><span></span></div>").ConfigureAwait(false);
-        string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
-        Assert.IsFalse(result.Contains("<div>"));
-        File.Delete(testFile);
+        try
+        {
+            string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
+            Assert.IsFalse(result.Contains("<div>"));
+        }
+        finally
+        {
+            File.Delete(testFile);
+        }
     }
 
     /// <summary>
@@ -157,9 +198,15 @@ public class MarkdownNoteProcessorTests
         MarkdownNoteProcessor processor = new(logger, summarizer, CreateTestHierarchyDetector(), _markdownNoteBuilder);
         string testFile = "ai.txt";
         await File.WriteAllTextAsync(testFile, "This is a test for AI summary.").ConfigureAwait(false);
-        string result = await processor.ConvertToMarkdownAsync(testFile, "fake-key", "test-prompt").ConfigureAwait(false);
-        Assert.IsTrue(result.Contains("AI summary result"));
-        File.Delete(testFile);
+        try
+        {
+            string result = await processor.ConvertToMarkdownAsync(testFile, "fake-key", "test-prompt").ConfigureAwait(false);
+            Assert.IsTrue(result.Contains("AI summary result"));
+        }
+        finally
+        {
+            File.Delete(testFile);
+        }
     }
 
     /// <summary>
@@ -180,12 +227,18 @@ public class MarkdownNoteProcessorTests
         // Simulate EPUB file (file must exist, but content is mocked)
         await File.WriteAllTextAsync(testFile, "EPUB content").ConfigureAwait(false);
 
-        // Mock VersOne.Epub.EpubReader.ReadBookAsync via reflection or skip if not available
-        // This test will just check that the method handles the catch block gracefully
-        string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
+        try
+        {
+            // Mock VersOne.Epub.EpubReader.ReadBookAsync via reflection or skip if not available
+            // This test will just check that the method handles the catch block gracefully
+            string result = await processor.ConvertToMarkdownAsync(testFile, "dummy-api-key", "test-prompt").ConfigureAwait(false);
 
-        // Since the EPUB parser will throw, expect empty string
-        Assert.AreEqual(string.Empty, result);
-        File.Delete(testFile);
+            // Since the EPUB parser will throw, expect empty string
+            Assert.AreEqual(string.Empty, result);
+        }
+        finally
+        {
+            File.Delete(testFile);
+        }
     }
 }

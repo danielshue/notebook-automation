@@ -16,7 +16,7 @@ public class AISummarizerSemanticKernelTests
     {
         // Arrange
         var logger = new Mock<ILogger<AISummarizer>>();
-        var mockPromptService = new();
+        var mockPromptService = new Mock<IPromptService>();
         var mockTimeoutConfig = new TimeoutConfig();
 
         var summarizer = new AISummarizer(logger.Object, mockPromptService.Object, null, null, mockTimeoutConfig);
@@ -61,7 +61,7 @@ public class AISummarizerSemanticKernelTests
     {
         // Arrange
         var logger = new Mock<ILogger<AISummarizer>>();
-        var mockPromptService = new();
+        var mockPromptService = new Mock<IPromptService>();
 
         // Create a large text that will trigger chunking (over 8000 characters)
         string largeText = new string('A', 9000);
@@ -113,7 +113,7 @@ public class AISummarizerSemanticKernelTests
     {
         // Arrange
         var logger = new Mock<ILogger<AISummarizer>>();
-        var mockPromptService = new();
+        var mockPromptService = new Mock<IPromptService>();
 
         string originalTemplate = "Course: {{$course}}, Path: {{$onedrivePath}}, Content: {{$content}}";
         string substitutedTemplate = "Course: Test Course, Path: /test/path, Content: {{$content}}";

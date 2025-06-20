@@ -870,7 +870,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 // Convert back to non-nullable dictionary
                 foreach (var kvp in updatedMetadata)
                 {
-                    metadata[kvp.Key] = kvp.Value ?? new();
+                    metadata[kvp.Key] = kvp.Value ?? new object();
                 }
                 Logger.LogInformation(
                     $"Added hierarchy metadata for path {videoPath} - Program: {hierarchyInfo!.GetValueOrDefault("program", "")}, Course: {hierarchyInfo!.GetValueOrDefault("course", "")}, Class: {hierarchyInfo!.GetValueOrDefault("class", "")}");

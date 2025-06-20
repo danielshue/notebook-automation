@@ -54,10 +54,10 @@ metadata:
         TestPromptTemplateService testPromptService = new();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
         _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
-        _oneDriveServiceMock = new();
+        _oneDriveServiceMock = new Mock<IOneDriveService>();
         _oneDriveServiceMock.Setup(s => s.GetShareLinkAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync("https://example.com/share-link");
-        _yamlHelperMock = new();
+        _yamlHelperMock = new Mock<IYamlHelper>();
 
         // Setup YamlHelper mock
         _yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
@@ -154,6 +154,7 @@ metadata:
     {
         // Arrange
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
+
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
             _aiSummarizer,
@@ -161,7 +162,7 @@ metadata:
             CreateMetadataHierarchyDetector(),
             new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
             mockCourseStructureExtractor,
-            new MarkdownNoteBuilder(_yamlHelperMock.Object),
+            new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
             null);
 
@@ -203,7 +204,7 @@ metadata:
             CreateMetadataHierarchyDetector(),
             new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
             mockCourseStructureExtractor,
-            new MarkdownNoteBuilder(_yamlHelperMock.Object),
+            new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
             null);
 
@@ -246,7 +247,7 @@ metadata:
             CreateMetadataHierarchyDetector(),
             new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
             mockCourseStructureExtractor,
-            new MarkdownNoteBuilder(_yamlHelperMock.Object),
+            new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
             null);
 
@@ -285,7 +286,7 @@ metadata:
                 _testAppConfig,
                 _yamlHelperMock.Object),
             mockCourseStructureExtractor,
-            new MarkdownNoteBuilder(_yamlHelperMock.Object),
+            new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             null, // OneDriveService is null to disable OneDrive functionality
             _testAppConfig); // AppConfig
 
@@ -329,7 +330,7 @@ metadata:
             CreateMetadataHierarchyDetector(),
             new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
             mockCourseStructureExtractor,
-            new MarkdownNoteBuilder(_yamlHelperMock.Object),
+            new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
             null);
 
@@ -374,7 +375,7 @@ metadata:
             _yamlHelperMock.Object);
         var courseStructureExtractor = new CourseStructureExtractor(
             Mock.Of<ILogger<CourseStructureExtractor>>());
-        var markdownNoteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig);
 
         return new VideoNoteProcessor(
             _loggerMock.Object,

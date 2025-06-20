@@ -62,7 +62,7 @@ public class QueueChangedEventArgsTests
     public void Constructor_WithEmptyQueue_CreatesValidEventArgs()
     {
         // Arrange
-        var queueItems = new();
+        var queueItems = new List<QueueItem>();
 
         // Act
         var eventArgs = new QueueChangedEventArgs(queueItems);
@@ -120,7 +120,7 @@ public class QueueChangedEventArgsTests
     public void QueueChangedEventArgs_InheritsFromEventArgs()
     {
         // Arrange
-        var queueItems = new();
+        var queueItems = new List<QueueItem>();
         var eventArgs = new QueueChangedEventArgs(queueItems);
 
         // Act & Assert

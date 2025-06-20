@@ -59,8 +59,8 @@ public class ConfigCommandsSecretsTests
     [TestInitialize]
     public void Setup()
     {
-        mockLogger = new();
-        mockConfigManager = new();
+        mockLogger = new Mock<ILogger<ConfigCommands>>();
+        mockConfigManager = new Mock<IConfigManager>();
 
         // Create a real service collection for testing
         var services = new ServiceCollection();

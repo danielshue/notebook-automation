@@ -14,9 +14,9 @@ public class TagCommandsTests
     [TestInitialize]
     public void Setup()
     {
-        mockLogger = new();
-        mockServiceProvider = new();
-        mockAppConfig = new();
+        mockLogger = new Mock<ILogger<TagCommands>>();
+        mockServiceProvider = new Mock<IServiceProvider>();
+        mockAppConfig = new Mock<AppConfig>();
         mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig))).Returns(mockAppConfig.Object);
     }
 

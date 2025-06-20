@@ -69,7 +69,7 @@ metadata:
             null);
         var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance); var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelper);
-        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder, null, appConfig);
 
@@ -104,7 +104,7 @@ metadata:
             null);
         var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance); var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
         var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, appConfig, yamlHelper);
-        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder, null, appConfig);
 
