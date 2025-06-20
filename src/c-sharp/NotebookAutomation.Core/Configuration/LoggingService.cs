@@ -43,7 +43,7 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
     private Microsoft.Extensions.Logging.ILogger? failedLogger;
 
     // Synchronization object for thread safety
-    private readonly Lock initLock = new();
+    private readonly object initLock = new object();
     private volatile bool isInitialized = false;
 
     /// <summary>

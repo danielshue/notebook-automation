@@ -51,7 +51,7 @@ metadata:
 
         // Create a real AISummarizer with test dependencies
         ILogger<AISummarizer> mockAiLogger = new LoggerFactory().CreateLogger<AISummarizer>();
-        TestPromptTemplateService testPromptService = new();
+        TestPromptTemplateService testPromptService = new object();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
         _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
         _oneDriveServiceMock = new Mock<IOneDriveService>();

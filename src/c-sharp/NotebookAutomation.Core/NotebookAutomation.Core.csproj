@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>preview</LangVersion>
+        <LangVersion>12</LangVersion>
         <UserSecretsId>c6a8ab21-82a5-4993-bea2-7db0b10724ea</UserSecretsId>
     </PropertyGroup>
     <ItemGroup>

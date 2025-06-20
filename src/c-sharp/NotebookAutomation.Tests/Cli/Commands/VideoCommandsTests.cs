@@ -9,7 +9,7 @@ namespace NotebookAutomation.Tests.Cli.Commands;
 [TestClass]
 public class VideoCommandsTests
 {
-    private readonly Mock<ILogger<VideoCommands>> mockLogger = new();
+    private readonly Mock<ILogger<VideoCommands>> mockLogger = new object();
 
     /// <summary>
     /// Verifies that the 'video-notes' command prints usage/help when no arguments are provided.

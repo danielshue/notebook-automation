@@ -15,7 +15,7 @@ public class VideoNoteProcessorTests
     public async Task GenerateAiSummaryAsync_FallsBackToNewAISummarizer_WhenNotInjected()
     {
         // Arrange
-        Mock<ILogger<VideoNoteProcessor>> loggerMock = new(); var appConfig = new AppConfig
+        Mock<ILogger<VideoNoteProcessor>> loggerMock = new object(); var appConfig = new AppConfig
         {
             Paths = new PathsConfig
             {
@@ -30,7 +30,7 @@ public class VideoNoteProcessorTests
             Mock.Of<ILogger<AISummarizer>>(),
             promptService,
             null);
-        Mock<IYamlHelper> yamlHelperMock = new();
+        Mock<IYamlHelper> yamlHelperMock = new object();
         var hierarchyDetector = CreateMetadataHierarchyDetector(); var templateManager = new MetadataTemplateManager(
             Mock.Of<ILogger<MetadataTemplateManager>>(),
             appConfig,

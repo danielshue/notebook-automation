@@ -15,10 +15,10 @@ namespace NotebookAutomation.Cli.Tests.Commands;
 [TestClass]
 public class VaultCommandsRelativePathTests
 {
-    private readonly Mock<ILogger<VaultCommands>> _mockLogger = new();
-    private readonly TestServiceProvider _serviceProvider = new();
-    private readonly Mock<AppConfig> _appConfig = new();
-    private readonly Mock<PathsConfig> _pathsConfig = new();
+    private readonly Mock<ILogger<VaultCommands>> _mockLogger = new object();
+    private readonly TestServiceProvider _serviceProvider = new object();
+    private readonly Mock<AppConfig> _appConfig = new object();
+    private readonly Mock<PathsConfig> _pathsConfig = new object();
     private string _tempDir = string.Empty;
     private string _vaultRoot = string.Empty;
 
@@ -170,7 +170,7 @@ public class VaultCommandsRelativePathTests
     /// </summary>
     public class TestServiceProvider : IServiceProvider
     {
-        private readonly Dictionary<Type, object> _services = new();
+        private readonly Dictionary<Type, object> _services = new object();
 
         public void AddService<T>(T service) where T : class
         {
