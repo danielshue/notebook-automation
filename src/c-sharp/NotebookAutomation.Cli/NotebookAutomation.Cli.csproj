@@ -15,7 +15,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>12</LangVersion>
+        <LangVersion>13</LangVersion>
         <AssemblyName>na</AssemblyName>
         <UserSecretsId>30391e52-b669-419b-a859-fbd67b3c090b</UserSecretsId>
         <GenerateDocumentationFile>False</GenerateDocumentationFile>
