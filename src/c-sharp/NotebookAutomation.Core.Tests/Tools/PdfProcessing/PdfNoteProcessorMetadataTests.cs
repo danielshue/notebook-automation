@@ -44,7 +44,7 @@ public class PdfNoteProcessorMetadataTests
             ["module"] = "Test Module"
         };
 
-        var metadata = new Dictionary<string, object?>();
+        var metadata = new();
 
         // Act - Test with pdf-reference template type (should include all levels up to class)
         var result = realDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "pdf-reference");        // Assert - With pdf-reference template, we should get program, course, class, AND module
@@ -81,8 +81,8 @@ public class PdfNoteProcessorMetadataTests
             ["class"] = "Quality and Supply Chain"
         };
 
-        var metadata1 = new Dictionary<string, object?>();
-        var metadata2 = new Dictionary<string, object?>();
+        var metadata1 = new();
+        var metadata2 = new();
 
         // Act - Compare results with and without template type
         var resultWithoutTemplate = realDetector.UpdateMetadataWithHierarchy(metadata1, hierarchyInfo, null); // Bug scenario
@@ -119,7 +119,7 @@ public class PdfNoteProcessorMetadataTests
             ["module"] = "Quality and Supply Chain"
         };
 
-        var metadata = new Dictionary<string, object?>();
+        var metadata = new();
 
         // Act
         var result = detector.UpdateMetadataWithHierarchy(metadata, mbaHierarchy, "pdf-reference");        // Assert - PDF references should get all levels including module (pdf-reference is unknown type, gets maxLevel=4)

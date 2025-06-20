@@ -42,8 +42,8 @@ public class VaultCommandsRelativePathTests
 
         // Create mocks for VaultIndexBatchProcessor dependencies
         var mockBatchLogger = new Mock<ILogger<VaultIndexBatchProcessor>>();
-        var mockIndexProcessor = new Mock<IVaultIndexProcessor>();
-        var mockHierarchyDetector = new Mock<IMetadataHierarchyDetector>();
+        var mockIndexProcessor = new();
+        var mockHierarchyDetector = new();
 
         // Set up the index processor mock to return a successful result
         var mockResult = new VaultIndexBatchResult

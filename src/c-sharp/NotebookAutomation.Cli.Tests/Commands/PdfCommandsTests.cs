@@ -12,7 +12,7 @@ public class PdfCommandsTests
     [TestInitialize]
     public void Setup()
     {
-        mockLogger = new Mock<ILogger<PdfCommands>>();
+        mockLogger = new();
     }
 
     /// <summary>

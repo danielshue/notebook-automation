@@ -47,7 +47,7 @@ public class MetadataHierarchyDetectorTests
         _loggerMock = new Mock<ILogger<MetadataHierarchyDetector>>();
 
         // Create a real AppConfig instance instead of mocking it
-        _appConfigMock = new Mock<AppConfig>();
+        _appConfigMock = new();
 
         // Create the real config and set it up
         AppConfig realConfig = new()

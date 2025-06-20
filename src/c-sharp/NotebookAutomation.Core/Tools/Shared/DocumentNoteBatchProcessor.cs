@@ -37,7 +37,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
 
     // Queue-related fields
     private readonly List<QueueItem> processingQueue = [];
-    private readonly Lock queueLock = new();
+    private readonly object queueLock = new();
 
     /// <summary>
     /// Matches markdown headers for notes (e.g., "## Notes").

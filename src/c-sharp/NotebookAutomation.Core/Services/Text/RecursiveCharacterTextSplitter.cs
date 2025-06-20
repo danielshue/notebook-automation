@@ -542,7 +542,7 @@ public partial class RecursiveCharacterTextSplitter
         }
 
         // Split by whitespace to get a rough word count
-        string[] words = text.Split([' ', '\n', '\r', '\t'], StringSplitOptions.RemoveEmptyEntries);
+        string[] words = text.Split(new char[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 
         // Count punctuation and special characters separately as they often become individual tokens
         int punctuationCount = text.Count(c => !char.IsLetterOrDigit(c) && !char.IsWhiteSpace(c));

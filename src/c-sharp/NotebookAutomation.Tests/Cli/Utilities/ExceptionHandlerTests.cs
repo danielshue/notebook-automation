@@ -27,7 +27,7 @@ public class ExceptionHandlerTests
     [TestInitialize]
     public void Setup()
     {
-        mockLogger = new Mock<ILogger>();
+        mockLogger = new();
 
         // Capture console output for testing
         originalOut = Console.Out;

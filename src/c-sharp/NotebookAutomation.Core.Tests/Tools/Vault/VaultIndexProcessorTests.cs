@@ -31,13 +31,13 @@ public class VaultIndexProcessorTests
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<VaultIndexProcessor>>();
-        _templateManagerMock = new Mock<IMetadataTemplateManager>();
+        _templateManagerMock = new();
         _structureLoggerMock = new Mock<ILogger<CourseStructureExtractor>>();
         _structureExtractor = new CourseStructureExtractor(_structureLoggerMock.Object);
-        _yamlHelperMock = new Mock<IYamlHelper>();
+        _yamlHelperMock = new();
         _noteBuilderLoggerMock = new Mock<ILogger<MarkdownNoteBuilder>>();
         _noteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object);
-        _contentGeneratorMock = new Mock<IVaultIndexContentGenerator>();
+        _contentGeneratorMock = new();
         _appConfig = new AppConfig
         {
             Paths = new PathsConfig
@@ -45,7 +45,7 @@ public class VaultIndexProcessorTests
                 NotebookVaultFullpathRoot = "/vault/root"
             }
         };
-        _hierarchyDetectorMock = new Mock<IMetadataHierarchyDetector>();
+        _hierarchyDetectorMock = new();
 
         // Setup default content generator behavior
         _contentGeneratorMock.Setup(x => x.GenerateIndexContentAsync(

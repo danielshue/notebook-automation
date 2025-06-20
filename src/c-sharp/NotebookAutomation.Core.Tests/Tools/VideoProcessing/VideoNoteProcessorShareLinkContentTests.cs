@@ -52,10 +52,10 @@ metadata:
         TestPromptTemplateService testPromptService = new();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
         _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
-        _oneDriveServiceMock = new Mock<IOneDriveService>();
+        _oneDriveServiceMock = new();
         _oneDriveServiceMock.Setup(s => s.GetShareLinkAsync(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync("https://example.com/share-link");
-        _yamlHelperMock = new Mock<IYamlHelper>();
+        _yamlHelperMock = new();
 
         // Setup YamlHelper mock
         _yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
