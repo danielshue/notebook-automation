@@ -596,8 +596,9 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<MarkdownNoteBuilder>();
             var yaml = provider.GetRequiredService<IYamlHelper>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
 
-            return new MarkdownNoteBuilder(yaml);
+            return new MarkdownNoteBuilder(yaml, appConfig);
         });
 
         services.AddScoped<TagProcessor>();
