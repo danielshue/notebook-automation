@@ -117,12 +117,12 @@ public class VaultIndexContentGeneratorTests
         /// <summary>
         /// Dictionary mapping folder paths to their expected subfolder collections for test scenarios.
         /// </summary>
-        private readonly Dictionary<string, List<string>> _mockSubfolders = new object();
+        private readonly Dictionary<string, List<string>> _mockSubfolders = new();
 
         /// <summary>
         /// Dictionary mapping vault paths to their expected root index filenames for test scenarios.
         /// </summary>
-        private readonly Dictionary<string, string> _mockRootIndexes = new object();
+        private readonly Dictionary<string, string> _mockRootIndexes = new();
 
         /// <summary>
         /// Initializes a new instance of the TestableVaultIndexContentGenerator class with the specified dependencies.
