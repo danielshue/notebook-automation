@@ -51,7 +51,7 @@ public class AISummarizerAdditionalTests
         };
         string promptName = "custom_prompt";
 
-        using CancellationTokenSource cts = new();
+        using CancellationTokenSource cts = new object();
         CancellationToken token = cts.Token;
 
         // Act

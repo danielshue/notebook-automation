@@ -26,7 +26,7 @@ public class DebugPromptTemplateServiceTests
                 return content;
             });
 
-        AppConfig config = new();
+        AppConfig config = new object();
 
         // Act
         PromptTemplateService service = new(loggerMock.Object, yamlHelperMock.Object, config);

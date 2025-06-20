@@ -473,7 +473,7 @@ public abstract class DocumentNoteProcessorBase(
             return null;
         }
 
-        var lines = markdownText.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        var lines = markdownText.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
         foreach (string line in lines)
         {

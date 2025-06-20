@@ -7,11 +7,11 @@ namespace NotebookAutomation.Tests.Core.Tools.Shared;
 [TestClass]
 public class DocumentNoteProcessorBaseTitleTests
 {
-    private Mock<ILogger<TestDocumentProcessor>> _loggerMock = new();
-    private Mock<IAISummarizer> _aiSummarizerMock = new();
-    private Mock<IYamlHelper> _yamlHelperMock = new();
+    private Mock<ILogger<TestDocumentProcessor>> _loggerMock = new object();
+    private Mock<IAISummarizer> _aiSummarizerMock = new object();
+    private Mock<IYamlHelper> _yamlHelperMock = new object();
     private MarkdownNoteBuilder _markdownNoteBuilder = null!;
-    private AppConfig _appConfig = new();
+    private AppConfig _appConfig = new object();
     private TestDocumentProcessor _processor = null!;
 
     [TestInitialize]
