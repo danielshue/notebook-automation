@@ -30,7 +30,7 @@ public class VideoNoteBatchProcessorTests
         _testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());
 
         // Create mock YamlHelper
-        var mockYamlHelper = new Mock<IYamlHelper>();
+        var mockYamlHelper = new();
         mockYamlHelper.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
             .Returns(new Dictionary<string, object>
             {
@@ -41,7 +41,7 @@ public class VideoNoteBatchProcessorTests
             .Returns("---\ntitle: Test Video\ntags:\n  - test\n---");
 
         // Create a mock OneDriveService for link sharing
-        var mockOneDriveService = new Mock<IOneDriveService>();
+        var mockOneDriveService = new();
         mockOneDriveService
             .Setup(m => m.CreateShareLinkAsync(
                 It.IsAny<string>(),

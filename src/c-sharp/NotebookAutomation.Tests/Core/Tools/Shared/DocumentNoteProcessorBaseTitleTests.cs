@@ -76,7 +76,7 @@ public class DocumentNoteProcessorBaseTitleTests
     public void ExtractAndNormalizeTitle_WithBodyHeading_UsesFriendlyVersionOfHeading()
     {
         // Arrange
-        var frontmatter = new Dictionary<string, object>();
+        var frontmatter = new();
         const string bodyText = "# 01-Introduction to Strategic Management\nContent here";
         const string noteType = "PDF Note";
 
@@ -125,7 +125,7 @@ public class DocumentNoteProcessorBaseTitleTests
     public void ExtractAndNormalizeTitle_WithNoValidTitle_UsesNoteTypeFallback()
     {
         // Arrange
-        var frontmatter = new Dictionary<string, object>();
+        var frontmatter = new();
         const string bodyText = "Content without headings or useful metadata";
         const string noteType = "Video Note";
 
@@ -175,7 +175,7 @@ public class DocumentNoteProcessorBaseTitleTests
     public void ExtractAndNormalizeTitle_WithAIGeneratedFilenameHeading_UsesFriendlyVersion()
     {
         // Arrange
-        var frontmatter = new Dictionary<string, object>();
+        var frontmatter = new();
         const string bodyText = "# 02_01__BAMD 567 MOOC 1 Module 3 Word Transcript\n\nSummary content here";
         const string noteType = "PDF Note";
 

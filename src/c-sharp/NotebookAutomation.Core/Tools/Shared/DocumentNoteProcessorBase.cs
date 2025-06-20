@@ -210,7 +210,7 @@ public abstract class DocumentNoteProcessorBase(
                 // Extract document type from noteType (e.g., "PDF Note" -> "pdf", "Video Note" -> "video")
                 string documentType = noteType.Split(' ')[0].ToLowerInvariant();
                 var updatedMetadata = HierarchyDetector.UpdateMetadataWithHierarchy(nullableMetadata, hierarchyInfo, documentType);
-                metadata = updatedMetadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value ?? new object());
+                metadata = updatedMetadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value ?? new());
                 Logger.LogDebug($"Applied hierarchy detection - program: {hierarchyInfo.GetValueOrDefault("program", "")}, course: {hierarchyInfo.GetValueOrDefault("course", "")}, class: {hierarchyInfo.GetValueOrDefault("class", "")}");
             }
             catch (Exception ex)
@@ -473,7 +473,7 @@ public abstract class DocumentNoteProcessorBase(
             return null;
         }
 
-        var lines = markdownText.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        var lines = markdownText.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
 
         foreach (string line in lines)
         {

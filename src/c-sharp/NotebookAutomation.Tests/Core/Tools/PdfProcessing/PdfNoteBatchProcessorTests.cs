@@ -90,7 +90,7 @@ public class PdfNoteBatchProcessorTests
     [TestInitialize]
     public void Setup()
     {
-        _loggerMock = new Mock<ILogger>();
+        _loggerMock = new();
         _batchProcessor = new TestBatchProcessor();
         _processor = new PdfNoteBatchProcessor(_batchProcessor);
         _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

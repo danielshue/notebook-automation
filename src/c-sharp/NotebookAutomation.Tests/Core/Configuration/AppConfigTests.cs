@@ -118,7 +118,7 @@ public class AppConfigTests
     public void Initialize()
     {
         _loggerMock = new Mock<ILogger<AppConfig>>();
-        _configurationMock = new Mock<IConfiguration>();
+        _configurationMock = new();
     }
 
     /// <summary>

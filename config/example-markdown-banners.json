@@ -1,0 +1,16 @@
+{
+  "banners": {
+    "enabled": true,
+    "default": "## Welcome to Course Materials\n\nThis document contains course-related information.\n\n---",
+    "format": "markdown",
+    "template_banners": {
+      "main": "# 📚 Main Course Index\n\nWelcome to the main course directory.\n\n---",
+      "course": "# 📖 Course Materials\n\n**Course Information and Resources**\n\n---",
+      "assignment": "# 📝 Assignment\n\n**Please read the instructions carefully.**\n\n---"
+    },
+    "filename_patterns": {
+      "*syllabus*": "# 📋 Course Syllabus\n\n**Official course syllabus and requirements**\n\n---",
+      "*assignment*": "# ✍️ Assignment Details\n\n**Complete all requirements before the due date.**\n\n---"
+    }
+  }
+}

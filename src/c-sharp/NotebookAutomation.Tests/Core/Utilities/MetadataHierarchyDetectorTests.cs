@@ -46,7 +46,7 @@ public class MetadataHierarchyDetectorTests
         _loggerMock = new Mock<ILogger<MetadataHierarchyDetector>>();
 
         // Create a real AppConfig instance instead of mocking it
-        _appConfigMock = new Mock<AppConfig>();
+        _appConfigMock = new();
 
         // Create a unique vault path for each test run to prevent parallel test conflicts
         string uniqueId = Guid.NewGuid().ToString("N")[..8]; // Short unique ID
