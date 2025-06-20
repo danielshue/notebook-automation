@@ -242,8 +242,8 @@ public class VaultIndexContentGeneratorTests
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<VaultIndexContentGenerator>>();
-        _hierarchyDetectorMock = new Mock<IMetadataHierarchyDetector>();
-        _yamlHelperMock = new Mock<IYamlHelper>();
+        _hierarchyDetectorMock = new();
+        _yamlHelperMock = new();
         _noteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object);
 
         _appConfig = new AppConfig
@@ -369,8 +369,8 @@ public class VaultIndexContentGeneratorTests
     {
         // Arrange
         var template = new Dictionary<string, object> { ["template-type"] = "main" };
-        var files = new List<VaultFileInfo>();
-        var hierarchyInfo = new Dictionary<string, string>(); _hierarchyDetectorMock
+        var files = new();
+        var hierarchyInfo = new(); _hierarchyDetectorMock
             .Setup(x => x.UpdateMetadataWithHierarchy(
                 It.IsAny<Dictionary<string, object?>>(),
                 It.IsAny<Dictionary<string, string>>(),
@@ -489,7 +489,7 @@ public class VaultIndexContentGeneratorTests
             ["template-type"] = "class"
         };
 
-        var hierarchyInfo = new Dictionary<string, string>();
+        var hierarchyInfo = new();
 
         _hierarchyDetectorMock
             .Setup(x => x.UpdateMetadataWithHierarchy(
@@ -536,7 +536,7 @@ public class VaultIndexContentGeneratorTests
         };
         var originalCount = template.Count;
 
-        var hierarchyInfo = new Dictionary<string, string>();
+        var hierarchyInfo = new();
 
         _hierarchyDetectorMock
             .Setup(x => x.UpdateMetadataWithHierarchy(
@@ -587,8 +587,8 @@ public class VaultIndexContentGeneratorTests
             ["title"] = "Main Index"
         };
 
-        var files = new List<VaultFileInfo>();
-        var hierarchyInfo = new Dictionary<string, string>();
+        var files = new();
+        var hierarchyInfo = new();
 
         // Act
         var result = _generator.GenerateContentSections(
@@ -636,7 +636,7 @@ public class VaultIndexContentGeneratorTests
             ["title"] = "Class Index"
         };
 
-        var files = new List<VaultFileInfo>();
+        var files = new();
         var hierarchyInfo = new Dictionary<string, string>
         {
             ["course"] = "Test Course",
@@ -683,9 +683,9 @@ public class VaultIndexContentGeneratorTests
     public void GenerateContentSections_WithEmptyTitle_UsesDefaultTitle()
     {
         // Arrange
-        var frontmatter = new Dictionary<string, object>();
-        var files = new List<VaultFileInfo>();
-        var hierarchyInfo = new Dictionary<string, string>();
+        var frontmatter = new();
+        var files = new();
+        var hierarchyInfo = new();
 
         // Act
         var result = _generator.GenerateContentSections(
@@ -729,7 +729,7 @@ public class VaultIndexContentGeneratorTests
     public void AddSubfolderListing_WithSubfolders_AddsFormattedList()
     {
         // Arrange
-        var contentSections = new List<string>();
+        var contentSections = new();
         var subFolders = new List<string> { "intro-to-programming", "data-structures" };        // Act
         _generator.AddSubfolderListing(contentSections, subFolders, "Courses", "📚");
 
@@ -763,8 +763,8 @@ public class VaultIndexContentGeneratorTests
     public void AddSubfolderListing_WithEmptyList_AddsNothing()
     {
         // Arrange
-        var contentSections = new List<string>();
-        var subFolders = new List<string>();
+        var contentSections = new();
+        var subFolders = new();
 
         // Act
         _generator.AddSubfolderListing(contentSections, subFolders, "Courses");
@@ -797,7 +797,7 @@ public class VaultIndexContentGeneratorTests
     public void AddSubfolderListing_WithDefaultIcon_UsesFolder()
     {
         // Arrange
-        var contentSections = new List<string>();
+        var contentSections = new();
         var subFolders = new List<string> { "test-folder" };
 
         // Act
@@ -835,7 +835,7 @@ public class VaultIndexContentGeneratorTests
     public void AddContentByType_WithGroupedFiles_CreatesTypedSections()
     {
         // Arrange
-        var contentSections = new List<string>();
+        var contentSections = new();
         var groupedFiles = new Dictionary<string, List<VaultFileInfo>>
         {
             ["reading"] = new List<VaultFileInfo>
@@ -886,7 +886,7 @@ public class VaultIndexContentGeneratorTests
     public void AddContentByType_SortsFilesAlphabetically()
     {
         // Arrange
-        var contentSections = new List<string>();
+        var contentSections = new();
         var groupedFiles = new Dictionary<string, List<VaultFileInfo>>
         {
             ["reading"] = new List<VaultFileInfo>
@@ -930,7 +930,7 @@ public class VaultIndexContentGeneratorTests
     public void AddContentByType_WithEmptyGroupedFiles_AddsNothing()
     {
         // Arrange
-        var contentSections = new List<string>();
+        var contentSections = new();
         var groupedFiles = new Dictionary<string, List<VaultFileInfo>>();
         var contentTypes = new[] { "reading", "video" };
 
@@ -1310,7 +1310,7 @@ public class VaultIndexContentGeneratorTests
     public void AddHierarchySpecificContent_WithDifferentLevels_GeneratesAppropriateContent()
     {
         // Arrange
-        var contentSections = new List<string>();
+        var contentSections = new();
         var files = new List<VaultFileInfo>
         {
             new() { ContentType = "reading", Title = "Test Reading" }
@@ -1374,7 +1374,7 @@ public class VaultIndexContentGeneratorTests
             ["nullable-field"] = null!
         };
 
-        var hierarchyInfo = new Dictionary<string, string>();
+        var hierarchyInfo = new();
 
         _hierarchyDetectorMock
             .Setup(x => x.UpdateMetadataWithHierarchy(
@@ -1419,7 +1419,7 @@ public class VaultIndexContentGeneratorTests
     public void AddContentByType_WithNullTitles_HandlesGracefully()
     {
         // Arrange
-        var contentSections = new List<string>();
+        var contentSections = new();
         var groupedFiles = new Dictionary<string, List<VaultFileInfo>>
         {
             ["reading"] = new List<VaultFileInfo>
@@ -1462,8 +1462,8 @@ public class VaultIndexContentGeneratorTests
     {
         // Arrange
         var template = new Dictionary<string, object> { ["template-type"] = "module" };
-        var files = new List<VaultFileInfo>();
-        var hierarchyInfo = new Dictionary<string, string>();
+        var files = new();
+        var hierarchyInfo = new();
 
         _hierarchyDetectorMock.Setup(x => x.UpdateMetadataWithHierarchy(
                 It.IsAny<Dictionary<string, object?>>(),
@@ -1516,7 +1516,7 @@ public class VaultIndexContentGeneratorTests
     public void AddLessonLevelContent_WithContentAndSubfolders_PrioritizesContent()
     {
         // Arrange
-        var contentSections = new List<string>();
+        var contentSections = new();
         var subFolders = new List<string> { "additional-resources", "supplementary-materials" };
         var groupedFiles = new Dictionary<string, List<VaultFileInfo>>
         {
@@ -1582,7 +1582,7 @@ public class VaultIndexContentGeneratorTests
     public void AddLessonLevelContent_WithEmptyContent_ShowsSubfolders()
     {
         // Arrange
-        var contentSections = new List<string>();
+        var contentSections = new();
         var subFolders = new List<string> { "homework", "quiz" };
         var groupedFiles = new Dictionary<string, List<VaultFileInfo>>();
 
@@ -1608,8 +1608,8 @@ public class VaultIndexContentGeneratorTests
     public void AddLessonLevelContent_WithEmptyInputs_ProducesNoSections()
     {
         // Arrange
-        var contentSections = new List<string>();
-        var subFolders = new List<string>();
+        var contentSections = new();
+        var subFolders = new();
         var groupedFiles = new Dictionary<string, List<VaultFileInfo>>();
 
         // Act

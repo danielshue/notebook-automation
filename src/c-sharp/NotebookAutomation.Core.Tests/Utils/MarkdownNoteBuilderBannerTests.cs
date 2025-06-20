@@ -20,7 +20,7 @@ public class MarkdownNoteBuilderBannerTests
     [TestInitialize]
     public void Setup()
     {
-        _yamlHelperMock = new Mock<IYamlHelper>();
+        _yamlHelperMock = new();
         _appConfig = new AppConfig
         {
             Banners = new BannerConfig

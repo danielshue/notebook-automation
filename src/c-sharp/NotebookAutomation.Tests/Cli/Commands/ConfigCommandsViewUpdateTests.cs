@@ -84,7 +84,7 @@ public class ConfigCommandsViewUpdateTests
     public void Setup()
     {
         mockLogger = new Mock<ILogger<ConfigCommands>>();
-        mockConfigManager = new Mock<IConfigManager>();
+        mockConfigManager = new();
 
         // Create a real service collection for testing
         var services = new ServiceCollection();
