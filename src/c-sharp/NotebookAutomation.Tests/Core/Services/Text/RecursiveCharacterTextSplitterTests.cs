@@ -12,7 +12,7 @@ public class RecursiveCharacterTextSplitterTests
     [TestInitialize]
     public void SetUp()
     {
-        _mockLogger = new Mock<ILogger>();
+        _mockLogger = new();
     }
 
     /// <summary>

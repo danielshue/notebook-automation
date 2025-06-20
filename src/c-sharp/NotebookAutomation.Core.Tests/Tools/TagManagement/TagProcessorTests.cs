@@ -18,7 +18,7 @@ public class TagProcessorTests
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<TagProcessor>>();
-        _failedLoggerMock = new Mock<ILogger>();
+        _failedLoggerMock = new();
         _yamlHelper = new YamlHelper(_loggerMock.Object);
         _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
 

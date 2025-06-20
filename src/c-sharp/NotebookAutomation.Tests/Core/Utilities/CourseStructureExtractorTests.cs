@@ -21,8 +21,8 @@ public class CourseStructureExtractorTests
         Directory.CreateDirectory(_vaultRoot);
 
         // Mock AppConfig with the vault root
-        _mockAppConfig = new Mock<AppConfig>();
-        var mockPaths = new Mock<PathsConfig>();
+        _mockAppConfig = new();
+        var mockPaths = new();
         mockPaths.Setup(p => p.NotebookVaultFullpathRoot).Returns(_vaultRoot);
         _mockAppConfig.Setup(c => c.Paths).Returns(mockPaths.Object);
 
@@ -759,9 +759,9 @@ public class CourseStructureExtractorTests
     {
         // Arrange - Case study under module should extract module number
         var logger = new Mock<ILogger<CourseStructureExtractor>>();
-        var mockAppConfig = new Mock<AppConfig>();
+        var mockAppConfig = new();
         var extractor = new CourseStructureExtractor(logger.Object, mockAppConfig.Object); string filePath = @"D:\vault\TestProgram\TestCourse\03_module-fundamentals\Case Studies\financial-analysis-case-study.md";
-        var metadata = new Dictionary<string, object?>();
+        var metadata = new();
 
         // Act
         extractor.ExtractModuleAndLesson(filePath, metadata);
@@ -776,9 +776,9 @@ public class CourseStructureExtractorTests
     {
         // Arrange - Case study at class level should NOT extract module
         var logger = new Mock<ILogger<CourseStructureExtractor>>();
-        var mockAppConfig = new Mock<AppConfig>();
+        var mockAppConfig = new();
         var extractor = new CourseStructureExtractor(logger.Object, mockAppConfig.Object); string filePath = @"D:\vault\TestProgram\TestCourse\Case Studies\strategic-planning-case-study.md";
-        var metadata = new Dictionary<string, object?>();
+        var metadata = new();
 
         // Act
         extractor.ExtractModuleAndLesson(filePath, metadata);

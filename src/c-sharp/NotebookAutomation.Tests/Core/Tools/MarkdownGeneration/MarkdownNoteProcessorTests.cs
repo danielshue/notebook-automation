@@ -14,7 +14,7 @@ public class MarkdownNoteProcessorTests
 
     public MarkdownNoteProcessorTests()
     {
-        var mockYamlHelper = new Mock<IYamlHelper>();
+        var mockYamlHelper = new();
         _markdownNoteBuilder = new MarkdownNoteBuilder(mockYamlHelper.Object);
     }
 
