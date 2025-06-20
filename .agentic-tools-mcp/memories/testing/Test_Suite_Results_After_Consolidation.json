@@ -1,0 +1,8 @@
+{
+  "id": "1d980b80-4efb-4ef8-b714-c5b99a1c9d25",
+  "title": "Test Suite Results After Consolidation",
+  "details": "Test Suite Results After Consolidation Cleanup:\n\nOVERALL STATUS:\n✅ Test consolidation successful - no tests lost\n📊 Total Tests: 812 (Same count as before cleanup)\n✅ Passed: 806 tests\n❌ Failed: 3 tests (all in ConfigManagerTests)\n⏭️ Skipped: 3 tests\n⏱️ Duration: 10.0 seconds\n\nFAILING TESTS (Pre-existing, not related to consolidation):\n1. LoadConfigurationAsync_WithInvalidJson_ReturnsFailureResult\n   - Location: ConfigManagerTests.cs:386\n   - Error: Assert.IsNotNull failed\n\n2. LoadConfigurationAsync_WithFileReadFailure_ReturnsFailureResult  \n   - Location: ConfigManagerTests.cs:416\n   - Error: Assert.IsNotNull failed\n\n3. LoadConfigurationAsync_ComplexConfiguration_ParsesCorrectly\n   - Location: ConfigManagerTests.cs:665\n   - Error: Assert.AreEqual failed. Expected:<tenant-id>. Actual:<(null)>\n\nAll failures are in configuration-related tests and appear to be pre-existing issues, not caused by the test project consolidation.",
+  "category": "testing",
+  "dateCreated": "2025-06-20T21:07:10.463Z",
+  "dateUpdated": "2025-06-20T21:07:10.463Z"
+}

@@ -6,28 +6,62 @@ namespace NotebookAutomation.Core.Configuration;
 /// including JSON files, environment variables, and user secrets.
 /// </summary>
 /// <remarks>
-/// This class simplifies the process of building a configuration for the application,
-/// ensuring compatibility with different environments (e.g., development, production).
-/// It supports optional user secrets and config file paths, making it flexible for
-/// various deployment scenarios.
+/// <para><strong>Purpose and Role:</strong></para>
+/// <para>ConfigurationSetup is a factory class responsible for creating and building IConfiguration instances
+/// from multiple sources (JSON files, environment variables, user secrets). It serves as the configuration
+/// pipeline builder, while AppConfig is the strongly-typed configuration model that consumes the built configuration.</para>
+///
+/// <para><strong>Key Differences from AppConfig:</strong></para>
+/// <list type="bullet">
+/// <item><description><strong>Factory vs Model</strong>: ConfigurationSetup creates configurations, AppConfig represents configuration data</description></item>
+/// <item><description><strong>Static vs Instance</strong>: ConfigurationSetup provides static factory methods, AppConfig is an instance class</description></item>
+/// <item><description><strong>Builder vs Consumer</strong>: ConfigurationSetup builds IConfiguration, AppConfig consumes it</description></item>
+/// <item><description><strong>Discovery vs Storage</strong>: ConfigurationSetup discovers config files, AppConfig stores and provides access to values</description></item>
+/// </list>
+///
+/// <para><strong>Integration with AppConfig:</strong></para>
+/// <para>ConfigurationSetup and AppConfig work together in a two-phase process:</para>
+/// <list type="number">
+/// <item><description><strong>Configuration Building</strong>: ConfigurationSetup discovers config files, builds the configuration pipeline from multiple sources</description></item>
+/// <item><description><strong>Configuration Consumption</strong>: AppConfig receives the built IConfiguration and provides strongly-typed access to settings</description></item>
+/// </list>
+///
+/// <para><strong>Typical Usage Pattern:</strong></para>
+/// <code>
+/// // Phase 1: ConfigurationSetup builds the configuration
+/// var configuration = ConfigurationSetup.BuildConfiguration("Development");
+///
+/// // Phase 2: AppConfig consumes the configuration
+/// var appConfig = new AppConfig(configuration, logger);
+///
+/// // Alternative: AppConfig can fall back to ConfigurationSetup for file discovery
+/// // if no IConfiguration is provided to its constructor
+/// </code>
+///
+/// <para><strong>Configuration Discovery:</strong></para>
+/// <para>ConfigurationSetup provides multiple discovery methods including the modern ConfigManager-based
+/// approach and legacy file system search, ensuring consistent configuration file location across the application.</para>
+///
+/// <para><strong>Environment Support:</strong></para>
+/// <para>Supports different environments (Development, Production) with appropriate configuration sources,
+/// including user secrets for development environments.</para>
 /// </remarks>
 public static class ConfigurationSetup
-{
-    /// <summary>
-    /// Discovers the configuration file path using the modern ConfigManager approach.
-    /// This method replaces the legacy AppConfig.FindConfigFile() with consistent discovery logic.
-    /// </summary>
-    /// <param name="explicitConfigPath">Optional explicit configuration path from CLI or other source.</param>
-    /// <param name="configFileName">Name of the configuration file to search for. Defaults to "config.json".</param>
-    /// <returns>Path to the configuration file if found, otherwise null.</returns>
-    /// <remarks>
-    /// This method uses the same discovery order as ConfigManager:
-    /// 1. CLI option (if provided via explicitConfigPath)
-    /// 2. Environment variable (NOTEBOOKAUTOMATION_CONFIG)
-    /// 3. Current working directory
-    /// 4. Executable directory
-    /// 5. Executable config subdirectory
-    /// </remarks>
+{    /// <summary>
+     /// Discovers the configuration file path using the modern ConfigManager approach.
+     /// This method provides consistent discovery logic across the application.
+     /// </summary>
+     /// <param name="explicitConfigPath">Optional explicit configuration path from CLI or other source.</param>
+     /// <param name="configFileName">Name of the configuration file to search for. Defaults to "config.json".</param>
+     /// <returns>Path to the configuration file if found, otherwise null.</returns>
+     /// <remarks>
+     /// This method uses the same discovery order as ConfigManager:
+     /// 1. CLI option (if provided via explicitConfigPath)
+     /// 2. Environment variable (NOTEBOOKAUTOMATION_CONFIG)
+     /// 3. Current working directory
+     /// 4. Executable directory
+     /// 5. Executable config subdirectory
+     /// </remarks>
     public static async Task<string?> DiscoverConfigurationFileAsync(string? explicitConfigPath = null, string configFileName = "config.json")
     {
         var fileSystem = new FileSystemWrapper();
@@ -178,7 +212,9 @@ public static class ConfigurationSetup
                 Debug = false,
                 ExecutableDirectory = environmentWrapper.GetExecutableDirectory(),
                 WorkingDirectory = environmentWrapper.GetCurrentDirectory()
-            };            // Perform discovery synchronously (wrapping async call)
+            };
+
+            // Perform discovery synchronously (wrapping async call)
             var discoveryTask = configManager.LoadConfigurationAsync(options);
             discoveryTask.Wait();
             var discoveryResult = discoveryTask.Result; if (discoveryResult.IsSuccess && !string.IsNullOrEmpty(discoveryResult.ConfigurationPath))

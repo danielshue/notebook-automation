@@ -424,11 +424,10 @@ public class AppConfigAdditionalTests
         appConfig.SetVideoExtensions(list);
         CollectionAssert.AreEqual(list, appConfig.VideoExtensions);
     }
-
     [TestMethod]
-    public void FindConfigFile_ShouldReturnEmptyIfNotFound()
+    public void DiscoverConfigurationFile_ShouldReturnEmptyIfNotFound()
     {
-        string result = AppConfig.FindConfigFile("nonexistent_config_file.json");
+        string result = ConfigurationSetup.DiscoverConfigurationFile("nonexistent_config_file.json");
         Assert.AreEqual(string.Empty, result);
     }
 

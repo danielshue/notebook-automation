@@ -54,7 +54,7 @@ public class BannerConfig
     public Dictionary<string, string> TemplateBanners { get; set; } = new()
     {
         ["main"] = "gies-banner.png",
-        ["program"] = "gies-banner.png", 
+        ["program"] = "gies-banner.png",
         ["course"] = "gies-banner.png"
     };
 

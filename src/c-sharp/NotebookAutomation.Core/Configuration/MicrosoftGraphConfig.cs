@@ -59,5 +59,6 @@ public class MicrosoftGraphConfig
     /// that the application belongs to. It can be set to "common" for multi-tenant
     /// applications or a specific tenant ID for single-tenant applications.
     /// </remarks>
+    [JsonPropertyName("tenant_id")]
     public string? TenantId { get; set; }
 }

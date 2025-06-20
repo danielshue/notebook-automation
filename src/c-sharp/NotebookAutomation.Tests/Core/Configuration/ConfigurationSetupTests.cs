@@ -133,10 +133,8 @@ public class ConfigurationSetupTests
         // Assert
         Assert.IsNotNull(configuration);
     }
-
-
     /// <summary>
-    /// Tests BuildConfiguration with null config path uses AppConfig.FindConfigFile.
+    /// Tests BuildConfiguration with null config path uses modern configuration discovery.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_WithNullConfigPath_CallsFindConfigFile()

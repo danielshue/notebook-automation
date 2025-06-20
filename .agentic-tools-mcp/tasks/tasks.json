@@ -48,6 +48,13 @@
       "description": "Debugging and fixing the video-notes summarization pipeline to ensure correct metadata detection and variable substitution in prompt templates.",
       "createdAt": "2025-06-13T13:26:34.679Z",
       "updatedAt": "2025-06-13T13:26:34.679Z"
+    },
+    {
+      "id": "a2a27a32-4e92-4ec2-9971-89aa23047571",
+      "name": "Test Project Cleanup",
+      "description": "Remove old test projects after consolidation to NotebookAutomation.Tests",
+      "createdAt": "2025-06-20T19:33:18.101Z",
+      "updatedAt": "2025-06-20T19:33:18.101Z"
     }
   ],
   "tasks": [
@@ -356,6 +363,24 @@
       "completed": true,
       "createdAt": "2025-06-18T05:18:55.724Z",
       "updatedAt": "2025-06-18T05:19:02.284Z"
+    },
+    {
+      "id": "6f3e1e95-6fb2-4dfc-b843-8926e80a33a9",
+      "name": "Complete FindConfigFile Migration Cleanup",
+      "details": "Finalize the already-completed FindConfigFile to ConfigManager migration with remaining cleanup tasks:\n\n## Phase 1: Test Modernization ⚡ (Immediate)\n- [ ] Update `AppConfigTests.cs` to test new `ConfigurationSetup.DiscoverConfigurationFile()` method\n- [ ] Replace deprecated `FindConfigFile` test with modern equivalent\n- [ ] Remove CS0618 warning from build output\n\n## Phase 2: Documentation Update 📚 (Short-term)\n- [ ] Update any remaining documentation references\n- [ ] Ensure all code examples use modern ConfigManager approach\n- [ ] Update migration memory to mark as \"fully completed\"\n\n## Phase 3: Legacy Removal 🗑️ (Future - after deprecation period)\n- [ ] Remove `[Obsolete]` `FindConfigFile` method entirely\n- [ ] Clean up any remaining compatibility code\n- [ ] Final verification all discovery uses ConfigManager\n\n## Success Criteria:\n- Build with 0 warnings\n- All tests use modern configuration discovery\n- Documentation reflects current implementation",
+      "projectId": "3cc58445-7055-4924-9f21-fb132af98584",
+      "completed": false,
+      "createdAt": "2025-06-20T18:36:11.558Z",
+      "updatedAt": "2025-06-20T18:36:11.558Z"
+    },
+    {
+      "id": "8c1026a7-d714-4c24-9681-8ae3ea6a3c70",
+      "name": "Remove Old Test Project Directories",
+      "details": "Successfully removed the old test project directories NotebookAutomation.Core.Tests and NotebookAutomation.Cli.Tests after ensuring all tests were migrated to the consolidated NotebookAutomation.Tests project. \n\nKey actions completed:\n1. Identified missing test file: MarkdownNoteBuilderBannerTests.cs\n2. Added missing test file to consolidated project with correct namespace\n3. Verified all other tests were already migrated\n4. Removed old test project directories\n5. Confirmed solution builds successfully\n6. Verified consolidated test project runs (813 tests total, 4 pre-existing failures unrelated to consolidation)\n\nThe test project consolidation cleanup is now complete.",
+      "projectId": "a2a27a32-4e92-4ec2-9971-89aa23047571",
+      "completed": true,
+      "createdAt": "2025-06-20T19:33:25.429Z",
+      "updatedAt": "2025-06-20T19:46:54.226Z"
     }
   ],
   "subtasks": [
