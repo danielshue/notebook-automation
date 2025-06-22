@@ -1,0 +1,8 @@
+{
+  "id": "35a44343-cdae-432c-8c90-ffc4408c867b",
+  "title": "Test Project Consolidation Completed",
+  "details": "Successfully consolidated all tests from separate NotebookAutomation.Cli.Tests and NotebookAutomation.Core.Tests projects into a single NotebookAutomation.Tests project.\n\nDetails:\n- All 775 tests are running successfully in the consolidated project\n- Old CLI tests: 24 test files moved to /Cli folder\n- Old Core tests: 72 test files moved to /Core folder\n- Solution file already updated to reference only the consolidated project\n- Test structure maintained with Cli/ and Core/ subdirectories\n- All test files verified as present in consolidated project\n- Old test project directories successfully removed\n- Final verification: All 775 tests still passing after cleanup\n- Build verification: Solution builds successfully with only consolidated test project\n\nCLEANUP COMPLETED - Old test projects have been safely removed.",
+  "category": "project_refactoring",
+  "dateCreated": "2025-06-22T23:33:59.952Z",
+  "dateUpdated": "2025-06-22T23:35:43.393Z"
+}

@@ -9,9 +9,9 @@ namespace NotebookAutomation.Tests.Cli.Commands;
 [TestClass]
 public class MarkdownCommandsTests
 {
-    private readonly Mock<ILogger<MarkdownCommands>> mockLogger = new object();
-    private readonly Mock<AppConfig> mockAppConfig = new object();
-    private readonly Mock<IServiceProvider> mockServiceProvider = new object();
+    private readonly Mock<ILogger<MarkdownCommands>> mockLogger = new Mock<ILogger<MarkdownCommands>>();
+    private readonly Mock<AppConfig> mockAppConfig = new Mock<AppConfig>();
+    private readonly Mock<IServiceProvider> mockServiceProvider = new Mock<IServiceProvider>();
 
     /// <summary>
     /// Verifies that the 'generate-markdown' command prints usage/help when no arguments are provided.

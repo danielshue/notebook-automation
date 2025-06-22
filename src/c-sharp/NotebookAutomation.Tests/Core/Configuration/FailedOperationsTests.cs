@@ -10,7 +10,7 @@ public class FailedOperationsTests
     [TestMethod]
     public void RecordFailedFileOperation_WithException_LogsError()
     {
-        Mock<ILogger> mockLogger = new object();
+        Mock<ILogger> mockLogger = new Mock<ILogger>();
         string filePath = "test.txt";
         string operation = "Read";
         InvalidOperationException exception = new("fail!");
@@ -28,7 +28,7 @@ public class FailedOperationsTests
     [TestMethod]
     public void RecordFailedFileOperation_WithCustomError_LogsError()
     {
-        Mock<ILogger> mockLogger = new object();
+        Mock<ILogger> mockLogger = new Mock<ILogger>();
         string filePath = "test.txt";
         string operation = "Write";
         string errorMessage = "custom error";

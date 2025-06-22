@@ -1,0 +1,8 @@
+{
+  "id": "5f4eed5b-b375-4cf2-a546-c6bb1b9698b2",
+  "title": "C# 13 .NET 9 Compilation Issues",
+  "details": "Compilation Issues Analysis - .NET 9 C# 13 Upgrade\n\n## Primary Issues Found (92 errors, 1 warning)\n\n### 1. Target-typed new() Issues (CS8754)\n- Error: \"There is no target type for 'new()'\"\n- Cause: C# 13 target-typed new expressions failing with generic Mocks and complex types\n- Solution: Use explicit type declarations instead of new()\n\n### 2. Missing AppConfig Parameter (CS7036)  \n- Error: \"There is no argument given that corresponds to the required parameter 'appConfig' of 'MarkdownNoteBuilder.MarkdownNoteBuilder(IYamlHelper, AppConfig)'\"\n- Cause: MarkdownNoteBuilder constructor was updated to require AppConfig\n- Solution: Add Mock<AppConfig> parameter to all MarkdownNoteBuilder instantiations\n\n### 3. Obsolete Method Warning (CS0618)\n- Warning: AppConfig.FindConfigFile() is obsolete\n- Solution: Update to use ConfigurationSetup.DiscoverConfigurationFile()\n\n## Fix Strategy\n1. Create helper method for AppConfig mock setup\n2. Fix target-typed new() issues by using explicit types\n3. Update obsolete method calls\n4. Apply fixes systematically across test files",
+  "category": "compilation_issues",
+  "dateCreated": "2025-06-22T20:18:48.222Z",
+  "dateUpdated": "2025-06-22T20:18:48.222Z"
+}
