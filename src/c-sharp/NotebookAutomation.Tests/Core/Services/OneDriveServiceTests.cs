@@ -10,15 +10,14 @@ public class OneDriveServiceTests
     [TestMethod]
     [Ignore("Requires MSAL browser interaction or deeper refactor; skip in CI.")]
     public async Task AuthenticateAsync_UsesInjectedMsalApp_DoesNotLaunchBrowser()
-    {
-        // Arrange
-        Mock<ILogger<OneDriveService>> logger = new object();
-        Mock<Microsoft.Identity.Client.IPublicClientApplication> msalMock = new object(); Mock<Microsoft.Identity.Client.AcquireTokenSilentParameterBuilder> silentBuilderMock = new(null!, null!, null!);
+    {        // Arrange
+        Mock<ILogger<OneDriveService>> logger = new Mock<ILogger<OneDriveService>>();
+        Mock<Microsoft.Identity.Client.IPublicClientApplication> msalMock = new Mock<Microsoft.Identity.Client.IPublicClientApplication>(); Mock<Microsoft.Identity.Client.AcquireTokenSilentParameterBuilder> silentBuilderMock = new(null!, null!, null!);
         Mock<Microsoft.Identity.Client.AcquireTokenInteractiveParameterBuilder> interactiveBuilderMock = new(null!, null!);
 
         // Setup chained builder methods
         interactiveBuilderMock.Setup(b => b.WithPrompt(It.IsAny<Microsoft.Identity.Client.Prompt>())).Returns(interactiveBuilderMock.Object);
-        Mock<Microsoft.Identity.Client.IAccount> fakeAccount = new object(); Mock<Microsoft.Identity.Client.AuthenticationResult> fakeResult = new(
+        Mock<Microsoft.Identity.Client.IAccount> fakeAccount = new Mock<Microsoft.Identity.Client.IAccount>(); Mock<Microsoft.Identity.Client.AuthenticationResult> fakeResult = new(
             "token", false, "user", DateTimeOffset.Now, DateTimeOffset.Now.AddHours(1),
             string.Empty, null!, null!, "Bearer", null!, null!, null!, null!, null!, null!);
 
@@ -61,7 +60,7 @@ public class OneDriveServiceTests
     [Ignore("Requires MSAL browser interaction or deeper refactor; skip in CI.")]
     public void SetForceRefresh_UpdatesStateAndLogs()
     {
-        Mock<ILogger<OneDriveService>> logger = new object();
+        Mock<ILogger<OneDriveService>> logger = new Mock<ILogger<OneDriveService>>();
         OneDriveService service = new(logger.Object, "clientId", "tenantId", ["scope"]);
         service.SetForceRefresh(true);
         service.SetForceRefresh(false); logger.Verify(

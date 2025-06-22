@@ -1,0 +1,8 @@
+{
+  "id": "0b4b688b-3741-4d05-a4d2-78888ce34107",
+  "title": "Test Suite Compilation Issues Post-.NET 9 Upgrade",
+  "details": "Test Suite Compilation Issues - Post .NET 9 Upgrade\n\n## Main Issues Found:\n1. **Target-typed new() with Mock<T>**: CS8754 errors across test files - target-typed new doesn't work well with generic Mock types\n2. **Missing AppConfig parameter**: MarkdownNoteBuilder constructor now requires AppConfig parameter - many test files need updates\n\n## Affected Files:\n- Multiple test files across Core, Cli, and Tools namespaces\n- 92 compilation errors total\n- Issue appears to be from recent .NET 9 upgrade and constructor changes\n\n## Required Fixes:\n1. Replace `new Mock<T>()` with explicit type declarations in test setup methods\n2. Update all MarkdownNoteBuilder instantiations to include AppConfig parameter\n3. Use proper explicit typing for generic mock objects\n\n## Pattern to Follow:\n```csharp\n// Instead of: new Mock<ILogger<Service>>()\n// Use: new Mock<ILogger<Service>>()\n\n// For MarkdownNoteBuilder:\nvar mockAppConfig = new Mock<AppConfig>();\nvar markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, mockAppConfig.Object);\n```\n\nThis is a systematic refactoring needed across the entire test suite.",
+  "category": "code_issues",
+  "dateCreated": "2025-06-22T20:16:34.516Z",
+  "dateUpdated": "2025-06-22T20:16:34.516Z"
+}

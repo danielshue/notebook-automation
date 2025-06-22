@@ -290,55 +290,6 @@ public class AppConfig : IConfiguration
         var loaded = JsonSerializer.Deserialize<AppConfig>(json, options) ?? throw new InvalidOperationException($"Failed to deserialize configuration from: {configPath}");
         loaded.ConfigFilePath = configPath;
         return loaded;
-    }    /// <summary>
-         /// Attempts to find the configuration file in standard locations.
-         /// </summary>
-         /// <param name="configFileName">Name of the configuration file to find.</param>
-         /// <returns>Path to the configuration file if found, otherwise null.</returns>
-         /// <remarks>
-         /// This method is deprecated. Use ConfigurationSetup.DiscoverConfigurationFile()
-         /// or ConfigManager for consistent configuration discovery with the modern approach.
-         /// </remarks>
-    [Obsolete("Use ConfigurationSetup.DiscoverConfigurationFile() or ConfigManager for consistent configuration discovery. This method will be removed in a future version.")]
-    public static string FindConfigFile(string configFileName = "config.json")
-    {
-        // Check for absolute path first
-        if (Path.IsPathRooted(configFileName) && File.Exists(configFileName))
-        {
-            return configFileName;
-        }
-
-        // Standard locations to check
-        var locations = new[]
-        {
-            // Current directory
-            Path.Combine(Directory.GetCurrentDirectory(), configFileName),
-
-            // User's home directory
-            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".notebook-automation", configFileName),
-
-            // Application directory
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, configFileName),
-
-            // Parent directory of application
-            Path.Combine(Directory.GetParent(AppDomain.CurrentDomain.BaseDirectory)?.FullName ?? string.Empty, configFileName),
-
-            // Config directory in current directory
-            Path.Combine(Directory.GetCurrentDirectory(), "config", configFileName),
-
-            // Source directory for development environment
-            Path.Combine(Directory.GetCurrentDirectory(), "src", "c-sharp", configFileName),
-        };
-
-        foreach (var path in locations)
-        {
-            if (File.Exists(path))
-            {
-                return path;
-            }
-        }
-
-        return string.Empty; // Return empty string instead of null
     }
 
     /// <summary>

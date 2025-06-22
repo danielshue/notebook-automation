@@ -354,7 +354,7 @@ public class MetadataHierarchyDetectorTests
         Directory.CreateDirectory(vaultRoot);
 
         // Create a dictionary to store paths to various files in the structure
-        Dictionary<string, string> paths = new object();
+        Dictionary<string, string> paths = new Dictionary<string, string>();
 
         // Create the MBA program folder structure
         string mbaPath = Path.Combine(vaultRoot, "MBA");
@@ -740,7 +740,7 @@ class: SingleClass
             { "course", "Finance" },
             { "class", "Investment" },
             { "module", "Fundamentals" },
-        }; Dictionary<string, object?> emptyMetadata = new object();
+        }; Dictionary<string, object?> emptyMetadata = new Dictionary<string, object?>();
 
         // Test with different index types
         var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);

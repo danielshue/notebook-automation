@@ -64,7 +64,7 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_ReplacesTemplateVariables()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}, welcome to {{course}}!";
         Dictionary<string, string> variables = new()
@@ -87,7 +87,7 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesMissingVariables()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}, welcome to {{course}}!";
         Dictionary<string, string> variables = new()
@@ -111,7 +111,7 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_IgnoresExtraVariables()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}!";
         Dictionary<string, string> variables = new()
@@ -134,7 +134,7 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesComplexTemplates()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = @"# 📝 Notes for {{course}}
 
@@ -189,7 +189,7 @@ public class PromptTemplateServiceTests
     public async Task LoadAndSubstituteAsync_LoadsTemplateAndSubstitutesVariables()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string templatePath = Path.Combine(_testFolder, "test_template.md");
         string templateContent = "Hello {{name}}, welcome to {{course}}!";
@@ -216,7 +216,7 @@ public class PromptTemplateServiceTests
     public async Task LoadAndSubstituteAsync_ReturnsEmptyStringWhenFileNotFound()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string nonExistentPath = Path.Combine(_testFolder, "non_existent.md");
         Dictionary<string, string> variables = new()
@@ -249,7 +249,7 @@ public class PromptTemplateServiceTests
         // we're going to test the fallback to default templates
 
         // Arrange - Create a service with a mocked logger that we can verify
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
 
         // Act
@@ -277,7 +277,7 @@ public class PromptTemplateServiceTests
     public async Task LoadTemplateAsync_GetsCorrectDefaultTemplate()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
 
         // Set the prompts path to the repository root prompts directory
         // Use a more robust approach to find the prompts directory
@@ -474,7 +474,7 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesNestedVariables()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}, your course is {{course}}";
 
@@ -507,7 +507,7 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesWhitespaceInVariableNames()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{  name  }}, welcome to {{ course}}!";
 
@@ -532,7 +532,7 @@ public class PromptTemplateServiceTests
     public async Task LoadTemplateAsync_HandlesExceptions()
     {
         // Arrange - Create a mock FileSystem that throws an exception
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
 
         // We need to use a path that will cause an exception
@@ -581,7 +581,7 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesMultilingualContent()
     {
         // Arrange
-        AppConfig config = new object();
+        AppConfig config = new AppConfig();
         PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "{{greeting}}, {{name}}! {{message}}";
 
