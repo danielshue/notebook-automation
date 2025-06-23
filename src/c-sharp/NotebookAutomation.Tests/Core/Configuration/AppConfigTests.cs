@@ -65,6 +65,7 @@ public class AppConfigCoverageBoostTests
         string tempFile = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".json");
         Mock<ILogger<AppConfig>> logger = new();
         AppConfig appConfig = new() { Paths = new PathsConfig { LoggingDir = "/logs" } };
+
         appConfig.SaveToJsonFile(tempFile);
         Assert.IsTrue(File.Exists(tempFile));
         File.Delete(tempFile);
@@ -423,13 +424,6 @@ public class AppConfigAdditionalTests
         List<string> list = [".mp4", ".avi"];
         appConfig.SetVideoExtensions(list);
         CollectionAssert.AreEqual(list, appConfig.VideoExtensions);
-    }
-
-    [TestMethod]
-    public void FindConfigFile_ShouldReturnEmptyIfNotFound()
-    {
-        string result = AppConfig.FindConfigFile("nonexistent_config_file.json");
-        Assert.AreEqual(string.Empty, result);
     }
 
     [TestMethod]

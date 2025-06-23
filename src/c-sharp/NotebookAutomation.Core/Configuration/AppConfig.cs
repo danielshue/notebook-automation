@@ -51,9 +51,11 @@ public class AppConfig : IConfiguration
     /// Gets or sets the list of video file extensions to process.
     /// </summary>
     [JsonPropertyName("video_extensions")]
-    public virtual List<string> VideoExtensions { get; set; } = [];    /// <summary>
-                                                                       /// Gets or sets the list of PDF file extensions to process.
-                                                                       /// </summary>
+    public virtual List<string> VideoExtensions { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the list of PDF file extensions to process.
+    /// </summary>
     [JsonPropertyName("pdf_extensions")]
     public virtual List<string> PdfExtensions { get; set; } = [".pdf"];
 
@@ -309,6 +311,13 @@ public class AppConfig : IConfiguration
 
         try
         {
+            // Validate path contains no invalid characters for cross-platform compatibility
+            var invalidChars = Path.GetInvalidPathChars().Concat(['?', '*', '<', '>', '|']).ToArray();
+            if (configPath.IndexOfAny(invalidChars) >= 0)
+            {
+                throw new IOException($"Invalid characters found in path: {configPath}");
+            }
+
             // Make configPath absolute if it is not already
             if (!Path.IsPathRooted(configPath))
             {

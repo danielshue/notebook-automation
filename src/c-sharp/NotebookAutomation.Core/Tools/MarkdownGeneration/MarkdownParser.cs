@@ -44,6 +44,30 @@ public partial class MarkdownParser(ILogger logger)
     public static readonly Regex FrontmatterRegex = YamlFrontmatterRegex();
 
     /// <summary>
+    /// Matches YAML frontmatter blocks (e.g., "---\nkey: value\n---").
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This regex is used to extract YAML frontmatter from markdown files. It matches blocks enclosed
+    /// within triple dashes ("---") and captures the content between them.
+    /// </para>
+    /// </remarks>    [GeneratedRegex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline)]
+    [GeneratedRegex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline)]
+    internal static partial Regex YamlFrontmatterRegex();
+
+    /// <summary>
+    /// Matches markdown headers (e.g., "# Header", "## Subheader") with levels 1 to 6.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This regex is used to identify markdown headers in text and extract their level and content.
+    /// It matches headers with leading hashes followed by a space and text.
+    /// </para>
+    /// </remarks>    [GeneratedRegex(@"^(#+)\s+(.+)$")]
+    [GeneratedRegex(@"^(#+)\s+(.+)$")]
+    internal static partial Regex MarkdownHeaderRegex();
+
+    /// <summary>
     /// Extracts the frontmatter and content from a markdown file.
     /// </summary>
     /// <param name="filePath">Path to the markdown file.</param>
@@ -125,20 +149,20 @@ public partial class MarkdownParser(ILogger logger)
     /// <param name="frontmatter">The frontmatter dictionary.</param>
     /// <param name="content">The content body.</param>
     /// <returns>True if successful, false otherwise.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if filePath is null.</exception>
     public async Task<bool> WriteFileAsync(string filePath, Dictionary<string, object> frontmatter, string content)
     {
+        ArgumentNullException.ThrowIfNull(filePath);
+
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath) ?? string.Empty);
-
-            var fullContent = CombineMarkdown(frontmatter, content);
-            await File.WriteAllTextAsync(filePath, fullContent, Encoding.UTF8).ConfigureAwait(false);
-
+            string combined = CombineMarkdown(frontmatter, content);
+            await File.WriteAllTextAsync(filePath, combined).ConfigureAwait(false);
             return true;
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, $"Error writing markdown file: {filePath}");
+            logger.LogError($"Failed to write markdown file '{filePath}': {ex.Message}", ex);
             return false;
         }
     }
@@ -194,10 +218,35 @@ public partial class MarkdownParser(ILogger logger)
     }
 
     /// <summary>
-    /// Sanitizes a string for use in a filename.
+    /// Sanitizes a string for use in a filename by removing invalid characters and applying consistent formatting.
     /// </summary>
     /// <param name="input">The input string to sanitize.</param>
-    /// <returns>A sanitized filename-safe string.</returns>
+    /// <returns>
+    /// A sanitized filename-safe string that is guaranteed to be lowercase and compatible across platforms.
+    /// Returns "unnamed" if the input is null or empty.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method performs the following transformations to ensure cross-platform filename compatibility:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>Replaces invalid filename characters with hyphens</description></item>
+    /// <item><description>Replaces additional problematic characters (: * | ? &lt; &gt; " \ / \t \n \r \0) with hyphens for cross-platform compatibility</description></item>
+    /// <item><description>Replaces spaces with hyphens</description></item>
+    /// <item><description>Replaces dots with hyphens</description></item>
+    /// <item><description>Converts the entire string to lowercase using ToLowerInvariant()</description></item>
+    /// </list>
+    /// <para>
+    /// The method combines Path.GetInvalidFileNameChars() with additional characters that may cause
+    /// issues across different platforms and file systems, including whitespace control characters.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// string filename = SanitizeForFilename("My File: Document.txt");
+    /// // Returns: "my-file--document-txt"
+    /// </code>
+    /// </example>
     public static string SanitizeForFilename(string input)
     {
         if (string.IsNullOrEmpty(input))
@@ -206,40 +255,25 @@ public partial class MarkdownParser(ILogger logger)
         }
 
         var invalidChars = Path.GetInvalidFileNameChars();
+
+        // Add platform-specific characters that should be avoided for cross-platform compatibility
+        var additionalInvalidChars = new char[] { ':', '*', '|', '?', '<', '>', '"', '\\', '/', '\t', '\n', '\r', '\0' };
+
+        var allInvalidChars = invalidChars.Concat(additionalInvalidChars).Distinct().ToArray();
         var sb = new StringBuilder(input);
 
-        foreach (var c in invalidChars)
+        foreach (var c in allInvalidChars)
         {
             sb.Replace(c, '-');
         }
 
-        return sb.ToString()
+        var sanitizedFilename = sb.ToString()
             .Replace(' ', '-')
             .Replace('.', '-')
             .ToLowerInvariant();
+
+        return sanitizedFilename;
     }
 
-    /// <summary>
-    /// Matches YAML frontmatter blocks (e.g., "---\nkey: value\n---").
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This regex is used to extract YAML frontmatter from markdown files. It matches blocks enclosed
-    /// within triple dashes ("---") and captures the content between them.
-    /// </para>
-    /// </remarks>    [GeneratedRegex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline)]
-    [GeneratedRegex(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline)]
-    internal static partial Regex YamlFrontmatterRegex();
 
-    /// <summary>
-    /// Matches markdown headers (e.g., "# Header", "## Subheader") with levels 1 to 6.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// This regex is used to identify markdown headers in text and extract their level and content.
-    /// It matches headers with leading hashes followed by a space and text.
-    /// </para>
-    /// </remarks>    [GeneratedRegex(@"^(#+)\s+(.+)$")]
-    [GeneratedRegex(@"^(#+)\s+(.+)$")]
-    internal static partial Regex MarkdownHeaderRegex();
 }

@@ -54,15 +54,18 @@
         <None Update="Prompts\*.md">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
-    </ItemGroup>    <!--
-    Copy prompts from repository root if they exist -->
+    </ItemGroup>
+
+    <!-- Copy prompts from repository root if they exist -->
     <Target Name="CopyPrompts" BeforeTargets="Build">
         <!-- Copy prompts from Core project directory -->
         <ItemGroup>
             <CorePromptFiles Include="$(MSBuildThisFileDirectory)Prompts\*.md" />
         </ItemGroup>
         <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\"
-            SkipUnchangedFiles="true" />    <!-- Copy prompts from repository root -->
+            SkipUnchangedFiles="true" />
+
+        <!-- Copy prompts from repository root -->
         <ItemGroup>
             <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\prompts\*.md" />
         </ItemGroup>

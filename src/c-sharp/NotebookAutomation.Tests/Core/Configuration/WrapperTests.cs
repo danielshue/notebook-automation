@@ -109,13 +109,16 @@ public class FileSystemWrapperTests
     {
         // Act & Assert
         var combinedPath = _fileSystemWrapper.CombinePath("C:", "temp", "file.txt");
-        Assert.AreEqual(@"C:\temp\file.txt", combinedPath);
+        var expectedPath = OperatingSystem.IsWindows() ? @"C:\temp\file.txt" : "C:/temp/file.txt";
+        Assert.AreEqual(expectedPath, combinedPath);
 
         var fullPath = _fileSystemWrapper.GetFullPath("test.txt");
         Assert.IsNotNull(fullPath);
 
-        var dirName = _fileSystemWrapper.GetDirectoryName(@"C:\temp\file.txt");
-        Assert.AreEqual(@"C:\temp", dirName);
+        var testPath = OperatingSystem.IsWindows() ? @"C:\temp\file.txt" : "C:/temp/file.txt";
+        var dirName = _fileSystemWrapper.GetDirectoryName(testPath);
+        var expectedDirName = OperatingSystem.IsWindows() ? @"C:\temp" : "C:/temp";
+        Assert.AreEqual(expectedDirName, dirName);
     }
 
     /// <summary>
@@ -125,7 +128,7 @@ public class FileSystemWrapperTests
     public void CombinePath_ValidPaths_ReturnsCombinedPath()
     {
         // Arrange
-        var path1 = "C:\\test";
+        var path1 = OperatingSystem.IsWindows() ? "C:\\test" : "C:/test";
         var path2 = "folder";
         var path3 = "file.txt";
 
@@ -133,7 +136,8 @@ public class FileSystemWrapperTests
         var result = _fileSystemWrapper.CombinePath(path1, path2, path3);
 
         // Assert
-        Assert.AreEqual("C:\\test\\folder\\file.txt", result);
+        var expectedResult = OperatingSystem.IsWindows() ? "C:\\test\\folder\\file.txt" : "C:/test/folder/file.txt";
+        Assert.AreEqual(expectedResult, result);
     }
 
     /// <summary>

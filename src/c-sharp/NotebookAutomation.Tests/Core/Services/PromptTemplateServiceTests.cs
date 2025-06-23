@@ -19,7 +19,7 @@ public class PromptTemplateServiceTests
     public void TestInitialize()
     {
         _loggerMock = new Mock<ILogger<PromptTemplateService>>();
-        _yamlHelperMock = new();
+        _yamlHelperMock = new Mock<IYamlHelper>();
 
         // Set up yamlHelper to simulate frontmatter removal
         _yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
@@ -64,10 +64,10 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_ReplacesTemplateVariables()
     {
         // Arrange
-        AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
+        AppConfig config = new AppConfig();
+        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}, welcome to {{course}}!";
-        Dictionary<string, string> variables = new()
+        Dictionary<string, string> variables = new Dictionary<string, string>()
         {
             { "name", "John" },
             { "course", "MBA Programming" },
@@ -87,10 +87,10 @@ public class PromptTemplateServiceTests
     public void SubstituteVariables_HandlesMissingVariables()
     {
         // Arrange
-        AppConfig config = new();
-        PromptTemplateService service = new(_loggerMock.Object, _yamlHelperMock.Object, config);
+        AppConfig config = new AppConfig();
+        PromptTemplateService service = new PromptTemplateService(_loggerMock.Object, _yamlHelperMock.Object, config);
         string template = "Hello {{name}}, welcome to {{course}}!";
-        Dictionary<string, string> variables = new()
+        Dictionary<string, string> variables = new Dictionary<string, string>()
         {
             { "name", "John" },
 

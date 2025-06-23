@@ -1,0 +1,8 @@
+{
+  "id": "3faa7c12-06dc-420e-b4e1-5a44d1b0d398",
+  "title": "Test Project Consolidation with .NET 9 Complete",
+  "details": "Successfully consolidated the test projects and updated to .NET 9 framework:\n\n## Completed Tasks:\n- Merged NotebookAutomation.Cli.Tests and NotebookAutomation.Core.Tests into single NotebookAutomation.Tests project\n- Removed all old test project directories and files using git rm\n- Updated project to use .NET 9 (net9.0) framework\n- Added global.json to pin .NET SDK version to 9.0.101 for compatibility\n- Updated Directory.Build.props to use C# 13.0 language version\n- Resolved all merge conflicts by accepting incoming changes with modern new() syntax\n- Successfully committed merge with commit d6b6bf8\n\n## Current Status:\n- Project builds Core and CLI successfully\n- Test project has 95 compilation errors that need fixing\n- All tests are in consolidated NotebookAutomation.Tests project\n- Using modern C# 13 syntax with new() expressions\n\n## Remaining Issues to Fix:\n1. Target type inference issues with new() - need explicit types where compiler can't infer\n2. Missing appConfig parameter in MarkdownNoteBuilder constructors\n3. Missing FindConfigFile method in AppConfig class\n4. Various new() expressions where target type cannot be inferred\n\n## Next Steps:\n- Fix compilation errors systematically\n- Ensure all tests pass\n- Verify .NET 9 compatibility is working correctly",
+  "category": "project_consolidation",
+  "dateCreated": "2025-06-23T01:30:50.992Z",
+  "dateUpdated": "2025-06-23T01:30:50.992Z"
+}
