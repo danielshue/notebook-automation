@@ -7,9 +7,9 @@ namespace NotebookAutomation.Tests.Cli.Commands;
 [TestClass]
 public class VaultCommandsTests
 {
-    private readonly Mock<ILogger<VaultCommands>> mockLogger = new();
-    private readonly Mock<IServiceProvider> mockServiceProvider = new();
-    private readonly Mock<AppConfig> mockAppConfig = new();
+    private readonly Mock<ILogger<VaultCommands>> mockLogger = new Mock<ILogger<VaultCommands>>();
+    private readonly Mock<IServiceProvider> mockServiceProvider = new Mock<IServiceProvider>();
+    private readonly Mock<AppConfig> mockAppConfig = new Mock<AppConfig>();
 
     public VaultCommandsTests()
     {

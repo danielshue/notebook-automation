@@ -2,6 +2,8 @@
 
 namespace NotebookAutomation.Tests.Core.Utilities;
 
+using NotebookAutomation.Core.Configuration;
+
 [TestClass]
 public class CourseStructureExtractorTests
 {
@@ -22,7 +24,7 @@ public class CourseStructureExtractorTests
 
         // Mock AppConfig with the vault root
         _mockAppConfig = new();
-        var mockPaths = new();
+        var mockPaths = new Mock<PathsConfig>();
         mockPaths.Setup(p => p.NotebookVaultFullpathRoot).Returns(_vaultRoot);
         _mockAppConfig.Setup(c => c.Paths).Returns(mockPaths.Object);
 
@@ -728,8 +730,20 @@ public class CourseStructureExtractorTests
 
     [TestMethod]
     public void IsContentFile_CaseStudyUnderModule_TreatsAsContentFile()
-    {        // Arrange - Case study under a module folder should be treated as content file (get module extraction)
-        string filePath = @"D:\vault\TestProgram\TestCourse\03_module-fundamentals\Case Studies\financial-analysis-case-study.md";
+    {
+        // Arrange - Case study under a module folder should be treated as content file (get module extraction)
+        string programDir = "TestProgram";
+        string courseDir = "TestCourse";
+        string moduleDir = "03_module-fundamentals";
+        string caseStudyDir = "Case Studies";
+        string fileName = "financial-analysis-case-study.md";
+
+        // Create the directory structure using cross-platform paths
+        string modulePath = Path.Combine(_vaultRoot, programDir, courseDir, moduleDir);
+        string caseStudyPath = Path.Combine(modulePath, caseStudyDir);
+        Directory.CreateDirectory(caseStudyPath);
+
+        string filePath = Path.Combine(caseStudyPath, fileName);
 
         // Act
         var isContentFileMethod = typeof(CourseStructureExtractor).GetMethod("IsContentFile",
@@ -742,8 +756,19 @@ public class CourseStructureExtractorTests
 
     [TestMethod]
     public void IsContentFile_CaseStudyAtClassLevel_DoesNotTreatAsContentFile()
-    {        // Arrange - Case study at class level should NOT be treated as content file (no module extraction)
-        string filePath = @"D:\vault\TestProgram\TestCourse\Case Studies\strategic-planning-case-study.md";
+    {
+        // Arrange - Case study at class level should NOT be treated as content file (no module extraction)
+        string programDir = "TestProgram";
+        string courseDir = "TestCourse";
+        string caseStudyDir = "Case Studies";
+        string fileName = "strategic-planning-case-study.md";
+
+        // Create the directory structure using cross-platform paths
+        string coursePath = Path.Combine(_vaultRoot, programDir, courseDir);
+        string caseStudyPath = Path.Combine(coursePath, caseStudyDir);
+        Directory.CreateDirectory(caseStudyPath);
+
+        string filePath = Path.Combine(caseStudyPath, fileName);
 
         // Act
         var isContentFileMethod = typeof(CourseStructureExtractor).GetMethod("IsContentFile",
@@ -758,13 +783,22 @@ public class CourseStructureExtractorTests
     public void ExtractModuleAndLesson_CaseStudyUnderModule_ExtractsModule()
     {
         // Arrange - Case study under module should extract module number
-        var logger = new Mock<ILogger<CourseStructureExtractor>>();
-        var mockAppConfig = new();
-        var extractor = new CourseStructureExtractor(logger.Object, mockAppConfig.Object); string filePath = @"D:\vault\TestProgram\TestCourse\03_module-fundamentals\Case Studies\financial-analysis-case-study.md";
-        var metadata = new();
+        string programDir = "TestProgram";
+        string courseDir = "TestCourse";
+        string moduleDir = "03_module-fundamentals";
+        string caseStudyDir = "Case Studies";
+        string fileName = "financial-analysis-case-study.md";
+
+        // Create the directory structure using cross-platform paths
+        string modulePath = Path.Combine(_vaultRoot, programDir, courseDir, moduleDir);
+        string caseStudyPath = Path.Combine(modulePath, caseStudyDir);
+        Directory.CreateDirectory(caseStudyPath);
+
+        string filePath = Path.Combine(caseStudyPath, fileName);
+        var metadata = new Dictionary<string, object?>();
 
         // Act
-        extractor.ExtractModuleAndLesson(filePath, metadata);
+        _extractor.ExtractModuleAndLesson(filePath, metadata);
 
         // Assert
         Assert.IsTrue(metadata.ContainsKey("module"), "Case study under module should have module metadata");
@@ -775,13 +809,21 @@ public class CourseStructureExtractorTests
     public void ExtractModuleAndLesson_CaseStudyAtClassLevel_DoesNotExtractModule()
     {
         // Arrange - Case study at class level should NOT extract module
-        var logger = new Mock<ILogger<CourseStructureExtractor>>();
-        var mockAppConfig = new();
-        var extractor = new CourseStructureExtractor(logger.Object, mockAppConfig.Object); string filePath = @"D:\vault\TestProgram\TestCourse\Case Studies\strategic-planning-case-study.md";
-        var metadata = new();
+        string programDir = "TestProgram";
+        string courseDir = "TestCourse";
+        string caseStudyDir = "Case Studies";
+        string fileName = "strategic-planning-case-study.md";
+
+        // Create the directory structure using cross-platform paths
+        string coursePath = Path.Combine(_vaultRoot, programDir, courseDir);
+        string caseStudyPath = Path.Combine(coursePath, caseStudyDir);
+        Directory.CreateDirectory(caseStudyPath);
+
+        string filePath = Path.Combine(caseStudyPath, fileName);
+        var metadata = new Dictionary<string, object?>();
 
         // Act
-        extractor.ExtractModuleAndLesson(filePath, metadata);
+        _extractor.ExtractModuleAndLesson(filePath, metadata);
 
         // Assert
         Assert.IsFalse(metadata.ContainsKey("module"), "Case study at class level should NOT have module metadata");

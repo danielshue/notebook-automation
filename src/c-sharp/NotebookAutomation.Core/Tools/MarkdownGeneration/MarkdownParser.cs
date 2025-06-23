@@ -194,10 +194,35 @@ public partial class MarkdownParser(ILogger logger)
     }
 
     /// <summary>
-    /// Sanitizes a string for use in a filename.
+    /// Sanitizes a string for use in a filename by removing invalid characters and applying consistent formatting.
     /// </summary>
     /// <param name="input">The input string to sanitize.</param>
-    /// <returns>A sanitized filename-safe string.</returns>
+    /// <returns>
+    /// A sanitized filename-safe string that is guaranteed to be lowercase and compatible across platforms.
+    /// Returns "unnamed" if the input is null or empty.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method performs the following transformations to ensure cross-platform filename compatibility:
+    /// </para>
+    /// <list type="bullet">
+    /// <item><description>Replaces invalid filename characters with hyphens</description></item>
+    /// <item><description>Replaces additional problematic characters (: * | ? &lt; &gt; " \ / \t \n \r \0) with hyphens for cross-platform compatibility</description></item>
+    /// <item><description>Replaces spaces with hyphens</description></item>
+    /// <item><description>Replaces dots with hyphens</description></item>
+    /// <item><description>Converts the entire string to lowercase using ToLowerInvariant()</description></item>
+    /// </list>
+    /// <para>
+    /// The method combines Path.GetInvalidFileNameChars() with additional characters that may cause
+    /// issues across different platforms and file systems, including whitespace control characters.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// string filename = SanitizeForFilename("My File: Document.txt");
+    /// // Returns: "my-file--document-txt"
+    /// </code>
+    /// </example>
     public static string SanitizeForFilename(string input)
     {
         if (string.IsNullOrEmpty(input))
@@ -206,17 +231,24 @@ public partial class MarkdownParser(ILogger logger)
         }
 
         var invalidChars = Path.GetInvalidFileNameChars();
+
+        // Add platform-specific characters that should be avoided for cross-platform compatibility
+        var additionalInvalidChars = new char[] { ':', '*', '|', '?', '<', '>', '"', '\\', '/', '\t', '\n', '\r', '\0' };
+
+        var allInvalidChars = invalidChars.Concat(additionalInvalidChars).Distinct().ToArray();
         var sb = new StringBuilder(input);
 
-        foreach (var c in invalidChars)
+        foreach (var c in allInvalidChars)
         {
             sb.Replace(c, '-');
         }
 
-        return sb.ToString()
+        var sanitizedFilename = sb.ToString()
             .Replace(' ', '-')
             .Replace('.', '-')
             .ToLowerInvariant();
+
+        return sanitizedFilename;
     }
 
     /// <summary>

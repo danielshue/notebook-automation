@@ -73,7 +73,9 @@ public class ConfigurationExtensionsTests
         Assert.AreEqual("TestString", configuration["StringProperty"]);
         Assert.AreEqual("42", configuration["IntProperty"]);
         Assert.AreEqual("True", configuration["BoolProperty"]);
-        Assert.AreEqual("1/1/2023 12:00:00 AM", configuration["DateTimeProperty"]);
+        // Parse and compare DateTime instead of string comparison to avoid culture issues
+        Assert.IsTrue(DateTime.TryParse(configuration["DateTimeProperty"], out var actualDateTime));
+        Assert.AreEqual(new DateTime(2023, 1, 1), actualDateTime);
         Assert.AreEqual("Option2", configuration["EnumProperty"]);
     }
 
@@ -111,7 +113,9 @@ public class ConfigurationExtensionsTests
         Assert.AreEqual("NestedString", configuration["NestedConfig:StringProperty"]);
         Assert.AreEqual("100", configuration["NestedConfig:IntProperty"]);
         Assert.AreEqual("False", configuration["NestedConfig:BoolProperty"]);
-        Assert.AreEqual("12/31/2023 12:00:00 AM", configuration["NestedConfig:DateTimeProperty"]);
+        // Parse and compare DateTime instead of string comparison to avoid culture issues
+        Assert.IsTrue(DateTime.TryParse(configuration["NestedConfig:DateTimeProperty"], out var nestedDateTime));
+        Assert.AreEqual(new DateTime(2023, 12, 31), nestedDateTime);
         Assert.AreEqual("Option3", configuration["NestedConfig:EnumProperty"]);
     }
 

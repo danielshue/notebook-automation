@@ -22,10 +22,10 @@ public class BatchProcessResultTests
         _pdfLoggerMock = new Mock<ILogger<PdfNoteProcessor>>();
         _aiLoggerMock = new Mock<ILogger<AISummarizer>>();
         _aiSummarizerMock = new Mock<AISummarizer>(_aiLoggerMock!.Object, null!, null!, null!);        // Create a mock AppConfig for MetadataHierarchyDetector
-        var mockAppConfig = new();
+        var mockAppConfig = new Mock<AppConfig>();
         mockAppConfig.Setup(config => config.Paths).Returns(new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() });        // Create a real MetadataHierarchyDetector instead of mocking it
         var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
-        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, mockAppConfig.Object);
         var hierarchyDetector = new MetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             mockAppConfig.Object);

@@ -85,7 +85,7 @@ metadata:
             CreateMetadataHierarchyDetector(),
             CreateTestMetadataTemplateManager(),
             mockCourseStructureExtractor,
-            new MarkdownNoteBuilder(mockYamlHelper),
+            new MarkdownNoteBuilder(mockYamlHelper, _testAppConfig),
             mockOneDriveService,
             _testAppConfig);  // AppConfig
 

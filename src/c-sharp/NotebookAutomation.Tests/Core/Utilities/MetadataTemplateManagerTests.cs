@@ -21,7 +21,7 @@ public class MetadataTemplateManagerTests
             .Returns<string>(yaml =>
             {
                 // Simple parsing logic to handle our test data
-                var result = new();
+                var result = new Dictionary<string, object>();
 
                 // Extract template-type and title
                 if (yaml.Contains("template-type: video-reference"))
