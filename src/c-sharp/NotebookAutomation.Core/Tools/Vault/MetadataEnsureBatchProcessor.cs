@@ -75,7 +75,7 @@ public class MetadataEnsureBatchProcessor(
 
     // Queue-related fields
     private readonly List<QueueItem> _processingQueue = [];
-    private readonly object _queueLock = new object();
+    private readonly object _queueLock = new();
 
     /// <summary>
     /// Event triggered when processing progress changes for individual files during batch operations.

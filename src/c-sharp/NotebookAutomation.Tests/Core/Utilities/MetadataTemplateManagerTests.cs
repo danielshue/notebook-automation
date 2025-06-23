@@ -13,15 +13,15 @@ public class MetadataTemplateManagerTests
     [TestInitialize]
     public void Setup()
     {
-        _loggerMock = new Mock<ILogger>();
-        _yamlHelperMock = new Mock<IYamlHelper>();
+        _loggerMock = new();
+        _yamlHelperMock = new();
 
         // Setup YamlHelper mock to properly parse YAML
         _yamlHelperMock.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
             .Returns<string>(yaml =>
             {
                 // Simple parsing logic to handle our test data
-                var result = new Dictionary<string, object>();
+                var result = new();
 
                 // Extract template-type and title
                 if (yaml.Contains("template-type: video-reference"))
@@ -68,7 +68,7 @@ date-created: 2025-04-19";
         File.WriteAllText(_testMetadataFile, testMetadata, System.Text.Encoding.UTF8);
 
         // Create a real AppConfig instance instead of mocking it
-        _appConfigMock = new Mock<AppConfig>();
+        _appConfigMock = new();
 
         // Create the real config and set it up
         AppConfig realConfig = new()

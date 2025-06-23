@@ -11,7 +11,7 @@ public class ServiceRegistrationTests
     public void AddNotebookAutomationServices_RegistersCoreServices()
     {
         // Arrange
-        ServiceCollection services = new ServiceCollection();
+        ServiceCollection services = new();
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
             {

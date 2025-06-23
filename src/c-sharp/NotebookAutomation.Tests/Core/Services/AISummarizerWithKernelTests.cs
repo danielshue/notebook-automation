@@ -17,7 +17,7 @@ public class AISummarizerWithKernelTests
     public void SetUp()
     {
         _mockLogger = new Mock<ILogger<AISummarizer>>();
-        _mockPromptService = new Mock<IPromptService>();
+        _mockPromptService = new();
         _mockPromptService.Setup(p => p.LoadTemplateAsync(It.IsAny<string>()))
             .Returns(Task.FromResult("Template {{content}}"));
         _mockPromptService

@@ -64,6 +64,12 @@ public class AppConfig : IConfiguration
     public virtual bool PdfExtractImages { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets the banner configuration for generated markdown files.
+    /// </summary>
+    [JsonPropertyName("banners")]
+    public virtual BannerConfig Banners { get; set; } = new BannerConfig();
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="AppConfig"/> class.
     /// Default constructor for manual initialization.
     /// </summary>

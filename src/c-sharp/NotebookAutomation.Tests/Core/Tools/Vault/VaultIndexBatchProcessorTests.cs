@@ -20,8 +20,8 @@ public class VaultIndexBatchProcessorTests
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<VaultIndexBatchProcessor>>();
-        _processorMock = new Mock<IVaultIndexProcessor>();
-        _hierarchyDetectorMock = new Mock<IMetadataHierarchyDetector>();
+        _processorMock = new();
+        _hierarchyDetectorMock = new();
 
         _batchProcessor = new VaultIndexBatchProcessor(
             _loggerMock.Object,
@@ -337,7 +337,7 @@ public class VaultIndexBatchProcessorTests
         Assert.IsNotNull(initMethod);
         initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null]);
 
-        var tasks = new List<Task>();
+        var tasks = new();
         var exception = false;
 
         // Act - Access queue from multiple threads

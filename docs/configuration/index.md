@@ -163,6 +163,82 @@ course_template:
     **Points:** {points}
 ```
 
+## Banner Configuration
+
+Configure custom banners for generated markdown files using the `banners` section in `config.json`:
+
+### Basic Banner Configuration
+
+```json
+{
+  "banners": {
+    "enabled": true,
+    "default": "gies-banner.png",
+    "format": "image",
+    "template_banners": {
+      "main": "main-banner.png",
+      "program": "program-banner.png",
+      "course": "course-banner.png"
+    },
+    "filename_patterns": {
+      "*index*": "index-banner.png",
+      "*assignment*": "assignment-banner.png"
+    }
+  }
+}
+```
+
+### Banner Configuration Options
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `enabled` | Global enable/disable for banner functionality | `true` |
+| `default` | Default banner content when no specific match is found | `"gies-banner.png"` |
+| `format` | Banner format type: `image`, `text`, `markdown`, `html` | `"image"` |
+| `template_banners` | Banner content by template type | See defaults |
+| `filename_patterns` | Banner content by filename patterns (wildcards supported) | `{}` |
+
+### Banner Selection Priority
+
+The system selects banners in the following order (first match wins):
+
+1. **Existing banner**: If frontmatter already contains a banner, it's preserved
+2. **Filename patterns**: Matches filename against wildcard patterns
+3. **Template types**: Matches `template-type` frontmatter field
+4. **Default fallback**: Uses default banner for backward compatibility
+
+### Filename Pattern Examples
+
+```json
+{
+  "filename_patterns": {
+    "*index*": "index-banner.png",        // Matches: index.md, course-index.md, etc.
+    "assignment-*": "assignment-banner.png", // Matches: assignment-1.md, assignment-final.md
+    "*.course.*": "course-banner.png",    // Matches: mba.course.md, intro.course.notes.md
+    "main": "main-banner.png"             // Exact match: main.md
+  }
+}
+```
+
+### Banner Format Types
+
+- **`image`**: Obsidian-style image references (default behavior)
+- **`text`**: Plain text content
+- **`markdown`**: Markdown formatted content  
+- **`html`**: HTML formatted content
+
+### Disabling Banners
+
+To disable banner functionality entirely:
+
+```json
+{
+  "banners": {
+    "enabled": false
+  }
+}
+```
+
 ## Validation
 
 The configuration system includes built-in validation:
