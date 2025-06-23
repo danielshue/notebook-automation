@@ -15,10 +15,10 @@ namespace NotebookAutomation.Tests.Cli.Commands;
 [TestClass]
 public class VaultCommandsRelativePathTests
 {
-    private readonly Mock<ILogger<VaultCommands>> _mockLogger = new Mock<ILogger<VaultCommands>>();
-    private readonly TestServiceProvider _serviceProvider = new TestServiceProvider();
-    private readonly Mock<AppConfig> _appConfig = new Mock<AppConfig>();
-    private readonly Mock<PathsConfig> _pathsConfig = new Mock<PathsConfig>();
+    private readonly Mock<ILogger<VaultCommands>> _mockLogger = new();
+    private readonly TestServiceProvider _serviceProvider = new();
+    private readonly Mock<AppConfig> _appConfig = new();
+    private readonly Mock<PathsConfig> _pathsConfig = new();
     private string _tempDir = string.Empty;
     private string _vaultRoot = string.Empty;
 
@@ -42,8 +42,8 @@ public class VaultCommandsRelativePathTests
 
         // Create mocks for VaultIndexBatchProcessor dependencies
         var mockBatchLogger = new Mock<ILogger<VaultIndexBatchProcessor>>();
-        var mockIndexProcessor = new Mock<IVaultIndexProcessor>();
-        var mockHierarchyDetector = new Mock<IMetadataHierarchyDetector>();
+        var mockIndexProcessor = new();
+        var mockHierarchyDetector = new();
 
         // Set up the index processor mock to return a successful result
         var mockResult = new VaultIndexBatchResult
@@ -170,7 +170,7 @@ public class VaultCommandsRelativePathTests
     /// </summary>
     public class TestServiceProvider : IServiceProvider
     {
-        private readonly Dictionary<Type, object> _services = new Dictionary<Type, object>();
+        private readonly Dictionary<Type, object> _services = new();
 
         public void AddService<T>(T service) where T : class
         {

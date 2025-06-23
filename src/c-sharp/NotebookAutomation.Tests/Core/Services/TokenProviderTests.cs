@@ -20,8 +20,8 @@ public class TokenProviderTests
     [TestInitialize]
     public void Setup()
     {
-        _msalAppMock = new Mock<IPublicClientApplication>();
-        _loggerMock = new Mock<ILogger>();
+        _msalAppMock = new();
+        _loggerMock = new();
         _testScopes = ["https://graph.microsoft.com/.default"];
     }
 

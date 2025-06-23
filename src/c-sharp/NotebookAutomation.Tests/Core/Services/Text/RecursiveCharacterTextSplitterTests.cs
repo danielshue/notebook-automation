@@ -12,7 +12,7 @@ public class RecursiveCharacterTextSplitterTests
     [TestInitialize]
     public void SetUp()
     {
-        _mockLogger = new Mock<ILogger>();
+        _mockLogger = new();
     }
 
     /// <summary>
@@ -96,7 +96,7 @@ public class RecursiveCharacterTextSplitterTests
         RecursiveCharacterTextSplitter splitter = new(_mockLogger.Object, maxTokens, 20);
 
         // Create a large text with many paragraphs
-        System.Text.StringBuilder largeText = new StringBuilder();
+        System.Text.StringBuilder largeText = new();
         for (int i = 0; i < 50; i++)
         {
             largeText.AppendLine($"This is paragraph {i + 1} with some content that should be considered as one logical unit.");

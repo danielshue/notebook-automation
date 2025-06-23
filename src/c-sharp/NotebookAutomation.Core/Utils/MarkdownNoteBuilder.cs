@@ -1,4 +1,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
+using NotebookAutomation.Core.Configuration;
+
 namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
@@ -17,14 +20,16 @@ namespace NotebookAutomation.Core.Utils;
 /// </code>
 /// </example>
 /// </remarks>
-public class MarkdownNoteBuilder(IYamlHelper yamlHelper)
+public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
 {
     private readonly IYamlHelper _yamlHelper = yamlHelper;
+    private readonly AppConfig _appConfig = appConfig;
 
     /// <summary>
     /// Builds a markdown note containing only YAML frontmatter (no content body).
     /// </summary>
     /// <param name="frontmatter">A dictionary of frontmatter keys and values to serialize as YAML.</param>
+    /// <param name="filename">Optional filename for banner pattern matching.</param>
     /// <returns>A markdown string containing only the YAML frontmatter block.</returns>
     /// <remarks>
     /// The resulting string will have a YAML frontmatter block delimited by <c>---</c> and two trailing newlines.
@@ -34,13 +39,10 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper)
     /// var frontmatter = new Dictionary&lt;string, object&gt; { ["title"] = "Sample" };    /// string note = builder.CreateMarkdownWithFrontmatter(frontmatter);
     /// </code>
     /// </example>
-    public string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter)
+    public string CreateMarkdownWithFrontmatter(Dictionary<string, object> frontmatter, string? filename = null)
     {
-        // Only add banner if explicitly requested or if template includes one
-        if (ShouldAddDefaultBanner(frontmatter))
-        {
-            frontmatter["banner"] = "'[[gies-banner.png]]'";
-        }
+        // Apply banner configuration
+        ApplyBannerConfiguration(frontmatter, filename);
 
         var yaml = _yamlHelper.UpdateFrontmatter(string.Empty, frontmatter);
 
@@ -59,6 +61,7 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper)
     /// </summary>
     /// <param name="frontmatter">A dictionary of frontmatter keys and values to serialize as YAML.</param>
     /// <param name="body">The markdown content body to append after the frontmatter.</param>
+    /// <param name="filename">Optional filename for banner pattern matching.</param>
     /// <returns>A markdown string containing the YAML frontmatter block followed by the content body.</returns>
     /// <remarks>
     /// The frontmatter is always placed at the top of the note, followed by the markdown body.    /// </remarks>
@@ -68,15 +71,10 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper)
     /// string note = builder.BuildNote(frontmatter, "# Heading\nContent");
     /// </code>
     /// </example>
-    public string BuildNote(Dictionary<string, object> frontmatter, string body)
+    public string BuildNote(Dictionary<string, object> frontmatter, string body, string? filename = null)
     {
-        // Only set default banner if explicitly requested by template type
-        if (ShouldAddDefaultBanner(frontmatter))
-        {
-            frontmatter["banner"] = "gies-banner.png";
-        }
-        // Note: We preserve the banner value exactly as it comes from the template
-        // to maintain proper Obsidian wiki link syntax like '[[gies-banner.png]]'
+        // Apply banner configuration
+        ApplyBannerConfiguration(frontmatter, filename);
 
         var serializer = new YamlDotNet.Serialization.SerializerBuilder()
             .WithEmissionPhaseObjectGraphVisitor(args => new NoQuotesForBannerVisitor(args.InnerVisitor))
@@ -143,5 +141,120 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper)
 
         // Default: don't add banner unless explicitly requested
         return false;
+    }
+
+    /// <summary>
+    /// Applies banner configuration to the frontmatter based on template type and filename patterns.
+    /// </summary>
+    /// <param name="frontmatter">The frontmatter dictionary to modify.</param>
+    /// <param name="filename">Optional filename for pattern matching.</param>
+    /// <remarks>
+    /// This method checks banner configuration in the following order:
+    /// 1. If banner is already explicitly set, preserves it
+    /// 2. Checks filename patterns for matches
+    /// 3. Checks template-type specific banners
+    /// 4. Falls back to default banner if enabled
+    /// </remarks>
+    private void ApplyBannerConfiguration(Dictionary<string, object> frontmatter, string? filename)
+    {
+        // Don't add banner if globally disabled
+        if (!_appConfig.Banners.Enabled)
+        {
+            return;
+        }
+
+        // Don't override existing banner setting
+        if (frontmatter.ContainsKey("banner"))
+        {
+            return;
+        }
+
+        string? bannerContent = null;
+
+        // 1. Check filename patterns first (most specific)
+        if (!string.IsNullOrWhiteSpace(filename))
+        {
+            bannerContent = GetBannerByFilenamePattern(filename);
+        }
+
+        // 2. Check template-type specific banners
+        if (bannerContent == null && frontmatter.TryGetValue("template-type", out var templateType))
+        {
+            var templateTypeStr = templateType?.ToString() ?? string.Empty;
+            bannerContent = GetBannerByTemplateType(templateTypeStr);
+        }
+
+        // 3. Fall back to default banner for backward compatibility
+        if (bannerContent == null && ShouldAddDefaultBanner(frontmatter))
+        {
+            bannerContent = _appConfig.Banners.DefaultBanner;
+        }
+
+        // Apply the banner if found
+        if (!string.IsNullOrWhiteSpace(bannerContent))
+        {
+            frontmatter["banner"] = FormatBannerContent(bannerContent);
+        }
+    }
+
+    /// <summary>
+    /// Gets banner content based on filename pattern matching.
+    /// </summary>
+    /// <param name="filename">The filename to match against patterns.</param>
+    /// <returns>Banner content if a pattern matches, null otherwise.</returns>
+    private string? GetBannerByFilenamePattern(string filename)
+    {
+        foreach (var pattern in _appConfig.Banners.FilenamePatterns)
+        {
+            if (IsFilenameMatch(filename, pattern.Key))
+            {
+                return pattern.Value;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Gets banner content based on template type.
+    /// </summary>
+    /// <param name="templateType">The template type to look up.</param>
+    /// <returns>Banner content if template type is configured, null otherwise.</returns>
+    private string? GetBannerByTemplateType(string templateType)
+    {
+        return _appConfig.Banners.TemplateBanners.TryGetValue(templateType, out var banner) ? banner : null;
+    }
+
+    /// <summary>
+    /// Formats banner content based on the configured format type.
+    /// </summary>
+    /// <param name="bannerContent">The raw banner content.</param>
+    /// <returns>Formatted banner content.</returns>
+    private string FormatBannerContent(string bannerContent)
+    {
+        return _appConfig.Banners.Format switch
+        {
+            "image" => bannerContent, // For Obsidian image references, use as-is
+            "text" => bannerContent,
+            "markdown" => bannerContent,
+            "html" => bannerContent,
+            _ => bannerContent // Default: use as-is
+        };
+    }
+
+    /// <summary>
+    /// Checks if a filename matches a wildcard pattern.
+    /// </summary>
+    /// <param name="filename">The filename to check.</param>
+    /// <param name="pattern">The pattern with wildcards (* and ?).</param>
+    /// <returns>True if the filename matches the pattern, false otherwise.</returns>
+    private static bool IsFilenameMatch(string filename, string pattern)
+    {
+        // Simple wildcard matching - convert to regex
+        var regexPattern = "^" + pattern
+            .Replace("*", ".*")
+            .Replace("?", ".")
+            + "$";
+        
+        return System.Text.RegularExpressions.Regex.IsMatch(filename, regexPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     }
 }

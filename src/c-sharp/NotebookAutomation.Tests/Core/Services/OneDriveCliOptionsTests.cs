@@ -10,7 +10,7 @@ public class OneDriveCliOptionsTests
     [TestMethod]
     public void Properties_DefaultValues_AreFalse()
     {
-        OneDriveCliOptions options = new OneDriveCliOptions();
+        OneDriveCliOptions options = new();
         Assert.IsFalse(options.DryRun);
         Assert.IsFalse(options.Verbose);
         Assert.IsFalse(options.Force);

@@ -9,12 +9,18 @@
         <FileVersion>1.0.0.0</FileVersion>
         <InformationalVersion>1.0.0-development</InformationalVersion>
 
+        <!-- .NET 9 and C# 13 Configuration -->
+        <TargetFramework>net9.0</TargetFramework>
+        <LangVersion>13.0</LangVersion>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
         <!-- Enable deterministic builds for CI -->
         <Deterministic>false</Deterministic>
         <Company>Dan Shue</Company>
         <Copyright>Copyright © 2025</Copyright>
         <Product>Notebook Automation</Product>
-        <Authors>Dan Shue</Authors>        <!-- Code Analysis and Formatting - TEMPORARILY DISABLED -->
+        <Authors>Dan Shue</Authors><!-- Code Analysis and Formatting - TEMPORARILY DISABLED -->
         <EnableNETAnalyzers>false</EnableNETAnalyzers>
         <AnalysisMode>None</AnalysisMode>
         <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>

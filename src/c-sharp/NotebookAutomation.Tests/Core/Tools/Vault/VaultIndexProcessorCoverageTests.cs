@@ -35,12 +35,12 @@ public class VaultIndexProcessorCoverageTests
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<VaultIndexProcessor>>();
-        _templateManagerMock = new Mock<IMetadataTemplateManager>();
+        _templateManagerMock = new();
         _structureLoggerMock = new Mock<ILogger<CourseStructureExtractor>>();
         _structureExtractor = new CourseStructureExtractor(_structureLoggerMock.Object);
-        _yamlHelperMock = new Mock<IYamlHelper>();
+        _yamlHelperMock = new();
         _noteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object);
-        _contentGeneratorMock = new Mock<IVaultIndexContentGenerator>();
+        _contentGeneratorMock = new();
         _appConfig = new AppConfig
         {
             Paths = new PathsConfig
@@ -58,7 +58,7 @@ public class VaultIndexProcessorCoverageTests
                 It.IsAny<Dictionary<string, string>>(),
                 It.IsAny<int>()))
             .ReturnsAsync("Generated index content");
-        _hierarchyDetectorMock = new Mock<IMetadataHierarchyDetector>();
+        _hierarchyDetectorMock = new();
 
         // Create test directory structure
         _testTempDir = Path.Combine(Path.GetTempPath(), "VaultIndexProcessorCoverageTests", Guid.NewGuid().ToString());

@@ -46,7 +46,7 @@ public class MetadataHierarchyDetectorTests
         _loggerMock = new Mock<ILogger<MetadataHierarchyDetector>>();
 
         // Create a real AppConfig instance instead of mocking it
-        _appConfigMock = new Mock<AppConfig>();
+        _appConfigMock = new();
 
         // Create a unique vault path for each test run to prevent parallel test conflicts
         string uniqueId = Guid.NewGuid().ToString("N")[..8]; // Short unique ID
@@ -354,7 +354,7 @@ public class MetadataHierarchyDetectorTests
         Directory.CreateDirectory(vaultRoot);
 
         // Create a dictionary to store paths to various files in the structure
-        Dictionary<string, string> paths = new Dictionary<string, string>();
+        Dictionary<string, string> paths = new();
 
         // Create the MBA program folder structure
         string mbaPath = Path.Combine(vaultRoot, "MBA");
@@ -740,7 +740,7 @@ class: SingleClass
             { "course", "Finance" },
             { "class", "Investment" },
             { "module", "Fundamentals" },
-        }; Dictionary<string, object?> emptyMetadata = new Dictionary<string, object?>();
+        }; Dictionary<string, object?> emptyMetadata = new();
 
         // Test with different index types
         var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);

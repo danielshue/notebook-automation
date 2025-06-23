@@ -1,0 +1,19 @@
+{
+  "banners": {
+    "enabled": true,
+    "default": "company-logo.png",
+    "format": "image",
+    "template_banners": {
+      "main": "main-header.png",
+      "program": "program-header.png",
+      "course": "course-header.png",
+      "assignment": "assignment-header.png"
+    },
+    "filename_patterns": {
+      "*index*": "index-banner.png",
+      "*readme*": "readme-banner.png",
+      "assignment-*": "assignment-banner.png",
+      "*final*": "final-project-banner.png"
+    }
+  }
+}
