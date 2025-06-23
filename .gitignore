@@ -9,6 +9,7 @@ __pycache__/
 *$py.class
 
 coverage-report/*
+CoverageReport/
 
 # Virtual environment
 venv/
