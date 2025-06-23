@@ -1,0 +1,8 @@
+{
+  "id": "61fdca61-6658-4c32-a863-f1f2ed690854",
+  "title": "global.json file corruption issue",
+  "details": "The global.json file in the project root was empty, causing .NET SDK resolution failures. The empty file prevented the MSBuild system from loading workloads and resolving SDKs, resulting in build failures across all projects in the solution.\n\nError symptoms:\n- \"Failed to map file. CreateFileMappingW(D:\\source\\notebook-automation\\global.json) failed with error 1006\"\n- \"The input does not contain any JSON tokens\"\n- SDK resolver failures for Microsoft.DotNet.MSBuildWorkloadSdkResolver\n\nSolution: Replace empty global.json with proper JSON structure specifying SDK version and rollForward policy.",
+  "category": "troubleshooting",
+  "dateCreated": "2025-06-23T20:30:49.358Z",
+  "dateUpdated": "2025-06-23T20:30:49.358Z"
+}

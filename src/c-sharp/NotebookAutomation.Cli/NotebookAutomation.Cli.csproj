@@ -22,8 +22,8 @@
         <PublishAot>False</PublishAot>
         <Copyright>Copyright 2025</Copyright>
         <!-- PublishSingleFile and SelfContained should only be set during publish operations -->
-        <!-- These properties cause build issues when set during regular builds -->        <!-- Make assembly version info available as C#
-        constants -->
+        <!-- These properties cause build issues when set during regular builds -->
+        <!-- Make assembly version info available as C# constants -->
         <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
         <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
         <GenerateAssemblyFileVersionAttribute>true</GenerateAssemblyFileVersionAttribute>
@@ -33,8 +33,9 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
         <IsPublishable>True</IsPublishable>
-    </PropertyGroup>    <!-- Copy prompts from repository
-    root and Core project if they exist -->
+    </PropertyGroup>
+
+    <!-- Copy prompts from repository root and Core project if they exist -->
     <Target Name="CopyPrompts" BeforeTargets="Build">
         <!-- Copy prompts from Core project -->
         <ItemGroup>
@@ -42,7 +43,9 @@
                 Include="$(MSBuildThisFileDirectory)..\NotebookAutomation.Core\Prompts\*.md" />
         </ItemGroup>
         <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\"
-            SkipUnchangedFiles="true" />        <!-- Copy prompts from repository root -->
+            SkipUnchangedFiles="true" />
+
+        <!-- Copy prompts from repository root -->
         <ItemGroup>
             <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\prompts\*.md" />
         </ItemGroup>

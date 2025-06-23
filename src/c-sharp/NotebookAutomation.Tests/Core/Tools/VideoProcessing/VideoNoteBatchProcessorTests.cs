@@ -32,7 +32,7 @@ public class VideoNoteBatchProcessorTests
         _testAISummarizer = new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>());
 
         // Create mock YamlHelper
-        var mockYamlHelper = new();
+        var mockYamlHelper = new Mock<IYamlHelper>();
         mockYamlHelper.Setup(m => m.ParseYamlToDictionary(It.IsAny<string>()))
             .Returns(new Dictionary<string, object>
             {
@@ -43,7 +43,7 @@ public class VideoNoteBatchProcessorTests
             .Returns("---\ntitle: Test Video\ntags:\n  - test\n---");
 
         // Create a mock OneDriveService for link sharing
-        var mockOneDriveService = new();
+        var mockOneDriveService = new Mock<IOneDriveService>();
         mockOneDriveService
             .Setup(m => m.CreateShareLinkAsync(
                 It.IsAny<string>(),
@@ -69,7 +69,7 @@ public class VideoNoteBatchProcessorTests
         };        // Create a real MetadataHierarchyDetector instead of mocking it
 
         var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
-        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, _appConfig);
         var hierarchyDetector = new MetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             _appConfig);
@@ -109,7 +109,7 @@ public class VideoNoteBatchProcessorTests
                 new Mock<IMetadataHierarchyDetector>().Object,
                 new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, new Mock<IYamlHelper>().Object),
                 new CourseStructureExtractor(NullLogger<CourseStructureExtractor>.Instance, _appConfig),
-                new MarkdownNoteBuilder(new Mock<IYamlHelper>().Object),
+                new MarkdownNoteBuilder(new Mock<IYamlHelper>().Object, _appConfig),
                 new Mock<IOneDriveService>().Object),
             new AISummarizer(new Mock<ILogger<AISummarizer>>().Object, null, null));
 

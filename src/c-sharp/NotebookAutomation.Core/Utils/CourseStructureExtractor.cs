@@ -908,7 +908,7 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     /// IsContentFile("/course/01_module/01_module-overview.md");       // Returns false -> module: "Module 1 Overview"
     /// </code>
     /// </example>
-    private bool IsContentFile(string filePath)
+    internal bool IsContentFile(string filePath)
     {
         var fileName = Path.GetFileNameWithoutExtension(filePath).ToLowerInvariant();
         var extension = Path.GetExtension(filePath).ToLowerInvariant();
@@ -961,7 +961,9 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
 
             // Otherwise, treat PDFs as non-content files (e.g., course materials, notes)
             return false;
-        }        // Special handling for case studies: only treat as content file if under a module
+        }
+
+        // Special handling for case studies: only treat as content file if under a module
         if (fileName.Contains("case-study") || directoryName.Contains("case-stud"))
         {
             return IsCaseStudyUnderModule(filePath);
@@ -1068,35 +1070,32 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     {
         try
         {
-            var fileInfo = new FileInfo(filePath);
-            var directory = fileInfo.Directory;
-
-            if (directory == null)
+            // Use path manipulation instead of FileInfo for non-existent paths
+            string? directoryPath = Path.GetDirectoryName(filePath);
+            if (string.IsNullOrEmpty(directoryPath))
             {
                 return false;
             }
 
-            // Go up two parent folders from the case study to reach the class level
-            // Structure: Class/Module/Case Studies/case-study-file.md
-            // We want to go from case-study-file.md -> Case Studies -> Module -> Class
-            var currentDir = directory;
+            string currentDirName = Path.GetFileName(directoryPath);
 
             // Go up to Case Studies folder (if we're in it)
-            if (currentDir.Name.ToLowerInvariant().Contains("case"))
+            var directoryNameLower = currentDirName.ToLowerInvariant();
+            if (directoryNameLower.Contains("case") || directoryNameLower.Contains("stud"))
             {
-                currentDir = currentDir.Parent; // Now at Module or Class level
-            }
-
-            if (currentDir == null)
-            {
-                return false;
+                directoryPath = Path.GetDirectoryName(directoryPath); // Now at Module or Class level
+                if (string.IsNullOrEmpty(directoryPath))
+                {
+                    return false;
+                }
+                currentDirName = Path.GetFileName(directoryPath);
             }
 
             // Check if we're at a module level by looking for module patterns
-            if (HasNumberPrefix(currentDir.Name) ||
-                currentDir.Name.ToLowerInvariant().Contains("module") ||
-                currentDir.Name.ToLowerInvariant().Contains("week") ||
-                currentDir.Name.ToLowerInvariant().Contains("unit"))
+            if (HasNumberPrefix(currentDirName) ||
+                currentDirName.ToLowerInvariant().Contains("module") ||
+                currentDirName.ToLowerInvariant().Contains("week") ||
+                currentDirName.ToLowerInvariant().Contains("unit"))
             {
                 // We're at module level - case study is under a module
                 return true;

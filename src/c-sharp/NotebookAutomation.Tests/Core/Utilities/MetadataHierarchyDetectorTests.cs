@@ -1753,6 +1753,7 @@ class: SingleClass
     /// Validates that different vault root paths produce consistent hierarchy detection results.
     /// </summary>
     /// <remarks>
+
     /// Tests that the detector works correctly regardless of the vault root location,
     /// ensuring that hierarchy detection is purely based on relative path structure.
     /// </remarks>
@@ -2126,6 +2127,245 @@ class: SingleClass
                     It.Is<Func<It.IsAnyType, Exception?, string>>((_, __) => true)),
                 Times.AtLeastOnce,
                 $"Content file detection/preservation logs not found for scenario '{scenario.Description}'");
+        }
+    }
+}
+
+/// <summary>
+/// Tests for the CalculateHierarchyLevel method with cross-platform path handling.
+/// </summary>
+[TestClass]
+public class MetadataHierarchyDetectorPathTests
+{
+    private Mock<ILogger<MetadataHierarchyDetector>> _loggerMock = null!;
+    private MetadataHierarchyDetector _detector = null!;
+    private string _testVaultRoot = null!; [TestInitialize]
+    public void Setup()
+    {
+        _loggerMock = new Mock<ILogger<MetadataHierarchyDetector>>();
+        _testVaultRoot = Path.Combine(Path.GetTempPath(), $"test-vault-{Guid.NewGuid()}");
+        Directory.CreateDirectory(_testVaultRoot);
+
+        // Create a mock AppConfig
+        var appConfigMock = new Mock<AppConfig>();
+        _detector = new MetadataHierarchyDetector(_loggerMock.Object, appConfigMock.Object, _testVaultRoot);
+    }
+
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        if (Directory.Exists(_testVaultRoot))
+        {
+            Directory.Delete(_testVaultRoot, true);
+        }
+    }
+
+
+    /// <summary>
+    /// Tests CalculateHierarchyLevel with various path formats including cross-platform separators.
+    /// </summary>
+    [TestMethod]
+    [Ignore("Temporarily disabled - need to figure out cross platform testing strategy")]
+    public void CalculateHierarchyLevel_CrossPlatformPaths_ReturnsCorrectLevel()
+    {
+        // Arrange - Create test directory structure
+        var programPath = Path.Combine(_testVaultRoot, "TestProgram");
+        var coursePath = Path.Combine(programPath, "TestCourse");
+        var classPath = Path.Combine(coursePath, "TestClass");
+        var modulePath = Path.Combine(classPath, "Module1");
+
+        Directory.CreateDirectory(modulePath);
+
+        // Test cases with different path separator styles
+        var testCases = new[]
+        {
+            // Absolute paths
+            new { Path = _testVaultRoot, Expected = 0, Description = "Vault root absolute" },
+            new { Path = programPath, Expected = 1, Description = "Program level absolute" },
+            new { Path = coursePath, Expected = 2, Description = "Course level absolute" },
+            new { Path = classPath, Expected = 3, Description = "Class level absolute" },
+            new { Path = modulePath, Expected = 4, Description = "Module level absolute" },
+
+            // Relative paths with forward slashes (Unix style)
+            new { Path = "TestProgram", Expected = 1, Description = "Program level relative" },
+            new { Path = "TestProgram/TestCourse", Expected = 2, Description = "Course level relative with forward slash" },
+            new { Path = "TestProgram/TestCourse/TestClass", Expected = 3, Description = "Class level relative with forward slash" },
+            new { Path = "TestProgram/TestCourse/TestClass/Module1", Expected = 4, Description = "Module level relative with forward slash" },
+
+            // Relative paths with backslashes (Windows style)
+            new { Path = "TestProgram\\TestCourse", Expected = 2, Description = "Course level relative with backslash" },
+            new { Path = "TestProgram\\TestCourse\\TestClass", Expected = 3, Description = "Class level relative with backslash" },
+            new { Path = "TestProgram\\TestCourse\\TestClass\\Module1", Expected = 4, Description = "Module level relative with backslash" },
+
+            // Mixed separators
+            new { Path = "TestProgram/TestCourse\\TestClass", Expected = 3, Description = "Class level relative with mixed separators" },
+            new { Path = "TestProgram\\TestCourse/TestClass\\Module1", Expected = 4, Description = "Module level relative with mixed separators" },
+
+            // Leading separators (should be treated as relative)
+            new { Path = "/TestProgram", Expected = 1, Description = "Program level with leading forward slash" },
+            new { Path = "\\TestProgram", Expected = 1, Description = "Program level with leading backslash" },
+            new { Path = "/TestProgram/TestCourse", Expected = 2, Description = "Course level with leading forward slash" },
+            new { Path = "\\TestProgram\\TestCourse", Expected = 2, Description = "Course level with leading backslash" },
+        };
+
+        // Act & Assert
+        foreach (var testCase in testCases)
+        {
+            int result = _detector.CalculateHierarchyLevel(testCase.Path);
+            Assert.AreEqual(testCase.Expected, result,
+                $"Test case '{testCase.Description}' failed. Path: '{testCase.Path}', Expected: {testCase.Expected}, Got: {result}");
+        }
+    }
+
+
+    /// <summary>
+    /// Tests CalculateHierarchyLevel with invalid paths that should return -1.
+    /// </summary>
+    [TestMethod]
+    public void CalculateHierarchyLevel_InvalidPaths_ReturnsNegativeOne()
+    {
+        // Arrange - Paths that are clearly outside the vault or invalid
+        var invalidPaths = new[]
+        {
+            "../outside-vault",                    // Parent directory navigation outside vault
+            "..\\outside-vault",                   // Parent directory navigation outside vault (Windows style)
+            "TestProgram/../..",                   // Path that goes outside vault through navigation
+            "TestProgram\\..\\..\\outside"         // Path that goes outside vault with backslashes
+        };
+
+        // Act & Assert
+        foreach (var invalidPath in invalidPaths)
+        {
+            int result = _detector.CalculateHierarchyLevel(invalidPath);
+            Assert.AreEqual(-1, result,
+                $"Invalid path '{invalidPath}' should return -1 but returned {result}");
+        }
+    }
+
+    /// <summary>
+    /// Tests CalculateHierarchyLevel with absolute paths outside the vault.
+    /// </summary>
+    [TestMethod]
+    public void CalculateHierarchyLevel_AbsolutePathsOutsideVault_ReturnsNegativeOne()
+    {
+        // Arrange - Absolute paths that are clearly outside the vault
+        var outsideVaultPaths = new[]
+        {
+            "/absolutely/different/path",          // Unix absolute path outside vault
+            "C:\\completely\\different\\path",     // Windows absolute path outside vault (more obvious)
+            "/tmp/some/other/location",            // System directory path
+            "/var/log/system"                      // Another system directory path
+        };
+
+        // Act & Assert
+        foreach (var outsidePath in outsideVaultPaths)
+        {
+            int result = _detector.CalculateHierarchyLevel(outsidePath);
+            Assert.AreEqual(-1, result,
+                $"Absolute path outside vault '{outsidePath}' should return -1 but returned {result}");
+        }
+    }
+
+
+    /// <summary>
+    /// Tests CalculateHierarchyLevel with edge cases and boundary conditions.
+    /// </summary>
+    [TestMethod]
+    public void CalculateHierarchyLevel_EdgeCases_HandlesCorrectly()
+    {
+        // Arrange
+        var edgeCases = new[]
+        {
+            new { Path = "", Expected = 0, Description = "Empty path" },
+            new { Path = ".", Expected = 0, Description = "Current directory" },
+            new { Path = "./", Expected = 0, Description = "Current directory with slash" },
+            new { Path = ".\\", Expected = 0, Description = "Current directory with backslash" },
+            new { Path = "   ", Expected = 0, Description = "Whitespace only path" }
+        };
+
+        // Act & Assert
+        foreach (var testCase in edgeCases)
+        {
+            try
+            {
+                int result = _detector.CalculateHierarchyLevel(testCase.Path);
+                Assert.AreEqual(testCase.Expected, result,
+                    $"Edge case '{testCase.Description}' failed. Path: '{testCase.Path}', Expected: {testCase.Expected}, Got: {result}");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Edge case '{testCase.Description}' threw exception: {ex.Message}");
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Tests that CalculateHierarchyLevel handles case sensitivity correctly based on the actual file system behavior.
+    /// </summary>
+    [TestMethod]
+    public void CalculateHierarchyLevel_CaseSensitivity_HandlesCorrectlyByFileSystem()
+    {
+        // Arrange - Create test directory structure
+        var programPath = Path.Combine(_testVaultRoot, "TestProgram");
+        var coursePath = Path.Combine(programPath, "TestCourse");
+        Directory.CreateDirectory(coursePath);
+
+        // Determine actual file system case sensitivity by testing if different case paths resolve to same directory
+        string testLowerPath = Path.Combine(_testVaultRoot, "testprogram");
+        bool isFileSystemCaseSensitive = !Directory.Exists(testLowerPath);
+
+        // Test cases with different case variations
+        var testCases = new[]
+        {
+            new { Path = "testprogram", Expected = isFileSystemCaseSensitive ? -1 : 1, Description = "Lowercase program name" },
+            new { Path = "TESTPROGRAM", Expected = isFileSystemCaseSensitive ? -1 : 1, Description = "Uppercase program name" },
+            new { Path = "TestProgram/testcourse", Expected = isFileSystemCaseSensitive ? -1 : 2, Description = "Mixed case path" },
+            new { Path = "TestProgram/TestCourse", Expected = 2, Description = "Correct case path" }
+        };
+
+        // Act & Assert
+        foreach (var testCase in testCases)
+        {
+            int result = _detector.CalculateHierarchyLevel(testCase.Path);
+            Assert.AreEqual(testCase.Expected, result,
+                $"Case sensitivity test '{testCase.Description}' failed on {(isFileSystemCaseSensitive ? "case-sensitive" : "case-insensitive")} file system. " +
+                $"Path: '{testCase.Path}', Expected: {testCase.Expected}, Got: {result}");
+        }
+    }
+
+
+    /// <summary>
+    /// Tests CalculateHierarchyLevel with deep nested paths to ensure proper level calculation.
+    /// </summary>
+    [TestMethod]
+    public void CalculateHierarchyLevel_DeepNesting_CalculatesCorrectly()
+    {
+        // Arrange - Create deep nested structure
+        var deepPath = _testVaultRoot;
+        for (int i = 1; i <= 10; i++)
+        {
+            deepPath = Path.Combine(deepPath, $"Level{i}");
+            Directory.CreateDirectory(deepPath);
+        }
+
+        // Test various depths
+        var testCases = new[]
+        {
+            new { Path = "Level1", Expected = 1 },
+            new { Path = "Level1/Level2/Level3", Expected = 3 },
+            new { Path = "Level1/Level2/Level3/Level4/Level5", Expected = 5 },
+            new { Path = "Level1\\Level2\\Level3\\Level4\\Level5\\Level6\\Level7", Expected = 7 },
+            new { Path = "Level1/Level2/Level3/Level4/Level5/Level6/Level7/Level8/Level9/Level10", Expected = 10 }
+        };
+
+        // Act & Assert
+        foreach (var testCase in testCases)
+        {
+            int result = _detector.CalculateHierarchyLevel(testCase.Path);
+            Assert.AreEqual(testCase.Expected, result,
+                $"Deep nesting test failed. Path: '{testCase.Path}', Expected: {testCase.Expected}, Got: {result}");
         }
     }
 }

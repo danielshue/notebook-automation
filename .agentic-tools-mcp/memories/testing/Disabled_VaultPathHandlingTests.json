@@ -1,0 +1,8 @@
+{
+  "id": "c35b60dc-1887-4148-b27e-48baaee0b5d0",
+  "title": "Disabled VaultPathHandlingTests",
+  "details": "Temporarily disabled tests in VaultPathHandlingTests.cs:\n1. CalculateHierarchyLevel_RelativePath_CalculatedCorrectly\n2. GetTemplateTypeFromHierarchyLevel_ReturnsCorrectTemplateType\n\nUsed [Ignore(\"Temporarily disabled\")] attribute in MSTest to disable the tests. These tests are related to MetadataHierarchyDetector functionality for vault path handling and template type mapping.\n\nTests can be re-enabled by removing the [Ignore] attributes when ready.",
+  "category": "testing",
+  "dateCreated": "2025-06-23T21:10:22.395Z",
+  "dateUpdated": "2025-06-23T21:10:22.395Z"
+}

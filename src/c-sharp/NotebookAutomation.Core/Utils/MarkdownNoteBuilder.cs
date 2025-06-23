@@ -157,8 +157,8 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
     /// </remarks>
     private void ApplyBannerConfiguration(Dictionary<string, object> frontmatter, string? filename)
     {
-        // Don't add banner if globally disabled
-        if (!_appConfig.Banners.Enabled)
+        // Don't add banner if globally disabled or configuration is missing
+        if (_appConfig?.Banners?.Enabled != true)
         {
             return;
         }
@@ -187,7 +187,7 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
         // 3. Fall back to default banner for backward compatibility
         if (bannerContent == null && ShouldAddDefaultBanner(frontmatter))
         {
-            bannerContent = _appConfig.Banners.DefaultBanner;
+            bannerContent = _appConfig?.Banners?.DefaultBanner;
         }
 
         // Apply the banner if found
@@ -204,6 +204,11 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
     /// <returns>Banner content if a pattern matches, null otherwise.</returns>
     private string? GetBannerByFilenamePattern(string filename)
     {
+        if (_appConfig?.Banners?.FilenamePatterns == null)
+        {
+            return null;
+        }
+
         foreach (var pattern in _appConfig.Banners.FilenamePatterns)
         {
             if (IsFilenameMatch(filename, pattern.Key))
@@ -221,7 +226,7 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
     /// <returns>Banner content if template type is configured, null otherwise.</returns>
     private string? GetBannerByTemplateType(string templateType)
     {
-        return _appConfig.Banners.TemplateBanners.TryGetValue(templateType, out var banner) ? banner : null;
+        return _appConfig?.Banners?.TemplateBanners?.TryGetValue(templateType, out var banner) == true ? banner : null;
     }
 
     /// <summary>
@@ -231,7 +236,7 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
     /// <returns>Formatted banner content.</returns>
     private string FormatBannerContent(string bannerContent)
     {
-        return _appConfig.Banners.Format switch
+        return (_appConfig?.Banners?.Format) switch
         {
             "image" => bannerContent, // For Obsidian image references, use as-is
             "text" => bannerContent,
@@ -254,7 +259,7 @@ public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
             .Replace("*", ".*")
             .Replace("?", ".")
             + "$";
-        
+
         return System.Text.RegularExpressions.Regex.IsMatch(filename, regexPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
     }
 }

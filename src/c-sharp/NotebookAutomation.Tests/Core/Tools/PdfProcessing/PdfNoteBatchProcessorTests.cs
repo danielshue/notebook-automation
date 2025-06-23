@@ -33,7 +33,8 @@ public class PdfNoteBatchProcessorTests
             var mockAppConfig = new AppConfig();
             mockAppConfig.Paths = new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() };
             var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
-            var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper);
+            var appConfig = new AppConfig();
+            var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
             var hierarchyDetector = new MetadataHierarchyDetector(
                 Mock.Of<ILogger<MetadataHierarchyDetector>>(),
                 mockAppConfig);

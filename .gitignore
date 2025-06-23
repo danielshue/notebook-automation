@@ -9,6 +9,7 @@ __pycache__/
 *$py.class
 
 coverage-report/*
+CoverageReport/
 
 # Virtual environment
 venv/
@@ -229,3 +230,6 @@ src/c-sharp/coverage.xml
 src/c-sharp/NotebookAutomation.Cli/coverage.cobertura.xml
 publish/win-arm64/Prompts/chunk_summary_prompt.md
 src/tests/fixtures/frontmatter/subdir/subdir.md
+CoverageReport/index.html
+CoverageReport/NotebookAutomation.Core_AIServiceConfig.html
+CoverageReport/NotebookAutomation.Core_AISummarizer.html

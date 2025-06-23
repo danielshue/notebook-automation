@@ -337,7 +337,7 @@ public class VaultIndexBatchProcessorTests
         Assert.IsNotNull(initMethod);
         initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null]);
 
-        var tasks = new();
+        var tasks = new List<Task>();
         var exception = false;
 
         // Act - Access queue from multiple threads
