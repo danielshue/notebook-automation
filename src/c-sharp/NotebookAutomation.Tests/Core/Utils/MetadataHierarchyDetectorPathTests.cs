@@ -1,24 +1,12 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System;
-using System.IO;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Moq;
-
-using NotebookAutomation.Core.Configuration;
-using NotebookAutomation.Core.Tools.Vault;
-using NotebookAutomation.Core.Utils;
-
 namespace NotebookAutomation.Tests.Core.Utils;
 
 /// <summary>
 /// Tests for path handling and hierarchy level calculation in MetadataHierarchyDetector.
 /// </summary>
 [TestClass]
-public class MetadataHierarchyDetectorPathTests
+public class MetadataHierarchyDetectorPathHandlingTests
 {
     private readonly Mock<ILogger<MetadataHierarchyDetector>> _mockLogger = new();
     private AppConfig _appConfig = new();
@@ -286,10 +274,11 @@ public class MetadataHierarchyDetectorPathTests
         var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
 
         // We need all the dependencies to create the VaultIndexProcessor
-        var mockTemplateManager = new(); var mockStructureExtractor = new();
-        var mockYamlHelper = new();
-        var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, null!);
-        var mockContentGenerator = new();
+        var mockTemplateManager = new Mock<IMetadataTemplateManager>();
+        var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
+        var mockYamlHelper = new Mock<IYamlHelper>();
+        var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, mockYamlHelper.Object, _appConfig);
+        var mockContentGenerator = new Mock<IVaultIndexContentGenerator>();
 
         IVaultIndexProcessor processor = new VaultIndexProcessor(
             mockProcessorLogger.Object,
@@ -347,11 +336,11 @@ public class MetadataHierarchyDetectorPathTests
         // Arrange
         var detector = new MetadataHierarchyDetector(_mockLogger.Object, _appConfig);
         var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();        // We need all the dependencies to create the VaultIndexProcessor
-        var mockTemplateManager = new();
-        var mockStructureExtractor = new();
-        var mockYamlHelper = new();
-        var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, null!);
-        var mockContentGenerator = new();
+        var mockTemplateManager = new Mock<IMetadataTemplateManager>();
+        var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
+        var mockYamlHelper = new Mock<IYamlHelper>();
+        var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, mockYamlHelper.Object, _appConfig);
+        var mockContentGenerator = new Mock<IVaultIndexContentGenerator>();
 
         IVaultIndexProcessor processor = new VaultIndexProcessor(
             mockProcessorLogger.Object,
@@ -486,12 +475,13 @@ public class MetadataHierarchyDetectorPathTests
     public void DetermineTemplateType_WithUnusualFolderPatterns_DetectsCorrectly()
     {
         // Arrange
-        var detector = new MetadataHierarchyDetector(_mockLogger.Object, _appConfig); var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
-        var mockTemplateManager = new();
-        var mockStructureExtractor = new();
-        var mockYamlHelper = new();
-        var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, null!);
-        var mockContentGenerator = new();
+        var detector = new MetadataHierarchyDetector(_mockLogger.Object, _appConfig);
+        var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
+        var mockTemplateManager = new Mock<IMetadataTemplateManager>();
+        var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
+        var mockYamlHelper = new Mock<IYamlHelper>();
+        var mockNoteBuilder = new Mock<MarkdownNoteBuilder>(MockBehavior.Default, mockYamlHelper.Object, _appConfig);
+        var mockContentGenerator = new Mock<IVaultIndexContentGenerator>();
 
         IVaultIndexProcessor processor = new VaultIndexProcessor(
             mockProcessorLogger.Object,

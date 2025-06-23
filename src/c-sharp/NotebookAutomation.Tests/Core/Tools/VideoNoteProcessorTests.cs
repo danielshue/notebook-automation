@@ -35,7 +35,7 @@ public class VideoNoteProcessorTests
             Mock.Of<ILogger<MetadataTemplateManager>>(),
             appConfig,
             yamlHelperMock.Object);
-        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelperMock.Object);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelperMock.Object, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer, yamlHelperMock.Object, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder);
 

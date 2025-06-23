@@ -9,7 +9,7 @@ public class DebugPromptTemplateServiceTests
     {
         // Arrange
         var loggerMock = new Mock<ILogger<PromptTemplateService>>();
-        var yamlHelperMock = new();
+        var yamlHelperMock = new Mock<IYamlHelper>();
 
         yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
             .Returns<string>(content =>

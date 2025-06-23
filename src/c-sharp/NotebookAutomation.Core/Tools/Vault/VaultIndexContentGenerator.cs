@@ -366,9 +366,10 @@ public class VaultIndexContentGenerator(
             contentSections.Add(string.Empty);
         }
         else
-        {
-            // Get the root index filename for the Home link
-            string rootIndex = GetRootIndexFilename(vaultPath, folderPath); if (hierarchyLevel == 1) // Program index - only show Home and other navigation, no back link
+        {        // Get the root index filename for the Home link
+            string rootIndex = GetRootIndexFilename(vaultPath, folderPath);
+
+            if (hierarchyLevel == 1) // Program index - only show Home and other navigation, no back link
             {
                 contentSections.Add($"🏠 [Home]({rootIndex}) | 📊 [[Dashboard]] | 📝 [[Classes Assignments]]");
             }
@@ -821,11 +822,23 @@ public class VaultIndexContentGenerator(
     /// </summary>
     internal static string GetBackLinkTarget(string folderPath, int hierarchyLevel)
     {
-        return hierarchyLevel switch
-        {
-            2 or 3 => Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty), // Course or Class index
-            _ => Path.GetFileName(Path.GetDirectoryName(folderPath) ?? string.Empty) // Module or other indices
-        };
+        if (string.IsNullOrEmpty(folderPath))
+            return string.Empty;
+
+        // Split the path into parts using both separators to handle Windows/Unix paths
+        var pathParts = folderPath.Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+        // Need at least 2 parts to have a parent
+        if (pathParts.Length < 2)
+            return string.Empty;
+
+        // For cross-platform compatibility, we need to handle the difference in path structures:
+        // Windows: C:\vault\program\course\class -> ["C:", "vault", "program", "course", "class"]
+        // Unix: /vault/program/course/class -> ["vault", "program", "course", "class"]
+        // 
+        // We want to return the parent directory of the current folder.
+        // The parent of "class" is "course" which is at index pathParts.Length - 2
+        return pathParts[pathParts.Length - 2];
     }
 
     /// <summary>

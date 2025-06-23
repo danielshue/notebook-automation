@@ -130,6 +130,11 @@ internal static class VersionHelper
     {
         try
         {
+            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+            {
+                return DateTime.Now;
+            }
+
             const int peHeaderOffset = 60;
             const int linkerTimestampOffset = 8; // Read the linker timestamp from the PE header
             byte[] buffer = new byte[2048];
@@ -148,6 +153,13 @@ internal static class VersionHelper
             // Convert the timestamp to a DateTime (PE timestamp is seconds since Jan 1, 1970)
             DateTime origin = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             DateTime buildDate = origin.AddSeconds(timestamp);
+
+            // If we get exactly Unix epoch, it means the PE timestamp is 0 (not set properly)
+            // Fall back to file creation time
+            if (buildDate == origin)
+            {
+                return File.GetCreationTime(filePath);
+            }
 
             return buildDate.ToLocalTime();
         }
