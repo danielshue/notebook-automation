@@ -31,14 +31,14 @@ Break-down of each field
 
 Example interpretation
 ----------------------
-“3.9.0-6.21124.20 (db94f4cc)” →  
+“3.9.0-6.21124.20 (db94f4cc)” →
 Version **3.9.0**, built from branch **6** on **2021-05-04**, 20th build that day, commit **db94f4cc**.
 
 This file contains
 ------------------
-* **Version** record (with full XML docs) to store every piece  
-* Static **Parse** method that converts the raw string to the record  
-* Helper **BuildDateUtc** that resolves YYDDD to a real <c>DateTime</c>  
+* **Version** record (with full XML docs) to store every piece
+* Static **Parse** method that converts the raw string to the record
+* Helper **BuildDateUtc** that resolves YYDDD to a real <c>DateTime</c>
 * Simple demo **Program** that prints the parsed parts
 
 NOTE: Wrapped in <c>NotebookAutomation.Cli.Utilities</c> so it won’t collide with <c>System.Version</c>.
@@ -169,8 +169,37 @@ public record AppVersion
     public static AppVersion FromCurrentAssembly()
     {
         var assembly = Assembly.GetExecutingAssembly();
-        var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(
-            assembly.Location.Length > 0 ? assembly.Location : Environment.ProcessPath ?? "");
+        // Use the path to the main module (exe or dll) for FileVersionInfo
+        string? mainModulePath = Environment.ProcessPath;
+        if (string.IsNullOrEmpty(mainModulePath))
+        {
+            // Fallback: try to find the first .exe (Windows) or .dll (Unix) in the base directory
+            var baseDir = AppContext.BaseDirectory;
+            if (!string.IsNullOrEmpty(baseDir))
+            {
+                string? candidate = null;
+                // On Windows, look for .exe first, then .dll. On Mac/Linux, only .dll is produced.
+#if WINDOWS
+                var exeFiles = Directory.GetFiles(baseDir, "*.exe");
+                candidate = exeFiles.FirstOrDefault();
+                if (candidate == null)
+                {
+                    var dllFiles = Directory.GetFiles(baseDir, "*.dll");
+                    candidate = dllFiles.FirstOrDefault();
+                }
+#else
+                // On Mac/Linux, only .dll is produced by .NET publish
+                var dllFiles = Directory.GetFiles(baseDir, "*.dll");
+                candidate = dllFiles.FirstOrDefault();
+#endif
+                mainModulePath = candidate ?? baseDir;
+            }
+            else
+            {
+                mainModulePath = string.Empty;
+            }
+        }
+        var versionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(mainModulePath!);
 
         if (string.IsNullOrEmpty(versionInfo.FileVersion))
         {
@@ -196,18 +225,31 @@ public record AppVersion
         // If it matches our expected format, parse it
         if (fullVersion.Contains('-') && fullVersion.Contains('('))
         {
-            return Parse(fullVersion);
+            try
+            {
+                return Parse(fullVersion);
+            }
+            catch (FormatException)
+            {
+                // Fallback to default version if parsing fails
+            }
         }
 
-        // Otherwise, construct from available information
-        var parts = (versionInfo.FileVersion ?? "1.0.0.0").Split('.');
+        // Defensive: try to parse as dotted version, else fallback to 1.0.0.0
+        var fileVersion = versionInfo.FileVersion ?? "1.0.0.0";
+        var parts = fileVersion.Split('.', StringSplitOptions.RemoveEmptyEntries);
+        int major = 1, minor = 0, patch = 0, build = 0;
+        if (parts.Length >= 1 && int.TryParse(parts[0], out var m)) major = m;
+        if (parts.Length >= 2 && int.TryParse(parts[1], out var n)) minor = n;
+        if (parts.Length >= 3 && int.TryParse(parts[2], out var p)) patch = p;
+        if (parts.Length >= 4 && int.TryParse(parts[3], out var b)) build = b;
         return new AppVersion(
-            parts.Length > 0 ? int.Parse(parts[0], CultureInfo.InvariantCulture) : 1,
-            parts.Length > 1 ? int.Parse(parts[1], CultureInfo.InvariantCulture) : 0,
-            parts.Length > 2 ? int.Parse(parts[2], CultureInfo.InvariantCulture) : 0,
+            major,
+            minor,
+            patch,
             0, // Branch - not available
             GetCurrentDateCode(),
-            parts.Length > 3 ? int.Parse(parts[3], CultureInfo.InvariantCulture) : 0,
+            build,
             "current"
         );
     }

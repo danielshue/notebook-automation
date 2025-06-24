@@ -293,7 +293,7 @@ jobs:
           path: |
             publish/${{ matrix.runtime-id }}/na
             publish/${{ matrix.runtime-id }}/na.exe
-          retention-days: 14
+          retention-days: 7
 
       - name: Upload published executables artifact (ARM64)
         if: always() && matrix.runtime-id-arm && (success() || failure())
@@ -303,7 +303,7 @@ jobs:
           path: |
             publish/${{ matrix.runtime-id-arm }}/na
             publish/${{ matrix.runtime-id-arm }}/na.exe
-          retention-days: 14
+          retention-days: 7
 
   # Consolidate artifacts from all platforms
   consolidate-artifacts:
@@ -334,4 +334,4 @@ jobs:
         with:
           name: all-platform-executables-${{ github.run_number }}
           path: consolidated-executables/
-          retention-days: 30 # Keep consolidated executables longer
+          retention-days: 7 # Keep consolidated executables for 7 days (max allowed)
