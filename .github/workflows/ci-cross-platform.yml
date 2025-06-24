@@ -32,6 +32,8 @@ permissions:
 jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
+    outputs:
+      informational-version: ${{ steps.gitversion.outputs.informational-version }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
@@ -75,6 +77,18 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
+
+      - name: Install GitVersion tool
+        run: dotnet tool install --global GitVersion.Tool
+
+      - name: Get version from GitVersion
+        id: gitversion
+        run: |
+          VERSION_JSON=$(dotnet gitversion /output json)
+          INFORMATIONAL_VERSION=$(echo $VERSION_JSON | jq -r '.InformationalVersion')
+          echo "informational-version=$INFORMATIONAL_VERSION" >> $GITHUB_OUTPUT
+          echo "GitVersion InformationalVersion: $INFORMATIONAL_VERSION"
+        shell: bash
 
       - name: Restore dependencies
         run: dotnet restore src/c-sharp/NotebookAutomation.sln
@@ -130,13 +144,13 @@ jobs:
           filefilters: "+*"
           verbosity: "Info"
           title: "Notebook Automation Code Coverage Report (${{ runner.os }})"
-          tag: "${{ github.run_number }}_${{ github.run_id }}_${{ runner.os }}"
+          tag: "${{ steps.gitversion.outputs.informational-version }}_${{ github.run_id }}_${{ runner.os }}"
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ runner.os }}-${{ github.run_number }}
+          name: test-results-${{ runner.os }}-${{ steps.gitversion.outputs.informational-version }}
           path: TestResults/*.trx
           retention-days: 7 # Keep test results for 7 days
 
@@ -144,7 +158,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report-${{ runner.os }}-${{ github.run_number }}
+          name: coverage-report-${{ runner.os }}-${{ steps.gitversion.outputs.informational-version }}
           path: CoverageReport/
           retention-days: 7 # Keep coverage reports for 7 days
 
@@ -152,7 +166,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-raw-${{ runner.os }}-${{ github.run_number }}
+          name: coverage-raw-${{ runner.os }}-${{ steps.gitversion.outputs.informational-version }}
           path: TestResults/**/coverage.cobertura.xml
           retention-days: 7 # Keep raw coverage files for 7 days
 
@@ -279,17 +293,17 @@ jobs:
             echo -e "$files_to_upload" > files-to-upload.txt
             echo "Uploading the following files:"
             cat files-to-upload.txt
-            tar -czf published-executables-${{ runner.os }}-${{ github.run_number }}.tar.gz $(cat files-to-upload.txt)
+            tar -czf published-executables-${{ runner.os }}-${{ steps.gitversion.outputs.informational-version }}.tar.gz $(cat files-to-upload.txt)
           else
             echo "No executables found to upload."
-            touch published-executables-${{ runner.os }}-${{ github.run_number }}.empty
+            touch published-executables-${{ runner.os }}-${{ steps.gitversion.outputs.informational-version }}.empty
           fi
         shell: bash
       - name: Upload published executables artifact (x64)
         if: always() && matrix.runtime-id && (success() || failure())
         uses: actions/upload-artifact@v4
         with:
-          name: published-executables-${{ matrix.os }}-x64-${{ github.run_number }}
+          name: published-executables-${{ matrix.os }}-x64-${{ steps.gitversion.outputs.informational-version }}
           path: |
             publish/${{ matrix.runtime-id }}/na
             publish/${{ matrix.runtime-id }}/na.exe
@@ -299,7 +313,7 @@ jobs:
         if: always() && matrix.runtime-id-arm && (success() || failure())
         uses: actions/upload-artifact@v4
         with:
-          name: published-executables-${{ matrix.os }}-arm64-${{ github.run_number }}
+          name: published-executables-${{ matrix.os }}-arm64-${{ steps.gitversion.outputs.informational-version }}
           path: |
             publish/${{ matrix.runtime-id-arm }}/na
             publish/${{ matrix.runtime-id-arm }}/na.exe
@@ -335,6 +349,6 @@ jobs:
       - name: Upload consolidated executables
         uses: actions/upload-artifact@v4
         with:
-          name: all-platform-executables-${{ github.run_number }}
+          name: all-platform-executables-${{ needs.build-and-test.outputs.informational-version }}
           path: consolidated-executables/
           retention-days: 7 # Keep consolidated executables for 7 days (max allowed)
