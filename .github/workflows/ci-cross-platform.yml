@@ -320,13 +320,16 @@ jobs:
         run: |
           mkdir -p consolidated-executables
 
-          # Copy all executables to consolidated directory
+          # For each platform/arch artifact, copy into its own subdirectory
           find all-artifacts -name "published-executables-*" -type d | while read dir; do
-            cp -r "$dir"/* consolidated-executables/ 2>/dev/null || true
+            # Extract the artifact name (e.g., published-executables-windows-latest-x64-123)
+            artifact_name=$(basename "$dir")
+            mkdir -p "consolidated-executables/$artifact_name"
+            cp -r "$dir"/* "consolidated-executables/$artifact_name/" 2>/dev/null || true
           done
 
           # List what we have
-          echo "Consolidated executables:"
+          echo "Consolidated executables (by platform/arch):"
           find consolidated-executables -type f -name "na*" -exec ls -la {} \;
 
       - name: Upload consolidated executables
