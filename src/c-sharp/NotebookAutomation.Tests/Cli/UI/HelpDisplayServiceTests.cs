@@ -58,8 +58,8 @@ public class HelpDisplayServiceTests
         // Act & Assert
         Assert.ThrowsException<ArgumentNullException>(() => new HelpDisplayService(null!));
     }    /// <summary>
-         /// Tests that ShowVersionInfo displays version information correctly.
-         /// </summary>
+    /// Tests that ShowVersionInfo displays version information correctly.
+    /// </summary>
     [TestMethod]
     public void ShowVersionInfo_DisplaysVersionInformation()
     {
@@ -68,10 +68,11 @@ public class HelpDisplayServiceTests
 
         // Assert
         var output = consoleOutput!.ToString();
-        Assert.IsTrue(output.Contains("Notebook Automation") || output.Contains("v"), "Should display application name or version");
-        Assert.IsTrue(output.Contains("Runtime:"), "Should display runtime information");
-        Assert.IsTrue(output.Contains("Author:"), "Should display author information");
-        // The copyright text might be empty in test environment, so just check that the method doesn't crash
+        Assert.IsTrue(output.Contains("Notebook Automation"), "Should display application name");
+        Assert.IsTrue(output.Contains("Copyright"), "Should display copyright information");
+        Assert.IsTrue(output.Contains("Dan Shue"), "Should display author information");
+        // The version format should include version number and commit hash
+        Assert.IsTrue(output.Contains("version"), "Should display version information");
         Assert.IsTrue(output.Length > 0, "Should produce some output");
     }
 

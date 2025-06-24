@@ -189,9 +189,13 @@ set_build_version() {
     current_date=$(date +%s)
     days_since_base=$(( (current_date - base_date) / 86400 ))
     
-    # Use current timestamp as revision for local builds
+    # Use seconds since midnight divided by 2 for local builds (keeps revision < 65536)
     local revision
-    revision=$(date +%s)
+    local seconds_since_midnight
+    seconds_since_midnight=$(date +%s)
+    local midnight_today
+    midnight_today=$(date -d "today 00:00:00" +%s 2>/dev/null || date -j -f "%Y-%m-%d %H:%M:%S" "$(date +%Y-%m-%d) 00:00:00" +%s)
+    revision=$(( (seconds_since_midnight - midnight_today) / 2 ))
     
     # Format version strings
     local major=1
