@@ -166,16 +166,36 @@ jobs:
           fi
         shell: bash
 
-      - name: Publish single-file executables (x64)
-        if: always()
+      - name: Publish single-file executables (x64, Windows)
+        if: always() && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id }}
+          if (!(Test-Path publish/${{ matrix.runtime-id }})) { Write-Host "dotnet publish failed"; exit 1 }
+          Write-Host "Publish directory contents (x64):"
+          Get-ChildItem publish/${{ matrix.runtime-id }}
+
+      - name: Publish single-file executables (x64, Non-Windows)
+        if: always() && runner.os != 'Windows'
+        shell: bash
         run: |
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id }}
           if [ $? -ne 0 ]; then echo "dotnet publish failed"; exit 1; fi
           echo "Publish directory contents (x64):"
           ls -la publish/${{ matrix.runtime-id }} || true
 
-      - name: Publish single-file executables (ARM64)
-        if: always()
+      - name: Publish single-file executables (ARM64, Windows)
+        if: always() && runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id-arm }}
+          if (!(Test-Path publish/${{ matrix.runtime-id-arm }})) { Write-Host "dotnet publish failed"; exit 1 }
+          Write-Host "Publish directory contents (ARM64):"
+          Get-ChildItem publish/${{ matrix.runtime-id-arm }}
+
+      - name: Publish single-file executables (ARM64, Non-Windows)
+        if: always() && runner.os != 'Windows'
+        shell: bash
         run: |
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id-arm }}
           if [ $? -ne 0 ]; then echo "dotnet publish failed"; exit 1; fi
