@@ -70,8 +70,9 @@ jobs:
           $baseDate = Get-Date -Year 2024 -Month 1 -Day 1
           $daysSinceBase = [math]::Floor(($buildDate - $baseDate).TotalDays)
 
-          # For CI builds, use GitHub run number as revision for traceability
-          $revision = $env:GITHUB_RUN_NUMBER
+          # For CI builds, use GitHub run number modulo 65535 to keep within valid range
+          # The revision component should be between 0-65535 for best compatibility
+          $revision = [int]$env:GITHUB_RUN_NUMBER % 65535
 
           # Format version strings
           $major = 1
