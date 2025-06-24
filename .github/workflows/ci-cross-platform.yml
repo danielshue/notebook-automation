@@ -79,12 +79,19 @@ jobs:
         run: dotnet restore src/c-sharp/NotebookAutomation.sln
 
       - name: Build solution
-        run: dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
+        run: |
+          dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
+          if [ $? -ne 0 ]; then echo "dotnet build failed"; exit 1; fi
+          echo "Build output directory contents:"
+          ls -la src/c-sharp/NotebookAutomation.Cli/bin/Release || true
 
       - name: Run tests with coverage
         run: |
           # Run all tests in the solution with coverage collection using runsettings
           dotnet test src/c-sharp/NotebookAutomation.sln --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults/
+          if [ $? -ne 0 ]; then echo "dotnet test failed"; exit 1; fi
+          echo "TestResults directory contents:"
+          ls -la TestResults || true
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
 
@@ -162,17 +169,30 @@ jobs:
         if: always()
         run: |
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id }}
+          if [ $? -ne 0 ]; then echo "dotnet publish failed"; exit 1; fi
+          echo "Publish directory contents (x64):"
+          ls -la publish/${{ matrix.runtime-id }} || true
 
       - name: Publish single-file executables (ARM64)
         if: always()
         run: |
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id-arm }}
+          if [ $? -ne 0 ]; then echo "dotnet publish failed"; exit 1; fi
+          echo "Publish directory contents (ARM64):"
+          ls -la publish/${{ matrix.runtime-id-arm }} || true
 
       - name: Test published executable (x64)
         if: always()
         run: |
           # Test the published executable
-          ./publish/${{ matrix.runtime-id }}/na${{ matrix.executable-extension }} --version
+          echo "Published files in publish/${{ matrix.runtime-id }}:"
+          ls -la publish/${{ matrix.runtime-id }} || true
+          if [ -f "publish/${{ matrix.runtime-id }}/na${{ matrix.executable-extension }}" ]; then
+            ./publish/${{ matrix.runtime-id }}/na${{ matrix.executable-extension }} --version
+          else
+            echo "Executable not found: publish/${{ matrix.runtime-id }}/na${{ matrix.executable-extension }}"
+            exit 1
+          fi
 
       - name: Upload published executables
         if: always()
