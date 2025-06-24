@@ -187,10 +187,15 @@ jobs:
           # Test the published executable
           echo "Published files in publish/${{ matrix.runtime-id }}:"
           ls -la publish/${{ matrix.runtime-id }} || true
-          if [ -f "publish/${{ matrix.runtime-id }}/na${{ matrix.executable-extension }}" ]; then
-            ./publish/${{ matrix.runtime-id }}/na${{ matrix.executable-extension }} --version
+          if [ "${{ matrix.os }}" = "windows-latest" ]; then
+            exe_name="na.exe"
           else
-            echo "Executable not found: publish/${{ matrix.runtime-id }}/na${{ matrix.executable-extension }}"
+            exe_name="na"
+          fi
+          if [ -f "publish/${{ matrix.runtime-id }}/$exe_name" ]; then
+            ./publish/${{ matrix.runtime-id }}/$exe_name --version
+          else
+            echo "Executable not found: publish/${{ matrix.runtime-id }}/$exe_name"
             exit 1
           fi
 
@@ -200,8 +205,10 @@ jobs:
         with:
           name: published-executables-${{ runner.os }}-${{ github.run_number }}
           path: |
-            publish/${{ matrix.runtime-id }}/
-            publish/${{ matrix.runtime-id-arm }}/
+            publish/${{ matrix.runtime-id }}/na
+            publish/${{ matrix.runtime-id }}/na.exe
+            publish/${{ matrix.runtime-id-arm }}/na
+            publish/${{ matrix.runtime-id-arm }}/na.exe
           retention-days: 14 # Keep executables for 14 days (longer than test artifacts)
 
   # Consolidate artifacts from all platforms
