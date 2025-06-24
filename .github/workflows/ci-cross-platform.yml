@@ -78,84 +78,8 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore src/c-sharp/NotebookAutomation.sln
 
-      - name: Set build version (Windows)
-        if: runner.os == 'Windows'
-        id: version-windows
-        run: |
-          $buildDate = Get-Date
-
-          # Microsoft recommended format: major.minor.build.revision
-          # where build is typically days since a base date and revision is seconds since midnight / 2
-
-          # Calculate build number (days since Jan 1, 2024)
-          $baseDate = Get-Date -Year 2024 -Month 1 -Day 1
-          $daysSinceBase = [math]::Floor(($buildDate - $baseDate).TotalDays)
-
-          # For CI builds, use GitHub run number modulo 65535 to keep within valid range
-          # The revision component should be between 0-65535 for best compatibility
-          $revision = [int]$env:GITHUB_RUN_NUMBER % 65535
-
-          # Format version strings
-          $major = 1
-          $minor = 0
-
-          # For NuGet package version (must be valid SemVer)
-          $packageVersion = "$major.$minor.0"
-
-          # For assembly version - must be a specific version for NuGet restore
-          $assemblyVersion = "$major.$minor.0.0"
-
-          # For file version - use MS recommended format
-          $fileVersion = "$major.$minor.$daysSinceBase.$revision"
-
-          echo "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
-          echo "FILE_VERSION=$fileVersion" >> $env:GITHUB_ENV
-          echo "ASSEMBLY_VERSION=$assemblyVersion" >> $env:GITHUB_ENV
-
-          echo "Package Version: $packageVersion"
-          echo "File Version: $fileVersion"
-          echo "Assembly Version: $assemblyVersion"
-        shell: pwsh
-
-      - name: Set build version (Unix)
-        if: runner.os != 'Windows'
-        id: version-unix
-        run: |
-          buildDate=$(date -u +"%Y-%m-%d %H:%M:%S")
-
-          # Calculate build number (days since Jan 1, 2024)
-          baseDate=$(date -d "2024-01-01" +%s)
-          currentDate=$(date +%s)
-          daysSinceBase=$(( (currentDate - baseDate) / 86400 ))
-
-          # For CI builds, use GitHub run number modulo 65535 to keep within valid range
-          # The revision component should be between 0-65535 for best compatibility
-          revision=$(( $GITHUB_RUN_NUMBER % 65535 ))
-
-          # Format version strings
-          major=1
-          minor=0
-
-          # For NuGet package version (must be valid SemVer)
-          packageVersion="$major.$minor.0"
-
-          # For assembly version - must be a specific version for NuGet restore
-          assemblyVersion="$major.$minor.0.0"
-
-          # For file version - use MS recommended format
-          fileVersion="$major.$minor.$daysSinceBase.$revision"
-
-          echo "PACKAGE_VERSION=$packageVersion" >> $GITHUB_ENV
-          echo "FILE_VERSION=$fileVersion" >> $GITHUB_ENV
-          echo "ASSEMBLY_VERSION=$assemblyVersion" >> $GITHUB_ENV
-
-          echo "Package Version: $packageVersion"
-          echo "File Version: $fileVersion"
-          echo "Assembly Version: $assemblyVersion"
-        shell: bash
-
       - name: Build solution
-        run: dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} /p:InformationalVersion=${{ env.FILE_VERSION }}
+        run: dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
 
       - name: Run tests with coverage
         run: |
@@ -191,7 +115,7 @@ jobs:
         with:
           name: coverage-report-${{ runner.os }}-${{ github.run_number }}
           path: CoverageReport/
-          retention-days: 14 # Keep coverage reports for 14 days
+          retention-days: 7 # Keep coverage reports for 7 days
 
       - name: Upload raw coverage results
         if: always()
@@ -214,8 +138,18 @@ jobs:
           PR_NUMBER: ${{ github.event.number }}
         shell: pwsh
 
-      - name: Publish coverage in build summary
-        if: always()
+      - name: Publish coverage in build summary (Windows)
+        if: always() && runner.os == 'Windows'
+        run: |
+          if (Test-Path "CoverageReport/SummaryGithub.md") {
+            Get-Content "CoverageReport/SummaryGithub.md" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
+          } else {
+            echo "Coverage markdown summary not found, skipping build summary"
+          }
+        shell: pwsh
+
+      - name: Publish coverage in build summary (Unix)
+        if: always() && runner.os != 'Windows'
         run: |
           if [ -f "CoverageReport/SummaryGithub.md" ]; then
             cat CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
@@ -227,12 +161,12 @@ jobs:
       - name: Publish single-file executables (x64)
         if: always()
         run: |
-          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} /p:InformationalVersion=${{ env.FILE_VERSION }} --output publish/${{ matrix.runtime-id }}
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id }}
 
       - name: Publish single-file executables (ARM64)
         if: always()
         run: |
-          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true /p:Version=${{ env.PACKAGE_VERSION }} /p:FileVersion=${{ env.FILE_VERSION }} /p:AssemblyVersion=${{ env.ASSEMBLY_VERSION }} /p:InformationalVersion=${{ env.FILE_VERSION }} --output publish/${{ matrix.runtime-id-arm }}
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id-arm }}
 
       - name: Test published executable (x64)
         if: always()
@@ -264,12 +198,12 @@ jobs:
       - name: Consolidate executables
         run: |
           mkdir -p consolidated-executables
-          
+
           # Copy all executables to consolidated directory
           find all-artifacts -name "published-executables-*" -type d | while read dir; do
             cp -r "$dir"/* consolidated-executables/ 2>/dev/null || true
           done
-          
+
           # List what we have
           echo "Consolidated executables:"
           find consolidated-executables -type f -name "na*" -exec ls -la {} \;

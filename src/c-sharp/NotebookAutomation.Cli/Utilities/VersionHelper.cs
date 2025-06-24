@@ -43,7 +43,7 @@ public static class VersionHelper
             // Get version using new AppVersion record
             var version = GetVersion();
             var versionDict = version.ToInfoDictionary();
-            
+
             // Add version information from the new AppVersion record
             foreach (var kvp in versionDict)
             {

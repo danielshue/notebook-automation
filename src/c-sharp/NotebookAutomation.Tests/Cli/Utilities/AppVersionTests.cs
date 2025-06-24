@@ -145,7 +145,7 @@ public class AppVersionTests
         // Assert
         var expectedKeys = new[]
         {
-            "SemanticVersion", "FullVersion", "Major", "Minor", "Patch", 
+            "SemanticVersion", "FullVersion", "Major", "Minor", "Patch",
             "Branch", "DateCode", "Build", "Commit", "BuildDate", "BuildDateUtc"
         };
 

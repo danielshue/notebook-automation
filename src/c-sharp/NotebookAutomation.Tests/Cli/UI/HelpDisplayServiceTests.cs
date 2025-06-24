@@ -58,8 +58,8 @@ public class HelpDisplayServiceTests
         // Act & Assert
         Assert.ThrowsException<ArgumentNullException>(() => new HelpDisplayService(null!));
     }    /// <summary>
-    /// Tests that ShowVersionInfo displays version information correctly.
-    /// </summary>
+         /// Tests that ShowVersionInfo displays version information correctly.
+         /// </summary>
     [TestMethod]
     public void ShowVersionInfo_DisplaysVersionInformation()
     {
