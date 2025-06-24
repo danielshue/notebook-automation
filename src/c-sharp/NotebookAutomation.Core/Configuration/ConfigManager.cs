@@ -99,6 +99,19 @@ public class ConfigManager(
     /// </summary>
     /// <param name="options">The configuration discovery options.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the discovered path or null.</returns>
+    /// <remarks>
+    /// The discovery follows this priority order:
+    /// <list type="number">
+    ///   <item><description>CLI option (--config) - Highest priority, if invalid returns null immediately</description></item>
+    ///   <item><description>Environment variable (NOTEBOOKAUTOMATION_CONFIG) - If set but invalid, continues to next option</description></item>
+    ///   <item><description>Current working directory (./config.json)</description></item>
+    ///   <item><description>Executable directory ({exe-dir}/config.json)</description></item>
+    ///   <item><description>Executable config subdirectory ({exe-dir}/config/config.json)</description></item>
+    ///   <item><description>User home directory ({user-home}/notebook-automation/config.json) - Cross-platform using Environment.SpecialFolder.UserProfile</description></item>
+    /// </list>
+    /// Each location is validated for file existence and JSON format before being accepted.
+    /// If no valid configuration file is found in any location, returns null.
+    /// </remarks>
     private async Task<string?> DiscoverConfigurationPathAsync(ConfigDiscoveryOptions options)
     {
         // 1. CLI option takes highest priority
@@ -189,6 +202,26 @@ public class ConfigManager(
                 _logger.LogDebug("Using executable config subdirectory configuration: {ConfigPath}", executableSubdirConfig);
             }
             return executableSubdirConfig;
+        }
+
+        // 6. User home directory - notebook-automation subdirectory
+        var homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (!string.IsNullOrEmpty(homeDirectory))
+        {
+            var homeDirConfig = _fileSystem.CombinePath(homeDirectory, "notebook-automation", "config.json");
+            if (options.Debug)
+            {
+                _logger.LogDebug($"Checking user home notebook-automation directory: {homeDirConfig}");
+            }
+
+            if (await ValidateConfigurationAsync(homeDirConfig))
+            {
+                if (options.Debug)
+                {
+                    _logger.LogDebug($"Using home notebook-automation directory configuration: {homeDirConfig}");
+                }
+                return homeDirConfig;
+            }
         }
 
         if (options.Debug)

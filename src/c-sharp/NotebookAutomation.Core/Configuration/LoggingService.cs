@@ -193,7 +193,7 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
             var time = DateTime.Now.ToString("HHmmss");
 
             // Use a consistent filename to avoid creating multiple log files per session
-            var logFilePath = Path.Combine(loggingDir, $"{appAssemblyName.ToLower()}_{date}.log");
+            var logFilePath = Path.Combine(loggingDir, $"na_{date}_{time}.log");
 
             // Store the log file path for external access
             currentLogFilePath = logFilePath;

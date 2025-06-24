@@ -16,6 +16,8 @@
 #   -Architecture: Target architecture - "all", "x64", "arm64" (default: all)
 #   -Version: Specific SemVer to download (optional, downloads latest if not specified)
 #   -ListOnly: Only list available artifacts without downloading
+#
+# Note: Downloads are placed in ../dist with standardized directory names (e.g., windows-x64, ubuntu-x64, macos-arm64)
 
 param(
     [string]$Workflow = "ci-cross-platform.yml",
@@ -95,12 +97,12 @@ if ($Version) {
 if ($ListOnly) {
     Write-Host "  Mode: List only (no download)"
 } else {
-    Write-Host "  Mode: Download to ./dist"
+    Write-Host "  Mode: Download to ../dist"
 }
 Write-Host ""
 
 # Ensure dist folder exists
-$DistPath = "./dist"
+$DistPath = "../dist"
 if (-not (Test-Path $DistPath)) {
     New-Item -ItemType Directory -Path $DistPath
 }
@@ -266,14 +268,43 @@ foreach ($artifact in $filteredArtifacts) {
     
     try {
         # Use the artifact download command with the artifact ID
-        gh api repos/:owner/:repo/actions/artifacts/$($artifact.id)/zip --method GET > "./dist/$($artifact.name).zip"
+        gh api repos/:owner/:repo/actions/artifacts/$($artifact.id)/zip --method GET > "../dist/$($artifact.name).zip"
+        
+        # Determine the standardized directory name based on artifact name
+        $standardizedDirName = ""
+        if ($artifact.name -like "*windows-latest*") {
+            if ($artifact.name -like "*x64*") {
+                $standardizedDirName = "windows-x64"
+            } elseif ($artifact.name -like "*arm64*") {
+                $standardizedDirName = "windows-arm64"
+            }
+        } elseif ($artifact.name -like "*ubuntu-latest*") {
+            if ($artifact.name -like "*x64*") {
+                $standardizedDirName = "ubuntu-x64"
+            } elseif ($artifact.name -like "*arm64*") {
+                $standardizedDirName = "ubuntu-arm64"
+            }
+        } elseif ($artifact.name -like "*macos-latest*") {
+            if ($artifact.name -like "*x64*") {
+                $standardizedDirName = "macos-x64"
+            } elseif ($artifact.name -like "*arm64*") {
+                $standardizedDirName = "macos-arm64"
+            }
+        }
+        
+        # Use standardized directory name if determined, otherwise fall back to artifact name
+        $extractPath = if ($standardizedDirName) { "../dist/$standardizedDirName" } else { "../dist/$($artifact.name)" }
         
         # Extract the zip file
-        Expand-Archive -Path "./dist/$($artifact.name).zip" -DestinationPath "./dist/$($artifact.name)" -Force
-        Remove-Item "./dist/$($artifact.name).zip"
+        Expand-Archive -Path "../dist/$($artifact.name).zip" -DestinationPath $extractPath -Force
+        Remove-Item "../dist/$($artifact.name).zip"
         
         $downloadedAny = $true
-        Write-Host "✓ Downloaded: $($artifact.name)"
+        if ($standardizedDirName) {
+            Write-Host "✓ Downloaded: $($artifact.name) -> $standardizedDirName"
+        } else {
+            Write-Host "✓ Downloaded: $($artifact.name)"
+        }
     }
     catch {
         Write-Host "✗ Failed to download: $($artifact.name) - $($_.Exception.Message)"
@@ -282,9 +313,9 @@ foreach ($artifact in $filteredArtifacts) {
 
 if ($downloadedAny) {
     Write-Host ""
-    Write-Host "Download completed! Contents of ./dist:"
-    Get-ChildItem -Path "./dist" -Recurse | ForEach-Object {
-        $relativePath = $_.FullName.Replace((Resolve-Path './dist').Path, '')
+    Write-Host "Download completed! Contents of ../dist:"
+    Get-ChildItem -Path "../dist" -Recurse | ForEach-Object {
+        $relativePath = $_.FullName.Replace((Resolve-Path '../dist').Path, '')
         if ($_.PSIsContainer) {
             Write-Host "  📁 $relativePath"
         } else {
@@ -296,27 +327,28 @@ if ($downloadedAny) {
     Write-Host ""
     Write-Host "Platform summary:"
     
-    # Check for executables by platform
-    $supportedPlatforms = @("windows-latest", "ubuntu-latest", "macos-latest")
+    # Check for executables by platform using standardized directory names
+    $standardizedPlatforms = @("windows", "ubuntu", "macos")
     $supportedArchitectures = @("x64", "arm64")
     
-    foreach ($platformName in $supportedPlatforms) {
+    foreach ($platformName in $standardizedPlatforms) {
         foreach ($archName in $supportedArchitectures) {
-            $platformDir = Get-ChildItem -Path "./dist" -Directory -Recurse | Where-Object { 
-                $_.Name -like "*$platformName*$archName*" 
+            $standardizedDirName = "$platformName-$archName"
+            $platformDir = Get-ChildItem -Path "../dist" -Directory | Where-Object { 
+                $_.Name -eq $standardizedDirName
             }
             
             if ($platformDir) {
-                $executables = Get-ChildItem -Path $platformDir.FullName -File | Where-Object { 
+                $executables = Get-ChildItem -Path $platformDir.FullName -File -Recurse | Where-Object { 
                     $_.Name -eq "na" -or $_.Name -eq "na.exe" 
                 }
                 
                 if ($executables) {
-                    $platformShort = $platformName -replace "-latest", ""
-                    Write-Host "  ✓ $platformShort-$archName : $($executables.Count) executable(s)"
+                    Write-Host "  ✓ $standardizedDirName : $($executables.Count) executable(s)"
                     $executables | ForEach-Object {
                         $sizeKB = [math]::Round($_.Length / 1KB, 2)
-                        Write-Host "    - $($_.Name) ($sizeKB KB)"
+                        $relativePath = $_.FullName.Replace($platformDir.FullName, "").TrimStart("\", "/")
+                        Write-Host "    - $relativePath ($sizeKB KB)"
                     }
                 }
             }
@@ -324,7 +356,7 @@ if ($downloadedAny) {
     }
     
     # Check for consolidated executables
-    $consolidatedDir = Get-ChildItem -Path "./dist" -Directory -Recurse | Where-Object { 
+    $consolidatedDir = Get-ChildItem -Path "../dist" -Directory -Recurse | Where-Object { 
         $_.Name -like "all-platform-executables-*" 
     }
     
@@ -362,35 +394,39 @@ if ($downloadedAny) {
     }
     
     if ($downloadedVersion) {
-        Write-Host "  Windows: ./dist/published-executables-windows-latest-x64-$downloadedVersion/na.exe --help"
-        Write-Host "  macOS:   ./dist/published-executables-macos-latest-x64-$downloadedVersion/na --help"
-        Write-Host "  Linux:   ./dist/published-executables-ubuntu-latest-x64-$downloadedVersion/na --help"
+        Write-Host "  Windows: ../dist/windows-x64/na.exe --help"
+        Write-Host "  macOS:   ../dist/macos-x64/na --help"
+        Write-Host "  Linux:   ../dist/ubuntu-x64/na --help"
         Write-Host ""
-        Write-Host "  Or use the consolidated directory:"
-        Write-Host "  ./dist/all-platform-executables-$downloadedVersion/published-executables-<platform>-<arch>-$downloadedVersion/na[.exe]"
+        Write-Host "  ARM64 variants:"
+        Write-Host "  Windows: ../dist/windows-arm64/na.exe --help"
+        Write-Host "  macOS:   ../dist/macos-arm64/na --help"
+        Write-Host "  Linux:   ../dist/ubuntu-arm64/na --help"
+        Write-Host ""
+        Write-Host "  Or use the consolidated directory (if available):"
+        Write-Host "  ../dist/all-platform-executables-$downloadedVersion/published-executables-<platform>-<arch>-$downloadedVersion/na[.exe]"
     } else {
-        Write-Host "  Windows: ./dist/published-executables-windows-latest-x64-<version>/na.exe --help"
-        Write-Host "  macOS:   ./dist/published-executables-macos-latest-x64-<version>/na --help"
-        Write-Host "  Linux:   ./dist/published-executables-ubuntu-latest-x64-<version>/na --help"
+        Write-Host "  Windows: ../dist/windows-x64/na.exe --help"
+        Write-Host "  macOS:   ../dist/macos-x64/na --help"
+        Write-Host "  Linux:   ../dist/ubuntu-x64/na --help"
         Write-Host ""
-        Write-Host "  Or use the consolidated directory:"
-        Write-Host "  ./dist/all-platform-executables-<version>/published-executables-<platform>-<arch>-<version>/na[.exe]"
+        Write-Host "  ARM64 variants:"
+        Write-Host "  Windows: ../dist/windows-arm64/na.exe --help"
+        Write-Host "  macOS:   ../dist/macos-arm64/na --help"
+        Write-Host "  Linux:   ../dist/ubuntu-arm64/na --help"
+        Write-Host ""
+        Write-Host "  Or use the consolidated directory (if available):"
+        Write-Host "  ../dist/all-platform-executables-<version>/published-executables-<platform>-<arch>-<version>/na[.exe]"
     }
     
     # Show specific command for current platform if auto-detected
     if ($Platform -ne "all" -and $Architecture -ne "all") {
-        $platformLatest = switch ($Platform) {
-            "windows" { "windows-latest" }
-            "ubuntu" { "ubuntu-latest" }
-            "macos" { "macos-latest" }
-        }
+        $standardizedPlatform = $Platform.ToLower()
         $extension = if ($Platform -eq "windows") { ".exe" } else { "" }
         
-        if ($downloadedVersion) {
-            Write-Host ""
-            Write-Host "Quick start for your platform (auto-detected):" -ForegroundColor Green
-            Write-Host "  ./dist/published-executables-$platformLatest-$Architecture-$downloadedVersion/na$extension --help"
-        }
+        Write-Host ""
+        Write-Host "Quick start for your platform (auto-detected):" -ForegroundColor Green
+        Write-Host "  ../dist/$standardizedPlatform-$Architecture/na$extension --help"
     }
 } else {
     Write-Host "No artifacts were downloaded."
