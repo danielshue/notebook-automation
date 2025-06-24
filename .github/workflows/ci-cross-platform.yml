@@ -201,14 +201,44 @@ jobs:
 
       - name: Upload published executables
         if: always()
+        run: |
+          echo "Listing publish/${{ matrix.runtime-id }}:"
+          ls -la publish/${{ matrix.runtime-id }} || true
+          echo "Listing publish/${{ matrix.runtime-id-arm }}:"
+          ls -la publish/${{ matrix.runtime-id-arm }} || true
+          echo "Preparing artifact upload list..."
+          files_to_upload=""
+          for f in \
+            publish/${{ matrix.runtime-id }}/na \
+            publish/${{ matrix.runtime-id }}/na.exe \
+            publish/${{ matrix.runtime-id-arm }}/na \
+            publish/${{ matrix.runtime-id-arm }}/na.exe
+          do
+            if [ -f "$f" ]; then
+              echo "Found: $f"
+              files_to_upload+="$f\n"
+            else
+              echo "Not found: $f"
+            fi
+          done
+          if [ -n "$files_to_upload" ]; then
+            echo -e "$files_to_upload" > files-to-upload.txt
+            echo "Uploading the following files:"
+            cat files-to-upload.txt
+            tar -czf published-executables-${{ runner.os }}-${{ github.run_number }}.tar.gz $(cat files-to-upload.txt)
+          else
+            echo "No executables found to upload."
+            touch published-executables-${{ runner.os }}-${{ github.run_number }}.empty
+          fi
+        shell: bash
+      - name: Upload published executables artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: published-executables-${{ runner.os }}-${{ github.run_number }}
           path: |
-            publish/${{ matrix.runtime-id }}/na
-            publish/${{ matrix.runtime-id }}/na.exe
-            publish/${{ matrix.runtime-id-arm }}/na
-            publish/${{ matrix.runtime-id-arm }}/na.exe
+            published-executables-${{ runner.os }}-${{ github.run_number }}.tar.gz
+            published-executables-${{ runner.os }}-${{ github.run_number }}.empty
           retention-days: 14 # Keep executables for 14 days (longer than test artifacts)
 
   # Consolidate artifacts from all platforms
