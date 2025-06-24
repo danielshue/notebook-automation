@@ -299,4 +299,59 @@ public class VersionHelperTests
         string processName = Path.GetFileName(AppDomain.CurrentDomain.FriendlyName);
         return Path.Combine(baseDirectory, processName);
     }
+
+    /// <summary>
+    /// Tests that GetVersion returns a valid AppVersion record.
+    /// </summary>
+    [TestMethod]
+    public void GetVersion_ReturnsValidVersionRecord()
+    {
+        // Act
+        var version = VersionHelper.GetVersion();
+
+        // Assert
+        Assert.IsNotNull(version);
+        Assert.IsTrue(version.Major >= 0, "Major version should be non-negative");
+        Assert.IsTrue(version.Minor >= 0, "Minor version should be non-negative");
+        Assert.IsTrue(version.Patch >= 0, "Patch version should be non-negative");
+        Assert.IsNotNull(version.Commit, "Commit should not be null");
+    }
+
+    /// <summary>
+    /// Tests that GetVersion works consistently across multiple calls.
+    /// </summary>
+    [TestMethod]
+    public void GetVersion_ConsistentAcrossMultipleCalls()
+    {
+        // Act
+        var version1 = VersionHelper.GetVersion();
+        var version2 = VersionHelper.GetVersion();
+
+        // Assert
+        Assert.AreEqual(version1, version2, "Version should be consistent across calls");
+    }
+
+    /// <summary>
+    /// Tests that the new version info contains additional fields from Version record.
+    /// </summary>
+    [TestMethod]
+    public void GetVersionInfo_ContainsNewVersionFields()
+    {
+        // Act
+        var versionInfo = VersionHelper.GetVersionInfo();
+
+        // Assert
+        // Check for new fields from AppVersion record
+        var expectedNewKeys = new[]
+        {
+            "SemanticVersion", "FullVersion", "Major", "Minor", "Patch",
+            "Branch", "DateCode", "Build", "Commit", "BuildDateUtc"
+        };
+
+        foreach (var key in expectedNewKeys)
+        {
+            Assert.IsTrue(versionInfo.ContainsKey(key), $"Version info should contain key: {key}");
+            Assert.IsFalse(string.IsNullOrEmpty(versionInfo[key]), $"Value for key '{key}' should not be null or empty");
+        }
+    }
 }

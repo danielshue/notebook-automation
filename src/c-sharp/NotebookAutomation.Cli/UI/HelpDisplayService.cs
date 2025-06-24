@@ -82,28 +82,38 @@ internal class HelpDisplayService
     {
         try
         {
+            // Get version using the new AppVersion record system
+            var version = VersionHelper.GetVersion();
+            var versionInfo = VersionHelper.GetVersionInfo();
+
             Assembly? entryAssembly = Assembly.GetEntryAssembly();
             if (entryAssembly != null)
             {
-                // Get version information from the executable
+                // Get version information from the executable for display purposes
                 string exePath = Process.GetCurrentProcess().MainModule?.FileName ?? string.Empty;
-                var versionInfo = !string.IsNullOrEmpty(exePath)
+                var fileVersionInfo = !string.IsNullOrEmpty(exePath)
                     ? FileVersionInfo.GetVersionInfo(exePath)
                     : null;
 
-                // Extract version details
-                var assemblyVersion = Assembly.GetExecutingAssembly().GetName().Version;
-                string fileVersion = versionInfo?.FileVersion ?? assemblyVersion?.ToString() ?? "1.0.0.0";
-                string productName = versionInfo?.ProductName ?? "Notebook Automation";
-                string companyName = versionInfo?.CompanyName ?? "Dan Shue";
-                string copyrightInfo = versionInfo?.LegalCopyright ?? "Copyright 2025";
+                // Extract display details with fallbacks to new Version system
+                string displayVersion = version.ToSemanticVersionString();
+                string fullVersion = version.ToDisplayString();
+                string productName = fileVersionInfo?.ProductName ?? "Notebook Automation";
+                string companyName = fileVersionInfo?.CompanyName ?? "Dan Shue";
+                string copyrightInfo = fileVersionInfo?.LegalCopyright ?? "Copyright 2025";
+                string buildDate = version.BuildDateUtc.ToString("yyyy-MM-dd");
+                string branch = GitVersionInformation.BranchName ?? "master";
+
+                string shortSha = GitVersionInformation.ShortSha ?? "unknown";
+                string commitDate = GitVersionInformation.CommitDate ?? "unknown";
+                string semVer = GitVersionInformation.SemVer ?? "0.0.0";
+
+
 
                 // Display professional version information
                 Console.WriteLine();
-                Console.WriteLine($"{AnsiColors.BOLD}{productName}{AnsiColors.ENDC} {AnsiColors.OKGREEN}v{fileVersion}{AnsiColors.ENDC}");
-                Console.WriteLine($"Runtime: {AnsiColors.OKCYAN}.NET {Environment.Version}{AnsiColors.ENDC}");
-                Console.WriteLine($"Author:  {AnsiColors.GREY}{companyName}{AnsiColors.ENDC}");
-                Console.WriteLine($"{AnsiColors.GREY}{copyrightInfo}{AnsiColors.ENDC}");
+                Console.WriteLine($"Notebook Automation version {fullVersion} ({shortSha})");
+                Console.WriteLine("Copyright (C) Dan Shue. All rights reserved.");
                 Console.WriteLine();
             }
             else
