@@ -1,4 +1,5 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 namespace NotebookAutomation.Cli.Utilities;
 
 /// <summary>
@@ -8,8 +9,26 @@ namespace NotebookAutomation.Cli.Utilities;
 /// This class includes methods for retrieving detailed version information, assembly paths,
 /// build dates, and linker timestamps.
 /// </remarks>
-internal static class VersionHelper
+public static class VersionHelper
 {
+    /// <summary>
+    /// Gets the current application version using the new AppVersion record format.
+    /// </summary>
+    /// <returns>An AppVersion record representing the current application version.</returns>
+    public static AppVersion GetVersion()
+    {
+        try
+        {
+            return AppVersion.FromCurrentAssembly();
+        }
+        catch (Exception)
+        {
+            // Fallback version if parsing fails
+            return new AppVersion(1, 0, 0, 0, GetCurrentDateCode(), 0, "unknown");
+        }
+    }
+
+
     /// <summary>
     /// Gets detailed version information about the application.
     /// </summary>
@@ -21,29 +40,39 @@ internal static class VersionHelper
 
         try
         {
-            // Assembly version information
+            // Get version using new AppVersion record
+            var version = GetVersion();
+            var versionDict = version.ToInfoDictionary();
+            
+            // Add version information from the new AppVersion record
+            foreach (var kvp in versionDict)
+            {
+                versionInfo[kvp.Key] = kvp.Value;
+            }
+
+            // Assembly information
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyName = assembly.GetName();
-
-            versionInfo["Version"] = assemblyName.Version?.ToString() ?? "Unknown";
             versionInfo["AssemblyName"] = assemblyName.Name ?? "Unknown";
+            versionInfo["Version"] = version.ToSemanticVersionString();
 
             try
             {
                 // File version and product version - handle single-file apps
                 string assemblyPath = GetAssemblyPath(assembly);
                 var fileVersionInfo = System.Diagnostics.FileVersionInfo.GetVersionInfo(assemblyPath);
-                versionInfo["FileVersion"] = fileVersionInfo.FileVersion ?? "Unknown";
-                versionInfo["ProductVersion"] = fileVersionInfo.ProductVersion ?? "Unknown";
+                versionInfo["FileVersion"] = fileVersionInfo.FileVersion ?? version.ToDisplayString();
+                versionInfo["ProductVersion"] = fileVersionInfo.ProductVersion ?? version.ToSemanticVersionString();
 
-                // Build information
-                versionInfo["BuildDate"] = GetBuildDate(assemblyPath).ToString("yyyy-MM-dd HH:mm:ss");
+                // Build information from PE header
+                var buildDate = GetBuildDate(assemblyPath);
+                versionInfo["PEBuildDate"] = buildDate.ToString("yyyy-MM-dd HH:mm:ss");
             }
             catch (Exception ex)
             {
-                versionInfo["FileVersion"] = GetInformationalVersion() ?? "Unknown (Single-file app)";
-                versionInfo["ProductVersion"] = GetInformationalVersion() ?? "Unknown (Single-file app)";
-                versionInfo["BuildDate"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                versionInfo["FileVersion"] = GetInformationalVersion() ?? version.ToDisplayString();
+                versionInfo["ProductVersion"] = GetInformationalVersion() ?? version.ToSemanticVersionString();
+                versionInfo["PEBuildDate"] = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
                 versionInfo["ErrorDetail"] = ex.Message;
             }
 
@@ -61,6 +90,19 @@ internal static class VersionHelper
         }
 
         return versionInfo;
+    }
+
+
+    /// <summary>
+    /// Gets the current date code in YYDDD format for fallback scenarios.
+    /// </summary>
+    /// <returns>Current date encoded as YYDDD.</returns>
+    private static int GetCurrentDateCode()
+    {
+        var now = DateTime.Now;
+        int yy = now.Year % 100;
+        int ddd = now.DayOfYear;
+        return yy * 1000 + ddd;
     }
 
     /// <summary>

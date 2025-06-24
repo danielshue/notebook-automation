@@ -10,28 +10,21 @@
         <PackageReference Include="Azure.Identity" Version="1.14.0" />
         <PackageReference Include="Microsoft.Extensions.AI" Version="9.5.0" />
         <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0-preview.1.25265.7" />
-        <PackageReference Include="Microsoft.Extensions.Configuration"
-            Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder"
-            Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
-            Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json"
-            Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets"
-            Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console"
-            Version="9.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
         <PackageReference Include="Microsoft.Extensions.Primitives" Version="9.0.5" />
         <PackageReference Include="Microsoft.Graph" Version="5.80.0" />
         <PackageReference Include="Microsoft.Identity.Client" Version="4.72.1" />
         <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.72.1" />
         <PackageReference Include="Microsoft.SemanticKernel" Version="1.55.0" />
         <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.54.0" />
-        <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars"
-            Version="1.54.0" />
+        <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars" Version="1.54.0" />
         <PackageReference Include="OpenTelemetry" Version="1.10.0" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.10.0" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.10.0" />
@@ -62,19 +55,16 @@
         <ItemGroup>
             <CorePromptFiles Include="$(MSBuildThisFileDirectory)Prompts\*.md" />
         </ItemGroup>
-        <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\"
-            SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(CorePromptFiles)" DestinationFolder="$(OutDir)Prompts\" SkipUnchangedFiles="true" />
 
         <!-- Copy prompts from repository root -->
         <ItemGroup>
             <RepoPromptFiles Include="$(MSBuildThisFileDirectory)..\..\..\prompts\*.md" />
         </ItemGroup>
-        <Copy SourceFiles="@(RepoPromptFiles)" DestinationFolder="$(OutDir)Prompts\"
-            SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(RepoPromptFiles)" DestinationFolder="$(OutDir)Prompts\" SkipUnchangedFiles="true" />
 
         <!-- Log info about prompt files -->
-        <Message Text="Copying prompt files to output directory: $(OutDir)Prompts\"
-            Importance="high" />
+        <Message Text="Copying prompt files to output directory: $(OutDir)Prompts\" Importance="high" />
     </Target>
 
     <!-- Copy config files from repository root -->
@@ -82,12 +72,10 @@
         <ItemGroup>
             <RepoConfigFiles Include="$(MSBuildThisFileDirectory)..\..\..\config\*.*" />
         </ItemGroup>
-        <Copy SourceFiles="@(RepoConfigFiles)" DestinationFolder="$(OutDir)config\"
-            SkipUnchangedFiles="true" />
+        <Copy SourceFiles="@(RepoConfigFiles)" DestinationFolder="$(OutDir)config\" SkipUnchangedFiles="true" />
 
         <!-- Log info about config files -->
-        <Message Text="Copying config files to output directory: $(OutDir)config\"
-            Importance="high" />
+        <Message Text="Copying config files to output directory: $(OutDir)config\" Importance="high" />
     </Target>
 
 </Project>

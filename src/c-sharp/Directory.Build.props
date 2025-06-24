@@ -1,34 +1,64 @@
 <Project>
-    <PropertyGroup>
-        <!-- Set the version for all projects in the solution -->
-        <!-- For NuGet packages, we need a valid semantic version without wildcards -->
-        <Version>1.0.0.0</Version>
-        <!-- Assembly version needs to be a valid version without wildcards for NuGet restore -->
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <!-- File version needs a valid version string without wildcards -->
-        <FileVersion>1.0.0.0</FileVersion>
-        <InformationalVersion>1.0.0-development</InformationalVersion>
+  <PropertyGroup>
 
-        <!-- Enable deterministic builds for CI -->
-        <Deterministic>false</Deterministic>
-        <Company>Dan Shue</Company>
-        <Copyright>Copyright © 2025</Copyright>
-        <Product>Notebook Automation</Product>
-        <Authors>Dan Shue</Authors>        <!-- Code Analysis and Formatting - TEMPORARILY DISABLED -->
-        <EnableNETAnalyzers>false</EnableNETAnalyzers>
-        <AnalysisMode>None</AnalysisMode>
-        <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
-        <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
-        <WarningsAsErrors />
-        <WarningsNotAsErrors />
-    </PropertyGroup>
-    <ItemGroup>
-        <!-- StyleCop Analyzers for consistent formatting - TEMPORARILY DISABLED -->
-        <!--
-        <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
-            <PrivateAssets>all</PrivateAssets>
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
-        -->
-    </ItemGroup>
+    <!-- Allow .NET SDKs to roll forward so GitVersion can work under newer SDKs -->
+    <GitVersion_RollForward>Major</GitVersion_RollForward>
+
+    <!-- General Build Metadata -->
+    <Deterministic>false</Deterministic>
+    <Company>Dan Shue</Company>
+    <Copyright>Copyright © 2025</Copyright>
+    <Product>Notebook Automation</Product>
+    <Authors>Dan Shue</Authors>
+
+    <!-- Enable GitVersion -->
+    <GitVersion_UseGitVersion>true</GitVersion_UseGitVersion>
+    <GitVersion_NoFetch>true</GitVersion_NoFetch>
+
+    <!-- Enable default assembly version generation -->
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
+    <!-- AppVersion-compatible components -->
+    <VersionBranch Condition="'$(VersionBranch)' == ''">0</VersionBranch>
+    <VersionDateCode>$([System.DateTime]::Now.ToString("yy"))$([System.DateTime]::Now.DayOfYear.ToString("000"))</VersionDateCode>
+    <VersionBuild>1</VersionBuild>
+
+    <!-- Code Analysis - TEMPORARILY DISABLED -->
+    <EnableNETAnalyzers>false</EnableNETAnalyzers>
+    <AnalysisMode>None</AnalysisMode>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <WarningsNotAsErrors />
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <Version>$(GitVersion_SemVer)</Version>
+    <AssemblyVersion>$(GitVersion_AssemblySemVer)</AssemblyVersion>
+    <FileVersion>$(GitVersion_AssemblySemFileVer)</FileVersion>
+    <InformationalVersion>$(GitVersion_InformationalVersion)</InformationalVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GitVersion_SemVer)' == ''">
+    <GitVersion_SemVer>0.1.0-fallback</GitVersion_SemVer>
+    <GitVersion_AssemblySemVer>0.1.0.0</GitVersion_AssemblySemVer>
+    <GitVersion_AssemblySemFileVer>0.1.0.0</GitVersion_AssemblySemFileVer>
+    <GitVersion_InformationalVersion>0.1.0-fallback</GitVersion_InformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- GitVersion -->
+    <PackageReference Include="GitVersion.MsBuild" Version="6.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+
+    <!-- StyleCop Analyzers - TEMPORARILY DISABLED -->
+    <!--
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    -->
+  </ItemGroup>
 </Project>
