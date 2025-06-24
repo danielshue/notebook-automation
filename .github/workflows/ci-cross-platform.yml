@@ -97,9 +97,21 @@ jobs:
           echo "Build output directory contents:"
           ls -la src/c-sharp/NotebookAutomation.Cli/bin/Release || true
 
-      - name: Run tests with coverage
+      - name: Run tests with coverage (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
         run: |
-          # Run all tests in the solution with coverage collection using runsettings
+          dotnet test src/c-sharp/NotebookAutomation.sln --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults/
+          if ($LASTEXITCODE -ne 0) { Write-Host "dotnet test failed"; exit 1 }
+          Write-Host "TestResults directory contents:"
+          Get-ChildItem TestResults | Format-Table Name, Length
+        env:
+          DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+      - name: Run tests with coverage (Non-Windows)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
           dotnet test src/c-sharp/NotebookAutomation.sln --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage" --settings coverlet.runsettings --results-directory TestResults/
           if [ $? -ne 0 ]; then echo "dotnet test failed"; exit 1; fi
           echo "TestResults directory contents:"
