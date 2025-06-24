@@ -81,10 +81,18 @@ jobs:
 
       - name: Build solution
         run: |
-          dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
-          if [ $? -ne 0 ]; then echo "dotnet build failed"; exit 1; fi
-          echo "Build output directory contents:"
-          ls -la src/c-sharp/NotebookAutomation.Cli/bin/Release || true
+          if ($env:RUNNER_OS -eq "Windows") {
+            dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
+            if ($LASTEXITCODE -ne 0) { Write-Host "dotnet build failed"; exit 1 }
+            Write-Host "Build output directory contents:"
+            Get-ChildItem src/c-sharp/NotebookAutomation.Cli/bin/Release -Recurse | Format-Table FullName, Length
+          } else {
+            dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
+            if [ $? -ne 0 ]; then echo "dotnet build failed"; exit 1; fi
+            echo "Build output directory contents:"
+            ls -la src/c-sharp/NotebookAutomation.Cli/bin/Release || true
+          }
+        shell: pwsh
 
       - name: Run tests with coverage
         run: |
@@ -202,17 +210,27 @@ jobs:
           echo "Publish directory contents (ARM64):"
           ls -la publish/${{ matrix.runtime-id-arm }} || true
 
-      - name: Test published executable (x64)
-        if: always()
+      - name: Test published executable (x64, Windows)
+        if: always() && runner.os == 'Windows'
+        shell: pwsh
         run: |
-          # Test the published executable
+          Write-Host "Published files in publish/${{ matrix.runtime-id }}:"
+          Get-ChildItem publish/${{ matrix.runtime-id }}
+          $exe = "publish/${{ matrix.runtime-id }}/na.exe"
+          if (Test-Path $exe) {
+            & $exe --version
+          } else {
+            Write-Host "Executable not found: $exe"
+            exit 1
+          }
+
+      - name: Test published executable (x64, Non-Windows)
+        if: always() && runner.os != 'Windows'
+        shell: bash
+        run: |
           echo "Published files in publish/${{ matrix.runtime-id }}:"
           ls -la publish/${{ matrix.runtime-id }} || true
-          if [ "${{ matrix.os }}" = "windows-latest" ]; then
-            exe_name="na.exe"
-          else
-            exe_name="na"
-          fi
+          exe_name="na"
           if [ -f "publish/${{ matrix.runtime-id }}/$exe_name" ]; then
             ./publish/${{ matrix.runtime-id }}/$exe_name --version
           else
@@ -252,15 +270,25 @@ jobs:
             touch published-executables-${{ runner.os }}-${{ github.run_number }}.empty
           fi
         shell: bash
-      - name: Upload published executables artifact
-        if: always()
+      - name: Upload published executables artifact (x64)
+        if: always() && matrix.runtime-id && (success() || failure())
         uses: actions/upload-artifact@v4
         with:
-          name: published-executables-${{ runner.os }}-${{ github.run_number }}
+          name: published-executables-${{ matrix.os }}-x64-${{ github.run_number }}
           path: |
-            published-executables-${{ runner.os }}-${{ github.run_number }}.tar.gz
-            published-executables-${{ runner.os }}-${{ github.run_number }}.empty
-          retention-days: 14 # Keep executables for 14 days (longer than test artifacts)
+            publish/${{ matrix.runtime-id }}/na
+            publish/${{ matrix.runtime-id }}/na.exe
+          retention-days: 14
+
+      - name: Upload published executables artifact (ARM64)
+        if: always() && matrix.runtime-id-arm && (success() || failure())
+        uses: actions/upload-artifact@v4
+        with:
+          name: published-executables-${{ matrix.os }}-arm64-${{ github.run_number }}
+          path: |
+            publish/${{ matrix.runtime-id-arm }}/na
+            publish/${{ matrix.runtime-id-arm }}/na.exe
+          retention-days: 14
 
   # Consolidate artifacts from all platforms
   consolidate-artifacts:
