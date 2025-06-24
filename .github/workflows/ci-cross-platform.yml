@@ -79,20 +79,23 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore src/c-sharp/NotebookAutomation.sln
 
-      - name: Build solution
-        run: |
-          if ($env:RUNNER_OS -eq "Windows") {
-            dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
-            if ($LASTEXITCODE -ne 0) { Write-Host "dotnet build failed"; exit 1 }
-            Write-Host "Build output directory contents:"
-            Get-ChildItem src/c-sharp/NotebookAutomation.Cli/bin/Release -Recurse | Format-Table FullName, Length
-          } else {
-            dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
-            if [ $? -ne 0 ]; then echo "dotnet build failed"; exit 1; fi
-            echo "Build output directory contents:"
-            ls -la src/c-sharp/NotebookAutomation.Cli/bin/Release || true
-          }
+      - name: Build solution (Windows)
+        if: runner.os == 'Windows'
         shell: pwsh
+        run: |
+          dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
+          if ($LASTEXITCODE -ne 0) { Write-Host "dotnet build failed"; exit 1 }
+          Write-Host "Build output directory contents:"
+          Get-ChildItem src/c-sharp/NotebookAutomation.Cli/bin/Release -Recurse | Format-Table FullName, Length
+
+      - name: Build solution (Non-Windows)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          dotnet build src/c-sharp/NotebookAutomation.sln --configuration Release --no-restore
+          if [ $? -ne 0 ]; then echo "dotnet build failed"; exit 1; fi
+          echo "Build output directory contents:"
+          ls -la src/c-sharp/NotebookAutomation.Cli/bin/Release || true
 
       - name: Run tests with coverage
         run: |
