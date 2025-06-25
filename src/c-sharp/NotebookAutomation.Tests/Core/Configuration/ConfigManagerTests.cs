@@ -1,15 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-using System;
-using System.Collections.Generic;
-using System.IO;
-
-using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Moq;
-
-using NotebookAutomation.Core.Configuration;
-
 namespace NotebookAutomation.Tests.Core.Configuration;
 
 /// <summary>
@@ -18,7 +7,6 @@ namespace NotebookAutomation.Tests.Core.Configuration;
 [TestClass]
 public class ConfigManagerTests
 {
-
     private Mock<ILogger<ConfigManager>> _loggerMock = null!;
     private MockFileSystemWrapper _fileSystem = null!;
     private MockEnvironmentWrapper _environment = null!;
@@ -71,11 +59,12 @@ public class ConfigManagerTests
         var manager = new ConfigManager(_fileSystem, _environment, _loggerMock.Object);
         var options = new ConfigDiscoveryOptions { ConfigPath = "doesnotexist.json" };
 
-        // Act & Assert
-        await Assert.ThrowsExceptionAsync<FileNotFoundException>(async () =>
-        {
-            await manager.LoadConfigurationAsync(options);
-        });
+        // Act
+        var result = await manager.LoadConfigurationAsync(options);
+
+        // Assert
+        Assert.IsFalse(result.IsSuccess);
+        Assert.AreEqual("No configuration file found. Please create a config.json file or specify one with --config.", result.ErrorMessage);
     }
 
     /// <summary>
@@ -136,7 +125,6 @@ public class ConfigManagerTests
         // Arrange
         var manager = new ConfigManager(_fileSystem, _environment, _loggerMock.Object);
         var config = new AppConfig();
-        string invalidPath = "?invalidpath/bad.json";
 
         // Act & Assert
         Assert.ThrowsException<ArgumentException>(() =>

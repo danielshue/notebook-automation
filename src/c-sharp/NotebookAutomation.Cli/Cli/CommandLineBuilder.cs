@@ -92,11 +92,16 @@ internal class CommandLineBuilder
         // Register config commands (note: doesn't support verbose/dry-run)
         var configCommands = new ConfigCommands(loggerFactory.CreateLogger<ConfigCommands>(), serviceProvider);
         configCommands.Register(rootCommand, options.ConfigOption, options.DebugOption);
+
+        // Register OneDrive commands
+        var oneDriveCommands = new OneDriveCommands(loggerFactory.CreateLogger<OneDriveCommands>(), serviceProvider);
+        oneDriveCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
     }
 
     /// <summary>
     /// Builds the command line parser with middleware configuration.
-    /// </summary>    /// <param name="rootCommand">The root command to build the parser for.</param>
+    /// </summary>    
+    /// <param name="rootCommand">The root command to build the parser for.</param>
     /// <param name="isDebugMode">Whether debug mode is enabled for exception handling.</param>
     /// <returns>A configured Parser instance.</returns>
     public Parser BuildParser(RootCommand rootCommand, bool isDebugMode)

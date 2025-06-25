@@ -202,7 +202,8 @@ internal class ConfigCommands
                     Debug = debug,
                     ExecutableDirectory = AppContext.BaseDirectory ?? Environment.CurrentDirectory,
                     WorkingDirectory = Environment.CurrentDirectory
-                }; var configResult = await _configManager.LoadConfigurationAsync(discoveryOptions);
+                };
+                var configResult = await _configManager.LoadConfigurationAsync(discoveryOptions);
 
                 if (!configResult.IsSuccess || string.IsNullOrEmpty(configResult.ConfigurationPath))
                 {
@@ -213,7 +214,9 @@ internal class ConfigCommands
                 Console.WriteLine($"\n{AnsiColors.OKCYAN}Using configuration file: {AnsiColors.BOLD}{configResult.ConfigurationPath}{AnsiColors.ENDC}\n");
 
                 var appConfig = AppConfig.LoadFromJsonFile(configResult.ConfigurationPath);
-                PrintConfigFormatted(appConfig);
+                await PrintConfigFormatted(appConfig);
+
+                
             }
             catch (Exception ex)
             {
@@ -520,7 +523,7 @@ internal class ConfigCommands
     /// Prints the current configuration in a formatted, colorized style for the CLI.
     /// </summary>
     /// <param name="appConfig">The AppConfig instance to display.</param>
-    public static void PrintConfigFormatted(AppConfig appConfig)
+    public static async Task PrintConfigFormatted(AppConfig appConfig)
     {
         // Helper for aligned output
         static void PrintAligned(string key, string value)
@@ -594,6 +597,7 @@ internal class ConfigCommands
             PrintAligned("api_endpoint", "[not set]");
             PrintAligned("authority", "[not set]");
             PrintAligned("scopes", "[not set]");
+            PrintAligned("onedrive_token_status", "[not set]");
         }
         else
         {
@@ -607,6 +611,18 @@ internal class ConfigCommands
             else
             {
                 PrintAligned("scopes", string.Join(", ", graph.Scopes));
+            }
+
+            // Check OneDrive token status
+            var oneDriveService = Program.ServiceProvider.GetService<IOneDriveService>();
+            if (oneDriveService != null)
+            {
+                bool isTokenValid = await oneDriveService.IsTokenValidAsync();
+                PrintAligned("onedrive_token_status", isTokenValid ? "Valid" : "[not set]");
+            }
+            else
+            {
+                PrintAligned("onedrive_token_status", "Service not available");
             }
         }
 
@@ -782,43 +798,45 @@ internal class ConfigCommands
         Console.WriteLine("  dotnet user-secrets list --project src/c-sharp/NotebookAutomation.Cli");
         Console.WriteLine();
         AnsiConsoleHelper.WriteInfo("For more information, see: src/c-sharp/docs/UserSecrets.md");
-    }    /// <summary>
-         /// Masks a secret value for secure display in configuration output.
-         /// </summary>
-         /// <param name="secret">The secret string to mask for display purposes.</param>
-         /// <returns>
-         /// A masked version of the secret that preserves privacy while indicating presence.
-         /// Returns "[Not Set]" if the secret is null or empty, "[Set]" for short secrets,
-         /// or a partially masked version showing only the first and last few characters for longer secrets.
-         /// </returns>
-         /// <remarks>
-         /// <para>
-         /// This method implements a security-conscious approach to displaying secret values in configuration
-         /// output. It ensures that sensitive information like API keys, passwords, and tokens are never
-         /// displayed in full, while still providing useful feedback about their presence and basic structure.
-         /// </para>
-         /// <para>
-         /// The masking strategy varies based on the secret length:
-         /// <list type="bullet">
-         /// <item><description><strong>Null or empty:</strong> Returns "[Not Set]" to indicate no value is configured</description></item>
-         /// <item><description><strong>Short secrets (≤8 characters):</strong> Returns "[Set]" to indicate presence without revealing structure</description></item>
-         /// <item><description><strong>Long secrets (&gt;8 characters):</strong> Returns first 3 and last 3 characters with "..." in between</description></item>
-         /// </list>
-         /// </para>
-         /// <para>
-         /// This approach balances security with usability, allowing users to verify that their secrets
-         /// are properly configured without exposing sensitive data in logs, screenshots, or shared terminal output.
-         /// </para>
-         /// </remarks>
-         /// <example>
-         /// <code>
-         /// string result1 = MaskSecret(null);                    // Returns: "[Not Set]"
-         /// string result2 = MaskSecret("");                      // Returns: "[Not Set]"
-         /// string result3 = MaskSecret("short");                 // Returns: "[Set]"
-         /// string result4 = MaskSecret("sk-1234567890abcdef");   // Returns: "sk-...def"
-         /// string result5 = MaskSecret("very-long-api-key-here"); // Returns: "ver...ere"
-         /// </code>
-         /// </example>
+    }
+
+    /// <summary>
+    /// Masks a secret value for secure display in configuration output.
+    /// </summary>
+    /// <param name="secret">The secret string to mask for display purposes.</param>
+    /// <returns>
+    /// A masked version of the secret that preserves privacy while indicating presence.
+    /// Returns "[Not Set]" if the secret is null or empty, "[Set]" for short secrets,
+    /// or a partially masked version showing only the first and last few characters for longer secrets.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method implements a security-conscious approach to displaying secret values in configuration
+    /// output. It ensures that sensitive information like API keys, passwords, and tokens are never
+    /// displayed in full, while still providing useful feedback about their presence and basic structure.
+    /// </para>
+    /// <para>
+    /// The masking strategy varies based on the secret length:
+    /// <list type="bullet">
+    /// <item><description><strong>Null or empty:</strong> Returns "[Not Set]" to indicate no value is configured</description></item>
+    /// <item><description><strong>Short secrets (≤8 characters):</strong> Returns "[Set]" to indicate presence without revealing structure</description></item>
+    /// <item><description><strong>Long secrets (&gt;8 characters):</strong> Returns first 3 and last 3 characters with "..." in between</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// This approach balances security with usability, allowing users to verify that their secrets
+    /// are properly configured without exposing sensitive data in logs, screenshots, or shared terminal output.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// string result1 = MaskSecret(null);                    // Returns: "[Not Set]"
+    /// string result2 = MaskSecret("");                      // Returns: "[Not Set]"
+    /// string result3 = MaskSecret("short");                 // Returns: "[Set]"
+    /// string result4 = MaskSecret("sk-1234567890abcdef");   // Returns: "sk-...def"
+    /// string result5 = MaskSecret("very-long-api-key-here"); // Returns: "ver...ere"
+    /// </code>
+    /// </example>
     private static string MaskSecret(string? secret)
     {
         if (string.IsNullOrEmpty(secret))

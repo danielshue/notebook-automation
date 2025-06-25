@@ -356,7 +356,7 @@ internal class VideoCommands
             }
 
             // Validate OpenAI config before proceeding
-            if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
+            if (appConfig == null || !await ConfigValidation.RequireOpenAi(appConfig))
             {
                 logger.LogError("OpenAI configuration is missing or incomplete. Exiting.");
                 return;

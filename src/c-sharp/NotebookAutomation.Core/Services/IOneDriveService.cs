@@ -267,4 +267,21 @@ public interface IOneDriveService
     /// </code>
     /// </example>
     Task<string> GetShareLinkAsync(string filePath, bool forceRefresh = false, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Checks if the current OneDrive authentication token is valid.
+    /// </summary>
+    /// <returns>True if the token is valid, false otherwise.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method verifies the validity of the current authentication token.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// bool isValid = await oneDriveService.IsTokenValidAsync();
+    /// Console.WriteLine($"Token is valid: {isValid}");
+    /// </code>
+    /// </example>
+    Task<bool> IsTokenValidAsync();
 }

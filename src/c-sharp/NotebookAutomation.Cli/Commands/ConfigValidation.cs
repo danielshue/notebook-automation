@@ -99,7 +99,7 @@ internal static class ConfigValidation
     /// Validates that Microsoft Graph config values are present. Returns true if valid, else prints error and config.
     /// </summary>
     /// <returns></returns>
-    public static bool RequireMicrosoftGraph(AppConfig config)
+    public static async Task<bool> RequireMicrosoftGraph(AppConfig config)
     {
         if (config.MicrosoftGraph == null ||
             string.IsNullOrWhiteSpace(config.MicrosoftGraph.ClientId) ||
@@ -108,7 +108,7 @@ internal static class ConfigValidation
             config.MicrosoftGraph.Scopes == null || config.MicrosoftGraph.Scopes.Count == 0)
         {
             AnsiConsoleHelper.WriteError("Microsoft Graph configuration is required for this feature but is missing or incomplete.");
-            ConfigCommands.PrintConfigFormatted(config);
+            await ConfigCommands.PrintConfigFormatted(config);
             return false;
         }
 
@@ -119,12 +119,12 @@ internal static class ConfigValidation
     /// Validates that AI service config values are present. Returns true if valid, else prints error and config.
     /// </summary>
     /// <returns></returns>
-    public static bool RequireOpenAi(AppConfig config)
+    public static async Task<bool> RequireOpenAi(AppConfig config)
     {
         if (config.AiService == null)
         {
             AnsiConsoleHelper.WriteError("OpenAI configuration is required for this feature but is missing or incomplete.");
-            ConfigCommands.PrintConfigFormatted(config);
+            await ConfigCommands.PrintConfigFormatted(config);
             return false;
         }
 
@@ -132,7 +132,7 @@ internal static class ConfigValidation
         if (string.IsNullOrWhiteSpace(apiKey))
         {
             AnsiConsoleHelper.WriteError("OpenAI configuration is required for this feature but is missing or incomplete.");
-            ConfigCommands.PrintConfigFormatted(config);
+            await ConfigCommands.PrintConfigFormatted(config);
             return false;
         }
 

@@ -159,7 +159,7 @@ internal class MarkdownCommands
             var failedLogger = loggingService?.FailedLogger;
 
             // Validate OpenAI config before proceeding
-            if (!ConfigValidation.RequireOpenAi(appConfig))
+            if (!await ConfigValidation.RequireOpenAi(appConfig))
             {
                 logger.LogError($"OpenAI configuration is missing or incomplete. Exiting.");
                 return;
