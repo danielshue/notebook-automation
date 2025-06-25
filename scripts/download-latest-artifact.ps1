@@ -97,12 +97,13 @@ if ($Version) {
 if ($ListOnly) {
     Write-Host "  Mode: List only (no download)"
 } else {
-    Write-Host "  Mode: Download to ../dist"
+    Write-Host "  Mode: Download to $DistPath"
 }
 Write-Host ""
 
-# Ensure dist folder exists
-$DistPath = "../dist"
+# Ensure dist folder exists - use absolute path relative to script location
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$DistPath = Join-Path (Split-Path -Parent $ScriptDir) "dist"
 if (-not (Test-Path $DistPath)) {
     New-Item -ItemType Directory -Path $DistPath
 }
@@ -268,7 +269,7 @@ foreach ($artifact in $filteredArtifacts) {
     
     try {
         # Use the artifact download command with the artifact ID
-        gh api repos/:owner/:repo/actions/artifacts/$($artifact.id)/zip --method GET > "../dist/$($artifact.name).zip"
+        gh api repos/:owner/:repo/actions/artifacts/$($artifact.id)/zip --method GET > "$DistPath/$($artifact.name).zip"
         
         # Determine the standardized directory name based on artifact name
         $standardizedDirName = ""
@@ -293,11 +294,11 @@ foreach ($artifact in $filteredArtifacts) {
         }
         
         # Use standardized directory name if determined, otherwise fall back to artifact name
-        $extractPath = if ($standardizedDirName) { "../dist/$standardizedDirName" } else { "../dist/$($artifact.name)" }
+        $extractPath = if ($standardizedDirName) { "$DistPath/$standardizedDirName" } else { "$DistPath/$($artifact.name)" }
         
         # Extract the zip file
-        Expand-Archive -Path "../dist/$($artifact.name).zip" -DestinationPath $extractPath -Force
-        Remove-Item "../dist/$($artifact.name).zip"
+        Expand-Archive -Path "$DistPath/$($artifact.name).zip" -DestinationPath $extractPath -Force
+        Remove-Item "$DistPath/$($artifact.name).zip"
         
         $downloadedAny = $true
         if ($standardizedDirName) {
@@ -313,9 +314,9 @@ foreach ($artifact in $filteredArtifacts) {
 
 if ($downloadedAny) {
     Write-Host ""
-    Write-Host "Download completed! Contents of ../dist:"
-    Get-ChildItem -Path "../dist" -Recurse | ForEach-Object {
-        $relativePath = $_.FullName.Replace((Resolve-Path '../dist').Path, '')
+    Write-Host "Download completed! Contents of ${DistPath}:"
+    Get-ChildItem -Path "$DistPath" -Recurse | ForEach-Object {
+        $relativePath = $_.FullName.Replace((Resolve-Path $DistPath).Path, '')
         if ($_.PSIsContainer) {
             Write-Host "  📁 $relativePath"
         } else {
@@ -334,7 +335,7 @@ if ($downloadedAny) {
     foreach ($platformName in $standardizedPlatforms) {
         foreach ($archName in $supportedArchitectures) {
             $standardizedDirName = "$platformName-$archName"
-            $platformDir = Get-ChildItem -Path "../dist" -Directory | Where-Object { 
+            $platformDir = Get-ChildItem -Path "$DistPath" -Directory | Where-Object { 
                 $_.Name -eq $standardizedDirName
             }
             
@@ -356,7 +357,7 @@ if ($downloadedAny) {
     }
     
     # Check for consolidated executables
-    $consolidatedDir = Get-ChildItem -Path "../dist" -Directory -Recurse | Where-Object { 
+    $consolidatedDir = Get-ChildItem -Path "$DistPath" -Directory -Recurse | Where-Object { 
         $_.Name -like "all-platform-executables-*" 
     }
     
@@ -394,29 +395,29 @@ if ($downloadedAny) {
     }
     
     if ($downloadedVersion) {
-        Write-Host "  Windows: ../dist/windows-x64/na.exe --help"
-        Write-Host "  macOS:   ../dist/macos-x64/na --help"
-        Write-Host "  Linux:   ../dist/ubuntu-x64/na --help"
+        Write-Host "  Windows: $DistPath/windows-x64/na.exe --help"
+        Write-Host "  macOS:   $DistPath/macos-x64/na --help"
+        Write-Host "  Linux:   $DistPath/ubuntu-x64/na --help"
         Write-Host ""
         Write-Host "  ARM64 variants:"
-        Write-Host "  Windows: ../dist/windows-arm64/na.exe --help"
-        Write-Host "  macOS:   ../dist/macos-arm64/na --help"
-        Write-Host "  Linux:   ../dist/ubuntu-arm64/na --help"
+        Write-Host "  Windows: $DistPath/windows-arm64/na.exe --help"
+        Write-Host "  macOS:   $DistPath/macos-arm64/na --help"
+        Write-Host "  Linux:   $DistPath/ubuntu-arm64/na --help"
         Write-Host ""
         Write-Host "  Or use the consolidated directory (if available):"
-        Write-Host "  ../dist/all-platform-executables-$downloadedVersion/published-executables-<platform>-<arch>-$downloadedVersion/na[.exe]"
+        Write-Host "  $DistPath/all-platform-executables-$downloadedVersion/published-executables-<platform>-<arch>-$downloadedVersion/na[.exe]"
     } else {
-        Write-Host "  Windows: ../dist/windows-x64/na.exe --help"
-        Write-Host "  macOS:   ../dist/macos-x64/na --help"
-        Write-Host "  Linux:   ../dist/ubuntu-x64/na --help"
+        Write-Host "  Windows: $DistPath/windows-x64/na.exe --help"
+        Write-Host "  macOS:   $DistPath/macos-x64/na --help"
+        Write-Host "  Linux:   $DistPath/ubuntu-x64/na --help"
         Write-Host ""
         Write-Host "  ARM64 variants:"
-        Write-Host "  Windows: ../dist/windows-arm64/na.exe --help"
-        Write-Host "  macOS:   ../dist/macos-arm64/na --help"
-        Write-Host "  Linux:   ../dist/ubuntu-arm64/na --help"
+        Write-Host "  Windows: $DistPath/windows-arm64/na.exe --help"
+        Write-Host "  macOS:   $DistPath/macos-arm64/na --help"
+        Write-Host "  Linux:   $DistPath/ubuntu-arm64/na --help"
         Write-Host ""
         Write-Host "  Or use the consolidated directory (if available):"
-        Write-Host "  ../dist/all-platform-executables-<version>/published-executables-<platform>-<arch>-<version>/na[.exe]"
+        Write-Host "  $DistPath/all-platform-executables-<version>/published-executables-<platform>-<arch>-<version>/na[.exe]"
     }
     
     # Show specific command for current platform if auto-detected
@@ -426,7 +427,7 @@ if ($downloadedAny) {
         
         Write-Host ""
         Write-Host "Quick start for your platform (auto-detected):" -ForegroundColor Green
-        Write-Host "  ../dist/$standardizedPlatform-$Architecture/na$extension --help"
+        Write-Host "  $DistPath/$standardizedPlatform-$Architecture/na$extension --help"
     }
 } else {
     Write-Host "No artifacts were downloaded."
