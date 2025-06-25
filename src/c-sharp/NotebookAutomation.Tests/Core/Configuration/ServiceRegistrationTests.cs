@@ -2,11 +2,17 @@
 namespace NotebookAutomation.Tests.Core.Configuration;
 
 /// <summary>
-/// Unit tests for the ServiceRegistration class.
+/// Unit tests for the <c>ServiceRegistration</c> class.
+/// <para>
+/// These tests verify that core services are registered correctly in the dependency injection container and that null argument handling is robust.
+/// </para>
 /// </summary>
 [TestClass]
 public class ServiceRegistrationTests
 {
+    /// <summary>
+    /// Verifies that <c>AddNotebookAutomationServices</c> registers all required core services and they are resolvable from the service provider.
+    /// </summary>
     [TestMethod]
     public void AddNotebookAutomationServices_RegistersCoreServices()
     {
@@ -34,6 +40,11 @@ public class ServiceRegistrationTests
         var aiSummarizer = provider.GetService<IAISummarizer>();
         Assert.IsNotNull(aiSummarizer, "IAISummarizer should be registered and resolvable");
     }
+
+
+    /// <summary>
+    /// Verifies that <c>AddNotebookAutomationServices</c> throws <see cref="ArgumentNullException"/> when passed null arguments.
+    /// </summary>
     [TestMethod]
     public void AddNotebookAutomationServices_ThrowsOnNullArguments()
     {

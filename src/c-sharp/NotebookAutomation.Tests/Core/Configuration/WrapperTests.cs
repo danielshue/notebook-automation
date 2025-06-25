@@ -88,9 +88,11 @@ public class FileSystemWrapperTests
 
         // Assert
         Assert.IsFalse(result);
-    }    /// <summary>
-         /// Tests that FileSystemWrapper basic operations work correctly.
-         /// </summary>
+    }
+
+    /// <summary>
+    /// Tests that FileSystemWrapper basic operations work correctly.
+    /// Verifies that <c>FileSystemWrapper</c> basic file and directory operations work as expected.
     [TestMethod]
     public void FileSystemWrapper_BasicOperations_WorkCorrectly()
     {
@@ -186,13 +188,16 @@ public class FileSystemWrapperTests
 }
 
 /// <summary>
-/// Unit tests for the EnvironmentWrapper class.
+/// Provides unit tests for the <see cref="EnvironmentWrapper"/> class, verifying environment variable access and environment detection logic.
 /// </summary>
 [TestClass]
 public class EnvironmentWrapperTests
 {
     private EnvironmentWrapper _environmentWrapper = null!;
 
+    /// <summary>
+    /// Initializes the test environment for <see cref="EnvironmentWrapper"/> tests.
+    /// </summary>
     [TestInitialize]
     public void Setup()
     {
@@ -200,7 +205,7 @@ public class EnvironmentWrapperTests
     }
 
     /// <summary>
-    /// Tests that GetEnvironmentVariable returns the correct value for an existing environment variable.
+    /// Verifies that <see cref="EnvironmentWrapper.GetEnvironmentVariable(string)"/> returns the correct value for an existing environment variable.
     /// </summary>
     [TestMethod]
     public void GetEnvironmentVariable_ExistingVariable_ReturnsValue()
@@ -225,7 +230,7 @@ public class EnvironmentWrapperTests
     }
 
     /// <summary>
-    /// Tests that GetEnvironmentVariable returns null for a non-existing environment variable.
+    /// Verifies that <see cref="EnvironmentWrapper.GetEnvironmentVariable(string)"/> returns <c>null</c> for a non-existing environment variable.
     /// </summary>
     [TestMethod]
     public void GetEnvironmentVariable_NonExistingVariable_ReturnsNull()
@@ -239,7 +244,8 @@ public class EnvironmentWrapperTests
         // Assert
         Assert.IsNull(result);
     }    /// <summary>
-         /// Tests that IsDevelopment returns a boolean value.
+         /// <summary>
+         /// Verifies that <see cref="EnvironmentWrapper.IsDevelopment()"/> returns a boolean value.
          /// </summary>
     [TestMethod]
     public void IsDevelopment_ReturnsBooleanValue()
@@ -251,7 +257,8 @@ public class EnvironmentWrapperTests
         Assert.IsNotNull(result);
         Assert.IsTrue(result == true || result == false);
     }    /// <summary>
-         /// Tests that IsDevelopment correctly identifies development environment.
+         /// <summary>
+         /// Verifies that <see cref="EnvironmentWrapper.IsDevelopment()"/> correctly identifies the development environment based on the ASPNETCORE_ENVIRONMENT variable.
          /// </summary>
     [TestMethod]
     public void IsDevelopment_ChecksEnvironmentVariable()
@@ -270,7 +277,8 @@ public class EnvironmentWrapperTests
             Assert.IsFalse(result);
         }
     }    /// <summary>
-         /// Tests that IsDevelopment returns true when ASPNETCORE_ENVIRONMENT is set to Development.
+         /// <summary>
+         /// Verifies that <see cref="EnvironmentWrapper.IsDevelopment()"/> returns <c>true</c> when ASPNETCORE_ENVIRONMENT is set to "Development".
          /// </summary>
     [TestMethod]
     public void IsDevelopment_WithASPNETCOREEnvironmentDevelopment_ReturnsTrue()
@@ -292,7 +300,8 @@ public class EnvironmentWrapperTests
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", originalValue);
         }
     }    /// <summary>
-         /// Tests that environment variables can be retrieved correctly.
+         /// <summary>
+         /// Verifies that environment variables can be retrieved correctly using <see cref="EnvironmentWrapper.GetEnvironmentVariable(string)"/>.
          /// </summary>
     [TestMethod]
     public void GetEnvironmentVariable_ReturnsCorrectValue()

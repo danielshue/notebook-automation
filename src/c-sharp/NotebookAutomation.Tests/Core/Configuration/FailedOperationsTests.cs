@@ -2,11 +2,17 @@
 namespace NotebookAutomation.Tests.Core.Configuration;
 
 /// <summary>
-/// Unit tests for the FailedOperations static class.
+/// Unit tests for the <c>FailedOperations</c> static class.
+/// <para>
+/// These tests verify that failed file operations are logged correctly and that null logger arguments are handled as expected.
+/// </para>
 /// </summary>
 [TestClass]
 public class FailedOperationsTests
 {
+    /// <summary>
+    /// Verifies that <c>RecordFailedFileOperation</c> logs an error with exception details for a failed file operation.
+    /// </summary>
     [TestMethod]
     public void RecordFailedFileOperation_WithException_LogsError()
     {
@@ -25,6 +31,9 @@ public class FailedOperationsTests
             Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that <c>RecordFailedFileOperation</c> logs an error with a custom error message for a failed file operation.
+    /// </summary>
     [TestMethod]
     public void RecordFailedFileOperation_WithCustomError_LogsError()
     {
@@ -43,6 +52,9 @@ public class FailedOperationsTests
             Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that <c>RecordFailedFileOperation</c> throws <see cref="ArgumentNullException"/> when the logger is null.
+    /// </summary>
     [TestMethod]
     public void RecordFailedFileOperation_NullLogger_Throws()
     {
