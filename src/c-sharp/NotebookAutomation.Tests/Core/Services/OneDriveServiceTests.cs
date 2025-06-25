@@ -2,11 +2,14 @@
 namespace NotebookAutomation.Tests.Core.Services;
 
 /// <summary>
-/// Unit tests for the OneDriveService class.
+/// Unit tests for the <see cref="OneDriveService"/> class.
 /// </summary>
 [TestClass]
 public class OneDriveServiceTests
 {
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.AuthenticateAsync"/> uses the injected MSAL app and does not launch a browser.
+    /// </summary>
     [TestMethod]
     [Ignore("Requires MSAL browser interaction or deeper refactor; skip in CI.")]
     public async Task AuthenticateAsync_UsesInjectedMsalApp_DoesNotLaunchBrowser()
@@ -42,6 +45,9 @@ public class OneDriveServiceTests
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.AtLeastOnce);
     }
 
+    /// <summary>
+    /// Tests that the constructor of <see cref="OneDriveService"/> throws <see cref="ArgumentNullException"/> for null arguments.
+    /// </summary>
     [TestMethod]
     public void Constructor_ThrowsOnNullArguments()
     {
@@ -57,6 +63,9 @@ public class OneDriveServiceTests
             new OneDriveService(logger, "clientId", "tenantId", null!));
     }
 
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.SetForceRefresh"/> updates the state and logs the changes.
+    /// </summary>
     [TestMethod]
     [Ignore("Requires MSAL browser interaction or deeper refactor; skip in CI.")]
     public void SetForceRefresh_UpdatesStateAndLogs()
@@ -73,6 +82,9 @@ public class OneDriveServiceTests
             It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Exactly(2));
     }
 
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.ConfigureVaultRoots"/> sets trimmed values without exceptions.
+    /// </summary>
     [TestMethod]
     public void ConfigureVaultRoots_SetsTrimmedValues()
     {
@@ -83,6 +95,9 @@ public class OneDriveServiceTests
         // No exception means success; further validation would require reflection or exposing properties for test
     }
 
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.MapLocalToOneDrivePath"/> throws <see cref="InvalidOperationException"/> if not configured.
+    /// </summary>
     [TestMethod]
     public void MapLocalToOneDrivePath_ThrowsIfNotConfigured()
     {
@@ -92,6 +107,9 @@ public class OneDriveServiceTests
             service.MapLocalToOneDrivePath("C:/vault/file.txt"));
     }
 
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.MapLocalToOneDrivePath"/> throws <see cref="ArgumentException"/> if the path is not under the root.
+    /// </summary>
     [TestMethod]
     public void MapLocalToOneDrivePath_ThrowsIfPathNotUnderRoot()
     {
@@ -102,6 +120,9 @@ public class OneDriveServiceTests
             service.MapLocalToOneDrivePath("C:/other/file.txt"));
     }
 
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.MapLocalToOneDrivePath"/> returns the expected OneDrive path.
+    /// </summary>
     [TestMethod]
     public void MapLocalToOneDrivePath_ReturnsExpectedPath()
     {
@@ -114,6 +135,9 @@ public class OneDriveServiceTests
         Assert.AreEqual(expected, result.Replace("\\", "/"));
     }
 
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.MapOneDriveToLocalPath"/> throws <see cref="InvalidOperationException"/> if not configured.
+    /// </summary>
     [TestMethod]
     public void MapOneDriveToLocalPath_ThrowsIfNotConfigured()
     {
@@ -123,6 +147,9 @@ public class OneDriveServiceTests
             service.MapOneDriveToLocalPath("onedrive/root/file.txt"));
     }
 
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.MapOneDriveToLocalPath"/> throws <see cref="ArgumentException"/> if the path is not under the root.
+    /// </summary>
     [TestMethod]
     public void MapOneDriveToLocalPath_ThrowsIfPathNotUnderRoot()
     {
@@ -133,6 +160,9 @@ public class OneDriveServiceTests
             service.MapOneDriveToLocalPath("otherroot/file.txt"));
     }
 
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.MapOneDriveToLocalPath"/> returns the expected local path.
+    /// </summary>
     [TestMethod]
     public void MapOneDriveToLocalPath_ReturnsExpectedPath()
     {
@@ -144,6 +174,9 @@ public class OneDriveServiceTests
         Assert.AreEqual(expected, result);
     }
 
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.SetCliOptions"/> sets options or defaults without exceptions.
+    /// </summary>
     [TestMethod]
     public void SetCliOptions_SetsOptionsOrDefaults()
     {
@@ -151,5 +184,40 @@ public class OneDriveServiceTests
         OneDriveService service = new(logger, "clientId", "tenantId", ["scope"]);
         service.SetCliOptions(null!); // Should not throw
         service.SetCliOptions(new OneDriveCliOptions()); // Should not throw
+    }
+
+    /// <summary>
+    /// Tests that <see cref="OneDriveService.RefreshAuthenticationAsync"/> refreshes the token successfully.
+    /// </summary>
+    [TestMethod]
+    [Ignore("Requires MSAL browser interaction or deeper refactor; skip in CI.")]
+    public async Task RefreshAuthenticationAsync_RefreshesTokenSuccessfully()
+    {
+        // Arrange
+        Mock<ILogger<OneDriveService>> logger = new();
+        Mock<Microsoft.Identity.Client.IPublicClientApplication> msalMock = new();
+        Mock<Microsoft.Identity.Client.AcquireTokenInteractiveParameterBuilder> interactiveBuilderMock = new(null!, null!);
+
+        interactiveBuilderMock.Setup(b => b.WithPrompt(It.IsAny<Microsoft.Identity.Client.Prompt>())).Returns(interactiveBuilderMock.Object);
+        Mock<Microsoft.Identity.Client.AuthenticationResult> fakeResult = new(
+            "token", false, "user", DateTimeOffset.Now, DateTimeOffset.Now.AddHours(1),
+            string.Empty, null!, null!, "Bearer", null!, null!, null!, null!, null!, null!);
+
+        interactiveBuilderMock.Setup(b => b.ExecuteAsync(It.IsAny<CancellationToken>())).ReturnsAsync(fakeResult.Object);
+        msalMock.Setup(m => m.AcquireTokenInteractive(It.IsAny<string[]>())).Returns(interactiveBuilderMock.Object);
+
+        OneDriveService service = new(logger.Object, "clientId", "tenantId", ["scope"], msalMock.Object);
+
+        // Act
+        await service.RefreshAuthenticationAsync().ConfigureAwait(false);
+
+        // Assert
+        logger.Verify(
+            l => l.Log(
+                LogLevel.Information,
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("OneDrive authentication refreshed successfully")),
+                null,
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
     }
 }

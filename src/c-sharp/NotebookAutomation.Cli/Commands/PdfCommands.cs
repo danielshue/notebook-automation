@@ -313,7 +313,7 @@ internal class PdfCommands
             }
 
             // Validate AI config before proceeding
-            if (appConfig == null || !ConfigValidation.RequireOpenAi(appConfig))
+            if (appConfig == null || !await ConfigValidation.RequireOpenAi(appConfig))
             {
                 logger.LogError("AI configuration is missing or incomplete. Exiting.");
                 return;

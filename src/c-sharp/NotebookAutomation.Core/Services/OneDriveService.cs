@@ -1081,6 +1081,59 @@ public class OneDriveService : IOneDriveService
         }
     }
 
+    /// <summary>
+    /// Checks if the current OneDrive authentication token is valid.
+    /// </summary>
+    /// <returns>True if the token is valid, false otherwise.</returns>
+    public async Task<bool> IsTokenValidAsync()
+    {
+        try
+        {
+            // Ensure MSAL app is initialized
+            if (msalApp == null)
+            {
+                msalApp = PublicClientApplicationBuilder
+                    .Create(clientId)
+                    .WithTenantId(tenantId)
+                    .WithRedirectUri("http://localhost")
+                    .Build();
+
+                await ConfigureTokenCacheAsync().ConfigureAwait(false);
+            }
+
+            var accounts = await msalApp.GetAccountsAsync().ConfigureAwait(false);
+            if (!accounts.Any())
+            {
+                logger.LogWarning("No accounts found in token cache.");
+                return false;
+            }
+
+            var account = accounts.FirstOrDefault();
+            if (account == null)
+            {
+                logger.LogWarning("No valid account found.");
+                return false;
+            }
+
+            try
+            {
+                var authResult = await msalApp.AcquireTokenSilent(scopes, account).ExecuteAsync().ConfigureAwait(false);
+                logger.LogInformation("Token is valid for account: {Account}", account.Username);
+                return true;
+            }
+            catch (MsalUiRequiredException)
+            {
+                logger.LogWarning("Token is invalid or requires user interaction.");
+                return false;
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error checking token validity.");
+            return false;
+        }
+    }
+
     // --- Path Mapping and CLI Option Support (Implemented) ---
 
     /// <summary>

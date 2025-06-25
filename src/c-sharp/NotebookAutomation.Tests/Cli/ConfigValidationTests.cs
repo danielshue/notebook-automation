@@ -8,7 +8,7 @@ namespace NotebookAutomation.Tests.Cli;
 public class ConfigValidationTests
 {
     [TestMethod]
-    public void RequireOpenAi_ReturnsFalse_WhenApiKeyMissing()
+    public async Task RequireOpenAi_ReturnsFalse_WhenApiKeyMissing()
     {
         // Arrange
         var original = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
@@ -22,7 +22,7 @@ public class ConfigValidationTests
         };
 
         // Act
-        var result = ConfigValidation.RequireOpenAi(config);
+        var result = await ConfigValidation.RequireOpenAi(config);
 
         // Assert
         Assert.IsFalse(result);
@@ -32,7 +32,7 @@ public class ConfigValidationTests
     }
 
     [TestMethod]
-    public void RequireOpenAi_ReturnsTrue_WhenApiKeyPresent()
+    public async Task RequireOpenAi_ReturnsTrue_WhenApiKeyPresent()
     {
         // Arrange
         var original = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
@@ -46,7 +46,7 @@ public class ConfigValidationTests
         };
 
         // Act
-        var result = ConfigValidation.RequireOpenAi(config);
+        var result = await ConfigValidation.RequireOpenAi(config);
 
         // Assert
         Assert.IsTrue(result);
@@ -82,25 +82,25 @@ public class ConfigValidationTests
         Assert.AreEqual(5, missing.Count);
     }
     [TestMethod]
-    public void RequireMicrosoftGraph_ReturnsFalse_WhenMicrosoftGraphIsNull()
+    public async Task RequireMicrosoftGraph_ReturnsFalse_WhenMicrosoftGraphIsNull()
     {
         var config = new AppConfig { MicrosoftGraph = null! };
-        var result = ConfigValidation.RequireMicrosoftGraph(config);
+        var result = await ConfigValidation.RequireMicrosoftGraph(config);
         Assert.IsFalse(result);
     }
     [TestMethod]
-    public void RequireMicrosoftGraph_ReturnsFalse_WhenScopesIsNullOrEmpty()
+    public async Task RequireMicrosoftGraph_ReturnsFalse_WhenScopesIsNullOrEmpty()
     {
         var config1 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = null! } };
         var config2 = new AppConfig { MicrosoftGraph = new MicrosoftGraphConfig { ClientId = "id", ApiEndpoint = "ep", Authority = "auth", Scopes = [] } };
-        Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config1));
-        Assert.IsFalse(ConfigValidation.RequireMicrosoftGraph(config2));
+        Assert.IsFalse(await ConfigValidation.RequireMicrosoftGraph(config1));
+        Assert.IsFalse(await ConfigValidation.RequireMicrosoftGraph(config2));
     }
     [TestMethod]
-    public void RequireOpenAi_ReturnsFalse_WhenAiServiceIsNull()
+    public async Task RequireOpenAi_ReturnsFalse_WhenAiServiceIsNull()
     {
         var config = new AppConfig { AiService = null! };
-        var result = ConfigValidation.RequireOpenAi(config);
+        var result = await ConfigValidation.RequireOpenAi(config);
         Assert.IsFalse(result);
     }
 
@@ -147,7 +147,7 @@ public class ConfigValidationTests
     }
 
     [TestMethod]
-    public void RequireMicrosoftGraph_ReturnsFalse_WhenMissingValues()
+    public async Task RequireMicrosoftGraph_ReturnsFalse_WhenMissingValues()
     {
         var config = new AppConfig
         {
@@ -159,12 +159,12 @@ public class ConfigValidationTests
                 Scopes = [],
             },
         };
-        var result = ConfigValidation.RequireMicrosoftGraph(config);
+        var result = await ConfigValidation.RequireMicrosoftGraph(config);
         Assert.IsFalse(result);
     }
 
     [TestMethod]
-    public void RequireMicrosoftGraph_ReturnsTrue_WhenAllValuesPresent()
+    public async Task RequireMicrosoftGraph_ReturnsTrue_WhenAllValuesPresent()
     {
         var config = new AppConfig
         {
@@ -176,7 +176,7 @@ public class ConfigValidationTests
                 Scopes = ["scope1"],
             },
         };
-        var result = ConfigValidation.RequireMicrosoftGraph(config);
+        var result = await ConfigValidation.RequireMicrosoftGraph(config);
         Assert.IsTrue(result);
     }
 }
