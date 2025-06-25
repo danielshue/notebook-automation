@@ -4,31 +4,51 @@
 namespace NotebookAutomation.Cli.Commands;
 
 /// <summary>
-/// Provides CLI commands for processing video files and generating markdown notes.
+/// Provides CLI commands for processing video files and generating markdown notes within the Notebook Automation CLI.
 /// </summary>
 /// <remarks>
 /// <para>
-/// This class registers the 'video-notes' command for processing video files to extract
-/// metadata, generate markdown notes with appropriate frontmatter, and optionally
-/// include references to the original video file. It supports:
+/// The <see cref="VideoCommands"/> class is responsible for registering and handling the <c>video-notes</c> command,
+/// which enables users to process video files or directories, extract metadata, and generate markdown notes with
+/// appropriate frontmatter and metadata. The command supports advanced features such as:
+/// </para>
 /// <list type="bullet">
-/// <item><description>Video file discovery and filtering</description></item>
-/// <item><description>Metadata extraction (e.g., duration, resolution, codec)</description></item>
-/// <item><description>Markdown note generation with YAML frontmatter</description></item>
-/// <item><description>Integration with the Core library for video processing</description></item>
+///   <item>Video file discovery and filtering (by extension, directory, or file)</item>
+///   <item>Metadata extraction (duration, resolution, codec, etc.)</item>
+///   <item>Markdown note generation with YAML frontmatter and references to the original video</item>
+///   <item>Integration with the Core library for video processing and batch operations</item>
+///   <item>OneDrive integration for resource path resolution and share link creation</item>
+///   <item>Customizable output directories and vault root overrides</item>
+///   <item>Retrying failed files, force overwrite, and dry-run simulation</item>
+///   <item>Comprehensive logging, progress reporting, and AI-powered summary generation</item>
 /// </list>
+/// <para>
+/// The class leverages dependency injection for configuration, logging, and service resolution, and ensures
+/// robust cross-platform path handling by combining OneDrive root and resource base paths as needed.
 /// </para>
 /// <para>
-/// The video processing functionality utilizes the <see cref="VideoNoteProcessingEntrypoint"/>
-/// from the Core library to handle the actual processing of video files. The supported
-/// video formats are defined in the application configuration and typically include
-/// MP4, MOV, AVI, MKV, WEBM, and others.
+/// <b>Usage Example:</b>
+/// <code language="shell">
+/// na.exe video-notes --input "C:\Users\me\Videos" --overwrite-output-dir "C:\Notes"
+/// </code>
+/// </para>
+/// <para>
+/// <b>Example: Registering the command</b>
+/// <code language="csharp">
+/// var videoCommands = new VideoCommands(logger);
+/// videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+/// </code>
+/// </para>
+/// <para>
+/// For details on path resolution and configuration, see <see cref="PathUtils.ResolveInputPath(string, string?, string?)"/>.
 /// </para>
 /// </remarks>
 /// <example>
 /// <code>
 /// var rootCommand = new RootCommand();
-/// VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+/// var logger = new LoggerFactory().CreateLogger<VideoCommands>();
+/// var videoCommands = new VideoCommands(logger);
+/// videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
 /// rootCommand.Invoke("video-notes --input videos --output notes");
 /// </code>
 /// </example>
@@ -36,31 +56,69 @@ internal class VideoCommands
 {
     private readonly ILogger<VideoCommands> logger;
 
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VideoCommands"/> class.
+    /// </summary>
+    /// <param name="logger">The logger instance for diagnostic and operational logging.</param>
+    /// <remarks>
+    /// The constructor sets up the logger and logs initialization for debugging purposes.
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger"/> is <c>null</c>.</exception>
     public VideoCommands(ILogger<VideoCommands> logger)
     {
-        this.logger = logger;
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.logger.LogDebug("Video command initialized");
     }
 
     /// <summary>
-    /// Registers the 'video-notes' command with the root command.
+    /// Registers the <c>video-notes</c> command with the specified root command, enabling CLI video processing.
     /// </summary>
-    /// <param name="rootCommand">The root command to add video processing commands to.</param>
-    /// <param name="configOption">The global config file option.</param>
-    /// <param name="debugOption">The global debug option.</param>
-    /// <param name="verboseOption">The global verbose output option.</param>
+    /// <param name="rootCommand">The root command to which the <c>video-notes</c> command will be added.</param>
+    /// <param name="configOption">The global config file option for specifying the configuration file path.</param>
+    /// <param name="debugOption">The global debug option to enable debug logging.</param>
+    /// <param name="verboseOption">The global verbose output option for detailed output.</param>
     /// <param name="dryRunOption">The global dry run option to simulate actions without making changes.</param>
     /// <remarks>
     /// <para>
-    /// This method adds the 'video-notes' command to the root command, enabling users to process
-    /// video files and generate markdown notes. It defines options for input, output, and other
-    /// global settings.
+    /// This method adds the <c>video-notes</c> command to the root command, allowing users to process video files or directories,
+    /// extract metadata, and generate markdown notes. It defines options for input, output, vault root overrides, OneDrive integration,
+    /// summary generation, retrying failed files, force overwrite, API timeout, and more. The method configures dependency injection,
+    /// resolves paths using <see cref="PathUtils.ResolveInputPath(string, string?, string?)"/>, and sets up the processing pipeline.
+    /// </para>
+    /// <para>
+    /// The command handler performs the following steps:
+    /// <list type="number">
+    ///   <item>Validates and resolves input and output paths, including OneDrive and resource base paths.</item>
+    ///   <item>Initializes dependency injection and retrieves required services.</item>
+    ///   <item>Configures OneDrive vault roots and handles authentication refresh if requested.</item>
+    ///   <item>Outputs configuration and environment details in debug/verbose mode.</item>
+    ///   <item>Validates AI/OpenAI configuration and retrieves API keys.</item>
+    ///   <item>Processes video files or directories, reporting progress and handling errors.</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// <b>Example CLI Usage:</b>
+    /// <code language="shell">
+    /// na.exe video-notes --input "C:\Users\me\Videos" --overwrite-output-dir "C:\Notes" --no-summary
+    /// </code>
+    /// </para>
+    /// <para>
+    /// <b>Example C# Usage:</b>
+    /// <code language="csharp">
+    /// var videoCommands = new VideoCommands(logger);
+    /// videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+    /// </code>
     /// </para>
     /// </remarks>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="rootCommand"/> is <c>null</c>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if dependency injection setup fails or required services are missing.</exception>
     /// <example>
     /// <code>
     /// var rootCommand = new RootCommand();
-    /// VideoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+    /// var logger = new LoggerFactory().CreateLogger<VideoCommands>();
+    /// var videoCommands = new VideoCommands(logger);
+    /// videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
     /// rootCommand.Invoke("video-notes --input videos --output notes");
     /// </code>
     /// </example>
@@ -204,7 +262,11 @@ internal class VideoCommands
             }
 
             // Resolve input path - if it's relative, prepend with OneDrive root
-            string resolvedInput = PathUtils.ResolveInputPath(input, effectiveResourcesRoot);
+            string resolvedInput = PathUtils.ResolveInputPath(
+                input,
+                effectiveResourcesRoot,
+                appConfig?.Paths?.OnedriveResourcesBasepath
+            );
             logger.LogDebug($"Input path resolution: '{input}' -> '{resolvedInput}' (OneDrive root: {effectiveResourcesRoot ?? "(none)"})");
 
             // Build the full local resources path for path calculations
