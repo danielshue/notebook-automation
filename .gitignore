@@ -233,3 +233,4 @@ src/tests/fixtures/frontmatter/subdir/subdir.md
 CoverageReport/index.html
 CoverageReport/NotebookAutomation.Core_AIServiceConfig.html
 CoverageReport/NotebookAutomation.Core_AISummarizer.html
+packages-microsoft-prod.deb
