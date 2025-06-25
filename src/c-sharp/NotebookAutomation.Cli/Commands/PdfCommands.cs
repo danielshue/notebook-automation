@@ -4,12 +4,42 @@
 namespace NotebookAutomation.Cli.Commands;
 
 /// <summary>
-/// Provides CLI commands for processing PDF files and converting them to markdown notes.
+/// Provides CLI commands for processing PDF files and converting them to markdown notes within the Notebook Automation CLI.
 /// </summary>
 /// <remarks>
-/// This class registers the 'pdf-notes' command for processing PDF files to extract
-/// text content, generate markdown notes with appropriate frontmatter, and optionally
-/// include AI-generated summaries and OneDrive integration.
+/// <para>
+/// The <see cref="PdfCommands"/> class is responsible for registering and handling the <c>pdf-notes</c> command,
+/// which enables users to process PDF files or directories of PDFs, extract their text content, and generate
+/// markdown notes with appropriate frontmatter and metadata. The command supports advanced features such as:
+/// </para>
+/// <list type="bullet">
+///   <item>AI-generated summaries using configurable providers (OpenAI, Azure, Foundry, etc.)</item>
+///   <item>OneDrive integration for resource path resolution and share link creation</item>
+///   <item>Customizable output directories and vault root overrides</item>
+///   <item>Image extraction from PDFs</item>
+///   <item>Retrying failed files, force overwrite, and dry-run simulation</item>
+///   <item>Comprehensive logging and progress reporting</item>
+/// </list>
+/// <para>
+/// The class leverages dependency injection for configuration, logging, and service resolution, and ensures
+/// robust cross-platform path handling by combining OneDrive root and resource base paths as needed.
+/// </para>
+/// <para>
+/// <b>Usage Example:</b>
+/// <code language="shell">
+/// na.exe pdf-notes --input "C:\Users\me\OneDrive\Resources\MyFile.pdf" --overwrite-output-dir "C:\Notes"
+/// </code>
+/// </para>
+/// <para>
+/// <b>Example: Registering the command</b>
+/// <code language="csharp">
+/// var pdfCommands = new PdfCommands(logger);
+/// pdfCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+/// </code>
+/// </para>
+/// <para>
+/// For details on path resolution and configuration, see <see cref="PathUtils.ResolveInputPath(string, string?, string?)"/>.
+/// </para>
 /// </remarks>
 internal class PdfCommands
 {
@@ -189,7 +219,11 @@ internal class PdfCommands
             }
 
             // Resolve input path - if it's relative, prepend with OneDrive root
-            string resolvedInput = PathUtils.ResolveInputPath(input, effectiveResourcesRoot);
+            string resolvedInput = PathUtils.ResolveInputPath(
+                input,
+                effectiveResourcesRoot,
+                appConfig?.Paths?.OnedriveResourcesBasepath
+            );
             logger.LogDebug($"Input path resolution: '{input}' -> '{resolvedInput}' (OneDrive root: {effectiveResourcesRoot ?? "(none)"})");
 
             // Build the full local resources path for path calculations

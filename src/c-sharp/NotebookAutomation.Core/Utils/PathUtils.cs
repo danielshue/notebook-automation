@@ -316,22 +316,22 @@ public static class PathUtils
     /// </summary>
     /// <param name="inputPath">The input path that may be relative or absolute.</param>
     /// <param name="oneDriveRoot">The OneDrive root directory to prepend for relative paths.</param>
-    /// <returns>The resolved absolute path.</returns>
+    /// <returns>The resolved absolute path, normalized for the current platform.</returns>
     /// <remarks>
     /// <para>
-    /// This method handles path resolution for CLI commands that accept both relative and absolute paths.
-    /// If the input path is already absolute (rooted), it returns the path unchanged.
-    /// If the input path is relative and an OneDrive root is provided, it combines them to create
-    /// an absolute path.
+    /// This method resolves a user-supplied path for CLI commands, supporting both absolute and relative paths.
+    /// If <paramref name="inputPath"/> is already absolute, it is normalized and returned unchanged.
+    /// If <paramref name="inputPath"/> is relative and <paramref name="oneDriveRoot"/> is provided, the two are combined.
     /// </para>
     /// <para>
-    /// This is particularly useful for video-notes and pdf-notes commands where users may want to
-    /// specify relative paths from their OneDrive root instead of full absolute paths.
+    /// This is particularly useful for video-notes and pdf-notes commands where users may want to specify
+    /// relative paths from their OneDrive root instead of full absolute paths. The result is always normalized
+    /// to use the platform's directory separator.
     /// </para>
     /// </remarks>
     /// <example>
     /// <code>
-    /// // Absolute path - returned unchanged
+    /// // Absolute path - returned normalized
     /// string resolved1 = PathUtils.ResolveInputPath(@"C:\Users\user\OneDrive\folder", null);
     /// // Result: @"C:\Users\user\OneDrive\folder"
     ///
@@ -339,28 +339,86 @@ public static class PathUtils
     /// string resolved2 = PathUtils.ResolveInputPath("Education/MBA", @"C:\Users\user\OneDrive");
     /// // Result: @"C:\Users\user\OneDrive\Education\MBA"
     ///
-    /// // Relative path without OneDrive root - returned unchanged
+    /// // Relative path without OneDrive root - returned normalized
     /// string resolved3 = PathUtils.ResolveInputPath("folder", null);
     /// // Result: "folder"
     /// </code>
     /// </example>
     public static string ResolveInputPath(string inputPath, string? oneDriveRoot)
     {
+        return ResolveInputPath(inputPath, oneDriveRoot, null);
+    }
+
+    /// <summary>
+    /// Resolves an input path by prepending OneDrive root and resources basepath if the path is relative.
+    /// </summary>
+    /// <param name="inputPath">The input path that may be relative or absolute.</param>
+    /// <param name="oneDriveRoot">The OneDrive root directory to prepend for relative paths.</param>
+    /// <param name="oneDriveResourcesBasepath">The OneDrive resources basepath to prepend after the root. May be null or empty if not nested.</param>
+    /// <returns>The resolved absolute path, normalized for the current platform.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method resolves a user-supplied path for CLI commands, supporting both absolute and relative paths.
+    /// If <paramref name="inputPath"/> is already absolute, it is normalized and returned unchanged.
+    /// If <paramref name="inputPath"/> is relative and <paramref name="oneDriveRoot"/> is provided, the method combines:
+    /// <list type="number">
+    ///   <item><description><paramref name="oneDriveRoot"/></description></item>
+    ///   <item><description><paramref name="oneDriveResourcesBasepath"/> (if not null/empty/whitespace)</description></item>
+    ///   <item><description><paramref name="inputPath"/></description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// Leading slashes or directory separators in <paramref name="oneDriveResourcesBasepath"/> are always trimmed at runtime to prevent <c>Path.Combine</c> from treating it as rooted.
+    /// If <paramref name="oneDriveResourcesBasepath"/> is null, empty, or whitespace, it is omitted from the combined path.
+    /// </para>
+    /// <para>
+    /// The result is always normalized to use the platform's directory separator. This ensures robust cross-platform behavior.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Windows example:
+    /// string resolved = PathUtils.ResolveInputPath("Course/Module/Lesson.mp4", @"C:\\Users\\user\\OneDrive", "Education/MBA-Resources");
+    /// // Result: @"C:\\Users\\user\\OneDrive\\Education\\MBA-Resources\\Course\\Module\\Lesson.mp4"
+    ///
+    /// // Unix example:
+    /// string resolved = PathUtils.ResolveInputPath("Course/Module/Lesson.mp4", "/home/user/OneDrive", "Education/MBA-Resources");
+    /// // Result: "/home/user/OneDrive/Education/MBA-Resources/Course/Module/Lesson.mp4"
+    ///
+    /// // If basepath is null or empty, only root and input are combined:
+    /// string resolved = PathUtils.ResolveInputPath("file.txt", @"C:\\Users\\user\\OneDrive", null);
+    /// // Result: @"C:\\Users\\user\\OneDrive\\file.txt"
+    ///
+    /// // If root is null or empty, input is normalized and returned:
+    /// string resolved = PathUtils.ResolveInputPath("file.txt", null, "Education/MBA-Resources");
+    /// // Result: "file.txt"
+    /// </code>
+    /// </example>
+    public static string ResolveInputPath(string inputPath, string? oneDriveRoot, string? oneDriveResourcesBasepath)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(inputPath);
 
-        // If already absolute, return as-is
+        // If already absolute, return as-is (works for both Windows and Unix)
         if (Path.IsPathRooted(inputPath))
         {
-            return inputPath;
+            return NormalizePath(inputPath);
         }
 
         // If no OneDrive root configured, return relative path as-is
         if (string.IsNullOrWhiteSpace(oneDriveRoot))
         {
-            return inputPath;
+            return NormalizePath(inputPath);
         }
 
-        // Combine OneDrive root with relative path and normalize
-        return NormalizePath(Path.Combine(oneDriveRoot, inputPath));
+        // Compose the path segments, omitting null/empty segments
+        string resolvedPath = oneDriveRoot;
+        if (!string.IsNullOrWhiteSpace(oneDriveResourcesBasepath))
+        {
+            // Always trim leading directory separators to avoid Path.Combine treating as rooted
+            var basePath = oneDriveResourcesBasepath.TrimStart(Path.DirectorySeparatorChar, '/', '\\');
+            resolvedPath = Path.Combine(resolvedPath, basePath);
+        }
+        resolvedPath = Path.Combine(resolvedPath, inputPath);
+        return NormalizePath(resolvedPath);
     }
 }

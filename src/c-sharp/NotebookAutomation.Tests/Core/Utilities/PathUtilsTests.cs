@@ -4,11 +4,32 @@ using System.Runtime.InteropServices;
 namespace NotebookAutomation.Tests.Core.Utils;
 
 /// <summary>
-/// Unit tests for the <see cref="PathUtils"/> class.
+/// Provides unit tests for the <see cref="PathUtils"/> utility class.
 /// </summary>
+/// <remarks>
+/// <para>
+/// This test class covers all major path manipulation and resolution methods in <see cref="PathUtils"/>,
+/// including normalization, directory creation, relative/absolute path handling, and unique file path generation.
+/// </para>
+/// <para>
+/// Tests are designed to validate correct behavior on both Windows and Unix-like platforms, including:
+/// <list type="bullet">
+///   <item><description>Slash normalization and platform-specific separators</description></item>
+///   <item><description>Combining and resolving paths with and without OneDrive roots and basepaths</description></item>
+///   <item><description>Edge cases for null, empty, and whitespace input</description></item>
+///   <item><description>Exception handling for invalid arguments</description></item>
+/// </list>
+/// </para>
+/// <para>
+/// The tests ensure robust, cross-platform path logic for the Notebook Automation CLI and related tools.
+/// </para>
+/// </remarks>
 [TestClass]
 public class PathUtilsTests
 {
+    /// <summary>
+    /// Verifies that NormalizePath returns an empty string for null or whitespace input.
+    /// </summary>
     [TestMethod]
     public void NormalizePath_ReturnsEmptyString_WhenInputIsNullOrWhitespace()
     {
@@ -16,6 +37,9 @@ public class PathUtilsTests
         Assert.AreEqual(string.Empty, PathUtils.NormalizePath(" "));
     }
 
+    /// <summary>
+    /// Verifies that NormalizePath converts all slashes to the platform-specific separator.
+    /// </summary>
     [TestMethod]
     public void NormalizePath_ConvertsSlashesToPlatformSeparator()
     {
@@ -24,6 +48,9 @@ public class PathUtilsTests
         Assert.AreEqual(expected, PathUtils.NormalizePath(input));
     }
 
+    /// <summary>
+    /// Ensures EnsureDirectoryExists creates the directory if missing and returns the normalized path.
+    /// </summary>
     [TestMethod]
     public void EnsureDirectoryExists_CreatesAndReturnsNormalizedPath()
     {
@@ -43,6 +70,9 @@ public class PathUtilsTests
         }
     }
 
+    /// <summary>
+    /// Verifies that GetPathRelativeToApp returns a path relative to the application base directory.
+    /// </summary>
     [TestMethod]
     public void GetPathRelativeToApp_ReturnsPathRelativeToAppBase()
     {
@@ -51,6 +81,9 @@ public class PathUtilsTests
         StringAssert.EndsWith(result, PathUtils.NormalizePath(rel));
     }
 
+    /// <summary>
+    /// Verifies that GetPathRelativeToDirectory combines and normalizes base and relative paths.
+    /// </summary>
     [TestMethod]
     public void GetPathRelativeToDirectory_ReturnsCombinedNormalizedPath()
     {
@@ -60,6 +93,9 @@ public class PathUtilsTests
         Assert.AreEqual(expected, PathUtils.GetPathRelativeToDirectory(baseDir, rel));
     }
 
+    /// <summary>
+    /// Verifies that GenerateUniqueFilePath returns the original path if the file does not exist.
+    /// </summary>
     [TestMethod]
     public void GenerateUniqueFilePath_ReturnsOriginalIfNotExists()
     {
@@ -77,6 +113,9 @@ public class PathUtilsTests
         }
     }
 
+    /// <summary>
+    /// Verifies that GenerateUniqueFilePath appends a number if the file already exists.
+    /// </summary>
     [TestMethod]
     public void GenerateUniqueFilePath_AppendsNumberIfExists()
     {
@@ -98,6 +137,9 @@ public class PathUtilsTests
         }
     }
 
+    /// <summary>
+    /// Verifies that MakeRelative returns the correct relative path when possible.
+    /// </summary>
     [TestMethod]
     public void MakeRelative_ReturnsRelativePath_WhenPossible()
     {
@@ -107,6 +149,9 @@ public class PathUtilsTests
         Assert.AreEqual(Path.Combine("folder", "file.txt"), rel);
     }
 
+    /// <summary>
+    /// Verifies that MakeRelative returns the full path if it cannot be made relative.
+    /// </summary>
     [TestMethod]
     public void MakeRelative_ReturnsFullPath_WhenNotRelative()
     {
@@ -115,6 +160,9 @@ public class PathUtilsTests
         Assert.AreEqual(fullPath, PathUtils.MakeRelative(baseDir, fullPath));
     }
 
+    /// <summary>
+    /// Verifies that GetCommonBasePath returns the common directory prefix for multiple paths.
+    /// </summary>
     [TestMethod]
     public void GetCommonBasePath_ReturnsCommonPrefix()
     {
@@ -128,6 +176,9 @@ public class PathUtilsTests
         Assert.AreEqual(expected, PathUtils.GetCommonBasePath(paths));
     }
 
+    /// <summary>
+    /// Verifies that GetCommonBasePath returns an empty string when there is no commonality.
+    /// </summary>
     [TestMethod]
     public void GetCommonBasePath_ReturnsEmpty_WhenNoCommonality()
     {
@@ -139,9 +190,15 @@ public class PathUtilsTests
         Assert.AreEqual(string.Empty, PathUtils.GetCommonBasePath(paths));
     }
 
+    /// <summary>
+    /// Verifies that GetCommonBasePath returns an empty string for empty input.
+    /// </summary>
     [TestMethod]
     public void GetCommonBasePath_ReturnsEmpty_WhenEmptyInput() => Assert.AreEqual(string.Empty, PathUtils.GetCommonBasePath([]));
 
+    /// <summary>
+    /// Verifies that GetCommonBasePath returns the directory for a single path input.
+    /// </summary>
     [TestMethod]
     public void GetCommonBasePath_ReturnsDir_WhenSinglePath()
     {
@@ -150,6 +207,9 @@ public class PathUtilsTests
         Assert.AreEqual(expected, PathUtils.GetCommonBasePath([path]));
     }
 
+    /// <summary>
+    /// Verifies that ResolveInputPath returns the absolute path unchanged if already absolute.
+    /// </summary>
     [TestMethod]
     public void ResolveInputPath_AbsolutePath_ReturnsUnchanged()
     {
@@ -172,6 +232,9 @@ public class PathUtilsTests
         Assert.AreEqual(absolutePath, result);
     }
 
+    /// <summary>
+    /// Verifies that ResolveInputPath combines OneDrive root and relative path correctly.
+    /// </summary>
     [TestMethod]
     public void ResolveInputPath_RelativePathWithOneDriveRoot_ReturnsCombinedPath()
     {
@@ -198,6 +261,9 @@ public class PathUtilsTests
         Assert.AreEqual(PathUtils.NormalizePath(expected), result);
     }
 
+    /// <summary>
+    /// Verifies that ResolveInputPath returns the normalized input if OneDrive root is null.
+    /// </summary>
     [TestMethod]
     public void ResolveInputPath_RelativePathWithoutOneDriveRoot_ReturnsOriginal()
     {
@@ -208,9 +274,12 @@ public class PathUtilsTests
         string result = PathUtils.ResolveInputPath(relativePath, null);
 
         // Assert
-        Assert.AreEqual(relativePath, result);
+        Assert.AreEqual(PathUtils.NormalizePath(relativePath), result);
     }
 
+    /// <summary>
+    /// Verifies that ResolveInputPath returns the normalized input if OneDrive root is empty.
+    /// </summary>
     [TestMethod]
     public void ResolveInputPath_RelativePathWithEmptyOneDriveRoot_ReturnsOriginal()
     {
@@ -221,9 +290,12 @@ public class PathUtilsTests
         string result = PathUtils.ResolveInputPath(relativePath, string.Empty);
 
         // Assert
-        Assert.AreEqual(relativePath, result);
+        Assert.AreEqual(PathUtils.NormalizePath(relativePath), result);
     }
 
+    /// <summary>
+    /// Verifies that ResolveInputPath returns the normalized input if OneDrive root is whitespace.
+    /// </summary>
     [TestMethod]
     public void ResolveInputPath_RelativePathWithWhitespaceOneDriveRoot_ReturnsOriginal()
     {
@@ -234,8 +306,11 @@ public class PathUtilsTests
         string result = PathUtils.ResolveInputPath(relativePath, "   ");
 
         // Assert
-        Assert.AreEqual(relativePath, result);
+        Assert.AreEqual(PathUtils.NormalizePath(relativePath), result);
     }
+    /// <summary>
+    /// Verifies that ResolveInputPath throws ArgumentNullException for null inputPath.
+    /// </summary>
     [TestMethod]
     [ExpectedException(typeof(ArgumentNullException))]
     public void ResolveInputPath_NullInputPath_ThrowsArgumentNullException()
@@ -244,6 +319,9 @@ public class PathUtilsTests
         PathUtils.ResolveInputPath(null!, @"C:\OneDrive");
     }
 
+    /// <summary>
+    /// Verifies that ResolveInputPath throws ArgumentException for empty inputPath.
+    /// </summary>
     [TestMethod]
     [ExpectedException(typeof(ArgumentException))]
     public void ResolveInputPath_EmptyInputPath_ThrowsArgumentException()
@@ -252,11 +330,54 @@ public class PathUtilsTests
         PathUtils.ResolveInputPath(string.Empty, @"C:\OneDrive");
     }
 
+    /// <summary>
+    /// Verifies that ResolveInputPath throws ArgumentException for whitespace inputPath.
+    /// </summary>
     [TestMethod]
     [ExpectedException(typeof(ArgumentException))]
     public void ResolveInputPath_WhitespaceInputPath_ThrowsArgumentException()
     {
         // Act & Assert
         PathUtils.ResolveInputPath("   ", @"C:\OneDrive");
+    }
+
+    /// <summary>
+    /// Comprehensive cross-platform test for the 3-argument ResolveInputPath method, covering absolute, relative, and basepath scenarios for both Windows and Unix.
+    /// </summary>
+    [TestMethod]
+    public void ResolveInputPath_ThreeArg_CrossPlatformBehavior()
+    {
+        string inputRelative = "Course/Module/Lesson.mp4";
+        string oneDriveRoot;
+        string resourcesBasepath = "MBA-Resources/Videos";
+        string expected;
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            oneDriveRoot = @"C:\\Users\\test\\OneDrive";
+        }
+        else
+        {
+            oneDriveRoot = "/home/test/OneDrive";
+        }
+
+        // Relative path with both root and basepath
+        expected = Path.Combine(oneDriveRoot, "MBA-Resources", "Videos", "Course", "Module", "Lesson.mp4");
+        string result = PathUtils.ResolveInputPath(inputRelative, oneDriveRoot, resourcesBasepath);
+        Assert.AreEqual(PathUtils.NormalizePath(expected), result);
+
+        // Absolute path should return normalized absolute path
+        string absInput = Path.Combine(oneDriveRoot, "MBA-Resources", "Videos", "Course", "Module", "Lesson.mp4");
+        string absResult = PathUtils.ResolveInputPath(absInput, oneDriveRoot, resourcesBasepath);
+        Assert.AreEqual(PathUtils.NormalizePath(absInput), absResult);
+
+        // Relative path with only root
+        string expectedRootOnly = Path.Combine(oneDriveRoot, "Course", "Module", "Lesson.mp4");
+        string resultRootOnly = PathUtils.ResolveInputPath(inputRelative, oneDriveRoot, null);
+        Assert.AreEqual(PathUtils.NormalizePath(expectedRootOnly), resultRootOnly);
+
+        // Relative path with only basepath (should ignore basepath if root is null)
+        string resultBasepathOnly = PathUtils.ResolveInputPath(inputRelative, null, resourcesBasepath);
+        Assert.AreEqual(PathUtils.NormalizePath(inputRelative), resultBasepathOnly);
     }
 }
