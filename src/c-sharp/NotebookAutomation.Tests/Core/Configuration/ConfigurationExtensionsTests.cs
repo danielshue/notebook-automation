@@ -3,8 +3,11 @@ namespace NotebookAutomation.Tests.Core.Configuration;
 
 
 /// <summary>
-/// Unit tests for ConfigurationExtensions static class.
-/// Tests configuration extension methods for adding objects as configuration sources.
+/// Unit tests for the <c>ConfigurationExtensions</c> static class.
+/// <para>
+/// These tests verify the behavior of extension methods for adding objects as configuration sources to an <see cref="IConfigurationBuilder"/>.
+/// Scenarios include handling of simple and complex objects, nulls, anonymous types, deep nesting, collections, and fluent interface support.
+/// </para>
 /// </summary>
 [TestClass]
 public class ConfigurationExtensionsTests
@@ -48,7 +51,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject extension method with simple object.
+    /// Verifies that <c>AddObject</c> adds all simple properties of a plain object to the configuration.
     /// </summary>
     [TestMethod]
     public void AddObject_WithSimpleObject_AddsPropertiesToConfiguration()
@@ -81,7 +84,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject extension method with complex nested object.
+    /// Verifies that <c>AddObject</c> adds nested properties of a complex object to the configuration using colon-separated keys.
     /// </summary>
     [TestMethod]
     public void AddObject_WithComplexObject_AddsNestedPropertiesToConfiguration()
@@ -121,7 +124,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject extension method with object containing null properties.
+    /// Verifies that <c>AddObject</c> skips null properties and does not add them to the configuration.
     /// </summary>
     [TestMethod]
     public void AddObject_WithNullProperties_SkipsNullValues()
@@ -148,7 +151,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject extension method throws exception when object is null.
+    /// Verifies that <c>AddObject</c> throws <see cref="ArgumentNullException"/> when the input object is null.
     /// </summary>
     [TestMethod]
     [ExpectedException(typeof(ArgumentNullException))]
@@ -163,7 +166,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject extension method with empty object.
+    /// Verifies that <c>AddObject</c> with an empty object results in an empty configuration (no keys).
     /// </summary>
     [TestMethod]
     public void AddObject_WithEmptyObject_CreatesEmptyConfiguration()
@@ -185,7 +188,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject extension method with anonymous object.
+    /// Verifies that <c>AddObject</c> works with anonymous objects and adds their properties to the configuration.
     /// </summary>
     [TestMethod]
     public void AddObject_WithAnonymousObject_AddsPropertiesToConfiguration()
@@ -212,7 +215,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject extension method with multiple objects (last one wins).
+    /// Verifies that when <c>AddObject</c> is called multiple times, the last object's values overwrite previous ones for the same keys.
     /// </summary>
     [TestMethod]
     public void AddObject_WithMultipleObjects_LastObjectWins()
@@ -234,7 +237,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject extension method maintains configuration builder fluent interface.
+    /// Verifies that <c>AddObject</c> returns the same <see cref="IConfigurationBuilder"/> instance for fluent chaining.
     /// </summary>
     [TestMethod]
     public void AddObject_ReturnsConfigurationBuilder_ForFluentInterface()
@@ -252,7 +255,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject with complex nested hierarchy.
+    /// Verifies that <c>AddObject</c> correctly handles deep nested objects, producing colon-separated keys for all levels.
     /// </summary>
     [TestMethod]
     public void AddObject_WithDeepNesting_CreatesCorrectKeys()
@@ -284,7 +287,7 @@ public class ConfigurationExtensionsTests
 
 
     /// <summary>
-    /// Tests AddObject with object containing array or collection properties (should be ignored).
+    /// Verifies that <c>AddObject</c> ignores array or collection properties and only adds scalar values to the configuration.
     /// </summary>
     [TestMethod]
     public void AddObject_WithCollectionProperties_HandlesCorrectly()

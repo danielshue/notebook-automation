@@ -1,10 +1,11 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Configuration;
 
-
 /// <summary>
-/// Unit tests for ConfigurationSetup static class.
-/// Tests configuration building with various sources and environments.
+/// Unit tests for the <c>ConfigurationSetup</c> static class.
+/// <para>
+/// These tests verify configuration building from various sources and environments, including file-based, environment variable, and user secrets scenarios.
+/// </para>
 /// </summary>
 [TestClass]
 public class ConfigurationSetupTests
@@ -12,9 +13,8 @@ public class ConfigurationSetupTests
     private string? _tempConfigFile;
     private string _originalDirectory = string.Empty;
 
-
     /// <summary>
-    /// Test initialization - sets up temporary directory and config file.
+    /// Initializes the test by setting up a temporary directory and config file for use in each test.
     /// </summary>
     [TestInitialize]
     public void TestInitialize()
@@ -35,7 +35,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Test cleanup - removes temporary files and restores directory.
+    /// Cleans up after each test by removing temporary files and restoring the original working directory.
     /// </summary>
     [TestCleanup]
     public void TestCleanup()
@@ -50,7 +50,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests BuildConfiguration with default parameters creates valid configuration.
+    /// Verifies that <c>BuildConfiguration</c> with default parameters creates a valid configuration instance.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_WithDefaults_ReturnsValidConfiguration()
@@ -65,7 +65,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests BuildConfiguration with specified config file path loads configuration correctly.
+    /// Verifies that <c>BuildConfiguration</c> loads configuration from a specified config file path.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_WithConfigFilePath_LoadsConfigurationFromFile()
@@ -81,7 +81,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests BuildConfiguration with production environment excludes user secrets.
+    /// Verifies that <c>BuildConfiguration</c> with the production environment does not add user secrets.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_WithProductionEnvironment_DoesNotAddUserSecrets()
@@ -98,7 +98,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests BuildConfiguration with development environment and user secrets ID.
+    /// Verifies that <c>BuildConfiguration</c> with the development environment and a user secrets ID adds user secrets.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_WithDevelopmentAndUserSecretsId_AddsUserSecrets()
@@ -119,7 +119,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests BuildConfiguration with non-existent config file path.
+    /// Verifies that <c>BuildConfiguration</c> with a non-existent config file path still creates a configuration instance.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_WithNonExistentConfigFile_StillCreatesConfiguration()
@@ -136,7 +136,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests BuildConfiguration with null config path uses AppConfig.FindConfigFile.
+    /// Verifies that <c>BuildConfiguration</c> with a null config path calls <c>AppConfig.FindConfigFile</c> internally.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_WithNullConfigPath_CallsFindConfigFile()
@@ -150,7 +150,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests BuildConfiguration with empty environment string defaults to Development behavior.
+    /// Verifies that <c>BuildConfiguration</c> with an empty environment string defaults to development behavior.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_WithEmptyEnvironment_DefaultsToDevelopmentBehavior()
@@ -167,7 +167,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests BuildConfiguration with case-insensitive environment matching.
+    /// Verifies that <c>BuildConfiguration</c> matches environment names case-insensitively.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_WithCaseInsensitiveEnvironment_WorksCorrectly()
@@ -189,7 +189,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests generic BuildConfiguration method with type parameter.
+    /// Verifies that the generic <c>BuildConfiguration&lt;T&gt;</c> method returns a valid configuration instance.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_Generic_ReturnsValidConfiguration()
@@ -206,7 +206,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests generic BuildConfiguration with production environment.
+    /// Verifies that the generic <c>BuildConfiguration&lt;T&gt;</c> method with production environment does not add user secrets.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_GenericWithProduction_DoesNotAddUserSecrets()
@@ -223,7 +223,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests generic BuildConfiguration with development environment.
+    /// Verifies that the generic <c>BuildConfiguration&lt;T&gt;</c> method with development environment adds user secrets.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_GenericWithDevelopment_AddsUserSecrets()
@@ -240,7 +240,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests generic BuildConfiguration with null config path.
+    /// Verifies that the generic <c>BuildConfiguration&lt;T&gt;</c> method with a null config path calls <c>AppConfig.FindConfigFile</c>.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_GenericWithNullConfigPath_CallsFindConfigFile()
@@ -255,7 +255,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests that environment variables are added to configuration.
+    /// Verifies that environment variables are added to the configuration and can be retrieved.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_AddsEnvironmentVariables()
@@ -280,7 +280,7 @@ public class ConfigurationSetupTests
 
 
     /// <summary>
-    /// Tests that configuration sources are layered correctly (environment variables override JSON).
+    /// Verifies that configuration sources are layered correctly, with environment variables overriding JSON settings.
     /// </summary>
     [TestMethod]
     public void BuildConfiguration_EnvironmentVariablesOverrideJsonSettings()

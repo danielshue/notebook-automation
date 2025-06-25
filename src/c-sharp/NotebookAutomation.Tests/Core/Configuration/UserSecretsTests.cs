@@ -1,9 +1,18 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Configuration;
 
+/// <summary>
+/// Unit tests for the <c>UserSecretsHelper</c> class.
+/// <para>
+/// These tests verify that user secrets are loaded correctly from configuration and that null/empty configuration is handled gracefully.
+/// </para>
+/// </summary>
 [TestClass]
 public class UserSecretsTests
 {
+    /// <summary>
+    /// Verifies that <c>UserSecretsHelper</c> loads user secrets from configuration and exposes correct values.
+    /// </summary>
     [TestMethod]
     public void ConfigurationSetup_ShouldLoadUserSecrets()
     {
@@ -55,6 +64,9 @@ public class UserSecretsTests
         }
     }
 
+    /// <summary>
+    /// Verifies that <c>UserSecretsHelper</c> handles null or empty configuration without throwing and returns null/false for all queries.
+    /// </summary>
     [TestMethod]
     public void UserSecretsHelper_ShouldHandleNullConfiguration()
     {

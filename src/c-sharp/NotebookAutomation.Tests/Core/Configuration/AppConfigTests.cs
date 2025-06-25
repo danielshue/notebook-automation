@@ -1,9 +1,15 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Configuration;
 
+/// <summary>
+/// Additional coverage tests for the <see cref="AppConfig"/> class, focusing on configuration loading, file-based operations, and edge cases.
+/// </summary>
 [TestClass]
 public class AppConfigCoverageBoostTests
 {
+    /// <summary>
+    /// Verifies that the constructor loads all configuration sections from an underlying <see cref="IConfiguration"/>.
+    /// </summary>
     [TestMethod]
     public void Constructor_WithUnderlyingConfiguration_LoadsSections()
     {
@@ -39,6 +45,9 @@ public class AppConfigCoverageBoostTests
         CollectionAssert.Contains(appConfig.VideoExtensions, ".mp4");
     }
 
+    /// <summary>
+    /// Tests loading configuration from a file and verifies that all key properties are loaded and logged.
+    /// </summary>
     [TestMethod]
     public void LoadConfiguration_FileBased_LoadsAndLogs()
     {
@@ -59,6 +68,9 @@ public class AppConfigCoverageBoostTests
         File.Delete(tempFile);
     }
 
+    /// <summary>
+    /// Tests saving configuration to a JSON file and error handling for invalid paths.
+    /// </summary>
     [TestMethod]
     public void SaveToJsonFile_And_ErrorHandling()
     {
@@ -74,6 +86,9 @@ public class AppConfigCoverageBoostTests
         Assert.ThrowsExactly<IOException>(() => appConfig.SaveToJsonFile(Path.Combine("?invalidpath", "bad.json")));
     }
 
+    /// <summary>
+    /// Tests retrieving configuration sections and children with and without an underlying configuration.
+    /// </summary>
     [TestMethod]
     public void GetSection_And_GetChildren_WithAndWithoutUnderlyingConfig()
     {
@@ -92,6 +107,9 @@ public class AppConfigCoverageBoostTests
         Assert.AreNotEqual(0, children2.Count);
     }
 
+    /// <summary>
+    /// Tests the Exists method and indexer for complex scenarios, including updating values.
+    /// </summary>
     [TestMethod]
     public void Exists_And_Indexer_ComplexCases()
     {
@@ -318,8 +336,33 @@ public class AppConfigTests
     }
 
     /// <summary>
-    /// Tests saving configuration to JSON file.
+    /// Tests saving and loading configuration to and from a JSON file, including environment variable handling for API keys.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// This test verifies that the <see cref="AppConfig.SaveToJsonFile(string)"/> method correctly serializes the configuration to disk,
+    /// and that <see cref="AppConfig.LoadFromJsonFile(string)"/> can accurately restore the configuration from the file. It also ensures
+    /// that the OpenAI API key is correctly retrieved from the environment variable after loading, and that all key properties are preserved.
+    /// </para>
+    /// <para>
+    /// Steps:
+    /// <list type="number">
+    ///   <item>Set a test API key in the environment variable.</item>
+    ///   <item>Create an <see cref="AppConfig"/> instance and save it to a temporary JSON file.</item>
+    ///   <item>Verify the file was created and the API key is set in the environment.</item>
+    ///   <item>Load the configuration back from the file and verify all key properties and API key retrieval.</item>
+    ///   <item>Restore the original environment variable and clean up the file.</item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// This test ensures robust round-trip serialization and correct environment variable handling for sensitive settings.
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // See test implementation for usage
+    /// </code>
+    /// </example>
     [TestMethod]
     public void SaveToJsonFile_ShouldSaveConfigurationCorrectly()
     {
@@ -380,8 +423,8 @@ public class AppConfigTests
 
     /// <summary>
     /// Tests configuration with underlying IConfiguration.
-    /// </summary>    [TestMethod]
-
+    /// </summary>
+    [TestMethod]
     public void WithUnderlyingConfiguration_ShouldUseUnderlyingValues()
     {
         // Arrange
@@ -414,9 +457,15 @@ public class AppConfigTests
     }
 }
 
+/// <summary>
+/// Additional unit tests for <see cref="AppConfig"/> covering property setters, type handling, and utility methods.
+/// </summary>
 [TestClass]
 public class AppConfigAdditionalTests
 {
+    /// <summary>
+    /// Tests that <see cref="AppConfig.SetVideoExtensions"/> updates the video extensions list as expected.
+    /// </summary>
     [TestMethod]
     public void SetVideoExtensions_ShouldUpdateList()
     {
@@ -426,6 +475,9 @@ public class AppConfigAdditionalTests
         CollectionAssert.AreEqual(list, appConfig.VideoExtensions);
     }
 
+    /// <summary>
+    /// Tests that <see cref="AppConfig.Exists"/> works for both JsonPropertyName and direct property names.
+    /// </summary>
     [TestMethod]
     public void Exists_ShouldHandleJsonPropertyNameAndDirectProperty()
     {
@@ -437,6 +489,9 @@ public class AppConfigAdditionalTests
         Assert.IsTrue(appConfig.Exists("Paths")); // Direct property
     }
 
+    /// <summary>
+    /// Tests that <see cref="AppConfig.GetReloadToken"/> returns a non-null change token.
+    /// </summary>
     [TestMethod]
     public void GetReloadToken_ShouldReturnToken()
     {
@@ -445,6 +500,9 @@ public class AppConfigAdditionalTests
         Assert.IsNotNull(token);
     }
 
+    /// <summary>
+    /// Tests that setting nested and direct properties via the indexer updates the values correctly.
+    /// </summary>
     [TestMethod]
     public void Indexer_SetNestedAndDirectProperties_ShouldUpdateValues()
     {
@@ -455,6 +513,9 @@ public class AppConfigAdditionalTests
         Assert.AreEqual("True", appConfig["DebugEnabled"], ignoreCase: true);
     }
 
+    /// <summary>
+    /// Tests that setting various property types via the indexer is handled correctly.
+    /// </summary>
     [TestMethod]
     public void SetPropertyValue_ShouldHandleVariousTypes()
     {
@@ -467,6 +528,9 @@ public class AppConfigAdditionalTests
         Assert.AreEqual("vault", appConfig.Paths.NotebookVaultFullpathRoot);
     }
 
+    /// <summary>
+    /// Tests the private ExtractTenantIdFromAuthority method for various authority URL formats.
+    /// </summary>
     [TestMethod]
     public void ExtractTenantIdFromAuthority_ShouldReturnExpectedResults()
     {
