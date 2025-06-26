@@ -1,3 +1,8 @@
+---
+description: Guidelines for creating consistent and informative pull request descriptions.
+applyTo: "**"
+---
+
 # GitHub Copilot Pull Request Description Instructions
 
 ## Pull Request Title Format

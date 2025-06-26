@@ -1,3 +1,7 @@
+---
+applyTo: "**"
+---
+
 # GitHub Copilot Commit Message Instructions
 
 ## Commit Message Structure

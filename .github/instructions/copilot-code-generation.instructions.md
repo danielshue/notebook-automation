@@ -1,10 +1,14 @@
-# 2. copilot-code-generation.md
+---
+applyTo: "**"
+---
 
-```markdown
 # GitHub Copilot Code Generation Instructions
 
-## Code Structure
-- Create modular, loosely coupled components
+## Code Structure and Philosophy
+- Write maintainable, readable code that prioritizes clarity over cleverness
+- Follow SOLID principles in object-oriented design
+- Optimize for developer experience and code readability
+- Create modular, loosely coupled components that can be easily tested and extended
 - Favor composition over inheritance
 - Use appropriate design patterns when applicable
 - Follow the Dependency Inversion Principle - depend on abstractions, not implementations
@@ -40,6 +44,19 @@
 - Use safe APIs for risky operations (file handling, network calls)
 - Document security assumptions and requirements
 - Use principle of least privilege when accessing resources
+
+## Security Documentation
+- Document security assumptions and requirements in a dedicated section of the README or a separate SECURITY.md file.
+- Example:
+  ```markdown
+  ## Security Assumptions
+  - All user inputs are sanitized before processing.
+  - Sensitive data is stored securely using encryption.
+
+  ## Security Requirements
+  - Use HTTPS for all network communications.
+  - Implement role-based access control for sensitive operations.
+  ```
 
 ## Common Patterns to Implement
 - Configuration management from environment variables

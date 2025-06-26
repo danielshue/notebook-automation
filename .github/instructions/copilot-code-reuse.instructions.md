@@ -1,4 +1,6 @@
-# copilot-code-reuse-instructions.md
+---
+applyTo: "**"
+---
 
 ## Code Reuse Priority Hierarchy
 

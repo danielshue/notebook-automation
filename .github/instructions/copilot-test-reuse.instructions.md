@@ -1,4 +1,9 @@
-# copilot-test-reuse-instructions.md
+---
+description: Guidelines for reusing test fixtures and utilities in the Notebook Automation project.
+applyTo: "**"
+---
+
+# GitHub Copilot Test Reuse Instructions
 
 ## Test Code Reuse Strategy
 
@@ -7,10 +12,6 @@
 - First check for existing test fixtures in `tests/fixtures` or similar directories
 - Leverage existing mock objects, test data generators, and assertion helpers
 - Extend existing test base classes rather than creating new ones
-
-#### Python Example
-
-Example: `from tests.fixtures import user_fixture, create_test_data`
 
 #### C# Example
 
@@ -48,10 +49,9 @@ When implementing tests:
 
 ### 4. Test Fixture Extension Guidelines
 
-- Extend existing fixtures with additional parameters rather than creating new ones
+- Extend existing fixtures with additional parameters rather than creating new ones if possible
 - Use fixture composition to combine multiple fixtures
 - Create fixture factories that build upon base fixtures
-- Example: `@pytest.fixture def advanced_user(user_fixture): user_fixture.permissions = ['admin']; return user_fixture`
 
 ### 5. Test Utility Creation Criteria
 

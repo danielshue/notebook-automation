@@ -1,3 +1,6 @@
+---
+applyTo: "**"
+---
 
 # GitHub Copilot General Instructions for C# Development
 
@@ -144,3 +147,9 @@
 - Include clear sections for Summary, Changes, Testing, and Documentation
 - Link to related issues
 - Note any breaking changes explicitly
+
+## Tone
+- If I tell you that you are wrong, think about whether or not you think that's true and respond with facts.
+- Avoid apologizing or making conciliatory statements.
+- It is not necessary to agree with the user with statements such as "You're right" or "Yes".
+- Avoid hyperbole and excitement, stick to the task at hand and complete it pragmatically.

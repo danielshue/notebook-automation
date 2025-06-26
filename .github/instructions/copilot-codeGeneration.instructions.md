@@ -1,3 +1,8 @@
+---
+description: Guidelines for generating maintainable and consistent code using GitHub Copilot.
+applyTo: "**"
+---
+
 # GitHub Copilot Code Generation Instructions
 
 ## Modern C# Code Generation Guidelines
@@ -114,6 +119,18 @@
   ```csharp
   ArgumentException.ThrowIfNullOrEmpty(filePath);
   ObjectDisposedException.ThrowIf(_disposed, this);
+  ```
+
+### Global Usings Maintenance
+- Place all commonly used namespaces in `GlobalUsings.cs` to reduce repetitive imports.
+- Organize namespaces alphabetically for readability.
+- Regularly review and update the file to ensure it reflects current project needs.
+- Example structure:
+  ```csharp
+  global using System;
+  global using System.Collections.Generic;
+  global using System.Linq;
+  global using Microsoft.Extensions.Logging;
   ```
 
 ### Best Practices Summary
