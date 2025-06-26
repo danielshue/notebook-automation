@@ -1,3 +1,7 @@
+---
+applyTo: "**"
+---
+
 # GitHub Copilot Code Review Instructions
 
 ## Review Focus Areas

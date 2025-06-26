@@ -1,3 +1,8 @@
+---
+description: Guidelines for generating tests with MSTest and Moq for the Notebook Automation project.
+applyTo: "**"
+---
+
 # GitHub Copilot Test Generation Instructions
 
 ## Test Structure
@@ -23,16 +28,24 @@
 - Keep tests fast and deterministic
 - Test external dependencies via interfaces
 
-## Example Test Structure (pytest)
+## Example Test Structure (MSTest)
 
-```python
-def test_function_should_behavior_when_condition():
-    # Arrange
-    test_input = setup_input()
-    expected_output = define_expected_result()
-    
-    # Act
-    actual_result = function_under_test(test_input)
-    
-    # Assert
-    assert actual_result == expected_output
+```csharp
+[TestClass]
+public class MyTestClass
+{
+    [TestMethod]
+    public void Test_Method_Should_Behavior_When_Condition()
+    {
+        // Arrange
+        var input = SetupInput();
+        var expected = DefineExpectedResult();
+
+        // Act
+        var actual = MethodUnderTest(input);
+
+        // Assert
+        Assert.AreEqual(expected, actual);
+    }
+}
+```

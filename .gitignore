@@ -3,14 +3,6 @@ docs/_site/
 docs/api/
 docs/obj/
 
-# Python bytecode
-__pycache__/
-*.py[cod]
-*$py.class
-
-coverage-report/*
-CoverageReport/
-
 # Virtual environment
 venv/
 env/
@@ -62,21 +54,10 @@ debug_transcript.sh
 pdf_notes_results.json
 tests/test_transcript.sh
 tests/test_tools_modules.ipynb
+CoverageReport/
 
 # Jupyter/IPython
 .ipynb_checkpoints/
-
-# Python coverage and test caches
-.coverage
-.coverage.*
-.tox/
-.pytest_cache/
-.mypy_cache/
-.cache/
-
-# pip
-pip-log.txt
-pip-delete-this-directory.txt
 
 # macOS/Linux system files
 .AppleDouble
@@ -213,9 +194,6 @@ src/c-sharp/TestVideos/
 **/*.dll
 **/*.pdb
 
-# Python debug scripts
-src/python/debug/
-
 # Project specific test directories
 src/c-sharp/NotebookAutomation.Core.Tests/obj/NotebookAutomation.Core.Tests.csproj.nuget.dgspec.json
 
@@ -233,3 +211,6 @@ src/tests/fixtures/frontmatter/subdir/subdir.md
 CoverageReport/index.html
 CoverageReport/NotebookAutomation.Core_AIServiceConfig.html
 CoverageReport/NotebookAutomation.Core_AISummarizer.html
+
+# Project specific coverage files
+CoverageReport/

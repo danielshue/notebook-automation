@@ -53,5 +53,4 @@ Example configuration:
 
 There are duplicate instruction files in both the `.github` directory and the `docs` directory.
 
-The files in `docs` are referenced in VS Code settings, while the files in `.github` serve as reference for GitHub-related operations.
-When updating instruction files, make sure to keep both versions in sync.
+The files in `docs` are referenced in VS Code settings, while the files in `.github` serve as reference for GitHub-related operations. When updating instruction files, make sure to keep both versions in sync.
