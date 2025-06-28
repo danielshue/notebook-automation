@@ -1,0 +1,10 @@
+{
+  "id": "obsidian-onedrive-resource-launcher",
+  "name": "Obsidian OneDrive Resource Launcher",
+  "version": "0.1.0",
+  "minAppVersion": "0.15.0",
+  "description": "Launch and import resource files from OneDrive for the selected Vault folder, and generate indexes.",
+  "author": "Your Name",
+  "authorUrl": "https://github.com/your-profile",
+  "main": "main.ts"
+}
