@@ -523,7 +523,7 @@ internal class ConfigCommands
     /// Prints the current configuration in a formatted, colorized style for the CLI.
     /// </summary>
     /// <param name="appConfig">The AppConfig instance to display.</param>
-    public static async Task PrintConfigFormatted(AppConfig appConfig)
+    public static async Task PrintConfigFormatted(AppConfig appConfig, IOneDriveService? oneDriveService = null)
     {
         // Helper for aligned output
         static void PrintAligned(string key, string value)
@@ -614,10 +614,10 @@ internal class ConfigCommands
             }
 
             // Check OneDrive token status
-            var oneDriveService = Program.ServiceProvider.GetService<IOneDriveService>();
-            if (oneDriveService != null)
+            var service = oneDriveService ?? Program.ServiceProvider.GetService<IOneDriveService>();
+            if (service != null)
             {
-                bool isTokenValid = await oneDriveService.IsTokenValidAsync();
+                bool isTokenValid = await service.IsTokenValidAsync();
                 PrintAligned("onedrive_token_status", isTokenValid ? "Valid" : "[not set]");
             }
             else

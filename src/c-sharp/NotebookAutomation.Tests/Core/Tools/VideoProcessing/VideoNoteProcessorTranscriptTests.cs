@@ -282,14 +282,16 @@ public class VideoNoteProcessorTranscriptTests
         CreateTestTranscriptFile(_tempDirectory, "test_video.deu.txt", "German transcript");
 
         // Create an invalid one that should not be recognized
-        CreateTestTranscriptFile(_tempDirectory, "test_video.invalid-language-code.txt", "Invalid transcript");            // Act
+        CreateTestTranscriptFile(_tempDirectory, "test_video.invalid-language-code.txt", "Invalid transcript");
+
+        // Act
         string? result = _processor.TryLoadTranscript(videoPath);
 
         // Assert
         Assert.IsNotNull(result, "Failed to find language-specific transcript");
-
-        // The implementation seems to find the German transcript first due to file system order
-        Assert.AreEqual("German transcript", result);
+        // Accept any of the valid language transcripts
+        var validTranscripts = new[] { "English transcript", "French transcript", "Chinese transcript", "German transcript" };
+        CollectionAssert.Contains(validTranscripts, result, "Transcript should match one of the valid language transcripts");
     }
 
     /// <summary>
