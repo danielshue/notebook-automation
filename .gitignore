@@ -214,3 +214,6 @@ CoverageReport/NotebookAutomation.Core_AISummarizer.html
 
 # Project specific coverage files
 CoverageReport/
+
+packages-microsoft-prod.deb
+

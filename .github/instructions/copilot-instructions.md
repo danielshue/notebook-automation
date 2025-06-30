@@ -15,6 +15,12 @@ applyTo: "**"
 - When working on tasks and have completed then, be sure to mark them completed.
 - When making changes, always create or update the existing unit tests.
 
+# Build and Run Instructions
+Refer to [build instructions](../docs/developer-guide/building.md) when building, testing, and running code.
+
+# Tone 
+
+
 ## Project Philosophy
 - Write maintainable, readable code that prioritizes clarity over cleverness
 - Follow SOLID principles in object-oriented design
@@ -23,7 +29,7 @@ applyTo: "**"
 - Create modular, loosely coupled components that can be easily tested and extended
 
 ## Code Documentation
-- Ensure all C# files have appropriate XML documentation comments
+- Ensure all C# files including test have appropriate XML documentation comments
 - All classes, methods, and properties should have descriptive documentation
 - Use standard C# XML documentation format:
   ```csharp
