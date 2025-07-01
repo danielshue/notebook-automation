@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "minAppVersion": "0.15.0",
   "description": "Automate notebook workflows: launch, import, and index resource files from OneDrive or local folders for the selected Vault folder.",
-  "author": "Daniel Shue",
+  "author": "Dan Shue",
   "authorUrl": "https://github.com/danielshue",
   "main": "main.js"
 }

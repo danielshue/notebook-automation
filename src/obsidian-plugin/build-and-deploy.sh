@@ -29,41 +29,67 @@ else
     echo "Plugin directory already exists at $DEST_PATH"
 fi
 
-# Determine platform and set na executable source
-na_source=""
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
-    na_source="../../dist/all-platform-executables-1.0.1-19/published-executables-macos-latest-x64-1.0.1-19/na"
-else
-    # Linux - try x64 first, then arm64
-    na_source="../../dist/all-platform-executables-1.0.1-19/published-executables-ubuntu-latest-x64-1.0.1-19/na"
-    if [ ! -f "$na_source" ]; then
-        na_source="../../dist/all-platform-executables-1.0.1-19/published-executables-ubuntu-latest-arm64-1.0.1-19/na"
+# Determine available executables and copy all of them
+dist_path="../../dist"
+executables_found=()
+
+# Look for executables in dist folder (new flat structure)
+if [ -d "$dist_path" ]; then
+    available_executables=($(find "$dist_path" -maxdepth 1 -name "na-*" -type f))
+    
+    if [ ${#available_executables[@]} -gt 0 ]; then
+        echo "Found executables in flat dist structure:"
+        for exe in "${available_executables[@]}"; do
+            echo "  - $(basename "$exe")"
+            executables_found+=("$exe")
+        done
+    else
+        echo "No executables found in flat dist structure, trying old structure..."
+        
+        # Fallback: Look for old structure with version directories
+        for version_dir in "$dist_path"/*executables*; do
+            if [ -d "$version_dir" ]; then
+                while IFS= read -r -d '' exe; do
+                    echo "  - $(basename "$exe") (from $(basename "$version_dir"))"
+                    executables_found+=("$exe")
+                done < <(find "$version_dir" -name "na*" -type f -print0)
+            fi
+        done
     fi
 fi
 
 files_to_copy=("dist/main.js" "manifest.json" "default-config.json")
 
-# Copy na executable if it exists
-if [ -f "$na_source" ]; then
-    na_executable_name=$(basename "$na_source")
-    vault_na_path="$DEST_PATH/$na_executable_name"
-    cp "$na_source" "$vault_na_path"
-    echo "Copied platform-specific na executable ($na_executable_name) to plugin vault directory: $vault_na_path"
+# Copy all found executables
+if [ ${#executables_found[@]} -gt 0 ]; then
+    echo "Copying ${#executables_found[@]} executables to plugin directories..."
     
-    # Also copy to local plugin source directory for dev/test parity
-    local_na_path="$SOURCE_PATH/$na_executable_name"
-    cp "$na_source" "$local_na_path"
-    echo "Copied platform-specific na executable ($na_executable_name) to plugin source directory: $local_na_path"
-    
-    files_to_copy+=("$na_executable_name")
-    
-    # Set executable permissions
-    chmod +x "$vault_na_path"
-    chmod +x "$local_na_path"
-    echo "Set executable permissions for na executables."
+    for exe_path in "${executables_found[@]}"; do
+        exe_name=$(basename "$exe_path")
+        
+        # Copy to vault plugin directory
+        vault_exe_path="$DEST_PATH/$exe_name"
+        cp "$exe_path" "$vault_exe_path"
+        echo "Copied $exe_name to plugin vault directory: $vault_exe_path"
+        
+        # Copy to local plugin source directory for dev/test parity
+        local_exe_path="$SOURCE_PATH/$exe_name"
+        cp "$exe_path" "$local_exe_path"
+        echo "Copied $exe_name to plugin source directory: $local_exe_path"
+        
+        # Add to files to copy list
+        files_to_copy+=("$exe_name")
+        
+        # Set executable permissions for non-Windows executables
+        if [[ "$exe_name" != *.exe ]]; then
+            chmod +x "$vault_exe_path"
+            chmod +x "$local_exe_path"
+            echo "Set executable permissions for $exe_name"
+        fi
+    done
 else
-    echo "Warning: na executable not found at $na_source. Plugin may not function properly without the CLI executable."
+    echo "Warning: No na executables found in $dist_path. Plugin may not function properly without the CLI executables."
+    echo "Expected structure: $dist_path/na-win-x64.exe, na-macos-arm64, etc."
 fi
 
 # Copy all required files

@@ -31,41 +31,69 @@ if (-not (Test-Path $DestPath)) {
 }
 
 
-# Determine platform and set na executable source
-$naSource = $null
-if ($IsWindows) {
-    $naSource = "../../dist/all-platform-executables-1.0.1-19/published-executables-windows-latest-x64-1.0.1-19/na.exe"
-    if (-not (Test-Path $naSource)) {
-        Write-Warning "Windows na executable not found at $naSource. Trying fallback locations..."
-        # Try alternative Windows paths or skip
-        $naSource = $null
-    }
-} elseif ($IsMacOS) {
-    $naSource = "../../dist/all-platform-executables-1.0.1-19/published-executables-macos-latest-x64-1.0.1-19/na"
-} else {
-    # Linux - try x64 first, then arm64
-    $naSource = "../../dist/all-platform-executables-1.0.1-19/published-executables-ubuntu-latest-x64-1.0.1-19/na"
-    if (-not (Test-Path $naSource)) {
-        $naSource = "../../dist/all-platform-executables-1.0.1-19/published-executables-ubuntu-latest-arm64-1.0.1-19/na"
+# Determine available executables and copy all of them
+$distPath = "../../dist"
+$executablesFound = @()
+
+# Look for executables in dist folder (new flat structure)
+if (Test-Path $distPath) {
+    $availableExecutables = Get-ChildItem -Path $distPath -File | Where-Object { $_.Name -like "na-*" }
+    
+    if ($availableExecutables) {
+        Write-Host "Found executables in flat dist structure:"
+        foreach ($exe in $availableExecutables) {
+            Write-Host "  - $($exe.Name)"
+            $executablesFound += $exe.FullName
+        }
+    } else {
+        Write-Host "No executables found in flat dist structure, trying old structure..."
+        
+        # Fallback: Look for old structure with version directories
+        $versionDirs = Get-ChildItem -Path $distPath -Directory | Where-Object { $_.Name -like "*executables*" }
+        foreach ($versionDir in $versionDirs) {
+            $versionExes = Get-ChildItem -Path $versionDir.FullName -File -Recurse | Where-Object { $_.Name -like "na*" }
+            foreach ($exe in $versionExes) {
+                Write-Host "  - $($exe.Name) (from $($versionDir.Name))"
+                $executablesFound += $exe.FullName
+            }
+        }
     }
 }
 
 $FilesToCopy = @("main.js", "manifest.json", "default-config.json")
 
-
-# Ensure na executable is included in the deployment and copied directly to the plugin directory in the vault
-if ($naSource -and (Test-Path $naSource)) {
-    $naExecutableName = Split-Path $naSource -Leaf
-    $vaultNaPath = Join-Path $DestPath $naExecutableName
-    Copy-Item $naSource $vaultNaPath -Force
-    Write-Host "Copied platform-specific na executable ($naExecutableName) to plugin vault directory: $vaultNaPath"
-    # Also copy to local plugin source directory for dev/test parity
-    $localNaPath = Join-Path $SourcePath $naExecutableName
-    Copy-Item $naSource $localNaPath -Force
-    Write-Host "Copied platform-specific na executable ($naExecutableName) to plugin source directory: $localNaPath"
-    $FilesToCopy += @($naExecutableName)
+# Copy all found executables
+if ($executablesFound.Count -gt 0) {
+    Write-Host "Copying $($executablesFound.Count) executables to plugin directories..."
+    
+    foreach ($exePath in $executablesFound) {
+        $exeName = Split-Path $exePath -Leaf
+        
+        # Copy to vault plugin directory
+        $vaultExePath = Join-Path $DestPath $exeName
+        Copy-Item $exePath $vaultExePath -Force
+        Write-Host "Copied $exeName to plugin vault directory: $vaultExePath"
+        
+        # Copy to local plugin source directory for dev/test parity
+        $localExePath = Join-Path $SourcePath $exeName
+        Copy-Item $exePath $localExePath -Force
+        Write-Host "Copied $exeName to plugin source directory: $localExePath"
+        
+        # Add to files to copy list
+        $FilesToCopy += @($exeName)
+        
+        # Set executable permissions on non-Windows
+        if (-not $IsWindows -and -not $exeName.EndsWith(".exe")) {
+            if (Get-Command chmod -ErrorAction SilentlyContinue) {
+                & chmod +x $vaultExePath
+                & chmod +x $localExePath
+                Write-Host "Set executable permissions for $exeName"
+            }
+        }
+    }
 } else {
-    Write-Warning "na executable not found at $naSource. Plugin may not function properly without the CLI executable."
+    Write-Warning "No na executables found in $distPath. Plugin may not function properly without the CLI executables."
+    Write-Host "Expected structure: $distPath/na-win-x64.exe, na-macos-arm64, etc."
 }
 
 # Copy all required files
@@ -77,21 +105,6 @@ foreach ($file in $FilesToCopy) {
         Write-Host "Copied $file to $DestPath"
     } else {
         Write-Warning "$file not found in $SourcePath"
-    }
-}
-
-
-# Make sure na is executable on non-Windows (also in local plugin dir for dev/test)
-if (-not $IsWindows) {
-    $naPath = Join-Path $DestPath "na"
-    $localNaPath = Join-Path $SourcePath "na"
-    if (Test-Path $naPath) {
-        chmod +x $naPath
-        Write-Host "Set executable permissions for na in plugin directory."
-    }
-    if (Test-Path $localNaPath) {
-        chmod +x $localNaPath
-        Write-Host "Set executable permissions for na in local source directory."
     }
 }
 
