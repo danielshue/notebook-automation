@@ -1133,12 +1133,28 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
       `;
     }
 
-    // If config was previously loaded and valid, show fields
-    if ((window as any).notebookAutomationLoadedConfig) {
-      this.displayLoadedConfig((window as any).notebookAutomationLoadedConfig);
+    // Always show config fields (create default structure if no config loaded)
+    let configToDisplay = (window as any).notebookAutomationLoadedConfig;
+    if (!configToDisplay) {
+      // Create a default config structure to show empty fields
+      configToDisplay = {
+        paths: {},
+        microsoft_graph: {},
+        aiservice: {
+          provider: 'azure',
+          azure: {},
+          openai: {},
+          foundry: {},
+          timeout: {},
+          retry_policy: {}
+        },
+        video_extensions: [],
+        pdf_extensions: [],
+        banners: {}
+      };
     }
 
-    // Show NA version at the bottom
+    // Create version div first to ensure it's at the bottom
     const versionDiv = containerEl.createDiv({ cls: "notebook-automation-version" });
     versionDiv.setText("Notebook Automation version: Loading...");
     versionDiv.style.marginTop = "2em";
@@ -1146,8 +1162,13 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     versionDiv.style.borderTop = "1px solid var(--background-modifier-border)";
     versionDiv.style.paddingTop = "1em";
     this.getNaVersion().then(ver => {
-      versionDiv.setText(`Notebook Automation version: ${ver}`);
+      // Convert line feeds to HTML breaks for proper display
+      const formattedVersion = ver.replace(/\n/g, '<br>');
+      versionDiv.innerHTML = formattedVersion;
     });
+
+    // Now display config fields (this will insert content before the version div)
+    this.displayLoadedConfig(configToDisplay);
   }
 
   displayLoadedConfig(configJson: any, error?: string) {
@@ -1156,9 +1177,16 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     // Remove previous config fields if any
     const prev = containerEl.querySelector('.notebook-automation-config-fields');
     if (prev) prev.remove();
+    
+    // Find the version div to insert content before it
+    const versionDiv = containerEl.querySelector('.notebook-automation-version');
+    
     if (error) {
       const errorDiv = containerEl.createDiv({ cls: 'notebook-automation-config-fields' });
       errorDiv.createEl('p', { text: error, cls: 'mod-warning' });
+      if (versionDiv) {
+        containerEl.insertBefore(errorDiv, versionDiv);
+      }
       (window as any).notebookAutomationLoadedConfig = null;
       return;
     }
@@ -1166,6 +1194,11 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     (window as any).notebookAutomationLoadedConfig = configJson;
     const fieldsDiv = containerEl.createDiv({ cls: 'notebook-automation-config-fields' });
     fieldsDiv.createEl('h3', { text: 'Loaded Config Fields' });
+    
+    // Insert before version div if it exists
+    if (versionDiv) {
+      containerEl.insertBefore(fieldsDiv, versionDiv);
+    }
     
     const keyMeta = [
       {
