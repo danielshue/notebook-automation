@@ -137,4 +137,221 @@ public class VaultCommandsTests
             }
         }
     }
+
+    [TestMethod]
+    public async Task SyncDirsCommand_PrintsUsage_WhenMissingRequiredArguments()
+    {
+        // Arrange
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        
+        // Setup mock services for sync-dirs command
+        var mockSyncProcessor = new Mock<IVaultFolderSyncProcessor>();
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        mockServiceProvider.Setup(sp => sp.GetRequiredService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+        // Capture console output
+        var originalOut = Console.Out;
+        var stringWriter = new StringWriter();
+        Console.SetOut(stringWriter);
+        try
+        {
+            // Act: invoke sync-dirs with missing required arguments
+            var parser = new Parser(rootCommand);
+            var result = await parser.InvokeAsync("vault sync-dirs").ConfigureAwait(false);
+
+            // Assert - Should fail due to missing required argument
+            Assert.AreNotEqual(0, result, "Command should fail when required arguments are missing");
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [TestMethod]
+    public async Task SyncDirsCommand_ExecutesSuccessfully_WithValidArguments()
+    {
+        // Arrange
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        
+        // Setup mock services for sync-dirs command
+        var mockSyncProcessor = new Mock<IVaultFolderSyncProcessor>();
+        var mockResult = new VaultFolderSyncResult
+        {
+            Success = true,
+            TotalFolders = 5,
+            SynchronizedFolders = 5,
+            CreatedVaultFolders = 3,
+            SkippedFolders = 2,
+            FailedFolders = 0
+        };
+        
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            .ReturnsAsync(mockResult);
+        
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        mockServiceProvider.Setup(sp => sp.GetRequiredService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+        // Capture console output
+        var originalOut = Console.Out;
+        var stringWriter = new StringWriter();
+        Console.SetOut(stringWriter);
+        try
+        {
+            // Act
+            var parser = new Parser(rootCommand);
+            var result = await parser.InvokeAsync("vault sync-dirs MBA/Finance /test/vault --dry-run").ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(0, result, "Command should execute successfully");
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("Executing vault sync-dirs"), "Should show execution message");
+            Assert.IsTrue(output.Contains("completed successfully"), "Should show success message");
+            
+            // Verify the processor was called with correct parameters (bidirectional defaults to true)
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync("MBA/Finance", "/test/vault", true, true), Times.Once);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [TestMethod]
+    public async Task SyncDirsCommand_ExecutesBidirectional_WithBidirectionalFlag()
+    {
+        // Arrange
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        
+        // Setup mock services for sync-dirs command
+        var mockSyncProcessor = new Mock<IVaultFolderSyncProcessor>();
+        var mockResult = new VaultFolderSyncResult
+        {
+            Success = true,
+            TotalFolders = 8,
+            SynchronizedFolders = 8,
+            CreatedVaultFolders = 3,
+            CreatedOneDriveFolders = 2,
+            SkippedFolders = 3,
+            FailedFolders = 0
+        };
+        
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            .ReturnsAsync(mockResult);
+        
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        mockServiceProvider.Setup(sp => sp.GetRequiredService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+        // Capture console output
+        var originalOut = Console.Out;
+        var stringWriter = new StringWriter();
+        Console.SetOut(stringWriter);
+        try
+        {
+            // Act
+            var parser = new Parser(rootCommand);
+            var result = await parser.InvokeAsync("vault sync-dirs MBA/Finance /test/vault --bidirectional --dry-run").ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(0, result, "Command should execute successfully");
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("Executing vault bidirectional sync-dirs"), "Should show bidirectional execution message");
+            Assert.IsTrue(output.Contains("completed successfully"), "Should show success message");
+            Assert.IsTrue(output.Contains("Created 3 new vault directories"), "Should show vault directory creation count");
+            Assert.IsTrue(output.Contains("Created 2 new OneDrive directories"), "Should show OneDrive directory creation count");
+            
+            // Verify the processor was called with bidirectional = true
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync("MBA/Finance", "/test/vault", true, true), Times.Once);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
+    [TestMethod]
+    public async Task SyncDirsCommand_ExecutesSuccessfully_WithUnidirectionalFlag()
+    {
+        // Arrange
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+        
+        // Setup mock services for sync-dirs command
+        var mockSyncProcessor = new Mock<IVaultFolderSyncProcessor>();
+        var mockResult = new VaultFolderSyncResult
+        {
+            Success = true,
+            TotalFolders = 3,
+            SynchronizedFolders = 3,
+            CreatedVaultFolders = 2,
+            CreatedOneDriveFolders = 0, // No OneDrive folders created in unidirectional mode
+            SkippedFolders = 1,
+            FailedFolders = 0
+        };
+        
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            .ReturnsAsync(mockResult);
+        
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        mockServiceProvider.Setup(sp => sp.GetRequiredService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+        // Capture console output
+        var originalOut = Console.Out;
+        var stringWriter = new StringWriter();
+        Console.SetOut(stringWriter);
+        try
+        {
+            // Act - Test with --unidirectional flag
+            var parser = new Parser(rootCommand);
+            var result = await parser.InvokeAsync("vault sync-dirs MBA/Finance /test/vault --unidirectional --dry-run").ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(0, result, "Command should execute successfully");
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("Executing vault sync-dirs"), "Should show execution message");
+            Assert.IsTrue(output.Contains("completed successfully"), "Should show success message");
+            
+            // Verify the processor was called with bidirectional = false due to --unidirectional flag
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync("MBA/Finance", "/test/vault", true, false), Times.Once);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
 }
