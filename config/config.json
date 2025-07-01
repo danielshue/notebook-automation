@@ -4,6 +4,7 @@
     "paths": {
         "onedrive_fullpath_root": "c:/Users/danshue.REDMOND/OneDrive",
         "notebook_vault_fullpath_root": "C:/Users/danshue.REDMOND/Vault/01_Projects/MBA",
+        "notebook_vault_resources_basepath": "01_Projects/MBA",
         "metadata_file": "D:/source/notebook-automation/config/metadata.yaml",
         "onedrive_resources_basepath": "/Education/MBA-Resources",
         "logging_dir": "d:/source/notebook-automation/logs",

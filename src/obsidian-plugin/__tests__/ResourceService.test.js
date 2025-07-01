@@ -114,11 +114,11 @@ describe('listResourceFiles', () => {
         expect(() => (0, ResourceService_1.listResourceFiles)(noResourceDir)).toThrow('No supported resource files found in the OneDrive folder.');
     });
 });
+const config = {
+    vaultRoot: '/Users/test/Vault',
+    oneDriveRoot: '/Users/test/OneDrive/Resources'
+};
 describe('mapVaultToOneDriveFolder', () => {
-    const config = {
-        vaultRoot: '/Users/test/Vault',
-        oneDriveRoot: '/Users/test/OneDrive/Resources'
-    };
     it('should map a vault folder to the correct OneDrive folder', () => {
         const vaultFolder = '/Users/test/Vault/Notes/Math';
         const expected = '/Users/test/OneDrive/Resources/Notes/Math';

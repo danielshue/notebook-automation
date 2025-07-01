@@ -33,6 +33,8 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const IndexService_1 = require("../IndexService");
 describe('generateIndexesRecursively', () => {
     const rootDir = path.join(__dirname, 'test-index-recursive');
@@ -54,9 +56,6 @@ describe('generateIndexesRecursively', () => {
         expect(fs.existsSync(indexes[1])).toBe(true);
     });
 });
-const IndexService_2 = require("../IndexService");
-const fs = __importStar(require("fs"));
-const path = __importStar(require("path"));
 describe('generateFolderIndex', () => {
     const testDir = path.join(__dirname, 'test-index-folder');
     beforeAll(() => {
@@ -68,14 +67,14 @@ describe('generateFolderIndex', () => {
         fs.rmSync(testDir, { recursive: true, force: true });
     });
     it('should create an index file listing the resource files', () => {
-        const indexPath = (0, IndexService_2.generateFolderIndex)(testDir, ['file1.pdf', 'file2.mp4']);
+        const indexPath = (0, IndexService_1.generateFolderIndex)(testDir, ['file1.pdf', 'file2.mp4']);
         expect(fs.existsSync(indexPath)).toBe(true);
         const content = fs.readFileSync(indexPath, 'utf-8');
         expect(content).toContain('- [file1.pdf](./file1.pdf)');
         expect(content).toContain('- [file2.mp4](./file2.mp4)');
     });
     it('should throw if folder does not exist', () => {
-        expect(() => (0, IndexService_2.generateFolderIndex)('/bad/folder', ['file.pdf'])).toThrow();
+        expect(() => (0, IndexService_1.generateFolderIndex)('/bad/folder', ['file.pdf'])).toThrow();
     });
 });
 // Unit tests for IndexService
