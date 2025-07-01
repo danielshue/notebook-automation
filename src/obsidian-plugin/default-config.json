@@ -1,0 +1,74 @@
+{
+  "ConfigFilePath": "",
+  "DebugEnabled": false,
+  "paths": {
+    "onedrive_fullpath_root": "/Users/example/OneDrive",
+    "notebook_vault_fullpath_root": "/Users/example/Documents/ObsidianVault",
+    "notebook_vault_resources_basepath": "resources",
+    "metadata_file": "config/metadata.yaml",
+    "onedrive_resources_basepath": "Education/Resources",
+    "prompts_path": "prompts",
+    "logging_dir": "logs"
+  },
+  "microsoft_graph": {
+    "client_id": "your-client-id",
+    "api_endpoint": "https://graph.microsoft.com/v1.0",
+    "authority": "https://login.microsoftonline.com/common",
+    "scopes": [
+      "https://graph.microsoft.com/Files.Read",
+      "https://graph.microsoft.com/Sites.Read.All"
+    ]
+  },
+  "aiservice": {
+    "provider": "azure",
+    "azure": {
+      "endpoint": "https://your-resource.openai.azure.com/",
+      "deployment": "gpt-4o",
+      "model": "gpt-4o"
+    },
+    "openai": {
+      "endpoint": "https://api.openai.com/v1",
+      "model": "gpt-4o"
+    },
+    "foundry": {
+      "endpoint": "https://your-foundry-endpoint",
+      "model": "your-model"
+    },
+    "timeout": {
+      "timeout_milliseconds": 120000,
+      "max_file_parallelism": 4,
+      "file_rate_limit_ms": 200
+    },
+    "retry_policy": {
+      "max_retry_attempts": 3,
+      "delay_between_retries": 1000
+    }
+  },
+  "video_extensions": [
+    ".mp4",
+    ".avi",
+    ".mov",
+    ".wmv",
+    ".flv",
+    ".webm",
+    ".mkv"
+  ],
+  "pdf_extensions": [
+    ".pdf"
+  ],
+  "pdf_extract_images": false,
+  "banners": {
+    "enabled": true,
+    "default": "gies-banner.png",
+    "format": "image",
+    "template_banners": {
+      "main": "gies-banner.png",
+      "program": "gies-banner.png",
+      "course": "gies-banner.png"
+    },
+    "filename_patterns": {
+      "*index*": "gies-banner.png",
+      "*main*": "gies-banner.png"
+    }
+  }
+}

@@ -4,15 +4,27 @@
     "target": "es6",
     "jsx": "react",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": false,
     "types": ["node", "jest", "react", "obsidian"],
-    "outDir": "./",
-    "rootDir": "./"
+    "outDir": "./dist",
+    "lib": ["es2020", "dom"]
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx"
+    "*.ts",
+    "*.tsx",
+    "ui/**/*.ts",
+    "ui/**/*.tsx"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "dist",
+    "__tests__"
   ]
 }

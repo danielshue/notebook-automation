@@ -50,7 +50,7 @@ if ($IsWindows) {
     }
 }
 
-$FilesToCopy = @("main.js", "manifest.json")
+$FilesToCopy = @("main.js", "manifest.json", "default-config.json")
 
 
 # Ensure na executable is included in the deployment and copied directly to the plugin directory in the vault
