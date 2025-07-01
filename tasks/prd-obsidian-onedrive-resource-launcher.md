@@ -19,6 +19,17 @@ This feature enables Obsidian users to easily launch and import resource files (
 
 ## Functional Requirements
 
+## Implemented Capabilities (as of June 30, 2025)
+
+- Obsidian plugin registers a context menu command for all files and folders, allowing users to trigger automation actions directly from the UI.
+- Plugin loads configuration from `config.json`, including OneDrive and Vault root paths, and resource base paths.
+- Platform-specific `na` executable is bundled and deployed with the plugin for cross-platform support (Windows, MacOS, Linux).
+- Plugin provides a settings UI for specifying and validating the config file path, and displays loaded config values for user verification.
+- When the context menu command is triggered, the plugin logs the action to the developer console and shows a notification in Obsidian.
+- The plugin distinguishes between files and folders in the context menu handler, preparing for resource mapping and automation.
+- The folder structure in the test vault mirrors the OneDrive resource structure, supporting accurate mapping and testing.
+- All plugin actions are designed to be cross-platform and do not require CLI usage by the user.
+
 1. The system must read the OneDrive and Vault root locations from `config.json`.
 2. The system must display a list of resource files (videos, PDFs, spreadsheets, HTML) for the selected Vault folder, based on the mapped OneDrive folder.
 3. The system must allow users to open/launch these files directly from Obsidian.
