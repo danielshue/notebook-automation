@@ -229,3 +229,8 @@ CoverageReport/
 
 packages-microsoft-prod.deb
 
+src/obsidian-plugin/na-linux-arm64
+src/obsidian-plugin/na-linux-x64
+src/obsidian-plugin/na-macos-arm64
+.gitignore
+src/obsidian-plugin/na-macos-x64
