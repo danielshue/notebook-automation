@@ -19,10 +19,15 @@ $SourcePath = $PSScriptRoot
 $DestPath = Join-Path -Path $PSScriptRoot -ChildPath $VaultPluginsPath
 $DestPath = Join-Path -Path $DestPath -ChildPath $PluginName
 
+Write-Host "Source path: $SourcePath"
+Write-Host "Destination path: $DestPath"
+
 # Ensure destination directory exists
 if (-not (Test-Path $DestPath)) {
     Write-Host "Creating plugin directory at $DestPath"
-    New-Item -ItemType Directory -Path $DestPath | Out-Null
+    New-Item -ItemType Directory -Path $DestPath -Force | Out-Null
+} else {
+    Write-Host "Plugin directory already exists at $DestPath"
 }
 
 
@@ -30,22 +35,40 @@ if (-not (Test-Path $DestPath)) {
 $naSource = $null
 if ($IsWindows) {
     $naSource = "../../dist/all-platform-executables-1.0.1-19/published-executables-windows-latest-x64-1.0.1-19/na.exe"
+    if (-not (Test-Path $naSource)) {
+        Write-Warning "Windows na executable not found at $naSource. Trying fallback locations..."
+        # Try alternative Windows paths or skip
+        $naSource = $null
+    }
 } elseif ($IsMacOS) {
     $naSource = "../../dist/all-platform-executables-1.0.1-19/published-executables-macos-latest-x64-1.0.1-19/na"
 } else {
+    # Linux - try x64 first, then arm64
     $naSource = "../../dist/all-platform-executables-1.0.1-19/published-executables-ubuntu-latest-x64-1.0.1-19/na"
+    if (-not (Test-Path $naSource)) {
+        $naSource = "../../dist/all-platform-executables-1.0.1-19/published-executables-ubuntu-latest-arm64-1.0.1-19/na"
+    }
 }
 
 $FilesToCopy = @("main.js", "manifest.json")
-# Ensure na executable is included in the deployment
+
+
+# Ensure na executable is included in the deployment and copied directly to the plugin directory in the vault
 if ($naSource -and (Test-Path $naSource)) {
-    $FilesToCopy += @(Split-Path $naSource -Leaf)
-    Copy-Item $naSource (Join-Path $SourcePath (Split-Path $naSource -Leaf)) -Force
-    Write-Host "Copied platform-specific na executable to plugin directory."
+    $naExecutableName = Split-Path $naSource -Leaf
+    $vaultNaPath = Join-Path $DestPath $naExecutableName
+    Copy-Item $naSource $vaultNaPath -Force
+    Write-Host "Copied platform-specific na executable ($naExecutableName) to plugin vault directory: $vaultNaPath"
+    # Also copy to local plugin source directory for dev/test parity
+    $localNaPath = Join-Path $SourcePath $naExecutableName
+    Copy-Item $naSource $localNaPath -Force
+    Write-Host "Copied platform-specific na executable ($naExecutableName) to plugin source directory: $localNaPath"
+    $FilesToCopy += @($naExecutableName)
 } else {
-    Write-Warning "na executable not found at $naSource. Ensure it is built and available."
+    Write-Warning "na executable not found at $naSource. Plugin may not function properly without the CLI executable."
 }
 
+# Copy all required files
 foreach ($file in $FilesToCopy) {
     $src = Join-Path $SourcePath $file
     $dst = Join-Path $DestPath $file
