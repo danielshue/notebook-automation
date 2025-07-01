@@ -2,9 +2,15 @@
   "name": "obsidian-plugin",
   "version": "0.1.0",
   "description": "Obsidian plugin for notebook automation",
-  "main": "main.js",
+  "main": "dist/main.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "rebuild": "npm run clean && npm run build",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "tsc --noEmit"
   },
   "author": "",
   "license": "MIT",
