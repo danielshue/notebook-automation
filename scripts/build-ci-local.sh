@@ -369,60 +369,136 @@ publish_executables() {
         return 0
     fi
     
-    log_info "Publishing single-file executable for $RUNTIME_ID..."
+    log_info "Publishing single-file executables for both x64 and ARM64..."
     
-    local publish_dir="$PROJECT_ROOT/publish/$RUNTIME_ID"
-    mkdir -p "$publish_dir"
+    # Create executables directory (mirrors CI structure)
+    local executables_dir="$PROJECT_ROOT/publish/executables"
+    mkdir -p "$executables_dir"
     
-    local publish_args=(
+    # Map OS to platform prefix for naming
+    local platform_prefix
+    case "$OS" in
+        linux) platform_prefix="linux" ;;
+        osx) platform_prefix="macos" ;;
+        *) platform_prefix="$OS" ;;
+    esac
+    
+    # Publish x64 version
+    log_info "Publishing x64 executable..."
+    local temp_x64_dir="$PROJECT_ROOT/publish/temp-$OS-x64"
+    local x64_runtime_id="$OS-x64"
+    
+    local publish_args_x64=(
         "$CLI_PROJECT"
         "-c" "$CONFIGURATION"
-        "-r" "$RUNTIME_ID"
+        "-r" "$x64_runtime_id"
         "/p:PublishSingleFile=true"
         "/p:SelfContained=true"
         "/p:Version=$PACKAGE_VERSION"
         "/p:FileVersion=$FILE_VERSION"
         "/p:AssemblyVersion=$ASSEMBLY_VERSION"
         "/p:InformationalVersion=$FILE_VERSION"
-        "--output" "$publish_dir"
+        "--output" "$temp_x64_dir"
     )
     
     if [[ "$VERBOSE" == true ]]; then
-        publish_args+=("--verbosity" "detailed")
+        publish_args_x64+=("--verbosity" "detailed")
     fi
     
-    if ! dotnet publish "${publish_args[@]}"; then
-        log_error "Publish failed"
+    if ! dotnet publish "${publish_args_x64[@]}"; then
+        log_error "x64 publish failed"
         exit 1
     fi
     
-    # Test the published executable
-    local executable_path="$publish_dir/na$EXECUTABLE_EXT"
-    if [[ -f "$executable_path" ]]; then
-        log_info "Testing published executable..."
-        if ! "$executable_path" --version; then
-            log_warning "Published executable test failed"
+    # Copy and rename x64 executable using new naming convention
+    local source_x64_exe="$temp_x64_dir/na$EXECUTABLE_EXT"
+    local target_x64_exe="$executables_dir/na-$platform_prefix-x64$EXECUTABLE_EXT"
+    
+    if [[ -f "$source_x64_exe" ]]; then
+        cp "$source_x64_exe" "$target_x64_exe"
+        log_success "x64 executable published: na-$platform_prefix-x64$EXECUTABLE_EXT"
+    else
+        log_error "x64 executable not found: $source_x64_exe"
+        exit 1
+    fi
+    
+    # Publish ARM64 version
+    log_info "Publishing ARM64 executable..."
+    local temp_arm64_dir="$PROJECT_ROOT/publish/temp-$OS-arm64"
+    local arm64_runtime_id="$OS-arm64"
+    
+    local publish_args_arm64=(
+        "$CLI_PROJECT"
+        "-c" "$CONFIGURATION"
+        "-r" "$arm64_runtime_id"
+        "/p:PublishSingleFile=true"
+        "/p:SelfContained=true"
+        "/p:Version=$PACKAGE_VERSION"
+        "/p:FileVersion=$FILE_VERSION"
+        "/p:AssemblyVersion=$ASSEMBLY_VERSION"
+        "/p:InformationalVersion=$FILE_VERSION"
+        "--output" "$temp_arm64_dir"
+    )
+    
+    if [[ "$VERBOSE" == true ]]; then
+        publish_args_arm64+=("--verbosity" "detailed")
+    fi
+    
+    if ! dotnet publish "${publish_args_arm64[@]}"; then
+        log_error "ARM64 publish failed"
+        exit 1
+    fi
+    
+    # Copy and rename ARM64 executable using new naming convention
+    local source_arm64_exe="$temp_arm64_dir/na$EXECUTABLE_EXT"
+    local target_arm64_exe="$executables_dir/na-$platform_prefix-arm64$EXECUTABLE_EXT"
+    
+    if [[ -f "$source_arm64_exe" ]]; then
+        cp "$source_arm64_exe" "$target_arm64_exe"
+        log_success "ARM64 executable published: na-$platform_prefix-arm64$EXECUTABLE_EXT"
+    else
+        log_error "ARM64 executable not found: $source_arm64_exe"
+        exit 1
+    fi
+    
+    # Test the current architecture executable
+    local current_arch_exe="$executables_dir/na-$platform_prefix-$ARCH$EXECUTABLE_EXT"
+    if [[ -f "$current_arch_exe" ]]; then
+        log_info "Testing current architecture executable..."
+        if ! "$current_arch_exe" --version; then
+            log_warning "Current architecture executable test failed"
         else
-            log_success "Published executable test passed"
+            log_success "Current architecture executable test passed"
         fi
         
-        # Show file size
-        local file_size
+        # Show file sizes
+        local x64_size arm64_size
         if command -v stat &> /dev/null; then
             if [[ "$OS" == "osx" ]]; then
-                file_size=$(stat -f%z "$executable_path")
+                x64_size=$(stat -f%z "$target_x64_exe")
+                arm64_size=$(stat -f%z "$target_arm64_exe")
             else
-                file_size=$(stat -c%s "$executable_path")
+                x64_size=$(stat -c%s "$target_x64_exe")
+                arm64_size=$(stat -c%s "$target_arm64_exe")
             fi
-            local size_mb=$((file_size / 1024 / 1024))
-            log_info "Executable size: ${size_mb}MB"
+            local x64_size_mb=$((x64_size / 1024 / 1024))
+            local arm64_size_mb=$((arm64_size / 1024 / 1024))
+            log_info "Executable sizes:"
+            log_info "  - na-$platform_prefix-x64$EXECUTABLE_EXT: ${x64_size_mb}MB"
+            log_info "  - na-$platform_prefix-arm64$EXECUTABLE_EXT: ${arm64_size_mb}MB"
         fi
     else
-        log_error "Published executable not found: $executable_path"
+        log_error "Current architecture executable not found: $current_arch_exe"
         exit 1
     fi
     
-    log_success "Publish completed: $publish_dir"
+    # Clean up temp directories
+    rm -rf "$temp_x64_dir" "$temp_arm64_dir" 2>/dev/null || true
+    
+    log_info "Published executables with new naming convention:"
+    ls -la "$executables_dir"
+    
+    log_success "Publish completed: $executables_dir"
 }
 
 # Main execution
@@ -468,8 +544,8 @@ main() {
     fi
     
     if [[ "$SKIP_PUBLISH" != true ]]; then
-        if [[ -d "$PROJECT_ROOT/publish/$RUNTIME_ID" ]]; then
-            log_info "  Published Executable: $PROJECT_ROOT/publish/$RUNTIME_ID/"
+        if [[ -d "$PROJECT_ROOT/publish/executables" ]]; then
+            log_info "  Published Executables: $PROJECT_ROOT/publish/executables/"
         fi
     fi
     

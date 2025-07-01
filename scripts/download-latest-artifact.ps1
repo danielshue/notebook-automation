@@ -5,7 +5,7 @@
 # Examples:
 #   .\download-latest-artifact.ps1                              # Download all platform executables (auto-detects your platform)
 #   pwsh .\download-latest-artifact.ps1 -Platform windows       # Download only Windows executables  
-#   pwsh .\download-latest-artifact.ps1 -Platform ubuntu -Arch x64   # Download only Ubuntu x64 executables
+#   pwsh .\download-latest-artifact.ps1 -Platform ubuntu -Arch x64   # Download only Ubuntu executables (arch filter not needed for new format)
 #   pwsh .\download-latest-artifact.ps1 -ListOnly               # List available artifacts without downloading
 #   pwsh .\download-latest-artifact.ps1 -Version "1.0.1"        # Download artifacts for specific version (SemVer)
 #   pwsh .\download-latest-artifact.ps1 -Platform all           # Download all platforms and architectures
@@ -13,11 +13,12 @@
 # Parameters:
 #   -Workflow: GitHub Actions workflow file name (default: ci-cross-platform.yml)
 #   -Platform: Target platform - "all", "windows", "ubuntu", "macos" (default: all)
-#   -Architecture: Target architecture - "all", "x64", "arm64" (default: all)
+#   -Architecture: Target architecture - "all", "x64", "arm64" (Note: not needed for new format since each platform contains both architectures)
 #   -Version: Specific SemVer to download (optional, downloads latest if not specified)
 #   -ListOnly: Only list available artifacts without downloading
 #
-# Note: Downloads are placed in ../dist with standardized directory names (e.g., windows-x64, ubuntu-x64, macos-arm64)
+# Note: Downloads are placed in ../dist with platform-based directory names (e.g., windows, ubuntu, macos)
+#       Each directory contains executables named like na-win-x64.exe, na-macos-arm64, etc.
 
 param(
     [string]$Workflow = "ci-cross-platform.yml",
@@ -191,7 +192,7 @@ $artifacts | ForEach-Object {
 
 # Filter artifacts based on parameters
 $filteredArtifacts = $artifacts | Where-Object { 
-    $_.name -like "published-executables-*" -or $_.name -like "all-platform-executables-*"
+    $_.name -like "executables-*" -or $_.name -like "all-platform-executables-*"
 }
 
 # Apply version filter if specified
@@ -218,25 +219,25 @@ if ($Version) {
 # Apply platform filter
 if ($Platform -ne "all") {
     $platformMap = @{
-        "windows" = "windows-latest"
-        "ubuntu" = "ubuntu-latest" 
-        "macos" = "macos-latest"
+        "windows" = "win"
+        "ubuntu" = "linux" 
+        "macos" = "macos"
     }
     
     $platformName = $platformMap[$Platform.ToLower()]
     if ($platformName) {
         $filteredArtifacts = $filteredArtifacts | Where-Object { 
-            $_.name -like "*$platformName*" -or $_.name -like "all-platform-executables-*"
+            $_.name -like "*executables-$platformName-*" -or $_.name -like "all-platform-executables-*"
         }
     }
 }
 
-# Apply architecture filter
-if ($Architecture -ne "all") {
-    $filteredArtifacts = $filteredArtifacts | Where-Object { 
-        $_.name -like "*$Architecture*" -or $_.name -like "all-platform-executables-*"
-    }
-}
+# Apply architecture filter - not needed for new format since each platform artifact contains both architectures
+# if ($Architecture -ne "all") {
+#     $filteredArtifacts = $filteredArtifacts | Where-Object { 
+#         $_.name -like "*$Architecture*" -or $_.name -like "all-platform-executables-*"
+#     }
+# }
 
 if (-not $filteredArtifacts) {
     Write-Host "No matching artifacts found for Platform='$Platform', Architecture='$Architecture'"
@@ -273,24 +274,14 @@ foreach ($artifact in $filteredArtifacts) {
         
         # Determine the standardized directory name based on artifact name
         $standardizedDirName = ""
-        if ($artifact.name -like "*windows-latest*") {
-            if ($artifact.name -like "*x64*") {
-                $standardizedDirName = "windows-x64"
-            } elseif ($artifact.name -like "*arm64*") {
-                $standardizedDirName = "windows-arm64"
-            }
-        } elseif ($artifact.name -like "*ubuntu-latest*") {
-            if ($artifact.name -like "*x64*") {
-                $standardizedDirName = "ubuntu-x64"
-            } elseif ($artifact.name -like "*arm64*") {
-                $standardizedDirName = "ubuntu-arm64"
-            }
-        } elseif ($artifact.name -like "*macos-latest*") {
-            if ($artifact.name -like "*x64*") {
-                $standardizedDirName = "macos-x64"
-            } elseif ($artifact.name -like "*arm64*") {
-                $standardizedDirName = "macos-arm64"
-            }
+        if ($artifact.name -like "executables-win-*") {
+            $standardizedDirName = "windows"
+        } elseif ($artifact.name -like "executables-linux-*") {
+            $standardizedDirName = "ubuntu"
+        } elseif ($artifact.name -like "executables-macos-*") {
+            $standardizedDirName = "macos"
+        } elseif ($artifact.name -like "all-platform-executables-*") {
+            $standardizedDirName = "all-platforms"
         }
         
         # Use standardized directory name if determined, otherwise fall back to artifact name
@@ -328,43 +319,40 @@ if ($downloadedAny) {
     Write-Host ""
     Write-Host "Platform summary:"
     
-    # Check for executables by platform using standardized directory names
-    $standardizedPlatforms = @("windows", "ubuntu", "macos")
-    $supportedArchitectures = @("x64", "arm64")
+    # Check for executables by platform using the new naming convention
+    $platformDirs = @("windows", "ubuntu", "macos", "all-platforms")
     
-    foreach ($platformName in $standardizedPlatforms) {
-        foreach ($archName in $supportedArchitectures) {
-            $standardizedDirName = "$platformName-$archName"
-            $platformDir = Get-ChildItem -Path "$DistPath" -Directory | Where-Object { 
-                $_.Name -eq $standardizedDirName
+    foreach ($platformName in $platformDirs) {
+        $platformDir = Get-ChildItem -Path "$DistPath" -Directory | Where-Object { 
+            $_.Name -eq $platformName
+        }
+        
+        if ($platformDir) {
+            # Look for executables with the new naming convention
+            $executables = Get-ChildItem -Path $platformDir.FullName -File -Recurse | Where-Object { 
+                $_.Name -like "na-*" -or $_.Name -eq "na" -or $_.Name -eq "na.exe" 
             }
             
-            if ($platformDir) {
-                $executables = Get-ChildItem -Path $platformDir.FullName -File -Recurse | Where-Object { 
-                    $_.Name -eq "na" -or $_.Name -eq "na.exe" 
-                }
-                
-                if ($executables) {
-                    Write-Host "  ✓ $standardizedDirName : $($executables.Count) executable(s)"
-                    $executables | ForEach-Object {
-                        $sizeKB = [math]::Round($_.Length / 1KB, 2)
-                        $relativePath = $_.FullName.Replace($platformDir.FullName, "").TrimStart("\", "/")
-                        Write-Host "    - $relativePath ($sizeKB KB)"
-                    }
+            if ($executables) {
+                Write-Host "  ✓ $platformName : $($executables.Count) executable(s)"
+                $executables | ForEach-Object {
+                    $sizeKB = [math]::Round($_.Length / 1KB, 2)
+                    $relativePath = $_.FullName.Replace($platformDir.FullName, "").TrimStart("\", "/")
+                    Write-Host "    - $relativePath ($sizeKB KB)"
                 }
             }
         }
     }
     
     # Check for consolidated executables
-    $consolidatedDir = Get-ChildItem -Path "$DistPath" -Directory -Recurse | Where-Object { 
-        $_.Name -like "all-platform-executables-*" 
+    $consolidatedDir = Get-ChildItem -Path "$DistPath" -Directory | Where-Object { 
+        $_.Name -eq "all-platforms"
     }
     
     if ($consolidatedDir) {
         Write-Host "  ✓ Consolidated executables directory found"
         $allExes = Get-ChildItem -Path $consolidatedDir.FullName -File -Recurse | Where-Object { 
-            $_.Name -eq "na" -or $_.Name -eq "na.exe" 
+            $_.Name -like "na-*" -or $_.Name -eq "na" -or $_.Name -eq "na.exe" 
         }
         Write-Host "    Total executables: $($allExes.Count)"
         
@@ -395,39 +383,41 @@ if ($downloadedAny) {
     }
     
     if ($downloadedVersion) {
-        Write-Host "  Windows: $DistPath/windows-x64/na.exe --help"
-        Write-Host "  macOS:   $DistPath/macos-x64/na --help"
-        Write-Host "  Linux:   $DistPath/ubuntu-x64/na --help"
-        Write-Host ""
-        Write-Host "  ARM64 variants:"
-        Write-Host "  Windows: $DistPath/windows-arm64/na.exe --help"
-        Write-Host "  macOS:   $DistPath/macos-arm64/na --help"
-        Write-Host "  Linux:   $DistPath/ubuntu-arm64/na --help"
+        Write-Host "  Windows x64:  $DistPath/windows/na-win-x64.exe --help"
+        Write-Host "  Windows ARM64: $DistPath/windows/na-win-arm64.exe --help"
+        Write-Host "  macOS x64:    $DistPath/macos/na-macos-x64 --help"
+        Write-Host "  macOS ARM64:  $DistPath/macos/na-macos-arm64 --help"
+        Write-Host "  Linux x64:    $DistPath/ubuntu/na-linux-x64 --help"
+        Write-Host "  Linux ARM64:  $DistPath/ubuntu/na-linux-arm64 --help"
         Write-Host ""
         Write-Host "  Or use the consolidated directory (if available):"
-        Write-Host "  $DistPath/all-platform-executables-$downloadedVersion/published-executables-<platform>-<arch>-$downloadedVersion/na[.exe]"
+        Write-Host "  $DistPath/all-platforms/na-<platform>-<arch> --help"
     } else {
-        Write-Host "  Windows: $DistPath/windows-x64/na.exe --help"
-        Write-Host "  macOS:   $DistPath/macos-x64/na --help"
-        Write-Host "  Linux:   $DistPath/ubuntu-x64/na --help"
-        Write-Host ""
-        Write-Host "  ARM64 variants:"
-        Write-Host "  Windows: $DistPath/windows-arm64/na.exe --help"
-        Write-Host "  macOS:   $DistPath/macos-arm64/na --help"
-        Write-Host "  Linux:   $DistPath/ubuntu-arm64/na --help"
+        Write-Host "  Windows x64:  $DistPath/windows/na-win-x64.exe --help"
+        Write-Host "  Windows ARM64: $DistPath/windows/na-win-arm64.exe --help"
+        Write-Host "  macOS x64:    $DistPath/macos/na-macos-x64 --help"
+        Write-Host "  macOS ARM64:  $DistPath/macos/na-macos-arm64 --help"
+        Write-Host "  Linux x64:    $DistPath/ubuntu/na-linux-x64 --help"
+        Write-Host "  Linux ARM64:  $DistPath/ubuntu/na-linux-arm64 --help"
         Write-Host ""
         Write-Host "  Or use the consolidated directory (if available):"
-        Write-Host "  $DistPath/all-platform-executables-<version>/published-executables-<platform>-<arch>-<version>/na[.exe]"
+        Write-Host "  $DistPath/all-platforms/na-<platform>-<arch> --help"
     }
     
     # Show specific command for current platform if auto-detected
     if ($Platform -ne "all" -and $Architecture -ne "all") {
-        $standardizedPlatform = $Platform.ToLower()
+        $platformMap = @{
+            "windows" = "win"
+            "ubuntu" = "linux"
+            "macos" = "macos"
+        }
+        
+        $platformPrefix = $platformMap[$Platform.ToLower()]
         $extension = if ($Platform -eq "windows") { ".exe" } else { "" }
         
         Write-Host ""
         Write-Host "Quick start for your platform (auto-detected):" -ForegroundColor Green
-        Write-Host "  $DistPath/$standardizedPlatform-$Architecture/na$extension --help"
+        Write-Host "  $DistPath/$Platform/na-$platformPrefix-$Architecture$extension --help"
     }
 } else {
     Write-Host "No artifacts were downloaded."
