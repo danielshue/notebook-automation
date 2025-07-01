@@ -6,7 +6,7 @@
 set -e
 
 PLUGIN_NAME="notebook-automation"
-VAULT_PLUGINS_PATH="../../tests/obsidian-vault/Obsidian Vault Test/.obsidian/plugins"
+VAULT_PLUGINS_PATH="../../tests/obsidian-vault/.obsidian/plugins"
 
 echo "Building the plugin..."
 

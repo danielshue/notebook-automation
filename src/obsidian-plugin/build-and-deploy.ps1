@@ -3,7 +3,7 @@
 
 param(
     [string]$PluginName = "notebook-automation",
-    [string]$VaultPluginsPath = "../../tests/obsidian-vault/Obsidian Vault Test/.obsidian/plugins"
+    [string]$VaultPluginsPath = "../../tests/obsidian-vault/.obsidian/plugins"
 )
 
 $ErrorActionPreference = "Stop"
