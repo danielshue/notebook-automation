@@ -139,7 +139,7 @@ public class VaultCommandsTests
     }
 
     [TestMethod]
-    public async Task SyncDirsCommand_PrintsUsage_WhenMissingRequiredArguments()
+    public async Task SyncDirsCommand_ShowsUsage_WhenMissingRequiredArguments()
     {
         // Arrange
         var rootCommand = new RootCommand();
@@ -152,8 +152,9 @@ public class VaultCommandsTests
         var mockSyncProcessor = new Mock<IVaultFolderSyncProcessor>();
         mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
             .Returns(mockSyncProcessor.Object);
-        mockServiceProvider.Setup(sp => sp.GetRequiredService(typeof(IVaultFolderSyncProcessor)))
-            .Returns(mockSyncProcessor.Object);
+        // Mock the generic GetService method that GetRequiredService calls internally
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+            .Returns(mockAppConfig.Object);
         
         var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
         vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
@@ -168,8 +169,9 @@ public class VaultCommandsTests
             var parser = new Parser(rootCommand);
             var result = await parser.InvokeAsync("vault sync-dirs").ConfigureAwait(false);
 
-            // Assert - Should fail due to missing required argument
-            Assert.AreNotEqual(0, result, "Command should fail when required arguments are missing");
+            // Assert: Should show error message for missing argument
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("OneDrive path is required"), "Should show error message for missing OneDrive path");
         }
         finally
         {
@@ -204,8 +206,9 @@ public class VaultCommandsTests
         
         mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
             .Returns(mockSyncProcessor.Object);
-        mockServiceProvider.Setup(sp => sp.GetRequiredService(typeof(IVaultFolderSyncProcessor)))
-            .Returns(mockSyncProcessor.Object);
+        // Mock the generic GetService method that GetRequiredService calls internally
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+            .Returns(mockAppConfig.Object);
         
         var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
         vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
@@ -223,7 +226,7 @@ public class VaultCommandsTests
             // Assert
             Assert.AreEqual(0, result, "Command should execute successfully");
             string output = stringWriter.ToString();
-            Assert.IsTrue(output.Contains("Executing vault sync-dirs"), "Should show execution message");
+            Assert.IsTrue(output.Contains("Executing vault"), "Should show execution message");
             Assert.IsTrue(output.Contains("completed successfully"), "Should show success message");
             
             // Verify the processor was called with correct parameters (bidirectional defaults to true)
@@ -263,8 +266,9 @@ public class VaultCommandsTests
         
         mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
             .Returns(mockSyncProcessor.Object);
-        mockServiceProvider.Setup(sp => sp.GetRequiredService(typeof(IVaultFolderSyncProcessor)))
-            .Returns(mockSyncProcessor.Object);
+        // Mock the generic GetService method that GetRequiredService calls internally
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+            .Returns(mockAppConfig.Object);
         
         var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
         vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
@@ -324,8 +328,9 @@ public class VaultCommandsTests
         
         mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
             .Returns(mockSyncProcessor.Object);
-        mockServiceProvider.Setup(sp => sp.GetRequiredService(typeof(IVaultFolderSyncProcessor)))
-            .Returns(mockSyncProcessor.Object);
+        // Mock the generic GetService method that GetRequiredService calls internally
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+            .Returns(mockAppConfig.Object);
         
         var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
         vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);

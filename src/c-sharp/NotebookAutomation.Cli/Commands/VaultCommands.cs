@@ -270,11 +270,23 @@ internal class VaultCommands
         syncDirsCommand.AddArgument(oneDrivePathArg);
         syncDirsCommand.AddArgument(vaultPathArg);
         syncDirsCommand.AddOption(unidirectionalOption);
+        syncDirsCommand.AddOption(dryRunOption);
+        syncDirsCommand.AddOption(verboseOption);
         
         syncDirsCommand.SetHandler(async (string oneDrivePath, string? vaultPath, bool unidirectional, bool dryRun, bool verbose) =>
         {
             try
             {
+                // Validate required arguments
+                if (string.IsNullOrWhiteSpace(oneDrivePath))
+                {
+                    AnsiConsoleHelper.WriteError("OneDrive path is required. Please provide a relative path within OneDrive to synchronize.");
+                    AnsiConsoleHelper.WriteUsage("vault sync-dirs <onedrive-path> [vault-path]", 
+                                                "Synchronize directory structure between OneDrive and vault",
+                                                "--unidirectional  Disable bidirectional sync (OneDrive → Vault only)\n--dry-run        Preview changes without making them\n--verbose        Show detailed output");
+                    return;
+                }
+
                 // Get services from service provider
                 var syncProcessor = _serviceProvider.GetRequiredService<IVaultFolderSyncProcessor>();
                 var appConfig = _serviceProvider.GetRequiredService<AppConfig>();
