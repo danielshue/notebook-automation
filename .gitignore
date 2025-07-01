@@ -22,6 +22,16 @@ build/
 node_modules/
 publish/
 
+# TypeScript compiled files (exclude JS files generated from TS)
+src/obsidian-plugin/*.js
+src/obsidian-plugin/*.js.map
+!src/obsidian-plugin/jest.config.js
+
+# Obsidian plugin executables
+src/obsidian-plugin/na
+src/obsidian-plugin/na.exe
+src/obsidian-plugin/notebook-automation/
+
 # IDE specific files
 .idea/
 .vscode/
@@ -42,6 +52,7 @@ logs/*
 token_cache.bin
 
 # Reports
+tests/
 tests/*.txt
 
 failed_files.log
