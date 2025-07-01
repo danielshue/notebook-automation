@@ -258,11 +258,106 @@ internal class VaultCommands
             AnsiConsoleHelper.WriteInfo($"Executing vault clean-index for path: {pathValue}");
         });
 
+        // Create sync-dirs subcommand
+        var syncDirsCommand = new Command("sync-dirs", "Synchronize directory structure between OneDrive and vault (bidirectional by default)");
+        var oneDrivePathArg = new Argument<string>("onedrive-path", "Relative path within OneDrive to synchronize");
+        var vaultPathArg = new Argument<string?>("vault-path", "Target vault path (defaults to vault root from config)")
+        {
+            Arity = ArgumentArity.ZeroOrOne
+        };
+        var unidirectionalOption = new Option<bool>("--unidirectional", "Disable bidirectional sync (OneDrive → Vault only)");
+        
+        syncDirsCommand.AddArgument(oneDrivePathArg);
+        syncDirsCommand.AddArgument(vaultPathArg);
+        syncDirsCommand.AddOption(unidirectionalOption);
+        
+        syncDirsCommand.SetHandler(async (string oneDrivePath, string? vaultPath, bool unidirectional, bool dryRun, bool verbose) =>
+        {
+            try
+            {
+                // Get services from service provider
+                var syncProcessor = _serviceProvider.GetRequiredService<IVaultFolderSyncProcessor>();
+                var appConfig = _serviceProvider.GetRequiredService<AppConfig>();
+
+                // Bidirectional is default, unidirectional flag turns it off
+                bool bidirectional = !unidirectional;
+
+                if (verbose)
+                {
+                    AnsiConsoleHelper.WriteInfo($"Starting directory synchronization");
+                    AnsiConsoleHelper.WriteInfo($"OneDrive path: {oneDrivePath}");
+                    AnsiConsoleHelper.WriteInfo($"Vault path: {vaultPath ?? "using default from config"}");
+                    AnsiConsoleHelper.WriteInfo($"Bidirectional: {bidirectional}");
+                    if (dryRun)
+                    {
+                        AnsiConsoleHelper.WriteInfo("Dry run mode enabled - no directories will be created");
+                    }
+                }
+
+                // Output basic execution message for test compatibility
+                var syncMode = bidirectional ? "bidirectional sync-dirs" : "sync-dirs";
+                AnsiConsoleHelper.WriteInfo($"Executing vault {syncMode} for OneDrive path: {oneDrivePath}");
+
+                // Execute the directory synchronization with animated status
+                var statusMessage = bidirectional 
+                    ? $"Synchronizing directories bidirectionally: {oneDrivePath}"
+                    : $"Synchronizing directories from OneDrive: {oneDrivePath}";
+                    
+                var result = await AnsiConsoleHelper.WithStatusAsync(
+                    async (updateStatus) =>
+                    {
+                        // Execute the directory synchronization
+                        return await syncProcessor.SyncDirectoriesAsync(
+                            oneDrivePath: oneDrivePath,
+                            vaultPath: vaultPath,
+                            dryRun: dryRun,
+                            bidirectional: bidirectional);
+                    },
+                    statusMessage).ConfigureAwait(false);
+
+                if (result.Success)
+                {
+                    AnsiConsoleHelper.WriteSuccess($"Directory synchronization completed successfully.");
+                    AnsiConsoleHelper.WriteInfo($"Synchronized {result.SynchronizedFolders} folders out of {result.TotalFolders} total.");
+                    
+                    if (result.CreatedVaultFolders > 0)
+                    {
+                        AnsiConsoleHelper.WriteInfo($"Created {result.CreatedVaultFolders} new vault directories.");
+                    }
+                    
+                    if (bidirectional && result.CreatedOneDriveFolders > 0)
+                    {
+                        AnsiConsoleHelper.WriteInfo($"Created {result.CreatedOneDriveFolders} new OneDrive directories.");
+                    }
+
+                    if (result.SkippedFolders > 0)
+                    {
+                        AnsiConsoleHelper.WriteWarning($"{result.SkippedFolders} folders were skipped (already exist).");
+                    }
+
+                    if (result.FailedFolders > 0)
+                    {
+                        AnsiConsoleHelper.WriteWarning($"{result.FailedFolders} folders failed to synchronize.");
+                    }
+                }
+                else
+                {
+                    AnsiConsoleHelper.WriteError($"Directory synchronization failed: {result.ErrorMessage}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error executing vault sync-dirs command");
+                AnsiConsoleHelper.WriteError($"An error occurred: {ex.Message}");
+            }
+        }, oneDrivePathArg, vaultPathArg, unidirectionalOption, dryRunOption, verboseOption);
+
         // Create parent vault command
         var vaultCommand = new Command("vault", "Vault management commands");
         vaultCommand.AddCommand(generateIndexCommand);
         vaultCommand.AddCommand(ensureMetadataCommand);
         vaultCommand.AddCommand(cleanIndexCommand);
+        vaultCommand.AddCommand(syncDirsCommand);
 
         // Add help handler for when no subcommand is specified
         vaultCommand.TreatUnmatchedTokensAsErrors = true;
