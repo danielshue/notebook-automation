@@ -203,23 +203,34 @@ try {
     $tempPublishDir = Join-Path $ScriptDir "temp_publish_test"
 
     try {
+        # Create executables directory (mirrors new CI structure)
+        $executablesDir = Join-Path $tempPublishDir "executables"
+        New-Item -ItemType Directory -Path $executablesDir -Force | Out-Null
+
         # Test win-x64 publish (mirrors CI)
         Write-Host "Testing win-x64 publish with version info:" -ForegroundColor $Yellow
         Write-Host "  - Package Version: $packageVersion" -ForegroundColor $Yellow
         Write-Host "  - File Version: $fileVersion" -ForegroundColor $Yellow
 
-        dotnet publish $cliProjectPath -c $Configuration -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$packageVersion /p:FileVersion=$fileVersion /p:AssemblyVersion=$assemblyVersion --output "$tempPublishDir\win-x64"
+        $tempWinX64Dir = Join-Path $tempPublishDir "temp-win-x64"
+        dotnet publish $cliProjectPath -c $Configuration -r win-x64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$packageVersion /p:FileVersion=$fileVersion /p:AssemblyVersion=$assemblyVersion --output $tempWinX64Dir
         if ($LASTEXITCODE -ne 0) {
             throw "win-x64 publish failed with exit code $LASTEXITCODE"
-        }        # Verify win-x64 binary
-        $winX64Binary = Join-Path "$tempPublishDir\win-x64" "na.exe"
-        if (-not (Test-Path $winX64Binary)) {
-            throw "win-x64 binary not found at $winX64Binary"
-        }        # Test the win-x64 binary with version command
+        }
+
+        # Copy and rename using new naming convention
+        $sourceWinX64Binary = Join-Path $tempWinX64Dir "na.exe"
+        $targetWinX64Binary = Join-Path $executablesDir "na-win-x64.exe"
+        if (-not (Test-Path $sourceWinX64Binary)) {
+            throw "win-x64 binary not found at $sourceWinX64Binary"
+        }
+        Copy-Item $sourceWinX64Binary $targetWinX64Binary
+
+        # Test the win-x64 binary with version command
         # Only test if not in CI environment and either TestAllArch is true or platform is x64
         if ((-not $env:CI) -and ($TestAllArch -or [Environment]::Is64BitOperatingSystem)) {
             Write-Host "Testing win-x64 binary with --version option..." -ForegroundColor $Yellow
-            & $winX64Binary --version
+            & $targetWinX64Binary --version
             if ($LASTEXITCODE -ne 0) {
                 throw "win-x64 binary test failed with exit code $LASTEXITCODE"
             }
@@ -228,20 +239,27 @@ try {
 
         # Test win-arm64 publish (mirrors CI)
         Write-Host "`nTesting win-arm64 publish..." -ForegroundColor $Yellow
-        dotnet publish $cliProjectPath -c $Configuration -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$packageVersion /p:FileVersion=$fileVersion /p:AssemblyVersion=$assemblyVersion --output "$tempPublishDir\win-arm64"
+        $tempWinArm64Dir = Join-Path $tempPublishDir "temp-win-arm64"
+        dotnet publish $cliProjectPath -c $Configuration -r win-arm64 /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$packageVersion /p:FileVersion=$fileVersion /p:AssemblyVersion=$assemblyVersion --output $tempWinArm64Dir
         if ($LASTEXITCODE -ne 0) {
             throw "win-arm64 publish failed with exit code $LASTEXITCODE"
-        }        # Verify win-arm64 binary
-        $winArm64Binary = Join-Path "$tempPublishDir\win-arm64" "na.exe"
-        if (-not (Test-Path $winArm64Binary)) {
-            throw "win-arm64 binary not found at $winArm64Binary"
-        }        # Test the win-arm64 binary with version command if possible
+        }
+
+        # Copy and rename using new naming convention
+        $sourceWinArm64Binary = Join-Path $tempWinArm64Dir "na.exe"
+        $targetWinArm64Binary = Join-Path $executablesDir "na-win-arm64.exe"
+        if (-not (Test-Path $sourceWinArm64Binary)) {
+            throw "win-arm64 binary not found at $sourceWinArm64Binary"
+        }
+        Copy-Item $sourceWinArm64Binary $targetWinArm64Binary
+
+        # Test the win-arm64 binary with version command if possible
         # Only attempt this on ARM64 hardware or if explicitly testing all architectures
         $isArm64Hardware = (Get-CimInstance -Class Win32_ComputerSystem).SystemType -like "*ARM64*"
         if ((-not $env:CI) -and ($TestAllArch -or $isArm64Hardware)) {
             Write-Host "Testing win-arm64 binary with --version option..." -ForegroundColor $Yellow
             try {
-                & $winArm64Binary --version
+                & $targetWinArm64Binary --version
                 if ($LASTEXITCODE -ne 0) {
                     throw "win-arm64 binary test failed with exit code $LASTEXITCODE"
                 }
@@ -261,12 +279,17 @@ try {
         }
 
         # Check file sizes to verify they are reasonable
-        $x64Size = (Get-Item $winX64Binary).Length / 1MB
-        $arm64Size = (Get-Item $winArm64Binary).Length / 1MB
+        $x64Size = (Get-Item $targetWinX64Binary).Length / 1MB
+        $arm64Size = (Get-Item $targetWinArm64Binary).Length / 1MB
 
         Write-Host "`nBinary sizes:" -ForegroundColor $Yellow
-        Write-Host "  - win-x64: $([math]::Round($x64Size, 2)) MB" -ForegroundColor $Yellow
-        Write-Host "  - win-arm64: $([math]::Round($arm64Size, 2)) MB" -ForegroundColor $Yellow
+        Write-Host "  - na-win-x64.exe: $([math]::Round($x64Size, 2)) MB" -ForegroundColor $Yellow
+        Write-Host "  - na-win-arm64.exe: $([math]::Round($arm64Size, 2)) MB" -ForegroundColor $Yellow
+
+        Write-Host "`nPublished executables with new naming convention:" -ForegroundColor $Yellow
+        Get-ChildItem -Path $executablesDir | ForEach-Object {
+            Write-Host "  - $($_.Name)" -ForegroundColor $Yellow
+        }
 
         Write-Success "Publish operations completed successfully"
     }

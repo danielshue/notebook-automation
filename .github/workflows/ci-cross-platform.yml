@@ -44,16 +44,25 @@ jobs:
             runtime-id-arm: win-arm64
             executable-extension: .exe
             shell-type: pwsh
+            platform-name: win
+            x64-executable-name: na-win-x64.exe
+            arm64-executable-name: na-win-arm64.exe
           - os: ubuntu-latest
             runtime-id: linux-x64
             runtime-id-arm: linux-arm64
             executable-extension: ""
             shell-type: bash
+            platform-name: linux
+            x64-executable-name: na-linux-x64
+            arm64-executable-name: na-linux-arm64
           - os: macos-latest
             runtime-id: osx-x64
             runtime-id-arm: osx-arm64
             executable-extension: ""
             shell-type: bash
+            platform-name: macos
+            x64-executable-name: na-macos-x64
+            arm64-executable-name: na-macos-arm64
 
     steps:
       - name: Checkout repository
@@ -240,120 +249,101 @@ jobs:
           fi
         shell: bash
 
-      - name: Publish single-file executables (x64, Windows)
+      - name: Create executables directory
+        run: mkdir -p publish/executables
+        shell: bash
+
+      - name: Publish and rename executables (Windows)
         if: always() && runner.os == 'Windows'
         shell: pwsh
         run: |
-          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id }}
-          if (!(Test-Path publish/${{ matrix.runtime-id }})) { Write-Host "dotnet publish failed"; exit 1 }
-          Write-Host "Publish directory contents (x64):"
-          Get-ChildItem publish/${{ matrix.runtime-id }}
+          # Publish x64 executable
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id }}
+          if (!(Test-Path publish/temp-${{ matrix.runtime-id }})) { Write-Host "dotnet publish x64 failed"; exit 1 }
+          Copy-Item "publish/temp-${{ matrix.runtime-id }}/na.exe" "publish/executables/${{ matrix.x64-executable-name }}"
+          
+          # Publish ARM64 executable
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id-arm }}
+          if (!(Test-Path publish/temp-${{ matrix.runtime-id-arm }})) { Write-Host "dotnet publish ARM64 failed"; exit 1 }
+          Copy-Item "publish/temp-${{ matrix.runtime-id-arm }}/na.exe" "publish/executables/${{ matrix.arm64-executable-name }}"
+          
+          # Clean up temp directories
+          Remove-Item -Recurse -Force publish/temp-* -ErrorAction SilentlyContinue
+          
+          Write-Host "Published executables:"
+          Get-ChildItem publish/executables
 
-      - name: Publish single-file executables (x64, Non-Windows)
+      - name: Publish and rename executables (Non-Windows)
         if: always() && runner.os != 'Windows'
         shell: bash
         run: |
-          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id }}
-          if [ $? -ne 0 ]; then echo "dotnet publish failed"; exit 1; fi
-          echo "Publish directory contents (x64):"
-          ls -la publish/${{ matrix.runtime-id }} || true
+          # Publish x64 executable
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id }}
+          if [ $? -ne 0 ]; then echo "dotnet publish x64 failed"; exit 1; fi
+          cp "publish/temp-${{ matrix.runtime-id }}/na" "publish/executables/${{ matrix.x64-executable-name }}"
+          
+          # Publish ARM64 executable
+          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id-arm }}
+          if [ $? -ne 0 ]; then echo "dotnet publish ARM64 failed"; exit 1; fi
+          cp "publish/temp-${{ matrix.runtime-id-arm }}/na" "publish/executables/${{ matrix.arm64-executable-name }}"
+          
+          # Clean up temp directories
+          rm -rf publish/temp-*
+          
+          echo "Published executables:"
+          ls -la publish/executables
 
-      - name: Publish single-file executables (ARM64, Windows)
+      - name: Test published executables (Windows)
         if: always() && runner.os == 'Windows'
         shell: pwsh
         run: |
-          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id-arm }}
-          if (!(Test-Path publish/${{ matrix.runtime-id-arm }})) { Write-Host "dotnet publish failed"; exit 1 }
-          Write-Host "Publish directory contents (ARM64):"
-          Get-ChildItem publish/${{ matrix.runtime-id-arm }}
-
-      - name: Publish single-file executables (ARM64, Non-Windows)
-        if: always() && runner.os != 'Windows'
-        shell: bash
-        run: |
-          dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/${{ matrix.runtime-id-arm }}
-          if [ $? -ne 0 ]; then echo "dotnet publish failed"; exit 1; fi
-          echo "Publish directory contents (ARM64):"
-          ls -la publish/${{ matrix.runtime-id-arm }} || true
-
-      - name: Test published executable (x64, Windows)
-        if: always() && runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Write-Host "Published files in publish/${{ matrix.runtime-id }}:"
-          Get-ChildItem publish/${{ matrix.runtime-id }}
-          $exe = "publish/${{ matrix.runtime-id }}/na.exe"
-          if (Test-Path $exe) {
-            & $exe --version
+          Write-Host "Testing x64 executable:"
+          $exe_x64 = "publish/executables/${{ matrix.x64-executable-name }}"
+          if (Test-Path $exe_x64) {
+            & $exe_x64 --version
           } else {
-            Write-Host "Executable not found: $exe"
+            Write-Host "x64 executable not found: $exe_x64"
+            exit 1
+          }
+          
+          Write-Host "Testing ARM64 executable:"
+          $exe_arm64 = "publish/executables/${{ matrix.arm64-executable-name }}"
+          if (Test-Path $exe_arm64) {
+            Write-Host "ARM64 executable found: $exe_arm64 (cannot test on x64 runner)"
+          } else {
+            Write-Host "ARM64 executable not found: $exe_arm64"
             exit 1
           }
 
-      - name: Test published executable (x64, Non-Windows)
+      - name: Test published executables (Non-Windows)
         if: always() && runner.os != 'Windows'
         shell: bash
         run: |
-          echo "Published files in publish/${{ matrix.runtime-id }}:"
-          ls -la publish/${{ matrix.runtime-id }} || true
-          exe_name="na"
-          if [ -f "publish/${{ matrix.runtime-id }}/$exe_name" ]; then
-            ./publish/${{ matrix.runtime-id }}/$exe_name --version
+          echo "Testing x64 executable:"
+          exe_x64="publish/executables/${{ matrix.x64-executable-name }}"
+          if [ -f "$exe_x64" ]; then
+            chmod +x "$exe_x64"
+            ./"$exe_x64" --version
           else
-            echo "Executable not found: publish/${{ matrix.runtime-id }}/$exe_name"
+            echo "x64 executable not found: $exe_x64"
+            exit 1
+          fi
+          
+          echo "Testing ARM64 executable:"
+          exe_arm64="publish/executables/${{ matrix.arm64-executable-name }}"
+          if [ -f "$exe_arm64" ]; then
+            echo "ARM64 executable found: $exe_arm64 (cannot test on x64 runner)"
+          else
+            echo "ARM64 executable not found: $exe_arm64"
             exit 1
           fi
 
       - name: Upload published executables
         if: always()
-        run: |
-          echo "Listing publish/${{ matrix.runtime-id }}:"
-          ls -la publish/${{ matrix.runtime-id }} || true
-          echo "Listing publish/${{ matrix.runtime-id-arm }}:"
-          ls -la publish/${{ matrix.runtime-id-arm }} || true
-          echo "Preparing artifact upload list..."
-          files_to_upload=""
-          for f in \
-            publish/${{ matrix.runtime-id }}/na \
-            publish/${{ matrix.runtime-id }}/na.exe \
-            publish/${{ matrix.runtime-id-arm }}/na \
-            publish/${{ matrix.runtime-id-arm }}/na.exe
-          do
-            if [ -f "$f" ]; then
-              echo "Found: $f"
-              files_to_upload+="$f\n"
-            else
-              echo "Not found: $f"
-            fi
-          done
-          if [ -n "$files_to_upload" ]; then
-            echo -e "$files_to_upload" > files-to-upload.txt
-            echo "Uploading the following files:"
-            cat files-to-upload.txt
-            tar -czf published-executables-${{ runner.os }}-${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}.tar.gz $(cat files-to-upload.txt)
-          else
-            echo "No executables found to upload."
-            touch published-executables-${{ runner.os }}-${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}.empty
-          fi
-        shell: bash
-      - name: Upload published executables artifact (x64)
-        if: always() && matrix.runtime-id && (success() || failure())
         uses: actions/upload-artifact@v4
         with:
-          name: published-executables-${{ matrix.os }}-x64-${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}
-          path: |
-            publish/${{ matrix.runtime-id }}/na
-            publish/${{ matrix.runtime-id }}/na.exe
-          retention-days: 7
-
-      - name: Upload published executables artifact (ARM64)
-        if: always() && matrix.runtime-id-arm && (success() || failure())
-        uses: actions/upload-artifact@v4
-        with:
-          name: published-executables-${{ matrix.os }}-arm64-${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}
-          path: |
-            publish/${{ matrix.runtime-id-arm }}/na
-            publish/${{ matrix.runtime-id-arm }}/na.exe
+          name: executables-${{ matrix.platform-name }}-${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}
+          path: publish/executables/
           retention-days: 7
 
   # Consolidate artifacts from all platforms
@@ -371,17 +361,17 @@ jobs:
         run: |
           mkdir -p consolidated-executables
 
-          # For each platform/arch artifact, copy into its own subdirectory
-          find all-artifacts -name "published-executables-*" -type d | while read dir; do
-            # Extract the artifact name (e.g., published-executables-windows-latest-x64-123)
-            artifact_name=$(basename "$dir")
-            mkdir -p "consolidated-executables/$artifact_name"
-            cp -r "$dir"/* "consolidated-executables/$artifact_name/" 2>/dev/null || true
+          # Copy all executables from each platform artifact into a single directory
+          find all-artifacts -name "executables-*" -type d | while read dir; do
+            echo "Processing artifact directory: $dir"
+            if [ -d "$dir" ]; then
+              cp -v "$dir"/* consolidated-executables/ 2>/dev/null || true
+            fi
           done
 
           # List what we have
-          echo "Consolidated executables (by platform/arch):"
-          find consolidated-executables -type f -name "na*" -exec ls -la {} \;
+          echo "Consolidated executables:"
+          ls -la consolidated-executables/
 
       - name: Upload consolidated executables
         uses: actions/upload-artifact@v4
