@@ -28,14 +28,55 @@ function getRelativeVaultResourcePath(fullPath: string, vaultRoot: string, vault
   return normFull;
 }
 /**
- * Utility to resolve the correct executable name for the current platform.
+ * Utility to resolve the correct executable name for the current platform and architecture.
  */
 function getNaExecutableName(): string {
   const platform = process?.platform || (window?.process && window.process.platform);
-  if (platform === "win32") {
-    return "na.exe";
+  const arch = process?.arch || (window?.process && window.process.arch);
+  
+  // Map Node.js platform/arch to our naming convention
+  let platformName: string;
+  let archName: string;
+  
+  // Map platform
+  switch (platform) {
+    case "win32":
+      platformName = "win";
+      break;
+    case "darwin":
+      platformName = "macos";
+      break;
+    case "linux":
+      platformName = "linux";
+      break;
+    default:
+      // Fallback to win32 if unknown
+      platformName = "win";
+      break;
   }
-  return "na";
+  
+  // Map architecture - convert to string and handle all cases
+  const archString = String(arch);
+  if (archString === "x64" || archString === "x86_64" || (archString.includes("64") && !archString.includes("arm"))) {
+    archName = "x64";
+  } else if (archString === "arm64" || archString === "aarch64" || archString.includes("arm")) {
+    archName = "arm64";
+  } else {
+    // Default fallback for unknown architectures
+    archName = "x64";
+  }
+  
+  // Build executable name using our naming convention
+  const extension = platformName === "win" ? ".exe" : "";
+  const execName = `na-${platformName}-${archName}${extension}`;
+  
+  // Log for debugging
+  // eslint-disable-next-line no-console
+  console.log(`[Notebook Automation] Platform: ${platform}, Arch: ${arch}`);
+  // eslint-disable-next-line no-console
+  console.log(`[Notebook Automation] Resolved executable name: ${execName}`);
+  
+  return execName;
 }
 
 /**
@@ -49,11 +90,15 @@ function getNaExecutablePath(plugin: Plugin): string {
     const path = window.require ? window.require('path') : null;
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
+    
     // Log plugin.manifest.dir and plugin.manifest.id for debugging
     // eslint-disable-next-line no-console
     console.log('[Notebook Automation] plugin.manifest.dir:', plugin.manifest?.dir);
     // eslint-disable-next-line no-console
     console.log('[Notebook Automation] plugin.manifest.id:', plugin.manifest?.id);
+    // eslint-disable-next-line no-console
+    console.log('[Notebook Automation] Looking for executable:', execName);
+    
     // Get vault root first - this is essential for building absolute paths
     let vaultRoot = '';
     const adapter = plugin.app?.vault?.adapter;
@@ -61,6 +106,7 @@ function getNaExecutablePath(plugin: Plugin): string {
     console.log('[Notebook Automation] adapter exists:', !!adapter);
     // eslint-disable-next-line no-console
     console.log('[Notebook Automation] adapter constructor:', adapter?.constructor?.name);
+    
     // @ts-ignore - Check for getBasePath method directly instead of constructor name (which can be minified)
     if (adapter && typeof adapter.getBasePath === 'function') {
       try {
@@ -76,18 +122,56 @@ function getNaExecutablePath(plugin: Plugin): string {
       // eslint-disable-next-line no-console
       console.log('[Notebook Automation] Could not get vaultRoot - getBasePath method not available');
     }
-    // Also try vault.getRoot() for additional validation
-    const vaultRootFolder = plugin.app?.vault?.getRoot?.();
-    if (vaultRootFolder) {
-      // eslint-disable-next-line no-console
-      console.log('[Notebook Automation] vault.getRoot() returned:', vaultRootFolder.path, 'name:', vaultRootFolder.name);
-    } else {
-      // eslint-disable-next-line no-console
-      console.log('[Notebook Automation] vault.getRoot() not available or returned null');
-    }
-    // Log final vaultRoot value
-    // eslint-disable-next-line no-console
-    console.log('[Notebook Automation] Final vaultRoot value:', vaultRoot);
+    
+    // Helper function to try finding an executable in a directory
+    const tryFindExecutable = (dir: string): string | null => {
+      if (!fs || !path) return null;
+      
+      // First try the exact match
+      const exactPath = path.join(dir, execName);
+      if (fs.existsSync(exactPath)) {
+        // eslint-disable-next-line no-console
+        console.log(`[Notebook Automation] Found exact match: ${exactPath}`);
+        return exactPath;
+      }
+      
+      // If exact match not found, try to find any na executable as fallback
+      try {
+        const files = fs.readdirSync(dir);
+        const naExecutables = files.filter((file: string) => 
+          file.startsWith('na-') || file === 'na' || file === 'na.exe'
+        );
+        
+        if (naExecutables.length > 0) {
+          // Prefer platform-specific matches
+          const platform = process?.platform || 'win32';
+          const platformName = platform === 'win32' ? 'win' : platform === 'darwin' ? 'macos' : 'linux';
+          
+          const platformMatch = naExecutables.find((file: string) => 
+            file.includes(platformName)
+          );
+          
+          if (platformMatch) {
+            const fallbackPath = path.join(dir, platformMatch);
+            // eslint-disable-next-line no-console
+            console.log(`[Notebook Automation] Found platform fallback: ${fallbackPath}`);
+            return fallbackPath;
+          }
+          
+          // If no platform match, use the first available
+          const fallbackPath = path.join(dir, naExecutables[0]);
+          // eslint-disable-next-line no-console
+          console.log(`[Notebook Automation] Found generic fallback: ${fallbackPath}`);
+          return fallbackPath;
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log(`[Notebook Automation] Error scanning directory ${dir}:`, err);
+      }
+      
+      return null;
+    };
+    
     const isValidPluginDir = (dir: string | undefined, pluginId: string | undefined) => {
       // eslint-disable-next-line no-console
       console.log('[Notebook Automation] isValidPluginDir check - dir:', dir, 'pluginId:', pluginId);
@@ -109,6 +193,7 @@ function getNaExecutablePath(plugin: Plugin): string {
       }
       return true;
     };
+    
     if (plugin.manifest && isValidPluginDir(plugin.manifest.dir, plugin.manifest.id) && path) {
       let resolvedDir = plugin.manifest.dir || '';
       
@@ -121,6 +206,7 @@ function getNaExecutablePath(plugin: Plugin): string {
         // eslint-disable-next-line no-console
         console.log('[Notebook Automation] Detected incorrectly rooted path, treating as relative:', resolvedDir);
       }
+      
       // If manifest.dir is relative, make it absolute by prepending vaultRoot
       const isAbsolute = path.isAbsolute(resolvedDir) && fs?.existsSync?.(resolvedDir);
       if (!isAbsolute && vaultRoot) {
@@ -128,18 +214,16 @@ function getNaExecutablePath(plugin: Plugin): string {
         // eslint-disable-next-line no-console
         console.log('[Notebook Automation] Made plugin.manifest.dir absolute:', resolvedDir);
       }
-      const resolved = path.join(resolvedDir, execName);
-      // Check if file exists
-      const exists = fs && fs.existsSync && fs.existsSync(resolved);
-      // eslint-disable-next-line no-console
-      console.log(`[Notebook Automation] Using plugin.manifest.dir for naPath: ${resolved} (exists: ${exists})`);
-      if (exists) {
-        return resolved;
+      
+      const foundExecutable = tryFindExecutable(resolvedDir);
+      if (foundExecutable) {
+        return foundExecutable;
       } else {
         // eslint-disable-next-line no-console
-        console.log('[Notebook Automation] File does not exist at plugin.manifest.dir path, will fallback.');
+        console.log('[Notebook Automation] No executable found in plugin.manifest.dir path, will fallback.');
       }
     }
+    
     // Fallback: Use FileSystemAdapter.getBasePath() and vault.configDir
     if (plugin.app && plugin.app.vault && path) {
       // If we don't have vaultRoot, try to get it again
@@ -158,16 +242,19 @@ function getNaExecutablePath(plugin: Plugin): string {
           }
         }
       }
+      
       if (vaultRoot) {
         const configDir = plugin.app.vault.configDir || '.obsidian';
         const pluginId = plugin.manifest?.id || 'notebook-automation';
         const pluginDir = path.join(vaultRoot, configDir, 'plugins', pluginId);
-        const resolved = path.join(pluginDir, execName);
-        // Check if file exists
-        const exists = fs && fs.existsSync && fs.existsSync(resolved);
+        
+        const foundExecutable = tryFindExecutable(pluginDir);
+        if (foundExecutable) {
+          return foundExecutable;
+        }
+        
         // eslint-disable-next-line no-console
-        console.log(`[Notebook Automation] Using FileSystemAdapter fallback for naPath: ${resolved} (exists: ${exists})`);
-        return resolved;
+        console.log(`[Notebook Automation] No executable found in FileSystemAdapter fallback: ${pluginDir}`);
       } else {
         // If we still can't get vaultRoot, try to construct from manifest.dir if it exists
         if (plugin.manifest?.dir && plugin.manifest.dir !== '/' && !path.isAbsolute(plugin.manifest.dir)) {
@@ -177,32 +264,37 @@ function getNaExecutablePath(plugin: Plugin): string {
         }
       }
     }
+    
     // Fallback: use __dirname (should work in most plugin contexts)
     if (typeof __dirname !== 'undefined' && path) {
-      const resolved = path.join(__dirname, execName);
-      const exists = fs && fs.existsSync && fs.existsSync(resolved);
+      const foundExecutable = tryFindExecutable(__dirname);
+      if (foundExecutable) {
+        return foundExecutable;
+      }
       // eslint-disable-next-line no-console
-      console.log(`[Notebook Automation] Using __dirname fallback for naPath: ${resolved} (exists: ${exists})`);
-      return resolved;
+      console.log(`[Notebook Automation] No executable found in __dirname: ${__dirname}`);
     }
-    // Final safety check: if we're still returning a path that starts with / but isn't properly absolute
-    // (like /.obsidian/plugins/...), force it to use the fallback construction
+    
+    // Final fallback: return just the executable name and hope it's in PATH
     // eslint-disable-next-line no-console
-    console.log('[Notebook Automation] Using execName fallback for naPath:', execName);
+    console.log('[Notebook Automation] Using execName fallback:', execName);
+    
     // Before returning execName, try one last attempt to construct absolute path
     if (vaultRoot && plugin.manifest?.id) {
       const configDir = plugin.app?.vault?.configDir || '.obsidian';
       const pluginId = plugin.manifest.id;
-      const lastResortPath = path ? path.join(vaultRoot, configDir, 'plugins', pluginId, execName) : execName;
-      // eslint-disable-next-line no-console
-      console.log('[Notebook Automation] Last resort absolute path attempt:', lastResortPath);
-      const exists = fs && fs.existsSync && fs.existsSync(lastResortPath);
-      if (exists) {
-        // eslint-disable-next-line no-console
-        console.log('[Notebook Automation] Last resort path exists, using it instead of execName');
-        return lastResortPath;
+      const lastResortDir = path ? path.join(vaultRoot, configDir, 'plugins', pluginId) : '';
+      
+      if (lastResortDir) {
+        const foundExecutable = tryFindExecutable(lastResortDir);
+        if (foundExecutable) {
+          // eslint-disable-next-line no-console
+          console.log('[Notebook Automation] Last resort found executable:', foundExecutable);
+          return foundExecutable;
+        }
       }
     }
+    
     return execName;
   } catch {
     // eslint-disable-next-line no-console

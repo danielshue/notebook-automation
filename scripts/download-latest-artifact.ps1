@@ -17,8 +17,8 @@
 #   -Version: Specific SemVer to download (optional, downloads latest if not specified)
 #   -ListOnly: Only list available artifacts without downloading
 #
-# Note: Downloads are placed in ../dist with platform-based directory names (e.g., windows, ubuntu, macos)
-#       Each directory contains executables named like na-win-x64.exe, na-macos-arm64, etc.
+# Note: Downloads are placed in ../dist with all executables in a single directory
+#       Executables are named like na-win-x64.exe, na-macos-arm64, na-linux-x64, etc.
 
 param(
     [string]$Workflow = "ci-cross-platform.yml",
@@ -272,31 +272,15 @@ foreach ($artifact in $filteredArtifacts) {
         # Use the artifact download command with the artifact ID
         gh api repos/:owner/:repo/actions/artifacts/$($artifact.id)/zip --method GET > "$DistPath/$($artifact.name).zip"
         
-        # Determine the standardized directory name based on artifact name
-        $standardizedDirName = ""
-        if ($artifact.name -like "executables-win-*") {
-            $standardizedDirName = "windows"
-        } elseif ($artifact.name -like "executables-linux-*") {
-            $standardizedDirName = "ubuntu"
-        } elseif ($artifact.name -like "executables-macos-*") {
-            $standardizedDirName = "macos"
-        } elseif ($artifact.name -like "all-platform-executables-*") {
-            $standardizedDirName = "all-platforms"
-        }
-        
-        # Use standardized directory name if determined, otherwise fall back to artifact name
-        $extractPath = if ($standardizedDirName) { "$DistPath/$standardizedDirName" } else { "$DistPath/$($artifact.name)" }
+        # Extract directly to dist folder (all executables go in one place)
+        $extractPath = $DistPath
         
         # Extract the zip file
         Expand-Archive -Path "$DistPath/$($artifact.name).zip" -DestinationPath $extractPath -Force
         Remove-Item "$DistPath/$($artifact.name).zip"
         
         $downloadedAny = $true
-        if ($standardizedDirName) {
-            Write-Host "✓ Downloaded: $($artifact.name) -> $standardizedDirName"
-        } else {
-            Write-Host "✓ Downloaded: $($artifact.name)"
-        }
+        Write-Host "✓ Downloaded: $($artifact.name)"
     }
     catch {
         Write-Host "✗ Failed to download: $($artifact.name) - $($_.Exception.Message)"
@@ -319,49 +303,53 @@ if ($downloadedAny) {
     Write-Host ""
     Write-Host "Platform summary:"
     
-    # Check for executables by platform using the new naming convention
-    $platformDirs = @("windows", "ubuntu", "macos", "all-platforms")
-    
-    foreach ($platformName in $platformDirs) {
-        $platformDir = Get-ChildItem -Path "$DistPath" -Directory | Where-Object { 
-            $_.Name -eq $platformName
-        }
-        
-        if ($platformDir) {
-            # Look for executables with the new naming convention
-            $executables = Get-ChildItem -Path $platformDir.FullName -File -Recurse | Where-Object { 
-                $_.Name -like "na-*" -or $_.Name -eq "na" -or $_.Name -eq "na.exe" 
-            }
-            
-            if ($executables) {
-                Write-Host "  ✓ $platformName : $($executables.Count) executable(s)"
-                $executables | ForEach-Object {
-                    $sizeKB = [math]::Round($_.Length / 1KB, 2)
-                    $relativePath = $_.FullName.Replace($platformDir.FullName, "").TrimStart("\", "/")
-                    Write-Host "    - $relativePath ($sizeKB KB)"
-                }
-            }
-        }
+    # Check for executables using the new naming convention (all in dist folder)
+    $executables = Get-ChildItem -Path "$DistPath" -File | Where-Object { 
+        $_.Name -like "na-*" -or $_.Name -eq "na" -or $_.Name -eq "na.exe" 
     }
     
-    # Check for consolidated executables
-    $consolidatedDir = Get-ChildItem -Path "$DistPath" -Directory | Where-Object { 
-        $_.Name -eq "all-platforms"
-    }
-    
-    if ($consolidatedDir) {
-        Write-Host "  ✓ Consolidated executables directory found"
-        $allExes = Get-ChildItem -Path $consolidatedDir.FullName -File -Recurse | Where-Object { 
-            $_.Name -like "na-*" -or $_.Name -eq "na" -or $_.Name -eq "na.exe" 
-        }
-        Write-Host "    Total executables: $($allExes.Count)"
+    if ($executables) {
+        Write-Host "  ✓ Found $($executables.Count) executable(s) in dist folder:"
         
-        # List executables by platform/arch from consolidated directory
-        $allExes | ForEach-Object {
-            $relativePath = $_.FullName.Replace($consolidatedDir.FullName, "").TrimStart("\", "/")
-            $sizeKB = [math]::Round($_.Length / 1KB, 2)
-            Write-Host "    - $relativePath ($sizeKB KB)"
+        # Group by platform for better display
+        $windowsExes = $executables | Where-Object { $_.Name -like "na-win-*" }
+        $macosExes = $executables | Where-Object { $_.Name -like "na-macos-*" }
+        $linuxExes = $executables | Where-Object { $_.Name -like "na-linux-*" }
+        $otherExes = $executables | Where-Object { $_.Name -notlike "na-win-*" -and $_.Name -notlike "na-macos-*" -and $_.Name -notlike "na-linux-*" }
+        
+        if ($windowsExes) {
+            Write-Host "    Windows:"
+            $windowsExes | ForEach-Object {
+                $sizeKB = [math]::Round($_.Length / 1KB, 2)
+                Write-Host "      - $($_.Name) ($sizeKB KB)"
+            }
         }
+        
+        if ($macosExes) {
+            Write-Host "    macOS:"
+            $macosExes | ForEach-Object {
+                $sizeKB = [math]::Round($_.Length / 1KB, 2)
+                Write-Host "      - $($_.Name) ($sizeKB KB)"
+            }
+        }
+        
+        if ($linuxExes) {
+            Write-Host "    Linux:"
+            $linuxExes | ForEach-Object {
+                $sizeKB = [math]::Round($_.Length / 1KB, 2)
+                Write-Host "      - $($_.Name) ($sizeKB KB)"
+            }
+        }
+        
+        if ($otherExes) {
+            Write-Host "    Other:"
+            $otherExes | ForEach-Object {
+                $sizeKB = [math]::Round($_.Length / 1KB, 2)
+                Write-Host "      - $($_.Name) ($sizeKB KB)"
+            }
+        }
+    } else {
+        Write-Host "  ✗ No executables found in dist folder"
     }
     
     # Show usage instructions
@@ -383,25 +371,19 @@ if ($downloadedAny) {
     }
     
     if ($downloadedVersion) {
-        Write-Host "  Windows x64:  $DistPath/windows/na-win-x64.exe --help"
-        Write-Host "  Windows ARM64: $DistPath/windows/na-win-arm64.exe --help"
-        Write-Host "  macOS x64:    $DistPath/macos/na-macos-x64 --help"
-        Write-Host "  macOS ARM64:  $DistPath/macos/na-macos-arm64 --help"
-        Write-Host "  Linux x64:    $DistPath/ubuntu/na-linux-x64 --help"
-        Write-Host "  Linux ARM64:  $DistPath/ubuntu/na-linux-arm64 --help"
-        Write-Host ""
-        Write-Host "  Or use the consolidated directory (if available):"
-        Write-Host "  $DistPath/all-platforms/na-<platform>-<arch> --help"
+        Write-Host "  Windows x64:  $DistPath/na-win-x64.exe --help"
+        Write-Host "  Windows ARM64: $DistPath/na-win-arm64.exe --help"
+        Write-Host "  macOS x64:    $DistPath/na-macos-x64 --help"
+        Write-Host "  macOS ARM64:  $DistPath/na-macos-arm64 --help"
+        Write-Host "  Linux x64:    $DistPath/na-linux-x64 --help"
+        Write-Host "  Linux ARM64:  $DistPath/na-linux-arm64 --help"
     } else {
-        Write-Host "  Windows x64:  $DistPath/windows/na-win-x64.exe --help"
-        Write-Host "  Windows ARM64: $DistPath/windows/na-win-arm64.exe --help"
-        Write-Host "  macOS x64:    $DistPath/macos/na-macos-x64 --help"
-        Write-Host "  macOS ARM64:  $DistPath/macos/na-macos-arm64 --help"
-        Write-Host "  Linux x64:    $DistPath/ubuntu/na-linux-x64 --help"
-        Write-Host "  Linux ARM64:  $DistPath/ubuntu/na-linux-arm64 --help"
-        Write-Host ""
-        Write-Host "  Or use the consolidated directory (if available):"
-        Write-Host "  $DistPath/all-platforms/na-<platform>-<arch> --help"
+        Write-Host "  Windows x64:  $DistPath/na-win-x64.exe --help"
+        Write-Host "  Windows ARM64: $DistPath/na-win-arm64.exe --help"
+        Write-Host "  macOS x64:    $DistPath/na-macos-x64 --help"
+        Write-Host "  macOS ARM64:  $DistPath/na-macos-arm64 --help"
+        Write-Host "  Linux x64:    $DistPath/na-linux-x64 --help"
+        Write-Host "  Linux ARM64:  $DistPath/na-linux-arm64 --help"
     }
     
     # Show specific command for current platform if auto-detected
@@ -417,7 +399,7 @@ if ($downloadedAny) {
         
         Write-Host ""
         Write-Host "Quick start for your platform (auto-detected):" -ForegroundColor Green
-        Write-Host "  $DistPath/$Platform/na-$platformPrefix-$Architecture$extension --help"
+        Write-Host "  $DistPath/na-$platformPrefix-$Architecture$extension --help"
     }
 } else {
     Write-Host "No artifacts were downloaded."
