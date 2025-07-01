@@ -373,9 +373,75 @@ export default class NotebookAutomationPlugin extends Plugin {
     // eslint-disable-next-line no-console
     console.log(`[Notebook Automation] Command '${action}' triggered for: ${file.path}`);
     console.log(`[Notebook Automation] Relative path for OneDrive mapping: ${relPath}`);
-    // Check if config is loaded
-    if (!this.settings.configPath) {
-      new Notice("Please configure the config file path in plugin settings first.");
+    
+    // Check if any config is available (using same priority as executeNotebookAutomationCommand)
+    let hasConfig = false;
+    
+    // Check for environment variable first
+    const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
+    if (envConfigPath) {
+      try {
+        // @ts-ignore
+        const fs = window.require ? window.require('fs') : null;
+        if (fs && fs.existsSync(envConfigPath)) {
+          hasConfig = true;
+        }
+      } catch (err) {
+        // Continue to next check
+      }
+    }
+    
+    // Check for default-config.json from plugin directory
+    if (!hasConfig) {
+      try {
+        // @ts-ignore
+        const path = window.require ? window.require('path') : null;
+        // @ts-ignore
+        const fs = window.require ? window.require('fs') : null;
+        
+        if (path && fs) {
+          let pluginDir = this.manifest?.dir;
+          if (pluginDir) {
+            const adapter = this.app?.vault?.adapter;
+            // @ts-ignore
+            if (adapter && typeof adapter.getBasePath === 'function') {
+              try {
+                // @ts-ignore
+                const vaultRoot = adapter.getBasePath();
+                if (vaultRoot && !path.isAbsolute(pluginDir)) {
+                  pluginDir = path.join(vaultRoot, pluginDir);
+                }
+              } catch (err) {
+                // Continue with original pluginDir
+              }
+            }
+            
+            const defaultConfigPath = path.join(pluginDir, 'default-config.json');
+            if (fs.existsSync(defaultConfigPath)) {
+              hasConfig = true;
+            }
+          }
+        }
+      } catch (err) {
+        // Continue to next check
+      }
+    }
+    
+    // Check for user-configured path
+    if (!hasConfig && this.settings.configPath) {
+      try {
+        // @ts-ignore
+        const fs = window.require ? window.require('fs') : null;
+        if (fs && fs.existsSync(this.settings.configPath)) {
+          hasConfig = true;
+        }
+      } catch (err) {
+        // Continue
+      }
+    }
+    
+    if (!hasConfig) {
+      new Notice("No configuration file found. Please set up configuration in plugin settings first.");
       return;
     }
     try {
@@ -479,31 +545,31 @@ export default class NotebookAutomationPlugin extends Plugin {
     
     switch (action) {
       case "import-summarize-videos":
-        args = ["video-notes", "--input", relativePath, "--config", `"${configPath}"`];
+        args = ["video-notes", "--input", relativePath, "--config", configPath];
         commandDescription = "Import & AI Summarize Videos";
         break;
       case "import-summarize-pdfs":
-        args = ["pdf-notes", "--input", relativePath, "--config", `"${configPath}"`];
+        args = ["pdf-notes", "--input", relativePath, "--config", configPath];
         commandDescription = "Import & AI Summarize PDFs";
         break;
       case "build-index":
-        args = ["build-index", "--input", relativePath, "--config", `"${configPath}"`];
+        args = ["build-index", "--input", relativePath, "--config", configPath];
         commandDescription = "Build Index";
         break;
       case "build-index-recursive":
-        args = ["build-index", "--input", relativePath, "--config", `"${configPath}"`, "--recursive"];
+        args = ["build-index", "--input", relativePath, "--config", configPath, "--recursive"];
         commandDescription = "Build Index (Recursive)";
         break;
       case "reprocess-summary-video":
-        args = ["video-notes", "--input", relativePath, "--reprocess", "--config", `"${configPath}"`];
+        args = ["video-notes", "--input", relativePath, "--reprocess", "--config", configPath];
         commandDescription = "Reprocess Video Summary";
         break;
       case "reprocess-summary-pdf":
-        args = ["pdf-notes", "--input", relativePath, "--reprocess", "--config", `"${configPath}"`];
+        args = ["pdf-notes", "--input", relativePath, "--reprocess", "--config", configPath];
         commandDescription = "Reprocess PDF Summary";
         break;
       case "ensure-metadata":
-        args = ["ensure-metadata", "--input", relativePath, "--config", `"${configPath}"`];
+        args = ["ensure-metadata", "--input", relativePath, "--config", configPath];
         commandDescription = "Ensure Metadata Consistency";
         break;
       default:
