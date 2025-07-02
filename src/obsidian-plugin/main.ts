@@ -646,9 +646,8 @@ export default class NotebookAutomationPlugin extends Plugin {
     
     switch (action) {
       case "sync-dir":
-        // For sync-dir, we need to pass the OneDrive-relative path, not the vault-relative path
-        // The CLI will construct full paths using the config
-        args = ["vault", "sync-dirs", relativePath, "--config", configPath];
+        // For sync-dir, paths are obtained from config - no need to pass the current folder
+        args = ["vault", "sync-dirs", "--config", configPath];
         commandDescription = "Sync Directory with OneDrive";
         break;
       case "import-summarize-videos":
