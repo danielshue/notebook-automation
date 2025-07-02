@@ -219,7 +219,7 @@ public class VaultFolderSyncProcessor(
 
             // Use default vault path from configuration if not provided
             var targetVaultPath = vaultPath ?? _appConfig.Paths.NotebookVaultFullpathRoot;
-            
+
             if (string.IsNullOrEmpty(targetVaultPath))
             {
                 return CreateErrorResult("Cannot determine vault target path. Neither vaultPath parameter nor AppConfig.Paths.NotebookVaultFullpathRoot is provided.");
@@ -228,14 +228,14 @@ public class VaultFolderSyncProcessor(
             // Construct the full OneDrive source path using configuration
             var onedriveRoot = _appConfig.Paths.OnedriveFullpathRoot;
             var resourcesBasePath = _appConfig.Paths.OnedriveResourcesBasepath;
-            
+
             if (string.IsNullOrEmpty(onedriveRoot))
             {
                 return CreateErrorResult("OneDrive root path not configured. Please set paths.onedrive_fullpath_root in configuration.");
             }
 
             // Build the complete OneDrive source path
-            var fullOneDriveSource = string.IsNullOrEmpty(resourcesBasePath) 
+            var fullOneDriveSource = string.IsNullOrEmpty(resourcesBasePath)
                 ? Path.Combine(onedriveRoot, oneDrivePath)
                 : Path.Combine(onedriveRoot, resourcesBasePath, oneDrivePath);
 
@@ -451,10 +451,10 @@ public class VaultFolderSyncProcessor(
             {
                 // Get all directories recursively
                 var foundDirectories = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
-                
+
                 // Sort for consistent processing order
                 directories.AddRange(foundDirectories.OrderBy(d => d));
-                
+
                 _logger.LogDebug($"Discovered {directories.Count} directories in {path}");
             }).ConfigureAwait(false);
         }

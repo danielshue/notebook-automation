@@ -151,7 +151,7 @@ public class VaultFolderSyncProcessorTests
         // Arrange
         var testPath = "MBA/Finance";
         CreateTestOneDriveStructure(testPath);
-        
+
         // Create some directories in vault first
         var existingDir = Path.Combine(_testVaultRoot, "Course1");
         Directory.CreateDirectory(existingDir);
@@ -217,7 +217,7 @@ public class VaultFolderSyncProcessorTests
     private void CreateTestOneDriveStructure(string relativePath)
     {
         var basePath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, relativePath);
-        
+
         // Create test directory structure
         Directory.CreateDirectory(Path.Combine(basePath, "Course1", "Module1"));
         Directory.CreateDirectory(Path.Combine(basePath, "Course1", "Module2"));
@@ -268,7 +268,7 @@ public class VaultFolderSyncProcessorTests
         // Arrange
         var testPath = "MBA/Finance";
         CreateTestOneDriveStructure(testPath);
-        
+
         // Create some vault-only directories
         Directory.CreateDirectory(Path.Combine(_testVaultRoot, "VaultOnly"));
         Directory.CreateDirectory(Path.Combine(_testVaultRoot, "VaultOnly", "SubFolder"));
@@ -285,7 +285,7 @@ public class VaultFolderSyncProcessorTests
         // Verify OneDrive directories were created in vault
         Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course1")));
         Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course1", "Module1")));
-        
+
         // Verify vault directories were created in OneDrive
         var oneDriveTargetPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath);
         Assert.IsTrue(Directory.Exists(Path.Combine(oneDriveTargetPath, "VaultOnly")));
@@ -302,7 +302,7 @@ public class VaultFolderSyncProcessorTests
         // Arrange
         var testPath = "MBA/Finance";
         CreateTestOneDriveStructure(testPath);
-        
+
         // Create some vault-only directories
         Directory.CreateDirectory(Path.Combine(_testVaultRoot, "VaultOnly"));
 
@@ -318,7 +318,7 @@ public class VaultFolderSyncProcessorTests
         // Verify directories were NOT actually created
         var oneDriveTargetPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath);
         Assert.IsFalse(Directory.Exists(Path.Combine(oneDriveTargetPath, "VaultOnly")), "VaultOnly should NOT be created in OneDrive during dry run");
-        
+
         // OneDrive directories should also not be created in vault during dry run
         Assert.IsFalse(Directory.Exists(Path.Combine(_testVaultRoot, "Course1")), "Course1 should NOT be created in vault during dry run");
     }
@@ -333,7 +333,7 @@ public class VaultFolderSyncProcessorTests
         // Arrange
         var testPath = "MBA/Finance";
         CreateTestOneDriveStructure(testPath);
-        
+
         // Create some vault-only directories
         Directory.CreateDirectory(Path.Combine(_testVaultRoot, "VaultOnly"));
 
@@ -348,7 +348,7 @@ public class VaultFolderSyncProcessorTests
 
         // Verify OneDrive directories were created in vault
         Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course1")));
-        
+
         // Verify vault directories were NOT created in OneDrive
         var oneDriveTargetPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath);
         Assert.IsFalse(Directory.Exists(Path.Combine(oneDriveTargetPath, "VaultOnly")), "VaultOnly should NOT be created in OneDrive in unidirectional mode");
@@ -364,13 +364,13 @@ public class VaultFolderSyncProcessorTests
         // Arrange
         var testPath = "MBA/Finance";
         CreateTestOneDriveStructure(testPath);
-        
+
         // Create some directories that exist in both locations
         Directory.CreateDirectory(Path.Combine(_testVaultRoot, "Course1")); // Exists in both
-        
+
         // Create vault-only directory
         Directory.CreateDirectory(Path.Combine(_testVaultRoot, "VaultExclusive"));
-        
+
         // Act
         var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: true);
 
