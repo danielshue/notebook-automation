@@ -216,7 +216,7 @@ internal class ConfigCommands
                 var appConfig = AppConfig.LoadFromJsonFile(configResult.ConfigurationPath);
                 await PrintConfigFormatted(appConfig);
 
-                
+
             }
             catch (Exception ex)
             {
