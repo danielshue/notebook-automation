@@ -260,7 +260,10 @@ internal class VaultCommands
 
         // Create sync-dirs subcommand
         var syncDirsCommand = new Command("sync-dirs", "Synchronize directory structure between OneDrive and vault (bidirectional by default)");
-        var oneDrivePathArg = new Argument<string>("onedrive-path", "Relative path within OneDrive to synchronize");
+        var oneDrivePathArg = new Argument<string?>("onedrive-path", "Relative path within OneDrive to synchronize (defaults to onedrive_resources_basepath from config)")
+        {
+            Arity = ArgumentArity.ZeroOrOne
+        };
         var vaultPathArg = new Argument<string?>("vault-path", "Target vault path (defaults to vault root from config)")
         {
             Arity = ArgumentArity.ZeroOrOne
@@ -273,23 +276,46 @@ internal class VaultCommands
         syncDirsCommand.AddOption(dryRunOption);
         syncDirsCommand.AddOption(verboseOption);
         
-        syncDirsCommand.SetHandler(async (string oneDrivePath, string? vaultPath, bool unidirectional, bool dryRun, bool verbose) =>
+        syncDirsCommand.SetHandler(async (string? oneDrivePath, string? vaultPath, bool unidirectional, bool dryRun, bool verbose) =>
         {
             try
             {
-                // Validate required arguments
-                if (string.IsNullOrWhiteSpace(oneDrivePath))
-                {
-                    AnsiConsoleHelper.WriteError("OneDrive path is required. Please provide a relative path within OneDrive to synchronize.");
-                    AnsiConsoleHelper.WriteUsage("vault sync-dirs <onedrive-path> [vault-path]", 
-                                                "Synchronize directory structure between OneDrive and vault",
-                                                "--unidirectional  Disable bidirectional sync (OneDrive → Vault only)\n--dry-run        Preview changes without making them\n--verbose        Show detailed output");
-                    return;
-                }
-
                 // Get services from service provider
                 var syncProcessor = _serviceProvider.GetRequiredService<IVaultFolderSyncProcessor>();
                 var appConfig = _serviceProvider.GetRequiredService<AppConfig>();
+
+                // Default paths from config if not provided
+                var effectiveOneDrivePath = oneDrivePath;
+                var effectiveVaultPath = vaultPath;
+
+                if (string.IsNullOrWhiteSpace(effectiveOneDrivePath))
+                {
+                    // Construct default OneDrive path from config: onedrive_fullpath_root + onedrive_resources_basepath
+                    var oneDriveRoot = appConfig.Paths?.OnedriveFullpathRoot;
+                    var oneDriveBase = appConfig.Paths?.OnedriveResourcesBasepath;
+                    
+                    if (string.IsNullOrWhiteSpace(oneDriveRoot))
+                    {
+                        AnsiConsoleHelper.WriteError("OneDrive path is required");
+                        return;
+                    }
+                    
+                    effectiveOneDrivePath = string.IsNullOrWhiteSpace(oneDriveBase) 
+                        ? oneDriveRoot 
+                        : Path.Combine(oneDriveRoot, oneDriveBase.TrimStart('/', '\\'));
+                }
+
+                if (string.IsNullOrWhiteSpace(effectiveVaultPath))
+                {
+                    // Use vault root from config
+                    effectiveVaultPath = appConfig.Paths?.NotebookVaultFullpathRoot;
+                    
+                    if (string.IsNullOrWhiteSpace(effectiveVaultPath))
+                    {
+                        AnsiConsoleHelper.WriteError("Vault path is required");
+                        return;
+                    }
+                }
 
                 // Bidirectional is default, unidirectional flag turns it off
                 bool bidirectional = !unidirectional;
@@ -297,8 +323,8 @@ internal class VaultCommands
                 if (verbose)
                 {
                     AnsiConsoleHelper.WriteInfo($"Starting directory synchronization");
-                    AnsiConsoleHelper.WriteInfo($"OneDrive path: {oneDrivePath}");
-                    AnsiConsoleHelper.WriteInfo($"Vault path: {vaultPath ?? "using default from config"}");
+                    AnsiConsoleHelper.WriteInfo($"OneDrive path: {effectiveOneDrivePath}{(string.IsNullOrWhiteSpace(oneDrivePath) ? " (from config)" : "")}");
+                    AnsiConsoleHelper.WriteInfo($"Vault path: {effectiveVaultPath}{(string.IsNullOrWhiteSpace(vaultPath) ? " (from config)" : "")}");
                     AnsiConsoleHelper.WriteInfo($"Bidirectional: {bidirectional}");
                     if (dryRun)
                     {
@@ -308,20 +334,20 @@ internal class VaultCommands
 
                 // Output basic execution message for test compatibility
                 var syncMode = bidirectional ? "bidirectional sync-dirs" : "sync-dirs";
-                AnsiConsoleHelper.WriteInfo($"Executing vault {syncMode} for OneDrive path: {oneDrivePath}");
+                AnsiConsoleHelper.WriteInfo($"Executing vault {syncMode} for OneDrive path: {effectiveOneDrivePath}");
 
                 // Execute the directory synchronization with animated status
                 var statusMessage = bidirectional 
-                    ? $"Synchronizing directories bidirectionally: {oneDrivePath}"
-                    : $"Synchronizing directories from OneDrive: {oneDrivePath}";
+                    ? $"Synchronizing directories bidirectionally: {effectiveOneDrivePath}"
+                    : $"Synchronizing directories from OneDrive: {effectiveOneDrivePath}";
                     
                 var result = await AnsiConsoleHelper.WithStatusAsync(
                     async (updateStatus) =>
                     {
                         // Execute the directory synchronization
                         return await syncProcessor.SyncDirectoriesAsync(
-                            oneDrivePath: oneDrivePath,
-                            vaultPath: vaultPath,
+                            oneDrivePath: effectiveOneDrivePath,
+                            vaultPath: effectiveVaultPath,
                             dryRun: dryRun,
                             bidirectional: bidirectional);
                     },
