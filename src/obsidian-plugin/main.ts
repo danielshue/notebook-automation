@@ -316,6 +316,7 @@ interface NotebookAutomationSettings {
   enablePdfSummary?: boolean;
   enableIndexCreation?: boolean;
   enableEnsureMetadata?: boolean;
+  unidirectionalSync?: boolean;
 }
 
 const DEFAULT_SETTINGS: NotebookAutomationSettings = {
@@ -331,6 +332,7 @@ const DEFAULT_SETTINGS: NotebookAutomationSettings = {
   enablePdfSummary: true,
   enableIndexCreation: true,
   enableEnsureMetadata: true,
+  unidirectionalSync: false,
 };
 
 export default class NotebookAutomationPlugin extends Plugin {
@@ -349,6 +351,13 @@ export default class NotebookAutomationPlugin extends Plugin {
         // Folder context
         if (file instanceof TFolder) {
           menu.addSeparator();
+          
+          // Sync Directory - always available at the top
+          menu.addItem((item) => {
+            item.setTitle("Notebook Automation: Sync Directory with OneDrive")
+              .setIcon("sync")
+              .onClick(() => this.handleNotebookAutomationCommand(file, "sync-dir"));
+          });
           
           // AI Video Summary - only if enabled
           if (this.settings.enableVideoSummary) {
@@ -636,6 +645,12 @@ export default class NotebookAutomationPlugin extends Plugin {
     let commandDescription = "";
     
     switch (action) {
+      case "sync-dir":
+        // For sync-dir, we need to pass the OneDrive-relative path, not the vault-relative path
+        // The CLI will construct full paths using the config
+        args = ["vault", "sync-dirs", relativePath, "--config", configPath];
+        commandDescription = "Sync Directory with OneDrive";
+        break;
       case "import-summarize-videos":
         args = ["video-notes", "--input", relativePath, "--config", configPath];
         commandDescription = "Import & AI Summarize Videos";
@@ -689,6 +704,9 @@ export default class NotebookAutomationPlugin extends Plugin {
     }
     if (this.settings.bannersEnabled) {
       args.push("--banners-enabled");
+    }
+    if (this.settings.unidirectionalSync) {
+      args.push("--unidirectional");
     }
     // Only add --force if explicitly requested by the caller (in addition to settings)
     if (opts?.force) {
@@ -1149,6 +1167,18 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
         toggle.setValue(this.plugin.settings.oneDriveSharedLink ?? true)
           .onChange(async (value) => {
             this.plugin.settings.oneDriveSharedLink = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    // Unidirectional Sync flag
+    new Setting(flagsGroup)
+      .setName("Unidirectional Sync")
+      .setDesc("Enable unidirectional synchronization mode for directory sync operations. When enabled, synchronization will only flow from OneDrive to Vault (OneDrive → Vault), preventing any changes from being pushed back to OneDrive. This is useful when you want to import content from OneDrive but keep your vault as read-only relative to the OneDrive source. Disable this for bidirectional sync where changes can flow in both directions.")
+      .addToggle(toggle => {
+        toggle.setValue(this.plugin.settings.unidirectionalSync || false)
+          .onChange(async (value) => {
+            this.plugin.settings.unidirectionalSync = value;
             await this.plugin.saveSettings();
           });
       });

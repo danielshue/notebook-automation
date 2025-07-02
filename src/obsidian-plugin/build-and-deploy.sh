@@ -6,7 +6,7 @@
 set -e
 
 PLUGIN_NAME="notebook-automation"
-VAULT_PLUGINS_PATH="../../tests/obsidian-vault/.obsidian/plugins"
+VAULT_PLUGINS_PATH="../../tests/obsidian-vault/Obsidian Vault Test/.obsidian/plugins"
 
 echo "Building the plugin..."
 
@@ -16,7 +16,7 @@ npm run build
 
 # Define paths
 SOURCE_PATH="$(pwd)"
-DEST_PATH="$SOURCE_PATH/$VAULT_PLUGINS_PATH/$PLUGIN_NAME"
+DEST_PATH="$(realpath "$SOURCE_PATH/$VAULT_PLUGINS_PATH")/$PLUGIN_NAME"
 
 echo "Source path: $SOURCE_PATH"
 echo "Destination path: $DEST_PATH"

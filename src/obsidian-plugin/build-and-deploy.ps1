@@ -3,7 +3,7 @@
 
 param(
     [string]$PluginName = "notebook-automation",
-    [string]$VaultPluginsPath = "../../tests/obsidian-vault/.obsidian/plugins"
+    [string]$VaultPluginsPath = "../../tests/obsidian-vault/Obsidian Vault Test/.obsidian/plugins"
 )
 
 $ErrorActionPreference = "Stop"
@@ -16,7 +16,7 @@ npm run build
 
 # Define source and destination paths
 $SourcePath = $PSScriptRoot
-$DestPath = Join-Path -Path $PSScriptRoot -ChildPath $VaultPluginsPath
+$DestPath = Resolve-Path (Join-Path -Path $PSScriptRoot -ChildPath $VaultPluginsPath)
 $DestPath = Join-Path -Path $DestPath -ChildPath $PluginName
 
 Write-Host "Source path: $SourcePath"
