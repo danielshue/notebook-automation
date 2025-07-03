@@ -30,7 +30,8 @@ if ($Version) {
 }
 if ($ListOnly) {
     Write-Host "  Mode: List only (no download)"
-} else {
+}
+else {
     Write-Host "  Mode: Download to ../dist/notebook-automation/"
 }
 Write-Host ""
@@ -55,7 +56,8 @@ Write-Host "Checking prerequisites..." -ForegroundColor Yellow
 try {
     $branch = git rev-parse --abbrev-ref HEAD
     Write-Host "✓ Git repository found, current branch: $branch"
-} catch {
+}
+catch {
     Write-Host "✗ Error: Not in a git repository or git not available" -ForegroundColor Red
     Write-Host "Please run this script from within the repository directory."
     exit 1
@@ -66,12 +68,14 @@ try {
     $authStatus = gh auth status 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✓ GitHub CLI authenticated"
-    } else {
+    }
+    else {
         Write-Host "✗ GitHub CLI not authenticated" -ForegroundColor Red
         Write-Host "Please run 'gh auth login' first."
         exit 1
     }
-} catch {
+}
+catch {
     Write-Host "✗ GitHub CLI not available" -ForegroundColor Red
     Write-Host "Please install GitHub CLI: https://cli.github.com/"
     exit 1
@@ -80,7 +84,8 @@ try {
 Write-Host ""
 
 # Get the latest successful run ID for the workflow on the current branch
-$run = gh run list --workflow $Workflow --branch $branch --limit 1 --json databaseId,status,conclusion | ConvertFrom-Json
+# Correct the gh run list command to properly format the --json flag
+$run = gh run list --workflow $Workflow --branch $branch --limit 1 --json "databaseId,status,conclusion" | ConvertFrom-Json
 
 if (-not $run -or -not $run[0].databaseId) {
     Write-Host "No workflow run found for $Workflow on branch $branch."
@@ -97,7 +102,8 @@ Write-Host "Found run $runId with status: $runStatus, conclusion: $runConclusion
 try {
     $artifactsJson = gh api repos/:owner/:repo/actions/runs/$runId/artifacts --jq '.artifacts'
     $artifacts = $artifactsJson | ConvertFrom-Json
-} catch {
+}
+catch {
     Write-Host "Error fetching artifacts: $($_.Exception.Message)"
     Write-Host "Trying alternative method..."
     
@@ -106,7 +112,8 @@ try {
         $allArtifactsJson = gh api repos/:owner/:repo/actions/artifacts --jq '.artifacts'
         $allArtifacts = $allArtifactsJson | ConvertFrom-Json
         $artifacts = $allArtifacts | Where-Object { $_.workflow_run.id -eq $runId }
-    } catch {
+    }
+    catch {
         Write-Host "Failed to fetch artifacts with alternative method: $($_.Exception.Message)"
         exit 1
     }
@@ -125,7 +132,12 @@ $artifacts | ForEach-Object {
 
 # Filter artifacts based on parameters
 $filteredArtifacts = $artifacts | Where-Object { 
-    $_.name -eq "notebook-automation"
+    $_.name -like "notebook-automation*" 
+} | Sort-Object -Property created_at -Descending | Select-Object -First 1
+
+if (-not $filteredArtifacts) {
+    Write-Host "No suitable artifact found containing the notebook-automation folder." -ForegroundColor Yellow
+    exit 1
 }
 
 # Apply version filter if specified
@@ -139,6 +151,18 @@ if ($Version) {
         $artifacts | Where-Object { $_.name -eq "notebook-automation" } | ForEach-Object {
             Write-Host "  - latest (from notebook-automation artifact)"
         }
+        exit 1
+    }
+}
+else {
+    Write-Host "No version specified. Fetching the latest artifact..."
+    # Adjust artifact filtering to include 'notebook-automation-obsidian-plugin' for plugin files and executables
+    $filteredArtifacts = $artifacts | Where-Object { 
+        $_.name -like "notebook-automation-obsidian-plugin*" 
+    } | Sort-Object -Property created_at -Descending | Select-Object -First 1
+
+    if (-not $filteredArtifacts) {
+        Write-Host "No suitable artifact found containing the required files." -ForegroundColor Yellow
         exit 1
     }
 }
@@ -201,7 +225,8 @@ if ($downloadedAny) {
         $relativePath = $_.FullName.Replace((Resolve-Path $DistPath).Path, '')
         if ($_.PSIsContainer) {
             Write-Host "  📁 $relativePath"
-        } else {
+        }
+        else {
             $sizeKB = [math]::Round($_.Length / 1KB, 2)
             Write-Host "  📄 $relativePath ($sizeKB KB)"
         }
@@ -264,7 +289,8 @@ if ($downloadedAny) {
                 }
             }
         }
-    } else {
+    }
+    else {
         Write-Host "  ✗ notebook-automation directory not found"
     }
     
@@ -282,6 +308,22 @@ if ($downloadedAny) {
     Write-Host "  macOS ARM64:  $pluginDir/na-macos-arm64 --help"
     Write-Host "  Linux x64:    $pluginDir/na-linux-x64 --help"
     Write-Host "  Linux ARM64:  $pluginDir/na-linux-arm64 --help"
-} else {
+}
+else {
     Write-Host "No artifacts were downloaded."
+}
+
+# Ensure Obsidian plugin files are extracted into the notebook-automation folder
+$pluginFiles = Get-ChildItem -Path "$extractPath" -File | Where-Object {
+    $_.Name -in @("main.js", "manifest.json", "styles.css")
+}
+
+if (-not $pluginFiles) {
+    Write-Host "✗ Obsidian plugin files not found in the extracted artifact." -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "✓ Found Obsidian plugin files:"
+$pluginFiles | ForEach-Object {
+    Write-Host "  - $($_.Name)"
 }

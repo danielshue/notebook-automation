@@ -479,9 +479,16 @@ jobs:
       - name: Prepare plugin directory for direct installation
         run: |
           mkdir -p notebook-automation
-          cp src/obsidian-plugin/dist/main.js src/obsidian-plugin/manifest.json src/obsidian-plugin/styles.css notebook-automation/
+          cp src/obsidian-plugin/dist/main.js src/obsidian-plugin/manifest.json src/obsidian-plugin/styles.css src/obsidian-plugin/dist/default-config.json notebook-automation/
           cp consolidated-executables/* notebook-automation/ || true
           ls -la notebook-automation
+
+      - name: Upload plugin and executables as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: notebook-automation-obsidian-plugin
+          path: notebook-automation/
+          retention-days: 7
 
       # Only create a GitHub release if this is a tag push
       - name: Create GitHub release with plugin and executables
