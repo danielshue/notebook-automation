@@ -18,7 +18,7 @@ Inspired by these projects but needing broader functionality beyond just downloa
 ## ✨ Key Features
 
 - **📊 Intelligent Processing** - AI-powered content analysis and summarization
-- **🗂️ Obsidian Integration** - Hierarchical course structures with rich metadata
+- **🗂️ Obsidian Integration** - Comprehensive vault integration featuring hierarchical course structures, rich YAML frontmatter, contextual menu automation, bidirectional OneDrive synchronization, automated index generation, cross-referenced note linking, and seamless plugin-based workflow management for enhanced knowledge discovery
 - **📈 Progress Tracking** - Real-time processing status and logging of course content
 - **❓ Question Generation** - AI-powered Q&A creation for study materials
 - **📚 Anki Integration** - Export flashcards for spaced repetition learning
@@ -26,6 +26,8 @@ Inspired by these projects but needing broader functionality beyond just downloa
 - **📄 PDF Annotation Extraction** - Preserve highlights and comments from documents
 - **📝 Vocabulary Management** - Extract and organize key terms and definitions
 - **📁 Batch Operations** - Process multiple content for note efficiently
+- **☁️ OneDrive Folder Synchronization** - Create and maintain folder structures in OneDrive without content transfer for organizational alignment
+- **🔗 OneDrive Shared Links Management** - Generate and manage shareable links for collaborative access to course materials and resources
 - **🔧 Extensible Architecture** - Plugin system for custom processors
 
 ## 📸 Screenshots & Features
@@ -102,7 +104,6 @@ The plugin seamlessly integrates with Obsidian's native interface through contex
 #### OneDrive & Vault Synchronization
 
 The toolkit includes sophisticated synchronization capabilities that bridge your Obsidian vault with OneDrive storage, ensuring your educational content remains accessible across all devices and platforms. The system supports both bidirectional synchronization (default) for seamless two-way updates, and unidirectional synchronization for controlled content flow. This flexible approach allows you to maintain local vault organization while leveraging cloud storage benefits, automatically handling file mapping, conflict resolution, and maintaining metadata consistency between your vault structure and OneDrive folders.
-
 
 ## 📖 Documentation
 

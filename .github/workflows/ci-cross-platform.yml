@@ -321,15 +321,15 @@ jobs:
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id }}
           if (!(Test-Path publish/temp-${{ matrix.runtime-id }})) { Write-Host "dotnet publish x64 failed"; exit 1 }
           Copy-Item "publish/temp-${{ matrix.runtime-id }}/na.exe" "publish/executables/${{ matrix.x64-executable-name }}"
-          
+
           # Publish ARM64 executable
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id-arm }}
           if (!(Test-Path publish/temp-${{ matrix.runtime-id-arm }})) { Write-Host "dotnet publish ARM64 failed"; exit 1 }
           Copy-Item "publish/temp-${{ matrix.runtime-id-arm }}/na.exe" "publish/executables/${{ matrix.arm64-executable-name }}"
-          
+
           # Clean up temp directories
           Remove-Item -Recurse -Force publish/temp-* -ErrorAction SilentlyContinue
-          
+
           Write-Host "Published executables:"
           Get-ChildItem publish/executables
 
@@ -341,15 +341,15 @@ jobs:
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id }}
           if [ $? -ne 0 ]; then echo "dotnet publish x64 failed"; exit 1; fi
           cp "publish/temp-${{ matrix.runtime-id }}/na" "publish/executables/${{ matrix.x64-executable-name }}"
-          
+
           # Publish ARM64 executable
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id-arm }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id-arm }}
           if [ $? -ne 0 ]; then echo "dotnet publish ARM64 failed"; exit 1; fi
           cp "publish/temp-${{ matrix.runtime-id-arm }}/na" "publish/executables/${{ matrix.arm64-executable-name }}"
-          
+
           # Clean up temp directories
           rm -rf publish/temp-*
-          
+
           echo "Published executables:"
           ls -la publish/executables
 
@@ -365,7 +365,7 @@ jobs:
             Write-Host "x64 executable not found: $exe_x64"
             exit 1
           }
-          
+
           Write-Host "Testing ARM64 executable:"
           $exe_arm64 = "publish/executables/${{ matrix.arm64-executable-name }}"
           if (Test-Path $exe_arm64) {
@@ -388,7 +388,7 @@ jobs:
             echo "x64 executable not found: $exe_x64"
             exit 1
           fi
-          
+
           echo "Testing ARM64 executable:"
           exe_arm64="publish/executables/${{ matrix.arm64-executable-name }}"
           if [ -f "$exe_arm64" ]; then
@@ -406,9 +406,9 @@ jobs:
           path: publish/executables/
           retention-days: 7
 
-# ========================
-# JOB: consolidate-artifacts
-# ========================
+  # ========================
+  # JOB: consolidate-artifacts
+  # ========================
 
   consolidate-artifacts:
     if: always()
@@ -445,10 +445,10 @@ jobs:
           path: consolidated-executables/
           retention-days: 7 # Keep consolidated executables for 7 days (max allowed)
 
-# ========================
-# JOB: obsidian-plugin-release
-# ========================
-          
+  # ========================
+  # JOB: obsidian-plugin-release
+  # ========================
+
   obsidian-plugin-build-and-release:
     name: Obsidian Plugin Build and Release
     needs: consolidate-artifacts
