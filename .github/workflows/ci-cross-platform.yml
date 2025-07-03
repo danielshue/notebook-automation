@@ -34,6 +34,7 @@ on:
       - master
     paths:
       - "src/c-sharp/**"
+      - "src/obsidian-plugin/**"
       - ".github/workflows/**"
       - "docs/**"
       - "!.agentic-tools-mcp/**"
@@ -42,6 +43,7 @@ on:
       - master
     paths:
       - "src/c-sharp/**"
+      - "src/obsidian-plugin/**"
       - "docs/**"
       - ".github/workflows/**"
       - "!.agentic-tools-mcp/**"
