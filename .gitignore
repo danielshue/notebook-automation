@@ -34,11 +34,17 @@ src/obsidian-plugin/notebook-automation/
 
 # IDE specific files
 .idea/
-.vscode/
 .vs/*
 *.swp
 *.swo
 .env
+
+# VS Code - selectively include team configuration files
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/settings.json
 
 # log files
 *.log
@@ -154,7 +160,7 @@ artifacts/
 .idea/
 
 # VS for Mac
-.vscode/
+# Note: .vscode/ inclusion rules are defined above in "VS Code" section
 
 # Others
 *.vspscc

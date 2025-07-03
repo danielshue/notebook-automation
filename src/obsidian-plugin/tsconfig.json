@@ -14,7 +14,7 @@
     "sourceMap": false,
     "types": ["node", "jest", "react", "obsidian"],
     "outDir": "./dist",
-    "lib": ["es2020", "dom"]
+    "lib": ["es2020", "dom", "DOM", "ES5", "ES6", "ES7"]
   },
   "include": [
     "*.ts",

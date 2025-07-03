@@ -1,0 +1,34 @@
+{
+    "recommendations": [
+        // .NET/C# Development
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        // Testing
+        "ms-dotnettools.vstest-adapter",
+        // TypeScript/JavaScript (for Obsidian plugin)
+        "ms-vscode.vscode-typescript-next",
+        // PowerShell (for build scripts)
+        "ms-vscode.powershell",
+        // Documentation and Markdown
+        "yzhang.markdown-all-in-one",
+        "DavidAnson.vscode-markdownlint",
+        "bierner.markdown-mermaid",
+        // YAML/JSON
+        "redhat.vscode-yaml",
+        "ms-vscode.vscode-json",
+        // Git
+        "eamodio.gitlens",
+        // Code Quality
+        "ms-vscode.vscode-eslint",
+        "streetsidesoftware.code-spell-checker",
+        // Docker (if needed for builds)
+        "ms-azuretools.vscode-docker",
+        // XML/Config files
+        "redhat.vscode-xml"
+    ],
+    "unwantedRecommendations": [
+        // Avoid conflicting C# extensions
+        "ms-vscode.omnisharp-vscode"
+    ]
+}

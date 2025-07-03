@@ -1,104 +1,37 @@
-# PowerShell script to download the latest GitHub Actions artifacts for this repo/branch
+# PowerShell script to download the latest notebook-automation artifact from GitHub Actions
 # Requires GitHub CLI (https://cli.github.com/) and authentication (gh auth login)
 # Works on Windows, macOS, and Linux with PowerShell (pwsh) installed
 #
 # Examples:
-#   .\download-latest-artifact.ps1                              # Download all platform executables (auto-detects your platform)
-#   pwsh .\download-latest-artifact.ps1 -Platform windows       # Download only Windows executables  
-#   pwsh .\download-latest-artifact.ps1 -Platform ubuntu -Arch x64   # Download only Ubuntu executables (arch filter not needed for new format)
+#   .\download-latest-artifact.ps1                              # Download complete plugin package
 #   pwsh .\download-latest-artifact.ps1 -ListOnly               # List available artifacts without downloading
-#   pwsh .\download-latest-artifact.ps1 -Version "1.0.1"        # Download artifacts for specific version (SemVer)
-#   pwsh .\download-latest-artifact.ps1 -Platform all           # Download all platforms and architectures
+#   pwsh .\download-latest-artifact.ps1 -Version "1.0.1"        # Download specific version (SemVer)
 #
 # Parameters:
 #   -Workflow: GitHub Actions workflow file name (default: ci-cross-platform.yml)
-#   -Platform: Target platform - "all", "windows", "ubuntu", "macos" (default: all)
-#   -Architecture: Target architecture - "all", "x64", "arm64" (Note: not needed for new format since each platform contains both architectures)
 #   -Version: Specific SemVer to download (optional, downloads latest if not specified)
 #   -ListOnly: Only list available artifacts without downloading
 #
-# Note: Downloads are placed in ../dist with all executables in a single directory
-#       Executables are named like na-win-x64.exe, na-macos-arm64, na-linux-x64, etc.
+# Note: Downloads the complete notebook-automation package to ../dist/notebook-automation/
+#       This includes the Obsidian plugin files (main.js, manifest.json, styles.css) and 
+#       all platform executables (na-win-x64.exe, na-macos-arm64, na-linux-x64, etc.)
+#       Ready for direct installation into Obsidian plugins folder.
 
 param(
     [string]$Workflow = "ci-cross-platform.yml",
-    [ValidateSet("all", "windows", "ubuntu", "macos")]
-    [string]$Platform = "all",  # Options: "all", "windows", "ubuntu", "macos"
-    [ValidateSet("all", "x64", "arm64")]
-    [string]$Architecture = "all",  # Options: "all", "x64", "arm64"
     [string]$Version = "",  # Specific SemVer to download (optional)
     [switch]$ListOnly  # Only list available artifacts without downloading
 )
 
-# Auto-detect current platform and architecture if not specified
-if ($Platform -eq "all") {
-    # Detect current platform
-    if ($IsWindows) {
-        $Platform = "windows"
-    } elseif ($IsMacOS) {
-        $Platform = "macos"
-    } elseif ($IsLinux) {
-        $Platform = "ubuntu"
-    } else {
-        # Fallback detection
-        $osInfo = [System.Environment]::OSVersion.Platform
-        if ($osInfo -eq "Win32NT") {
-            $Platform = "windows"
-        } elseif ($osInfo -eq "Unix") {
-            $unameOutput = uname -s 2>/dev/null
-            if ($unameOutput -eq "Darwin") {
-                $Platform = "macos"
-            } else {
-                $Platform = "ubuntu"
-            }
-        }
-    }
-    Write-Host "Auto-detected platform: $Platform" -ForegroundColor Yellow
-}
-
-if ($Architecture -eq "all") {
-    # Detect current architecture
-    $arch = [System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture
-    if ($arch -eq "X64") {
-        $Architecture = "x64"
-    } elseif ($arch -eq "Arm64") {
-        $Architecture = "arm64"
-    } else {
-        # Fallback detection
-        $archInfo = $env:PROCESSOR_ARCHITECTURE
-        if ($archInfo -like "*64*" -and $archInfo -notlike "*ARM*") {
-            $Architecture = "x64"
-        } elseif ($archInfo -like "*ARM*") {
-            $Architecture = "arm64"
-        } else {
-            $Architecture = "x64"  # Default fallback
-        }
-    }
-    Write-Host "Auto-detected architecture: $Architecture" -ForegroundColor Yellow
-}
-
-# Validation
-if ($Platform -notin @("all", "windows", "ubuntu", "macos")) {
-    Write-Host "Error: Platform must be one of: all, windows, ubuntu, macos" -ForegroundColor Red
-    exit 1
-}
-
-if ($Architecture -notin @("all", "x64", "arm64")) {
-    Write-Host "Error: Architecture must be one of: all, x64, arm64" -ForegroundColor Red
-    exit 1
-}
-
-Write-Host "Downloading artifacts for:" -ForegroundColor Green
+Write-Host "Downloading notebook-automation package:" -ForegroundColor Green
 Write-Host "  Workflow: $Workflow"
-Write-Host "  Platform: $Platform"
-Write-Host "  Architecture: $Architecture"
 if ($Version) {
     Write-Host "  Version: $Version"
 }
 if ($ListOnly) {
     Write-Host "  Mode: List only (no download)"
 } else {
-    Write-Host "  Mode: Download to $DistPath"
+    Write-Host "  Mode: Download to ../dist/notebook-automation/"
 }
 Write-Host ""
 
@@ -192,7 +125,7 @@ $artifacts | ForEach-Object {
 
 # Filter artifacts based on parameters
 $filteredArtifacts = $artifacts | Where-Object { 
-    $_.name -like "executables-*" -or $_.name -like "all-platform-executables-*"
+    $_.name -eq "notebook-automation"
 }
 
 # Apply version filter if specified
@@ -201,54 +134,25 @@ if ($Version) {
     $filteredArtifacts = $filteredArtifacts | Where-Object { 
         $_.name -like "*$Version*"
     }
-    
     if (-not $filteredArtifacts) {
         Write-Host "No artifacts found for version '$Version'. Available versions:" -ForegroundColor Yellow
-        $artifacts | Where-Object { $_.name -like "*executables*" } | ForEach-Object {
-            # Try to extract SemVer from artifact name
-            if ($_.name -match "executables-.*?-(\d+\.\d+\.\d+.*?)$") {
-                Write-Host "  - $($matches[1])"
-            } elseif ($_.name -match "all-platform-executables-(\d+\.\d+\.\d+.*?)$") {
-                Write-Host "  - $($matches[1])"
-            }
-        } | Sort-Object | Get-Unique
+        $artifacts | Where-Object { $_.name -eq "notebook-automation" } | ForEach-Object {
+            Write-Host "  - latest (from notebook-automation artifact)"
+        }
         exit 1
     }
 }
 
-# Apply platform filter
-if ($Platform -ne "all") {
-    $platformMap = @{
-        "windows" = "win"
-        "ubuntu" = "linux" 
-        "macos" = "macos"
-    }
-    
-    $platformName = $platformMap[$Platform.ToLower()]
-    if ($platformName) {
-        $filteredArtifacts = $filteredArtifacts | Where-Object { 
-            $_.name -like "*executables-$platformName-*" -or $_.name -like "all-platform-executables-*"
-        }
-    }
-}
-
-# Apply architecture filter - not needed for new format since each platform artifact contains both architectures
-# if ($Architecture -ne "all") {
-#     $filteredArtifacts = $filteredArtifacts | Where-Object { 
-#         $_.name -like "*$Architecture*" -or $_.name -like "all-platform-executables-*"
-#     }
-# }
-
 if (-not $filteredArtifacts) {
-    Write-Host "No matching artifacts found for Platform='$Platform', Architecture='$Architecture'"
-    Write-Host "Available executable artifacts:"
-    $artifacts | Where-Object { $_.name -like "*executables*" } | ForEach-Object {
+    Write-Host "No notebook-automation artifact found"
+    Write-Host "Available artifacts:"
+    $artifacts | ForEach-Object {
         Write-Host "  - $($_.name)"
     }
     exit 1
 }
 
-Write-Host "Filtered artifacts to download:"
+Write-Host "Found notebook-automation artifact to download:"
 $filteredArtifacts | ForEach-Object {
     Write-Host "  - $($_.name)"
 }
@@ -272,15 +176,18 @@ foreach ($artifact in $filteredArtifacts) {
         # Use the artifact download command with the artifact ID
         gh api repos/:owner/:repo/actions/artifacts/$($artifact.id)/zip --method GET > "$DistPath/$($artifact.name).zip"
         
-        # Extract directly to dist folder (all executables go in one place)
-        $extractPath = $DistPath
-        
-        # Extract the zip file
+        # This is the complete plugin package - extract to a subdirectory to preserve structure
+        $extractPath = Join-Path $DistPath "notebook-automation"
+        if (-not (Test-Path $extractPath)) {
+            New-Item -ItemType Directory -Path $extractPath -Force
+        }
         Expand-Archive -Path "$DistPath/$($artifact.name).zip" -DestinationPath $extractPath -Force
-        Remove-Item "$DistPath/$($artifact.name).zip"
         
+        Write-Host "✓ Downloaded complete plugin package: $($artifact.name)"
+        Write-Host "  Plugin files and executables available in: $extractPath"
+        
+        Remove-Item "$DistPath/$($artifact.name).zip"
         $downloadedAny = $true
-        Write-Host "✓ Downloaded: $($artifact.name)"
     }
     catch {
         Write-Host "✗ Failed to download: $($artifact.name) - $($_.Exception.Message)"
@@ -301,106 +208,80 @@ if ($downloadedAny) {
     }
     
     Write-Host ""
-    Write-Host "Platform summary:"
+    Write-Host "Package summary:"
     
-    # Check for executables using the new naming convention (all in dist folder)
-    $executables = Get-ChildItem -Path "$DistPath" -File | Where-Object { 
-        $_.Name -like "na-*" -or $_.Name -eq "na" -or $_.Name -eq "na.exe" 
-    }
-    
-    if ($executables) {
-        Write-Host "  ✓ Found $($executables.Count) executable(s) in dist folder:"
-        
-        # Group by platform for better display
-        $windowsExes = $executables | Where-Object { $_.Name -like "na-win-*" }
-        $macosExes = $executables | Where-Object { $_.Name -like "na-macos-*" }
-        $linuxExes = $executables | Where-Object { $_.Name -like "na-linux-*" }
-        $otherExes = $executables | Where-Object { $_.Name -notlike "na-win-*" -and $_.Name -notlike "na-macos-*" -and $_.Name -notlike "na-linux-*" }
-        
-        if ($windowsExes) {
-            Write-Host "    Windows:"
-            $windowsExes | ForEach-Object {
-                $sizeKB = [math]::Round($_.Length / 1KB, 2)
-                Write-Host "      - $($_.Name) ($sizeKB KB)"
-            }
+    # Check in notebook-automation subdirectory
+    $pluginDir = Join-Path $DistPath "notebook-automation"
+    if (Test-Path $pluginDir) {
+        # Check for plugin files
+        $pluginFiles = Get-ChildItem -Path "$pluginDir" -File | Where-Object { 
+            $_.Name -in @("main.js", "manifest.json", "styles.css")
         }
         
-        if ($macosExes) {
-            Write-Host "    macOS:"
-            $macosExes | ForEach-Object {
-                $sizeKB = [math]::Round($_.Length / 1KB, 2)
-                Write-Host "      - $($_.Name) ($sizeKB KB)"
-            }
+        # Check for executables
+        $executables = Get-ChildItem -Path "$pluginDir" -File | Where-Object { 
+            $_.Name -like "na-*"
         }
         
-        if ($linuxExes) {
-            Write-Host "    Linux:"
-            $linuxExes | ForEach-Object {
-                $sizeKB = [math]::Round($_.Length / 1KB, 2)
-                Write-Host "      - $($_.Name) ($sizeKB KB)"
-            }
+        if ($pluginFiles) {
+            Write-Host "  ✓ Found complete Obsidian plugin package:"
+            Write-Host "    Plugin files: $($pluginFiles.Count)"
+            Write-Host "    Executables: $($executables.Count)"
+            Write-Host ""
+            Write-Host "  Installation: Copy the entire 'notebook-automation' directory to your Obsidian plugins folder"
         }
         
-        if ($otherExes) {
-            Write-Host "    Other:"
-            $otherExes | ForEach-Object {
-                $sizeKB = [math]::Round($_.Length / 1KB, 2)
-                Write-Host "      - $($_.Name) ($sizeKB KB)"
+        if ($executables) {
+            Write-Host ""
+            Write-Host "  Available executables:"
+            
+            # Group by platform for better display
+            $windowsExes = $executables | Where-Object { $_.Name -like "na-win-*" }
+            $macosExes = $executables | Where-Object { $_.Name -like "na-macos-*" }
+            $linuxExes = $executables | Where-Object { $_.Name -like "na-linux-*" }
+            
+            if ($windowsExes) {
+                Write-Host "    Windows:"
+                $windowsExes | ForEach-Object {
+                    $sizeKB = [math]::Round($_.Length / 1KB, 2)
+                    Write-Host "      - $($_.Name) ($sizeKB KB)"
+                }
+            }
+            
+            if ($macosExes) {
+                Write-Host "    macOS:"
+                $macosExes | ForEach-Object {
+                    $sizeKB = [math]::Round($_.Length / 1KB, 2)
+                    Write-Host "      - $($_.Name) ($sizeKB KB)"
+                }
+            }
+            
+            if ($linuxExes) {
+                Write-Host "    Linux:"
+                $linuxExes | ForEach-Object {
+                    $sizeKB = [math]::Round($_.Length / 1KB, 2)
+                    Write-Host "      - $($_.Name) ($sizeKB KB)"
+                }
             }
         }
     } else {
-        Write-Host "  ✗ No executables found in dist folder"
+        Write-Host "  ✗ notebook-automation directory not found"
     }
     
     # Show usage instructions
     Write-Host ""
     Write-Host "Usage Instructions:" -ForegroundColor Cyan
-    
-    # Find the actual SemVer from downloaded artifacts
-    $downloadedVersion = ""
-    $sampleArtifact = $filteredArtifacts | Select-Object -First 1
-    if ($sampleArtifact.name -match "executables-.*?-(\d+\.\d+\.\d+.*?)$") {
-        $downloadedVersion = $matches[1]
-    } elseif ($sampleArtifact.name -match "all-platform-executables-(\d+\.\d+\.\d+.*?)$") {
-        $downloadedVersion = $matches[1]
-    }
-    
-    # Clean up version string - SemVer should be clean already
-    if (-not $downloadedVersion -and $sampleArtifact.name -match "executables-.*?-(.+?)$") {
-        $downloadedVersion = $matches[1]
-    }
-    
-    if ($downloadedVersion) {
-        Write-Host "  Windows x64:  $DistPath/na-win-x64.exe --help"
-        Write-Host "  Windows ARM64: $DistPath/na-win-arm64.exe --help"
-        Write-Host "  macOS x64:    $DistPath/na-macos-x64 --help"
-        Write-Host "  macOS ARM64:  $DistPath/na-macos-arm64 --help"
-        Write-Host "  Linux x64:    $DistPath/na-linux-x64 --help"
-        Write-Host "  Linux ARM64:  $DistPath/na-linux-arm64 --help"
-    } else {
-        Write-Host "  Windows x64:  $DistPath/na-win-x64.exe --help"
-        Write-Host "  Windows ARM64: $DistPath/na-win-arm64.exe --help"
-        Write-Host "  macOS x64:    $DistPath/na-macos-x64 --help"
-        Write-Host "  macOS ARM64:  $DistPath/na-macos-arm64 --help"
-        Write-Host "  Linux x64:    $DistPath/na-linux-x64 --help"
-        Write-Host "  Linux ARM64:  $DistPath/na-linux-arm64 --help"
-    }
-    
-    # Show specific command for current platform if auto-detected
-    if ($Platform -ne "all" -and $Architecture -ne "all") {
-        $platformMap = @{
-            "windows" = "win"
-            "ubuntu" = "linux"
-            "macos" = "macos"
-        }
-        
-        $platformPrefix = $platformMap[$Platform.ToLower()]
-        $extension = if ($Platform -eq "windows") { ".exe" } else { "" }
-        
-        Write-Host ""
-        Write-Host "Quick start for your platform (auto-detected):" -ForegroundColor Green
-        Write-Host "  $DistPath/na-$platformPrefix-$Architecture$extension --help"
-    }
+    Write-Host "  1. Copy the 'notebook-automation' directory to your Obsidian plugins folder"
+    Write-Host "  2. Enable the plugin in Obsidian settings"
+    Write-Host "  3. The plugin will automatically use the appropriate executable for your platform"
+    Write-Host ""
+    Write-Host "Manual executable usage:" -ForegroundColor Cyan
+    Write-Host "  Windows x64:  $pluginDir/na-win-x64.exe --help"
+    Write-Host "  Windows ARM64: $pluginDir/na-win-arm64.exe --help"
+    Write-Host "  macOS x64:    $pluginDir/na-macos-x64 --help"
+    Write-Host "  macOS ARM64:  $pluginDir/na-macos-arm64 --help"
+    Write-Host "  Linux x64:    $pluginDir/na-linux-x64 --help"
+    Write-Host "  Linux ARM64:  $pluginDir/na-linux-arm64 --help"
 } else {
     Write-Host "No artifacts were downloaded."
 }

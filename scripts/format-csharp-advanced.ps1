@@ -16,7 +16,7 @@
 .PARAMETER Verify
     Only verify formatting without making changes
 .EXAMPLE
-    ./enforce-formatting.ps1 -Path "src/c-sharp" -Fix
+    ./format-csharp-advanced.ps1 -Path "src/c-sharp" -Fix
 #>
 
 param(

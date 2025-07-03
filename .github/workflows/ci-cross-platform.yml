@@ -1,3 +1,32 @@
+# -----------------------------------------------------------------------------
+# Workflow: ci-cross-platform.yml
+# Purpose: Cross-platform build, test, package, and release for Notebook Automation
+#
+# Description:
+#   - Builds and tests the .NET solution on Windows, Linux, and macOS runners
+#   - Publishes platform-specific executables for each OS/arch
+#   - Consolidates all executables into a single artifact
+#   - Builds and packages the Obsidian plugin with executables
+#   - Creates a GitHub release with ready-to-install plugin directory on tag push
+#
+# Triggers:
+#   - On push or pull request to master (src/c-sharp, docs, workflows)
+#
+# Main Jobs:
+#   - build-and-test: Build, test, and publish executables for all platforms
+#   - consolidate-artifacts: Gather all executables into one artifact
+#   - obsidian-plugin-release: Build plugin and create GitHub release (on tag)
+#
+# Maintenance:
+#   - Update matrix.os and dotnet-version as new platforms/SDKs are supported
+#   - Ensure artifact names match between jobs for correct consolidation
+#   - Review release asset preparation if plugin structure changes
+#
+# Security:
+#   - Uses GitHub Actions tokens for artifact upload/release
+#   - Only runs release job on tag push
+#   - Artifacts are retained for 7 days for traceability
+# -----------------------------------------------------------------------------
 name: Cross-Platform Build and Package Notebook Automation Tool
 on:
   push:
@@ -17,16 +46,24 @@ on:
       - ".github/workflows/**"
       - "!.agentic-tools-mcp/**"
 
+# Concurrency and permissions
+
 # Control workflow execution retention - deletes workflow runs after 14 days
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+# Only keep the 10 most recent workflow runs
 
 # Controls automatic cleanup of workflow runs
 # Keeps only the 10 most recent workflow runs and deletes older runs
 permissions:
   actions: write
   contents: read
+
+# ========================
+# JOB: build-and-test
+# ========================
 
 jobs:
   build-and-test:
@@ -63,12 +100,16 @@ jobs:
             x64-executable-name: na-macos-x64
             arm64-executable-name: na-macos-arm64
 
+    # Each matrix entry builds and tests for a specific OS/arch
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+
+      # Diagnostic step to verify git state
 
       - name: Verify git repository
         run: |
@@ -84,6 +125,8 @@ jobs:
           git log --oneline -10 || echo "Git log failed"
         shell: bash
 
+      # Cache NuGet packages for faster builds
+
       - name: Cache NuGet packages
         uses: actions/cache@v4
         with:
@@ -95,13 +138,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
+      # Setup .NET SDK
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ matrix.dotnet-version }}
 
+      # Install GitVersion for semantic versioning
+
       - name: Install GitVersion tool
         run: dotnet tool install --global GitVersion.Tool
+
+      # Get version info for each OS
 
       - name: Get version from GitVersion (Windows)
         if: runner.os == 'Windows'
@@ -135,6 +184,8 @@ jobs:
           echo "GitVersion SemVer: $SEMVER"
         shell: bash
 
+      # Restore and build solution
+
       - name: Restore dependencies
         run: dotnet restore src/c-sharp/NotebookAutomation.sln
 
@@ -155,6 +206,8 @@ jobs:
           if [ $? -ne 0 ]; then echo "dotnet build failed"; exit 1; fi
           echo "Build output directory contents:"
           ls -la src/c-sharp/NotebookAutomation.Cli/bin/Release || true
+
+      # Run tests with code coverage
 
       - name: Run tests with coverage (Windows)
         if: runner.os == 'Windows'
@@ -177,6 +230,8 @@ jobs:
           ls -la TestResults || true
         env:
           DOTNET_CLI_TELEMETRY_OPTOUT: 1
+
+      # Generate and upload coverage reports
 
       - name: Generate coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.4.7
@@ -215,6 +270,8 @@ jobs:
           path: TestResults/**/coverage.cobertura.xml
           retention-days: 7 # Keep raw coverage files for 7 days
 
+      # Add coverage summary to PR/build summary
+
       - name: Add coverage comment to PR (Windows only)
         if: github.event_name == 'pull_request' && runner.os == 'Windows'
         run: |
@@ -247,6 +304,8 @@ jobs:
             echo "Coverage markdown summary not found, skipping build summary"
           fi
         shell: bash
+
+      # Publish and test executables for each platform
 
       - name: Create executables directory
         run: mkdir -p publish/executables
@@ -345,10 +404,16 @@ jobs:
           path: publish/executables/
           retention-days: 7
 
+# ========================
+# JOB: consolidate-artifacts
+# ========================
+
   consolidate-artifacts:
     if: always()
     needs: build-and-test
     runs-on: ubuntu-latest
+    outputs:
+      informational-version: ${{ needs.build-and-test.outputs.informational-version }}
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
@@ -377,12 +442,15 @@ jobs:
           name: all-platform-executables-${{ needs.build-and-test.outputs.informational-version }}
           path: consolidated-executables/
           retention-days: 7 # Keep consolidated executables for 7 days (max allowed)
+
+# ========================
+# JOB: obsidian-plugin-release
+# ========================
           
-  obsidian-plugin-release:
-    name: Obsidian Plugin Release
+  obsidian-plugin-build-and-release:
+    name: Obsidian Plugin Build and Release
     needs: consolidate-artifacts
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
     steps:
@@ -396,25 +464,26 @@ jobs:
 
       - name: Build Obsidian plugin
         run: |
-          cd obsidian-plugin
+          cd src/obsidian-plugin
           npm install
           npm run build
-          cd ..
-
+      # Download all consolidated executables for release
       - name: Download consolidated executables
         uses: actions/download-artifact@v4
         with:
-          name: all-platform-executables-${{ needs.build-and-test.outputs.informational-version }}
+          name: all-platform-executables-${{ needs.consolidate-artifacts.outputs.informational-version }}
           path: consolidated-executables
 
-      - name: Prepare release assets
+      - name: Prepare plugin directory for direct installation
         run: |
-          mkdir -p release-assets
-          cp obsidian-plugin/main.js obsidian-plugin/manifest.json obsidian-plugin/styles.css release-assets/
-          cp consolidated-executables/* release-assets/ || true
-          ls -la release-assets
+          mkdir -p notebook-automation
+          cp src/obsidian-plugin/dist/main.js src/obsidian-plugin/manifest.json src/obsidian-plugin/styles.css notebook-automation/
+          cp consolidated-executables/* notebook-automation/ || true
+          ls -la notebook-automation
 
+      # Only create a GitHub release if this is a tag push
       - name: Create GitHub release with plugin and executables
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -422,4 +491,4 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             --draft \
-            release-assets/*
+            notebook-automation/*
