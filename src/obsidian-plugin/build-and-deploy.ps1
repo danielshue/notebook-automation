@@ -35,6 +35,7 @@ if (-not (Test-Path $DestPath)) {
 $distPath = "../../dist"
 $executablesFound = @()
 
+
 # Look for executables in dist folder (new flat structure)
 if (Test-Path $distPath) {
     $availableExecutables = Get-ChildItem -Path $distPath -File | Where-Object { $_.Name -like "na-*" }
@@ -60,7 +61,24 @@ if (Test-Path $distPath) {
     }
 }
 
-$FilesToCopy = @("main.js", "manifest.json", "default-config.json")
+
+# Only copy manifest.json, default-config.json, and main.js from the source directory
+$FilesToCopy = @("manifest.json", "default-config.json")
+
+# Always copy main.js from dist
+$distMainJs = Join-Path $SourcePath "dist/main.js"
+if (Test-Path $distMainJs) {
+    $mainJsDest = Join-Path $DestPath "main.js"
+    Copy-Item $distMainJs $mainJsDest -Force
+    Write-Host "Copied main.js from dist to plugin directory: $mainJsDest"
+    # Also copy to local plugin source directory for dev/test parity
+    $localMainJs = Join-Path $SourcePath "main.js"
+    Copy-Item $distMainJs $localMainJs -Force
+    Write-Host "Copied main.js from dist to local source: $localMainJs"
+    $FilesToCopy += @("main.js")
+} else {
+    Write-Warning "main.js not found in dist directory. Build may have failed."
+}
 
 # Copy all found executables
 if ($executablesFound.Count -gt 0) {
@@ -74,13 +92,12 @@ if ($executablesFound.Count -gt 0) {
         Copy-Item $exePath $vaultExePath -Force
         Write-Host "Copied $exeName to plugin vault directory: $vaultExePath"
         
-        # Copy to local plugin source directory for dev/test parity
-        $localExePath = Join-Path $SourcePath $exeName
+        # Copy to dist directory for dev/test parity
+        $localExePath = Join-Path $SourcePath "dist/$exeName"
         Copy-Item $exePath $localExePath -Force
-        Write-Host "Copied $exeName to plugin source directory: $localExePath"
+        Write-Host "Copied $exeName to dist directory: $localExePath"
         
-        # Add to files to copy list
-        $FilesToCopy += @($exeName)
+        # Do not add executables to $FilesToCopy; they are already copied above
         
         # Set executable permissions on non-Windows
         if (-not $IsWindows -and -not $exeName.EndsWith(".exe")) {
@@ -96,7 +113,8 @@ if ($executablesFound.Count -gt 0) {
     Write-Host "Expected structure: $distPath/na-win-x64.exe, na-macos-arm64, etc."
 }
 
-# Copy all required files
+
+# Copy all required files (manifest.json, default-config.json, main.js) from source directory
 foreach ($file in $FilesToCopy) {
     $src = Join-Path $SourcePath $file
     $dst = Join-Path $DestPath $file
