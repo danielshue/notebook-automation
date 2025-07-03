@@ -14,7 +14,10 @@
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
         "source.fixAll": "explicit"
-    }
+    },
+    "cSpell.words": [
+        "Shue"
+    ]
     // Personal preferences (font, theme, etc.) should be set in User Settings
     // not in the workspace settings.json to avoid conflicts between team members
 }
