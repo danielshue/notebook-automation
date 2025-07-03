@@ -1,5 +1,4 @@
-name: Cross-Platform Build and Package C# Notebook Automation Tool
-
+name: Cross-Platform Build and Package Notebook Automation Tool
 on:
   push:
     branches:
@@ -323,7 +322,7 @@ jobs:
           exe_x64="publish/executables/${{ matrix.x64-executable-name }}"
           if [ -f "$exe_x64" ]; then
             chmod +x "$exe_x64"
-            ./"$exe_x64" --version
+            ./$exe_x64 --version
           else
             echo "x64 executable not found: $exe_x64"
             exit 1
@@ -346,7 +345,6 @@ jobs:
           path: publish/executables/
           retention-days: 7
 
-  # Consolidate artifacts from all platforms
   consolidate-artifacts:
     if: always()
     needs: build-and-test
@@ -379,3 +377,49 @@ jobs:
           name: all-platform-executables-${{ needs.build-and-test.outputs.informational-version }}
           path: consolidated-executables/
           retention-days: 7 # Keep consolidated executables for 7 days (max allowed)
+          
+  obsidian-plugin-release:
+    name: Obsidian Plugin Release
+    needs: consolidate-artifacts
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18.x"
+
+      - name: Build Obsidian plugin
+        run: |
+          cd obsidian-plugin
+          npm install
+          npm run build
+          cd ..
+
+      - name: Download consolidated executables
+        uses: actions/download-artifact@v4
+        with:
+          name: all-platform-executables-${{ needs.build-and-test.outputs.informational-version }}
+          path: consolidated-executables
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          cp obsidian-plugin/main.js obsidian-plugin/manifest.json obsidian-plugin/styles.css release-assets/
+          cp consolidated-executables/* release-assets/ || true
+          ls -la release-assets
+
+      - name: Create GitHub release with plugin and executables
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="${GITHUB_REF#refs/tags/}"
+          gh release create "$tag" \
+            --title="$tag" \
+            --draft \
+            release-assets/*
