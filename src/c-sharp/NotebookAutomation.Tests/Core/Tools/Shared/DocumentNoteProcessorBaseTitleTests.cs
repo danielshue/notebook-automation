@@ -191,6 +191,7 @@ public class DocumentNoteProcessorBaseTitleTests
     /// <summary>
     /// Test implementation of DocumentNoteProcessorBase for testing purposes.
     /// </summary>
+
     public class TestDocumentProcessor : DocumentNoteProcessorBase
     {
         public TestDocumentProcessor(

@@ -5,6 +5,7 @@ namespace NotebookAutomation.Cli.Commands;
 /// <summary>
 /// Provides CLI commands for managing OneDrive authentication and operations.
 /// </summary>
+
 internal class OneDriveCommands
 {
     private readonly ILogger<OneDriveCommands> _logger;

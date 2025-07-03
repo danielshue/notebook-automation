@@ -363,6 +363,7 @@ metadata:
     /// <summary>
     /// Helper method to create VideoNoteProcessor with correct constructor parameters.
     /// </summary>
+
     private VideoNoteProcessor CreateVideoNoteProcessor()
     {
         var hierarchyDetector = new MetadataHierarchyDetector(

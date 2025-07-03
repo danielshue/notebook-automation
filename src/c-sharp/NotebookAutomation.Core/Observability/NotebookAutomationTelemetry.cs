@@ -69,6 +69,7 @@ public static class NotebookAutomationTelemetry
     /// <summary>
     /// The main ActivitySource for the application.
     /// </summary>
+
     public static readonly ActivitySource ActivitySource = new(ActivitySourceName, Version);
 
 
@@ -267,6 +268,7 @@ public static class NotebookAutomationTelemetry
     /// <summary>
     /// Disposes the ActivitySource when the application shuts down.
     /// </summary>
+
     public static void Dispose()
     {
         ActivitySource?.Dispose();

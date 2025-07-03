@@ -136,6 +136,7 @@ public class EnvironmentDisplayServiceTests
         Assert.IsTrue(output.Contains("Verbose Mode:"), "Should display verbose mode section");
         Assert.IsTrue(output.Contains("Enabled"), "Should show verbose mode as enabled");
     }
+
     /// <summary>
     /// Tests that DisplayEnvironmentSettingsAsync handles no configuration file gracefully.
     /// </summary>

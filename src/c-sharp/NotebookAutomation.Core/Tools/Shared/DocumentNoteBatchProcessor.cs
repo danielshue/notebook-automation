@@ -1233,6 +1233,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// <summary>
     /// Processes files sequentially (the original implementation).
     /// </summary>
+
     protected virtual async Task<(int processed, int failed, List<string> failedFiles)> ProcessFilesSequentiallyAsync(
         List<string> files,
         string effectiveOutput,
@@ -1319,6 +1320,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// <summary>
     /// Processes files in parallel with concurrency control and rate limiting.
     /// </summary>
+
     protected virtual async Task<(int processed, int failed, List<string> failedFiles)> ProcessFilesInParallelAsync(
         List<string> files,
         string effectiveOutput,
@@ -1412,6 +1414,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// <summary>
     /// Processes a single file in parallel context with thread-safe queue operations.
     /// </summary>
+
     protected virtual async Task<(bool success, string? errorMessage, string filePath)> ProcessSingleFileInParallelAsync(
         string filePath,
         int fileIndex,

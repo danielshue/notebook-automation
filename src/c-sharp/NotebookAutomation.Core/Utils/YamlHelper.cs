@@ -295,6 +295,7 @@ public partial class YamlHelper : IYamlHelper
         // Add just one set of --- separators with proper newlines
         return $"---\n{yamlString}---\n\n";
     }
+
     /// <summary>
     /// Removes YAML frontmatter from markdown content if present.
     /// </summary>

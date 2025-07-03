@@ -66,6 +66,7 @@ public class CommandLineBuilderTests
         Assert.IsNotNull(options, "Should return valid options");
         Assert.IsInstanceOfType(options, typeof(CommandLineOptions), "Should return CommandLineOptions instance");
     }
+
     /// <summary>
     /// Tests that RegisterCommands adds global options to the root command.
     /// </summary>
@@ -113,6 +114,7 @@ public class CommandLineBuilderTests
         // Cleanup
         completeServiceProvider.Dispose();
     }
+
     /// <summary>
     /// Tests that RegisterCommands adds commands to the root command.
     /// </summary>
@@ -155,6 +157,7 @@ public class CommandLineBuilderTests
         // Cleanup
         completeServiceProvider.Dispose();
     }
+
     /// <summary>
     /// Tests that RegisterCommands handles null parameters gracefully.
     /// </summary>

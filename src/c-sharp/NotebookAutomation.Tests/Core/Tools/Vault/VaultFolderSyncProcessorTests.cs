@@ -229,6 +229,7 @@ public class VaultFolderSyncProcessorTests
     /// <summary>
     /// Creates test directories.
     /// </summary>
+
     private void CreateTestDirectories()
     {
         Directory.CreateDirectory(_testOneDriveRoot);
@@ -239,6 +240,7 @@ public class VaultFolderSyncProcessorTests
     /// <summary>
     /// Cleans up test directories.
     /// </summary>
+
     private void CleanupTestDirectories()
     {
         try

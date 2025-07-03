@@ -308,6 +308,7 @@ public class PathUtilsTests
         // Assert
         Assert.AreEqual(PathUtils.NormalizePath(relativePath), result);
     }
+
     /// <summary>
     /// Verifies that ResolveInputPath throws ArgumentNullException for null inputPath.
     /// </summary>

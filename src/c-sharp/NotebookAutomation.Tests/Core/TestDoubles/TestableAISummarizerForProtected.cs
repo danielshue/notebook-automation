@@ -79,6 +79,7 @@ internal class TestableAISummarizerForProtected : AISummarizer
     /// <summary>
     /// Override to always return [Simulated AI summary] for tests
     /// </summary>
+
     internal override async Task<string?> SummarizeWithChunkingAsync(
         string inputText,
         string? prompt,

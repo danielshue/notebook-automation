@@ -104,7 +104,7 @@
             "problemMatcher": []
         },
         {
-            "label": "local-ci-build-enhanced-formatting",
+            "label": "local-ci-build-advanced-csharp-formatting",
             "type": "shell",
             "command": "pwsh",
             "args": [
@@ -112,7 +112,52 @@
                 "Bypass",
                 "-File",
                 "${workspaceFolder}/scripts/build-ci-local.ps1",
-                "-EnhancedFormatting"
+                "-AdvancedCSharpFormatting"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "local-ci-build-test-documentation",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/scripts/build-ci-local.ps1",
+                "-CheckTestDocumentation"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "local-ci-build-comprehensive-quality",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/scripts/build-ci-local.ps1",
+                "-AdvancedCSharpFormatting",
+                "-CheckTestDocumentation"
             ],
             "group": "build",
             "presentation": {
@@ -225,6 +270,29 @@
                 "-Path",
                 "${workspaceFolder}/src/c-sharp",
                 "-Verify"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "check-csharp-test-documentation",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/scripts/check-csharp-test-documentation.ps1",
+                "-TestPath",
+                "${workspaceFolder}/src/c-sharp"
             ],
             "group": "build",
             "presentation": {

@@ -13,6 +13,7 @@ namespace NotebookAutomation.Tests.Core.Configuration;
 /// <summary>
 /// Mock implementation of <see cref="IFileSystemWrapper"/> for unit testing.
 /// </summary>
+
 public class MockFileSystemWrapper : IFileSystemWrapper
 {
     private readonly Dictionary<string, string> _files = new();
@@ -50,6 +51,7 @@ public class MockFileSystemWrapper : IFileSystemWrapper
 /// <summary>
 /// Mock implementation of <see cref="IEnvironmentWrapper"/> for unit testing.
 /// </summary>
+
 public class MockEnvironmentWrapper : IEnvironmentWrapper
 {
     /// <inheritdoc />

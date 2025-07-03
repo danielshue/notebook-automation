@@ -28,6 +28,7 @@ public class TokenProviderTests
     /// <summary>
     /// Tests constructor validation for null arguments.
     /// </summary>    [TestMethod]
+
     public void Constructor_NullMsalApp_ThrowsArgumentNullException()
     {
         // Act & Assert
@@ -232,6 +233,7 @@ public class TokenProviderTests
     /// <summary>
     /// Helper method to create TokenProvider instances using reflection since it's internal.
     /// </summary>
+
     private static IAccessTokenProvider CreateTokenProvider(IPublicClientApplication msalApp, string[] scopes, ILogger logger)
     {
         var tokenProviderType = GetTokenProviderType();
@@ -245,6 +247,7 @@ public class TokenProviderTests
     /// <summary>
     /// Helper method to get the TokenProvider type using reflection.
     /// </summary>
+
     private static Type GetTokenProviderType()
     {
         // Look for TokenProvider in the OneDriveService assembly

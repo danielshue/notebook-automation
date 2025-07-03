@@ -126,6 +126,7 @@ public class VaultCommandsRelativePathTests
     /// <summary>
     /// Modified VaultIndexBatchProcessor for testing purposes
     /// </summary>
+
     public class TestVaultIndexBatchProcessor : VaultIndexBatchProcessor
     {
         private readonly Func<string, string, bool, bool, string[]?, Task<BatchProcessingResult>> _processAsyncFunc;
@@ -168,6 +169,7 @@ public class VaultCommandsRelativePathTests
     /// <summary>
     /// Simple test service provider implementation
     /// </summary>
+
     public class TestServiceProvider : IServiceProvider
     {
         private readonly Dictionary<Type, object> _services = new();

@@ -208,6 +208,7 @@ public class VaultIndexContentGenerator(
     /// A dictionary containing the complete frontmatter with template fields, hierarchy metadata,
     /// and standardized index fields ready for YAML serialization.
     /// </returns>
+
     internal Dictionary<string, object> PrepareFrontmatter(
         Dictionary<string, object> template,
         string folderPath,
@@ -292,6 +293,7 @@ public class VaultIndexContentGenerator(
     /// A list of content section strings that will be joined to form the complete markdown body.
     /// Each string represents a distinct content section (navigation, listings, etc.).
     /// </returns>
+
     internal List<string> GenerateContentSections(
         string folderPath,
         string vaultPath,
@@ -808,6 +810,7 @@ public class VaultIndexContentGenerator(
     /// <summary>
     /// Gets ordered list of subfolders, excluding hidden directories.
     /// </summary>
+
     protected virtual List<string> GetOrderedSubfolders(string folderPath)
     {
         return Directory.GetDirectories(folderPath)
@@ -820,6 +823,7 @@ public class VaultIndexContentGenerator(
     /// <summary>
     /// Determines the back link target based on hierarchy level.
     /// </summary>
+
     internal static string GetBackLinkTarget(string folderPath, int hierarchyLevel)
     {
         if (string.IsNullOrEmpty(folderPath))
@@ -1119,6 +1123,7 @@ public class VaultIndexContentGenerator(
     /// <summary>
     /// Logs frontmatter debug information for troubleshooting.
     /// </summary>
+
     private void LogFrontmatterDebugInfo(string stage, Dictionary<string, object> frontmatter)
     {
         _logger.LogDebug($"{stage} UpdateMetadataWithHierarchy - frontmatter keys: {string.Join(", ", frontmatter.Keys)}");

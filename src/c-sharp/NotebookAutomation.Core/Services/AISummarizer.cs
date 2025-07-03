@@ -369,6 +369,7 @@ public class AISummarizer : IAISummarizer
 
         return chunkSummaries;
     }
+
     /// <summary>
     /// Processes a single chunk and returns the result with its original index.
     /// </summary>

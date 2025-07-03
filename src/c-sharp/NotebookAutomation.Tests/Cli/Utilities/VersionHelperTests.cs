@@ -288,6 +288,7 @@ public class VersionHelperTests
     /// <summary>
     /// Helper method to get assembly path similar to the private method in VersionHelper.
     /// </summary>
+
     private static string GetAssemblyPath(Assembly assembly)
     {
         if (Environment.ProcessPath != null)

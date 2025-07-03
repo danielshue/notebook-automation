@@ -13,7 +13,8 @@
     .\build-ci-local.ps1 -TestAllArch
     .\build-ci-local.ps1 -PluginOnly
     .\build-ci-local.ps1 -PluginOnly -DeployPlugin
-    .\build-ci-local.ps1 -EnhancedFormatting
+    .\build-ci-local.ps1 -AdvancedCSharpFormatting
+    .\build-ci-local.ps1 -CheckTestDocumentation
 #>
 
 param(
@@ -42,8 +43,11 @@ param(
     [Parameter(HelpMessage = "Deploy plugin to test vault after building")]
     [switch]$DeployPlugin,
 
-    [Parameter(HelpMessage = "Use enhanced formatting with XML documentation spacing (calls format-csharp-advanced.ps1)")]
-    [switch]$EnhancedFormatting
+    [Parameter(HelpMessage = "Use advanced C# formatting with XML documentation spacing and StyleCop rules (calls format-csharp-advanced.ps1)")]
+    [switch]$AdvancedCSharpFormatting,
+
+    [Parameter(HelpMessage = "Check test method documentation coverage (calls check-csharp-test-documentation.ps1)")]
+    [switch]$CheckTestDocumentation
 )
 
 # Set error action preference
@@ -91,8 +95,8 @@ try {
     Write-Host "Solution: $SolutionPath" -ForegroundColor $Yellow
     Write-Host "Working Directory: $(Get-Location)" -ForegroundColor $Yellow
     Write-Host "Solution Exists: $(Test-Path $SolutionPath)" -ForegroundColor $Yellow
-    if ($EnhancedFormatting) {
-        Write-Host "Enhanced Formatting: Enabled (includes XML doc spacing)" -ForegroundColor $Magenta
+    if ($AdvancedCSharpFormatting) {
+        Write-Host "Advanced C# Formatting: Enabled (XML docs + StyleCop)" -ForegroundColor $Magenta
     }
 
     # Plugin-only mode - skip .NET solution build
@@ -285,8 +289,8 @@ try {
     if (-not $SkipFormat) {
         Write-Step "Step 3: Code Formatting"
         
-        if ($EnhancedFormatting) {
-            Write-Host "Applying enhanced C# formatting with XML documentation spacing..." -ForegroundColor $Yellow
+        if ($AdvancedCSharpFormatting) {
+            Write-Host "Applying advanced C# formatting with XML documentation spacing and StyleCop rules..." -ForegroundColor $Yellow
             
             # Use the advanced formatting script
             $advancedFormatScript = Join-Path $ScriptDir "format-csharp-advanced.ps1"
@@ -294,15 +298,15 @@ try {
                 $csharpSourcePath = Join-Path $RepositoryRoot "src\c-sharp"
                 & pwsh -ExecutionPolicy Bypass -File $advancedFormatScript -Path $csharpSourcePath -Fix
                 if ($LASTEXITCODE -ne 0) {
-                    Write-Warning "Enhanced formatting encountered issues but continuing..."
+                    Write-Warning "Advanced C# formatting encountered issues but continuing..."
                     Write-Host "You may want to review the changes and commit them." -ForegroundColor $Yellow
                 }
                 else {
-                    Write-Success "Enhanced C# formatting completed successfully"
+                    Write-Success "Advanced C# formatting completed successfully"
                 }
             }
             else {
-                Write-Warning "Enhanced formatting script not found at: $advancedFormatScript"
+                Write-Warning "Advanced C# formatting script not found at: $advancedFormatScript"
                 Write-Host "Falling back to standard dotnet format..." -ForegroundColor $Yellow
                 
                 if ($VerboseOutput) {
@@ -753,6 +757,26 @@ try {
     }
     Write-Success "Static code analysis passed"
 
+    # Step 9: Check Test Documentation Coverage (optional)
+    if ($CheckTestDocumentation) {
+        Write-Step "Step 9: Check C# Test Documentation Coverage"
+        $testDocScript = Join-Path $ScriptDir "check-csharp-test-documentation.ps1"
+        if (Test-Path $testDocScript) {
+            $csharpSourcePath = Join-Path $RepositoryRoot "src\c-sharp"
+            & pwsh -ExecutionPolicy Bypass -File $testDocScript -TestPath $csharpSourcePath
+            if ($LASTEXITCODE -ne 0) {
+                Write-Warning "Test documentation issues found but continuing..."
+                Write-Host "Consider adding XML documentation to undocumented test methods." -ForegroundColor $Yellow
+            }
+            else {
+                Write-Success "Test documentation coverage check completed"
+            }
+        }
+        else {
+            Write-Warning "Test documentation script not found at: $testDocScript"
+        }
+    }
+
     # Success Summary
     Write-Host "`n🎉 LOCAL CI BUILD PIPELINE COMPLETED SUCCESSFULLY! 🎉" -ForegroundColor $Green
     Write-Host "All steps that run in GitHub Actions CI have passed locally." -ForegroundColor $Green
@@ -762,8 +786,8 @@ try {
     Write-Host "======================" -ForegroundColor $Magenta
     Write-Host "✓ .NET solution built and tested" -ForegroundColor $Green
     Write-Host "✓ Code coverage report generated" -ForegroundColor $Green
-    if ($EnhancedFormatting) {
-        Write-Host "✓ Enhanced C# formatting applied (includes XML doc spacing)" -ForegroundColor $Green
+    if ($AdvancedCSharpFormatting) {
+        Write-Host "✓ Advanced C# formatting applied (XML docs + StyleCop)" -ForegroundColor $Green
     }
     else {
         Write-Host "✓ Standard code formatting applied" -ForegroundColor $Green
@@ -771,6 +795,10 @@ try {
     Write-Host "✓ Cross-platform executables published (6 platforms)" -ForegroundColor $Green
     Write-Host "✓ Obsidian plugin built successfully" -ForegroundColor $Green
     Write-Host "✓ Static code analysis passed" -ForegroundColor $Green
+    
+    if ($CheckTestDocumentation) {
+        Write-Host "✓ Test documentation coverage checked" -ForegroundColor $Green
+    }
     
     if ($DeployPlugin) {
         Write-Host "✓ Plugin deployed to test vault" -ForegroundColor $Green
@@ -788,7 +816,8 @@ catch {
     # Display helpful commands
     Write-Host "`nHelpful Commands:" -ForegroundColor $Cyan
     Write-Host "  Fix formatting: dotnet format $SolutionPath" -ForegroundColor $Yellow
-    Write-Host "  Enhanced formatting: pwsh scripts/format-csharp-advanced.ps1 -Path src/c-sharp -Fix" -ForegroundColor $Yellow
+    Write-Host "  Advanced C# formatting: pwsh scripts/format-csharp-advanced.ps1 -Path src/c-sharp -Fix" -ForegroundColor $Yellow
+    Write-Host "  Check test documentation: pwsh scripts/check-csharp-test-documentation.ps1 -TestPath src/c-sharp" -ForegroundColor $Yellow
     Write-Host "  Run tests only: dotnet test $SolutionPath --configuration $Configuration" -ForegroundColor $Yellow
     Write-Host "  Build only: dotnet build $SolutionPath --configuration $Configuration" -ForegroundColor $Yellow
 

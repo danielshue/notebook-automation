@@ -1,14 +1,14 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Enforces consistent formatting and spacing throughout the C# codebase
+    Advanced C# code formatting with XML documentation spacing and StyleCop integration
 .DESCRIPTION
-    This script applies comprehensive formatting rules including:
-    - XML documentation spacing (2 blank lines between xmldoc and class/method)
-    - Method spacing (1 blank line between methods)
+    This script provides comprehensive C# code formatting that goes beyond standard dotnet format:
+    - XML documentation spacing (proper blank lines around XML docs)
+    - Method spacing (blank lines between methods and classes)
+    - StyleCop rule enforcement and analysis
     - Using statement organization
-    - Code formatting via dotnet format
-    - StyleCop rule enforcement
+    - Standard dotnet format integration
 .PARAMETER Path
     Path to the C# source directory (default: current directory)
 .PARAMETER Fix

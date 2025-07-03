@@ -455,6 +455,7 @@ public abstract class DocumentNoteProcessorBase(
         Logger.LogDebug($"Using note type as fallback title: '{noteType}' -> '{normalizedNoteType}'");
         return normalizedNoteType;
     }
+
     /// <summary>
     /// Extracts the first H1 heading from markdown text and applies friendly title formatting.
     /// </summary>

@@ -43,6 +43,7 @@ internal class ApplicationBootstrapper
         // Build service provider
         return services.BuildServiceProvider();
     }
+
     /// <summary>
     /// Converts service setup exceptions to user-friendly messages.
     /// </summary>

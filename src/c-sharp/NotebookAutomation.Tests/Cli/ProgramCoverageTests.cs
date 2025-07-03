@@ -113,6 +113,7 @@ public class ProgramCoverageTests
     /// <summary>
     /// Tests Main method with exception in non-debug mode.
     /// </summary>    [TestMethod]
+
     public async Task Main_WithExceptionInNonDebugMode_DisplaysFriendlyError()
     {
         // Arrange - use malformed config that will cause JSON parsing error

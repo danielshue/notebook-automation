@@ -73,6 +73,7 @@ public record AppVersion
     /// <summary>
     /// Gets the build date derived from <see cref="DateCode"/> in coordinated universal time (midnight).
     /// </summary>
+
     public DateTime BuildDateUtc => JulianToDate(DateCode);
 
     /// <summary>

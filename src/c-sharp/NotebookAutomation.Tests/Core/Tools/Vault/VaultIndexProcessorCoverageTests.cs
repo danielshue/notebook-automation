@@ -170,6 +170,7 @@ public class VaultIndexProcessorCoverageTests
     /// <summary>
     /// Tests GenerateIndexAsync in dry run mode.
     /// </summary>    [TestMethod]
+
     public async Task GenerateIndexAsync_DryRunMode_DoesNotCreateFiles()
     {
         // Arrange

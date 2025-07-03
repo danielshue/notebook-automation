@@ -32,8 +32,14 @@ A comprehensive local CI build script that mirrors the GitHub Actions CI pipelin
 # Plugin-only with deployment to test vault
 .\scripts\build-ci-local.ps1 -PluginOnly -DeployPlugin
 
-# Enhanced formatting with XML documentation spacing
-.\scripts\build-ci-local.ps1 -EnhancedFormatting
+# Advanced C# formatting with XML documentation spacing and StyleCop
+.\scripts\build-ci-local.ps1 -AdvancedCSharpFormatting
+
+# Check C# test documentation coverage
+.\scripts\build-ci-local.ps1 -CheckTestDocumentation
+
+# Comprehensive quality check (advanced formatting + test documentation)
+.\scripts\build-ci-local.ps1 -AdvancedCSharpFormatting -CheckTestDocumentation
 ```
 
 **Build Pipeline Steps:**
@@ -108,6 +114,31 @@ Advanced C# code formatting script that goes beyond basic `dotnet format` with c
 - When setting up new development environments
 - For enforcing project-specific formatting standards beyond basic tools
 
+### `check-csharp-test-documentation.ps1`
+
+C# test documentation coverage checker that scans test methods for missing XML documentation. Ensures comprehensive documentation standards across all test methods.
+
+**Usage:**
+
+```powershell
+# Check test documentation coverage
+.\scripts\check-csharp-test-documentation.ps1 -TestPath "src/c-sharp"
+
+# With verbose output
+.\scripts\check-csharp-test-documentation.ps1 -TestPath "src/c-sharp" -VerboseOutput
+```
+
+**Features:**
+- **Test Method Detection**: Finds all `[TestMethod]` attributed methods
+- **Documentation Coverage**: Reports missing XML documentation
+- **File-by-File Analysis**: Shows which files need documentation
+- **Summary Statistics**: Provides coverage percentages and totals
+
+**When to use:**
+- Before committing test changes to ensure documentation standards
+- During code reviews to validate test documentation
+- As part of automated quality checks in CI/CD pipelines
+
 ### `download-latest-artifact.ps1`
 
 Downloads the latest notebook-automation artifact from GitHub Actions, which includes both the Obsidian plugin files and all platform executables ready for installation.
@@ -138,12 +169,15 @@ These scripts are integrated with VS Code tasks. Use `Ctrl+Shift+P` and search f
 - `local-ci-build` - Full build pipeline
 - `local-ci-build-skip-tests` - Build without tests
 - `local-ci-build-quick` - Build without tests and formatting
-- `local-ci-build-enhanced-formatting` - Full build with advanced C# formatting
+- `local-ci-build-advanced-csharp-formatting` - Full build with advanced C# formatting
+- `local-ci-build-test-documentation` - Full build with test documentation checking
+- `local-ci-build-comprehensive-quality` - Full build with advanced formatting AND test documentation
 - `plugin-build` - Build only the Obsidian plugin (fast)
 - `plugin-build-deploy` - Build and deploy plugin to test vault
 - `dotnet-format-solution` - Format code only
 - `format-csharp-advanced` - Apply advanced C# formatting with XML doc spacing
 - `format-csharp-advanced-verify` - Verify advanced C# formatting compliance
+- `check-csharp-test-documentation` - Check C# test documentation coverage
 
 ## Requirements
 

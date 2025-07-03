@@ -117,11 +117,13 @@ public class VaultIndexContentGeneratorTests
         /// <summary>
         /// Dictionary mapping folder paths to their expected subfolder collections for test scenarios.
         /// </summary>
+
         private readonly Dictionary<string, List<string>> _mockSubfolders = new();
 
         /// <summary>
         /// Dictionary mapping vault paths to their expected root index filenames for test scenarios.
         /// </summary>
+
         private readonly Dictionary<string, string> _mockRootIndexes = new();
 
         /// <summary>
@@ -1083,6 +1085,7 @@ public class VaultIndexContentGeneratorTests
         Assert.AreEqual("Assignments", VaultIndexContentGenerator.GetContentTypeTitle("assignment"));
         Assert.AreEqual("Discussions", VaultIndexContentGenerator.GetContentTypeTitle("discussion"));
     }
+
     /// <summary>
     /// Validates that GetContentTypeTitle returns a default title for unrecognized content types.
     /// </summary>

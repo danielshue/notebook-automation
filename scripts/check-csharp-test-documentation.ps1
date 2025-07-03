@@ -24,13 +24,8 @@ $Yellow = [System.ConsoleColor]::Yellow
 $Cyan = [System.ConsoleColor]::Cyan
 
 function Write-ColoredOutput {
-    param([string]$Message, [System.ConsoleColor]$Color = "White")
-    if ($Color) {
-        Write-Host $Message -ForegroundColor $Color
-    }
-    else {
-        Write-Host $Message
-    }
+    param([string]$Message, [System.ConsoleColor]$Color = [System.ConsoleColor]::White)
+    Write-Host $Message -ForegroundColor $Color
 }
 
 function Find-TestMethodsMissingDocumentation {
@@ -48,6 +43,12 @@ function Find-TestMethodsMissingDocumentation {
 
     foreach ($file in $testFiles) {
         $content = Get-Content $file.FullName -Raw
+        
+        # Skip empty files
+        if ([string]::IsNullOrWhiteSpace($content)) {
+            continue
+        }
+        
         $lines = Get-Content $file.FullName
 
         # Find all test methods using regex
@@ -97,7 +98,7 @@ function Find-TestMethodsMissingDocumentation {
     }
 
     Write-ColoredOutput "`n📊 Summary:" $Cyan
-    Write-ColoredOutput "Total test methods found: $totalMethods" $White
+    Write-ColoredOutput "Total test methods found: $totalMethods" ([System.ConsoleColor]::White)
     Write-ColoredOutput "Undocumented methods: $undocumentedMethods" $Red
     Write-ColoredOutput "Documentation coverage: $([math]::Round((($totalMethods - $undocumentedMethods) / $totalMethods) * 100, 1))%" $Green
 

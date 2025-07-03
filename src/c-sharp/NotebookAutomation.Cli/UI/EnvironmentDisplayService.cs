@@ -21,6 +21,7 @@ internal class EnvironmentDisplayService
     {
         _configurationDiscoveryService = configurationDiscoveryService ?? throw new ArgumentNullException(nameof(configurationDiscoveryService));
     }
+
     /// <summary>
     /// Displays current environment settings with appropriate colors and masking.
     /// </summary>
