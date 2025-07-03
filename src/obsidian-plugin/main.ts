@@ -12,19 +12,19 @@ function getRelativeVaultResourcePath(fullPath: string, vaultRoot: string, vault
   let normFull = fullPath.replace(/\\/g, '/');
   let normRoot = vaultRoot.replace(/\\/g, '/').replace(/\/$/, '');
   let normBase = (vaultBase || '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '');
-  
+
   // Remove vaultRoot if present
   if (normRoot && normFull.startsWith(normRoot)) {
     normFull = normFull.substring(normRoot.length);
     if (normFull.startsWith('/')) normFull = normFull.substring(1);
   }
-  
+
   // Remove vaultBase if present
   if (normBase && normFull.startsWith(normBase)) {
     normFull = normFull.substring(normBase.length);
     if (normFull.startsWith('/')) normFull = normFull.substring(1);
   }
-  
+
   return normFull;
 }
 /**
@@ -33,11 +33,11 @@ function getRelativeVaultResourcePath(fullPath: string, vaultRoot: string, vault
 function getNaExecutableName(): string {
   const platform = process?.platform || (window?.process && window.process.platform);
   const arch = process?.arch || (window?.process && window.process.arch);
-  
+
   // Map Node.js platform/arch to our naming convention
   let platformName: string;
   let archName: string;
-  
+
   // Map platform
   switch (platform) {
     case "win32":
@@ -54,7 +54,7 @@ function getNaExecutableName(): string {
       platformName = "win";
       break;
   }
-  
+
   // Map architecture - convert to string and handle all cases
   const archString = String(arch);
   if (archString === "x64" || archString === "x86_64" || (archString.includes("64") && !archString.includes("arm"))) {
@@ -65,17 +65,17 @@ function getNaExecutableName(): string {
     // Default fallback for unknown architectures
     archName = "x64";
   }
-  
+
   // Build executable name using our naming convention
   const extension = platformName === "win" ? ".exe" : "";
   const execName = `na-${platformName}-${archName}${extension}`;
-  
+
   // Log for debugging
   // eslint-disable-next-line no-console
   console.log(`[Notebook Automation] Platform: ${platform}, Arch: ${arch}`);
   // eslint-disable-next-line no-console
   console.log(`[Notebook Automation] Resolved executable name: ${execName}`);
-  
+
   return execName;
 }
 
@@ -90,7 +90,7 @@ function getNaExecutablePath(plugin: Plugin): string {
     const path = window.require ? window.require('path') : null;
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
-    
+
     // Log plugin.manifest.dir and plugin.manifest.id for debugging
     // eslint-disable-next-line no-console
     console.log('[Notebook Automation] plugin.manifest.dir:', plugin.manifest?.dir);
@@ -98,7 +98,7 @@ function getNaExecutablePath(plugin: Plugin): string {
     console.log('[Notebook Automation] plugin.manifest.id:', plugin.manifest?.id);
     // eslint-disable-next-line no-console
     console.log('[Notebook Automation] Looking for executable:', execName);
-    
+
     // Get vault root first - this is essential for building absolute paths
     let vaultRoot = '';
     const adapter = plugin.app?.vault?.adapter;
@@ -106,7 +106,7 @@ function getNaExecutablePath(plugin: Plugin): string {
     console.log('[Notebook Automation] adapter exists:', !!adapter);
     // eslint-disable-next-line no-console
     console.log('[Notebook Automation] adapter constructor:', adapter?.constructor?.name);
-    
+
     // @ts-ignore - Check for getBasePath method directly instead of constructor name (which can be minified)
     if (adapter && typeof adapter.getBasePath === 'function') {
       try {
@@ -122,11 +122,11 @@ function getNaExecutablePath(plugin: Plugin): string {
       // eslint-disable-next-line no-console
       console.log('[Notebook Automation] Could not get vaultRoot - getBasePath method not available');
     }
-    
+
     // Helper function to try finding an executable in a directory
     const tryFindExecutable = (dir: string): string | null => {
       if (!fs || !path) return null;
-      
+
       // First try the exact match
       const exactPath = path.join(dir, execName);
       if (fs.existsSync(exactPath)) {
@@ -134,30 +134,30 @@ function getNaExecutablePath(plugin: Plugin): string {
         console.log(`[Notebook Automation] Found exact match: ${exactPath}`);
         return exactPath;
       }
-      
+
       // If exact match not found, try to find any na executable as fallback
       try {
         const files = fs.readdirSync(dir);
-        const naExecutables = files.filter((file: string) => 
+        const naExecutables = files.filter((file: string) =>
           file.startsWith('na-') || file === 'na' || file === 'na.exe'
         );
-        
+
         if (naExecutables.length > 0) {
           // Prefer platform-specific matches
           const platform = process?.platform || 'win32';
           const platformName = platform === 'win32' ? 'win' : platform === 'darwin' ? 'macos' : 'linux';
-          
-          const platformMatch = naExecutables.find((file: string) => 
+
+          const platformMatch = naExecutables.find((file: string) =>
             file.includes(platformName)
           );
-          
+
           if (platformMatch) {
             const fallbackPath = path.join(dir, platformMatch);
             // eslint-disable-next-line no-console
             console.log(`[Notebook Automation] Found platform fallback: ${fallbackPath}`);
             return fallbackPath;
           }
-          
+
           // If no platform match, use the first available
           const fallbackPath = path.join(dir, naExecutables[0]);
           // eslint-disable-next-line no-console
@@ -168,10 +168,10 @@ function getNaExecutablePath(plugin: Plugin): string {
         // eslint-disable-next-line no-console
         console.log(`[Notebook Automation] Error scanning directory ${dir}:`, err);
       }
-      
+
       return null;
     };
-    
+
     const isValidPluginDir = (dir: string | undefined, pluginId: string | undefined) => {
       // eslint-disable-next-line no-console
       console.log('[Notebook Automation] isValidPluginDir check - dir:', dir, 'pluginId:', pluginId);
@@ -193,10 +193,10 @@ function getNaExecutablePath(plugin: Plugin): string {
       }
       return true;
     };
-    
+
     if (plugin.manifest && isValidPluginDir(plugin.manifest.dir, plugin.manifest.id) && path) {
       let resolvedDir = plugin.manifest.dir || '';
-      
+
       // Special case: if manifest.dir starts with / but is actually relative (like /.obsidian/...)
       // This happens when manifest.dir is incorrectly set to a path rooted at /
       if (resolvedDir && (resolvedDir.startsWith('/.obsidian') || resolvedDir.startsWith('/.') || (resolvedDir.startsWith('/') && !fs?.existsSync?.(resolvedDir)))) {
@@ -206,7 +206,7 @@ function getNaExecutablePath(plugin: Plugin): string {
         // eslint-disable-next-line no-console
         console.log('[Notebook Automation] Detected incorrectly rooted path, treating as relative:', resolvedDir);
       }
-      
+
       // If manifest.dir is relative, make it absolute by prepending vaultRoot
       const isAbsolute = path.isAbsolute(resolvedDir) && fs?.existsSync?.(resolvedDir);
       if (!isAbsolute && vaultRoot) {
@@ -214,7 +214,7 @@ function getNaExecutablePath(plugin: Plugin): string {
         // eslint-disable-next-line no-console
         console.log('[Notebook Automation] Made plugin.manifest.dir absolute:', resolvedDir);
       }
-      
+
       const foundExecutable = tryFindExecutable(resolvedDir);
       if (foundExecutable) {
         return foundExecutable;
@@ -223,7 +223,7 @@ function getNaExecutablePath(plugin: Plugin): string {
         console.log('[Notebook Automation] No executable found in plugin.manifest.dir path, will fallback.');
       }
     }
-    
+
     // Fallback: Use FileSystemAdapter.getBasePath() and vault.configDir
     if (plugin.app && plugin.app.vault && path) {
       // If we don't have vaultRoot, try to get it again
@@ -242,17 +242,17 @@ function getNaExecutablePath(plugin: Plugin): string {
           }
         }
       }
-      
+
       if (vaultRoot) {
         const configDir = plugin.app.vault.configDir || '.obsidian';
         const pluginId = plugin.manifest?.id || 'notebook-automation';
         const pluginDir = path.join(vaultRoot, configDir, 'plugins', pluginId);
-        
+
         const foundExecutable = tryFindExecutable(pluginDir);
         if (foundExecutable) {
           return foundExecutable;
         }
-        
+
         // eslint-disable-next-line no-console
         console.log(`[Notebook Automation] No executable found in FileSystemAdapter fallback: ${pluginDir}`);
       } else {
@@ -264,7 +264,7 @@ function getNaExecutablePath(plugin: Plugin): string {
         }
       }
     }
-    
+
     // Fallback: use __dirname (should work in most plugin contexts)
     if (typeof __dirname !== 'undefined' && path) {
       const foundExecutable = tryFindExecutable(__dirname);
@@ -274,17 +274,17 @@ function getNaExecutablePath(plugin: Plugin): string {
       // eslint-disable-next-line no-console
       console.log(`[Notebook Automation] No executable found in __dirname: ${__dirname}`);
     }
-    
+
     // Final fallback: return just the executable name and hope it's in PATH
     // eslint-disable-next-line no-console
     console.log('[Notebook Automation] Using execName fallback:', execName);
-    
+
     // Before returning execName, try one last attempt to construct absolute path
     if (vaultRoot && plugin.manifest?.id) {
       const configDir = plugin.app?.vault?.configDir || '.obsidian';
       const pluginId = plugin.manifest.id;
       const lastResortDir = path ? path.join(vaultRoot, configDir, 'plugins', pluginId) : '';
-      
+
       if (lastResortDir) {
         const foundExecutable = tryFindExecutable(lastResortDir);
         if (foundExecutable) {
@@ -294,7 +294,7 @@ function getNaExecutablePath(plugin: Plugin): string {
         }
       }
     }
-    
+
     return execName;
   } catch {
     // eslint-disable-next-line no-console
@@ -351,23 +351,23 @@ export default class NotebookAutomationPlugin extends Plugin {
         // Folder context
         if (file instanceof TFolder) {
           menu.addSeparator();
-          
+
           // Sync Directory - always available at the top
           menu.addItem((item) => {
             item.setTitle("Notebook Automation: Sync Directory with OneDrive")
               .setIcon("sync")
               .onClick(() => this.handleNotebookAutomationCommand(file, "sync-dir"));
           });
-          
+
           // AI Video Summary - only if enabled
           if (this.settings.enableVideoSummary) {
             menu.addItem((item) => {
               item.setTitle("Notebook Automation: Import & AI Summarize All Videos")
-                .setIcon("video-file")
+                .setIcon("play")
                 .onClick(() => this.handleNotebookAutomationCommand(file, "import-summarize-videos"));
             });
           }
-          
+
           // AI PDF Summary - only if enabled
           if (this.settings.enablePdfSummary) {
             menu.addItem((item) => {
@@ -376,7 +376,7 @@ export default class NotebookAutomationPlugin extends Plugin {
                 .onClick(() => this.handleNotebookAutomationCommand(file, "import-summarize-pdfs"));
             });
           }
-          
+
           // Index Creation - only if enabled
           if (this.settings.enableIndexCreation) {
             menu.addItem((item) => {
@@ -390,7 +390,7 @@ export default class NotebookAutomationPlugin extends Plugin {
                 .onClick(() => this.handleNotebookAutomationCommand(file, "build-index-recursive"));
             });
           }
-          
+
           // Ensure Metadata - only if enabled
           if (this.settings.enableEnsureMetadata) {
             menu.addItem((item) => {
@@ -400,20 +400,20 @@ export default class NotebookAutomationPlugin extends Plugin {
             });
           }
         }
-        
+
         // File context: only for .md files
         if (file instanceof TFile && file.extension === "md") {
           menu.addSeparator();
-          
+
           // AI Video Summary - only if enabled
           if (this.settings.enableVideoSummary) {
             menu.addItem((item) => {
               item.setTitle("Notebook Automation: Reprocess AI Summary (Video)")
-                .setIcon("video-file")
+                .setIcon("play")
                 .onClick(() => this.handleNotebookAutomationCommand(file, "reprocess-summary-video"));
             });
           }
-          
+
           // AI PDF Summary - only if enabled
           if (this.settings.enablePdfSummary) {
             menu.addItem((item) => {
@@ -463,7 +463,7 @@ export default class NotebookAutomationPlugin extends Plugin {
           }
         }
       }
-    } catch {}
+    } catch { }
     // Debug log vaultRoot, vaultBase, and file.path
     // eslint-disable-next-line no-console
     console.log(`[Notebook Automation] vaultRoot: ${vaultRoot}`);
@@ -474,10 +474,10 @@ export default class NotebookAutomationPlugin extends Plugin {
     // eslint-disable-next-line no-console
     console.log(`[Notebook Automation] Command '${action}' triggered for: ${file.path}`);
     console.log(`[Notebook Automation] Relative path for OneDrive mapping: ${relPath}`);
-    
+
     // Check if any config is available (using same priority as executeNotebookAutomationCommand)
     let hasConfig = false;
-    
+
     // Check for environment variable first
     const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
     if (envConfigPath) {
@@ -491,7 +491,7 @@ export default class NotebookAutomationPlugin extends Plugin {
         // Continue to next check
       }
     }
-    
+
     // Check for default-config.json from plugin directory
     if (!hasConfig) {
       try {
@@ -499,7 +499,7 @@ export default class NotebookAutomationPlugin extends Plugin {
         const path = window.require ? window.require('path') : null;
         // @ts-ignore
         const fs = window.require ? window.require('fs') : null;
-        
+
         if (path && fs) {
           let pluginDir = this.manifest?.dir;
           if (pluginDir) {
@@ -516,7 +516,7 @@ export default class NotebookAutomationPlugin extends Plugin {
                 // Continue with original pluginDir
               }
             }
-            
+
             const defaultConfigPath = path.join(pluginDir, 'default-config.json');
             if (fs.existsSync(defaultConfigPath)) {
               hasConfig = true;
@@ -527,7 +527,7 @@ export default class NotebookAutomationPlugin extends Plugin {
         // Continue to next check
       }
     }
-    
+
     // Check for user-configured path
     if (!hasConfig && this.settings.configPath) {
       try {
@@ -540,7 +540,7 @@ export default class NotebookAutomationPlugin extends Plugin {
         // Continue
       }
     }
-    
+
     if (!hasConfig) {
       new Notice("No configuration file found. Please set up configuration in plugin settings first.");
       return;
@@ -572,10 +572,10 @@ export default class NotebookAutomationPlugin extends Plugin {
     }
 
     const naPath = getNaExecutablePath(this);
-    
+
     // Check for environment variable first, then default-config.json, then user setting
     let configPath = '';
-    
+
     // First priority: Environment variable NOTEBOOKAUTOMATION_CONFIG
     const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
     if (envConfigPath) {
@@ -590,7 +590,7 @@ export default class NotebookAutomationPlugin extends Plugin {
         console.log('[Notebook Automation] Error checking environment config path:', err);
       }
     }
-    
+
     // Second priority: Use default-config.json from plugin directory
     if (!configPath) {
       try {
@@ -598,7 +598,7 @@ export default class NotebookAutomationPlugin extends Plugin {
         const path = window.require ? window.require('path') : null;
         // @ts-ignore
         const fs = window.require ? window.require('fs') : null;
-        
+
         if (path && fs) {
           // Get plugin directory
           let pluginDir = this.manifest?.dir;
@@ -617,7 +617,7 @@ export default class NotebookAutomationPlugin extends Plugin {
                 console.log('[Notebook Automation] Error getting vault root for config path:', err);
               }
             }
-            
+
             const defaultConfigPath = path.join(pluginDir, 'default-config.json');
             if (fs.existsSync(defaultConfigPath)) {
               configPath = defaultConfigPath;
@@ -629,21 +629,21 @@ export default class NotebookAutomationPlugin extends Plugin {
         console.log('[Notebook Automation] Error constructing default config path:', err);
       }
     }
-    
+
     // Third priority: Fallback to user-configured path
     if (!configPath && this.settings.configPath) {
       configPath = this.settings.configPath || '';
       console.log('[Notebook Automation] Fallback to user-configured path:', configPath);
     }
-    
+
     if (!configPath) {
       throw new Error("No configuration file available. Please set up configuration in plugin settings.");
     }
-    
+
     // Build command arguments based on action
     let args: string[] = [];
     let commandDescription = "";
-    
+
     switch (action) {
       case "sync-dir":
         // For sync-dir, paths are obtained from config - no need to pass the current folder
@@ -715,7 +715,7 @@ export default class NotebookAutomationPlugin extends Plugin {
     // Build the full command for display and execution
     const quotedArgs = args.map(arg => arg.includes(' ') ? `"${arg}"` : arg);
     const fullCommand = `"${naPath}" ${quotedArgs.join(' ')}`;
-    
+
     // Log the full command to console
     // eslint-disable-next-line no-console
     console.log(`[Notebook Automation] ===== EXECUTING COMMAND =====`);
@@ -731,21 +731,21 @@ export default class NotebookAutomationPlugin extends Plugin {
     console.log(`[Notebook Automation] Full Command: ${fullCommand}`);
     // eslint-disable-next-line no-console
     console.log(`[Notebook Automation] ===============================`);
-    
+
     // Show initial notice
     new Notice(`Starting: ${commandDescription} for ${relativePath}`);
-    
+
     try {
       // Get environment variables from process.env and log them for debugging
       const env = { ...process.env };
-      
+
       // eslint-disable-next-line no-console
       console.log(`[Notebook Automation] Environment check:`);
       // eslint-disable-next-line no-console
       console.log(`[Notebook Automation] AZURE_OPENAI_KEY: ${env.AZURE_OPENAI_KEY ? 'SET (length: ' + env.AZURE_OPENAI_KEY.length + ')' : 'NOT SET'}`);
       // eslint-disable-next-line no-console
       console.log(`[Notebook Automation] NOTEBOOKAUTOMATION_CONFIG: ${env.NOTEBOOKAUTOMATION_CONFIG || 'NOT SET'}`);
-      
+
       // If config path is not set in plugin settings, try environment variable
       let finalConfigPath = configPath;
       if (!finalConfigPath && env.NOTEBOOKAUTOMATION_CONFIG) {
@@ -753,28 +753,28 @@ export default class NotebookAutomationPlugin extends Plugin {
         // eslint-disable-next-line no-console
         console.log(`[Notebook Automation] Using config path from environment: ${finalConfigPath}`);
       }
-      
+
       // Execute the command asynchronously to avoid blocking the UI
       const { spawn } = child_process;
-      
+
       // Parse the command and arguments
       const matchResult = fullCommand.match(/(?:[^\s"]+|"[^"]*")+/g);
       if (!matchResult) {
         throw new Error("Failed to parse command");
       }
       const [command, ...cmdArgs] = matchResult.map(arg => arg.replace(/^"(.*)"$/, '$1'));
-      
+
       // eslint-disable-next-line no-console
       console.log(`[Notebook Automation] Executing asynchronously - command: ${command}, args:`, cmdArgs);
-      
+
       const childProcess = spawn(command, cmdArgs, {
         env: env,
         stdio: ['pipe', 'pipe', 'pipe']
       });
-      
+
       let stdout = '';
       let stderr = '';
-      
+
       // Collect stdout data
       childProcess.stdout.on('data', (data: Buffer) => {
         const chunk = data.toString();
@@ -782,7 +782,7 @@ export default class NotebookAutomationPlugin extends Plugin {
         // eslint-disable-next-line no-console
         console.log(`[Notebook Automation] STDOUT chunk:`, chunk);
       });
-      
+
       // Collect stderr data
       childProcess.stderr.on('data', (data: Buffer) => {
         const chunk = data.toString();
@@ -790,7 +790,7 @@ export default class NotebookAutomationPlugin extends Plugin {
         // eslint-disable-next-line no-console
         console.log(`[Notebook Automation] STDERR chunk:`, chunk);
       });
-      
+
       // Handle process completion
       const exitPromise = new Promise<void>((resolve, reject) => {
         childProcess.on('close', (code: number | null) => {
@@ -800,7 +800,7 @@ export default class NotebookAutomationPlugin extends Plugin {
           console.log(`[Notebook Automation] Final STDOUT:`, stdout);
           // eslint-disable-next-line no-console
           console.log(`[Notebook Automation] Final STDERR:`, stderr);
-          
+
           if (code === 0) {
             resolve();
           } else {
@@ -811,40 +811,40 @@ export default class NotebookAutomationPlugin extends Plugin {
             reject(error);
           }
         });
-        
+
         childProcess.on('error', (error: Error) => {
           // eslint-disable-next-line no-console
           console.error(`[Notebook Automation] Process error:`, error);
           reject(error);
         });
       });
-      
+
       // Wait for the process to complete
       await exitPromise;
-      
+
       // eslint-disable-next-line no-console
       console.log(`[Notebook Automation] Command completed successfully`);
-      
+
       // Show success notice
       new Notice(`✅ ${commandDescription} completed successfully!`);
-      
+
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(`[Notebook Automation] Command failed:`, error);
-      
+
       // Get more detailed error information
       const errorAny = error as any;
       const stderr = errorAny.stderr?.toString() || '';
       const stdout = errorAny.stdout?.toString() || '';
       const exitCode = errorAny.code || errorAny.status || 'unknown';
-      
+
       // eslint-disable-next-line no-console
       console.log(`[Notebook Automation] Exit code: ${exitCode}`);
       // eslint-disable-next-line no-console
       console.log(`[Notebook Automation] STDOUT:`, stdout);
       // eslint-disable-next-line no-console
       console.log(`[Notebook Automation] STDERR:`, stderr);
-      
+
       // Create a more informative error message
       let errorMsg = `Command failed (exit code: ${exitCode})`;
       if (stdout && stdout.includes('AZURE_OPENAI_KEY')) {
@@ -863,7 +863,7 @@ export default class NotebookAutomationPlugin extends Plugin {
       } else if (error instanceof Error) {
         errorMsg = error.message;
       }
-      
+
       // Show error notice with details
       new Notice(`❌ ${commandDescription} failed: ${errorMsg}`, 8000); // Show for 8 seconds
       throw error;
@@ -1030,7 +1030,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
 
     // Feature toggles section
     containerEl.createEl("h3", { text: "Features", cls: "notebook-automation-section-header" });
-    
+
     const featureGroup = containerEl.createDiv({ cls: "notebook-automation-settings-group" });
 
     // Enable AI Video Summary
@@ -1083,7 +1083,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
 
     // Command flags section
     containerEl.createEl("h3", { text: "Flags", cls: "notebook-automation-section-header" });
-    
+
     const flagsGroup = containerEl.createDiv({ cls: "notebook-automation-settings-group" });
 
     // Verbose flag
@@ -1258,7 +1258,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     configStatusDiv.style.borderRadius = "4px";
     configStatusDiv.style.backgroundColor = "var(--background-secondary-alt)";
     configStatusDiv.style.border = "1px solid var(--background-modifier-border)";
-    
+
     if ((window as any).notebookAutomationLoadedConfig) {
       // Check for environment variable first
       const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
@@ -1289,7 +1289,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
                 // Fallback to original path
               }
             }
-            
+
             const defaultConfigPath = path.join(resolvedPluginDir, 'default-config.json');
             configStatusDiv.innerHTML = `
               <div style="color: var(--color-green); font-weight: bold;">✅ Configuration Status</div>
@@ -1364,10 +1364,10 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     // Remove previous config fields if any
     const prev = containerEl.querySelector('.notebook-automation-config-fields');
     if (prev) prev.remove();
-    
+
     // Find the version div to insert content before it
     const versionDiv = containerEl.querySelector('.notebook-automation-version');
-    
+
     if (error) {
       const errorDiv = containerEl.createDiv({ cls: 'notebook-automation-config-fields' });
       errorDiv.createEl('p', { text: error, cls: 'mod-warning' });
@@ -1381,12 +1381,12 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     (window as any).notebookAutomationLoadedConfig = configJson;
     const fieldsDiv = containerEl.createDiv({ cls: 'notebook-automation-config-fields' });
     fieldsDiv.createEl('h3', { text: 'Loaded Config Fields' });
-    
+
     // Insert before version div if it exists
     if (versionDiv) {
       containerEl.insertBefore(fieldsDiv, versionDiv);
     }
-    
+
     const keyMeta = [
       {
         key: 'onedrive_fullpath_root',
@@ -1396,7 +1396,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
       },
       {
         key: 'notebook_vault_fullpath_root',
-        label: 'Notebook Vault Root Path', 
+        label: 'Notebook Vault Root Path',
         desc: 'The full path to the root of your Obsidian notebook vault.',
         icon: ''
       },
@@ -1433,22 +1433,22 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     ];
     const paths = configJson.paths || {};
     const updatedPaths: Record<string, string> = { ...paths };
-    
+
     // Add path configuration fields
     keyMeta.forEach(meta => {
       // Create a custom container instead of using Setting component
       const settingDiv = fieldsDiv.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-      
+
       // Create info section (label and description)
       const infoDiv = settingDiv.createDiv({ cls: 'setting-item-info' });
       const nameDiv = infoDiv.createDiv({ cls: 'setting-item-name' });
       nameDiv.setText(meta.label);
       const descDiv = infoDiv.createDiv({ cls: 'setting-item-description' });
       descDiv.setText(`${meta.desc} (JSON key: ${meta.key})`);
-      
+
       // Create control section (input)
       const controlDiv = settingDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-      const input = controlDiv.createEl('input', { 
+      const input = controlDiv.createEl('input', {
         type: 'text',
         cls: 'notebook-automation-path-input'
       });
@@ -1462,14 +1462,14 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     // AI Provider Configuration Section
     const aiSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section' });
     aiSection.createEl('h4', { text: 'AI Service Configuration', cls: 'notebook-automation-ai-header' });
-    
+
     const aiConfig = configJson.aiservice || {};
     const updatedAiConfig: Record<string, any> = { ...aiConfig };
-    
+
     // Available AI providers
     const aiProviders = ['azure', 'openai', 'foundry'];
     const currentProvider = aiConfig.provider || 'azure';
-    
+
     // AI Provider Dropdown
     const providerSettingDiv = aiSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
     const providerInfoDiv = providerSettingDiv.createDiv({ cls: 'setting-item-info' });
@@ -1477,24 +1477,24 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     providerNameDiv.setText('AI Provider');
     const providerDescDiv = providerInfoDiv.createDiv({ cls: 'setting-item-description' });
     providerDescDiv.setText('Select the AI service provider to use for automation tasks.');
-    
+
     const providerControlDiv = providerSettingDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
     const providerSelect = providerControlDiv.createEl('select', { cls: 'notebook-automation-provider-select' });
-    
+
     aiProviders.forEach(provider => {
       const option = providerSelect.createEl('option', { value: provider, text: provider.toUpperCase() });
       if (provider === currentProvider) {
         option.selected = true;
       }
     });
-    
+
     // Provider-specific configuration fields container
     const providerFieldsDiv = aiSection.createDiv({ cls: 'notebook-automation-provider-fields' });
-    
+
     // Function to update provider fields based on selection
     const updateProviderFields = (provider: string) => {
       providerFieldsDiv.empty();
-      
+
       const providerConfigs = {
         azure: [
           { key: 'endpoint', label: 'Azure OpenAI Endpoint', desc: 'The Azure OpenAI service endpoint URL', type: 'text' },
@@ -1510,24 +1510,24 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
           { key: 'model', label: 'Model Name', desc: 'The Foundry model name to use', type: 'text' }
         ]
       };
-      
+
       const fields = providerConfigs[provider as keyof typeof providerConfigs] || [];
-      
+
       fields.forEach(field => {
         const fieldDiv = providerFieldsDiv.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-        
+
         const fieldInfoDiv = fieldDiv.createDiv({ cls: 'setting-item-info' });
         const fieldNameDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-name' });
         fieldNameDiv.setText(field.label);
         const fieldDescDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-description' });
         fieldDescDiv.setText(field.desc);
-        
+
         const fieldControlDiv = fieldDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-        const fieldInput = fieldControlDiv.createEl('input', { 
+        const fieldInput = fieldControlDiv.createEl('input', {
           type: field.type,
           cls: 'notebook-automation-path-input'
         });
-        
+
         // Get value from nested provider config
         const providerConfig = updatedAiConfig[provider] || {};
         fieldInput.value = providerConfig[field.key] || '';
@@ -1540,39 +1540,39 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
         };
       });
     };
-    
+
     // Initialize provider fields
     updateProviderFields(currentProvider);
-    
+
     // Handle provider selection change
     providerSelect.onchange = (e: any) => {
       const selectedProvider = e.target.value;
       updatedAiConfig.provider = selectedProvider;
       updateProviderFields(selectedProvider);
     };
-    
+
     // Timeout Configuration
     const timeoutSection = aiSection.createDiv({ cls: 'notebook-automation-additional-fields' });
     timeoutSection.createEl('h5', { text: 'Timeout Configuration', cls: 'notebook-automation-sub-header' });
-    
+
     const timeoutConfig = aiConfig.timeout || {};
     const timeoutFields = [
       { key: 'timeout_milliseconds', label: 'Timeout (milliseconds)', desc: 'Request timeout in milliseconds', type: 'number', default: 120000 },
       { key: 'max_file_parallelism', label: 'Max File Parallelism', desc: 'Maximum number of files to process in parallel', type: 'number', default: 4 },
       { key: 'file_rate_limit_ms', label: 'File Rate Limit (ms)', desc: 'Minimum delay between file processing in milliseconds', type: 'number', default: 200 }
     ];
-    
+
     timeoutFields.forEach(field => {
       const fieldDiv = timeoutSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-      
+
       const fieldInfoDiv = fieldDiv.createDiv({ cls: 'setting-item-info' });
       const fieldNameDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-name' });
       fieldNameDiv.setText(field.label);
       const fieldDescDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-description' });
       fieldDescDiv.setText(field.desc);
-      
+
       const fieldControlDiv = fieldDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-      const fieldInput = fieldControlDiv.createEl('input', { 
+      const fieldInput = fieldControlDiv.createEl('input', {
         type: field.type,
         cls: 'notebook-automation-path-input'
       });
@@ -1590,24 +1590,24 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     // Retry Policy Configuration
     const retrySection = aiSection.createDiv({ cls: 'notebook-automation-additional-fields' });
     retrySection.createEl('h5', { text: 'Retry Policy', cls: 'notebook-automation-sub-header' });
-    
+
     const retryConfig = aiConfig.retry_policy || {};
     const retryFields = [
       { key: 'max_retry_attempts', label: 'Max Retry Attempts', desc: 'Maximum number of retry attempts for failed requests', type: 'number', default: 3 },
       { key: 'delay_between_retries', label: 'Delay Between Retries (ms)', desc: 'Delay in milliseconds between retry attempts', type: 'number', default: 1000 }
     ];
-    
+
     retryFields.forEach(field => {
       const fieldDiv = retrySection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-      
+
       const fieldInfoDiv = fieldDiv.createDiv({ cls: 'setting-item-info' });
       const fieldNameDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-name' });
       fieldNameDiv.setText(field.label);
       const fieldDescDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-description' });
       fieldDescDiv.setText(field.desc);
-      
+
       const fieldControlDiv = fieldDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-      const fieldInput = fieldControlDiv.createEl('input', { 
+      const fieldInput = fieldControlDiv.createEl('input', {
         type: field.type,
         cls: 'notebook-automation-path-input'
       });
@@ -1625,27 +1625,27 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     // Microsoft Graph Configuration Section
     const graphSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section' });
     graphSection.createEl('h4', { text: 'Microsoft Graph Configuration', cls: 'notebook-automation-ai-header' });
-    
+
     const graphConfig = configJson.microsoft_graph || {};
     const updatedGraphConfig: Record<string, any> = { ...graphConfig };
-    
+
     const graphFields = [
       { key: 'client_id', label: 'Client ID', desc: 'Microsoft Graph application client ID', type: 'text' },
       { key: 'api_endpoint', label: 'API Endpoint', desc: 'Microsoft Graph API endpoint URL', type: 'text' },
       { key: 'authority', label: 'Authority', desc: 'Microsoft authentication authority URL', type: 'text' }
     ];
-    
+
     graphFields.forEach(field => {
       const fieldDiv = graphSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-      
+
       const fieldInfoDiv = fieldDiv.createDiv({ cls: 'setting-item-info' });
       const fieldNameDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-name' });
       fieldNameDiv.setText(field.label);
       const fieldDescDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-description' });
       fieldDescDiv.setText(field.desc);
-      
+
       const fieldControlDiv = fieldDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-      const fieldInput = fieldControlDiv.createEl('input', { 
+      const fieldInput = fieldControlDiv.createEl('input', {
         type: field.type,
         cls: 'notebook-automation-path-input'
       });
@@ -1663,9 +1663,9 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     scopesNameDiv.setText('Scopes');
     const scopesDescDiv = scopesInfoDiv.createDiv({ cls: 'setting-item-description' });
     scopesDescDiv.setText('Microsoft Graph API scopes (one per line)');
-    
+
     const scopesControlDiv = scopesDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    const scopesTextarea = scopesControlDiv.createEl('textarea', { 
+    const scopesTextarea = scopesControlDiv.createEl('textarea', {
       cls: 'notebook-automation-path-input'
     });
     scopesTextarea.rows = 3;
@@ -1678,7 +1678,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     // Other Configuration Section
     const otherSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section' });
     otherSection.createEl('h4', { text: 'Other Configuration', cls: 'notebook-automation-ai-header' });
-    
+
     // Video extensions
     const videoExtDiv = otherSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
     const videoExtInfoDiv = videoExtDiv.createDiv({ cls: 'setting-item-info' });
@@ -1686,9 +1686,9 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     videoExtNameDiv.setText('Video Extensions');
     const videoExtDescDiv = videoExtInfoDiv.createDiv({ cls: 'setting-item-description' });
     videoExtDescDiv.setText('Supported video file extensions (one per line)');
-    
+
     const videoExtControlDiv = videoExtDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    const videoExtTextarea = videoExtControlDiv.createEl('textarea', { 
+    const videoExtTextarea = videoExtControlDiv.createEl('textarea', {
       cls: 'notebook-automation-path-input'
     });
     videoExtTextarea.rows = 4;
@@ -1702,9 +1702,9 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     pdfExtNameDiv.setText('PDF Extensions');
     const pdfExtDescDiv = pdfExtInfoDiv.createDiv({ cls: 'setting-item-description' });
     pdfExtDescDiv.setText('Supported PDF file extensions (one per line)');
-    
+
     const pdfExtControlDiv = pdfExtDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    const pdfExtTextarea = pdfExtControlDiv.createEl('textarea', { 
+    const pdfExtTextarea = pdfExtControlDiv.createEl('textarea', {
       cls: 'notebook-automation-path-input'
     });
     pdfExtTextarea.rows = 2;
@@ -1714,27 +1714,27 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     // Banners Configuration Section
     const bannersSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section' });
     bannersSection.createEl('h4', { text: 'Banners Configuration', cls: 'notebook-automation-ai-header' });
-    
+
     const bannersConfig = configJson.banners || {};
     const updatedBannersConfig: Record<string, any> = { ...bannersConfig };
-    
+
     // Default banner and format
     const bannerFields = [
       { key: 'default', label: 'Default Banner', desc: 'Default banner image filename' },
       { key: 'format', label: 'Banner Format', desc: 'Banner format (e.g., image)' }
     ];
-    
+
     bannerFields.forEach(field => {
       const fieldDiv = bannersSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-      
+
       const fieldInfoDiv = fieldDiv.createDiv({ cls: 'setting-item-info' });
       const fieldNameDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-name' });
       fieldNameDiv.setText(field.label);
       const fieldDescDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-description' });
       fieldDescDiv.setText(field.desc);
-      
+
       const fieldControlDiv = fieldDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-      const fieldInput = fieldControlDiv.createEl('input', { 
+      const fieldInput = fieldControlDiv.createEl('input', {
         type: 'text',
         cls: 'notebook-automation-path-input'
       });
@@ -1756,7 +1756,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
             new Notice('At least one config path must be set.');
             return;
           }
-          
+
           try {
             // @ts-ignore
             const fs = window.require ? window.require('fs') : null;
@@ -1840,7 +1840,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
             // Write default-config.json to plugin directory
             fs.writeFileSync(defaultConfigPath, JSON.stringify(defaultConfig, null, 4), 'utf8');
             new Notice('✅ Default config saved successfully to plugin directory.');
-            
+
             // Also update the seeded config if it exists
             if (this.plugin.settings.configPath) {
               try {
@@ -1852,7 +1852,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
                 configJson.pdf_extensions = defaultConfig.pdf_extensions;
                 configJson.pdf_extract_images = defaultConfig.pdf_extract_images;
                 configJson.banners = defaultConfig.banners;
-                
+
                 fs.writeFileSync(this.plugin.settings.configPath, JSON.stringify(configJson, null, 4), 'utf8');
                 new Notice('✅ Seeded config also updated successfully.');
               } catch (err) {
@@ -1860,10 +1860,10 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
                 new Notice('⚠️ Default config saved, but could not update seeded config.');
               }
             }
-            
+
             // Update global loaded config
             (window as any).notebookAutomationLoadedConfig = defaultConfig;
-            
+
           } catch (err) {
             console.error('[Notebook Automation] Error saving config:', err);
             new Notice('Failed to save config: ' + (err instanceof Error ? err.message : String(err)));

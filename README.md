@@ -10,7 +10,7 @@ After spending countless evenings manually organizing course materials, I discov
 
 Inspired by these projects but needing broader functionality beyond just downloading, I set out to create a comprehensive toolkit that could not only organize content but also analyze, tag, and enhance it with AI-powered insights. The result is Notebook Automation—a project born from the frustration of manual organization and the inspiration of seeing what thoughtful automation could achieve in the educational space.
 
-[![Build Status](https://github.com/danielshue/notebook-automation/actions/workflows/ci-windows.yml/badge.svg)](https://github.com/danielshue/notebook-automation/actions)
+[![Build Status](https://github.com/danielshue/notebook-automation/actions/workflows/ci-cross-platform.yml/badge.svg)](https://github.com/danielshue/notebook-automation/actions)
 [![Latest Release](https://img.shields.io/github/v/release/danielshue/notebook-automation?label=Download&color=brightgreen)](https://github.com/danielshue/notebook-automation/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![.NET](https://img.shields.io/badge/.NET-9.0-blue.svg)](https://dotnet.microsoft.com/download/dotnet/9.0)
@@ -85,6 +85,25 @@ Automatically identify and extract key terms and definitions from course materia
 
 ![Vocabulary Definitions](docs/images/VocabularyDefinitions.png)
 
+### Obsidian Plugin Integration
+
+#### Comprehensive Settings & Configuration
+
+The Obsidian plugin provides a comprehensive settings interface that allows you to customize every aspect of the automation workflow. From enabling specific AI processing features to configuring file paths and behavior options, the settings panel gives you granular control over how the toolkit integrates with your vault and processes your educational content.The Notebook Automation toolkit has been designed for both command-line interface (CLI) and Obsidian plugin usage, providing users with flexible deployment options to match their preferred workflow. Whether you prefer the precision and automation capabilities of CLI commands or the seamless integration within your Obsidian vault, the system offers extensive and flexible configuration options that adapt to your specific needs and preferences.
+
+![Obsidian Plugin Integration](docs/images/ObsidianNotebookAutomationSettings.png)
+
+#### Contextual Menu Integration
+
+The plugin seamlessly integrates with Obsidian's native interface through context menus, providing instant access to powerful automation features directly from your file explorer. Right-click on any folder or file to access processing options like AI summarization, index generation, and OneDrive synchronization—bringing professional-grade automation tools directly into your daily workflow.
+
+![Obsidian Plugin Integration - Contextual Menu](docs/images/ObsidianContextualMenuOptions.png)
+
+#### OneDrive & Vault Synchronization
+
+The toolkit includes sophisticated synchronization capabilities that bridge your Obsidian vault with OneDrive storage, ensuring your educational content remains accessible across all devices and platforms. The system supports both bidirectional synchronization (default) for seamless two-way updates, and unidirectional synchronization for controlled content flow. This flexible approach allows you to maintain local vault organization while leveraging cloud storage benefits, automatically handling file mapping, conflict resolution, and maintaining metadata consistency between your vault structure and OneDrive folders.
+
+
 ## 📖 Documentation
 
 | Section | Description |
@@ -108,14 +127,22 @@ Automatically identify and extract key terms and definitions from course materia
 
 ```
 notebook-automation/
-├── src/c-sharp/                 🎯 Core C# application
-│   ├── NotebookAutomation.Core/ 📚 Main processing library
-│   ├── NotebookAutomation.CLI/  💻 Command-line interface
-│   └── NotebookAutomation.Tests/🧪 Unit and integration tests
+├── .github/                     🏗️ CI/CD workflows and templates
+├── .vscode/                     🔧 VS Code configuration and tasks
+├── src/                         📁 Source code
+│   ├── c-sharp/                 🎯 Core C# application
+│   │   ├── NotebookAutomation.Core/  📚 Main processing library
+│   │   ├── NotebookAutomation.Cli/   💻 Command-line interface
+│   │   └── NotebookAutomation.Tests/ 🧪 Unit and integration tests
+│   ├── obsidian-plugin/         🔌 Obsidian plugin for integration
+│   └── tests/                   🔬 Additional test resources
 ├── docs/                        📖 Documentation site
 ├── config/                      ⚙️ Configuration templates
 ├── scripts/                     🔧 Build and utility scripts
-└── templates/                   📄 Output templates
+├── tasks/                       📋 Project task documentation
+├── tests/                       🎯 Test fixtures and data
+├── prompts/                     🤖 AI prompt templates
+└── logs/                        📝 Application logs
 ```
 
 ## 🎯 Use Cases
