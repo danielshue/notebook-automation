@@ -304,6 +304,114 @@
                 "clear": false
             },
             "problemMatcher": []
+        },
+        {
+            "label": "plugin-version-beta",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/scripts/manage-plugin-version.ps1",
+                "-Version",
+                "${input:versionNumber}",
+                "-Type",
+                "beta",
+                "-CreateRelease",
+                "-PreRelease"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "plugin-version-stable",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/scripts/manage-plugin-version.ps1",
+                "-Version",
+                "${input:versionNumber}",
+                "-Type",
+                "stable",
+                "-CreateRelease"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "plugin-version-patch",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/scripts/manage-plugin-version.ps1",
+                "-Version",
+                "${input:versionNumber}",
+                "-Type",
+                "patch",
+                "-CreateRelease"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "test-brat-workflow",
+            "type": "shell",
+            "command": "pwsh",
+            "args": [
+                "-ExecutionPolicy",
+                "Bypass",
+                "-File",
+                "${workspaceFolder}/scripts/test-brat-workflow.ps1"
+            ],
+            "group": "test",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": true,
+                "clear": false
+            },
+            "problemMatcher": []
+        }
+    ],
+    "inputs": [
+        {
+            "id": "versionNumber",
+            "description": "Version number (e.g., 0.1.0-beta.1, 0.1.0, 0.1.1)",
+            "default": "0.1.0-beta.1",
+            "type": "promptString"
         }
     ]
 }

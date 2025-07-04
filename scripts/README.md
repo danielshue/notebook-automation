@@ -139,6 +139,99 @@ C# test documentation coverage checker that scans test methods for missing XML d
 - During code reviews to validate test documentation
 - As part of automated quality checks in CI/CD pipelines
 
+### `manage-plugin-version.ps1`
+
+Comprehensive version management script for the Obsidian plugin, specifically designed for BRAT (Beta Reviewer's Auto-update Tool) compatibility. Automates the entire release process from version updates to GitHub release creation.
+
+**Usage:**
+
+```powershell
+# Create a beta release for BRAT testing
+.\scripts\manage-plugin-version.ps1 -Version "0.1.0-beta.1" -Type "beta" -CreateRelease -PreRelease
+
+# Create a stable release
+.\scripts\manage-plugin-version.ps1 -Version "0.1.0" -Type "stable" -CreateRelease
+
+# Create a patch release
+.\scripts\manage-plugin-version.ps1 -Version "0.1.1" -Type "patch" -CreateRelease
+
+# Update version only (no release)
+.\scripts\manage-plugin-version.ps1 -Version "0.2.0-beta.1" -Type "beta"
+```
+
+**Features:**
+- **Version Synchronization**: Automatically syncs versions between `package.json` and `manifest.json`
+- **Git Integration**: Creates commits and tags with appropriate conventional commit messages
+- **GitHub Release Creation**: Automatically creates GitHub releases with proper release notes
+- **BRAT Compatibility**: Ensures proper versioning and file structure for BRAT beta testing
+- **Build Validation**: Runs full plugin build and verifies all required artifacts
+- **Executable Preservation**: Maintains cross-platform executables during version updates
+- **Pre-release Support**: Handles both stable and pre-release versions appropriately
+
+**Process Steps:**
+1. **Version Update**: Updates `package.json` using `npm version`
+2. **Synchronization**: Runs version sync script to update `manifest.json`
+3. **Validation**: Verifies version consistency across files
+4. **Build**: Runs complete plugin build with executable preservation
+5. **Git Operations**: Commits changes and creates version tag
+6. **Release Creation**: Optionally creates GitHub release with assets
+7. **Documentation**: Provides next steps and release URL
+
+**Release Types:**
+- **Beta** (`-Type "beta"`): Creates pre-release for BRAT testing with beta-specific release notes
+- **Stable** (`-Type "stable"`): Creates stable release with full documentation
+- **Patch** (`-Type "patch"`): Creates patch release for bug fixes
+
+**BRAT Integration:**
+- Automatically formats releases for BRAT compatibility
+- Includes installation instructions in release notes
+- Maintains proper semantic versioning for beta tracking
+- Ensures all required plugin files are included in releases
+
+**When to use:**
+- Before releasing new plugin versions for beta testing
+- When preparing stable releases for general availability
+- For automated version management in CI/CD pipelines
+- To ensure consistent versioning across all plugin files
+
+### `test-brat-workflow.ps1`
+
+Comprehensive BRAT (Beta Reviewer's Auto-update Tool) compatibility testing script that validates the entire plugin build and release workflow. Ensures all requirements are met before creating releases for beta testing.
+
+**Usage:**
+
+```powershell
+# Test complete BRAT workflow
+.\scripts\test-brat-workflow.ps1
+```
+
+**Features:**
+- **Prerequisites Check**: Verifies npm dependencies and development environment
+- **Build Validation**: Runs complete plugin build and verifies success
+- **BRAT File Verification**: Ensures all required files (main.js, manifest.json, styles.css) are present
+- **Manifest Validation**: Validates manifest.json structure and required fields
+- **Executable Detection**: Checks for cross-platform executables from CI builds
+- **Installation Simulation**: Simulates BRAT installation process in temporary directory
+- **Version Consistency**: Verifies version synchronization between package.json and manifest.json
+- **Release Readiness**: Provides complete readiness assessment for BRAT releases
+
+**Process Steps:**
+1. **Environment Check**: Validates plugin directory and npm dependencies
+2. **Build Process**: Runs `npm run build` with full validation
+3. **File Verification**: Checks all BRAT-required files are present and valid
+4. **Manifest Parsing**: Validates JSON structure and required fields
+5. **Executable Audit**: Reports on available cross-platform executables
+6. **BRAT Simulation**: Creates temporary installation to test plugin structure
+7. **Version Sync Check**: Ensures consistent versioning across configuration files
+8. **Summary Report**: Provides detailed readiness assessment and next steps
+
+**When to use:**
+- Before creating any plugin releases (beta or stable)
+- After making changes to plugin configuration or build process
+- To troubleshoot BRAT installation issues
+- As part of release validation workflow
+- Before sharing plugin with beta testers
+
 ### `download-latest-artifact.ps1`
 
 Downloads the latest notebook-automation artifact from GitHub Actions, which includes both the Obsidian plugin files and all platform executables ready for installation.
@@ -174,6 +267,10 @@ These scripts are integrated with VS Code tasks. Use `Ctrl+Shift+P` and search f
 - `local-ci-build-comprehensive-quality` - Full build with advanced formatting AND test documentation
 - `plugin-build` - Build only the Obsidian plugin (fast)
 - `plugin-build-deploy` - Build and deploy plugin to test vault
+- `plugin-version-beta` - Create beta release with version prompt
+- `plugin-version-stable` - Create stable release with version prompt
+- `plugin-version-patch` - Create patch release with version prompt
+- `test-brat-workflow` - Test complete BRAT compatibility and readiness
 - `dotnet-format-solution` - Format code only
 - `format-csharp-advanced` - Apply advanced C# formatting with XML doc spacing
 - `format-csharp-advanced-verify` - Verify advanced C# formatting compliance
