@@ -69,15 +69,44 @@ internal class VaultCommands
 
         // Add --force option for overwriting existing files
         var forceOption = new Option<bool>("--force", "Force overwrite existing index files");
-        generateIndexCommand.AddOption(forceOption); generateIndexCommand.SetHandler(async (string? path, bool overrideVaultRoot, string[] types, bool force, bool dryRun, bool verbose) =>
+        generateIndexCommand.AddOption(forceOption);
+
+        // Add --recursive option for processing subdirectories
+        var recursiveOption = new Option<bool>("--recursive", "Process subdirectories recursively (default: process only the specified directory)");
+        generateIndexCommand.AddOption(recursiveOption);
+
+        generateIndexCommand.SetHandler(async (string? path, bool overrideVaultRoot, string[] types, bool force, bool recursive, bool dryRun, bool verbose) =>
         {
             try
             {
                 // Get services from service provider
                 var batchProcessor = _serviceProvider.GetRequiredService<VaultIndexBatchProcessor>();
                 var appConfig = _serviceProvider.GetRequiredService<AppConfig>();
-                // Use vault root from config if no path provided
-                var targetPath = path ?? appConfig.Paths.NotebookVaultFullpathRoot;
+
+                // Determine target path and vault root
+                string targetPath;
+                string vaultRootPath = appConfig.Paths.NotebookVaultFullpathRoot;
+
+                if (string.IsNullOrEmpty(path))
+                {
+                    // No path provided - use vault root from config
+                    targetPath = vaultRootPath;
+                }
+                else if (Path.IsPathRooted(path))
+                {
+                    // Absolute path provided - use as-is
+                    targetPath = path;
+                }
+                else
+                {
+                    // Relative path provided - resolve against vault root
+                    if (string.IsNullOrEmpty(vaultRootPath))
+                    {
+                        AnsiConsoleHelper.WriteError("Relative path provided but no vault root configured. Please configure vault root in config file.");
+                        return;
+                    }
+                    targetPath = Path.Combine(vaultRootPath, path);
+                }
 
                 if (string.IsNullOrEmpty(targetPath))
                 {
@@ -87,10 +116,21 @@ internal class VaultCommands
                 if (verbose)
                 {
                     AnsiConsoleHelper.WriteInfo($"Starting vault index generation for: {targetPath}");
+                    AnsiConsoleHelper.WriteInfo($"Vault root path: {vaultRootPath}");
+
                     if (string.IsNullOrEmpty(path))
                     {
                         AnsiConsoleHelper.WriteInfo("Using vault root from configuration (no path provided)");
                     }
+                    else if (Path.IsPathRooted(path))
+                    {
+                        AnsiConsoleHelper.WriteInfo("Using provided absolute path");
+                    }
+                    else
+                    {
+                        AnsiConsoleHelper.WriteInfo($"Resolved relative path '{path}' against vault root");
+                    }
+
                     if (types.Length > 0)
                     {
                         AnsiConsoleHelper.WriteInfo($"Filtering by types: {string.Join(", ", types)}");
@@ -98,6 +138,14 @@ internal class VaultCommands
                     if (overrideVaultRoot)
                     {
                         AnsiConsoleHelper.WriteInfo("Using provided path as vault root override");
+                    }
+                    if (recursive)
+                    {
+                        AnsiConsoleHelper.WriteInfo("Recursive mode: processing subdirectories");
+                    }
+                    else
+                    {
+                        AnsiConsoleHelper.WriteInfo("Non-recursive mode: processing only the specified directory");
                     }
                     if (force)
                     {
@@ -113,8 +161,20 @@ internal class VaultCommands
                 AnsiConsoleHelper.WriteInfo($"Executing vault generate-index for path: {targetPath}");
 
                 // Convert template types to list if provided
-                var templateTypes = types.Length > 0 ? types.ToList() : null;                // Set vault root override if requested
-                var vaultRoot = overrideVaultRoot ? targetPath : null;                // Execute the batch index generation with animated status
+                var templateTypes = types.Length > 0 ? types.ToList() : null;
+
+                // Set vault root - use explicit vault root unless overrideVaultRoot is true
+                string? vaultRoot;
+                if (overrideVaultRoot)
+                {
+                    // Use the target path as vault root (user explicitly requested this)
+                    vaultRoot = targetPath;
+                }
+                else
+                {
+                    // Use the configured vault root for proper hierarchy calculation
+                    vaultRoot = vaultRootPath;
+                }                // Execute the batch index generation with animated status
                 var result = await AnsiConsoleHelper.WithStatusAsync(
                     async (updateStatus) =>
                     {
@@ -124,6 +184,7 @@ internal class VaultCommands
                             dryRun: dryRun,
                             templateTypes: templateTypes,
                             forceOverwrite: force,
+                            recursive: recursive,
                             vaultRoot: vaultRoot);
                     },
                     $"Generating vault indexes for: {targetPath}").ConfigureAwait(false); if (result.Success)
@@ -151,7 +212,7 @@ internal class VaultCommands
                 _logger.LogError(ex, "Error executing vault generate-index command");
                 AnsiConsoleHelper.WriteError($"An error occurred: {ex.Message}");
             }
-        }, pathArg, vaultRootOverrideOption, typeOption, forceOption, dryRunOption, verboseOption);        // Create ensure-metadata subcommand
+        }, pathArg, vaultRootOverrideOption, typeOption, forceOption, recursiveOption, dryRunOption, verboseOption);        // Create ensure-metadata subcommand
         var ensureMetadataCommand = new Command("ensure-metadata", "Ensure metadata consistency across markdown files based on directory hierarchy");
         ensureMetadataCommand.AddArgument(pathArg);
         ensureMetadataCommand.AddOption(vaultRootOverrideOption);

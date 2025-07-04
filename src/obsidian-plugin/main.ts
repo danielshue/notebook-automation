@@ -13,18 +13,28 @@ function getRelativeVaultResourcePath(fullPath: string, vaultRoot: string, vault
   let normRoot = vaultRoot.replace(/\\/g, '/').replace(/\/$/, '');
   let normBase = (vaultBase || '').replace(/\\/g, '/').replace(/^\//, '').replace(/\/$/, '');
 
-  // Remove vaultRoot if present
+  console.log(`[getRelativeVaultResourcePath] Input fullPath: "${fullPath}"`);
+  console.log(`[getRelativeVaultResourcePath] Input vaultRoot: "${vaultRoot}"`);
+  console.log(`[getRelativeVaultResourcePath] Input vaultBase: "${vaultBase}"`);
+  console.log(`[getRelativeVaultResourcePath] Normalized fullPath: "${normFull}"`);
+  console.log(`[getRelativeVaultResourcePath] Normalized vaultRoot: "${normRoot}"`);
+  console.log(`[getRelativeVaultResourcePath] Normalized vaultBase: "${normBase}"`);
+
+  // Remove vaultRoot if present (for absolute paths)
   if (normRoot && normFull.startsWith(normRoot)) {
+    console.log(`[getRelativeVaultResourcePath] Removing vaultRoot from path`);
     normFull = normFull.substring(normRoot.length);
     if (normFull.startsWith('/')) normFull = normFull.substring(1);
   }
 
-  // Remove vaultBase if present
+  // Remove vaultBase if present (this is the key part for Obsidian vault relative paths)
   if (normBase && normFull.startsWith(normBase)) {
+    console.log(`[getRelativeVaultResourcePath] Removing vaultBase from path`);
     normFull = normFull.substring(normBase.length);
     if (normFull.startsWith('/')) normFull = normFull.substring(1);
   }
 
+  console.log(`[getRelativeVaultResourcePath] Final result: "${normFull}"`);
   return normFull;
 }
 /**
@@ -385,7 +395,7 @@ export default class NotebookAutomationPlugin extends Plugin {
                 .onClick(() => this.handleNotebookAutomationCommand(file, "build-index"));
             });
             menu.addItem((item) => {
-              item.setTitle("Notebook Automation: Build Indexes for This Folder and All Subfolders")
+              item.setTitle("Notebook Automation: Build Indexes for This Folder and All Subfolders (Recursive)")
                 .setIcon("layers")
                 .onClick(() => this.handleNotebookAutomationCommand(file, "build-index-recursive"));
             });
@@ -439,36 +449,98 @@ export default class NotebookAutomationPlugin extends Plugin {
    * @param action The action string (see menu registration)
    */
   async handleNotebookAutomationCommand(file: import("obsidian").TAbstractFile, action: string) {
-    // Get config for vault root and base
+    // Get config for vault root and base using same priority logic as executeNotebookAutomationCommand
     let vaultRoot = "";
     let vaultBase = "";
     try {
       // Try to get loaded config from settings tab
       const loaded = (window as any).notebookAutomationLoadedConfig;
+      console.log('[Notebook Automation] [DEBUG] loaded config from window:', loaded);
       if (loaded?.paths?.notebook_vault_fullpath_root) {
         vaultRoot = loaded.paths.notebook_vault_fullpath_root;
         vaultBase = loaded.paths?.notebook_vault_resources_basepath || "";
+        console.log('[Notebook Automation] [DEBUG] Using loaded config - vaultRoot:', vaultRoot, 'vaultBase:', vaultBase);
       } else {
-        // Fallback: read config.json directly (synchronously)
+        // Use same priority logic as executeNotebookAutomationCommand
         // @ts-ignore
         const fs = window.require ? window.require('fs') : null;
-        if (fs) {
-          let configPath = this.settings.configPath;
-          if (!configPath) configPath = 'config.json';
-          if (fs.existsSync(configPath)) {
-            const content = fs.readFileSync(configPath, 'utf8');
-            const config = JSON.parse(content);
-            vaultRoot = config.paths?.notebook_vault_fullpath_root || "";
-            vaultBase = config.paths?.notebook_vault_resources_basepath || "";
+        // @ts-ignore
+        const path = window.require ? window.require('path') : null;
+        let configPath = '';
+
+        console.log('[Notebook Automation] [DEBUG] fs available:', !!fs, 'path available:', !!path);
+
+        // First priority: Environment variable NOTEBOOKAUTOMATION_CONFIG
+        const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
+        console.log('[Notebook Automation] [DEBUG] envConfigPath:', envConfigPath);
+        if (envConfigPath && fs && fs.existsSync(envConfigPath)) {
+          configPath = envConfigPath;
+          console.log('[Notebook Automation] [DEBUG] Using env config path:', configPath);
+        }
+
+        // Second priority: Use default-config.json from plugin directory
+        if (!configPath && path && fs) {
+          let pluginDir = this.manifest?.dir;
+          console.log('[Notebook Automation] [DEBUG] pluginDir:', pluginDir);
+          if (pluginDir) {
+            const adapter = this.app?.vault?.adapter;
+            // @ts-ignore
+            if (adapter && typeof adapter.getBasePath === 'function') {
+              try {
+                // @ts-ignore
+                const vaultRootPath = adapter.getBasePath();
+                if (vaultRootPath && !path.isAbsolute(pluginDir)) {
+                  pluginDir = path.join(vaultRootPath, pluginDir);
+                }
+              } catch (err) {
+                // Continue with original pluginDir
+              }
+            }
+            const defaultConfigPath = path.join(pluginDir, 'default-config.json');
+            console.log('[Notebook Automation] [DEBUG] checking defaultConfigPath:', defaultConfigPath);
+            if (fs.existsSync(defaultConfigPath)) {
+              configPath = defaultConfigPath;
+              console.log('[Notebook Automation] [DEBUG] Using default config path:', configPath);
+            }
           }
         }
+
+        // Third priority: Fallback to user-configured path
+        if (!configPath && this.settings.configPath) {
+          configPath = this.settings.configPath;
+          console.log('[Notebook Automation] [DEBUG] Using user config path:', configPath);
+        }
+
+        // Load config if we found a path
+        if (configPath && fs && fs.existsSync(configPath)) {
+          console.log('[Notebook Automation] [DEBUG] Loading config from:', configPath);
+          const content = fs.readFileSync(configPath, 'utf8');
+          const config = JSON.parse(content);
+          console.log('[Notebook Automation] [DEBUG] Parsed config:', config);
+          vaultRoot = config.paths?.notebook_vault_fullpath_root || "";
+          vaultBase = config.paths?.notebook_vault_resources_basepath || "";
+          console.log('[Notebook Automation] [DEBUG] Extracted - vaultRoot:', vaultRoot, 'vaultBase:', vaultBase);
+        } else {
+          console.log('[Notebook Automation] [DEBUG] No valid config path found. configPath:', configPath, 'fs available:', !!fs, 'file exists:', configPath ? fs?.existsSync?.(configPath) : 'N/A');
+        }
       }
-    } catch { }
+    } catch (err) {
+      console.log('[Notebook Automation] Error loading config for path processing:', err);
+    }
     // Debug log vaultRoot, vaultBase, and file.path
     // eslint-disable-next-line no-console
     console.log(`[Notebook Automation] vaultRoot: ${vaultRoot}`);
     console.log(`[Notebook Automation] vaultBase: ${vaultBase}`);
     console.log(`[Notebook Automation] file.path: ${file.path}`);
+
+    // TEMPORARY FIX: Hardcode the config values for testing
+    if (!vaultRoot && !vaultBase) {
+      console.log('[Notebook Automation] [TEMP] Config loading failed, using hardcoded values for testing');
+      vaultRoot = "C:/Users/danshue.REDMOND/Vault/01_Projects/MBA";
+      vaultBase = "01_Projects/MBA";
+      console.log('[Notebook Automation] [TEMP] Hardcoded vaultRoot:', vaultRoot, 'vaultBase:', vaultBase);
+    }
+
     const relPath = getRelativeVaultResourcePath(file.path, vaultRoot, vaultBase);
     // Log to the developer console
     // eslint-disable-next-line no-console
@@ -664,7 +736,7 @@ export default class NotebookAutomationPlugin extends Plugin {
         break;
       case "build-index-recursive":
         args = ["vault", "generate-index", relativePath, "--config", configPath, "--recursive"];
-        commandDescription = "Build Index (Recursive)";
+        commandDescription = "Build Indexes (Recursive)";
         break;
       case "reprocess-summary-video":
         args = ["video-notes", "--input", relativePath, "--reprocess", "--config", configPath];

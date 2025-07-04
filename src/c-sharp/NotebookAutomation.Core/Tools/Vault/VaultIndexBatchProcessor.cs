@@ -84,8 +84,10 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     /// <param name="vaultPath">Path to the vault directory to scan for folders.</param>
     /// <param name="templateTypes">Optional filter for specific template types to generate. If specified, only folders matching these types will be queued.</param>
     /// <param name="vaultRoot">Optional vault root for hierarchy calculation. If null, uses vaultPath as the reference point for hierarchy detection.</param>
+    /// <param name="recursive">When true, processes all subdirectories recursively. When false, processes only the specified directory.</param>
     /// <remarks>
-    /// This method scans the vault directory recursively to identify all folders that require index generation.
+    /// This method scans the vault directory to identify folders that require index generation.
+    /// When recursive is true, it scans all subdirectories; when false, it processes only the target directory.
     /// It applies filtering based on template types and ignores standard directories like hidden folders,
     /// templates, attachments, and resources. Each qualifying folder is added to the processing queue
     /// with an initial status of "Waiting".
@@ -97,19 +99,33 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     /// <exception cref="DirectoryNotFoundException">Thrown when the vault path does not exist.</exception>
     /// <example>
     /// <code>
-    /// // Initialize queue for all template types
-    /// InitializeProcessingQueue("/path/to/vault");
+    /// // Initialize queue for all template types (recursive)
+    /// InitializeProcessingQueue("/path/to/vault", recursive: true);
+    ///
+    /// // Initialize queue for single directory only
+    /// InitializeProcessingQueue("/path/to/vault/Course1", recursive: false);
     ///
     /// // Initialize queue for specific template types only
     /// var templateTypes = new List&lt;string&gt; { "course", "module" };
-    /// InitializeProcessingQueue("/path/to/vault", templateTypes, "/vault/root");
+    /// InitializeProcessingQueue("/path/to/vault", templateTypes, "/vault/root", true);
     /// </code>
     /// </example>
-    protected virtual void InitializeProcessingQueue(string vaultPath, List<string>? templateTypes = null, string? vaultRoot = null)
-    { // Get all directories in the vault, including the vault root itself
-        var directories = new List<string> { vaultPath }; // Start with vault root
-        directories.AddRange(Directory.GetDirectories(vaultPath, "*", SearchOption.AllDirectories)
-            .Where(d => !IsIgnoredDirectory(d)));
+    protected virtual void InitializeProcessingQueue(string vaultPath, List<string>? templateTypes = null, string? vaultRoot = null, bool recursive = false)
+    {
+        // Get directories based on recursive flag
+        var directories = new List<string> { vaultPath }; // Always include the target path itself
+
+        if (recursive)
+        {
+            // Recursive: get all subdirectories
+            directories.AddRange(Directory.GetDirectories(vaultPath, "*", SearchOption.AllDirectories)
+                .Where(d => !IsIgnoredDirectory(d)));
+        }
+        else
+        {
+            // Non-recursive: only process the target directory
+            // No additional directories to add - just the vaultPath itself
+        }
 
         directories = directories
             .OrderBy(d => d) // Process in consistent order
@@ -273,12 +289,13 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     }
 
     /// <summary>
-    /// Generates vault index files for all folders in the specified directory structure.
+    /// Generates vault index files for folders in the specified directory structure.
     /// </summary>
     /// <param name="vaultPath">The path to start processing from (can be the vault root or any subdirectory).</param>
     /// <param name="dryRun">When true, simulates processing without making actual file changes.</param>
     /// <param name="templateTypes">Optional list of template types to filter by (e.g., "program", "course", "class", "module", "lesson"). If null, processes all folder types.</param>
     /// <param name="forceOverwrite">When true, regenerates index files even if they already exist and are up-to-date.</param>
+    /// <param name="recursive">When true, processes subdirectories recursively. When false, processes only the specified directory.</param>
     /// <param name="vaultRoot">
     /// The vault root path to use for hierarchy calculation. This is critical for correct template selection:
     /// - When null: Uses configured vault root from AppConfig
@@ -290,7 +307,7 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     /// <para>
     /// This method is the main entry point for batch index generation. It performs the following operations:
     /// 1. Validates input parameters and directory existence
-    /// 2. Optionally cleans up old index.md files
+    /// 2. Optionally cleans up old index.md files (when recursive is true)
     /// 3. Initializes the processing queue with discovered folders
     /// 4. Processes each folder sequentially, generating appropriate index files
     /// 5. Tracks progress and errors throughout the operation
@@ -301,6 +318,7 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     /// It's important to understand the difference between vaultPath and vaultRoot parameters:
     /// - <paramref name="vaultPath"/>: Where to START processing - can be any subdirectory within the vault
     /// - <paramref name="vaultRoot"/>: What to use as the BASE for hierarchy level calculation
+    /// - <paramref name="recursive"/>: Whether to process subdirectories (true) or just the target directory (false)
     /// </para>
     ///
     /// <para>
@@ -318,25 +336,31 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
     /// <exception cref="DirectoryNotFoundException">Thrown when the vault directory does not exist.</exception>
     /// <example>
     /// <code>
-    /// // Generate indexes for entire vault
-    /// var result = await processor.GenerateIndexesAsync("/path/to/vault");
+    /// // Generate indexes for entire vault (recursive)
+    /// var result = await processor.GenerateIndexesAsync("/path/to/vault", recursive: true);
+    ///
+    /// // Generate index for single directory only
+    /// var result = await processor.GenerateIndexesAsync("/path/to/vault/Course1", recursive: false);
     ///
     /// // Dry run with specific template types
     /// var templateTypes = new List&lt;string&gt; { "course", "module" };
     /// var result = await processor.GenerateIndexesAsync(
     ///     "/path/to/vault",
     ///     dryRun: true,
-    ///     templateTypes: templateTypes);
+    ///     templateTypes: templateTypes,
+    ///     recursive: true);
     ///
     /// // Force regeneration of all indexes
     /// var result = await processor.GenerateIndexesAsync(
     ///     "/path/to/vault",
-    ///     forceOverwrite: true);
+    ///     forceOverwrite: true,
+    ///     recursive: true);
     ///
     /// // Process subdirectory with explicit vault root
     /// var result = await processor.GenerateIndexesAsync(
     ///     "/path/to/vault/Course 1",
-    ///     vaultRoot: "/path/to/vault");
+    ///     vaultRoot: "/path/to/vault",
+    ///     recursive: false);
     /// </code>
     /// </example>
     public virtual async Task<VaultIndexBatchResult> GenerateIndexesAsync(
@@ -344,6 +368,7 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
         bool dryRun = false,
         List<string>? templateTypes = null,
         bool forceOverwrite = false,
+        bool recursive = false,
         string? vaultRoot = null)
     {
         if (string.IsNullOrEmpty(vaultPath))
@@ -363,14 +388,14 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
         {
             _logger.LogInformation("Starting vault index generation for vault: {VaultPath}", vaultPath);
 
-            // Clean up old index.md files first (if not dry run)
-            if (!dryRun)
+            // Clean up old index.md files first (if not dry run and recursive)
+            if (!dryRun && recursive)
             {
                 await CleanupOldIndexFilesAsync(vaultPath).ConfigureAwait(false);
             }
 
             // Initialize the processing queue
-            InitializeProcessingQueue(vaultPath, templateTypes, vaultRoot);
+            InitializeProcessingQueue(vaultPath, templateTypes, vaultRoot, recursive);
 
             var queueCopy = Queue.ToList();
             if (!queueCopy.Any())

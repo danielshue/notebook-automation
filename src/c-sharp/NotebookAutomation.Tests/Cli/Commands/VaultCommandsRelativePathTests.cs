@@ -150,6 +150,7 @@ public class VaultCommandsRelativePathTests
             bool dryRun = false,
             List<string>? templateTypes = null,
             bool forceOverwrite = false,
+            bool recursive = true,
             string? vaultRoot = null)
         {
             // Call the process function to capture the path

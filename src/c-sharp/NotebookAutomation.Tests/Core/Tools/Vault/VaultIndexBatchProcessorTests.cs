@@ -112,7 +112,7 @@ public class VaultIndexBatchProcessorTests
         Assert.IsNotNull(methodInfo);
 
         // Act
-        methodInfo.Invoke(_batchProcessor, [_testVaultPath, null, null]);
+        methodInfo.Invoke(_batchProcessor, [_testVaultPath, null, null, true]);
 
         // Assert
         var queue = _batchProcessor.Queue;
@@ -156,7 +156,7 @@ public class VaultIndexBatchProcessorTests
             .Returns("program");
 
         // Act
-        methodInfo.Invoke(_batchProcessor, [_testVaultPath, templateTypes, _testVaultPath]);        // Assert
+        methodInfo.Invoke(_batchProcessor, [_testVaultPath, templateTypes, _testVaultPath, true]);        // Assert
         var queue = _batchProcessor.Queue;
         Assert.IsTrue(queue.Count > 0, "Queue should contain filtered items");
 
@@ -224,7 +224,7 @@ public class VaultIndexBatchProcessorTests
         var initMethod = typeof(VaultIndexBatchProcessor).GetMethod("InitializeProcessingQueue",
             BindingFlags.NonPublic | BindingFlags.Instance);
         Assert.IsNotNull(initMethod);
-        initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null]);
+        initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null, true]);
 
         var updateMethod = typeof(VaultIndexBatchProcessor).GetMethod("UpdateQueueItemStatus",
             BindingFlags.NonPublic | BindingFlags.Instance);
@@ -262,7 +262,7 @@ public class VaultIndexBatchProcessorTests
         var initMethod = typeof(VaultIndexBatchProcessor).GetMethod("InitializeProcessingQueue",
             BindingFlags.NonPublic | BindingFlags.Instance);
         Assert.IsNotNull(initMethod);
-        initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null]);
+        initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null, true]);
 
         var updateMethod = typeof(VaultIndexBatchProcessor).GetMethod("UpdateQueueItemStatus",
             BindingFlags.NonPublic | BindingFlags.Instance);
@@ -335,7 +335,7 @@ public class VaultIndexBatchProcessorTests
         var initMethod = typeof(VaultIndexBatchProcessor).GetMethod("InitializeProcessingQueue",
             BindingFlags.NonPublic | BindingFlags.Instance);
         Assert.IsNotNull(initMethod);
-        initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null]);
+        initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null, true]);
 
         var tasks = new List<Task>();
         var exception = false;
@@ -397,7 +397,7 @@ public class VaultIndexBatchProcessorTests
         var initMethod = typeof(VaultIndexBatchProcessor).GetMethod("InitializeProcessingQueue",
             BindingFlags.NonPublic | BindingFlags.Instance);
         Assert.IsNotNull(initMethod);
-        initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null]);
+        initMethod.Invoke(_batchProcessor, [_testVaultPath, null, null, true]);
 
         // Act
         var queue = _batchProcessor.Queue;
