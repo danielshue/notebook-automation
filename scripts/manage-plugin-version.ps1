@@ -88,17 +88,30 @@ if ($gitStatus) {
     }
 }
 
+# Debugging: Check variable types and values before Join-Path calls
+Write-Host "[DEBUG] RepoRoot: $RepoRoot (Type: $($RepoRoot.GetType().Name))" -ForegroundColor Yellow
+Write-Host "[DEBUG] PluginDir: $PluginDir (Type: $($PluginDir.GetType().Name))" -ForegroundColor Yellow
+Write-Host "[DEBUG] PackageJsonPath: $PackageJsonPath (Type: $($PackageJsonPath.GetType().Name))" -ForegroundColor Yellow
+Write-Host "[DEBUG] ManifestJsonPath: $ManifestJsonPath (Type: $($ManifestJsonPath.GetType().Name))" -ForegroundColor Yellow
+
 # Step 1: Update package.json version
-Write-Host "📝 Updating package.json version to $Version"
-Push-Location $PluginDir
-try {
-    npm version $Version --no-git-tag-version
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to update package.json version"
-    }
+# Check if the specified version is already set in package.json
+$packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
+if ($packageJson.version -eq $Version) {
+    Write-Host "⚠️  Specified version ($Version) is already set in package.json. Skipping version update." -ForegroundColor Yellow
 }
-finally {
-    Pop-Location
+else {
+    Write-Host "📝 Updating package.json version to $Version"
+    Push-Location $PluginDir
+    try {
+        npm version $Version --no-git-tag-version
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to update package.json version"
+        }
+    }
+    finally {
+        Pop-Location
+    }
 }
 
 # Step 2: Run version bump script to sync manifest.json
@@ -151,8 +164,8 @@ finally {
 
 # Step 5: Verify build artifacts
 $buildArtifacts = @(
-    Join-Path $PluginDir "dist\main.js",
-    Join-Path $PluginDir "manifest.json",
+    Join-Path $PluginDir "dist\main.js"
+    Join-Path $PluginDir "manifest.json"
     Join-Path $PluginDir "styles.css"
 )
 
@@ -196,8 +209,8 @@ if ($CreateRelease) {
     
     # Prepare release assets
     $releaseAssets = @(
-        Join-Path $PluginDir "dist\main.js",
-        Join-Path $PluginDir "manifest.json",
+        Join-Path $PluginDir "dist\main.js"
+        Join-Path $PluginDir "manifest.json"
         Join-Path $PluginDir "styles.css"
     )
     
