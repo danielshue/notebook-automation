@@ -47,19 +47,21 @@ namespace NotebookAutomation.Core.Tools.Vault;
 ///     @"MBA/Finance",
 ///     @"C:\Users\user\Vault");
 ///
-/// // Explicit bidirectional synchronization
+/// // Explicit bidirectional synchronization with recursive scanning
 /// var bidirectionalResult = await processor.SyncDirectoriesAsync(
 ///     @"MBA/Finance",
 ///     @"C:\Users\user\Vault",
 ///     dryRun: false,
-///     bidirectional: true);
+///     bidirectional: true,
+///     recursive: true);
 ///
-/// // Unidirectional synchronization (OneDrive → Vault only)
+/// // Unidirectional synchronization (OneDrive → Vault only) with non-recursive scanning
 /// var unidirectionalResult = await processor.SyncDirectoriesAsync(
 ///     @"MBA/Finance",
 ///     @"C:\Users\user\Vault",
 ///     dryRun: false,
-///     bidirectional: false);
+///     bidirectional: false,
+///     recursive: false);
 ///
 /// if (result.Success)
 /// {
@@ -68,12 +70,13 @@ namespace NotebookAutomation.Core.Tools.Vault;
 ///     Console.WriteLine($"Created {result.CreatedOneDriveFolders} OneDrive directories");
 /// }
 ///
-/// // Dry run for preview
+/// // Dry run for preview with recursive scanning
 /// var previewResult = await processor.SyncDirectoriesAsync(
 ///     oneDrivePath,
 ///     vaultPath,
 ///     dryRun: true,
-///     bidirectional: true);
+///     bidirectional: true,
+///     recursive: true);
 /// </code>
 /// </example>
 public class VaultFolderSyncProcessor(
@@ -147,6 +150,11 @@ public class VaultFolderSyncProcessor(
     /// in both OneDrive and vault. When false, only creates missing vault directories.
     /// Default is true for bidirectional synchronization to keep both locations in sync.
     /// </param>
+    /// <param name="recursive">
+    /// When true, scans subdirectories recursively to synchronize the entire directory tree.
+    /// When false, only synchronizes the immediate children of the specified directory.
+    /// Default is false for non-recursive operation (immediate children only).
+    /// </param>
     /// <returns>
     /// A task that represents the asynchronous synchronization operation.
     /// The task result contains:
@@ -187,23 +195,25 @@ public class VaultFolderSyncProcessor(
     ///     Console.WriteLine($"Created: {result.CreatedVaultFolders} new directories");
     /// }
     ///
-    /// // Preview synchronization without making changes
+    /// // Preview synchronization without making changes (recursive)
     /// var previewResult = await processor.SyncDirectoriesAsync(
     ///     "MBA/Finance",
     ///     vaultPath,
-    ///     dryRun: true);
+    ///     dryRun: true,
+    ///     recursive: true);
     ///
     /// Console.WriteLine($"Would create {previewResult.CreatedVaultFolders} directories");
     ///
-    /// // Use default vault path from configuration
-    /// var defaultResult = await processor.SyncDirectoriesAsync("MBA/Finance", null);
+    /// // Use default vault path from configuration (non-recursive)
+    /// var defaultResult = await processor.SyncDirectoriesAsync("MBA/Finance", null, recursive: false);
     /// </code>
     /// </example>
     public async Task<VaultFolderSyncResult> SyncDirectoriesAsync(
         string oneDrivePath,
         string? vaultPath,
         bool dryRun = false,
-        bool bidirectional = true)
+        bool bidirectional = true,
+        bool recursive = false)
     {
         if (string.IsNullOrEmpty(oneDrivePath))
         {
@@ -258,18 +268,28 @@ public class VaultFolderSyncProcessor(
                 _logger.LogInformation("BIDIRECTIONAL MODE: Synchronizing in both directions");
             }
 
+            if (recursive)
+            {
+                _logger.LogInformation("RECURSIVE MODE: Processing subdirectories recursively");
+            }
+            else
+            {
+                _logger.LogInformation("NON-RECURSIVE MODE: Processing only immediate children");
+            }
+
             var result = new VaultFolderSyncResult();
             var failedFolders = new List<string>();
+            var createdVaultDirectories = new HashSet<string>();
 
             // Phase 1: OneDrive to Vault synchronization
             _logger.LogInformation("Phase 1: Synchronizing OneDrive directories to vault");
-            await SyncOneDriveToVaultAsync(fullOneDriveSource, targetVaultPath, result, failedFolders, dryRun).ConfigureAwait(false);
+            await SyncOneDriveToVaultAsync(fullOneDriveSource, targetVaultPath, result, failedFolders, dryRun, recursive, createdVaultDirectories).ConfigureAwait(false);
 
             // Phase 2: Vault to OneDrive synchronization (if bidirectional)
             if (bidirectional)
             {
                 _logger.LogInformation("Phase 2: Synchronizing vault directories to OneDrive");
-                await SyncVaultToOneDriveAsync(targetVaultPath, fullOneDriveSource, result, failedFolders, dryRun).ConfigureAwait(false);
+                await SyncVaultToOneDriveAsync(targetVaultPath, fullOneDriveSource, result, failedFolders, dryRun, recursive, createdVaultDirectories).ConfigureAwait(false);
             }
 
             _logger.LogInformation($"Directory synchronization completed: {result.SynchronizedFolders}/{result.TotalFolders} synchronized, {result.CreatedVaultFolders} vault folders created, {result.CreatedOneDriveFolders} OneDrive folders created, {result.SkippedFolders} skipped, {result.FailedFolders} failed");
@@ -292,15 +312,19 @@ public class VaultFolderSyncProcessor(
     /// <param name="result">The result object to update.</param>
     /// <param name="failedFolders">List to track failed folders.</param>
     /// <param name="dryRun">Whether this is a dry run.</param>
+    /// <param name="recursive">Whether to scan subdirectories recursively.</param>
+    /// <param name="createdVaultDirectories">Set to track directories created in vault during this sync.</param>
     private async Task SyncOneDriveToVaultAsync(
         string oneDriveSource,
         string vaultTarget,
         VaultFolderSyncResult result,
         List<string> failedFolders,
-        bool dryRun)
+        bool dryRun,
+        bool recursive,
+        HashSet<string> createdVaultDirectories)
     {
         // Discover all directories in the OneDrive source
-        var sourceDirectories = await DiscoverDirectoriesAsync(oneDriveSource).ConfigureAwait(false);
+        var sourceDirectories = await DiscoverDirectoriesAsync(oneDriveSource, recursive).ConfigureAwait(false);
         result.TotalFolders += sourceDirectories.Count;
 
         _logger.LogInformation($"Found {sourceDirectories.Count} OneDrive directories to synchronize to vault");
@@ -337,6 +361,7 @@ public class VaultFolderSyncProcessor(
                     _logger.LogInformation($"DRY RUN: Would create vault directory: {targetDir}");
                     result.CreatedVaultFolders++;
                     result.SynchronizedFolders++;
+                    createdVaultDirectories.Add(targetDir);
                 }
                 else
                 {
@@ -344,6 +369,7 @@ public class VaultFolderSyncProcessor(
                     Directory.CreateDirectory(targetDir);
                     result.CreatedVaultFolders++;
                     result.SynchronizedFolders++;
+                    createdVaultDirectories.Add(targetDir);
                     _logger.LogInformation($"Created vault directory: {targetDir}");
                 }
             }
@@ -365,15 +391,19 @@ public class VaultFolderSyncProcessor(
     /// <param name="result">The result object to update.</param>
     /// <param name="failedFolders">List to track failed folders.</param>
     /// <param name="dryRun">Whether this is a dry run.</param>
+    /// <param name="recursive">Whether to scan subdirectories recursively.</param>
+    /// <param name="createdVaultDirectories">Set of directories created in vault during this sync to exclude from processing.</param>
     private async Task SyncVaultToOneDriveAsync(
         string vaultSource,
         string oneDriveTarget,
         VaultFolderSyncResult result,
         List<string> failedFolders,
-        bool dryRun)
+        bool dryRun,
+        bool recursive,
+        HashSet<string> createdVaultDirectories)
     {
         // Discover all directories in the vault source
-        var sourceDirectories = await DiscoverDirectoriesAsync(vaultSource).ConfigureAwait(false);
+        var sourceDirectories = await DiscoverDirectoriesAsync(vaultSource, recursive).ConfigureAwait(false);
         var originalTotalFolders = result.TotalFolders;
         result.TotalFolders += sourceDirectories.Count;
 
@@ -396,6 +426,13 @@ public class VaultFolderSyncProcessor(
                     result.TotalFolders);
 
                 _logger.LogDebug($"Processing vault directory: {sourceDir} -> {targetDir}");
+
+                // Skip directories that were created in vault during this sync to avoid circular sync
+                if (createdVaultDirectories.Contains(sourceDir))
+                {
+                    _logger.LogDebug($"Skipping vault directory created in this sync: {sourceDir}");
+                    continue;
+                }
 
                 // Check if target directory already exists
                 if (Directory.Exists(targetDir))
@@ -432,16 +469,18 @@ public class VaultFolderSyncProcessor(
 
 
     /// <summary>
-    /// Discovers all directories in the specified path recursively.
+    /// Discovers all directories in the specified path.
     /// </summary>
     /// <remarks>
-    /// This method performs a recursive scan of the directory structure to identify
-    /// all subdirectories that need to be synchronized. It returns directories in
-    /// depth-first order to ensure proper creation hierarchy.
+    /// This method performs a scan of the directory structure to identify
+    /// all subdirectories that need to be synchronized. When recursive is true,
+    /// it returns directories in depth-first order to ensure proper creation hierarchy.
+    /// When recursive is false, it returns only immediate child directories.
     /// </remarks>
     /// <param name="path">The root path to scan for directories.</param>
+    /// <param name="recursive">Whether to scan subdirectories recursively.</param>
     /// <returns>A list of all directory paths found, sorted for consistent processing order.</returns>
-    private async Task<List<string>> DiscoverDirectoriesAsync(string path)
+    private async Task<List<string>> DiscoverDirectoriesAsync(string path, bool recursive)
     {
         var directories = new List<string>();
 
@@ -449,13 +488,15 @@ public class VaultFolderSyncProcessor(
         {
             await Task.Run(() =>
             {
-                // Get all directories recursively
-                var foundDirectories = Directory.GetDirectories(path, "*", SearchOption.AllDirectories);
+                // Get directories based on recursive flag
+                var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+                var foundDirectories = Directory.GetDirectories(path, "*", searchOption);
 
                 // Sort for consistent processing order
                 directories.AddRange(foundDirectories.OrderBy(d => d));
 
-                _logger.LogDebug($"Discovered {directories.Count} directories in {path}");
+                var searchMode = recursive ? "recursively" : "non-recursively";
+                _logger.LogDebug($"Discovered {directories.Count} directories {searchMode} in {path}");
             }).ConfigureAwait(false);
         }
         catch (Exception ex)

@@ -126,7 +126,7 @@ public class VaultFolderSyncProcessorTests
         CreateTestOneDriveStructure(testPath);
 
         // Act
-        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, bidirectional: false);
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: false, recursive: true);
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -276,7 +276,7 @@ public class VaultFolderSyncProcessorTests
         Directory.CreateDirectory(Path.Combine(_testVaultRoot, "VaultOnly", "SubFolder"));
 
         // Act
-        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: true);
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: true, recursive: true);
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -374,7 +374,7 @@ public class VaultFolderSyncProcessorTests
         Directory.CreateDirectory(Path.Combine(_testVaultRoot, "VaultExclusive"));
 
         // Act
-        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: true);
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: true, recursive: true);
 
         // Assert
         Assert.IsTrue(result.Success);
@@ -389,5 +389,115 @@ public class VaultFolderSyncProcessorTests
         Assert.IsTrue(Directory.Exists(Path.Combine(oneDriveTargetPath, "VaultExclusive")), "VaultExclusive should be created in OneDrive");
         Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course1")), "Course1 should still exist in vault");
         Assert.IsTrue(Directory.Exists(Path.Combine(oneDriveTargetPath, "Course1")), "Course1 should still exist in OneDrive");
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirectoriesAsync with recursive=false processes only immediate children.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirectoriesAsync_NonRecursive_ProcessesOnlyImmediateChildren()
+    {
+        // Arrange
+        var testPath = "MBA/Finance";
+        var oneDriveTestPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath);
+        Directory.CreateDirectory(oneDriveTestPath);
+
+        // Create nested directory structure
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "Course1"));
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "Course2"));
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "Course1", "Module1")); // Nested - should not be processed
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "Course1", "Module2")); // Nested - should not be processed
+
+        // Act
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: false, recursive: false);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(2, result.CreatedVaultFolders); // Only Course1 and Course2, not the nested modules
+        Assert.AreEqual(2, result.SynchronizedFolders);
+        Assert.AreEqual(0, result.SkippedFolders);
+        Assert.AreEqual(0, result.FailedFolders);
+
+        // Verify only immediate children were created
+        Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course1")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course2")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(_testVaultRoot, "Course1", "Module1")), "Nested Module1 should NOT be created in non-recursive mode");
+        Assert.IsFalse(Directory.Exists(Path.Combine(_testVaultRoot, "Course1", "Module2")), "Nested Module2 should NOT be created in non-recursive mode");
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirectoriesAsync with recursive=true processes entire directory tree.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirectoriesAsync_Recursive_ProcessesEntireDirectoryTree()
+    {
+        // Arrange
+        var testPath = "MBA/Finance";
+        var oneDriveTestPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath);
+        Directory.CreateDirectory(oneDriveTestPath);
+
+        // Create nested directory structure
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "Course1"));
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "Course2"));
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "Course1", "Module1"));
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "Course1", "Module2"));
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "Course1", "Module1", "Lesson1"));
+
+        // Act
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: false, recursive: true);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(5, result.CreatedVaultFolders); // Course1, Course2, Module1, Module2, Lesson1
+        Assert.AreEqual(5, result.SynchronizedFolders);
+        Assert.AreEqual(0, result.SkippedFolders);
+        Assert.AreEqual(0, result.FailedFolders);
+
+        // Verify entire directory tree was created
+        Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course1")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course2")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course1", "Module1")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course1", "Module2")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "Course1", "Module1", "Lesson1")));
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirectoriesAsync with bidirectional=true and recursive=false processes only immediate children in both directions.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirectoriesAsync_BidirectionalNonRecursive_ProcessesOnlyImmediateChildren()
+    {
+        // Arrange
+        var testPath = "MBA/Finance";
+        var oneDriveTestPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath);
+        Directory.CreateDirectory(oneDriveTestPath);
+
+        // Create OneDrive structure with nested directories
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "OneDriveCourse1"));
+        Directory.CreateDirectory(Path.Combine(oneDriveTestPath, "OneDriveCourse1", "Module1")); // Nested - should not be processed
+
+        // Create vault structure with nested directories
+        Directory.CreateDirectory(Path.Combine(_testVaultRoot, "VaultCourse1"));
+        Directory.CreateDirectory(Path.Combine(_testVaultRoot, "VaultCourse1", "Module1")); // Nested - should not be processed
+
+        // Act
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: true, recursive: false);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(1, result.CreatedVaultFolders); // Only OneDriveCourse1, not the nested module
+        Assert.AreEqual(1, result.CreatedOneDriveFolders); // Only VaultCourse1, not the nested module
+        Assert.AreEqual(2, result.SynchronizedFolders);
+        Assert.AreEqual(0, result.SkippedFolders);
+        Assert.AreEqual(0, result.FailedFolders);
+
+        // Verify only immediate children were created in both directions
+        Assert.IsTrue(Directory.Exists(Path.Combine(_testVaultRoot, "OneDriveCourse1")));
+        Assert.IsTrue(Directory.Exists(Path.Combine(oneDriveTestPath, "VaultCourse1")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(_testVaultRoot, "OneDriveCourse1", "Module1")), "Nested OneDrive module should NOT be created in non-recursive mode");
+        Assert.IsFalse(Directory.Exists(Path.Combine(oneDriveTestPath, "VaultCourse1", "Module1")), "Nested vault module should NOT be created in non-recursive mode");
     }
 }

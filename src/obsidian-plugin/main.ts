@@ -327,6 +327,8 @@ interface NotebookAutomationSettings {
   enableIndexCreation?: boolean;
   enableEnsureMetadata?: boolean;
   unidirectionalSync?: boolean;
+  recursiveDirectorySync?: boolean;
+  recursiveIndexBuild?: boolean;
 }
 
 const DEFAULT_SETTINGS: NotebookAutomationSettings = {
@@ -343,6 +345,8 @@ const DEFAULT_SETTINGS: NotebookAutomationSettings = {
   enableIndexCreation: true,
   enableEnsureMetadata: true,
   unidirectionalSync: false,
+  recursiveDirectorySync: true,
+  recursiveIndexBuild: false,
 };
 
 export default class NotebookAutomationPlugin extends Plugin {
@@ -364,7 +368,10 @@ export default class NotebookAutomationPlugin extends Plugin {
 
           // Sync Directory - always available at the top
           menu.addItem((item) => {
-            item.setTitle("Notebook Automation: Sync Directory with OneDrive")
+            const syncTitle = this.settings.recursiveDirectorySync
+              ? "Notebook Automation: Sync Directory with OneDrive Recursively"
+              : "Notebook Automation: Sync Directory with OneDrive";
+            item.setTitle(syncTitle)
               .setIcon("sync")
               .onClick(() => this.handleNotebookAutomationCommand(file, "sync-dir"));
           });
@@ -390,14 +397,14 @@ export default class NotebookAutomationPlugin extends Plugin {
           // Index Creation - only if enabled
           if (this.settings.enableIndexCreation) {
             menu.addItem((item) => {
-              item.setTitle("Notebook Automation: Build Index for This Folder")
-                .setIcon("list")
-                .onClick(() => this.handleNotebookAutomationCommand(file, "build-index"));
-            });
-            menu.addItem((item) => {
-              item.setTitle("Notebook Automation: Build Indexes for This Folder and All Subfolders (Recursive)")
-                .setIcon("layers")
-                .onClick(() => this.handleNotebookAutomationCommand(file, "build-index-recursive"));
+              const indexTitle = this.settings.recursiveIndexBuild
+                ? "Notebook Automation: Build Indexes for This Folder and All Subfolders (Recursive)"
+                : "Notebook Automation: Build Index for This Folder";
+              const indexIcon = this.settings.recursiveIndexBuild ? "layers" : "list";
+              const indexAction = this.settings.recursiveIndexBuild ? "build-index-recursive" : "build-index";
+              item.setTitle(indexTitle)
+                .setIcon(indexIcon)
+                .onClick(() => this.handleNotebookAutomationCommand(file, indexAction));
             });
           }
 
@@ -718,8 +725,8 @@ export default class NotebookAutomationPlugin extends Plugin {
 
     switch (action) {
       case "sync-dir":
-        // For sync-dir, paths are obtained from config - no need to pass the current folder
-        args = ["vault", "sync-dirs", "--config", configPath];
+        // Pass the relative path to sync-dirs command to specify starting point
+        args = ["vault", "sync-dirs", relativePath, "--config", configPath];
         commandDescription = "Sync Directory with OneDrive";
         break;
       case "import-summarize-videos":
@@ -778,6 +785,10 @@ export default class NotebookAutomationPlugin extends Plugin {
     }
     if (this.settings.unidirectionalSync) {
       args.push("--unidirectional");
+    }
+    // Add recursive flag for sync operations only
+    if (action === "sync-dir" && this.settings.recursiveDirectorySync) {
+      args.push("--recursive");
     }
     // Only add --force if explicitly requested by the caller (in addition to settings)
     if (opts?.force) {
@@ -1250,6 +1261,30 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
         toggle.setValue(this.plugin.settings.unidirectionalSync || false)
           .onChange(async (value) => {
             this.plugin.settings.unidirectionalSync = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    // Recursive Directory Sync flag
+    new Setting(flagsGroup)
+      .setName("Recursive Directory Sync")
+      .setDesc("Enable recursive directory scanning for sync operations. When enabled, directory synchronization will process the entire directory tree including all subdirectories and nested folders. When disabled, only the immediate children (first level) of the target directory will be synchronized. This affects how deep the sync operation goes into the folder hierarchy when synchronizing between OneDrive and your vault.")
+      .addToggle(toggle => {
+        toggle.setValue(this.plugin.settings.recursiveDirectorySync ?? true)
+          .onChange(async (value) => {
+            this.plugin.settings.recursiveDirectorySync = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
+    // Recursive Index Build flag
+    new Setting(flagsGroup)
+      .setName("Recursive Index Build")
+      .setDesc("Enable recursive index building for directory operations. When enabled, the 'Build Index' context menu option will process the entire directory tree including all subdirectories and nested folders. When disabled, only the immediate folder will be indexed. This affects the depth of index generation when building indexes from the context menu.")
+      .addToggle(toggle => {
+        toggle.setValue(this.plugin.settings.recursiveIndexBuild ?? false)
+          .onChange(async (value) => {
+            this.plugin.settings.recursiveIndexBuild = value;
             await this.plugin.saveSettings();
           });
       });

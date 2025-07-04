@@ -40,6 +40,11 @@ public interface IVaultFolderSyncProcessor
     /// in both OneDrive and vault. When false, only creates missing vault directories.
     /// Default is true for bidirectional synchronization to keep both locations in sync.
     /// </param>
+    /// <param name="recursive">
+    /// When true, scans subdirectories recursively to synchronize the entire directory tree.
+    /// When false, only synchronizes the immediate children of the specified directory.
+    /// Default is false for non-recursive operation (immediate children only).
+    /// </param>
     /// <returns>
     /// A task that represents the asynchronous synchronization operation.
     /// The task result contains statistics about the synchronization process including
@@ -49,5 +54,6 @@ public interface IVaultFolderSyncProcessor
         string oneDrivePath,
         string? vaultPath,
         bool dryRun = false,
-        bool bidirectional = true);
+        bool bidirectional = true,
+        bool recursive = false);
 }

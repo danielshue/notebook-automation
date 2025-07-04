@@ -321,23 +321,20 @@ internal class VaultCommands
 
         // Create sync-dirs subcommand
         var syncDirsCommand = new Command("sync-dirs", "Synchronize directory structure between OneDrive and vault (bidirectional by default)");
-        var oneDrivePathArg = new Argument<string?>("onedrive-path", "Relative path within OneDrive to synchronize (defaults to onedrive_resources_basepath from config)")
-        {
-            Arity = ArgumentArity.ZeroOrOne
-        };
-        var vaultPathArg = new Argument<string?>("vault-path", "Target vault path (defaults to vault root from config)")
+        var vaultPathArg = new Argument<string?>("vault-path", "Vault path to start synchronization from (defaults to vault root from config)")
         {
             Arity = ArgumentArity.ZeroOrOne
         };
         var unidirectionalOption = new Option<bool>("--unidirectional", "Disable bidirectional sync (OneDrive → Vault only)");
+        var syncRecursiveOption = new Option<bool>("--recursive", "Enable recursive directory scanning (default: false, immediate children only)");
 
-        syncDirsCommand.AddArgument(oneDrivePathArg);
         syncDirsCommand.AddArgument(vaultPathArg);
         syncDirsCommand.AddOption(unidirectionalOption);
+        syncDirsCommand.AddOption(syncRecursiveOption);
         syncDirsCommand.AddOption(dryRunOption);
         syncDirsCommand.AddOption(verboseOption);
 
-        syncDirsCommand.SetHandler(async (string? oneDrivePath, string? vaultPath, bool unidirectional, bool dryRun, bool verbose) =>
+        syncDirsCommand.SetHandler(async (string? vaultPath, bool unidirectional, bool recursive, bool dryRun, bool verbose) =>
         {
             try
             {
@@ -345,37 +342,68 @@ internal class VaultCommands
                 var syncProcessor = _serviceProvider.GetRequiredService<IVaultFolderSyncProcessor>();
                 var appConfig = _serviceProvider.GetRequiredService<AppConfig>();
 
-                // Default paths from config if not provided
-                var effectiveOneDrivePath = oneDrivePath;
+                // Determine effective vault path - use provided path or default to vault root
                 var effectiveVaultPath = vaultPath;
-
-                if (string.IsNullOrWhiteSpace(effectiveOneDrivePath))
-                {
-                    // Construct default OneDrive path from config: onedrive_fullpath_root + onedrive_resources_basepath
-                    var oneDriveRoot = appConfig.Paths?.OnedriveFullpathRoot;
-                    var oneDriveBase = appConfig.Paths?.OnedriveResourcesBasepath;
-
-                    if (string.IsNullOrWhiteSpace(oneDriveRoot))
-                    {
-                        AnsiConsoleHelper.WriteError("OneDrive path is required");
-                        return;
-                    }
-
-                    effectiveOneDrivePath = string.IsNullOrWhiteSpace(oneDriveBase)
-                        ? oneDriveRoot
-                        : Path.Combine(oneDriveRoot, oneDriveBase.TrimStart('/', '\\'));
-                }
 
                 if (string.IsNullOrWhiteSpace(effectiveVaultPath))
                 {
-                    // Use vault root from config
+                    // Use vault root from config as default starting point
                     effectiveVaultPath = appConfig.Paths?.NotebookVaultFullpathRoot;
 
                     if (string.IsNullOrWhiteSpace(effectiveVaultPath))
                     {
-                        AnsiConsoleHelper.WriteError("Vault path is required");
+                        AnsiConsoleHelper.WriteError("Vault path is required - either provide a path or configure vault root in config file");
                         return;
                     }
+                }
+                else
+                {
+                    // Handle relative vault paths by resolving against vault root
+                    if (!Path.IsPathRooted(effectiveVaultPath))
+                    {
+                        var vaultRoot = appConfig.Paths?.NotebookVaultFullpathRoot;
+                        if (string.IsNullOrWhiteSpace(vaultRoot))
+                        {
+                            AnsiConsoleHelper.WriteError("Relative vault path provided but no vault root configured. Please configure vault root in config file.");
+                            return;
+                        }
+                        effectiveVaultPath = Path.Combine(vaultRoot, effectiveVaultPath);
+                    }
+                }
+
+                // Validate that the vault path exists
+                if (!Directory.Exists(effectiveVaultPath))
+                {
+                    AnsiConsoleHelper.WriteError($"Vault path does not exist: {effectiveVaultPath}");
+                    return;
+                }
+
+                // Calculate the relative path from vault root to the effective vault path
+                // This will be used to determine the corresponding OneDrive path
+                var configuredVaultRoot = appConfig.Paths?.NotebookVaultFullpathRoot;
+                if (string.IsNullOrWhiteSpace(configuredVaultRoot))
+                {
+                    AnsiConsoleHelper.WriteError("Vault root not configured. Please set paths.notebook_vault_fullpath_root in configuration.");
+                    return;
+                }
+
+                string oneDriveRelativePath;
+                if (effectiveVaultPath.Equals(configuredVaultRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Syncing from vault root - use empty relative path (sync entire OneDrive base)
+                    oneDriveRelativePath = "";
+                }
+                else
+                {
+                    // Calculate relative path from vault root to the specified vault path
+                    if (!effectiveVaultPath.StartsWith(configuredVaultRoot, StringComparison.OrdinalIgnoreCase))
+                    {
+                        AnsiConsoleHelper.WriteError($"Vault path '{effectiveVaultPath}' is not under the configured vault root '{configuredVaultRoot}'");
+                        return;
+                    }
+                    oneDriveRelativePath = Path.GetRelativePath(configuredVaultRoot, effectiveVaultPath);
+                    // Normalize path separators to forward slashes for OneDrive compatibility
+                    oneDriveRelativePath = oneDriveRelativePath.Replace('\\', '/');
                 }
 
                 // Bidirectional is default, unidirectional flag turns it off
@@ -384,9 +412,17 @@ internal class VaultCommands
                 if (verbose)
                 {
                     AnsiConsoleHelper.WriteInfo($"Starting directory synchronization");
-                    AnsiConsoleHelper.WriteInfo($"OneDrive path: {effectiveOneDrivePath}{(string.IsNullOrWhiteSpace(oneDrivePath) ? " (from config)" : "")}");
-                    AnsiConsoleHelper.WriteInfo($"Vault path: {effectiveVaultPath}{(string.IsNullOrWhiteSpace(vaultPath) ? " (from config)" : "")}");
+                    AnsiConsoleHelper.WriteInfo($"Vault path: {effectiveVaultPath}{(string.IsNullOrWhiteSpace(vaultPath) ? " (vault root from config)" : "")}");
+                    AnsiConsoleHelper.WriteInfo($"OneDrive relative path: {(string.IsNullOrEmpty(oneDriveRelativePath) ? "(root)" : oneDriveRelativePath)}");
                     AnsiConsoleHelper.WriteInfo($"Bidirectional: {bidirectional}");
+                    if (recursive)
+                    {
+                        AnsiConsoleHelper.WriteInfo("Recursive mode: processing subdirectories");
+                    }
+                    else
+                    {
+                        AnsiConsoleHelper.WriteInfo("Non-recursive mode: processing only immediate children");
+                    }
                     if (dryRun)
                     {
                         AnsiConsoleHelper.WriteInfo("Dry run mode enabled - no directories will be created");
@@ -395,22 +431,23 @@ internal class VaultCommands
 
                 // Output basic execution message for test compatibility
                 var syncMode = bidirectional ? "bidirectional sync-dirs" : "sync-dirs";
-                AnsiConsoleHelper.WriteInfo($"Executing vault {syncMode} for OneDrive path: {effectiveOneDrivePath}");
+                AnsiConsoleHelper.WriteInfo($"Executing vault {syncMode} for vault path: {effectiveVaultPath}");
 
                 // Execute the directory synchronization with animated status
                 var statusMessage = bidirectional
-                    ? $"Synchronizing directories bidirectionally: {effectiveOneDrivePath}"
-                    : $"Synchronizing directories from OneDrive: {effectiveOneDrivePath}";
+                    ? $"Synchronizing directories bidirectionally: {effectiveVaultPath}"
+                    : $"Synchronizing directories from OneDrive: {effectiveVaultPath}";
 
                 var result = await AnsiConsoleHelper.WithStatusAsync(
                     async (updateStatus) =>
                     {
                         // Execute the directory synchronization
                         return await syncProcessor.SyncDirectoriesAsync(
-                            oneDrivePath: effectiveOneDrivePath,
+                            oneDrivePath: oneDriveRelativePath,
                             vaultPath: effectiveVaultPath,
                             dryRun: dryRun,
-                            bidirectional: bidirectional);
+                            bidirectional: bidirectional,
+                            recursive: recursive);
                     },
                     statusMessage).ConfigureAwait(false);
 
@@ -449,7 +486,7 @@ internal class VaultCommands
                 _logger.LogError(ex, "Error executing vault sync-dirs command");
                 AnsiConsoleHelper.WriteError($"An error occurred: {ex.Message}");
             }
-        }, oneDrivePathArg, vaultPathArg, unidirectionalOption, dryRunOption, verboseOption);
+        }, vaultPathArg, unidirectionalOption, syncRecursiveOption, dryRunOption, verboseOption);
 
         // Create parent vault command
         var vaultCommand = new Command("vault", "Vault management commands");
