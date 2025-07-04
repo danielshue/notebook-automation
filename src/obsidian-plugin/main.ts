@@ -659,11 +659,11 @@ export default class NotebookAutomationPlugin extends Plugin {
         commandDescription = "Import & AI Summarize PDFs";
         break;
       case "build-index":
-        args = ["build-index", "--input", relativePath, "--config", configPath];
+        args = ["vault", "generate-index", relativePath, "--config", configPath];
         commandDescription = "Build Index";
         break;
       case "build-index-recursive":
-        args = ["build-index", "--input", relativePath, "--config", configPath, "--recursive"];
+        args = ["vault", "generate-index", relativePath, "--config", configPath, "--recursive"];
         commandDescription = "Build Index (Recursive)";
         break;
       case "reprocess-summary-video":
