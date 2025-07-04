@@ -89,6 +89,9 @@ function Write-Error {
     Write-Host "❌ $Message" -ForegroundColor $Red
 }
 
+# Update pluginDistPath to point to the repository's dist directory
+$pluginDistPath = Join-Path $RepositoryRoot "dist"
+
 try {
     Write-Host "🚀 Starting Local CI Build Pipeline" -ForegroundColor $Cyan
     Write-Host "Configuration: $Configuration" -ForegroundColor $Yellow
@@ -143,14 +146,18 @@ try {
                 }
 
                 # Verify build outputs
-                $mainJs = Join-Path $obsidianPluginDir "main.js"
-                $manifestJson = Join-Path $obsidianPluginDir "manifest.json"
-                $stylesCss = Join-Path $obsidianPluginDir "styles.css"
+                $mainJs = Join-Path $pluginDistPath "main.js"
+                $manifestJson = Join-Path $pluginDistPath "manifest.json"
+                $stylesCss = Join-Path $pluginDistPath "styles.css"
 
                 $buildOutputs = @()
                 if (Test-Path $mainJs) { $buildOutputs += "✓ main.js" }
                 if (Test-Path $manifestJson) { $buildOutputs += "✓ manifest.json" }
                 if (Test-Path $stylesCss) { $buildOutputs += "✓ styles.css" }
+
+                # Add default-config.json to the list of build outputs
+                $defaultConfigJson = Join-Path $pluginDistPath "default-config.json"
+                if (Test-Path $defaultConfigJson) { $buildOutputs += "✓ default-config.json" }
 
                 if ($buildOutputs.Count -gt 0) {
                     Write-Success "Obsidian plugin build completed successfully"
@@ -176,28 +183,41 @@ try {
                         Write-Host "Created plugin directory: $destPath" -ForegroundColor $Yellow
                     }
 
-                    # Copy plugin files
+                    # Copy plugin files from the 'dist' directory
                     $filesToCopy = @("main.js", "manifest.json", "styles.css")
-                    if (Test-Path "default-config.json") {
+                    $distAbsolutePath = Join-Path $RepositoryRoot "dist"
+                    if (Test-Path (Join-Path $distAbsolutePath "default-config.json")) {
                         $filesToCopy += "default-config.json"
                     }
 
+                    # Ensure 'dist' directory exists and contains the required files
+                    $mainJsAbsolutePath = Join-Path $distAbsolutePath "main.js"
+                    if (-not (Test-Path $mainJsAbsolutePath)) {
+                        throw "Error: '$mainJsAbsolutePath' not found. Ensure the build process generates this file."
+                    }
+                    if (-not (Test-Path (Join-Path $distAbsolutePath "default-config.json"))) {
+                        Write-Warning "Warning: 'default-config.json' not found in $distAbsolutePath. Skipping this file."
+                    }
+
                     foreach ($file in $filesToCopy) {
-                        $src = Join-Path $obsidianPluginDir $file
+                        $src = Join-Path $distAbsolutePath $file
                         $dst = Join-Path $destPath $file
                         if (Test-Path $src) {
                             Copy-Item $src $dst -Force
-                            Write-Host "  ✓ Copied $file" -ForegroundColor $Green
+                            Write-Host "    ✓ Copied $file" -ForegroundColor $Green
+                        }
+                        else {
+                            Write-Warning "    ⚠ $file not found in '$distAbsolutePath'. Skipping."
                         }
                     }
 
                     # Copy executables if they exist from a previous full build
                     # (Note: Plugin-only mode doesn't build executables, but can deploy existing ones)
-                    $distPath = "../../dist"
+                    $distPath = Join-Path $RepositoryRoot "dist"
                     $executablesFound = @()
 
                     # Check for notebook-automation directory structure first (matches CI output)
-                    $notebookAutomationPath = "$distPath/notebook-automation"
+                    $notebookAutomationPath = Join-Path $distPath "notebook-automation"
                     if (Test-Path $notebookAutomationPath) {
                         $availableExecutables = Get-ChildItem -Path $notebookAutomationPath -File | Where-Object { $_.Name -like "na-*" }
                         if ($availableExecutables) {
@@ -597,24 +617,59 @@ try {
         Write-Success "Cross-platform publish operations completed successfully"
     }
     finally {
-        # Clean up temp publish directory but preserve executables if plugin deployment is requested
-        if (Test-Path $tempPublishDir) {
-            if ($DeployPlugin) {
-                # Move executables to a persistent location for plugin deployment
-                $persistentExecutablesDir = Join-Path $RepositoryRoot "dist"
-                if (-not (Test-Path $persistentExecutablesDir)) {
-                    New-Item -ItemType Directory -Path $persistentExecutablesDir -Force | Out-Null
+        # Copy executables to the root dist folder before cleaning up the temp publish directory
+        $persistentExecutablesDir = Join-Path $RepositoryRoot "dist"
+        if (-not (Test-Path $persistentExecutablesDir)) {
+            New-Item -ItemType Directory -Path $persistentExecutablesDir -Force | Out-Null
+        }
+
+        # Add logging to confirm paths and files being copied
+        Write-Host "Checking executables in: $persistentExecutablesDir" -ForegroundColor $Cyan
+        if (Test-Path $persistentExecutablesDir) {
+            $availableExecutables = Get-ChildItem -Path $persistentExecutablesDir -File | Where-Object { $_.Name -like "na-*" }
+            if ($availableExecutables) {
+                Write-Host "Found executables:" -ForegroundColor $Yellow
+                $availableExecutables | ForEach-Object { Write-Host "  - $_.Name" -ForegroundColor $Green }
+            }
+            else {
+                Write-Host "No executables found in $persistentExecutablesDir" -ForegroundColor $Red
+            }
+        }
+        else {
+            Write-Host "Path does not exist: $persistentExecutablesDir" -ForegroundColor $Red
+        }
+
+        if (Test-Path $executablesDir) {
+            $availableExecutables = Get-ChildItem -Path $executablesDir -File | Where-Object { $_.Name -like "na-*" }
+            foreach ($exe in $availableExecutables) {
+                $persistentPath = Join-Path $persistentExecutablesDir $exe.Name
+                Copy-Item $exe.FullName $persistentPath -Force
+                Write-Host "  Copied $($exe.Name) to dist folder" -ForegroundColor $Green
+            }
+        }
+
+        # Log successful copying of main.js and default-config.json
+        $filesToEnsure = @("main.js", "default-config.json")
+        foreach ($file in $filesToEnsure) {
+            $srcPath = Join-Path $pluginDistPath $file
+            $destPath = Join-Path $persistentExecutablesDir $file
+            if (Test-Path $srcPath) {
+                # Ensure source and destination paths are not the same before copying
+                if ($srcPath -ne $destPath) {
+                    Copy-Item $srcPath $destPath -Force
+                    Write-Host "  ✓ Copied $file to dist folder" -ForegroundColor $Green
                 }
-                
-                if (Test-Path $executablesDir) {
-                    $availableExecutables = Get-ChildItem -Path $executablesDir -File | Where-Object { $_.Name -like "na-*" }
-                    foreach ($exe in $availableExecutables) {
-                        $persistentPath = Join-Path $persistentExecutablesDir $exe.Name
-                        Copy-Item $exe.FullName $persistentPath -Force
-                        Write-Host "  Preserved $($exe.Name) for plugin deployment" -ForegroundColor $Yellow
-                    }
+                else {
+                    Write-Host "  Skipping copy for $file as source and destination are the same" -ForegroundColor $Yellow
                 }
             }
+            else {
+                Write-Warning "  ⚠ $file not found in plugin dist folder. Skipping."
+            }
+        }
+
+        # Clean up temp publish directory
+        if (Test-Path $tempPublishDir) {
             Remove-Item -Recurse -Force $tempPublishDir -ErrorAction SilentlyContinue
         }
     }
@@ -659,14 +714,16 @@ try {
             }
 
             # Verify build outputs
-            $mainJs = Join-Path $obsidianPluginDir "main.js"
-            $manifestJson = Join-Path $obsidianPluginDir "manifest.json"
-            $stylesCss = Join-Path $obsidianPluginDir "styles.css"
+            $mainJs = Join-Path $pluginDistPath "main.js"
+            $manifestJson = Join-Path $pluginDistPath "manifest.json"
+            $stylesCss = Join-Path $pluginDistPath "styles.css"
+            $defaultConfigJson = Join-Path $pluginDistPath "default-config.json"
 
             $buildOutputs = @()
             if (Test-Path $mainJs) { $buildOutputs += "main.js" }
             if (Test-Path $manifestJson) { $buildOutputs += "manifest.json" }
             if (Test-Path $stylesCss) { $buildOutputs += "styles.css" }
+            if (Test-Path $defaultConfigJson) { $buildOutputs += "default-config.json" }
 
             if ($buildOutputs.Count -gt 0) {
                 Write-Host "Successfully built plugin files:" -ForegroundColor $Yellow
@@ -690,18 +747,31 @@ try {
                         Write-Host "  Created plugin directory: $destPath" -ForegroundColor $Yellow
                     }
 
-                    # Copy plugin files
+                    # Copy plugin files from the 'dist' directory
                     $filesToCopy = @("main.js", "manifest.json", "styles.css")
-                    if (Test-Path "default-config.json") {
+                    $distAbsolutePath = Join-Path $RepositoryRoot "dist"
+                    if (Test-Path (Join-Path $distAbsolutePath "default-config.json")) {
                         $filesToCopy += "default-config.json"
                     }
 
+                    # Ensure 'dist' directory exists and contains the required files
+                    $mainJsAbsolutePath = Join-Path $distAbsolutePath "main.js"
+                    if (-not (Test-Path $mainJsAbsolutePath)) {
+                        throw "Error: '$mainJsAbsolutePath' not found. Ensure the build process generates this file."
+                    }
+                    if (-not (Test-Path (Join-Path $distAbsolutePath "default-config.json"))) {
+                        Write-Warning "Warning: 'default-config.json' not found in $distAbsolutePath. Skipping this file."
+                    }
+
                     foreach ($file in $filesToCopy) {
-                        $src = Join-Path $obsidianPluginDir $file
+                        $src = Join-Path $distAbsolutePath $file
                         $dst = Join-Path $destPath $file
                         if (Test-Path $src) {
                             Copy-Item $src $dst -Force
                             Write-Host "    ✓ Copied $file" -ForegroundColor $Green
+                        }
+                        else {
+                            Write-Warning "    ⚠ $file not found in '$distAbsolutePath'. Skipping."
                         }
                     }
 
@@ -730,6 +800,14 @@ try {
                         Write-Host "  No executables available from current build" -ForegroundColor $Yellow
                     }
 
+                    # Copy all contents of the dist folder to the Obsidian Test Vault
+                    $distContents = Get-ChildItem -Path $persistentExecutablesDir -File
+                    foreach ($item in $distContents) {
+                        $vaultPath = Join-Path $destPath $item.Name
+                        Copy-Item $item.FullName $vaultPath -Force
+                        Write-Host "  ✓ Copied $($item.Name) to Obsidian Test Vault" -ForegroundColor $Green
+                    }
+
                     Write-Success "Plugin deployed to test vault: $destPath"
                     Write-Host "  Reload plugins in Obsidian to see changes." -ForegroundColor $Yellow
                 }
@@ -747,8 +825,8 @@ try {
         Write-Warning "Obsidian plugin directory not found at: $obsidianPluginDir"
         Write-Warning "Skipping plugin build step"
     }
-    # Step 8: Run Static Code Analysis (mirrors CI - this runs last)
-    Write-Step "Step 8: Static Code Analysis"
+    # Step 9: Run Static Code Analysis (mirrors CI - this runs last)
+    Write-Step "Step 9: Static Code Analysis"
     dotnet format $SolutionPath --verify-no-changes --severity error
     if ($LASTEXITCODE -ne 0) {
         Write-Error "Code formatting issues detected!"
