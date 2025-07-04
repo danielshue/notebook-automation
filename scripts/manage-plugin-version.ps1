@@ -157,16 +157,24 @@ try {
     
     # The new build script automatically handles executable preservation
     Write-Host "✅ Build completed with executable preservation"
+    # Copy manifest.json to repository root for BRAT compatibility
+    $repoRootManifest = Join-Path $RepoRoot "manifest.json"
+    Copy-Item -Path $ManifestJsonPath -Destination $repoRootManifest -Force
+    Write-Host "✅ Copied manifest.json to repository root for BRAT compatibility"
 }
 finally {
     Pop-Location
 }
 
 # Step 5: Verify build artifacts
+$distDir = Join-Path $RepoRoot "dist"
+$distFiles = Get-ChildItem -Path $distDir | Select-Object -ExpandProperty Name
+Write-Host "[DEBUG] Files in dist directory:" -ForegroundColor Yellow
+$distFiles | ForEach-Object { Write-Host "   $_" -ForegroundColor Yellow }
 $buildArtifacts = @(
-    Join-Path $PluginDir "dist\main.js"
-    Join-Path $PluginDir "manifest.json"
-    Join-Path $PluginDir "styles.css"
+    Join-Path $distDir "main.js"
+    Join-Path $distDir "manifest.json"
+    Join-Path $distDir "styles.css"
 )
 
 foreach ($artifact in $buildArtifacts) {
@@ -208,10 +216,11 @@ if ($CreateRelease) {
     }
     
     # Prepare release assets
+    $distDir = Join-Path $RepoRoot "dist"
     $releaseAssets = @(
-        Join-Path $PluginDir "dist\main.js"
-        Join-Path $PluginDir "manifest.json"
-        Join-Path $PluginDir "styles.css"
+        Join-Path $distDir "main.js"
+        Join-Path $distDir "manifest.json"
+        Join-Path $distDir "styles.css"
     )
     
     # Create release notes
