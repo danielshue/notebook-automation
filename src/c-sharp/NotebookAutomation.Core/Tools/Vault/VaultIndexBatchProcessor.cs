@@ -386,7 +386,7 @@ public class VaultIndexBatchProcessor(ILogger<VaultIndexBatchProcessor> _logger,
 
         try
         {
-            _logger.LogInformation("Starting vault index generation for vault: {VaultPath}", vaultPath);
+            _logger.LogDebug("Starting vault index generation for vault: {VaultPath}", vaultPath);
 
             // Clean up old index.md files first (if not dry run and recursive)
             if (!dryRun && recursive)
