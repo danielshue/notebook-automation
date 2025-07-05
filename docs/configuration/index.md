@@ -31,9 +31,11 @@ The primary configuration file is `config/config.json`:
     "ParallelProcessing": false
   },
   "LoggingSettings": {
-    "LogLevel": "Information",
+    "LogLevel": "Warning",
     "LogToFile": true,
-    "LogFilePath": "logs/notebookautomation.log"
+    "LogFilePath": "logs/notebook-automation.log",
+    "MaxFileSizeMB": 50,
+    "RetainedFileCount": 7
   }
 }
 ```
@@ -85,6 +87,91 @@ NOTEBOOK_PARALLEL_PROCESSING=false
 # Logging
 NOTEBOOK_LOG_LEVEL=Debug
 NOTEBOOK_LOG_FILE="logs/debug.log"
+```
+
+## Logging Configuration
+
+Notebook Automation provides comprehensive logging capabilities with configurable verbosity levels and automatic log file management.
+
+### Log Levels
+
+The application supports the following log levels:
+
+- **Debug/Verbose**: Detailed diagnostic information (only shown when `--debug` or `--verbose` flags are used)
+- **Information**: General application flow information
+- **Warning**: Potentially harmful situations (default for production)
+- **Error**: Error events that allow the application to continue
+- **Critical**: Critical failures that may cause the application to terminate
+
+### Production vs Debug Mode
+
+**Production Mode (Default)**:
+```bash
+# Only warnings, errors, and critical messages are shown in console
+NotebookAutomation.exe process-pdfs --input "Documents/"
+
+# Enable verbose mode for detailed console output
+NotebookAutomation.exe process-pdfs --input "Documents/" --verbose
+```
+
+**Debug Mode**:
+```bash
+# Shows all log levels including debug information in console
+NotebookAutomation.exe process-pdfs --input "Documents/" --debug
+```
+
+### Rolling Log Files
+
+Log files are automatically managed with size-based rolling:
+
+- **Default filename**: `notebook-automation.log` (consistent across runs)
+- **Rolling behavior**: When file reaches maximum size, creates `.1`, `.2`, etc.
+- **Automatic cleanup**: Old log files are automatically deleted when limit is reached
+
+### Configuration Options
+
+Add to your `config.json`:
+
+```json
+{
+  "logging": {
+    "max_file_size_mb": 50,
+    "retained_file_count": 7
+  },
+  "paths": {
+    "logging_dir": "./logs"
+  }
+}
+```
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `max_file_size_mb` | Maximum size of each log file before rolling | 50 MB |
+| `retained_file_count` | Number of old log files to keep | 7 |
+| `logging_dir` | Directory where log files are stored | `./logs` |
+
+### Example Log Files
+
+```
+logs/
+├── notebook-automation.log      # Current log file
+├── notebook-automation.log.1    # Previous log file  
+├── notebook-automation.log.2    # Older log file
+└── notebook-automation.log.3    # Oldest retained file
+```
+
+### Environment Variables
+
+Override logging settings with environment variables:
+
+```bash
+# Set log levels
+export DEBUG=true
+export VERBOSE=true
+
+# Override file settings  
+export LOGGING_MAX_FILE_SIZE_MB=100
+export LOGGING_RETAINED_FILE_COUNT=14
 ```
 
 ## User Secrets

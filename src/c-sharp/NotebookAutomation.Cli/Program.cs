@@ -72,10 +72,14 @@ internal class Program
         // Check for debug mode from environment or command line
         var isDebugMode = CommandLineModeDetector.IsDebugModeEnabled(args);
         var isVerboseMode = CommandLineModeDetector.IsVerboseModeEnabled(args);
+        
+        // Treat DEBUG and VERBOSE equivalently for logging purposes
+        var debugOrVerbose = isDebugMode || isVerboseMode;
 
-        if (isDebugMode)
+        if (debugOrVerbose)
         {
-            AnsiConsoleHelper.WriteInfo($"Debug mode enabled");
+            var modeText = isDebugMode ? "Debug" : "Verbose";
+            AnsiConsoleHelper.WriteInfo($"{modeText} mode enabled");
         }
 
         // Parse config option early to use it in dependency injection setup
@@ -92,7 +96,7 @@ internal class Program
         IServiceProvider serviceProvider;
         try
         {
-            serviceProvider = bootstrapper.SetupDependencyInjection(configPath, isDebugMode);
+            serviceProvider = bootstrapper.SetupDependencyInjection(configPath, debugOrVerbose);
             Program.serviceProvider = serviceProvider; // Set the static field
         }
         catch (Exception ex)
