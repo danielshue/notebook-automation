@@ -186,7 +186,7 @@ internal class PdfCommands
             // Use explicit vault root override if provided, otherwise use effective output directory
             string finalVaultRoot = vaultRootOverride ?? effectiveOutputDir;
             vaultRootContext.VaultRootOverride = finalVaultRoot;
-            logger.LogInformation($"Using vault root override for metadata hierarchy: {finalVaultRoot}");
+            logger.LogDebug($"Using vault root override for metadata hierarchy: {finalVaultRoot}");
 
             var batchProcessor = scopedServices.GetRequiredService<PdfNoteBatchProcessor>();
 
@@ -248,7 +248,7 @@ internal class PdfCommands
 
                         // Configure vault roots: local resources folder -> OneDrive resources path
                         oneDriveService.ConfigureVaultRoots(localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
-                        logger.LogInformation($"Configured OneDrive vault roots - Local: {localResourcesPath}, OneDrive: {appConfig.Paths.OnedriveResourcesBasepath}");
+                        logger.LogDebug($"Configured OneDrive vault roots - Local: {localResourcesPath}, OneDrive: {appConfig.Paths.OnedriveResourcesBasepath}");
                     }
                 }
                 catch (Exception ex)
@@ -345,14 +345,15 @@ internal class PdfCommands
             logger.LogInformation(
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
-                resolvedInput); logger.LogInformation($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
+                resolvedInput); 
+            logger.LogDebug($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
 
             // Override image extraction setting from CLI if specified
             bool originalExtractImages = appConfig.PdfExtractImages;
             if (extractImages != appConfig.PdfExtractImages)
             {
                 appConfig.PdfExtractImages = extractImages;
-                logger.LogInformation($"Overriding PDF image extraction setting from CLI: {extractImages}");
+                logger.LogDebug($"Overriding PDF image extraction setting from CLI: {extractImages}");
             }
 
             try

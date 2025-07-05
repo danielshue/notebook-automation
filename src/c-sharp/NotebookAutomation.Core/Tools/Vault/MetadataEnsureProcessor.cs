@@ -246,7 +246,7 @@ public class MetadataEnsureProcessor(
 
             if (dryRun)
             {
-                _logger.LogInformation($"DRY RUN: Would update metadata for: {filePath}");
+                _logger.LogDebug($"DRY RUN: Would update metadata for: {filePath}");
                 LogMetadataChanges(originalMetadata, metadata, filePath);
                 return true;
             }
@@ -255,7 +255,7 @@ public class MetadataEnsureProcessor(
             string updatedContent = _yamlHelper.UpdateFrontmatter(content, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
             await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
 
-            _logger.LogInformation($"Updated metadata for: {filePath}");
+            _logger.LogDebug($"Updated metadata for: {filePath}");
             return true;
         }
         catch (Exception ex)

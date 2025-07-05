@@ -224,7 +224,7 @@ public class AISummarizer : IAISummarizer
         Dictionary<string, string>? variables,
         CancellationToken cancellationToken)
     {
-        logger.LogInformation("Processing {ChunkCount} chunks sequentially", chunks.Count);
+        logger.LogDebug("Processing {ChunkCount} chunks sequentially", chunks.Count);
 
         var chunkSummaries = new List<string>();
 
@@ -297,7 +297,7 @@ public class AISummarizer : IAISummarizer
             }
         }
 
-        logger.LogInformation("Completed sequential processing of {SuccessCount}/{TotalCount} chunks",
+        logger.LogDebug("Completed sequential processing of {SuccessCount}/{TotalCount} chunks",
             chunkSummaries.Count, chunks.Count);
 
         return chunkSummaries;
@@ -321,7 +321,7 @@ public class AISummarizer : IAISummarizer
         var maxParallelism = Math.Min(timeoutConfig.MaxChunkParallelism, chunks.Count);
         var rateLimitDelay = TimeSpan.FromMilliseconds(timeoutConfig.ChunkRateLimitMs);
 
-        logger.LogInformation("Processing {ChunkCount} chunks with parallelism of {MaxParallelism} and rate limit of {RateLimit}ms",
+        logger.LogDebug("Processing {ChunkCount} chunks with parallelism of {MaxParallelism} and rate limit of {RateLimit}ms",
             chunks.Count, maxParallelism, timeoutConfig.ChunkRateLimitMs);
 
         // Create a semaphore to control concurrency
@@ -364,7 +364,7 @@ public class AISummarizer : IAISummarizer
             .Select(result => result.Summary!)
             .ToList();
 
-        logger.LogInformation("Successfully processed {SuccessCount}/{TotalCount} chunks in parallel",
+        logger.LogDebug("Successfully processed {SuccessCount}/{TotalCount} chunks in parallel",
             chunkSummaries.Count, chunks.Count);
 
         return chunkSummaries;
@@ -573,7 +573,7 @@ public class AISummarizer : IAISummarizer
         // Check if input likely exceeds character limits and needs chunking
         if (processedInputText.Length > maxChunkTokens)
         {
-            logger.LogInformation("Input text is large ({Length} characters). Using chunking strategy for summarization.", processedInputText.Length);
+            logger.LogDebug("Input text is large ({Length} characters). Using chunking strategy for summarization.", processedInputText.Length);
             return await SummarizeWithChunkingAsync(processedInputText, processedPrompt, variables, cancellationToken).ConfigureAwait(false);
         }
 
