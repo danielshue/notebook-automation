@@ -476,12 +476,28 @@ jobs:
           name: all-platform-executables-${{ needs.consolidate-artifacts.outputs.informational-version }}
           path: consolidated-executables
 
-      - name: Prepare plugin directory for direct installation
+      - name: Prepare plugin directory for BRAT/Community Release
         run: |
-          mkdir -p notebook-automation
-          cp src/obsidian-plugin/dist/main.js src/obsidian-plugin/manifest.json src/obsidian-plugin/styles.css src/obsidian-plugin/dist/default-config.json notebook-automation/
-          cp consolidated-executables/* notebook-automation/ || true
-          ls -la notebook-automation
+          PLUGIN_ID="notebook-automation"
+          PLUGIN_DIR="$PLUGIN_ID"
+          mkdir -p "$PLUGIN_DIR"
+          # Copy required plugin files (fail if missing)
+          for f in main.js manifest.json styles.css default-config.json; do
+            if [ ! -f "src/obsidian-plugin/dist/$f" ] && [ ! -f "src/obsidian-plugin/$f" ]; then
+              echo "❌ Required file missing: $f"; exit 1
+            fi
+            # Prefer dist/ for built files, fallback to root for manifest/styles/config
+            if [ -f "src/obsidian-plugin/dist/$f" ]; then
+              cp "src/obsidian-plugin/dist/$f" "$PLUGIN_DIR/"
+            else
+              cp "src/obsidian-plugin/$f" "$PLUGIN_DIR/"
+            fi
+          done
+          # Copy all executables if present
+          if [ -d consolidated-executables ]; then
+            cp consolidated-executables/* "$PLUGIN_DIR/" 2>/dev/null || true
+          fi
+          ls -la "$PLUGIN_DIR"
 
       - name: Upload plugin and executables as artifact
         uses: actions/upload-artifact@v4
