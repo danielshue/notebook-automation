@@ -95,18 +95,19 @@ internal class HelpDisplayService
                     ? FileVersionInfo.GetVersionInfo(exePath)
                     : null;
 
-                // Extract display details with fallbacks to new Version system
+                // Extract display details with GitVersion information when available
                 string displayVersion = version.ToSemanticVersionString();
                 string fullVersion = version.ToDisplayString();
                 string productName = fileVersionInfo?.ProductName ?? "Notebook Automation";
                 string companyName = fileVersionInfo?.CompanyName ?? "Dan Shue";
                 string copyrightInfo = fileVersionInfo?.LegalCopyright ?? "Copyright 2025";
                 string buildDate = version.BuildDateUtc.ToString("yyyy-MM-dd");
-                string branch = "master"; // GitVersionInformation.BranchName ?? "master";
-
-                string shortSha = "dev"; // GitVersionInformation.ShortSha ?? "unknown";
-                string commitDate = DateTime.Now.ToString("yyyy-MM-dd"); // GitVersionInformation.CommitDate ?? "unknown";
-                string semVer = "0.1.0-dev"; // GitVersionInformation.SemVer ?? "0.0.0";
+                
+                // Use GitVersionInformation when available, fallback to version info
+                string branch = GitVersionInformation.BranchName ?? "main";
+                string shortSha = GitVersionInformation.ShortSha ?? version.Commit;
+                string commitDate = GitVersionInformation.CommitDate ?? version.BuildDateUtc.ToString("yyyy-MM-dd");
+                string semVer = GitVersionInformation.SemVer ?? version.ToSemanticVersionString();
 
 
 

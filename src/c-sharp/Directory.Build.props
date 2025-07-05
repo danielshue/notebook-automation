@@ -12,7 +12,7 @@
     <Authors>Dan Shue</Authors>
 
     <!-- Enable GitVersion -->
-    <GitVersion_UseGitVersion>false</GitVersion_UseGitVersion>
+    <GitVersion_UseGitVersion>true</GitVersion_UseGitVersion>
     <GitVersion_NoFetch>true</GitVersion_NoFetch>
 
     <!-- Enable default assembly version generation -->
@@ -47,13 +47,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- GitVersion - TEMPORARILY DISABLED -->
-    <!--
+    <!-- GitVersion -->
     <PackageReference Include="GitVersion.MsBuild" Version="6.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    -->
 
     <!-- StyleCop Analyzers - TEMPORARILY DISABLED -->
     <!--

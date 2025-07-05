@@ -74,19 +74,19 @@ metadata:
 
 Override configuration settings using environment variables:
 
-```bash
+```powershell
 # Core settings
-NOTEBOOK_INPUT_DIR="C:\MyNotebooks"
-NOTEBOOK_OUTPUT_DIR="C:\ProcessedNotebooks"
+$env:NOTEBOOK_INPUT_DIR = "C:\MyNotebooks"
+$env:NOTEBOOK_OUTPUT_DIR = "C:\ProcessedNotebooks"
 
 # Processing options
-NOTEBOOK_ENABLE_METADATA=true
-NOTEBOOK_ENABLE_TAGS=true
-NOTEBOOK_PARALLEL_PROCESSING=false
+$env:NOTEBOOK_ENABLE_METADATA = "true"
+$env:NOTEBOOK_ENABLE_TAGS = "true"
+$env:NOTEBOOK_PARALLEL_PROCESSING = "false"
 
 # Logging
-NOTEBOOK_LOG_LEVEL=Debug
-NOTEBOOK_LOG_FILE="logs/debug.log"
+$env:NOTEBOOK_LOG_LEVEL = "Debug"
+$env:NOTEBOOK_LOG_FILE = "logs/debug.log"
 ```
 
 ## Logging Configuration
@@ -106,7 +106,7 @@ The application supports the following log levels:
 ### Production vs Debug Mode
 
 **Production Mode (Default)**:
-```bash
+```powershell
 # Only warnings, errors, and critical messages are shown in console
 NotebookAutomation.exe process-pdfs --input "Documents/"
 
@@ -115,7 +115,7 @@ NotebookAutomation.exe process-pdfs --input "Documents/" --verbose
 ```
 
 **Debug Mode**:
-```bash
+```powershell
 # Shows all log levels including debug information in console
 NotebookAutomation.exe process-pdfs --input "Documents/" --debug
 ```
@@ -164,21 +164,21 @@ logs/
 
 Override logging settings with environment variables:
 
-```bash
+```powershell
 # Set log levels
-export DEBUG=true
-export VERBOSE=true
+$env:DEBUG = "true"
+$env:VERBOSE = "true"
 
 # Override file settings  
-export LOGGING_MAX_FILE_SIZE_MB=100
-export LOGGING_RETAINED_FILE_COUNT=14
+$env:LOGGING_MAX_FILE_SIZE_MB = "100"
+$env:LOGGING_RETAINED_FILE_COUNT = "14"
 ```
 
 ## User Secrets
 
 Store sensitive configuration data securely using .NET User Secrets:
 
-```bash
+```powershell
 # Initialize user secrets
 dotnet user-secrets init --project src/c-sharp/NotebookAutomation.Core
 
@@ -191,7 +191,7 @@ dotnet user-secrets set "Azure:ConnectionString" "your-connection-string"
 
 Override any configuration setting from the command line:
 
-```bash
+```powershell
 # Basic usage with config overrides
 NotebookAutomation.exe --input "C:\Notes" --output "C:\Processed" --log-level Debug
 
