@@ -181,7 +181,7 @@ internal class MarkdownCommands
             // Use explicit vault root override if provided, otherwise use effective output directory
             string finalVaultRoot = vaultRootOverride ?? effectiveOutputDir;
             vaultRootContext.VaultRootOverride = finalVaultRoot;
-            logger.LogInformation($"Using vault root override for metadata hierarchy: {finalVaultRoot}");
+            logger.LogDebug($"Using vault root override for metadata hierarchy: {finalVaultRoot}");
 
             string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
             if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)
@@ -210,18 +210,18 @@ internal class MarkdownCommands
 
                     try
                     {
-                        logger.LogInformation($"Processing file: {file}");
+                        logger.LogDebug($"Processing file: {file}");
                         string markdown = await processor.ConvertToMarkdownAsync(file, openAiApiKey, "chunk_summary_prompt.md").ConfigureAwait(false);
                         if (!dryRun)
                         {
                             Directory.CreateDirectory(effectiveOutputDir);
                             string outputPath = Path.Combine(effectiveOutputDir, Path.GetFileNameWithoutExtension(file) + ".md");
                             await File.WriteAllTextAsync(outputPath, markdown).ConfigureAwait(false);
-                            logger.LogInformation($"Markdown note saved to: {outputPath}");
+                            logger.LogDebug($"Markdown note saved to: {outputPath}");
                         }
                         else
                         {
-                            logger.LogInformation($"[DRY RUN] Markdown note would be generated for: {file}");
+                            logger.LogDebug($"[DRY RUN] Markdown note would be generated for: {file}");
                         }
                     }
                     catch (Exception ex)

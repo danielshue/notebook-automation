@@ -71,7 +71,7 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
                 return;
             }
 
-            _logger.LogInformation($"Loading _templates from metadata file: {_metadataFilePath}");
+            _logger.LogDebug($"Loading _templates from metadata file: {_metadataFilePath}");
             _logger.LogDebug($"File exists, loading content from: {_metadataFilePath}");
             string content = File.ReadAllText(_metadataFilePath);
 

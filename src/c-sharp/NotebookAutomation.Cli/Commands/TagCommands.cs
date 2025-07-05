@@ -368,7 +368,7 @@ internal class TagCommands
             }
         }
 
-        logger.LogInformation($"Executing tag command: {command} on path: {path}");
+        logger.LogDebug($"Executing tag command: {command} on path: {path}");
 
         try
         {
@@ -411,13 +411,13 @@ internal class TagCommands
                     break;
 
                 case "clean-index":
-                    logger.LogInformation("Clean index functionality uses the same processor");
+                    logger.LogDebug("Clean index functionality uses the same processor");
                     stats = await tagProcessor.ProcessDirectoryAsync(path).ConfigureAwait(false);
                     LogStats(logger, stats);
                     break;
 
                 case "consolidate":
-                    logger.LogInformation("Consolidate tags functionality not yet implemented");
+                    logger.LogDebug("Consolidate tags functionality not yet implemented");
                     break;
 
                 case "restructure-tags":
@@ -509,7 +509,7 @@ internal class TagCommands
                 }
             }
 
-            logger.LogInformation($"Executing update-frontmatter command on path: {path}, key: {key}, value: {value}"); // Create a new TagProcessor with command-specific options
+            logger.LogDebug($"Executing update-frontmatter command on path: {path}, key: {key}, value: {value}");
             var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
             var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
             var tagProcessor = new TagProcessor(

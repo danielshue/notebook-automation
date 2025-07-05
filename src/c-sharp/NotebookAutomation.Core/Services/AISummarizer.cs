@@ -224,7 +224,7 @@ public class AISummarizer : IAISummarizer
         Dictionary<string, string>? variables,
         CancellationToken cancellationToken)
     {
-        logger.LogInformation("Processing {ChunkCount} chunks sequentially", chunks.Count);
+        logger.LogDebug("Processing {ChunkCount} chunks sequentially", chunks.Count);
 
         var chunkSummaries = new List<string>();
 
@@ -297,7 +297,7 @@ public class AISummarizer : IAISummarizer
             }
         }
 
-        logger.LogInformation("Completed sequential processing of {SuccessCount}/{TotalCount} chunks",
+        logger.LogDebug("Completed sequential processing of {SuccessCount}/{TotalCount} chunks",
             chunkSummaries.Count, chunks.Count);
 
         return chunkSummaries;
@@ -321,7 +321,7 @@ public class AISummarizer : IAISummarizer
         var maxParallelism = Math.Min(timeoutConfig.MaxChunkParallelism, chunks.Count);
         var rateLimitDelay = TimeSpan.FromMilliseconds(timeoutConfig.ChunkRateLimitMs);
 
-        logger.LogInformation("Processing {ChunkCount} chunks with parallelism of {MaxParallelism} and rate limit of {RateLimit}ms",
+        logger.LogDebug("Processing {ChunkCount} chunks with parallelism of {MaxParallelism} and rate limit of {RateLimit}ms",
             chunks.Count, maxParallelism, timeoutConfig.ChunkRateLimitMs);
 
         // Create a semaphore to control concurrency
@@ -364,7 +364,7 @@ public class AISummarizer : IAISummarizer
             .Select(result => result.Summary!)
             .ToList();
 
-        logger.LogInformation("Successfully processed {SuccessCount}/{TotalCount} chunks in parallel",
+        logger.LogDebug("Successfully processed {SuccessCount}/{TotalCount} chunks in parallel",
             chunkSummaries.Count, chunks.Count);
 
         return chunkSummaries;
@@ -573,7 +573,7 @@ public class AISummarizer : IAISummarizer
         // Check if input likely exceeds character limits and needs chunking
         if (processedInputText.Length > maxChunkTokens)
         {
-            logger.LogInformation("Input text is large ({Length} characters). Using chunking strategy for summarization.", processedInputText.Length);
+            logger.LogDebug("Input text is large ({Length} characters). Using chunking strategy for summarization.", processedInputText.Length);
             return await SummarizeWithChunkingAsync(processedInputText, processedPrompt, variables, cancellationToken).ConfigureAwait(false);
         }
 
@@ -659,7 +659,7 @@ public class AISummarizer : IAISummarizer
 
         try
         {
-            logger.LogInformation("Starting chunked summarization process");
+            logger.LogDebug("Starting chunked summarization process");
 
             // Split text into character-based chunks
             List<string> chunks = chunkingService.SplitTextIntoChunks(inputText, maxChunkTokens, overlapTokens);
@@ -735,7 +735,7 @@ public class AISummarizer : IAISummarizer
                     },
                     functionName: "SummarizeChunk");
 
-                logger.LogInformation("Successfully created fallback SummarizeChunk function");
+                logger.LogDebug("Successfully created fallback SummarizeChunk function");
             }// Process chunks - use parallel processing if beneficial and configured
             List<string> chunkSummaries;
 
@@ -763,7 +763,7 @@ public class AISummarizer : IAISummarizer
                 // For tests, provide a fallback response instead of empty string
                 if (semanticKernel != null)
                 {
-                    logger.LogInformation("No chunk summaries generated, but semantic kernel is available. Returning test fallback.");
+                    logger.LogDebug("No chunk summaries generated, but semantic kernel is available. Returning test fallback.");
                     return "[Simulated AI summary]";
                 }
                 return string.Empty;
@@ -810,7 +810,7 @@ public class AISummarizer : IAISummarizer
                     },
                     functionName: "AggregateSummaries");
 
-                logger.LogInformation("Successfully created fallback AggregateSummaries function");
+                logger.LogDebug("Successfully created fallback AggregateSummaries function");
             }
 
             // Combine and finalize
@@ -1119,7 +1119,7 @@ public class AISummarizer : IAISummarizer
         CancellationToken cancellationToken = default)
     {
         var inputList = inputs.ToList();
-        logger.LogInformation("Starting batch summarization of {InputCount} texts", inputList.Count);
+        logger.LogDebug("Starting batch summarization of {InputCount} texts", inputList.Count);
 
         // Use parallel processing for batch operations
         var maxBatchParallelism = Math.Min(timeoutConfig.MaxChunkParallelism, inputList.Count);
@@ -1147,7 +1147,7 @@ public class AISummarizer : IAISummarizer
         var results = await Task.WhenAll(tasks).ConfigureAwait(false);
 
         var successCount = results.Count(r => !string.IsNullOrEmpty(r));
-        logger.LogInformation("Completed batch summarization: {SuccessCount}/{TotalCount} successful",
+        logger.LogDebug("Completed batch summarization: {SuccessCount}/{TotalCount} successful",
             successCount, inputList.Count);
 
         return results;

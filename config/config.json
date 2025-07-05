@@ -10,6 +10,10 @@
         "logging_dir": "d:/source/notebook-automation/logs",
         "prompts_path": "d:/source/notebook-automation/prompts"
     },
+    "logging": {
+        "max_file_size_mb": 50,
+        "retained_file_count": 7
+    },
     "microsoft_graph": {
         "client_id": "489ad055-e4b0-4898-af27-53506ce83db7",
         "api_endpoint": "https://graph.microsoft.com/v1.0",

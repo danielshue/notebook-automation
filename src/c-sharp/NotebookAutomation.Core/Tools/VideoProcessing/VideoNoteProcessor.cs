@@ -941,7 +941,7 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         else
         {
             // Only call AI summarizer when summary is actually requested
-            Logger.LogInformation($"Generating AI summary for video: {videoPath}");
+            Logger.LogDebug($"Generating AI summary for video: {videoPath}");
             // Pass title and metadata for prompt variables
             var promptVariables = new Dictionary<string, string>();
             if (metadata.TryGetValue("title", out var titleObj) && titleObj != null)

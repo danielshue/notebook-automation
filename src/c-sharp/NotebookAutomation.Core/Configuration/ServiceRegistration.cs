@@ -473,9 +473,13 @@ public static class ServiceRegistration
             loggingDir = Path.Combine(AppContext.BaseDirectory, "logs");
         }
 
+        // Get logging configuration parameters
+        var maxFileSizeMB = configuration.GetValue<int>("logging:max_file_size_mb", 50);
+        var retainedFileCount = configuration.GetValue<int>("logging:retained_file_count", 7);
+
         // Register the LoggingService as a singleton early, before any other components
-        services.AddSingleton<ILoggingService>(_ => new LoggingService(loggingDir, debug));
-        services.AddSingleton(provider => (LoggingService)provider.GetRequiredService<ILoggingService>());        // Now configure Microsoft.Extensions.Logging to use our LoggingService
+        services.AddSingleton<ILoggingService>(_ => new LoggingService(loggingDir, debug, maxFileSizeMB, retainedFileCount));
+        services.AddSingleton(provider => (LoggingService)provider.GetRequiredService<ILoggingService>());// Now configure Microsoft.Extensions.Logging to use our LoggingService
         services.AddLogging(builder =>
         {
             var provider = services.BuildServiceProvider();

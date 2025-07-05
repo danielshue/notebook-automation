@@ -291,7 +291,7 @@ internal class VideoCommands
 
                         // Configure vault roots: local resources folder -> OneDrive resources path
                         oneDriveService.ConfigureVaultRoots(localResourcesPath, appConfig.Paths.OnedriveResourcesBasepath);
-                        logger.LogInformation($"Configured OneDrive vault roots - Local: {localResourcesPath}, OneDrive: {appConfig.Paths.OnedriveResourcesBasepath}");
+                        logger.LogDebug($"Configured OneDrive vault roots - Local: {localResourcesPath}, OneDrive: {appConfig.Paths.OnedriveResourcesBasepath}");
                     }
                 }
                 catch (Exception ex)
@@ -389,7 +389,7 @@ internal class VideoCommands
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
                 resolvedInput);
-            logger.LogInformation($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
+            logger.LogDebug($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
 
             try
             {

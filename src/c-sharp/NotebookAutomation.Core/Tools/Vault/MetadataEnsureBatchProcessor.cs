@@ -625,7 +625,7 @@ public class MetadataEnsureBatchProcessor(
 
         try
         {
-            _logger.LogInformation("Starting metadata ensure process for vault: {VaultPath}", vaultPath);
+            _logger.LogDebug("Starting metadata ensure process for vault: {VaultPath}", vaultPath);
 
             // Initialize the processing queue
             InitializeProcessingQueue(vaultPath);

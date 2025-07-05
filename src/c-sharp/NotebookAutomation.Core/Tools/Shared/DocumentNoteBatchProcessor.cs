@@ -384,14 +384,14 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     {
         try
         {
-            logger.LogInformation($"Processing file: {filePath}");
+            logger.LogDebug($"Processing file: {filePath}");
             string outputDir = effectiveOutput;
             Directory.CreateDirectory(outputDir);
 
             // Generate output path based on processor type and directory structure
-            logger.LogInformation($"ABOUT TO CALL GenerateOutputPath with filePath={filePath}, outputDir={outputDir}, resourcesRoot={resourcesRoot ?? "null"}");
+            logger.LogDebug($"ABOUT TO CALL GenerateOutputPath with filePath={filePath}, outputDir={outputDir}, resourcesRoot={resourcesRoot ?? "null"}");
             string outputPath = GenerateOutputPath(filePath, outputDir, resourcesRoot);
-            logger.LogInformation($"GenerateOutputPath RETURNED: {outputPath}");
+            logger.LogDebug($"GenerateOutputPath RETURNED: {outputPath}");
 
             // If not forceOverwrite and file exists, skip
             if (!forceOverwrite && File.Exists(outputPath))
@@ -1201,7 +1201,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         // Decide whether to use parallel or sequential processing
         if (maxFileParallelism > 1 && files.Count > 1)
         {
-            logger.LogInformation("Processing {FileCount} files with parallelism of {MaxParallelism} and rate limit of {RateLimit}ms",
+            logger.LogDebug("Processing {FileCount} files with parallelism of {MaxParallelism} and rate limit of {RateLimit}ms",
                 files.Count, maxFileParallelism, fileRateLimitMs);
 
             var (parallelProcessed, parallelFailed, parallelFailedFiles) = await ProcessFilesInParallelAsync(
@@ -1215,7 +1215,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         }
         else
         {
-            logger.LogInformation("Processing {FileCount} files sequentially", files.Count);
+            logger.LogDebug("Processing {FileCount} files sequentially", files.Count);
 
             var (sequentialProcessed, sequentialFailed, sequentialFailedFiles) = await ProcessFilesSequentiallyAsync(
                 files, effectiveOutput, effectiveResourcesRoot, forceOverwrite, dryRun,
@@ -1307,7 +1307,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                 failedFiles.Add(filePath);
             }
             fileStopwatch.Stop();
-            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.Elapsed.TotalSeconds:F1}s");
+            logger.LogDebug($"Processing file: {filePath} took {fileStopwatch.Elapsed.TotalSeconds:F1}s");
 
             // Report progress after each file
             OnProcessingProgressChanged(filePath, "Processed", processed + failed, files.Count);
@@ -1404,7 +1404,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             }
         }
 
-        logger.LogInformation("Completed parallel processing: {ProcessedCount} processed, {FailedCount} failed",
+        logger.LogDebug("Completed parallel processing: {ProcessedCount} processed, {FailedCount} failed",
             processedCount, failedCount);
 
         return (processedCount, failedCount, failedFiles.ToList());
@@ -1464,7 +1464,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             var (success, errorMessage) = await ProcessSingleFileAsync(
                 filePath, queueItem, fileIndex + 1, totalFiles, effectiveOutput, effectiveResourcesRoot,
                 forceOverwrite, dryRun, openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType).ConfigureAwait(false); fileStopwatch.Stop();
-            logger.LogInformation($"Processing file: {filePath} took {fileStopwatch.Elapsed.TotalSeconds:F1}s");
+            logger.LogDebug($"Processing file: {filePath} took {fileStopwatch.Elapsed.TotalSeconds:F1}s");
 
             return (success, errorMessage, filePath);
         }

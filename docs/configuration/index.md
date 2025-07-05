@@ -31,9 +31,11 @@ The primary configuration file is `config/config.json`:
     "ParallelProcessing": false
   },
   "LoggingSettings": {
-    "LogLevel": "Information",
+    "LogLevel": "Warning",
     "LogToFile": true,
-    "LogFilePath": "logs/notebookautomation.log"
+    "LogFilePath": "logs/notebook-automation.log",
+    "MaxFileSizeMB": 50,
+    "RetainedFileCount": 7
   }
 }
 ```
@@ -72,26 +74,111 @@ metadata:
 
 Override configuration settings using environment variables:
 
-```bash
+```powershell
 # Core settings
-NOTEBOOK_INPUT_DIR="C:\MyNotebooks"
-NOTEBOOK_OUTPUT_DIR="C:\ProcessedNotebooks"
+$env:NOTEBOOK_INPUT_DIR = "C:\MyNotebooks"
+$env:NOTEBOOK_OUTPUT_DIR = "C:\ProcessedNotebooks"
 
 # Processing options
-NOTEBOOK_ENABLE_METADATA=true
-NOTEBOOK_ENABLE_TAGS=true
-NOTEBOOK_PARALLEL_PROCESSING=false
+$env:NOTEBOOK_ENABLE_METADATA = "true"
+$env:NOTEBOOK_ENABLE_TAGS = "true"
+$env:NOTEBOOK_PARALLEL_PROCESSING = "false"
 
 # Logging
-NOTEBOOK_LOG_LEVEL=Debug
-NOTEBOOK_LOG_FILE="logs/debug.log"
+$env:NOTEBOOK_LOG_LEVEL = "Debug"
+$env:NOTEBOOK_LOG_FILE = "logs/debug.log"
+```
+
+## Logging Configuration
+
+Notebook Automation provides comprehensive logging capabilities with configurable verbosity levels and automatic log file management.
+
+### Log Levels
+
+The application supports the following log levels:
+
+- **Debug/Verbose**: Detailed diagnostic information (only shown when `--debug` or `--verbose` flags are used)
+- **Information**: General application flow information
+- **Warning**: Potentially harmful situations (default for production)
+- **Error**: Error events that allow the application to continue
+- **Critical**: Critical failures that may cause the application to terminate
+
+### Production vs Debug Mode
+
+**Production Mode (Default)**:
+```powershell
+# Only warnings, errors, and critical messages are shown in console
+NotebookAutomation.exe process-pdfs --input "Documents/"
+
+# Enable verbose mode for detailed console output
+NotebookAutomation.exe process-pdfs --input "Documents/" --verbose
+```
+
+**Debug Mode**:
+```powershell
+# Shows all log levels including debug information in console
+NotebookAutomation.exe process-pdfs --input "Documents/" --debug
+```
+
+### Rolling Log Files
+
+Log files are automatically managed with size-based rolling:
+
+- **Default filename**: `notebook-automation.log` (consistent across runs)
+- **Rolling behavior**: When file reaches maximum size, creates `.1`, `.2`, etc.
+- **Automatic cleanup**: Old log files are automatically deleted when limit is reached
+
+### Configuration Options
+
+Add to your `config.json`:
+
+```json
+{
+  "logging": {
+    "max_file_size_mb": 50,
+    "retained_file_count": 7
+  },
+  "paths": {
+    "logging_dir": "./logs"
+  }
+}
+```
+
+| Setting | Description | Default |
+|---------|-------------|---------|
+| `max_file_size_mb` | Maximum size of each log file before rolling | 50 MB |
+| `retained_file_count` | Number of old log files to keep | 7 |
+| `logging_dir` | Directory where log files are stored | `./logs` |
+
+### Example Log Files
+
+```
+logs/
+├── notebook-automation.log      # Current log file
+├── notebook-automation.log.1    # Previous log file  
+├── notebook-automation.log.2    # Older log file
+└── notebook-automation.log.3    # Oldest retained file
+```
+
+### Environment Variables
+
+Override logging settings with environment variables:
+
+```powershell
+# Set log levels
+$env:DEBUG = "true"
+$env:VERBOSE = "true"
+
+# Override file settings  
+$env:LOGGING_MAX_FILE_SIZE_MB = "100"
+$env:LOGGING_RETAINED_FILE_COUNT = "14"
 ```
 
 ## User Secrets
 
 Store sensitive configuration data securely using .NET User Secrets:
 
-```bash
+```powershell
 # Initialize user secrets
 dotnet user-secrets init --project src/c-sharp/NotebookAutomation.Core
 
@@ -104,7 +191,7 @@ dotnet user-secrets set "Azure:ConnectionString" "your-connection-string"
 
 Override any configuration setting from the command line:
 
-```bash
+```powershell
 # Basic usage with config overrides
 NotebookAutomation.exe --input "C:\Notes" --output "C:\Processed" --log-level Debug
 

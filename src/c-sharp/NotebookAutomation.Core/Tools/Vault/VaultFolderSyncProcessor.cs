@@ -223,9 +223,9 @@ public class VaultFolderSyncProcessor(
         try
         {
             _logger.LogDebug($"Starting directory synchronization from OneDrive path: {oneDrivePath}");
-            _logger.LogInformation("=== SYNCING DIRECTORIES ===");
-            _logger.LogInformation($"OneDrive Path: {oneDrivePath}");
-            _logger.LogInformation($"Vault Path: {vaultPath ?? "using default from config"}");
+            _logger.LogDebug("=== SYNCING DIRECTORIES ===");
+            _logger.LogDebug($"OneDrive Path: {oneDrivePath}");
+            _logger.LogDebug($"Vault Path: {vaultPath ?? "using default from config"}");
 
             // Use default vault path from configuration if not provided
             var targetVaultPath = vaultPath ?? _appConfig.Paths.NotebookVaultFullpathRoot;
@@ -249,8 +249,8 @@ public class VaultFolderSyncProcessor(
                 ? Path.Combine(onedriveRoot, oneDrivePath)
                 : Path.Combine(onedriveRoot, resourcesBasePath, oneDrivePath);
 
-            _logger.LogInformation($"Source: {fullOneDriveSource}");
-            _logger.LogInformation($"Target: {targetVaultPath}");
+            _logger.LogDebug($"Source: {fullOneDriveSource}");
+            _logger.LogDebug($"Target: {targetVaultPath}");
 
             // Validate that the OneDrive source exists
             if (!Directory.Exists(fullOneDriveSource))
@@ -260,21 +260,21 @@ public class VaultFolderSyncProcessor(
 
             if (dryRun)
             {
-                _logger.LogInformation("DRY RUN: Simulating directory synchronization");
+                _logger.LogDebug("DRY RUN: Simulating directory synchronization");
             }
 
             if (bidirectional)
             {
-                _logger.LogInformation("BIDIRECTIONAL MODE: Synchronizing in both directions");
+                _logger.LogDebug("BIDIRECTIONAL MODE: Synchronizing in both directions");
             }
 
             if (recursive)
             {
-                _logger.LogInformation("RECURSIVE MODE: Processing subdirectories recursively");
+                _logger.LogDebug("RECURSIVE MODE: Processing subdirectories recursively");
             }
             else
             {
-                _logger.LogInformation("NON-RECURSIVE MODE: Processing only immediate children");
+                _logger.LogDebug("NON-RECURSIVE MODE: Processing only immediate children");
             }
 
             var result = new VaultFolderSyncResult();
@@ -282,13 +282,13 @@ public class VaultFolderSyncProcessor(
             var createdVaultDirectories = new HashSet<string>();
 
             // Phase 1: OneDrive to Vault synchronization
-            _logger.LogInformation("Phase 1: Synchronizing OneDrive directories to vault");
+            _logger.LogDebug("Phase 1: Synchronizing OneDrive directories to vault");
             await SyncOneDriveToVaultAsync(fullOneDriveSource, targetVaultPath, result, failedFolders, dryRun, recursive, createdVaultDirectories).ConfigureAwait(false);
 
             // Phase 2: Vault to OneDrive synchronization (if bidirectional)
             if (bidirectional)
             {
-                _logger.LogInformation("Phase 2: Synchronizing vault directories to OneDrive");
+                _logger.LogDebug("Phase 2: Synchronizing vault directories to OneDrive");
                 await SyncVaultToOneDriveAsync(targetVaultPath, fullOneDriveSource, result, failedFolders, dryRun, recursive, createdVaultDirectories).ConfigureAwait(false);
             }
 
@@ -327,7 +327,7 @@ public class VaultFolderSyncProcessor(
         var sourceDirectories = await DiscoverDirectoriesAsync(oneDriveSource, recursive).ConfigureAwait(false);
         result.TotalFolders += sourceDirectories.Count;
 
-        _logger.LogInformation($"Found {sourceDirectories.Count} OneDrive directories to synchronize to vault");
+        _logger.LogDebug($"Found {sourceDirectories.Count} OneDrive directories to synchronize to vault");
 
         // Process each directory
         for (int i = 0; i < sourceDirectories.Count; i++)
@@ -358,7 +358,7 @@ public class VaultFolderSyncProcessor(
 
                 if (dryRun)
                 {
-                    _logger.LogInformation($"DRY RUN: Would create vault directory: {targetDir}");
+                    _logger.LogDebug($"DRY RUN: Would create vault directory: {targetDir}");
                     result.CreatedVaultFolders++;
                     result.SynchronizedFolders++;
                     createdVaultDirectories.Add(targetDir);
@@ -370,7 +370,7 @@ public class VaultFolderSyncProcessor(
                     result.CreatedVaultFolders++;
                     result.SynchronizedFolders++;
                     createdVaultDirectories.Add(targetDir);
-                    _logger.LogInformation($"Created vault directory: {targetDir}");
+                    _logger.LogDebug($"Created vault directory: {targetDir}");
                 }
             }
             catch (Exception ex)
@@ -407,7 +407,7 @@ public class VaultFolderSyncProcessor(
         var originalTotalFolders = result.TotalFolders;
         result.TotalFolders += sourceDirectories.Count;
 
-        _logger.LogInformation($"Found {sourceDirectories.Count} vault directories to synchronize to OneDrive");
+        _logger.LogDebug($"Found {sourceDirectories.Count} vault directories to synchronize to OneDrive");
 
         // Process each directory
         for (int i = 0; i < sourceDirectories.Count; i++)
@@ -445,7 +445,7 @@ public class VaultFolderSyncProcessor(
 
                 if (dryRun)
                 {
-                    _logger.LogInformation($"DRY RUN: Would create OneDrive directory: {targetDir}");
+                    _logger.LogDebug($"DRY RUN: Would create OneDrive directory: {targetDir}");
                     result.CreatedOneDriveFolders++;
                     result.SynchronizedFolders++;
                 }
@@ -455,7 +455,7 @@ public class VaultFolderSyncProcessor(
                     Directory.CreateDirectory(targetDir);
                     result.CreatedOneDriveFolders++;
                     result.SynchronizedFolders++;
-                    _logger.LogInformation($"Created OneDrive directory: {targetDir}");
+                    _logger.LogDebug($"Created OneDrive directory: {targetDir}");
                 }
             }
             catch (Exception ex)

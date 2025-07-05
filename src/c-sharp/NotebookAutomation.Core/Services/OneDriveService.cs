@@ -90,7 +90,7 @@ public class OneDriveService : IOneDriveService
             var accounts = await msalApp.GetAccountsAsync().ConfigureAwait(false);
             if (accounts.Any() && !forceRefresh)
             {
-                logger.LogInformation("Account found in token cache, attempting to use existing token");
+                logger.LogDebug("Account found in token cache, attempting to use existing token");
                 account = accounts.FirstOrDefault();
             }
 
@@ -103,13 +103,13 @@ public class OneDriveService : IOneDriveService
                     authResult = await msalApp.AcquireTokenSilent(scopes, account)
                         .ExecuteAsync().ConfigureAwait(false);
 
-                    logger.LogInformation(
+                    logger.LogDebug(
                         "Successfully acquired token silently for account: {Account}",
                         account.Username);
                 }
                 catch (MsalUiRequiredException)
                 {
-                    logger.LogInformation("Silent token acquisition failed, falling back to interactive authentication");
+                    logger.LogDebug("Silent token acquisition failed, falling back to interactive authentication");
                     authResult = await InteractiveAuthenticationAsync().ConfigureAwait(false);
                 }
             }
@@ -130,7 +130,7 @@ public class OneDriveService : IOneDriveService
                 try
                 {
                     var drive = await graphClient.Me.Drive.GetAsync().ConfigureAwait(false);
-                    logger.LogInformation(
+                    logger.LogDebug(
                         "Authenticated with Microsoft Graph successfully - Drive ID: {DriveId}",
                         drive?.Id ?? "Unknown");
                 }
