@@ -1323,7 +1323,7 @@ public class VaultIndexContentGenerator(
 
         // For lesson level, prioritize content over subfolders
         // Add content by type first with lesson-focused content types
-        AddContentByType(contentSections, groupedFiles, ["video", "reading", "transcript", "assignment", "discussion", "note"]);
+        AddContentByType(contentSections, groupedFiles, ["video", "video-reference", "pdf", "pdf-reference", "reading", "transcript", "assignment", "discussion", "note"]);
 
         // Add subfolders at the end if they exist (less prominent for lesson level)
         if (subFolders.Any())

@@ -1564,6 +1564,48 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
       input.oninput = (e: any) => {
         updatedPaths[meta.key] = e.target.value;
       };
+
+      // Add 'Open Log Folder' button for logging_dir
+      if (meta.key === 'logging_dir') {
+        const openBtn = document.createElement('button');
+        openBtn.textContent = 'Open Logs Folder';
+        openBtn.style.marginLeft = '0.5em';
+        openBtn.onclick = async () => {
+          // Try to resolve the absolute path using vault root if relative
+          let logPath = input.value || '';
+          // Try to get vault root from config or plugin settings
+          let vaultRoot = '';
+          try {
+            const loaded = (window as any).notebookAutomationLoadedConfig;
+            if (loaded?.paths?.notebook_vault_fullpath_root) {
+              vaultRoot = loaded.paths.notebook_vault_fullpath_root;
+            } else if (this.plugin.settings && (this.plugin.settings as any).notebook_vault_fullpath_root) {
+              vaultRoot = (this.plugin.settings as any).notebook_vault_fullpath_root;
+            }
+          } catch { }
+          // If logPath is relative, join with vaultRoot
+          if (logPath && vaultRoot && !/^[A-Za-z]:|^\//.test(logPath)) {
+            // @ts-ignore
+            const path = window.require ? window.require('path') : null;
+            if (path) {
+              logPath = path.join(vaultRoot, logPath);
+            }
+          }
+          // Use Electron shell to open the folder
+          try {
+            // @ts-ignore
+            const { shell } = window.require ? window.require('electron') : { shell: null };
+            if (shell && logPath) {
+              await shell.openPath(logPath);
+            } else {
+              new Notice('Unable to open log folder: shell module not available.');
+            }
+          } catch (err) {
+            new Notice('Failed to open log folder: ' + (err instanceof Error ? err.message : String(err)));
+          }
+        };
+        controlDiv.appendChild(openBtn);
+      }
     });
 
     // AI Provider Configuration Section

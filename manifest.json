@@ -7,5 +7,5 @@
 	"author": "Dan Shue",
 	"authorUrl": "https://github.com/danielshue",
 	"main": "main.js",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }
