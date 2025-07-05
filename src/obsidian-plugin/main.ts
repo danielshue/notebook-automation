@@ -369,7 +369,7 @@ export default class NotebookAutomationPlugin extends Plugin {
           // Sync Directory - always available at the top
           menu.addItem((item) => {
             const syncTitle = this.settings.recursiveDirectorySync
-              ? "Notebook Automation: Sync Directory with OneDrive Recursively"
+              ? "Notebook Automation: Sync Directory with OneDrive (Recursive)"
               : "Notebook Automation: Sync Directory with OneDrive";
             item.setTitle(syncTitle)
               .setIcon("sync")
@@ -398,8 +398,8 @@ export default class NotebookAutomationPlugin extends Plugin {
           if (this.settings.enableIndexCreation) {
             menu.addItem((item) => {
               const indexTitle = this.settings.recursiveIndexBuild
-                ? "Notebook Automation: Build Indexes for This Folder and All Subfolders (Recursive)"
-                : "Notebook Automation: Build Index for This Folder";
+                ? "Notebook Automation: Build Indexes for this Folder and All Subfolders (Recursive)"
+                : "Notebook Automation: Build Index for this Folder";
               const indexIcon = this.settings.recursiveIndexBuild ? "layers" : "list";
               const indexAction = this.settings.recursiveIndexBuild ? "build-index-recursive" : "build-index";
               item.setTitle(indexTitle)

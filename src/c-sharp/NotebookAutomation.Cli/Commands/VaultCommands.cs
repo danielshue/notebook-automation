@@ -344,12 +344,9 @@ internal class VaultCommands
 
                 // Determine effective vault path - use provided path or default to vault root
                 var effectiveVaultPath = vaultPath;
-
                 if (string.IsNullOrWhiteSpace(effectiveVaultPath))
                 {
-                    // Use vault root from config as default starting point
                     effectiveVaultPath = appConfig.Paths?.NotebookVaultFullpathRoot;
-
                     if (string.IsNullOrWhiteSpace(effectiveVaultPath))
                     {
                         AnsiConsoleHelper.WriteError("Vault path is required - either provide a path or configure vault root in config file");
@@ -370,6 +367,7 @@ internal class VaultCommands
                         effectiveVaultPath = Path.Combine(vaultRoot, effectiveVaultPath);
                     }
                 }
+                effectiveVaultPath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(effectiveVaultPath);
 
                 // Validate that the vault path exists
                 if (!Directory.Exists(effectiveVaultPath))
@@ -378,33 +376,57 @@ internal class VaultCommands
                     return;
                 }
 
-                // Calculate the relative path from vault root to the effective vault path
-                // This will be used to determine the corresponding OneDrive path
+                // Compose OneDrive path: onedrive_fullpath_root + onedrive_resources_basepath + provided path
+                var onedriveRoot = appConfig.Paths?.OnedriveFullpathRoot;
+                var onedriveBase = appConfig.Paths?.OnedriveResourcesBasepath;
+
+                if (string.IsNullOrWhiteSpace(onedriveRoot) || string.IsNullOrWhiteSpace(onedriveBase))
+                {
+                    AnsiConsoleHelper.WriteError("OneDrive root or resources basepath not configured. Please set paths.onedrive_fullpath_root and paths.onedrive_resources_basepath in configuration.");
+                    return;
+                }
+                onedriveRoot = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(onedriveRoot);
+
+                onedriveBase = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(onedriveBase);
+                // Ensure onedriveBase is relative (no leading slash or backslash)
+                onedriveBase = onedriveBase.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+                // Get the relative path from vault root to the effective vault path
                 var configuredVaultRoot = appConfig.Paths?.NotebookVaultFullpathRoot;
                 if (string.IsNullOrWhiteSpace(configuredVaultRoot))
                 {
                     AnsiConsoleHelper.WriteError("Vault root not configured. Please set paths.notebook_vault_fullpath_root in configuration.");
                     return;
                 }
+                configuredVaultRoot = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(configuredVaultRoot);
 
-                string oneDriveRelativePath;
+                string providedPath = string.Empty;
                 if (effectiveVaultPath.Equals(configuredVaultRoot, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Syncing from vault root - use empty relative path (sync entire OneDrive base)
-                    oneDriveRelativePath = "";
+                    providedPath = string.Empty;
                 }
                 else
                 {
-                    // Calculate relative path from vault root to the specified vault path
                     if (!effectiveVaultPath.StartsWith(configuredVaultRoot, StringComparison.OrdinalIgnoreCase))
                     {
                         AnsiConsoleHelper.WriteError($"Vault path '{effectiveVaultPath}' is not under the configured vault root '{configuredVaultRoot}'");
                         return;
                     }
-                    oneDriveRelativePath = Path.GetRelativePath(configuredVaultRoot, effectiveVaultPath);
-                    // Normalize path separators to forward slashes for OneDrive compatibility
-                    oneDriveRelativePath = oneDriveRelativePath.Replace('\\', '/');
+                    providedPath = Path.GetRelativePath(configuredVaultRoot, effectiveVaultPath);
+                    providedPath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(providedPath);
                 }
+
+                // Compose the OneDrive path and normalize
+                var oneDrivePath = Path.Combine(onedriveRoot, onedriveBase, providedPath);
+                oneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(oneDrivePath);
+
+                // Debug logging for all key path variables
+                _logger.LogDebug("[sync-dirs] onedriveRoot: {onedriveRoot}", onedriveRoot);
+                _logger.LogDebug("[sync-dirs] onedriveBase: {onedriveBase}", onedriveBase);
+                _logger.LogDebug("[sync-dirs] configuredVaultRoot: {configuredVaultRoot}", configuredVaultRoot);
+                _logger.LogDebug("[sync-dirs] effectiveVaultPath: {effectiveVaultPath}", effectiveVaultPath);
+                _logger.LogDebug("[sync-dirs] providedPath: {providedPath}", providedPath);
+                _logger.LogDebug("[sync-dirs] oneDrivePath: {oneDrivePath}", oneDrivePath);
 
                 // Bidirectional is default, unidirectional flag turns it off
                 bool bidirectional = !unidirectional;
@@ -413,7 +435,7 @@ internal class VaultCommands
                 {
                     AnsiConsoleHelper.WriteInfo($"Starting directory synchronization");
                     AnsiConsoleHelper.WriteInfo($"Vault path: {effectiveVaultPath}{(string.IsNullOrWhiteSpace(vaultPath) ? " (vault root from config)" : "")}");
-                    AnsiConsoleHelper.WriteInfo($"OneDrive relative path: {(string.IsNullOrEmpty(oneDriveRelativePath) ? "(root)" : oneDriveRelativePath)}");
+                    AnsiConsoleHelper.WriteInfo($"OneDrive path: {oneDrivePath}");
                     AnsiConsoleHelper.WriteInfo($"Bidirectional: {bidirectional}");
                     if (recursive)
                     {
@@ -443,7 +465,7 @@ internal class VaultCommands
                     {
                         // Execute the directory synchronization
                         return await syncProcessor.SyncDirectoriesAsync(
-                            oneDrivePath: oneDriveRelativePath,
+                            oneDrivePath: oneDrivePath,
                             vaultPath: effectiveVaultPath,
                             dryRun: dryRun,
                             bidirectional: bidirectional,

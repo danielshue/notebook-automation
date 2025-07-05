@@ -27,8 +27,10 @@ public class VaultCommandsTests
         mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
             .Returns(mockAppConfig.Object);
 
-        // Setup AppConfig.Paths to return PathsConfig with real temp vault root
+        // Setup AppConfig.Paths to return PathsConfig with real temp vault root and OneDrive config
         mockPathsConfig.SetupGet(p => p.NotebookVaultFullpathRoot).Returns(_tempVaultRoot);
+        mockPathsConfig.SetupGet(p => p.OnedriveFullpathRoot).Returns("C:/OneDriveRoot");
+        mockPathsConfig.SetupGet(p => p.OnedriveResourcesBasepath).Returns("Education/MBA-Resources");
         mockAppConfig.SetupGet(a => a.Paths).Returns(mockPathsConfig.Object);
     }
 
@@ -253,8 +255,9 @@ public class VaultCommandsTests
             Assert.IsTrue(output.Contains("Executing vault"), "Should show execution message");
             Assert.IsTrue(output.Contains("completed successfully"), "Should show success message");
 
-            // Verify the processor was called with correct parameters (empty string for OneDrive path, vault root from config)
-            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync("", _tempVaultRoot, true, true, false), Times.Once);
+            // Verify the processor was called with correct parameters (full normalized OneDrive path, vault root from config)
+            var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources"));
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, _tempVaultRoot, true, true, false), Times.Once);
         }
         finally
         {
@@ -316,8 +319,9 @@ public class VaultCommandsTests
             Assert.IsTrue(output.Contains("Executing vault"), "Should show execution message");
             Assert.IsTrue(output.Contains("completed successfully"), "Should show success message");
 
-            // Verify the processor was called with correct parameters (MBA/Finance as OneDrive path, full vault path)
-            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync("MBA/Finance", testVaultPath, true, true, false), Times.Once);
+            // Verify the processor was called with correct parameters (full normalized OneDrive path, full vault path)
+            var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources", "MBA/Finance"));
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, true, false), Times.Once);
         }
         finally
         {
@@ -383,7 +387,8 @@ public class VaultCommandsTests
             Assert.IsTrue(output.Contains("Created 2 new OneDrive directories"), "Should show OneDrive directory creation count");
 
             // Verify the processor was called with bidirectional = true (default)
-            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync("MBA/Finance", testVaultPath, true, true, false), Times.Once);
+            var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources", "MBA/Finance"));
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, true, false), Times.Once);
         }
         finally
         {
@@ -447,7 +452,8 @@ public class VaultCommandsTests
             Assert.IsTrue(output.Contains("completed successfully"), "Should show success message");
 
             // Verify the processor was called with bidirectional = false due to --unidirectional flag
-            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync("MBA/Finance", testVaultPath, true, false, false), Times.Once);
+            var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources", "MBA/Finance"));
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, false, false), Times.Once);
         }
         finally
         {
