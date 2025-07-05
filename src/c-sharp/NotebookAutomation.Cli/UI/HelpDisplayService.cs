@@ -102,11 +102,11 @@ internal class HelpDisplayService
                 string companyName = fileVersionInfo?.CompanyName ?? "Dan Shue";
                 string copyrightInfo = fileVersionInfo?.LegalCopyright ?? "Copyright 2025";
                 string buildDate = version.BuildDateUtc.ToString("yyyy-MM-dd");
-                string branch = GitVersionInformation.BranchName ?? "master";
+                string branch = "master"; // GitVersionInformation.BranchName ?? "master";
 
-                string shortSha = GitVersionInformation.ShortSha ?? "unknown";
-                string commitDate = GitVersionInformation.CommitDate ?? "unknown";
-                string semVer = GitVersionInformation.SemVer ?? "0.0.0";
+                string shortSha = "dev"; // GitVersionInformation.ShortSha ?? "unknown";
+                string commitDate = DateTime.Now.ToString("yyyy-MM-dd"); // GitVersionInformation.CommitDate ?? "unknown";
+                string semVer = "0.1.0-dev"; // GitVersionInformation.SemVer ?? "0.0.0";
 
 
 
