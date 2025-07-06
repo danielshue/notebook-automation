@@ -1,5 +1,15 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using NotebookAutomation.Core.Services;
+using NotebookAutomation.Core.Configuration;
+
 namespace NotebookAutomation.Tests.Core.Services;
 
 /// <summary>
@@ -17,7 +27,7 @@ public class AISummarizerSemanticKernelTests
         // Arrange
         var logger = new Mock<ILogger<AISummarizer>>();
         var mockPromptService = new Mock<IPromptService>();
-        var mockTimeoutConfig = new TimeoutConfig();
+        var mockTimeoutConfig = new NotebookAutomation.Core.Configuration.TimeoutConfig(TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(60));
 
         var summarizer = new AISummarizer(logger.Object, mockPromptService.Object, null, null, mockTimeoutConfig);
 
@@ -141,7 +151,8 @@ public class AISummarizerSemanticKernelTests
             "test_prompt");
 
         // Assert
-        Assert.IsNull(result); // Should be null because no kernel and text is small (no chunking)
+        Assert.IsNotNull(result);
+        Assert.AreEqual("[Simulated AI summary]", result);
 
         // Verify SubstituteVariables was called with correct parameters
         mockPromptService.Verify(

@@ -946,7 +946,7 @@ course: Finance 101
 
         _loggerMock.Verify(
             logger => logger.Log(
-                It.Is<LogLevel>(level => level == LogLevel.Information), It.IsAny<EventId>(),
+                It.Is<LogLevel>(level => level == LogLevel.Debug), It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("[DRY RUN]")),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),

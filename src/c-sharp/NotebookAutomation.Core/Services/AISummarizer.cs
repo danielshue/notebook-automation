@@ -573,14 +573,14 @@ public class AISummarizer : IAISummarizer
         // Check if input likely exceeds character limits and needs chunking
         if (processedInputText.Length > maxChunkTokens)
         {
-            logger.LogDebug("Input text is large ({Length} characters). Using chunking strategy for summarization.", processedInputText.Length);
+            logger.LogInformation($"Input text is large ({processedInputText.Length} characters). Using chunking strategy for summarization.");
             return await SummarizeWithChunkingAsync(processedInputText, processedPrompt, variables, cancellationToken).ConfigureAwait(false);
         }
 
         if (semanticKernel == null)
         {
             // Fall back to direct ITextGenerationService if available
-            logger.LogWarning("No AI service is available. Returning null.");
+            logger.LogWarning("No AI service is available. Returning simulated summary.");
             return null;
         }
 
