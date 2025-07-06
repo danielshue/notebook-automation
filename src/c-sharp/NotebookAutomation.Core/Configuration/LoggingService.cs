@@ -1,4 +1,10 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using System.Reflection;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
+using Serilog.Extensions.Logging;
+
 namespace NotebookAutomation.Core.Configuration;
 
 /// <summary>
