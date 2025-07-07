@@ -276,11 +276,18 @@ jobs:
 
       - name: Add coverage comment to PR (Windows only)
         if: github.event_name == 'pull_request' && runner.os == 'Windows'
+        continue-on-error: true
         run: |
           if (Test-Path "CoverageReport/SummaryGithub.md") {
-            gh pr comment $env:PR_NUMBER --body-file CoverageReport/SummaryGithub.md
+            try {
+              gh pr comment $env:PR_NUMBER --body-file CoverageReport/SummaryGithub.md
+              Write-Host "Coverage comment added successfully"
+            } catch {
+              Write-Host "Failed to add PR comment (likely due to permissions): $($_.Exception.Message)"
+              Write-Host "This is expected for forked PRs and doesn't affect the build"
+            }
           } else {
-            echo "Coverage markdown summary not found, skipping PR comment"
+            Write-Host "Coverage markdown summary not found, skipping PR comment"
           }
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
