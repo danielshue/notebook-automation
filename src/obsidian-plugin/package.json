@@ -1,6 +1,6 @@
 {
   "name": "obsidian-plugin",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "description": "A comprehensive toolkit that transforms educational content into intelligent, searchable knowledge bases. It processes PDFs, extracts annotations, generates AI-powered summaries from videos (with transcripts) and questions/answers, creates hierarchical course structures, and seamlessly integrates with popular tools like Obsidian and Anki for enhanced learning workflows. See details at https://github.com/danielshue/notebook-automation",
   "main": "dist/main.js",
   "scripts": {
