@@ -72,7 +72,7 @@ internal class Program
         // Check for debug mode from environment or command line
         var isDebugMode = CommandLineModeDetector.IsDebugModeEnabled(args);
         var isVerboseMode = CommandLineModeDetector.IsVerboseModeEnabled(args);
-        
+
         // Treat DEBUG and VERBOSE equivalently for logging purposes
         var debugOrVerbose = isDebugMode || isVerboseMode;
 

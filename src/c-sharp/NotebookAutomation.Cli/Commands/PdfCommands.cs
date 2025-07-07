@@ -345,7 +345,7 @@ internal class PdfCommands
             logger.LogInformation(
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
-                resolvedInput); 
+                resolvedInput);
             logger.LogDebug($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
 
             // Override image extraction setting from CLI if specified

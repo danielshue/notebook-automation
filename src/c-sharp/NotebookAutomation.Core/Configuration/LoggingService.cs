@@ -1,6 +1,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using System.Reflection;
+
 using Microsoft.Extensions.Logging;
+
 using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Logging;
@@ -36,7 +38,7 @@ namespace NotebookAutomation.Core.Configuration;
 /// <param name="maxFileSizeMB">Maximum log file size in MB before rolling. Defaults to 50MB.</param>
 /// <param name="retainedFileCount">Number of log files to retain. Defaults to 7.</param>
 public class LoggingService(
-    string loggingDir, 
+    string loggingDir,
     bool debug = false,
     int maxFileSizeMB = 50,
     int retainedFileCount = 7) : ILoggingService
@@ -201,10 +203,10 @@ public class LoggingService(
             }
 
             var appAssemblyName = GetAssemblyName();
-            
+
             // Set default production level to Warning to minimize output
             var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Warning;
-            
+
             // Console shows debug/info when debug mode is enabled, otherwise warnings and errors only
             var consoleMinLevel = debug ? LogEventLevel.Debug : LogEventLevel.Warning;
 

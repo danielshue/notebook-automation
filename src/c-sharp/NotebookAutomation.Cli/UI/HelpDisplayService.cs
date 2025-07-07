@@ -102,7 +102,7 @@ internal class HelpDisplayService
                 string companyName = fileVersionInfo?.CompanyName ?? "Dan Shue";
                 string copyrightInfo = fileVersionInfo?.LegalCopyright ?? "Copyright 2025";
                 string buildDate = version.BuildDateUtc.ToString("yyyy-MM-dd");
-                
+
                 // Use GitVersionInformation when available, fallback to version info
                 string branch = GitVersionInformation.BranchName ?? "main";
                 string shortSha = GitVersionInformation.ShortSha ?? version.Commit;

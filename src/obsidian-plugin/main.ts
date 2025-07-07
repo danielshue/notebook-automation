@@ -329,6 +329,7 @@ interface NotebookAutomationSettings {
   unidirectionalSync?: boolean;
   recursiveDirectorySync?: boolean;
   recursiveIndexBuild?: boolean;
+  advancedConfiguration?: boolean;
 }
 
 const DEFAULT_SETTINGS: NotebookAutomationSettings = {
@@ -347,6 +348,7 @@ const DEFAULT_SETTINGS: NotebookAutomationSettings = {
   unidirectionalSync: false,
   recursiveDirectorySync: true,
   recursiveIndexBuild: false,
+  advancedConfiguration: false,
 };
 
 export default class NotebookAutomationPlugin extends Plugin {
@@ -1238,6 +1240,13 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.bannersEnabled = value;
             await this.plugin.saveSettings();
+
+            // Toggle Banners Configuration section visibility
+            const bannersSection = document.querySelector('.notebook-automation-banners-section') as HTMLElement;
+            if (bannersSection) {
+              const newDisplay = value ? 'block' : 'none';
+              bannersSection.style.display = newDisplay;
+            }
           });
       });
 
@@ -1250,6 +1259,13 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.oneDriveSharedLink = value;
             await this.plugin.saveSettings();
+
+            // Toggle Microsoft Graph Configuration section visibility
+            const graphSection = document.querySelector('.notebook-automation-graph-section') as HTMLElement;
+            if (graphSection) {
+              const newDisplay = value ? 'block' : 'none';
+              graphSection.style.display = newDisplay;
+            }
           });
       });
 
@@ -1286,6 +1302,44 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.recursiveIndexBuild = value;
             await this.plugin.saveSettings();
+          });
+      });
+
+    // Advanced Configuration flag
+    new Setting(flagsGroup)
+      .setName("Advanced Configuration")
+      .setDesc("Show advanced configuration options including timeout settings and detailed technical configurations. When disabled, only basic configuration options are displayed for a cleaner interface. Enable this when you need to customize timeout values, rate limiting, or other advanced technical settings.")
+      .addToggle(toggle => {
+        toggle.setValue(this.plugin.settings.advancedConfiguration ?? false)
+          .onChange(async (value) => {
+            this.plugin.settings.advancedConfiguration = value;
+            await this.plugin.saveSettings();
+
+            // Toggle advanced configuration sections visibility
+            const timeoutSection = document.querySelector('.notebook-automation-timeout-section') as HTMLElement;
+            const otherSection = document.querySelector('.notebook-automation-other-section') as HTMLElement;
+
+            const newDisplay = value ? 'block' : 'none';
+
+            if (timeoutSection) {
+              timeoutSection.style.display = newDisplay;
+            }
+            if (otherSection) {
+              otherSection.style.display = newDisplay;
+            }
+
+            // Also set up a timeout to ensure visibility is applied after DOM is fully rendered
+            setTimeout(() => {
+              const timeoutSectionElement = document.querySelector('.notebook-automation-timeout-section') as HTMLElement;
+              const otherSectionElement = document.querySelector('.notebook-automation-other-section') as HTMLElement;
+
+              if (timeoutSectionElement) {
+                timeoutSectionElement.style.display = newDisplay;
+              }
+              if (otherSectionElement) {
+                otherSectionElement.style.display = newDisplay;
+              }
+            }, 100);
           });
       });
 
@@ -1433,14 +1487,14 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
       // Create a default config structure to show empty fields
       configToDisplay = {
         paths: {},
+        logging: {},
         microsoft_graph: {},
         aiservice: {
           provider: 'azure',
           azure: {},
           openai: {},
           foundry: {},
-          timeout: {},
-          retry_policy: {}
+          timeout: {}
         },
         video_extensions: [],
         pdf_extensions: [],
@@ -1701,13 +1755,22 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     };
 
     // Timeout Configuration
-    const timeoutSection = aiSection.createDiv({ cls: 'notebook-automation-additional-fields' });
+    const timeoutSection = aiSection.createDiv({ cls: 'notebook-automation-additional-fields notebook-automation-timeout-section' });
     timeoutSection.createEl('h5', { text: 'Timeout Configuration', cls: 'notebook-automation-sub-header' });
+
+    // Set initial visibility based on Advanced Configuration setting
+    const advancedConfigEnabled = this.plugin.settings.advancedConfiguration ?? false;
+    timeoutSection.style.display = advancedConfigEnabled ? 'block' : 'none';
 
     const timeoutConfig = aiConfig.timeout || {};
     const timeoutFields = [
-      { key: 'timeout_milliseconds', label: 'Timeout (milliseconds)', desc: 'Request timeout in milliseconds', type: 'number', default: 120000 },
-      { key: 'max_file_parallelism', label: 'Max File Parallelism', desc: 'Maximum number of files to process in parallel', type: 'number', default: 4 },
+      { key: 'request_timeout_seconds', label: 'Request Timeout (seconds)', desc: 'Request timeout in seconds', type: 'number', default: 300 },
+      { key: 'max_retry_attempts', label: 'Max Retry Attempts', desc: 'Maximum number of retry attempts for failed requests', type: 'number', default: 3 },
+      { key: 'base_retry_delay_seconds', label: 'Base Retry Delay (seconds)', desc: 'Base delay in seconds between retry attempts', type: 'number', default: 2 },
+      { key: 'max_retry_delay_seconds', label: 'Max Retry Delay (seconds)', desc: 'Maximum delay in seconds between retry attempts', type: 'number', default: 60 },
+      { key: 'max_chunk_parallelism', label: 'Max Chunk Parallelism', desc: 'Maximum number of chunks to process in parallel', type: 'number', default: 3 },
+      { key: 'chunk_rate_limit_ms', label: 'Chunk Rate Limit (ms)', desc: 'Minimum delay between chunk processing in milliseconds', type: 'number', default: 100 },
+      { key: 'max_file_parallelism', label: 'Max File Parallelism', desc: 'Maximum number of files to process in parallel', type: 'number', default: 2 },
       { key: 'file_rate_limit_ms', label: 'File Rate Limit (ms)', desc: 'Minimum delay between file processing in milliseconds', type: 'number', default: 200 }
     ];
 
@@ -1736,44 +1799,37 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
       };
     });
 
-    // Retry Policy Configuration
-    const retrySection = aiSection.createDiv({ cls: 'notebook-automation-additional-fields' });
-    retrySection.createEl('h5', { text: 'Retry Policy', cls: 'notebook-automation-sub-header' });
-
-    const retryConfig = aiConfig.retry_policy || {};
-    const retryFields = [
-      { key: 'max_retry_attempts', label: 'Max Retry Attempts', desc: 'Maximum number of retry attempts for failed requests', type: 'number', default: 3 },
-      { key: 'delay_between_retries', label: 'Delay Between Retries (ms)', desc: 'Delay in milliseconds between retry attempts', type: 'number', default: 1000 }
-    ];
-
-    retryFields.forEach(field => {
-      const fieldDiv = retrySection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-
-      const fieldInfoDiv = fieldDiv.createDiv({ cls: 'setting-item-info' });
-      const fieldNameDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-name' });
-      fieldNameDiv.setText(field.label);
-      const fieldDescDiv = fieldInfoDiv.createDiv({ cls: 'setting-item-description' });
-      fieldDescDiv.setText(field.desc);
-
-      const fieldControlDiv = fieldDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-      const fieldInput = fieldControlDiv.createEl('input', {
-        type: field.type,
-        cls: 'notebook-automation-path-input'
-      });
-      fieldInput.value = retryConfig[field.key] || field.default.toString();
-      fieldInput.placeholder = `Enter ${field.label.toLowerCase()}...`;
-      fieldInput.oninput = (e: any) => {
-        if (!updatedAiConfig.retry_policy) {
-          updatedAiConfig.retry_policy = {};
-        }
-        const value = field.type === 'number' ? parseInt(e.target.value) || field.default : e.target.value;
-        updatedAiConfig.retry_policy[field.key] = value;
-      };
-    });
+    // Set up a timeout to ensure visibility is applied after DOM is fully rendered
+    setTimeout(() => {
+      const timeoutSectionElement = document.querySelector('.notebook-automation-timeout-section') as HTMLElement;
+      if (timeoutSectionElement) {
+        const advancedConfigEnabled = this.plugin.settings.advancedConfiguration ?? false;
+        timeoutSectionElement.style.display = advancedConfigEnabled ? 'block' : 'none';
+      }
+    }, 100);
 
     // Microsoft Graph Configuration Section
-    const graphSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section' });
+    const graphSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section notebook-automation-graph-section' });
     graphSection.createEl('h4', { text: 'Microsoft Graph Configuration', cls: 'notebook-automation-ai-header' });
+
+    // Set initial visibility based on OneDrive Shared Link setting
+    const oneDriveSharedLinkEnabled = this.plugin.settings.oneDriveSharedLink ?? true;
+    console.log('[Notebook Automation] Initial OneDrive Shared Link setting:', oneDriveSharedLinkEnabled);
+    console.log('[Notebook Automation] Setting initial graph section display to:', oneDriveSharedLinkEnabled ? 'block' : 'none');
+    console.log('[Notebook Automation] Initial OneDrive Shared Link setting:', oneDriveSharedLinkEnabled);
+    console.log('[Notebook Automation] Setting initial graph section display to:', oneDriveSharedLinkEnabled ? 'block' : 'none');
+    graphSection.style.display = oneDriveSharedLinkEnabled ? 'block' : 'none';
+    console.log('[Notebook Automation] Graph section created with display:', graphSection.style.display);
+    console.log('[Notebook Automation] Graph section created with display:', graphSection.style.display);
+
+    // Also set up a timeout to ensure visibility is applied after DOM is fully rendered
+    setTimeout(() => {
+      const graphSectionElement = document.querySelector('.notebook-automation-graph-section') as HTMLElement;
+      if (graphSectionElement) {
+        const newDisplay = oneDriveSharedLinkEnabled ? 'block' : 'none';
+        graphSectionElement.style.display = newDisplay;
+      }
+    }, 100);
 
     const graphConfig = configJson.microsoft_graph || {};
     const updatedGraphConfig: Record<string, any> = { ...graphConfig };
@@ -1825,8 +1881,11 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     };
 
     // Other Configuration Section
-    const otherSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section' });
+    const otherSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section notebook-automation-other-section' });
     otherSection.createEl('h4', { text: 'Other Configuration', cls: 'notebook-automation-ai-header' });
+
+    // Set initial visibility based on Advanced Configuration setting
+    otherSection.style.display = advancedConfigEnabled ? 'block' : 'none';
 
     // Video extensions
     const videoExtDiv = otherSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
@@ -1843,6 +1902,9 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     videoExtTextarea.rows = 4;
     videoExtTextarea.value = (configJson.video_extensions || []).join('\n');
     videoExtTextarea.placeholder = 'Enter video extensions (one per line)...';
+    videoExtTextarea.oninput = (e: any) => {
+      updatedAiConfig.video_extensions = e.target.value.split('\n').filter((ext: string) => ext.trim().length > 0);
+    };
 
     // PDF extensions
     const pdfExtDiv = otherSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
@@ -1859,10 +1921,35 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
     pdfExtTextarea.rows = 2;
     pdfExtTextarea.value = (configJson.pdf_extensions || []).join('\n');
     pdfExtTextarea.placeholder = 'Enter PDF extensions (one per line)...';
+    pdfExtTextarea.oninput = (e: any) => {
+      updatedAiConfig.pdf_extensions = e.target.value.split('\n').filter((ext: string) => ext.trim().length > 0);
+    };
+
+    // Set up a timeout to ensure visibility is applied after DOM is fully rendered
+    setTimeout(() => {
+      const otherSectionElement = document.querySelector('.notebook-automation-other-section') as HTMLElement;
+      if (otherSectionElement) {
+        const advancedConfigEnabled = this.plugin.settings.advancedConfiguration ?? false;
+        otherSectionElement.style.display = advancedConfigEnabled ? 'block' : 'none';
+      }
+    }, 100);
 
     // Banners Configuration Section
-    const bannersSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section' });
+    const bannersSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section notebook-automation-banners-section' });
     bannersSection.createEl('h4', { text: 'Banners Configuration', cls: 'notebook-automation-ai-header' });
+
+    // Set initial visibility based on Banners Enabled setting
+    const bannersEnabled = this.plugin.settings.bannersEnabled || false;
+    bannersSection.style.display = bannersEnabled ? 'block' : 'none';
+
+    // Also set up a timeout to ensure visibility is applied after DOM is fully rendered
+    setTimeout(() => {
+      const bannersSectionElement = document.querySelector('.notebook-automation-banners-section') as HTMLElement;
+      if (bannersSectionElement) {
+        const newDisplay = bannersEnabled ? 'block' : 'none';
+        bannersSectionElement.style.display = newDisplay;
+      }
+    }, 100);
 
     const bannersConfig = configJson.banners || {};
     const updatedBannersConfig: Record<string, any> = { ...bannersConfig };
@@ -1946,6 +2033,10 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
               ConfigFilePath: this.plugin.settings.configPath || '',
               DebugEnabled: this.plugin.settings.debug || false,
               paths: { ...updatedPaths },
+              logging: {
+                max_file_size_mb: 50,
+                retained_file_count: 7
+              },
               microsoft_graph: {
                 ...updatedGraphConfig,
                 scopes: updatedGraphConfig.scopes || []
@@ -1953,19 +2044,20 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
               aiservice: {
                 provider: updatedAiConfig.provider || 'azure',
                 ...Object.keys(updatedAiConfig).reduce((acc, key) => {
-                  if (key !== 'provider' && key !== 'timeout' && key !== 'retry_policy') {
+                  if (key !== 'provider' && key !== 'timeout') {
                     acc[key] = updatedAiConfig[key];
                   }
                   return acc;
                 }, {} as any),
                 timeout: updatedAiConfig.timeout || {
-                  timeout_milliseconds: 120000,
-                  max_file_parallelism: 4,
-                  file_rate_limit_ms: 200
-                },
-                retry_policy: updatedAiConfig.retry_policy || {
+                  request_timeout_seconds: 300,
                   max_retry_attempts: 3,
-                  delay_between_retries: 1000
+                  base_retry_delay_seconds: 2,
+                  max_retry_delay_seconds: 60,
+                  max_chunk_parallelism: 3,
+                  chunk_rate_limit_ms: 100,
+                  max_file_parallelism: 2,
+                  file_rate_limit_ms: 200
                 }
               },
               video_extensions: videoExtTextarea.value.split('\n').filter(ext => ext.trim().length > 0),
@@ -1994,6 +2086,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
             if (this.plugin.settings.configPath) {
               try {
                 configJson.paths = { ...updatedPaths };
+                configJson.logging = defaultConfig.logging;
                 configJson.aiservice = defaultConfig.aiservice;
                 configJson.microsoft_graph = defaultConfig.microsoft_graph;
                 configJson.DebugEnabled = defaultConfig.DebugEnabled;

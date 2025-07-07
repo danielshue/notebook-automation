@@ -1,7 +1,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using System.IO;
 using System.Threading;
+
 using Microsoft.Extensions.Logging;
+
 using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Tests.Core.Configuration;
@@ -85,12 +87,12 @@ public class LoggingServiceTests
 
         // Assert
         var expectedLogFile = Path.Combine(tempLogDir, "notebook-automation.log");
-        Assert.AreEqual(expectedLogFile, loggingService.CurrentLogFilePath, 
+        Assert.AreEqual(expectedLogFile, loggingService.CurrentLogFilePath,
             "Log file should use consistent filename");
-        
+
         // Give a moment for file system operations
         Thread.Sleep(100);
-        Assert.IsTrue(File.Exists(expectedLogFile), 
+        Assert.IsTrue(File.Exists(expectedLogFile),
             "Log file should be created at expected location");
     }
 

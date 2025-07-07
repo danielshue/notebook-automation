@@ -10,6 +10,10 @@
     "prompts_path": "prompts",
     "logging_dir": "logs"
   },
+  "logging": {
+    "max_file_size_mb": 50,
+    "retained_file_count": 7
+  },
   "microsoft_graph": {
     "client_id": "your-client-id",
     "api_endpoint": "https://graph.microsoft.com/v1.0",
@@ -35,13 +39,14 @@
       "model": "your-model"
     },
     "timeout": {
-      "timeout_milliseconds": 120000,
-      "max_file_parallelism": 4,
-      "file_rate_limit_ms": 200
-    },
-    "retry_policy": {
+      "request_timeout_seconds": 300,
       "max_retry_attempts": 3,
-      "delay_between_retries": 1000
+      "base_retry_delay_seconds": 2,
+      "max_retry_delay_seconds": 60,
+      "max_chunk_parallelism": 3,
+      "chunk_rate_limit_ms": 100,
+      "max_file_parallelism": 2,
+      "file_rate_limit_ms": 200
     }
   },
   "video_extensions": [
