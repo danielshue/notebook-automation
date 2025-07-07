@@ -215,13 +215,23 @@ if ($CreateRelease) {
         throw "GitHub CLI (gh) not found. Install it to create releases automatically."
     }
     
-    # Prepare release assets
+    # Prepare release assets - include ALL files from dist directory
     $distDir = Join-Path $RepoRoot "dist"
-    $releaseAssets = @(
-        Join-Path $distDir "main.js"
-        Join-Path $distDir "manifest.json"
-        Join-Path $distDir "styles.css"
-    )
+    $releaseAssets = @()
+    
+    # Get all files from dist directory
+    if (Test-Path $distDir) {
+        $distFiles = Get-ChildItem -Path $distDir -File
+        foreach ($file in $distFiles) {
+            $releaseAssets += $file.FullName
+            Write-Host "   📎 Adding to release: $($file.Name)"
+        }
+    }
+    else {
+        throw "Dist directory not found: $distDir"
+    }
+    
+    Write-Host "✅ Prepared $($releaseAssets.Count) release assets from dist directory"
     
     # Create release notes
     $releaseNotes = switch ($Type) {
