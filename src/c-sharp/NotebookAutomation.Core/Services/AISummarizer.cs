@@ -585,7 +585,7 @@ public class AISummarizer : IAISummarizer
                 logger.LogWarning("No AI service is available. Returning simulated summary for testing.");
                 return "[Simulated AI summary]";
             }
-            
+
             // For simple summarization with no variables, return null
             logger.LogWarning("No AI service is available. Returning null.");
             return null;
