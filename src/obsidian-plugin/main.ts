@@ -313,6 +313,172 @@ function getNaExecutablePath(plugin: Plugin): string {
   }
 }
 
+/**
+ * Gets the path to the notebook automation executable, downloading it if necessary
+ * @param plugin - The plugin instance
+ * @returns Promise<string> - Path to the executable
+ */
+async function ensureExecutableExists(plugin: Plugin): Promise<string> {
+  // First try to find existing executable
+  const existingPath = getNaExecutablePath(plugin);
+  const execName = getNaExecutableName();
+  
+  try {
+    // @ts-ignore
+    const fs = window.require ? window.require('fs') : null;
+    
+    if (fs && existingPath !== execName && fs.existsSync(existingPath)) {
+      console.log('[Notebook Automation] Using existing executable:', existingPath);
+      return existingPath;
+    }
+    
+    // If no executable found, try to download it
+    console.log('[Notebook Automation] No executable found, attempting to download...');
+    return await downloadExecutableFromGitHub(plugin);
+    
+  } catch (error) {
+    console.error('[Notebook Automation] Error ensuring executable exists:', error);
+    // Fallback to the original path/name
+    return existingPath;
+  }
+}
+
+/**
+ * Downloads the appropriate executable for the current platform from GitHub releases
+ * @param plugin - The plugin instance
+ * @returns Promise<string> - Path to the downloaded executable
+ */
+async function downloadExecutableFromGitHub(plugin: Plugin): Promise<string> {
+  const execName = getNaExecutableName();
+  
+  try {
+    // @ts-ignore
+    const fs = window.require ? window.require('fs') : null;
+    // @ts-ignore
+    const path = window.require ? window.require('path') : null;
+    // @ts-ignore
+    const https = window.require ? window.require('https') : null;
+    
+    if (!fs || !path || !https) {
+      throw new Error('Required Node.js modules not available');
+    }
+
+    console.log('[Notebook Automation] Downloading executable:', execName);
+    
+    // Get plugin directory
+    let pluginDir = '';
+    const adapter = plugin.app?.vault?.adapter;
+    // @ts-ignore
+    if (adapter && typeof adapter.getBasePath === 'function') {
+      try {
+        // @ts-ignore
+        const vaultRoot = adapter.getBasePath();
+        if (plugin.manifest?.dir) {
+          pluginDir = path.resolve(vaultRoot, plugin.manifest.dir);
+        }
+      } catch (err) {
+        console.log('[Notebook Automation] Error getting plugin directory:', err);
+      }
+    }
+    
+    if (!pluginDir) {
+      throw new Error('Could not determine plugin directory');
+    }
+
+    const execPath = path.join(pluginDir, execName);
+    
+    // Check if executable already exists
+    if (fs.existsSync(execPath)) {
+      console.log('[Notebook Automation] Executable already exists:', execPath);
+      return execPath;
+    }
+
+    // GitHub release URL for the current version
+    const version = plugin.manifest?.version || '0.1.0-beta.2';
+    const downloadUrl = `https://github.com/danielshue/notebook-automation/releases/download/v${version}/${execName}`;
+    
+    console.log('[Notebook Automation] Downloading from:', downloadUrl);
+    
+    // Download the executable
+    return new Promise((resolve, reject) => {
+      const request = https.get(downloadUrl, (response: any) => {
+        if (response.statusCode === 302 || response.statusCode === 301) {
+          // Follow redirect
+          const redirectUrl = response.headers.location;
+          console.log('[Notebook Automation] Following redirect to:', redirectUrl);
+          
+          const redirectRequest = https.get(redirectUrl, (redirectResponse: any) => {
+            if (redirectResponse.statusCode !== 200) {
+              reject(new Error(`Failed to download executable: ${redirectResponse.statusCode}`));
+              return;
+            }
+            
+            const writeStream = fs.createWriteStream(execPath);
+            redirectResponse.pipe(writeStream);
+            
+            writeStream.on('finish', () => {
+              writeStream.close();
+              
+              // Make executable on Unix-like systems
+              if (process.platform !== 'win32') {
+                try {
+                  fs.chmodSync(execPath, 0o755);
+                } catch (chmodErr) {
+                  console.log('[Notebook Automation] Warning: Could not set executable permissions:', chmodErr);
+                }
+              }
+              
+              console.log('[Notebook Automation] Successfully downloaded executable to:', execPath);
+              resolve(execPath);
+            });
+            
+            writeStream.on('error', (err: any) => {
+              fs.unlinkSync(execPath); // Clean up partial file
+              reject(err);
+            });
+          });
+          
+          redirectRequest.on('error', reject);
+        } else if (response.statusCode !== 200) {
+          reject(new Error(`Failed to download executable: ${response.statusCode}`));
+          return;
+        } else {
+          // Direct download
+          const writeStream = fs.createWriteStream(execPath);
+          response.pipe(writeStream);
+          
+          writeStream.on('finish', () => {
+            writeStream.close();
+            
+            // Make executable on Unix-like systems
+            if (process.platform !== 'win32') {
+              try {
+                fs.chmodSync(execPath, 0o755);
+              } catch (chmodErr) {
+                console.log('[Notebook Automation] Warning: Could not set executable permissions:', chmodErr);
+              }
+            }
+            
+            console.log('[Notebook Automation] Successfully downloaded executable to:', execPath);
+            resolve(execPath);
+          });
+          
+          writeStream.on('error', (err: any) => {
+            fs.unlinkSync(execPath); // Clean up partial file
+            reject(err);
+          });
+        }
+      });
+      
+      request.on('error', reject);
+    });
+    
+  } catch (error) {
+    console.error('[Notebook Automation] Error downloading executable:', error);
+    throw error;
+  }
+}
+
 interface NotebookAutomationSettings {
   configPath: string;
   verbose?: boolean;
@@ -652,7 +818,7 @@ export default class NotebookAutomationPlugin extends Plugin {
       throw new Error("Child process module not available");
     }
 
-    const naPath = getNaExecutablePath(this);
+    const naPath = await ensureExecutableExists(this);
 
     // Check for environment variable first, then default-config.json, then user setting
     let configPath = '';
@@ -1087,7 +1253,7 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
         return "Unknown (Node.js not available)";
       }
 
-      const naPath = getNaExecutablePath(this.plugin);
+      const naPath = await ensureExecutableExists(this.plugin);
       const { exec } = child_process;
 
       return new Promise((resolve) => {
