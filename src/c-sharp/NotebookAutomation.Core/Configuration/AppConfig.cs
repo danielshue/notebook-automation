@@ -225,7 +225,7 @@ public class AppConfig : IConfiguration
             // Prefer the explicit ConfigFilePath property, then loadedConfigPath, then environment variable, then unknown
             string configPathHint = Environment.GetEnvironmentVariable("NOTEBOOKAUTOMATION_CONFIG_PATH") ?? string.Empty;
             string configPathToLog = ConfigFilePath ?? loadedConfigPath ?? (!string.IsNullOrEmpty(configPathHint) ? configPathHint : "unknown");
-            logger?.LogInformation($"Configuration loaded successfully - {configPathToLog}, Debug: {DebugEnabled}");
+            logger?.LogDebug($"Configuration loaded successfully - {configPathToLog}, Debug: {DebugEnabled}");
         }
         catch (Exception ex)
         {
@@ -357,7 +357,7 @@ public class AppConfig : IConfiguration
     /// <param name="list">List of video file extensions.</param>
     public void SetVideoExtensions(List<string> list)
     {
-        logger?.LogInformation($"Setting video extensions: {string.Join(", ", list)}");
+        logger?.LogDebug($"Setting video extensions: {string.Join(", ", list)}");
         VideoExtensions = list ?? [];
     }
 
@@ -367,7 +367,7 @@ public class AppConfig : IConfiguration
     /// <param name="list">List of PDF file extensions.</param>
     public void SetPdfExtensions(List<string> list)
     {
-        logger?.LogInformation($"Setting PDF extensions: {string.Join(", ", list)}");
+        logger?.LogDebug($"Setting PDF extensions: {string.Join(", ", list)}");
         PdfExtensions = list ?? [".pdf"];
     }
 

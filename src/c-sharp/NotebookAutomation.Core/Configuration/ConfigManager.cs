@@ -53,7 +53,7 @@ public class ConfigManager(
             }
 
             var configuration = await LoadConfigurationFromFileAsync(configPath);
-            _logger.LogInformation("Configuration loaded successfully from: {ConfigPath}", configPath);
+            _logger.LogDebug("Configuration loaded successfully from: {ConfigPath}", configPath);
 
             return ConfigManagerResult.Success(configuration, configPath);
         }

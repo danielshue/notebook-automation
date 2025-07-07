@@ -85,7 +85,8 @@ public class AISummarizerWithKernelTests
     /// <summary>
     /// Tests that the summarizer correctly utilizes the Kernel for function calls.
     /// </summary>
-    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>        [TestMethod]
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    [TestMethod]
     public async Task SummarizeWithVariablesAsync_KernelFunctionCalls_ProcessedCorrectly()
     {
         // Arrange

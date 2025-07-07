@@ -1,4 +1,10 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using System.Reflection;
+using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
+using Serilog.Extensions.Logging;
+
 namespace NotebookAutomation.Core.Configuration;
 
 /// <summary>
@@ -27,10 +33,18 @@ namespace NotebookAutomation.Core.Configuration;
 /// </remarks>
 /// <param name="loggingDir">The directory where log files should be stored.</param>
 /// <param name="debug">Whether debug mode is enabled.</param>
-public class LoggingService(string loggingDir, bool debug = false) : ILoggingService
+/// <param name="maxFileSizeMB">Maximum log file size in MB before rolling. Defaults to 50MB.</param>
+/// <param name="retainedFileCount">Number of log files to retain. Defaults to 7.</param>
+public class LoggingService(
+    string loggingDir, 
+    bool debug = false,
+    int maxFileSizeMB = 50,
+    int retainedFileCount = 7) : ILoggingService
 { // Core properties for logging configuration
     private readonly string loggingDir = loggingDir ?? Path.Combine(AppContext.BaseDirectory, "logs");
     private readonly bool debug = debug;
+    private readonly int maxFileSizeMB = maxFileSizeMB;
+    private readonly int retainedFileCount = retainedFileCount;
 
     // Current log file path (set during initialization)
     private string? currentLogFilePath;
@@ -187,13 +201,15 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
             }
 
             var appAssemblyName = GetAssemblyName();
-            var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Information;            // Console shows debug/info when debug mode is enabled, otherwise warnings and errors
+            
+            // Set default production level to Warning to minimize output
+            var minLevel = debug ? LogEventLevel.Debug : LogEventLevel.Warning;
+            
+            // Console shows debug/info when debug mode is enabled, otherwise warnings and errors only
             var consoleMinLevel = debug ? LogEventLevel.Debug : LogEventLevel.Warning;
-            var date = DateTime.Now.ToString("yyyyMMdd");
-            var time = DateTime.Now.ToString("HHmmss");
 
-            // Use a consistent filename to avoid creating multiple log files per session
-            var logFilePath = Path.Combine(loggingDir, $"na_{date}_{time}.log");
+            // Use a consistent filename for rolling logs instead of timestamped names
+            var logFilePath = Path.Combine(loggingDir, "notebook-automation.log");
 
             // Store the log file path for external access
             currentLogFilePath = logFilePath;
@@ -205,7 +221,7 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
                 ? "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
                 : "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}";
 
-            // Configure and create Serilog logger
+            // Configure and create Serilog logger with rolling based on size
             var loggerConfig = new LoggerConfiguration()
                 .MinimumLevel.Is(minLevel)
                 .WriteTo.Console(
@@ -214,9 +230,10 @@ public class LoggingService(string loggingDir, bool debug = false) : ILoggingSer
                     theme: Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme.Code)
                 .WriteTo.File(
                     logFilePath,
-                    rollingInterval: RollingInterval.Day,
-                    retainedFileCountLimit: 7,
-                    restrictedToMinimumLevel: minLevel,
+                    fileSizeLimitBytes: maxFileSizeMB * 1024 * 1024, // Convert MB to bytes
+                    rollOnFileSizeLimit: true,
+                    retainedFileCountLimit: retainedFileCount,
+                    restrictedToMinimumLevel: LogEventLevel.Debug, // Log everything to file for debugging
                     shared: true);  // Add shared flag to allow multiple processes to write to the same file
 
             return loggerConfig.CreateLogger().ForContext("SourceContext", appAssemblyName);

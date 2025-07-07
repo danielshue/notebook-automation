@@ -229,7 +229,7 @@ public partial class PromptTemplateService : IPromptService
 
                 // Strip frontmatter if present
                 content = yamlHelper.RemoveFrontmatter(content);
-                logger.LogInformation($"Loaded template '{templateName}' from: {templatePath}");
+                logger.LogDebug($"Loaded template '{templateName}' from: {templatePath}");
                 return content;
             } // Look in project Prompts directory too
 
@@ -240,7 +240,7 @@ public partial class PromptTemplateService : IPromptService
 
                 // Strip frontmatter if present
                 content = yamlHelper.RemoveFrontmatter(content);
-                logger.LogInformation($"Loaded template '{templateName}' from project: {projectPromptPath}");
+                logger.LogDebug($"Loaded template '{templateName}' from project: {projectPromptPath}");
                 return content;
             }
 

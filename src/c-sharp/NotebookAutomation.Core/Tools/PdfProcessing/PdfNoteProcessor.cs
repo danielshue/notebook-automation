@@ -118,7 +118,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
         string extractedText = string.Empty;
         try
         {
-            Logger.LogInformation($"Starting PDF content extraction: {pdfPath}");
+            Logger.LogDebug($"Starting PDF content extraction: {pdfPath}");
             extractedText = await Task.Run(() =>
             {
                 var sb = new StringBuilder();
@@ -217,7 +217,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                 metadata["auto-generated-state"] = "writable";                // Add the file path for later use
                 metadata["onedrive_fullpath_file_reference"] = pdfPath; return sb.ToString();
             }).ConfigureAwait(false); int extractedCharCount = extractedText.Length;
-            Logger.LogInformation($"Extracted {extractedCharCount:N0} characters of text from PDF: {pdfPath}");
+            Logger.LogDebug($"Extracted {extractedCharCount:N0} characters of text from PDF: {pdfPath}");
 
             // Generate OneDrive shared link if service is available
             if (_oneDriveService != null)
@@ -257,11 +257,11 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                 string markdownFilePath = Path.Combine(pdfDirectory, $"{pdfFileName}.md");
 
                 await File.WriteAllTextAsync(textFilePath, extractedText).ConfigureAwait(false);
-                Logger.LogInformation($"Saved extracted text to: {textFilePath}");
+                Logger.LogDebug($"Saved extracted text to: {textFilePath}");
 
                 // Also save as markdown file
                 await File.WriteAllTextAsync(markdownFilePath, extractedText).ConfigureAwait(false);
-                Logger.LogInformation($"Saved extracted text as markdown to: {markdownFilePath}");
+                Logger.LogDebug($"Saved extracted text as markdown to: {markdownFilePath}");
 
                 // Add the text file path to metadata for reference
                 metadata["extracted_text_file"] = textFilePath;
@@ -482,7 +482,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
 
             int yamlLength = yamlString.Length;
             int fields = yamlData.Count;
-            Logger.LogInformation($"Generated YAML frontmatter for PDF: {yamlLength} chars, {fields} fields");
+            Logger.LogDebug($"Generated YAML frontmatter for PDF: {yamlLength} chars, {fields} fields");
             Logger.LogDebug("Generated YAML frontmatter for PDF without separators");
             return yamlString;
         }
@@ -579,7 +579,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
             // Log the result statistics
             int summaryLength = result?.Length ?? 0;
             int compressionRatio = textLength > 0 ? (int)(100 - ((double)summaryLength / textLength * 100)) : 0;
-            Logger.LogInformation($"AI summary generation complete: {summaryLength:N0} characters ({compressionRatio}% reduction): {effectivePrompt}");
+            Logger.LogDebug($"AI summary generation complete: {summaryLength:N0} characters ({compressionRatio}% reduction): {effectivePrompt}");
         }
         catch (Exception ex)
         {

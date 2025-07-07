@@ -213,9 +213,9 @@ public class VaultIndexProcessor(
         try
         {
             _logger.LogDebug($"Generating index for folder: {folderPath}");
-            _logger.LogInformation("=== GENERATING INDEX ===");
-            _logger.LogInformation($"Folder Path: {folderPath}");
-            _logger.LogInformation($"Vault Path: {vaultPath}");
+            _logger.LogDebug("=== GENERATING INDEX ===");
+            _logger.LogDebug($"Folder Path: {folderPath}");
+            _logger.LogDebug($"Vault Path: {vaultPath}");
             _logger.LogDebug($"Starting GenerateIndexAsync - FolderPath: {folderPath}, VaultPath: {vaultPath}");
 
             // Validate vault path - use _defaultVaultRootPath if not provided
@@ -237,14 +237,14 @@ public class VaultIndexProcessor(
             // Convert from 0-based (MetadataHierarchyDetector) to 1-based (legacy VaultIndexProcessor) level system
             int hierarchyLevel = metadataHierarchyLevel + 1;
 
-            _logger.LogInformation($"Calculated hierarchy level: metadataHierarchyLevel={metadataHierarchyLevel} (0-based), adjustedLevel={hierarchyLevel} (1-based) for folder: {folderPath}");
+            _logger.LogDebug($"Calculated hierarchy level: metadataHierarchyLevel={metadataHierarchyLevel} (0-based), adjustedLevel={hierarchyLevel} (1-based) for folder: {folderPath}");
 
             // Create index file name based on folder name
             string folderName = Path.GetFileName(folderPath) ?? "Index";
 
             // Determine template type based on hierarchy level and folder name
             string templateType = DetermineTemplateType(hierarchyLevel, folderName);
-            _logger.LogInformation($"Determined template type: {templateType} for folder: {folderName} at level: {hierarchyLevel}");
+            _logger.LogDebug($"Determined template type: {templateType} for folder: {folderName} at level: {hierarchyLevel}");
             _logger.LogDebug($"Template type '{templateType}' determined for '{folderName}' at level {hierarchyLevel}");
 
             // Get template using the actual available method
@@ -284,14 +284,14 @@ public class VaultIndexProcessor(
             // Check if index already exists and force is not set
             if (fileExists && !forceOverwrite)
             {
-                _logger.LogInformation($"Skipping index file (already exists, use --force to overwrite): {indexFilePath}");
+                _logger.LogDebug($"Skipping index file (already exists, use --force to overwrite): {indexFilePath}");
                 _logger.LogDebug($"SKIPPING - File exists and force is false");
                 return false;
             }
 
             if (dryRun)
             {
-                _logger.LogInformation($"DRY RUN: Would generate index file: {indexFilePath}");
+                _logger.LogDebug($"DRY RUN: Would generate index file: {indexFilePath}");
                 return true;
             } // Scan folder for content
 

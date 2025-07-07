@@ -209,7 +209,7 @@ public class TagProcessor
             return Stats;
         }
 
-        _logger.LogInformation("Processing directory: {Directory}", directory);
+        _logger.LogDebug("Processing directory: {Directory}", directory);
 
         try
         {
@@ -335,7 +335,7 @@ public class TagProcessor
             var frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter);
             if (frontmatterDict.Count == 0)
             {
-                _logger.LogInformation($"Empty or invalid frontmatter in file: {filePath}");
+                _logger.LogDebug($"Empty or invalid frontmatter in file: {filePath}");
                 _logger.LogDebug($"Frontmatter content that failed parsing: {(frontmatter.Length > 100 ? frontmatter[..100] + "..." : frontmatter)}");
 
                 return false;
@@ -359,10 +359,10 @@ public class TagProcessor
 
                 if (_dryRun)
                 {
-                    _logger.LogInformation($"[DRY RUN] Would add {newTags.Count} tags to {filePath}");
+                    _logger.LogDebug($"[DRY RUN] Would add {newTags.Count} tags to {filePath}");
                     foreach (var tag in newTags)
                     {
-                        _logger.LogInformation($"[DRY RUN] New tag: {tag}");
+                        _logger.LogDebug($"[DRY RUN] New tag: {tag}");
                     }
                 }
                 else
@@ -382,7 +382,7 @@ public class TagProcessor
             }
             else
             {
-                _logger.LogInformation($"No new tags to add for {filePath}");
+                _logger.LogDebug($"No new tags to add for {filePath}");
             }
 
             return modified;
@@ -465,7 +465,7 @@ public class TagProcessor
 
         if (_dryRun)
         {
-            _logger.LogInformation($"[DRY RUN] Would clear tags from index file: {filePath}");
+            _logger.LogDebug($"[DRY RUN] Would clear tags from index file: {filePath}");
             Stats["IndexFilesCleared"]++;
             return true;
         }
@@ -473,7 +473,7 @@ public class TagProcessor
         var updatedContent = _yamlHelper.UpdateFrontmatter(content, frontmatter);
         await File.WriteAllTextAsync(filePath, updatedContent, Encoding.UTF8).ConfigureAwait(false);
 
-        _logger.LogInformation($"Cleared tags from index file: {filePath}");
+        _logger.LogDebug($"Cleared tags from index file: {filePath}");
         Stats["IndexFilesCleared"]++;
         Stats["FilesModified"]++;
 
@@ -569,14 +569,14 @@ public class TagProcessor
 
         if (_dryRun)
         {
-            _logger.LogInformation($"[DRY RUN] Would update tags in file: {filePath}");
+            _logger.LogDebug($"[DRY RUN] Would update tags in file: {filePath}");
             return true;
         }
 
         var updatedContent = _yamlHelper.UpdateFrontmatter(content, frontmatter);
         await File.WriteAllTextAsync(filePath, updatedContent, Encoding.UTF8).ConfigureAwait(false);
 
-        _logger.LogInformation($"Updated tags in file: {filePath}");
+        _logger.LogDebug($"Updated tags in file: {filePath}");
         Stats["FilesModified"]++;
 
         return true;
@@ -774,7 +774,7 @@ public class TagProcessor
         frontmatterDict["tags"] = normalizedTags;
         if (_dryRun)
         {
-            _logger.LogInformation($"[DRY RUN] Would restructure tags in {filePath}");
+            _logger.LogDebug($"[DRY RUN] Would restructure tags in {filePath}");
             return true;
         }
 
@@ -782,7 +782,7 @@ public class TagProcessor
         var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
         string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
         await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
-        _logger.LogInformation("Restructured tags in {FilePath}", filePath);
+        _logger.LogDebug("Restructured tags in {FilePath}", filePath);
         Stats["FilesModified"]++;
         return true;
     }
@@ -813,7 +813,7 @@ public class TagProcessor
         frontmatterDict["tags"] = exampleTags.Distinct().OrderBy(t => t).ToList();
         if (_dryRun)
         {
-            _logger.LogInformation("[DRY RUN] Would add example tags to {FilePath}", filePath);
+            _logger.LogDebug("[DRY RUN] Would add example tags to {FilePath}", filePath);
             return true;
         }
 
@@ -821,7 +821,7 @@ public class TagProcessor
         var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
         string updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
         await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
-        _logger.LogInformation("Added example tags to {FilePath}", filePath);
+        _logger.LogDebug("Added example tags to {FilePath}", filePath);
         Stats["FilesModified"]++;
         return true;
     }
@@ -879,7 +879,7 @@ public class TagProcessor
 
         if (_dryRun)
         {
-            _logger.LogInformation($"[DRY RUN] Would enforce metadata consistency in {filePath}");
+            _logger.LogDebug($"[DRY RUN] Would enforce metadata consistency in {filePath}");
             return true;
         }
 
@@ -889,7 +889,7 @@ public class TagProcessor
             var updatedFrontmatterDict = _yamlHelper.ParseYamlToDictionary(updatedFrontmatter);
             var updatedContent = _yamlHelper.ReplaceFrontmatter(content, updatedFrontmatterDict);
             await File.WriteAllTextAsync(filePath, updatedContent).ConfigureAwait(false);
-            _logger.LogInformation("Enforced metadata consistency in {FilePath}", filePath);
+            _logger.LogDebug("Enforced metadata consistency in {FilePath}", filePath);
             Stats["FilesModified"]++;
         }
 
