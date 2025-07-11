@@ -546,35 +546,166 @@ const DEFAULT_SETTINGS: NotebookAutomationSettings = {
 
 export default class NotebookAutomationPlugin extends Plugin {
   settings: NotebookAutomationSettings = DEFAULT_SETTINGS;
-
   async onload() {
     await this.loadSettings();
-    this.addRibbonIcon("dice", "Test Notebook Automation Executable", async () => {
-      try {
-        new Notice('🧪 Testing executable download system...');
-        console.log('[Notebook Automation] Starting ribbon test...');
+    this.addSettingTab(new NotebookAutomationSettingTab(this.app, this));
 
-        const execPath = await ensureExecutableExists(this);
+    // Register Command Palette commands for selected files/folders
+    this.addCommand({
+      id: 'sync-directory',
+      name: 'Sync Directory with OneDrive',
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
 
-        new Notice(`✅ Test complete! Executable path: ${execPath}`, 8000);
-        console.log('[Notebook Automation] Ribbon test completed - executable path:', execPath);
-
-        // Also verify the file actually exists
-        // @ts-ignore
-        const fs = window.require ? window.require('fs') : null;
-        if (fs && fs.existsSync(execPath)) {
-          new Notice(`📁 Verified: File exists on disk!`, 5000);
-        } else {
-          new Notice(`⚠️ Warning: Path returned but file not found on disk`, 5000);
+        // Check if we have a selected folder or file's parent folder
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "sync-dir");
+            }
+            return true;
+          }
         }
-
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        new Notice(`❌ Test failed: ${errorMessage}`, 10000);
-        console.error('[Notebook Automation] Ribbon test error:', error);
+        return false;
       }
     });
-    this.addSettingTab(new NotebookAutomationSettingTab(this.app, this));
+
+    this.addCommand({
+      id: 'import-summarize-videos',
+      name: 'Import & AI Summarize All Videos',
+      checkCallback: (checking: boolean) => {
+        if (!this.settings.enableVideoSummary) return false;
+
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "import-summarize-videos");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'import-summarize-pdfs',
+      name: 'Import & AI Summarize All PDFs',
+      checkCallback: (checking: boolean) => {
+        if (!this.settings.enablePdfSummary) return false;
+
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "import-summarize-pdfs");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'build-indexes',
+      name: 'Build Index for Folder',
+      checkCallback: (checking: boolean) => {
+        if (!this.settings.enableIndexCreation) return false;
+
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "build-indexes");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'ensure-metadata',
+      name: 'Ensure Metadata for Files',
+      checkCallback: (checking: boolean) => {
+        if (!this.settings.enableEnsureMetadata) return false;
+
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "ensure-metadata");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'open-onedrive-folder',
+      name: 'Open OneDrive Folder',
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "open-onedrive-folder");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'open-local-folder',
+      name: 'Open Local Folder',
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "open-local-folder");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
 
     // Register context menu commands for files and folders
     this.registerEvent(

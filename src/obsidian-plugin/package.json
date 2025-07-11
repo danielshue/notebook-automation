@@ -7,8 +7,9 @@
     "build": "tsc -noEmit -skipLibCheck && node esbuild.config.mjs production && node build-plugin.mjs",
     "dev": "node esbuild.config.mjs",
     "version": "node version-bump.mjs && git add manifest.json versions.json",
-    "clean": "rm -rf dist",
+    "clean": "powershell -Command \"if (Test-Path 'dist') { Remove-Item -Recurse -Force 'dist' }\"",
     "rebuild": "npm run clean && npm run build",
+    "deploy": "npm run rebuild && node deploy-to-test.mjs",
     "test": "jest",
     "test:watch": "jest --watch",
     "lint": "tsc --noEmit"

@@ -1,7 +1,8 @@
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
-import { mkdirSync } from "fs";
+import { mkdirSync, unlinkSync, existsSync } from "fs";
+import { resolve } from "path";
 
 const banner =
 	`/*
@@ -12,11 +13,27 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === "production");
 
-// Ensure dist directory exists
+// Point to repository root dist directory
+const rootDistDir = resolve("../../dist");
+const outputFile = resolve(rootDistDir, "main.js");
+
+// Ensure repository root dist directory exists
 try {
-	mkdirSync("dist", { recursive: true });
+	mkdirSync(rootDistDir, { recursive: true });
 } catch (err) {
 	// Directory already exists, ignore
+}
+
+// Delete old main.js file if it exists to force rebuild
+if (existsSync(outputFile)) {
+	console.log("🗑️  Deleting old main.js to force rebuild...");
+	console.log(`     Target: ${outputFile}`);
+	try {
+		unlinkSync(outputFile);
+		console.log("✅ Old main.js deleted");
+	} catch (err) {
+		console.log("⚠️  Could not delete old main.js:", err.message);
+	}
 }
 
 const context = await esbuild.context({
@@ -45,7 +62,7 @@ const context = await esbuild.context({
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
-	outfile: "dist/main.js",
+	outfile: outputFile,
 	minify: prod,
 });
 
