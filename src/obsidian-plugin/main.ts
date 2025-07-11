@@ -322,22 +322,26 @@ async function ensureExecutableExists(plugin: Plugin): Promise<string> {
   // First try to find existing executable
   const existingPath = getNaExecutablePath(plugin);
   const execName = getNaExecutableName();
-  
+
   try {
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
-    
+
     if (fs && existingPath !== execName && fs.existsSync(existingPath)) {
       console.log('[Notebook Automation] Using existing executable:', existingPath);
+      new Notice(`✅ Found existing executable: ${execName}`);
       return existingPath;
     }
-    
+
     // If no executable found, try to download it
     console.log('[Notebook Automation] No executable found, attempting to download...');
+    new Notice(`🔍 No ${execName} found locally, downloading from GitHub...`);
     return await downloadExecutableFromGitHub(plugin);
-    
+
   } catch (error) {
     console.error('[Notebook Automation] Error ensuring executable exists:', error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    new Notice(`❌ Failed to ensure executable: ${errorMessage}`);
     // Fallback to the original path/name
     return existingPath;
   }
@@ -350,7 +354,7 @@ async function ensureExecutableExists(plugin: Plugin): Promise<string> {
  */
 async function downloadExecutableFromGitHub(plugin: Plugin): Promise<string> {
   const execName = getNaExecutableName();
-  
+
   try {
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
@@ -358,13 +362,13 @@ async function downloadExecutableFromGitHub(plugin: Plugin): Promise<string> {
     const path = window.require ? window.require('path') : null;
     // @ts-ignore
     const https = window.require ? window.require('https') : null;
-    
+
     if (!fs || !path || !https) {
       throw new Error('Required Node.js modules not available');
     }
 
     console.log('[Notebook Automation] Downloading executable:', execName);
-    
+
     // Get plugin directory
     let pluginDir = '';
     const adapter = plugin.app?.vault?.adapter;
@@ -380,25 +384,29 @@ async function downloadExecutableFromGitHub(plugin: Plugin): Promise<string> {
         console.log('[Notebook Automation] Error getting plugin directory:', err);
       }
     }
-    
+
     if (!pluginDir) {
       throw new Error('Could not determine plugin directory');
     }
 
     const execPath = path.join(pluginDir, execName);
-    
+
     // Check if executable already exists
     if (fs.existsSync(execPath)) {
       console.log('[Notebook Automation] Executable already exists:', execPath);
+      new Notice(`✅ Executable already exists: ${execName}`);
       return execPath;
     }
 
     // GitHub release URL for the current version
     const version = plugin.manifest?.version || '0.1.0-beta.2';
     const downloadUrl = `https://github.com/danielshue/notebook-automation/releases/download/v${version}/${execName}`;
-    
+
     console.log('[Notebook Automation] Downloading from:', downloadUrl);
-    
+
+    // Show download start notification
+    new Notice(`📥 Starting download of ${execName} from GitHub releases...`);
+
     // Download the executable
     return new Promise((resolve, reject) => {
       const request = https.get(downloadUrl, (response: any) => {
@@ -406,19 +414,22 @@ async function downloadExecutableFromGitHub(plugin: Plugin): Promise<string> {
           // Follow redirect
           const redirectUrl = response.headers.location;
           console.log('[Notebook Automation] Following redirect to:', redirectUrl);
-          
+          new Notice(`🔄 Following redirect...`);
+
           const redirectRequest = https.get(redirectUrl, (redirectResponse: any) => {
             if (redirectResponse.statusCode !== 200) {
-              reject(new Error(`Failed to download executable: ${redirectResponse.statusCode}`));
+              const errorMsg = `Failed to download executable: HTTP ${redirectResponse.statusCode}`;
+              new Notice(`❌ ${errorMsg}`);
+              reject(new Error(errorMsg));
               return;
             }
-            
+
             const writeStream = fs.createWriteStream(execPath);
             redirectResponse.pipe(writeStream);
-            
+
             writeStream.on('finish', () => {
               writeStream.close();
-              
+
               // Make executable on Unix-like systems
               if (process.platform !== 'win32') {
                 try {
@@ -427,29 +438,38 @@ async function downloadExecutableFromGitHub(plugin: Plugin): Promise<string> {
                   console.log('[Notebook Automation] Warning: Could not set executable permissions:', chmodErr);
                 }
               }
-              
+
               console.log('[Notebook Automation] Successfully downloaded executable to:', execPath);
+              new Notice(`✅ Successfully downloaded ${execName}!`);
               resolve(execPath);
             });
-            
+
             writeStream.on('error', (err: any) => {
               fs.unlinkSync(execPath); // Clean up partial file
+              const errorMsg = `Download failed: ${err.message}`;
+              new Notice(`❌ ${errorMsg}`);
               reject(err);
             });
           });
-          
-          redirectRequest.on('error', reject);
+
+          redirectRequest.on('error', (err: any) => {
+            const errorMsg = `Network error during redirect: ${err.message}`;
+            new Notice(`❌ ${errorMsg}`);
+            reject(err);
+          });
         } else if (response.statusCode !== 200) {
-          reject(new Error(`Failed to download executable: ${response.statusCode}`));
+          const errorMsg = `Failed to download executable: HTTP ${response.statusCode}`;
+          new Notice(`❌ ${errorMsg}`);
+          reject(new Error(errorMsg));
           return;
         } else {
           // Direct download
           const writeStream = fs.createWriteStream(execPath);
           response.pipe(writeStream);
-          
+
           writeStream.on('finish', () => {
             writeStream.close();
-            
+
             // Make executable on Unix-like systems
             if (process.platform !== 'win32') {
               try {
@@ -458,21 +478,28 @@ async function downloadExecutableFromGitHub(plugin: Plugin): Promise<string> {
                 console.log('[Notebook Automation] Warning: Could not set executable permissions:', chmodErr);
               }
             }
-            
+
             console.log('[Notebook Automation] Successfully downloaded executable to:', execPath);
+            new Notice(`✅ Successfully downloaded ${execName}!`);
             resolve(execPath);
           });
-          
+
           writeStream.on('error', (err: any) => {
             fs.unlinkSync(execPath); // Clean up partial file
+            const errorMsg = `Download failed: ${err.message}`;
+            new Notice(`❌ ${errorMsg}`);
             reject(err);
           });
         }
       });
-      
-      request.on('error', reject);
+
+      request.on('error', (err: any) => {
+        const errorMsg = `Network error: ${err.message}`;
+        new Notice(`❌ ${errorMsg}`);
+        reject(err);
+      });
     });
-    
+
   } catch (error) {
     console.error('[Notebook Automation] Error downloading executable:', error);
     throw error;
@@ -519,13 +546,166 @@ const DEFAULT_SETTINGS: NotebookAutomationSettings = {
 
 export default class NotebookAutomationPlugin extends Plugin {
   settings: NotebookAutomationSettings = DEFAULT_SETTINGS;
-
   async onload() {
     await this.loadSettings();
-    this.addRibbonIcon("dice", "Notebook Automation Plugin", () => {
-      new Notice("Hello from Notebook Automation Plugin!");
-    });
     this.addSettingTab(new NotebookAutomationSettingTab(this.app, this));
+
+    // Register Command Palette commands for selected files/folders
+    this.addCommand({
+      id: 'sync-directory',
+      name: 'Sync Directory with OneDrive',
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        // Check if we have a selected folder or file's parent folder
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "sync-dir");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'import-summarize-videos',
+      name: 'Import & AI Summarize All Videos',
+      checkCallback: (checking: boolean) => {
+        if (!this.settings.enableVideoSummary) return false;
+
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "import-summarize-videos");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'import-summarize-pdfs',
+      name: 'Import & AI Summarize All PDFs',
+      checkCallback: (checking: boolean) => {
+        if (!this.settings.enablePdfSummary) return false;
+
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "import-summarize-pdfs");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'build-indexes',
+      name: 'Build Index for Folder',
+      checkCallback: (checking: boolean) => {
+        if (!this.settings.enableIndexCreation) return false;
+
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "build-indexes");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'ensure-metadata',
+      name: 'Ensure Metadata for Files',
+      checkCallback: (checking: boolean) => {
+        if (!this.settings.enableEnsureMetadata) return false;
+
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "ensure-metadata");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'open-onedrive-folder',
+      name: 'Open OneDrive Folder',
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "open-onedrive-folder");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
+
+    this.addCommand({
+      id: 'open-local-folder',
+      name: 'Open Local Folder',
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveFile();
+        const selectedFiles = (this.app as any).workspace.activeLeaf?.view?.file;
+        const activeFile = file || selectedFiles;
+
+        if (activeFile) {
+          const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+          if (folder) {
+            if (!checking) {
+              this.handleNotebookAutomationCommand(folder, "open-local-folder");
+            }
+            return true;
+          }
+        }
+        return false;
+      }
+    });
 
     // Register context menu commands for files and folders
     this.registerEvent(

@@ -24,12 +24,11 @@ if (!existsSync(distRoot)) {
     mkdirSync(distRoot, { recursive: true });
 }
 
-// Copy required plugin files
+// Copy required plugin files (excluding main.js which is built by esbuild)
 const pluginFiles = [
     { src: 'manifest.json', dest: 'manifest.json', required: true },
     { src: 'styles.css', dest: 'styles.css', required: true },
-    { src: 'default-config.json', dest: 'default-config.json', required: true },
-    { src: 'main.js', dest: 'main.js', required: false } // main.js might not exist until after esbuild
+    { src: 'default-config.json', dest: 'default-config.json', required: true }
 ];
 
 console.log('📋 Copying plugin files...');
