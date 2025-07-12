@@ -55,10 +55,10 @@ This initiative delivers a unified, extensible metadata schema loader and reserv
 
 ## Open Questions & Decision Log
 
-- [ ] Finalize plugin extension API details
-- [ ] Confirm migration script requirements
-- [ ] Assign documentation leads
-- [ ] Review and approve timeline with stakeholders
+- [x] Finalize plugin extension API details
+- [x] Confirm migration script requirements
+- [x] Assign documentation leads
+- [x] Review and approve timeline with stakeholders
 
 ## Cost & Effort Summary (Management Overview)
 
