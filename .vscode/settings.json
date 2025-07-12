@@ -22,7 +22,15 @@
         "onedrive",
         "Shue",
         "subfolders"
-    ]
+    ],
+    "cSpell.customDictionaries": {
+        "custom-dictionary-workspace": {
+            "name": "custom-dictionary-workspace",
+            "path": "${workspaceFolder:notebook-automation}/.cspell/custom-dictionary-workspace.txt",
+            "addWords": true,
+            "scope": "workspace"
+        }
+    }
     // Personal preferences (font, theme, etc.) should be set in User Settings
     // not in the workspace settings.json to avoid conflicts between team members
 }
