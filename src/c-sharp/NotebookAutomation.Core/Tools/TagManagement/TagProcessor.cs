@@ -18,6 +18,7 @@ public class TagProcessor
     private readonly bool _dryRun;
     private readonly bool _verbose;
     private readonly HashSet<string> _fieldsToProcess;
+    private readonly FieldValueResolverRegistry? _resolverRegistry;
 
     /// <summary>
     /// Gets statistics about the processing performed.
@@ -47,37 +48,53 @@ public class TagProcessor
           ///
           /// <para>
           /// The processor supports both dry-run mode for testing changes and verbose mode for
-          /// detailed operational logging. Statistics are automatically tracked during processing
-          /// and can be accessed via the <see cref="Stats"/> property.
-          /// </para>
-          /// </remarks>
-          /// <exception cref="ArgumentNullException">
-          /// Thrown when <paramref name="logger"/>, <paramref name="failedLogger"/>,
-          /// or <paramref name="yamlHelper"/> is null.
-          /// </exception>
-          /// <example>
-          /// <code>
-          /// var processor = new TagProcessor(logger, failedLogger, yamlHelper);
-          ///
-          /// // With dry-run mode enabled
-          /// var dryRunProcessor = new TagProcessor(logger, failedLogger, yamlHelper, dryRun: true);
-          ///
-          /// // With verbose logging
-          /// var verboseProcessor = new TagProcessor(logger, failedLogger, yamlHelper, verbose: true);
-          /// </code>
-          /// </example>
+    /// <param name="yamlHelper">Helper utility for YAML frontmatter processing and manipulation.</param>
+    /// <param name="dryRun">When true, simulates operations without making actual file changes. Default is false.</param>
+    /// <param name="verbose">When true, provides detailed verbose output during processing. Default is false.</param>
+    /// <param name="resolverRegistry">Optional field value resolver registry for dynamic field resolution.</param>
+    /// <remarks>
+    /// <para>
+    /// This constructor initializes the TagProcessor with a default set of frontmatter fields
+    /// that will be processed for tag generation. The default fields include common academic
+    /// and content metadata: course, lecture, topic, subjects, professor, university, program,
+    /// assignment, type, and author.
+    /// </para>
+    ///
+    /// <para>
+    /// The processor supports both dry-run mode for testing changes and verbose mode for
+    /// detailed operational logging. Statistics are automatically tracked during processing
+    /// and can be accessed via the <see cref="Stats"/> property.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="logger"/>, <paramref name="failedLogger"/>,
+    /// or <paramref name="yamlHelper"/> is null.
+    /// </exception>
+    /// <example>
+    /// <code>
+    /// var processor = new TagProcessor(logger, failedLogger, yamlHelper);
+    ///
+    /// // With dry-run mode enabled
+    /// var dryRunProcessor = new TagProcessor(logger, failedLogger, yamlHelper, dryRun: true);
+    ///
+    /// // With verbose logging
+    /// var verboseProcessor = new TagProcessor(logger, failedLogger, yamlHelper, verbose: true);
+    /// </code>
+    /// </example>
     public TagProcessor(
         ILogger<TagProcessor> logger,
         ILogger failedLogger,
         IYamlHelper yamlHelper,
         bool dryRun = false,
-        bool verbose = false)
+        bool verbose = false,
+        FieldValueResolverRegistry? resolverRegistry = null)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _failedLogger = failedLogger ?? throw new ArgumentNullException(nameof(failedLogger));
         _yamlHelper = yamlHelper ?? throw new ArgumentNullException(nameof(yamlHelper));
         _dryRun = dryRun;
         _verbose = verbose;
+        _resolverRegistry = resolverRegistry;
 
         // Fields to process for tags (generalized)
         _fieldsToProcess =

@@ -21,6 +21,7 @@ namespace NotebookAutomation.Core.Tools.Shared;
 /// <param name="yamlHelper">Optional YAML helper for processing YAML frontmatter.</param>
 /// <param name="hierarchyDetector">Optional hierarchy detector for metadata enhancement.</param>
 /// <param name="templateManager">Optional template manager for metadata enhancement.</param>
+/// <param name="resolverRegistry">Optional field value resolver registry for dynamic field resolution.</param>
 public abstract class DocumentNoteProcessorBase(
     ILogger logger,
     IAISummarizer aiSummarizer,
@@ -28,7 +29,8 @@ public abstract class DocumentNoteProcessorBase(
     AppConfig appConfig,
     IYamlHelper? yamlHelper = null,
     IMetadataHierarchyDetector? hierarchyDetector = null,
-    IMetadataTemplateManager? templateManager = null)
+    IMetadataTemplateManager? templateManager = null,
+    FieldValueResolverRegistry? resolverRegistry = null)
 {
     protected readonly ILogger Logger = logger ?? throw new ArgumentNullException(nameof(logger), "Logger must be provided via DI.");
     protected readonly IAISummarizer Summarizer = aiSummarizer ?? throw new ArgumentNullException(nameof(aiSummarizer), "IAISummarizer must be provided via DI.");
@@ -37,6 +39,7 @@ public abstract class DocumentNoteProcessorBase(
     protected readonly IYamlHelper? YamlHelper = yamlHelper;
     protected readonly IMetadataHierarchyDetector? HierarchyDetector = hierarchyDetector;
     protected readonly IMetadataTemplateManager? TemplateManager = templateManager;
+    protected readonly FieldValueResolverRegistry? ResolverRegistry = resolverRegistry;
     /// <summary>
     /// Extracts the main text/content and metadata from the document.
     /// </summary>
@@ -493,5 +496,69 @@ public abstract class DocumentNoteProcessorBase(
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Enhances metadata using registered field value resolvers.
+    /// </summary>
+    /// <param name="metadata">The metadata dictionary to enhance.</param>
+    /// <param name="context">Context for resolver operations.</param>
+    /// <param name="fileType">The file type for file type-specific resolvers.</param>
+    /// <returns>Enhanced metadata dictionary.</returns>
+    /// <remarks>
+    /// This method uses the resolver registry to dynamically populate or enhance metadata fields
+    /// based on the available resolvers and the provided context.
+    /// </remarks>
+    protected Dictionary<string, object> EnhanceMetadataWithResolvers(
+        Dictionary<string, object> metadata,
+        Dictionary<string, object> context,
+        string? fileType = null)
+    {
+        if (ResolverRegistry == null)
+            return metadata;
+
+        try
+        {
+            // Use file type-specific resolver if available
+            if (!string.IsNullOrEmpty(fileType))
+            {
+                var fileTypeResolver = ResolverRegistry.GetFileTypeResolver(fileType);
+                if (fileTypeResolver != null)
+                {
+                    var extractedMetadata = fileTypeResolver.ExtractMetadata(context);
+                    foreach (var kvp in extractedMetadata)
+                    {
+                        if (!metadata.ContainsKey(kvp.Key))
+                        {
+                            metadata[kvp.Key] = kvp.Value;
+                        }
+                    }
+                }
+            }
+
+            // Apply general resolvers for any missing fields
+            foreach (var resolver in ResolverRegistry.GetAllFileTypeResolvers().Values)
+            {
+                if (resolver.FileType != fileType) // Skip if we already processed this file type
+                {
+                    var extractedMetadata = resolver.ExtractMetadata(context);
+                    foreach (var kvp in extractedMetadata)
+                    {
+                        if (!metadata.ContainsKey(kvp.Key))
+                        {
+                            metadata[kvp.Key] = kvp.Value;
+                        }
+                    }
+                }
+            }
+
+            Logger.LogDebug("Enhanced metadata with {Count} fields using resolvers", metadata.Count);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error enhancing metadata with resolvers");
+        }
+
+        return metadata;
     }
 }
