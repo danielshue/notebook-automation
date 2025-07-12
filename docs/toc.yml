@@ -35,6 +35,8 @@
   items:
   - name: Overview
     href: developer-guide/index.md
+  - name: Integration Issues
+    href: Metadata-Schema-Loader-Integration-Issue.md
 - name: Troubleshooting
   href: troubleshooting/
   items:

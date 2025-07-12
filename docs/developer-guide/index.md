@@ -18,6 +18,13 @@ Comprehensive guide to how the system processes documents to generate AI summari
 - Template and prompt system
 - Error handling and retry logic
 
+### [Metadata Schema Loader Integration](../Metadata-Schema-Loader-Integration-Issue.md)
+Epic issue documentation for the comprehensive integration of metadata schema loader and reserved tag logic, including:
+- Implementation timeline and milestones
+- Risk assessment and mitigation strategies
+- Team assignments and responsibilities
+- Detailed task breakdown and acceptance criteria
+
 ### [Contributing](contributing.md)
 Guidelines for contributing to the project, including coding standards, pull request processes, and development workflow.
 
