@@ -1,0 +1,21 @@
+## Reserved tags listed in ReservedTags and UniversalFields will be inherited as fields by all template types.
+TemplateTypes:
+  pdf-reference:
+    Type: reference
+    RequiredFields:
+      - date-created
+      - publisher
+    BaseTypes:
+      - universal-fields
+    Fields:
+      date-created:
+        Default: "2025-07-11"
+        Resolver: NotebookAutomation.Core.Resolvers.DateCreatedResolver
+      publisher:
+        Default: "University of Illinois at Urbana-Champaign"
+UniversalFields:
+  - auto-generated-state
+TypeMapping:
+  pdf-reference: reference
+ReservedTags:
+  - auto-generated-state

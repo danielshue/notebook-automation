@@ -107,6 +107,21 @@ The toolkit includes sophisticated synchronization capabilities that bridge your
 
 ## 📖 Documentation
 
+### Metadata Schema Reserved Tags and Universal Fields
+
+The metadata schema system supports both universal fields and reserved tags. Reserved tags (e.g., `auto-generated-state`) are included in the list of universal fields and are inherited as fields by all template types. This ensures that reserved tags are present in every template type for consistent metadata automation. Reserved tags are protected and cannot be overridden, but they are always present as fields in the schema. All top-level YAML keys must use PascalCase to match C# property names, and the deserializer is case-sensitive.
+
+**Example:**
+
+```yaml
+UniversalFields:
+  - auto-generated-state
+ReservedTags:
+  - auto-generated-state
+```
+
+In this example, `auto-generated-state` will be present as a field in every template type that inherits universal fields.
+
 | Section | Description |
 |---------|-------------|
 | [**Getting Started**](docs/getting-started/index.md) | Installation, setup, and first steps |
