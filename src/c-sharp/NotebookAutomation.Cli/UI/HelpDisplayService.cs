@@ -104,10 +104,10 @@ internal class HelpDisplayService
                 string buildDate = version.BuildDateUtc.ToString("yyyy-MM-dd");
 
                 // Use GitVersionInformation when available, fallback to version info
-                string branch = GitVersionInformation.BranchName ?? "main";
-                string shortSha = GitVersionInformation.ShortSha ?? version.Commit;
-                string commitDate = GitVersionInformation.CommitDate ?? version.BuildDateUtc.ToString("yyyy-MM-dd");
-                string semVer = GitVersionInformation.SemVer ?? version.ToSemanticVersionString();
+                string branch = "main"; // GitVersionInformation.BranchName ?? "main";
+                string shortSha = version.Commit; // GitVersionInformation.ShortSha ?? version.Commit;
+                string commitDate = version.BuildDateUtc.ToString("yyyy-MM-dd"); // GitVersionInformation.CommitDate ?? version.BuildDateUtc.ToString("yyyy-MM-dd");
+                string semVer = version.ToSemanticVersionString(); // GitVersionInformation.SemVer ?? version.ToSemanticVersionString();
 
 
 
