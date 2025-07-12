@@ -58,6 +58,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     /// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>
     /// <param name="appConfig">Optional application configuration for metadata management.</param>
     /// <param name="extractImages">Whether to extract images from the PDF. Defaults to false.</param>
+    /// <param name="resolverRegistry">Optional field value resolver registry for dynamic field resolution.</param>
     /// <remarks>
     /// This constructor initializes the PDF note processor with optional services for metadata management
     /// and hierarchical detection.
@@ -72,7 +73,8 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
         MarkdownNoteBuilder markdownNoteBuilder,
         IOneDriveService? oneDriveService = null,
         AppConfig? appConfig = null,
-        bool extractImages = false) : base(logger, aiSummarizer, markdownNoteBuilder, appConfig ?? new AppConfig(), yamlHelper, hierarchyDetector, templateManager)
+        bool extractImages = false,
+        FieldValueResolverRegistry? resolverRegistry = null) : base(logger, aiSummarizer, markdownNoteBuilder, appConfig ?? new AppConfig(), yamlHelper, hierarchyDetector, templateManager, resolverRegistry)
     {
         _oneDriveService = oneDriveService;
         _appConfig = appConfig;
