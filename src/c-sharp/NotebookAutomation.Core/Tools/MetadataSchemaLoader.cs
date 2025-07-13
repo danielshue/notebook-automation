@@ -1,3 +1,5 @@
+using NotebookAutomation.Core.Tools.Resolvers;
+
 namespace NotebookAutomation.Core.Tools;
 
 /// <summary>
@@ -63,6 +65,7 @@ public class FieldValueResolverRegistry
     /// </example>
     public FieldValueResolverRegistry() { }
     private readonly Dictionary<string, IFieldValueResolver> _resolvers = new();
+    private readonly Dictionary<string, IFileTypeMetadataResolver> _fileTypeResolvers = new();
 
     /// <summary>
     /// Registers a field value resolver with the specified name.
@@ -71,6 +74,7 @@ public class FieldValueResolverRegistry
     /// <param name="resolver">The resolver instance to register.</param>
     /// <remarks>
     /// If a resolver with the same name already exists, it will be replaced.
+    /// If the resolver implements <see cref="IFileTypeMetadataResolver"/>, it will also be registered for file type-specific lookups.
     /// </remarks>
     /// <example>
     /// <code>
@@ -80,6 +84,31 @@ public class FieldValueResolverRegistry
     public void Register(string resolverName, IFieldValueResolver resolver)
     {
         _resolvers[resolverName] = resolver;
+        
+        // Also register as file type resolver if applicable
+        if (resolver is IFileTypeMetadataResolver fileTypeResolver)
+        {
+            _fileTypeResolvers[fileTypeResolver.FileType] = fileTypeResolver;
+        }
+    }
+
+    /// <summary>
+    /// Registers a file type-specific metadata resolver.
+    /// </summary>
+    /// <param name="fileType">The file type this resolver handles.</param>
+    /// <param name="resolver">The file type resolver instance to register.</param>
+    /// <remarks>
+    /// This method also registers the resolver in the general resolver registry using the file type as the key.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// registry.RegisterFileTypeResolver("pdf", new PdfMetadataResolver());
+    /// </code>
+    /// </example>
+    public void RegisterFileTypeResolver(string fileType, IFileTypeMetadataResolver resolver)
+    {
+        _fileTypeResolvers[fileType] = resolver;
+        _resolvers[fileType] = resolver;
     }
 
     /// <summary>
@@ -102,6 +131,40 @@ public class FieldValueResolverRegistry
     {
         _resolvers.TryGetValue(resolverName, out var resolver);
         return resolver;
+    }
+
+    /// <summary>
+    /// Retrieves a registered file type-specific metadata resolver by file type.
+    /// </summary>
+    /// <param name="fileType">The file type to get the resolver for.</param>
+    /// <returns>The <see cref="IFileTypeMetadataResolver"/> instance if found; otherwise, <c>null</c>.</returns>
+    /// <remarks>
+    /// Returns <c>null</c> if no file type resolver is registered for the specified file type.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// var resolver = registry.GetFileTypeResolver("pdf");
+    /// if (resolver != null) {
+    ///     var metadata = resolver.ExtractMetadata(context);
+    /// }
+    /// </code>
+    /// </example>
+    public IFileTypeMetadataResolver? GetFileTypeResolver(string fileType)
+    {
+        _fileTypeResolvers.TryGetValue(fileType, out var resolver);
+        return resolver;
+    }
+
+    /// <summary>
+    /// Gets all registered file type resolvers.
+    /// </summary>
+    /// <returns>A dictionary of file type to resolver mappings.</returns>
+    /// <remarks>
+    /// This method is useful for introspection and debugging of registered resolvers.
+    /// </remarks>
+    public IReadOnlyDictionary<string, IFileTypeMetadataResolver> GetAllFileTypeResolvers()
+    {
+        return _fileTypeResolvers;
     }
 }
 
@@ -315,6 +378,12 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                         {
                             ResolverRegistry.Register(type.FullName ?? type.Name, resolver);
                             _logger.LogInformation($"Registered resolver: {type.FullName ?? type.Name} from {dll}");
+                            
+                            // Log additional info for file type resolvers
+                            if (resolver is IFileTypeMetadataResolver fileTypeResolver)
+                            {
+                                _logger.LogInformation($"Registered file type resolver for '{fileTypeResolver.FileType}': {type.FullName ?? type.Name}");
+                            }
                         }
                     }
                 }

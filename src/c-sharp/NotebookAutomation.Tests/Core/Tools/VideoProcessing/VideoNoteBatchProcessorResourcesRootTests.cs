@@ -70,7 +70,8 @@ public class VideoNoteBatchProcessorResourcesRootTests
             mockCourseStructureExtractor, // Required ICourseStructureExtractor parameter
             new MarkdownNoteBuilder(mockYamlHelper, _testAppConfig), // Required MarkdownNoteBuilder parameter
             mockOneDriveService, // Optional OneDriveService
-            _testAppConfig); // Optional AppConfig
+            _testAppConfig, // Optional AppConfig
+            null); // Optional FieldValueResolverRegistry
 
         // Create a custom batch processor that will directly create a file with the resourcesRoot
         // so we can test that the parameter is being passed correctly

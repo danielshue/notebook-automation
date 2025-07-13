@@ -33,15 +33,18 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     /// <param name="templateManager">The metadata template manager for handling metadata templates.</param>
     /// <param name="courseStructureExtractor">The course structure extractor for extracting module and lesson information.</param>
     /// <param name="oneDriveService">Optional service for generating OneDrive share links.</param>
-    /// <param name="appConfig">Optional application configuration for metadata management.</param>    /// <remarks>    /// This constructor initializes the video note processor with optional services for metadata management
+    /// <param name="appConfig">Optional application configuration for metadata management.</param>
+    /// <param name="resolverRegistry">Optional field value resolver registry for dynamic field resolution.</param>
+    /// <remarks>
+    /// This constructor initializes the video note processor with optional services for metadata management
     /// and hierarchical detection.
     /// </remarks>
     public VideoNoteProcessor(ILogger<VideoNoteProcessor> logger, IAISummarizer aiSummarizer, IYamlHelper yamlHelper, IMetadataHierarchyDetector hierarchyDetector,
         IMetadataTemplateManager templateManager,
         ICourseStructureExtractor courseStructureExtractor,
         MarkdownNoteBuilder markdownNoteBuilder,
-        IOneDriveService? oneDriveService = null, AppConfig? appConfig = null)
-        : base(logger, aiSummarizer, markdownNoteBuilder, appConfig ?? new AppConfig(), yamlHelper, hierarchyDetector, templateManager)
+        IOneDriveService? oneDriveService = null, AppConfig? appConfig = null, FieldValueResolverRegistry? resolverRegistry = null)
+        : base(logger, aiSummarizer, markdownNoteBuilder, appConfig ?? new AppConfig(), yamlHelper, hierarchyDetector, templateManager, resolverRegistry)
     {
         _oneDriveService = oneDriveService;
         _appConfig = appConfig;
