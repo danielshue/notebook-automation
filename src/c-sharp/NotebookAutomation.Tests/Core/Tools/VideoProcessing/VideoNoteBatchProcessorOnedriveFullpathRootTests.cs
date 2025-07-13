@@ -87,7 +87,8 @@ metadata:
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(mockYamlHelper, _testAppConfig),
             mockOneDriveService,
-            _testAppConfig);  // AppConfig
+            _testAppConfig,  // AppConfig
+            null);  // FieldValueResolverRegistry
 
         // Create a custom batch processor that will directly create a file with the resourcesRoot
         // so we can test that the parameter is being passed correctly

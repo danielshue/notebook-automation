@@ -20,7 +20,7 @@ public class TagProcessorTests
         _loggerMock = new Mock<ILogger<TagProcessor>>();
         _failedLoggerMock = new();
         _yamlHelper = new YamlHelper(_loggerMock.Object);
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true, resolverRegistry: null);
 
         // Path to the fixtures directory
         _fixturesPath = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "..", "..", "tests", "fixtures", "frontmatter"));
@@ -179,7 +179,7 @@ public class TagProcessorTests
     public async Task UpdateFrontmatterKeyAsync_DryRun_DoesNotModifyFiles()
     {
         // Arrange
-        TagProcessor dryRunProcessor = new(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, true, true); // true = dryRun
+        TagProcessor dryRunProcessor = new(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, true, true, resolverRegistry: null); // true = dryRun
         string filePath = Path.Combine(_tempDir, "test.md");
         string originalContent = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
 
@@ -257,7 +257,7 @@ public class TagProcessorTests
         };
 
         List<string> existingTags = ["mba/course/finance-101"];        // Reset the processor for this test to isolate it
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true, resolverRegistry: null);
 
         // Act
         List<string> newTags = _processor.GenerateNestedTags(frontmatter, existingTags);
@@ -354,7 +354,7 @@ tags:
 ---
 # Index Page Content
 ";
-        await File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);        // Reset the processor stats for this test to isolate the test        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        await File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);        // Reset the processor stats for this test to isolate the test        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true, resolverRegistry: null);
 
         // Read the file content and frontmatter for the test
         string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
@@ -462,7 +462,7 @@ title: Incomplete Metadata
 ").ConfigureAwait(false);
 
         // Reset the processor stats for this test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true, resolverRegistry: null);
 
         // Act
         bool result = await _processor.CheckAndEnforceMetadataConsistencyInFileAsync(filePath).ConfigureAwait(false);
@@ -506,7 +506,7 @@ professor: Dr. Smith
 ").ConfigureAwait(false);
 
         // Reset the processor stats for this test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true, resolverRegistry: null);
 
         // Act
         Dictionary<string, int> stats = await _processor.ProcessDirectoryAsync(testDir).ConfigureAwait(false);
@@ -558,7 +558,7 @@ type: Lecture
         await File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);
 
         // Reset the processor stats for this test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);        // Read the file contentand frontmatter for the test
+        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true, resolverRegistry: null);        // Read the file contentand frontmatter for the test
         string? frontmatter = _yamlHelper.ExtractFrontmatter(content);
         Dictionary<string, object> frontmatterDict = _yamlHelper.ParseYamlToDictionary(frontmatter!);
 
@@ -816,7 +816,7 @@ title: File 1
 type: Note
 ---
 ").ConfigureAwait(false);        // Reset the processor stats for this test
-        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true);
+        _processor = new TagProcessor(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, false, true, resolverRegistry: null);
 
         // Act
         Dictionary<string, int> stats = await _processor.CheckAndEnforceMetadataConsistencyAsync(subDir).ConfigureAwait(false);
@@ -923,7 +923,7 @@ level: Advanced
     [TestMethod]
     public async Task ProcessDirectoryAsync_DryRun_LogsButDoesNotModify()
     { // Arrange
-        TagProcessor dryRunProcessor = new(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, true, true);
+        TagProcessor dryRunProcessor = new(_loggerMock.Object, _failedLoggerMock.Object, _yamlHelper, true, true, resolverRegistry: null);
 
         string mainFile = Path.Combine(_tempDir, "dry_run_test.md");
         await File.WriteAllTextAsync(mainFile, @"---
@@ -1003,7 +1003,7 @@ type: Lecture
             _yamlHelper,
             false,
             true,
-            ["metadata.course", "metadata.professor", "type"]);
+            fieldsToProcess: ["metadata.course", "metadata.professor", "type"]);
 
         // Act
         bool result = await _processor.ProcessFileAsync(filePath).ConfigureAwait(false);

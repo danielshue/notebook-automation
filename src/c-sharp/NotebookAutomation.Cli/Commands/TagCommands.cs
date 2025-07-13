@@ -401,7 +401,8 @@ internal class TagCommands
                 failedLogger,
                 yamlHelper,
                 dryRun,
-                verbose);
+                verbose,
+                resolverRegistry: null);
 
             switch (command.ToLowerInvariant())
             {
@@ -517,7 +518,8 @@ internal class TagCommands
                 failedLogger,
                 yamlHelper,
                 dryRun,
-                verbose);
+                verbose,
+                resolverRegistry: null);
 
             AnsiConsoleHelper.WriteInfo($"Updating frontmatter key '{key}' to value '{value}' in {path}...");
             if (dryRun)
@@ -617,7 +619,7 @@ internal class TagCommands
             // Create processor
             var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
             var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
-            var processor = new TagProcessor(tagProcessorLogger, failedLogger, yamlHelper, false, verbose);
+            var processor = new TagProcessor(tagProcessorLogger, failedLogger, yamlHelper, false, verbose, resolverRegistry: null);
 
             // Run diagnosis
             var results = await processor.DiagnoseFrontmatterIssuesAsync(path).ConfigureAwait(false);
