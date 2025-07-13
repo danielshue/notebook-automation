@@ -73,7 +73,7 @@ public class MarkdownMetadataResolver : IFileTypeMetadataResolver
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _yamlDeserializer = new DeserializerBuilder()
-            .WithNamingConvention(KebabCaseNamingConvention.Instance)
+            .WithNamingConvention(HyphenatedNamingConvention.Instance)
             .IgnoreUnmatchedProperties()
             .Build();
     }
@@ -219,12 +219,20 @@ public class MarkdownMetadataResolver : IFileTypeMetadataResolver
                     metadata["date-modified"] = fileInfo.LastWriteTimeUtc.ToString("yyyy-MM-dd");
                     metadata["file-size"] = fileInfo.Length;
                 }
-            }
 
-            // Ensure title is set
-            if (!metadata.ContainsKey("title"))
+                // Ensure title is set
+                if (!metadata.ContainsKey("title"))
+                {
+                    metadata["title"] = GetTitle(content, frontmatter) ?? Path.GetFileNameWithoutExtension(filePath);
+                }
+            }
+            else
             {
-                metadata["title"] = GetTitle(content, frontmatter);
+                // Ensure title is set even without file path
+                if (!metadata.ContainsKey("title"))
+                {
+                    metadata["title"] = GetTitle(content, frontmatter) ?? "Untitled";
+                }
             }
 
             _logger.LogDebug("Extracted {Count} metadata fields from markdown file", metadata.Count);

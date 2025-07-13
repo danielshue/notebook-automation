@@ -1,7 +1,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Text.RegularExpressions;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
 
 namespace NotebookAutomation.Core.Tools.Resolvers;
 
@@ -279,7 +279,7 @@ public class ResourceMetadataResolver : IFileTypeMetadataResolver
     /// <summary>
     /// Gets image dimensions if the file is an image.
     /// </summary>
-    private Size? GetImageDimensions(string filePath)
+    private (int Width, int Height)? GetImageDimensions(string filePath)
     {
         var extension = Path.GetExtension(filePath);
         if (!ImageExtensions.ContainsKey(extension))
@@ -291,8 +291,8 @@ public class ResourceMetadataResolver : IFileTypeMetadataResolver
 
         try
         {
-            using var image = Image.FromFile(filePath);
-            return new Size(image.Width, image.Height);
+            using var image = SixLabors.ImageSharp.Image.Load(filePath);
+            return (image.Width, image.Height);
         }
         catch (Exception ex)
         {
@@ -312,8 +312,8 @@ public class ResourceMetadataResolver : IFileTypeMetadataResolver
 
         try
         {
-            using var image = Image.FromFile(filePath);
-            return image.RawFormat.ToString();
+            using var image = SixLabors.ImageSharp.Image.Load(filePath);
+            return image.Metadata.DecodedImageFormat?.Name;
         }
         catch (Exception ex)
         {
