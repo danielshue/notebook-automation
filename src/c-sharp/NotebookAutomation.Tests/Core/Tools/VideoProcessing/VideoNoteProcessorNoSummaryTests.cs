@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Tests.Core.TestDoubles;
 
@@ -35,7 +37,7 @@ public class VideoNoteProcessorNoSummaryTests
                 MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml")
             }
         }; var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), appConfig);
-        var templateManager = new MetadataTemplateManager(new LoggerFactory().CreateLogger<MetadataTemplateManager>(), appConfig, yamlHelper);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder);

@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Tests.Core.TestDoubles;
 
@@ -75,10 +77,7 @@ public class VideoNoteBatchProcessorTests
             _appConfig);
 
         // Create MetadataTemplateManager
-        var templateManager = new MetadataTemplateManager(
-            Mock.Of<ILogger<MetadataTemplateManager>>(),
-            _appConfig,
-            mockYamlHelper.Object);        // Create a real VideoNoteProcessor with all the necessary dependencies
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();// Create a real VideoNoteProcessor with all the necessary dependencies
         var courseStructureExtractor = new CourseStructureExtractor(Mock.Of<ILogger<CourseStructureExtractor>>());
         VideoNoteProcessor videoNoteProcessor = new(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
@@ -107,7 +106,7 @@ public class VideoNoteBatchProcessorTests
                 new AISummarizer(new Mock<ILogger<AISummarizer>>().Object, null, null),
                 new Mock<IYamlHelper>().Object,
                 new Mock<IMetadataHierarchyDetector>().Object,
-                new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, new Mock<IYamlHelper>().Object),
+                MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(),
                 new CourseStructureExtractor(NullLogger<CourseStructureExtractor>.Instance, _appConfig),
                 new MarkdownNoteBuilder(new Mock<IYamlHelper>().Object, _appConfig),
                 new Mock<IOneDriveService>().Object),

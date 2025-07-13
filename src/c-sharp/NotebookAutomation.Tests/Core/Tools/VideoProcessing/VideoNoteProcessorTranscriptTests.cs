@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Tools.VideoProcessing;
 
@@ -59,7 +61,7 @@ public class VideoNoteProcessorTranscriptTests
                 MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml"),
             },
         }; var mockHierarchyDetector = new MetadataHierarchyDetector(mockLogger.Object, appConfig);
-        var templateManager = new MetadataTemplateManager(mockLogger.Object, appConfig, mockYamlHelper);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(mockYamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         _processor = new VideoNoteProcessor(

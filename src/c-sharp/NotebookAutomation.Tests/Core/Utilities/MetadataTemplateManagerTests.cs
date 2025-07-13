@@ -39,7 +39,7 @@ public class MetadataTemplateManagerTests
     public void LoadTemplates_ValidMetadataFile_LoadsAllTemplates()
     {
         // Arrange
-        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(_loggerMock.Object);
+        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
 
         // Act
         List<string> templateTypes = templateManager.GetTemplateTypes();
@@ -53,7 +53,7 @@ public class MetadataTemplateManagerTests
     public void GetTemplate_ExistingType_ReturnsTemplate()
     {
         // Arrange
-        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(_loggerMock.Object);
+        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
 
         // Act
         Dictionary<string, object>? template = templateManager.GetTemplate("video-reference");
@@ -67,7 +67,7 @@ public class MetadataTemplateManagerTests
     public void GetTemplate_NonExistentType_ReturnsNull()
     {
         // Arrange
-        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(_loggerMock.Object);
+        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
 
         // Act
         Dictionary<string, object>? template = templateManager.GetTemplate("non-existent-type");
@@ -80,7 +80,7 @@ public class MetadataTemplateManagerTests
     public void GetFilledTemplate_ProvidesValues_ReplacesPlaceholders()
     {
         // Arrange
-        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(_loggerMock.Object);
+        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         Dictionary<string, string> values = new()
         {
             { "title", "Custom Video Title" },
@@ -101,7 +101,7 @@ public class MetadataTemplateManagerTests
     public void EnhanceMetadataWithTemplate_VideoNote_AppliesVideoTemplate()
     {
         // Arrange
-        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(_loggerMock.Object);
+        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         Dictionary<string, object> metadata = new()
         {
             { "title", "Custom Video Title" },
@@ -129,7 +129,7 @@ public class MetadataTemplateManagerTests
     public void EnhanceMetadataWithTemplate_PdfNote_AppliesPdfTemplate()
     {
         // Arrange
-        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(_loggerMock.Object);
+        MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         Dictionary<string, object> metadata = new()
         {
             { "title", "Custom PDF Title" },
