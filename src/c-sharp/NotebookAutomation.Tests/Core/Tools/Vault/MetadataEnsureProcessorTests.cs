@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Copyright (c) 2025 Daniel Shue.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
@@ -33,7 +35,7 @@ public class MetadataEnsureProcessorTests
         var detectorLogger = loggerFactory.CreateLogger<MetadataHierarchyDetector>();
         var appConfig = new AppConfig(); // Create a mock or dummy AppConfig instance
         string? optionalParameter = null; // Provide a default value for the optional parameter
-        _metadataDetector = new MetadataHierarchyDetector(detectorLogger, appConfig, optionalParameter);
+        _metadataDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         var extractorLogger = loggerFactory.CreateLogger<CourseStructureExtractor>();
         _structureExtractor = new CourseStructureExtractor(extractorLogger);

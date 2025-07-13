@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
@@ -78,7 +80,7 @@ public class VaultPathHandlingTests
     {
         // Arrange
         var logger = new Mock<ILogger<MetadataHierarchyDetector>>();
-        var detector = new MetadataHierarchyDetector(logger.Object, _appConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         // Test cases with expected hierarchy levels
         var testCases = new Dictionary<string, int>
@@ -109,7 +111,7 @@ public class VaultPathHandlingTests
     {
         // Arrange
         var logger = new Mock<ILogger<MetadataHierarchyDetector>>();
-        var detector = new MetadataHierarchyDetector(logger.Object, _appConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         // Test cases with expected template types
         var testCases = new Dictionary<int, string>

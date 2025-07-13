@@ -596,6 +596,7 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<MetadataHierarchyDetector>();
             var appConfig = provider.GetRequiredService<AppConfig>();
+            var schemaLoader = provider.GetRequiredService<IMetadataSchemaLoader>();
             var vaultRootContext = provider.GetRequiredService<VaultRootContextService>();            // Use vault root override if available, otherwise use config
             string? vaultRootOverride = vaultRootContext.HasVaultRootOverride
                 ? vaultRootContext.VaultRootOverride
@@ -604,6 +605,7 @@ public static class ServiceRegistration
             return new MetadataHierarchyDetector(
                 logger,
                 appConfig,
+                schemaLoader,
                 vaultRootOverride
             );
         });

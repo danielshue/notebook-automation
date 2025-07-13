@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Tools.PdfProcessing;
 
@@ -32,7 +34,7 @@ public class PdfNoteProcessorMetadataTests
     public void UpdateMetadataWithHierarchy_WithPdfReferenceTemplate_IncludesAllHierarchyLevels()
     {
         // Arrange - Create a real MetadataHierarchyDetector to test the actual logic
-        var realDetector = new MetadataHierarchyDetector(
+        var realDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             _testAppConfig);
 
@@ -70,7 +72,7 @@ public class PdfNoteProcessorMetadataTests
     public void UpdateMetadataWithHierarchy_WithoutTemplateType_LimitsHierarchyLevels()
     {
         // Arrange - Create a real MetadataHierarchyDetector to test the actual logic
-        var realDetector = new MetadataHierarchyDetector(
+        var realDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             _testAppConfig);
 
@@ -107,7 +109,7 @@ public class PdfNoteProcessorMetadataTests
     public void PdfReferenceTemplate_ProvidesMbaHierarchyLevels()
     {
         // Arrange
-        var detector = new MetadataHierarchyDetector(
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             _testAppConfig);
 

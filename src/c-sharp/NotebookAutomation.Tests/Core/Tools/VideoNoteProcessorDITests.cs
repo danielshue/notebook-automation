@@ -69,7 +69,7 @@ metadata:
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
-        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance); var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
+        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance); var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
@@ -104,7 +104,7 @@ metadata:
             NullLogger<AISummarizer>.Instance,
             promptService,
             null);
-        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance); var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, appConfig);
+        var yamlHelper = new YamlHelper(NullLogger<YamlHelper>.Instance); var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();

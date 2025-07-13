@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Utils;
 
@@ -88,7 +90,7 @@ public class MetadataHierarchyDetectorTests
         }
         File.WriteAllText(filePath, "test file content");
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Act
         Dictionary<string, string> result = detector.FindHierarchyInfo(filePath);
@@ -129,7 +131,7 @@ public class MetadataHierarchyDetectorTests
         }
         File.WriteAllText(filePath, "test file content");
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Act
         Dictionary<string, string> result = detector.FindHierarchyInfo(filePath);
@@ -159,7 +161,7 @@ public class MetadataHierarchyDetectorTests
     public void UpdateMetadataWithHierarchy_AddsHierarchyInfo()
     {
         // Arrange
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig); Dictionary<string, object?> metadata = new()
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(); Dictionary<string, object?> metadata = new()
         {
             { "title", "Test Video" },
             { "source_file", "c:/path/to/video.mp4" },
@@ -194,7 +196,7 @@ public class MetadataHierarchyDetectorTests
     public void UpdateMetadataWithHierarchy_DoesNotOverrideExistingValues()
     {
         // Arrange
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig); Dictionary<string, object?> metadata = new()
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(); Dictionary<string, object?> metadata = new()
         {
             { "title", "Test Video" },
             { "source_file", "c:/path/to/video.mp4" },
@@ -233,7 +235,7 @@ public class MetadataHierarchyDetectorTests
     {        // Arrange
         var paths = CreateTemporaryVaultStructure();
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Test hierarchy detection at various levels
 
@@ -743,7 +745,7 @@ class: SingleClass
         }; Dictionary<string, object?> emptyMetadata = new();
 
         // Test with different index types
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         // Act - main-index
         var mainResult = detector.UpdateMetadataWithHierarchy(
@@ -811,7 +813,7 @@ class: SingleClass
         // Arrange
         var paths = CreateTemporaryVaultStructure();
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Test hierarchy detection for various content types
 
@@ -881,7 +883,7 @@ class: SingleClass
             Console.WriteLine($"Key: {path.Key}, Path: {path.Value}");
         }
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Test a few key paths to find the issue
         var transcriptResult = detector.FindHierarchyInfo(paths["video-transcript.md"]);
@@ -1270,7 +1272,7 @@ class: SingleClass
     {
         // Arrange
         var paths = CreateTemporaryVaultStructure();
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Test hierarchy detection at lesson level (deepest level with content)
         string lessonPath = paths["Intro"];
@@ -1309,7 +1311,7 @@ class: SingleClass
     {
         // Arrange
         var paths = CreateTemporaryVaultStructure();
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Test hierarchy detection at module level (fourth level)
         string modulePath = paths["Fundamentals"];
@@ -1344,7 +1346,7 @@ class: SingleClass
     {
         // Arrange
         var paths = CreateTemporaryVaultStructure();
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Test case study lesson level (Market Analysis)
         string marketAnalysisPath = paths["Market Analysis"];
@@ -1383,7 +1385,7 @@ class: SingleClass
     {
         // Arrange
         var paths = CreateTemporaryVaultStructure();
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Test various content types at different depths
         var testCases = new[]
@@ -1423,7 +1425,7 @@ class: SingleClass
     public void UpdateMetadataWithHierarchy_LessonIndex_IncludesAllHierarchyLevels()
     {
         // Arrange
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         Dictionary<string, string> hierarchyInfo = new()
         {
@@ -1464,7 +1466,7 @@ class: SingleClass
     public void UpdateMetadataWithHierarchy_ModuleIndex_IncludesCorrectHierarchyLevels()
     {
         // Arrange
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         Dictionary<string, string> hierarchyInfo = new()
         {
@@ -1507,7 +1509,7 @@ class: SingleClass
         string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
         Directory.CreateDirectory(vaultRoot);
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Act - Test with the vault root path itself
         Dictionary<string, string> result = detector.FindHierarchyInfo(vaultRoot);
@@ -1535,7 +1537,7 @@ class: SingleClass
 
         Directory.CreateDirectory(programPath);
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Act - Test with depth 1 path (program level)
         Dictionary<string, string> result = detector.FindHierarchyInfo(programPath);
@@ -1563,7 +1565,7 @@ class: SingleClass
 
         Directory.CreateDirectory(coursePath);
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Act - Test with depth 2 path (course level)
         Dictionary<string, string> result = detector.FindHierarchyInfo(coursePath);
@@ -1591,7 +1593,7 @@ class: SingleClass
 
         Directory.CreateDirectory(classPath);
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Act - Test with depth 3 path (class level)
         Dictionary<string, string> result = detector.FindHierarchyInfo(classPath);
@@ -1619,7 +1621,7 @@ class: SingleClass
 
         Directory.CreateDirectory(modulePath);
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Act - Test with depth 4 path (module level)
         Dictionary<string, string> result = detector.FindHierarchyInfo(modulePath);
@@ -1652,7 +1654,7 @@ class: SingleClass
         }
         File.WriteAllText(contentFilePath, "test content");
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Act - Test with depth 5+ path (content file level)
         Dictionary<string, string> result = detector.FindHierarchyInfo(contentFilePath);
@@ -1684,7 +1686,7 @@ class: SingleClass
     {
         // Arrange
         string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Create test directory structure
         Directory.CreateDirectory(vaultRoot);
@@ -1767,8 +1769,8 @@ class: SingleClass
         var config1 = new AppConfig { Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot1 } };
         var config2 = new AppConfig { Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot2 } };
 
-        var detector1 = new MetadataHierarchyDetector(_loggerMock.Object, config1);
-        var detector2 = new MetadataHierarchyDetector(_loggerMock.Object, config2);
+        var detector1 = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector2 = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         // Create identical structure in both vaults
         string[] pathSegments = ["Business Analytics", "Data Science", "Machine Learning Fundamentals"];
@@ -1815,7 +1817,7 @@ class: SingleClass
     public void FindHierarchyInfo_SpecialCharactersInPaths_DetectsCorrectHierarchy()
     {        // Arrange
         string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);        // Test with paths containing special characters commonly used in educational content
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);        // Test with paths containing special characters commonly used in educational content
         string programName = "Executive MBA - Leadership Track";
         string courseName = "Finance & Accounting Fundamentals";
         string className = "Corporate Finance (Advanced)";
@@ -1853,7 +1855,7 @@ class: SingleClass
     public void FindHierarchyInfo_NonExistentPaths_HandlesGracefully()
     {        // Arrange
         string vaultRoot = _testAppConfig.Paths.NotebookVaultFullpathRoot;
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, _testAppConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
 
         // Ensure vault root exists but test paths don't
         Directory.CreateDirectory(vaultRoot);
@@ -1997,7 +1999,7 @@ class: SingleClass
             Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot }
         };
 
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, config);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         // Test the exact path provided
         string testPath = Path.Combine(vaultRoot, "Value Chain Management", "Operations Management");
@@ -2080,7 +2082,7 @@ class: SingleClass
         };
 
         // Test with various content file scenarios
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         // Content file scenarios to test
         var testScenarios = new[]
@@ -2148,7 +2150,7 @@ public class MetadataHierarchyDetectorPathTests
 
         // Create a mock AppConfig
         var appConfigMock = new Mock<AppConfig>();
-        _detector = new MetadataHierarchyDetector(_loggerMock.Object, appConfigMock.Object, _testVaultRoot);
+        _detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
     }
 
 

@@ -46,6 +46,34 @@ internal static class MetadataSchemaLoaderHelper
     }
 
     /// <summary>
+    /// Creates a MetadataHierarchyDetector instance for testing using the schema loader.
+    /// </summary>
+    /// <param name="logger">Optional logger instance. If null, a NullLogger will be used.</param>
+    /// <param name="appConfig">Optional app config instance. If null, a test config will be created.</param>
+    /// <param name="schemaLoader">Optional schema loader instance. If null, a test schema loader will be created.</param>
+    /// <param name="vaultRootOverride">Optional vault root override for testing.</param>
+    /// <returns>A MetadataHierarchyDetector instance configured for testing.</returns>
+    public static MetadataHierarchyDetector CreateTestMetadataHierarchyDetector(
+        ILogger<MetadataHierarchyDetector>? logger = null,
+        AppConfig? appConfig = null,
+        IMetadataSchemaLoader? schemaLoader = null,
+        string? vaultRootOverride = null)
+    {
+        logger ??= NullLogger<MetadataHierarchyDetector>.Instance;
+        schemaLoader ??= CreateTestMetadataSchemaLoader();
+        
+        appConfig ??= new AppConfig
+        {
+            Paths = new PathsConfig
+            {
+                NotebookVaultFullpathRoot = vaultRootOverride ?? Path.GetTempPath()
+            }
+        };
+        
+        return new MetadataHierarchyDetector(logger, appConfig, schemaLoader, vaultRootOverride);
+    }
+
+    /// <summary>
     /// Creates a minimal test schema file for testing when the main schema file is not available.
     /// </summary>
     /// <returns>Path to the created test schema file.</returns>

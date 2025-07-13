@@ -36,7 +36,7 @@ public class VideoNoteProcessorNoSummaryTests
             {
                 MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml")
             }
-        }; var hierarchyDetector = new MetadataHierarchyDetector(new LoggerFactory().CreateLogger<MetadataHierarchyDetector>(), appConfig);
+        }; var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();

@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Utils;
 
@@ -71,7 +73,7 @@ public class ModuleExtractionTests
         File.WriteAllText(readingFilePath, "reading content");
 
         // Create a detector instance
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         // Act
         var videoMetadata = detector.FindHierarchyInfo(videoFilePath);
@@ -103,7 +105,7 @@ public class ModuleExtractionTests
         File.WriteAllText(indexFilePath, "index content");
 
         // Create a detector instance
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         // Act
         var indexMetadata = detector.FindHierarchyInfo(indexFilePath);
@@ -136,7 +138,7 @@ public class ModuleExtractionTests
             { "06", "06" }
         };
 
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
         foreach (var pattern in modulePatterns)
         {

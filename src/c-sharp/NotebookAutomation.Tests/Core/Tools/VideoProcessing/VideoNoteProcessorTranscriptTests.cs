@@ -60,7 +60,7 @@ public class VideoNoteProcessorTranscriptTests
                 NotebookVaultFullpathRoot = Path.Combine(Path.GetTempPath(), "TestVault"),
                 MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml"),
             },
-        }; var mockHierarchyDetector = new MetadataHierarchyDetector(mockLogger.Object, appConfig);
+        }; var mockHierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(mockYamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
