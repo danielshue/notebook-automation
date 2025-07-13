@@ -328,8 +328,10 @@ public class TagResolver : IFileTypeMetadataResolver
         if (string.IsNullOrWhiteSpace(tag))
             return string.Empty;
 
-        // Remove invalid characters
-        var normalized = InvalidCharsPattern.Replace(tag, "");
+        // Remove invalid characters but preserve the tag separator
+        var escapedSeparator = Regex.Escape(tagSeparator);
+        var invalidCharsPattern = new Regex($@"[^\w\s\-\/{escapedSeparator}]", RegexOptions.Compiled);
+        var normalized = invalidCharsPattern.Replace(tag, "");
         
         // Replace whitespace with hyphens
         normalized = WhitespacePattern.Replace(normalized, "-");
@@ -341,6 +343,18 @@ public class TagResolver : IFileTypeMetadataResolver
         // Clean up separators
         normalized = normalized.Replace("/" + tagSeparator, tagSeparator);
         normalized = normalized.Trim('-', '/');
+        
+        // Trim the tag separator from the beginning and end
+        if (tagSeparator.Length == 1)
+            normalized = normalized.Trim(tagSeparator[0]);
+        else
+        {
+            // For multi-character separators, trim manually
+            while (normalized.StartsWith(tagSeparator))
+                normalized = normalized.Substring(tagSeparator.Length);
+            while (normalized.EndsWith(tagSeparator))
+                normalized = normalized.Substring(0, normalized.Length - tagSeparator.Length);
+        }
         
         // Remove consecutive separators
         while (normalized.Contains(tagSeparator + tagSeparator))

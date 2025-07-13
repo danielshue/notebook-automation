@@ -277,12 +277,14 @@ public class TranscriptResolver : IFileTypeMetadataResolver
     /// </summary>
     private string? SearchForTranscriptFile(string mediaFilePath, int searchRadius)
     {
-        var mediaFile = new FileInfo(mediaFilePath);
-        var baseName = Path.GetFileNameWithoutExtension(mediaFile.Name);
-        var searchDirectory = mediaFile.DirectoryName;
+        try
+        {
+            var mediaFile = new FileInfo(mediaFilePath);
+            var baseName = Path.GetFileNameWithoutExtension(mediaFile.Name);
+            var searchDirectory = mediaFile.DirectoryName;
 
-        if (string.IsNullOrEmpty(searchDirectory))
-            return null;
+            if (string.IsNullOrEmpty(searchDirectory) || !Directory.Exists(searchDirectory))
+                return null;
 
         // Search patterns in order of preference
         var searchPatterns = new[]
@@ -310,25 +312,43 @@ public class TranscriptResolver : IFileTypeMetadataResolver
         // Search in subdirectories if search radius allows
         if (searchRadius > 0)
         {
-            var directories = Directory.GetDirectories(searchDirectory, "*", SearchOption.AllDirectories)
-                .Where(d => GetDirectoryDepth(d, searchDirectory) <= searchRadius);
-
-            foreach (var directory in directories)
+            try
             {
-                foreach (var pattern in searchPatterns)
+                var directories = Directory.GetDirectories(searchDirectory, "*", SearchOption.AllDirectories)
+                    .Where(d => GetDirectoryDepth(d, searchDirectory) <= searchRadius);
+
+                foreach (var directory in directories)
                 {
-                    var transcriptPath = Path.Combine(directory, pattern);
-                    if (File.Exists(transcriptPath))
+                    foreach (var pattern in searchPatterns)
                     {
-                        _logger.LogDebug("Found transcript file: {TranscriptPath}", transcriptPath);
-                        return transcriptPath;
+                        var transcriptPath = Path.Combine(directory, pattern);
+                        if (File.Exists(transcriptPath))
+                        {
+                            _logger.LogDebug("Found transcript file: {TranscriptPath}", transcriptPath);
+                            return transcriptPath;
+                        }
                     }
                 }
+            }
+            catch (DirectoryNotFoundException)
+            {
+                // Directory doesn't exist, which is expected for non-existent paths
+                _logger.LogDebug("Directory '{SearchDirectory}' does not exist for transcript search", searchDirectory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Error searching subdirectories for transcript files in '{SearchDirectory}'", searchDirectory);
             }
         }
 
         return null;
     }
+    catch (Exception ex)
+    {
+        _logger.LogWarning(ex, "Error searching for transcript file for media file '{MediaFilePath}'", mediaFilePath);
+        return null;
+    }
+}
 
     /// <summary>
     /// Gets the directory depth relative to a base directory.
@@ -650,6 +670,12 @@ public class TranscriptResolver : IFileTypeMetadataResolver
     /// </summary>
     private string StripTimingInformation(string content)
     {
+        // Ensure content ends with double newline for proper SRT parsing
+        if (!content.EndsWith("\n\n"))
+        {
+            content = content.TrimEnd() + "\n\n";
+        }
+        
         // Remove SRT timing
         content = SrtPattern.Replace(content, "$4\n");
         
