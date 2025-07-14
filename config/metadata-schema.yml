@@ -1,0 +1,104 @@
+## NOTE: All top-level keys must use PascalCase (e.g., TemplateTypes, UniversalFields, TypeMapping, ReservedTags)
+# This is required for C# deserialization; keys are case-sensitive and must match property names in MetadataSchemaConfig.
+# Metadata Schema for Notebook Automation
+# This file defines all template-types, type mappings, required fields, and reserved tags for metadata automation.
+
+TemplateTypes:
+  pdf-reference:
+    BaseTypes:
+      - universal-fields
+    Type: note/case-study
+    RequiredFields:
+      - comprehension
+      - status
+      - completion-date
+      - authors
+      - tags
+    Fields:
+      publisher:
+        Default: University of Illinois at Urbana-Champaign
+      status:
+        Default: unread
+      comprehension:
+        Default: 0
+      date-created:
+        Resolver: DateCreatedResolver
+      title:
+        Default: "PDF Note"
+      tags:
+        Default: [pdf, reference]
+      page-count:
+        Resolver: PdfPageCountResolver
+  video-reference:
+    BaseTypes:
+      - universal-fields
+    Type: note/video-note
+    RequiredFields:
+      - comprehension
+      - status
+      - video-duration
+      - author
+      - tags
+    Fields:
+      publisher:
+        Default: University of Illinois at Urbana-Champaign
+      status:
+        Default: unwatched
+      comprehension:
+        Default: 0
+      date-created:
+        Resolver: DateCreatedResolver
+      title:
+        Default: "Video Note"
+      tags:
+        Default: [video, reference]
+      video-duration:
+        Default: "00:00:00"
+  resource-reading:
+    BaseTypes:
+      - universal-fields
+    Type: note/reading
+    RequiredFields:
+      - comprehension
+      - status
+      - page-count
+      - authors
+      - tags
+    Fields:
+      publisher:
+        Default: University of Illinois at Urbana-Champaign
+      status:
+        Default: unread
+      comprehension:
+        Default: 0
+      date-created:
+        Resolver: DateCreatedResolver
+      title:
+        Default: ""
+      tags:
+        Default: []
+      page-count:
+        Resolver: PdfPageCountResolver
+  note/instruction:
+    BaseTypes:
+      - universal-fields
+    Type: note/instruction
+    RequiredFields:
+      - tags
+UniversalFields:
+  - auto-generated-state
+  - date-created
+  - publisher
+TypeMapping:
+  pdf-reference: note/case-study
+  video-reference: note/video-note
+  resource-reading: note/reading
+  note/instruction: note/instruction
+ReservedTags:
+  - case-study
+  - live-class
+  - reading
+  - finance
+  - operations
+  - video
+  - pdf
