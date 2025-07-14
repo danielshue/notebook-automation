@@ -313,37 +313,34 @@ describe('MetadataSchemaLoader Plugin Integration', () => {
 
   describe('Field Resolution', () => {
     it('should resolve default values for template fields', () => {
-      // Arrange
-      const mockResolveFieldDefaults = (templateType: string, fieldName: string) => {
-        const defaults: Record<string, Record<string, any>> = {
-          'pdf-reference': {
-            'publisher': 'University of Illinois at Urbana-Champaign',
-            'status': 'unread',
-            'comprehension': 0,
-            'title': 'PDF Note',
-            'tags': ['pdf', 'reference'],
-          },
-          'video-reference': {
-            'publisher': 'University of Illinois at Urbana-Champaign',
-            'status': 'unwatched',
-            'comprehension': 0,
-            'title': 'Video Note',
-            'tags': ['video', 'reference'],
-            'video-duration': '00:00:00',
-          },
-        };
-        
-        return defaults[templateType]?.[fieldName] || null;
+      // Test field resolution for both template types
+      const fieldDefaults = {
+        'pdf-reference': {
+          'publisher': 'University of Illinois at Urbana-Champaign',
+          'status': 'unread',
+          'comprehension': 0,
+          'title': 'PDF Note',
+          'tags': ['pdf', 'reference'],
+        },
+        'video-reference': {
+          'publisher': 'University of Illinois at Urbana-Champaign',
+          'status': 'unwatched',
+          'comprehension': 0,
+          'title': 'Video Note',
+          'tags': ['video', 'reference'],
+          'video-duration': '00:00:00',
+        },
       };
-
-      // Act & Assert
-      expect(mockResolveFieldDefaults('pdf-reference', 'status')).toBe('unread');
-      expect(mockResolveFieldDefaults('pdf-reference', 'comprehension')).toBe(0);
-      expect(mockResolveFieldDefaults('pdf-reference', 'tags')).toEqual(['pdf', 'reference']);
       
-      expect(mockResolveFieldDefaults('video-reference', 'status')).toBe('unwatched');
-      expect(mockResolveFieldDefaults('video-reference', 'video-duration')).toBe('00:00:00');
-      expect(mockResolveFieldDefaults('video-reference', 'tags')).toEqual(['video', 'reference']);
+      // Test PDF reference defaults
+      expect(fieldDefaults['pdf-reference']['status']).toBe('unread');
+      expect(fieldDefaults['pdf-reference']['comprehension']).toBe(0);
+      expect(fieldDefaults['pdf-reference']['tags']).toEqual(['pdf', 'reference']);
+      
+      // Test Video reference defaults
+      expect(fieldDefaults['video-reference']['status']).toBe('unwatched');
+      expect(fieldDefaults['video-reference']['video-duration']).toBe('00:00:00');
+      expect(fieldDefaults['video-reference']['tags']).toEqual(['video', 'reference']);
     });
 
     it('should identify fields that require resolvers', () => {
