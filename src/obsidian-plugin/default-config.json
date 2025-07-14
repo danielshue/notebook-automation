@@ -5,7 +5,7 @@
     "onedrive_fullpath_root": "/Users/example/OneDrive",
     "notebook_vault_fullpath_root": "/Users/example/Documents/ObsidianVault",
     "notebook_vault_resources_basepath": "resources",
-    "metadata_file": "config/metadata.yaml",
+    "metadata_file": "config/metadata-schema.yaml",
     "onedrive_resources_basepath": "Education/Resources",
     "prompts_path": "prompts",
     "logging_dir": "logs"

@@ -1915,8 +1915,8 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
       },
       {
         key: 'metadata_file',
-        label: 'Metadata File',
-        desc: 'The path to the metadata.yaml file used for notebook automation.',
+        label: 'Metadata Schema File',
+        desc: 'The path to the metadata-schema.yaml file used for notebook automation.',
         icon: ''
       },
       {

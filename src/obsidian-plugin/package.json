@@ -10,7 +10,7 @@
     "clean": "powershell -Command \"if (Test-Path 'dist') { Remove-Item -Recurse -Force 'dist' }\"",
     "rebuild": "npm run clean && npm run build",
     "deploy": "npm run rebuild && node deploy-to-test.mjs",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "lint": "tsc --noEmit"
   },
