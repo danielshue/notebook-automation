@@ -17,8 +17,8 @@ internal static class MetadataSchemaLoaderHelper
     {
         logger ??= NullLogger<MetadataSchemaLoader>.Instance;
         
-        // Use the test metadata-schema.yaml file
-        var testSchemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yaml");
+        // Use the test metadata-schema.yaml file - same path as MetadataSchemaLoaderTests
+        var testSchemaPath = "../../../config/metadata-schema.yaml";
         
         // If the test schema file doesn't exist, fall back to a minimal schema
         if (!File.Exists(testSchemaPath))
