@@ -1769,8 +1769,10 @@ class: SingleClass
         var config1 = new AppConfig { Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot1 } };
         var config2 = new AppConfig { Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot2 } };
 
-        var detector1 = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
-        var detector2 = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector1 = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+            vaultRootOverride: vaultRoot1);
+        var detector2 = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+            vaultRootOverride: vaultRoot2);
 
         // Create identical structure in both vaults
         string[] pathSegments = ["Business Analytics", "Data Science", "Machine Learning Fundamentals"];
@@ -2003,7 +2005,8 @@ class: SingleClass
             Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot }
         };
 
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+            vaultRootOverride: vaultRoot);
 
         // Test the exact path provided
         string testPath = Path.Combine(vaultRoot, "Value Chain Management", "Operations Management");
@@ -2086,7 +2089,7 @@ class: SingleClass
         };
 
         // Test with various content file scenarios
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(_loggerMock.Object);
 
         // Content file scenarios to test
         var testScenarios = new[]

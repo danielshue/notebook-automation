@@ -1,5 +1,6 @@
 
 using NotebookAutomation.Core.Tools;
+using NotebookAutomation.Tests.Core.Helpers;
 
 namespace NotebookAutomation.Tests.Core.Tools
 {
@@ -28,9 +29,7 @@ namespace NotebookAutomation.Tests.Core.Tools
         public void Loader_Should_Use_Namespaced_Resolver_For_FieldValue()
         {
             // Arrange
-            var schemaPath = "../../../config/metadata-schema.yaml";
-            var logger = new Moq.Mock<Microsoft.Extensions.Logging.ILogger<MetadataSchemaLoader>>().Object;
-            var loader = new MetadataSchemaLoader(schemaPath, logger);
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
             var expectedValue = "resolved-date-ns";
             var namespacedName = "NotebookAutomation.Core.Resolvers.DateCreatedResolver";
             loader.ResolverRegistry.Register(namespacedName, new MockDateCreatedResolver(expectedValue));
@@ -49,9 +48,7 @@ namespace NotebookAutomation.Tests.Core.Tools
         public void Loader_Should_Load_TypeMapping_And_ReservedTags()
         {
             // Arrange
-            var schemaPath = "../../../config/metadata-schema.yaml";
-            var logger = new Moq.Mock<Microsoft.Extensions.Logging.ILogger<MetadataSchemaLoader>>().Object;
-            var loader = new MetadataSchemaLoader(schemaPath, logger);
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
 
             // Assert type mapping
             Assert.IsTrue(loader.TypeMapping.ContainsKey("pdf-reference"));
@@ -81,9 +78,7 @@ namespace NotebookAutomation.Tests.Core.Tools
         public void Loader_Should_Recursively_Inherit_UniversalFields()
         {
             // Arrange
-            var schemaPath = "../../../config/metadata-schema.yaml";
-            var logger = new Moq.Mock<Microsoft.Extensions.Logging.ILogger<MetadataSchemaLoader>>().Object;
-            var loader = new MetadataSchemaLoader(schemaPath, logger);
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
 
             // Act
             var pdfSchema = loader.TemplateTypes["pdf-reference"];
@@ -114,9 +109,7 @@ namespace NotebookAutomation.Tests.Core.Tools
         public void Loader_Should_Use_Resolver_For_FieldValue()
         {
             // Arrange
-            var schemaPath = "../../../config/metadata-schema.yaml";
-            var logger = new Moq.Mock<Microsoft.Extensions.Logging.ILogger<MetadataSchemaLoader>>().Object;
-            var loader = new MetadataSchemaLoader(schemaPath, logger);
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
             var expectedValue = "resolved-date";
             loader.ResolverRegistry.Register("DateCreatedResolver", new MockDateCreatedResolver(expectedValue));
 
@@ -156,9 +149,7 @@ namespace NotebookAutomation.Tests.Core.Tools
         public void Loader_Should_Handle_Null_And_Empty_FieldNames()
         {
             // Arrange
-            var schemaPath = "../../../config/metadata-schema.yaml";
-            var logger = new Moq.Mock<Microsoft.Extensions.Logging.ILogger<MetadataSchemaLoader>>().Object;
-            var loader = new MetadataSchemaLoader(schemaPath, logger);
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
 
             // Act & Assert
             Assert.IsNull(loader.ResolveFieldValue("pdf-reference", ""));
@@ -171,9 +162,7 @@ namespace NotebookAutomation.Tests.Core.Tools
         public void ReservedTags_Should_Be_Present_As_Fields()
         {
             // Arrange
-            var schemaPath = "../../../config/metadata-schema.yaml";
-            var logger = new Moq.Mock<Microsoft.Extensions.Logging.ILogger<MetadataSchemaLoader>>().Object;
-            var loader = new MetadataSchemaLoader(schemaPath, logger);
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
 
             // Act
             var reserved = loader.ReservedTags;
@@ -192,9 +181,7 @@ namespace NotebookAutomation.Tests.Core.Tools
         public void Loader_Should_Handle_Plugin_DLL_Loading_Mocked()
         {
             // Arrange
-            var schemaPath = "../../../config/metadata-schema.yaml";
-            var logger = new Moq.Mock<Microsoft.Extensions.Logging.ILogger<MetadataSchemaLoader>>().Object;
-            var loader = new MetadataSchemaLoader(schemaPath, logger);
+            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
 
             // Act & Assert
             // Simulate loading from a non-existent directory (should log warning, not throw)
