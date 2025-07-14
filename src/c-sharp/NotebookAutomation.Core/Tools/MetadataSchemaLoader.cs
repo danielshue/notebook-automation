@@ -280,7 +280,7 @@ public interface IMetadataSchemaLoader
 }
 
 /// <summary>
-/// Loads and provides access to the metadata schema defined in metadata-schema.yaml.
+/// Loads and provides access to the metadata schema defined in metadata-schema.yml.
 /// Supports recursive inheritance, field defaults, and dynamic resolvers.
 /// </summary>
 public class MetadataSchemaLoader : IMetadataSchemaLoader
@@ -290,7 +290,7 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataSchemaLoader"/> class and loads the schema from the specified path.
     /// <summary>
-    /// Loads, processes, and provides structured access to the metadata schema defined in <c>metadata-schema.yaml</c>, supporting recursive inheritance, field defaults, dynamic field value resolvers, and extensible schema-driven automation workflows.
+    /// Loads, processes, and provides structured access to the metadata schema defined in <c>metadata-schema.yml</c>, supporting recursive inheritance, field defaults, dynamic field value resolvers, and extensible schema-driven automation workflows.
     /// </summary>
     /// <remarks>
     /// <para>

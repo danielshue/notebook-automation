@@ -126,6 +126,7 @@ public class AppConfig : IConfiguration
                         LoggingDir = pathsSection["logging_dir"] ?? string.Empty,
                         OnedriveFullpathRoot = pathsSection["onedrive_fullpath_root"] ?? string.Empty,
                         MetadataFile = pathsSection["metadata_file"] ?? string.Empty,
+                        MetadataSchemaFile = pathsSection["metadata_schema_file"] ?? string.Empty,
                     };
                 } // Load Microsoft Graph configuration
 

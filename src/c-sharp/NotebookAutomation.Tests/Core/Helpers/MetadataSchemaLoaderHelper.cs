@@ -9,7 +9,7 @@ namespace NotebookAutomation.Tests.Core.Helpers;
 internal static class MetadataSchemaLoaderHelper
 {
     /// <summary>
-    /// Creates a MetadataSchemaLoader instance for testing using the test metadata-schema.yaml file.
+    /// Creates a MetadataSchemaLoader instance for testing using the test metadata-schema.yml file.
     /// </summary>
     /// <param name="logger">Optional logger instance. If null, a NullLogger will be used.</param>
     /// <returns>A MetadataSchemaLoader instance configured for testing.</returns>
@@ -17,10 +17,10 @@ internal static class MetadataSchemaLoaderHelper
     {
         logger ??= NullLogger<MetadataSchemaLoader>.Instance;
         
-        // Use the test metadata-schema.yaml file - use absolute path from repository root
+        // Use the test metadata-schema.yml file - use absolute path from repository root
         // Assembly location is in bin/Debug/net8.0, so we need to go up 5 levels to get to repo root
         var repositoryRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(MetadataSchemaLoaderHelper).Assembly.Location)!, "../../../../../.."));
-        var testSchemaPath = Path.Combine(repositoryRoot, "config", "metadata-schema.yaml");
+        var testSchemaPath = Path.Combine(repositoryRoot, "config", "metadata-schema.yml");
         
         // If the test schema file doesn't exist, fall back to a minimal schema
         if (!File.Exists(testSchemaPath))
