@@ -5,85 +5,85 @@
 
 TemplateTypes:
   pdf-reference:
-    base-types:
+    BaseTypes:
       - universal-fields
-    type: note/case-study
-    required-fields:
+    Type: note/case-study
+    RequiredFields:
       - comprehension
       - status
       - completion-date
       - authors
       - tags
-    fields:
+    Fields:
       publisher:
-        default: University of Illinois at Urbana-Champaign
+        Default: University of Illinois at Urbana-Champaign
       status:
-        default: unread
+        Default: unread
       comprehension:
-        default: 0
+        Default: 0
       date-created:
-        resolver: DateCreatedResolver
+        Resolver: DateCreatedResolver
       title:
-        default: ""
+        Default: ""
       tags:
-        default: []
+        Default: []
       page-count:
-        resolver: PdfPageCountResolver
+        Resolver: PdfPageCountResolver
   video-reference:
-    base-types:
+    BaseTypes:
       - universal-fields
-    type: note/video-note
-    required-fields:
+    Type: note/video-note
+    RequiredFields:
       - comprehension
       - status
       - video-duration
       - author
       - tags
-    fields:
+    Fields:
       publisher:
-        default: University of Illinois at Urbana-Champaign
+        Default: University of Illinois at Urbana-Champaign
       status:
-        default: unwatched
+        Default: unwatched
       comprehension:
-        default: 0
+        Default: 0
       date-created:
-        resolver: DateCreatedResolver
+        Resolver: DateCreatedResolver
       title:
-        default: ""
+        Default: ""
       tags:
-        default: []
+        Default: []
       video-duration:
-        default: "00:00:00"
+        Default: "00:00:00"
   resource-reading:
-    base-types:
+    BaseTypes:
       - universal-fields
-    type: note/reading
-    required-fields:
+    Type: note/reading
+    RequiredFields:
       - comprehension
       - status
       - page-count
       - authors
       - tags
-    fields:
+    Fields:
       publisher:
-        default: University of Illinois at Urbana-Champaign
+        Default: University of Illinois at Urbana-Champaign
       status:
-        default: unread
+        Default: unread
       comprehension:
-        default: 0
+        Default: 0
       date-created:
-        resolver: DateCreatedResolver
+        Resolver: DateCreatedResolver
       title:
-        default: ""
+        Default: ""
       tags:
-        default: []
+        Default: []
       page-count:
-        resolver: PdfPageCountResolver
+        Resolver: PdfPageCountResolver
   note/instruction:
-    base-types:
+    BaseTypes:
       - universal-fields
-    type: note/instruction
-    required-fields:
+    Type: note/instruction
+    RequiredFields:
       - tags
 UniversalFields:
   - auto-generated-state

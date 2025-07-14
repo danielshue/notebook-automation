@@ -17,8 +17,9 @@ internal static class MetadataSchemaLoaderHelper
     {
         logger ??= NullLogger<MetadataSchemaLoader>.Instance;
         
-        // Use the test metadata-schema.yaml file - same path as MetadataSchemaLoaderTests
-        var testSchemaPath = "../../../config/metadata-schema.yaml";
+        // Use the test metadata-schema.yaml file - use absolute path from repository root
+        var repositoryRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(MetadataSchemaLoaderHelper).Assembly.Location)!, "../../../.."));
+        var testSchemaPath = Path.Combine(repositoryRoot, "config", "metadata-schema.yaml");
         
         // If the test schema file doesn't exist, fall back to a minimal schema
         if (!File.Exists(testSchemaPath))
@@ -97,9 +98,9 @@ internal static class MetadataSchemaLoaderHelper
       date-created:
         Default: ''
       title:
-        Default: ''
+        Default: Video Note
       tags:
-        Default: []
+        Default: [video, reference]
   pdf-reference:
     BaseTypes:
       - universal-fields
@@ -115,9 +116,9 @@ internal static class MetadataSchemaLoaderHelper
       date-created:
         Default: ''
       title:
-        Default: ''
+        Default: PDF Note
       tags:
-        Default: []
+        Default: [pdf, reference]
 UniversalFields:
   - date-created
   - publisher
