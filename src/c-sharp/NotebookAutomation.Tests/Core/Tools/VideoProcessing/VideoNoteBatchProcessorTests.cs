@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Tests.Core.TestDoubles;
 
@@ -70,16 +72,13 @@ public class VideoNoteBatchProcessorTests
 
         var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, _appConfig);
-        var hierarchyDetector = new MetadataHierarchyDetector(
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             _appConfig);
 
         // Create MetadataTemplateManager
-        var templateManager = new MetadataTemplateManager(
-            Mock.Of<ILogger<MetadataTemplateManager>>(),
-            _appConfig,
-            mockYamlHelper.Object);        // Create a real VideoNoteProcessor with all the necessary dependencies
-        var courseStructureExtractor = new CourseStructureExtractor(Mock.Of<ILogger<CourseStructureExtractor>>());
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();// Create a real VideoNoteProcessor with all the necessary dependencies
+        var courseStructureExtractor = new CourseStructureExtractor(Mock.Of<ILogger<CourseStructureExtractor>>(), _appConfig);
         VideoNoteProcessor videoNoteProcessor = new(
             Mock.Of<ILogger<VideoNoteProcessor>>(),
             _testAISummarizer,
@@ -98,19 +97,11 @@ public class VideoNoteBatchProcessorTests
         // Pre-create output files to simulate successful processing
         File.WriteAllText(
             Path.Combine(_outputDir, "test.md"),
-            "---\ntitle: Test Video\ntags:\n  - test\n---\n\n## Note\n\nThis is a test note.");        // Instead of mocking DocumentNoteBatchProcessor, use a real instance
-
-        // This avoids the issues with constructor parameters in mocks
+            "---\ntitle: Test Video\ntags:\n  - test\n---\n\n## Note\n\nThis is a test note.");
+            
         var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(
             new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>().Object,
-            new VideoNoteProcessor(new Mock<ILogger<VideoNoteProcessor>>().Object,
-                new AISummarizer(new Mock<ILogger<AISummarizer>>().Object, null, null),
-                new Mock<IYamlHelper>().Object,
-                new Mock<IMetadataHierarchyDetector>().Object,
-                new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, new Mock<IYamlHelper>().Object),
-                new CourseStructureExtractor(NullLogger<CourseStructureExtractor>.Instance, _appConfig),
-                new MarkdownNoteBuilder(new Mock<IYamlHelper>().Object, _appConfig),
-                new Mock<IOneDriveService>().Object),
+            videoNoteProcessor,
             new AISummarizer(new Mock<ILogger<AISummarizer>>().Object, null, null));
 
         // Fix TestContext issue

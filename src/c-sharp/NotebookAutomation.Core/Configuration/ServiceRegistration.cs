@@ -2,6 +2,7 @@
 
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using NotebookAutomation.Core.Tools;
 
 namespace NotebookAutomation.Core.Configuration;
 
@@ -556,18 +557,37 @@ public static class ServiceRegistration
     }
 
     /// <summary>
-    /// Registers metadata-related services for the application.
+    /// Registers metadata services including schema loader and template manager.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
     /// <returns>The configured service collection.</returns>
     private static IServiceCollection RegisterMetadataServices(IServiceCollection services)
-    {        // Register metadata-related services
+    {
+        // Register MetadataSchemaLoader first
+        services.AddScoped<IMetadataSchemaLoader>(provider =>
+        {
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var logger = loggingService.GetLogger<MetadataSchemaLoader>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            
+            // Get the metadata schema file path from configuration
+            string schemaPath = appConfig.Paths.MetadataSchemaFile;
+            
+            // If not configured, use default path
+            if (string.IsNullOrWhiteSpace(schemaPath))
+            {
+                schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yaml");
+            }
+            
+            return new MetadataSchemaLoader(schemaPath, logger);
+        });
+
+        // Register metadata template manager using schema loader
         services.AddScoped<IMetadataTemplateManager>(provider =>
         {
             var logger = provider.GetRequiredService<ILoggingService>().GetLogger<MetadataTemplateManager>();
-            var appConfig = provider.GetRequiredService<AppConfig>();
-            var yamlHelper = provider.GetRequiredService<IYamlHelper>();
-            return new MetadataTemplateManager(logger, appConfig, yamlHelper);
+            var schemaLoader = provider.GetRequiredService<IMetadataSchemaLoader>();
+            return new MetadataTemplateManager(logger, schemaLoader);
         });
 
         // Register IMetadataHierarchyDetector with factory
@@ -576,6 +596,7 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<MetadataHierarchyDetector>();
             var appConfig = provider.GetRequiredService<AppConfig>();
+            var schemaLoader = provider.GetRequiredService<IMetadataSchemaLoader>();
             var vaultRootContext = provider.GetRequiredService<VaultRootContextService>();            // Use vault root override if available, otherwise use config
             string? vaultRootOverride = vaultRootContext.HasVaultRootOverride
                 ? vaultRootContext.VaultRootOverride
@@ -584,6 +605,7 @@ public static class ServiceRegistration
             return new MetadataHierarchyDetector(
                 logger,
                 appConfig,
+                schemaLoader,
                 vaultRootOverride
             );
         });

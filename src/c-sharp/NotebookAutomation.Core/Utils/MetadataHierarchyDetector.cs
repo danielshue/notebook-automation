@@ -1,16 +1,19 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using NotebookAutomation.Core.Tools;
+
 namespace NotebookAutomation.Core.Utils;
 
 /// <summary>
-/// Detects and infers hierarchical metadata (program, course, class, module) from file paths in a notebook vault.
+/// Detects and infers hierarchical metadata (program, course, class, module) from file paths in a notebook vault using schema-driven processing.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Implements path-based hierarchy detection based on the directory structure.
-/// Determines the appropriate program, course, class, and module metadata based on a file's location,
-/// following the conventions used in the notebook vault.
+/// Implements path-based hierarchy detection based on the directory structure with schema-driven template mapping
+/// and reserved tag injection. Determines the appropriate program, course, class, and module metadata based on 
+/// a file's location, following the conventions defined in the metadata schema.
 /// </para>
-/// <para> ///. <b>Expected Directory Structure:</b>
+/// <para>
+/// <b>Expected Directory Structure:</b>
 /// <code>
 /// Vault Root (main-index) - NO hierarchy metadata
 /// └── Program Folders (program-index) - program only
@@ -26,35 +29,39 @@ namespace NotebookAutomation.Core.Utils;
 /// <para>
 /// Features:
 /// - Configurable vault root path (from config or override)
+/// - Schema-driven template type mapping and validation
+/// - Reserved tag injection based on schema definition
 /// - Support for explicit program overrides via parameter
 /// - Dynamic hierarchy detection based on folder structure
 /// - Dynamic fallback to folder names when index files aren't available
-/// - Robust path traversal for hierarchy detection.
+/// - Robust path traversal for hierarchy detection
 /// </para>
 /// <example>
 /// <code>
-/// var detector = new MetadataHierarchyDetector(logger, appConfig);
+/// var detector = new MetadataHierarchyDetector(logger, appConfig, schemaLoader);
 /// var info = detector.FindHierarchyInfo(@"C:\\notebook-vault\\MBA\\Course1\\ClassA\\Lesson1\\file.md");
 /// // info["program"] == "MBA", info["course"] == "Course1", info["class"] == "ClassA"
 /// </code>
 /// </example>
 /// </remarks>
-
 public class MetadataHierarchyDetector : IMetadataHierarchyDetector
 {
     public ILogger<MetadataHierarchyDetector> Logger { get; }
     public string? VaultRoot { get; }
+    public IMetadataSchemaLoader SchemaLoader { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MetadataHierarchyDetector"/> class.
     /// </summary>
     /// <param name="logger">Logger for diagnostic output.</param>
     /// <param name="appConfig">Application configuration for vault root path.</param>
+    /// <param name="schemaLoader">The metadata schema loader for template mapping and reserved tag injection.</param>
     /// <param name="vaultRootOverride">Optional override for the vault root path.</param>
-    /// <exception cref="ArgumentNullException"></exception>
-    public MetadataHierarchyDetector(ILogger<MetadataHierarchyDetector> logger, AppConfig appConfig, string? vaultRootOverride = null)
+    /// <exception cref="ArgumentNullException">Thrown when required parameters are null.</exception>
+    public MetadataHierarchyDetector(ILogger<MetadataHierarchyDetector> logger, AppConfig appConfig, IMetadataSchemaLoader schemaLoader, string? vaultRootOverride = null)
     {
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        SchemaLoader = schemaLoader ?? throw new ArgumentNullException(nameof(schemaLoader));
         VaultRoot = !string.IsNullOrEmpty(vaultRootOverride)
             ? vaultRootOverride
             : appConfig?.Paths?.NotebookVaultFullpathRoot
@@ -427,6 +434,36 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
                 }
 
                 hierarchyChainBroken = true;
+            }
+        }
+
+        // Inject reserved tags from schema loader if template type is specified
+        if (!string.IsNullOrEmpty(templateType))
+        {
+            Logger.LogDebug($"Injecting reserved tags for template type '{templateType}'");
+            metadata = InjectReservedTags(metadata, templateType);
+        }
+
+        // Add universal fields from schema loader if template type is specified
+        if (!string.IsNullOrEmpty(templateType))
+        {
+            foreach (var universalField in SchemaLoader.UniversalFields)
+            {
+                if (!metadata.ContainsKey(universalField))
+                {
+                    // Try to resolve the field value using the schema loader
+                    var resolvedValue = SchemaLoader.ResolveFieldValue(templateType, universalField);
+                    if (resolvedValue != null)
+                    {
+                        metadata[universalField] = resolvedValue;
+                        Logger.LogDebug($"Added universal field '{universalField}' with resolved value for template type '{templateType}'");
+                    }
+                    else
+                    {
+                        metadata[universalField] = string.Empty;
+                        Logger.LogDebug($"Added universal field '{universalField}' with empty value for template type '{templateType}'");
+                    }
+                }
             }
         }
 
@@ -1156,5 +1193,91 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Injects reserved tags from the schema loader into the metadata based on template type.
+    /// </summary>
+    /// <param name="metadata">The metadata dictionary to update.</param>
+    /// <param name="templateType">The template type for tag injection.</param>
+    /// <returns>The updated metadata dictionary with reserved tags injected.</returns>
+    /// <remarks>
+    /// Uses the schema loader's reserved tags list to inject appropriate tags based on
+    /// the template type and hierarchy level. Reserved tags are added according to schema rules.
+    /// </remarks>
+    public Dictionary<string, object?> InjectReservedTags(Dictionary<string, object?> metadata, string templateType)
+    {
+        var reservedTags = SchemaLoader.ReservedTags;
+        
+        if (reservedTags.Count == 0)
+        {
+            Logger.LogDebug("No reserved tags defined in schema");
+            return metadata;
+        }
+
+        // Get existing tags or create empty list
+        var existingTags = new List<string>();
+        if (metadata.TryGetValue("tags", out var tagsValue))
+        {
+            if (tagsValue is IEnumerable<string> stringTags)
+            {
+                existingTags.AddRange(stringTags);
+            }
+            else if (tagsValue is System.Collections.IEnumerable enumerable)
+            {
+                existingTags.AddRange(enumerable.Cast<object>().Select(t => t?.ToString() ?? string.Empty).Where(t => !string.IsNullOrEmpty(t)));
+            }
+        }
+
+        // Add reserved tags that are not already present
+        foreach (var reservedTag in reservedTags)
+        {
+            if (!existingTags.Contains(reservedTag, StringComparer.OrdinalIgnoreCase))
+            {
+                existingTags.Add(reservedTag);
+                Logger.LogDebug($"Injected reserved tag '{reservedTag}' for template type '{templateType}'");
+            }
+        }
+
+        metadata["tags"] = existingTags.ToArray();
+        return metadata;
+    }
+
+    /// <summary>
+    /// Maps hierarchy level to template type using schema-driven validation.
+    /// </summary>
+    /// <param name="hierarchyLevel">The hierarchy level to map.</param>
+    /// <param name="validateWithSchema">Whether to validate the template type exists in schema.</param>
+    /// <returns>The template type mapped from hierarchy level, validated against schema if requested.</returns>
+    /// <remarks>
+    /// Uses the schema loader to validate that the mapped template type exists in the schema,
+    /// providing fallback behavior for unmapped hierarchy levels.
+    /// </remarks>
+    public string MapHierarchyLevelToTemplateType(int hierarchyLevel, bool validateWithSchema = true)
+    {
+        string templateType = GetTemplateTypeFromHierarchyLevel(hierarchyLevel);
+        
+        if (validateWithSchema && !SchemaLoader.TemplateTypes.ContainsKey(templateType))
+        {
+            Logger.LogWarning($"Template type '{templateType}' for hierarchy level {hierarchyLevel} not found in schema. Available types: {string.Join(", ", SchemaLoader.TemplateTypes.Keys)}");
+            
+            // Try to find a suitable fallback from available template types
+            var availableTypes = SchemaLoader.TemplateTypes.Keys.ToList();
+            string fallbackType = hierarchyLevel switch
+            {
+                0 => availableTypes.FirstOrDefault(t => t.Contains("main")) ?? availableTypes.FirstOrDefault() ?? "unknown",
+                1 => availableTypes.FirstOrDefault(t => t.Contains("program")) ?? availableTypes.FirstOrDefault() ?? "unknown",
+                2 => availableTypes.FirstOrDefault(t => t.Contains("course")) ?? availableTypes.FirstOrDefault() ?? "unknown",
+                3 => availableTypes.FirstOrDefault(t => t.Contains("class")) ?? availableTypes.FirstOrDefault() ?? "unknown",
+                4 => availableTypes.FirstOrDefault(t => t.Contains("module")) ?? availableTypes.FirstOrDefault() ?? "unknown",
+                5 => availableTypes.FirstOrDefault(t => t.Contains("lesson")) ?? availableTypes.FirstOrDefault() ?? "unknown",
+                _ => availableTypes.FirstOrDefault() ?? "unknown"
+            };
+            
+            Logger.LogInformation($"Using fallback template type '{fallbackType}' for hierarchy level {hierarchyLevel}");
+            return fallbackType;
+        }
+        
+        return templateType;
     }
 }

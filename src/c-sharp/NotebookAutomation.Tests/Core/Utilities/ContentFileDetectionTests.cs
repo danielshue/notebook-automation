@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Utils;
 
@@ -66,7 +68,7 @@ public class ContentFileDetectionTests
             "notes", "summary", "lecture", "content", "material"
         };
 
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _vaultRoot);
 
         foreach (var keyword in contentFileKeywords)
         {
@@ -96,7 +98,7 @@ public class ContentFileDetectionTests
         // Create files with extensions associated with content
         var contentExtensions = new[] { ".mp4", ".pdf", ".pptx", ".docx" };
 
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _vaultRoot);
 
         foreach (var ext in contentExtensions)
         {
@@ -126,7 +128,7 @@ public class ContentFileDetectionTests
         // Create content directories with keywords
         var contentDirs = new[] { "videos", "readings", "resources", "content" };
 
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _vaultRoot);
 
         foreach (var dir in contentDirs)
         {
@@ -168,7 +170,7 @@ public class ContentFileDetectionTests
             "template.md"
         };
 
-        var detector = new MetadataHierarchyDetector(_loggerMock.Object, _testAppConfig);
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _vaultRoot);
 
         foreach (var file in nonContentFiles)
         {

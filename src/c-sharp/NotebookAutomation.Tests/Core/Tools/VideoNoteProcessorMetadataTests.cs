@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Tests.Core.TestDoubles;
 
@@ -121,8 +123,8 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithPathBasedMetadata_AppliesHierarchyDetection()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
@@ -163,8 +165,8 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithTemplate_AppliesTemplateMetadata()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
@@ -199,8 +201,8 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithTemplateAndHierarchy_AppliesBoth()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
@@ -246,8 +248,8 @@ video-uploaded:";
     public async Task ProcessVideoAsync_AppliesPathBasedMetadataAndTemplate()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
@@ -290,8 +292,8 @@ video-uploaded:";
     public async Task GenerateVideoNoteAsync_WithNoSummary_SuppressesBodyOutputsOnlyFrontmatter()
     {
         // Arrange
-        var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
@@ -342,8 +344,8 @@ video-uploaded:";
         // Arrange
         string testShareLink = "https://onedrive.live.com/view.aspx?test=example";
         _oneDriveServiceMock
-                    .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(testShareLink); var hierarchyDetector = new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance, _appConfig);
-        var templateManager = new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _appConfig, _yamlHelperMock.Object);
+                    .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(testShareLink); var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,

@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Tests.Core.TestDoubles;
 
@@ -35,10 +37,10 @@ public class PdfNoteBatchProcessorTests
             var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
             var appConfig = new AppConfig();
             var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
-            var hierarchyDetector = new MetadataHierarchyDetector(
+            var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
                 Mock.Of<ILogger<MetadataHierarchyDetector>>(),
                 mockAppConfig);
-            var templateManager = Mock.Of<IMetadataTemplateManager>();
+            var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
             var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>(); return new PdfNoteProcessor(
                 Mock.Of<ILogger<PdfNoteProcessor>>(),
                 new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>()),

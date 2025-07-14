@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Tests.Core.TestDoubles;
 
@@ -20,14 +22,12 @@ public class VideoNoteBatchProcessorOnedriveFullpathRootTests
 
     private MetadataTemplateManager CreateTestMetadataTemplateManager()
     {
-        return new MetadataTemplateManager(
-            NullLogger<MetadataTemplateManager>.Instance,
-            _testAppConfig,
-            Mock.Of<IYamlHelper>());
+        return MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
     }
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
-        return new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance,
+        return MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+            NullLogger<MetadataHierarchyDetector>.Instance,
             new AppConfig
             {
                 Paths = new PathsConfig
