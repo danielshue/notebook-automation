@@ -414,7 +414,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithMixedSlashes_CalculatesCorrectly()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Create mixed path with both slash types
         string mixedPath = _tempVaultRoot + "/Program1\\Course1";
@@ -433,7 +433,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithSpecialCharacters_CalculatesCorrectly()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Create temporary special folders
         string specialFolder1 = Path.Combine(_tempVaultRoot, "Program-With_Special.Chars!");
@@ -455,7 +455,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithSpacesInFolderNames_CalculatesCorrectly()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Create temporary folders with spaces
         string spaceFolder1 = Path.Combine(_tempVaultRoot, "Program With Spaces");
@@ -520,7 +520,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithNonExistentPath_StillCalculatesCorrectly()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Create a path that doesn't exist
         string nonExistentPath = Path.Combine(_tempVaultRoot, "NonExistent", "Folder", "Structure");

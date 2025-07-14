@@ -123,7 +123,7 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithPathBasedMetadata_AppliesHierarchyDetection()
     {
         // Arrange
-        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
@@ -165,7 +165,7 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithTemplate_AppliesTemplateMetadata()
     {
         // Arrange
-        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
@@ -201,7 +201,7 @@ video-uploaded:";
     public void GenerateMarkdownNote_WithTemplateAndHierarchy_AppliesBoth()
     {
         // Arrange
-        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
@@ -248,7 +248,7 @@ video-uploaded:";
     public async Task ProcessVideoAsync_AppliesPathBasedMetadataAndTemplate()
     {
         // Arrange
-        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
@@ -292,7 +292,7 @@ video-uploaded:";
     public async Task GenerateVideoNoteAsync_WithNoSummary_SuppressesBodyOutputsOnlyFrontmatter()
     {
         // Arrange
-        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
@@ -344,7 +344,7 @@ video-uploaded:";
         // Arrange
         string testShareLink = "https://onedrive.live.com/view.aspx?test=example";
         _oneDriveServiceMock
-                    .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(testShareLink); var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+                    .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(testShareLink); var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
