@@ -1,56 +1,58 @@
-# .github Directory
 
-This directory contains configuration files and instructions for GitHub Copilot and other GitHub-related functionality.
+# .github Copilot Instructions Directory
 
-## Copilot Instruction Files
+This directory contains all instruction files and configuration for GitHub Copilot and related automation. The approach is to centralize project-specific meta instructions in `copilot-instructions.md` and reference all detailed guidelines in separate instruction files. This ensures Copilot and contributors have clear, maintainable, and discoverable guidance for every aspect of the project.
 
-These files provide guidance to GitHub Copilot to ensure it generates code and content that matches the project's style, standards, and best practices.
+## Centralized Instruction Reference
 
-### Primary Instruction Files
+**copilot-instructions.md** is the entry point for all Copilot guidance. It provides:
 
-- **copilot-instructions.md**: General instructions for all Copilot interactions
-- **copilot-code-generation.md**: Specific instructions for code generation
-- **copilot-commit-message-generation.md**: Instructions for generating git commit messages
-- **copilot-pull-request-description-instructions.md**: Instructions for PR descriptions
-- **copilot-review-instructions.md**: Guidelines for code review comments
+- Project-specific meta instructions
+- References to all detailed instruction files below
 
-### Additional Files
+## Instruction Files
 
-- **copilot-test-generation.md**: Instructions for generating test code
-- **copilot-code-reuse-instructions.md**: Guidelines for code reuse
-- **copilot-test-reuse-instructions.md**: Guidelines for test reuse
+- **copilot-instructions.md**: Project meta instructions and reference list
+- **aspnet-rest-apis.instructions.md**: ASP.NET REST API development
+- **copilot-code-generation.instructions.md**: Code generation and structure
+- **copilot-code-reuse.instructions.md**: Code reuse and package discovery
+- **copilot-commit-message-instructions.md**: Commit message format and emoji usage
+- **copilot-pull-request-description.instructions.md**: Pull request title and description guidelines
+- **copilot-review-instructions.md**: Code review process and comment format
+- **copilot-test-generation.instructions.md**: Test generation and coverage
+- **copilot-test-reuse.instructions.md**: Test reuse and fixture strategy
+- **copilot-thought-logging.instructions.md**: Thought logging and process tracking
+- **dotnet-maui.instructions.md**: .NET MAUI component and app patterns
+- **localization.instructions.md**: Localization for markdown documents
+- **memory-bank.instructions.md**: Memory bank structure and workflows
 
 ## VS Code Configuration
 
-These Copilot instruction files are referenced in the VS Code `settings.json` file to customize Copilot behavior.
-
-Example configuration:
+These instruction files can be referenced in VS Code `settings.json` to customize Copilot behavior. Example configuration:
 
 ```jsonc
 "github.copilot.chat.codeGeneration.instructions": [
   {
-    "file": "D:\\repos\\mba-notebook-automation\\docs\\copilot-codeGeneration-instructions.md"
+    "file": "D:\\source\\notebook-automation\\.github\\instructions\\copilot-code-generation.instructions.md"
   }
 ],
 "github.copilot.chat.pullRequestDescriptionGeneration.instructions": [
   {
-    "file": "D:\\repos\\mba-notebook-automation\\docs\\copilot-pull-request-description-instructions.md"
+    "file": "D:\\source\\notebook-automation\\.github\\instructions\\copilot-pull-request-description.instructions.md"
   }
 ],
 "github.copilot.chat.commitMessageGeneration.instructions": [
   {
-    "file": "D:\\repos\\mba-notebook-automation\\docs\\copilot-commit-message-instructions.md"
+    "file": "D:\\source\\notebook-automation\\.github\\instructions\\copilot-commit-message-instructions.md"
   }
 ],
 "github.copilot.chat.testGeneration.instructions": [
   {
-    "file": "D:\\repos\\mba-notebook-automation\\docs\\copilot-test-instructions.md"
+    "file": "D:\\source\\notebook-automation\\.github\\instructions\\copilot-test-generation.instructions.md"
   }
 ]
 ```
 
 ## Note
 
-There are duplicate instruction files in both the `.github` directory and the `docs` directory.
-
-The files in `docs` are referenced in VS Code settings, while the files in `.github` serve as reference for GitHub-related operations. When updating instruction files, make sure to keep both versions in sync.
+If you maintain duplicate instruction files in both `.github` and `docs`, keep them in sync. The `.github` versions are authoritative for GitHub and Copilot automation. Update all references and links as new instruction files are added.

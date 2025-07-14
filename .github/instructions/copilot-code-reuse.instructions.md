@@ -2,15 +2,15 @@
 applyTo: "**"
 ---
 
-## Code Reuse Priority Hierarchy
+# Code Reuse Priority Hierarchy
 
-### 1. Reuse Existing Packages First
+## 1. Reuse Existing Packages First
 
 - Always search for and utilize existing packages in the `tools` folder before creating new code
 - Consider importing and extending existing utilities rather than duplicating functionality
 - Example approach: `from tools.existing_module import ExistingClass`
 
-### 2. Package Discovery Process
+## 2. Package Discovery Process
 
 When implementing a solution:
 
@@ -19,7 +19,7 @@ When implementing a solution:
 3. Consider composition of existing utilities to meet new requirements
 4. Only proceed to creating new packages when existing ones cannot fulfill requirements
 
-### 3. Package Extension Guidelines
+## 3. Package Extension Guidelines
 
 - Do not modify existing package interfaces
 - When additional functionality is needed:
@@ -27,7 +27,7 @@ When implementing a solution:
   - Use composition to combine existing utilities
   - Create wrapper functions that utilize existing packages
 
-### 4. New Package Creation Criteria
+## 4. New Package Creation Criteria
 
 Only create new packages when:
 
@@ -36,7 +36,7 @@ Only create new packages when:
 - The functionality is significantly different from anything available
 - Attempting to reuse would create excessive complexity or coupling
 
-### 5. Documentation Requirements for Reuse
+## 5. Documentation Requirements for Reuse
 
 When reusing packages:
 
@@ -44,7 +44,7 @@ When reusing packages:
 - Note any limitations of the reused packages
 - Explain integration points between existing and new code
 
-### 6. New Package Structure
+## 6. New Package Structure
 
 When a new package must be created:
 
