@@ -80,7 +80,7 @@ public class VaultPathHandlingTests
     {
         // Arrange
         var logger = new Mock<ILogger<MetadataHierarchyDetector>>();
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Test cases with expected hierarchy levels
         var testCases = new Dictionary<string, int>
@@ -111,7 +111,7 @@ public class VaultPathHandlingTests
     {
         // Arrange
         var logger = new Mock<ILogger<MetadataHierarchyDetector>>();
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Test cases with expected template types
         var testCases = new Dictionary<int, string>

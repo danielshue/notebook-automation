@@ -68,7 +68,7 @@ public class ContentFileDetectionTests
             "notes", "summary", "lecture", "content", "material"
         };
 
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _vaultRoot);
 
         foreach (var keyword in contentFileKeywords)
         {
@@ -98,7 +98,7 @@ public class ContentFileDetectionTests
         // Create files with extensions associated with content
         var contentExtensions = new[] { ".mp4", ".pdf", ".pptx", ".docx" };
 
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _vaultRoot);
 
         foreach (var ext in contentExtensions)
         {
@@ -128,7 +128,7 @@ public class ContentFileDetectionTests
         // Create content directories with keywords
         var contentDirs = new[] { "videos", "readings", "resources", "content" };
 
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _vaultRoot);
 
         foreach (var dir in contentDirs)
         {
@@ -170,7 +170,7 @@ public class ContentFileDetectionTests
             "template.md"
         };
 
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _vaultRoot);
 
         foreach (var file in nonContentFiles)
         {

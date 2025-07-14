@@ -2154,7 +2154,7 @@ public class MetadataHierarchyDetectorPathTests
 
         // Create a mock AppConfig
         var appConfigMock = new Mock<AppConfig>();
-        _detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        _detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
     }
 
 
