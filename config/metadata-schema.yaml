@@ -24,9 +24,9 @@ TemplateTypes:
       date-created:
         Resolver: DateCreatedResolver
       title:
-        Default: ""
+        Default: "PDF Note"
       tags:
-        Default: []
+        Default: [pdf, reference]
       page-count:
         Resolver: PdfPageCountResolver
   video-reference:
@@ -49,9 +49,9 @@ TemplateTypes:
       date-created:
         Resolver: DateCreatedResolver
       title:
-        Default: ""
+        Default: "Video Note"
       tags:
-        Default: []
+        Default: [video, reference]
       video-duration:
         Default: "00:00:00"
   resource-reading:

@@ -45,9 +45,11 @@ public class MetadataTemplateManagerTests
         List<string> templateTypes = templateManager.GetTemplateTypes();
 
         // Assert
-        Assert.AreEqual(2, templateTypes.Count);
+        Assert.AreEqual(4, templateTypes.Count);
         Assert.IsTrue(templateTypes.Contains("video-reference"));
         Assert.IsTrue(templateTypes.Contains("pdf-reference"));
+        Assert.IsTrue(templateTypes.Contains("resource-reading"));
+        Assert.IsTrue(templateTypes.Contains("note/instruction"));
     }
     [TestMethod]
     public void GetTemplate_ExistingType_ReturnsTemplate()
