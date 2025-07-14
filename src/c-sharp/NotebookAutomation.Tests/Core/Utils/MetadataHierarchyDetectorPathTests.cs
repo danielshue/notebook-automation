@@ -98,7 +98,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_AbsolutePaths_ReturnsCorrectLevel()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Test cases - path and expected hierarchy level
         var testCases = new[]
@@ -127,7 +127,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_RelativePaths_ReturnsCorrectLevel()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Get the relative paths
         string vaultRootRelative = Path.GetFileName(_tempVaultRoot);
@@ -160,7 +160,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithVaultPathOverride_ReturnsCorrectLevel()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Use a subdirectory as vault root override
         string vaultOverride = Path.Combine(_tempVaultRoot, "Value Chain Management", "Operations Management");
@@ -190,7 +190,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void GetTemplateTypeFromHierarchyLevel_ValidLevels_ReturnsCorrectTemplateType()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Test cases - hierarchy level and expected template type
         var testCases = new[]
@@ -221,7 +221,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithAbsolutePath_CalculatesCorrectly()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
         string absolutePath = Path.Combine(_tempVaultRoot, "Program1", "Course1", "Class1", "Module1");
 
         // Act
@@ -238,7 +238,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithRelativePath_CalculatesCorrectly()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Get the directory where the temp vault is located (usually the temp directory)
         string tempDir = Path.GetDirectoryName(_tempVaultRoot)!;
@@ -272,7 +272,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void DetermineTemplateType_BasedOnHierarchyLevel_ReturnsCorrectTemplate()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
         var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
 
         // We need all the dependencies to create the VaultIndexProcessor
@@ -318,12 +318,12 @@ public class MetadataHierarchyDetectorPathHandlingTests
     {
         // Arrange
         string overrideVaultRoot = Path.Combine(_tempVaultRoot, "Program1", "Course1");
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         string testPath = Path.Combine(overrideVaultRoot, "Class1", "Module1");
 
         // Act
-        int level = detector.CalculateHierarchyLevel(testPath);
+        int level = detector.CalculateHierarchyLevel(testPath, overrideVaultRoot);
 
         // Assert
         Assert.AreEqual(2, level, "Hierarchy level should be 2 when measured from the overridden vault root");
@@ -336,7 +336,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void DetermineTemplateType_WithSpecialFolderNames_ReturnsCorrectTemplate()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
         var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();        // We need all the dependencies to create the VaultIndexProcessor
         var mockTemplateManager = new Mock<IMetadataTemplateManager>();
         var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
@@ -376,7 +376,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithWindowsStylePath_CalculatesCorrectly()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Create Windows-style path with backslashes
         string windowsPath = _tempVaultRoot.Replace('/', '\\') + "\\Program1\\Course1";
@@ -395,7 +395,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithUnixStylePath_CalculatesCorrectly()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Create Unix-style path with forward slashes
         string unixPath = _tempVaultRoot.Replace('\\', '/') + "/Program1/Course1";
@@ -477,7 +477,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void DetermineTemplateType_WithUnusualFolderPatterns_DetectsCorrectly()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
         var mockProcessorLogger = new Mock<ILogger<VaultIndexProcessor>>();
         var mockTemplateManager = new Mock<IMetadataTemplateManager>();
         var mockStructureExtractor = new Mock<ICourseStructureExtractor>();
@@ -539,7 +539,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithNullPath_HandlesGracefully()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Act & Assert
         try
@@ -572,7 +572,7 @@ public class MetadataHierarchyDetectorPathHandlingTests
     public void CalculateHierarchyLevel_WithPathOutsideVaultRoot_HandlesAppropriately()
     {
         // Arrange
-        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
 
         // Create a path outside the vault root
         string outsidePath = Path.GetTempPath(); // System temp path, definitely outside vault root
