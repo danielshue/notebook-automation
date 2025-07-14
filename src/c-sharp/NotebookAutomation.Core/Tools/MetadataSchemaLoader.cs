@@ -156,6 +156,18 @@ public class FieldValueResolverRegistry
     }
 
     /// <summary>
+    /// Gets all registered field value resolvers.
+    /// </summary>
+    /// <returns>A dictionary of resolver name to resolver mappings.</returns>
+    /// <remarks>
+    /// This method is useful for introspection and debugging of registered resolvers.
+    /// </remarks>
+    public IReadOnlyDictionary<string, IFieldValueResolver> GetAll()
+    {
+        return _resolvers;
+    }
+
+    /// <summary>
     /// Gets all registered file type resolvers.
     /// </summary>
     /// <returns>A dictionary of file type to resolver mappings.</returns>
@@ -486,9 +498,20 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
         var fieldSchema = typeSchema.Fields[fieldName];
         if (!string.IsNullOrEmpty(fieldSchema.Resolver))
         {
-            // Try both full name and short name for backward compatibility
-            var resolver = ResolverRegistry.Get(fieldSchema.Resolver)
-                ?? ResolverRegistry.Get(fieldSchema.Resolver.Split('.').Last());
+            // Try short name first, then look for full names that end with the short name
+            var resolver = ResolverRegistry.Get(fieldSchema.Resolver);
+            if (resolver == null)
+            {
+                // Look for any registered resolver that ends with the short name
+                foreach (var kvp in ResolverRegistry.GetAll())
+                {
+                    if (kvp.Key.EndsWith($".{fieldSchema.Resolver}") || kvp.Key == fieldSchema.Resolver)
+                    {
+                        resolver = kvp.Value;
+                        break;
+                    }
+                }
+            }
             if (resolver != null)
             {
                 return resolver.Resolve(fieldName, context);
@@ -542,6 +565,18 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                         if (!typeSchema.Fields.ContainsKey(fieldKvp.Key))
                             typeSchema.Fields[fieldKvp.Key] = fieldKvp.Value;
                     }
+                }
+            }
+        }
+        
+        // Inject reserved tags as fields
+        if (schema.ReservedTags != null)
+        {
+            foreach (var reservedTag in schema.ReservedTags)
+            {
+                if (!typeSchema.Fields.ContainsKey(reservedTag))
+                {
+                    typeSchema.Fields[reservedTag] = new FieldSchema();
                 }
             }
         }

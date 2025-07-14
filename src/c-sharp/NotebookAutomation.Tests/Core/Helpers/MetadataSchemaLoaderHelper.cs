@@ -18,7 +18,8 @@ internal static class MetadataSchemaLoaderHelper
         logger ??= NullLogger<MetadataSchemaLoader>.Instance;
         
         // Use the test metadata-schema.yaml file - use absolute path from repository root
-        var repositoryRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(MetadataSchemaLoaderHelper).Assembly.Location)!, "../../../.."));
+        // Assembly location is in bin/Debug/net8.0, so we need to go up 5 levels to get to repo root
+        var repositoryRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(MetadataSchemaLoaderHelper).Assembly.Location)!, "../../../../../.."));
         var testSchemaPath = Path.Combine(repositoryRoot, "config", "metadata-schema.yaml");
         
         // If the test schema file doesn't exist, fall back to a minimal schema
