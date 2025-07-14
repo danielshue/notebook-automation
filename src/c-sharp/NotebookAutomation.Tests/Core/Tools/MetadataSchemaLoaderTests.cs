@@ -52,11 +52,11 @@ namespace NotebookAutomation.Tests.Core.Tools
 
             // Assert type mapping
             Assert.IsTrue(loader.TypeMapping.ContainsKey("pdf-reference"));
-            Assert.AreEqual("reference", loader.TypeMapping["pdf-reference"]);
+            Assert.AreEqual("note/case-study", loader.TypeMapping["pdf-reference"]);
 
             // Assert reserved tags
             var reserved = loader.ReservedTags;
-            Assert.IsTrue(reserved.Contains("auto-generated-state"));
+            Assert.IsTrue(reserved.Contains("case-study"));
         }
 
 
