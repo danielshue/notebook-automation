@@ -81,44 +81,43 @@ internal static class MetadataSchemaLoaderHelper
     {
         var tempSchemaPath = Path.Combine(Path.GetTempPath(), $"test-metadata-schema-{Guid.NewGuid():N}.yaml");
         
-        var minimalSchema = @"
-TemplateTypes:
+        var minimalSchema = @"TemplateTypes:
   video-reference:
-    base-types:
+    BaseTypes:
       - universal-fields
-    type: note/video-note
-    required-fields:
+    Type: note/video-note
+    RequiredFields:
       - status
       - tags
-    fields:
+    Fields:
       publisher:
-        default: University of Illinois at Urbana-Champaign
+        Default: University
       status:
-        default: unwatched
+        Default: unwatched
       date-created:
-        default: ""
+        Default: ''
       title:
-        default: ""
+        Default: ''
       tags:
-        default: []
+        Default: []
   pdf-reference:
-    base-types:
+    BaseTypes:
       - universal-fields
-    type: note/case-study
-    required-fields:
+    Type: note/case-study
+    RequiredFields:
       - status
       - tags
-    fields:
+    Fields:
       publisher:
-        default: University of Illinois at Urbana-Champaign
+        Default: University
       status:
-        default: unread
+        Default: unread
       date-created:
-        default: ""
+        Default: ''
       title:
-        default: ""
+        Default: ''
       tags:
-        default: []
+        Default: []
 UniversalFields:
   - date-created
   - publisher

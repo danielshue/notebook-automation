@@ -1894,7 +1894,9 @@ class: SingleClass
             Paths = new PathsConfig { NotebookVaultFullpathRoot = baseVaultPath }
         };
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, nestedConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+            _loggerMock.Object, 
+            nestedConfig);
 
         // Create the test path structure
         string testPath = Path.Combine(baseVaultPath, "Value Chain Management", "Operations Management", "test-file.md");
@@ -1947,7 +1949,9 @@ class: SingleClass
             Paths = new PathsConfig { NotebookVaultFullpathRoot = vaultRoot }
         };
 
-        MetadataHierarchyDetector detector = new(_loggerMock.Object, userConfig);
+        MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+            _loggerMock.Object, 
+            userConfig);
 
         // Create the exact path structure mentioned
         string testPath = Path.Combine(vaultRoot, "Value Chain Management", "Operations Management");

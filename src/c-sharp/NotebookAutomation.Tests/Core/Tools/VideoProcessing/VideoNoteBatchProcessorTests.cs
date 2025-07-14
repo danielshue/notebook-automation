@@ -72,7 +72,7 @@ public class VideoNoteBatchProcessorTests
 
         var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, _appConfig);
-        var hierarchyDetector = new MetadataHierarchyDetector(
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             _appConfig);
 

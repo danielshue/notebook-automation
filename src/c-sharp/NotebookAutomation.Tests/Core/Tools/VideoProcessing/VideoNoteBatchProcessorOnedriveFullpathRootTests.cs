@@ -26,7 +26,8 @@ public class VideoNoteBatchProcessorOnedriveFullpathRootTests
     }
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
-        return new MetadataHierarchyDetector(NullLogger<MetadataHierarchyDetector>.Instance,
+        return MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+            NullLogger<MetadataHierarchyDetector>.Instance,
             new AppConfig
             {
                 Paths = new PathsConfig

@@ -353,10 +353,9 @@ metadata:
     }
     private MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
-        return new MetadataHierarchyDetector(
+        return MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             NullLogger<MetadataHierarchyDetector>.Instance,
-            _testAppConfig)
-        ;
+            _testAppConfig);
     }
 
     /// <summary>
@@ -365,7 +364,7 @@ metadata:
 
     private VideoNoteProcessor CreateVideoNoteProcessor()
     {
-        var hierarchyDetector = new MetadataHierarchyDetector(
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             _testAppConfig);
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();

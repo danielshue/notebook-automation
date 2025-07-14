@@ -22,7 +22,7 @@ public class VideoNoteBatchProcessorResourcesRootTests
 
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
-        return new MetadataHierarchyDetector(
+        return MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             NullLogger<MetadataHierarchyDetector>.Instance,
             new AppConfig());
     }

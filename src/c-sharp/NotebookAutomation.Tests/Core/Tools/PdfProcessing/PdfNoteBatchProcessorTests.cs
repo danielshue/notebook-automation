@@ -37,7 +37,7 @@ public class PdfNoteBatchProcessorTests
             var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
             var appConfig = new AppConfig();
             var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
-            var hierarchyDetector = new MetadataHierarchyDetector(
+            var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
                 Mock.Of<ILogger<MetadataHierarchyDetector>>(),
                 mockAppConfig);
             var templateManager = Mock.Of<IMetadataTemplateManager>();
