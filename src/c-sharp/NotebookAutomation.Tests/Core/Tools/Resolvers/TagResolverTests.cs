@@ -9,8 +9,8 @@ namespace NotebookAutomation.Tests.Core.Tools.Resolvers;
 [TestClass]
 public class TagResolverTests
 {
-    private ILogger<TagResolver> _logger;
-    private TagResolver _resolver;
+    private ILogger<TagResolver> _logger = null!;
+    private TagResolver _resolver = null!;
 
     [TestInitialize]
     public void Initialize()

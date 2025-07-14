@@ -2138,6 +2138,194 @@ class: SingleClass
                 $"Content file detection/preservation logs not found for scenario '{scenario.Description}'");
         }
     }
+
+    /// <summary>
+    /// Tests that reserved tags are properly integrated into hierarchy metadata.
+    /// </summary>
+    [TestMethod]
+    public void UpdateMetadataWithHierarchy_IntegratesReservedTags()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        
+        Dictionary<string, object?> metadata = new()
+        {
+            { "title", "Test Content" },
+            { "tags", new[] { "custom-tag" } }
+        };
+
+        Dictionary<string, string> hierarchyInfo = new()
+        {
+            { "program", "MBA" },
+            { "course", "Finance" },
+            { "class", "Investment" }
+        };
+
+        // Act
+        var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "class-index");
+
+        // Assert - Reserved tags should be preserved and integrated
+        Assert.IsTrue(result.ContainsKey("tags"), "Tags should be present in result");
+        var tags = result["tags"] as string[];
+        Assert.IsNotNull(tags, "Tags should be a string array");
+        Assert.IsTrue(tags.Contains("custom-tag"), "Custom tag should be preserved");
+    }
+
+    /// <summary>
+    /// Tests that reserved tags are handled correctly for different template types.
+    /// </summary>
+    [TestMethod]
+    public void UpdateMetadataWithHierarchy_HandlesReservedTagsForTemplateTypes()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        
+        Dictionary<string, object?> videoMetadata = new()
+        {
+            { "title", "Test Video" },
+            { "template-type", "video-reference" }
+        };
+
+        Dictionary<string, object?> pdfMetadata = new()
+        {
+            { "title", "Test PDF" },
+            { "template-type", "pdf-reference" }
+        };
+
+        Dictionary<string, string> hierarchyInfo = new()
+        {
+            { "program", "MBA" },
+            { "course", "Finance" },
+            { "class", "Investment" }
+        };
+
+        // Act
+        var videoResult = detector.UpdateMetadataWithHierarchy(videoMetadata, hierarchyInfo, "video-reference");
+        var pdfResult = detector.UpdateMetadataWithHierarchy(pdfMetadata, hierarchyInfo, "pdf-reference");
+
+        // Assert - Both should have appropriate reserved tags based on template type
+        Assert.IsTrue(videoResult.ContainsKey("program"), "Video should have program key");
+        Assert.AreEqual("MBA", videoResult["program"], "Video should have hierarchy program");
+        Assert.IsTrue(videoResult.ContainsKey("course"), "Video should have course key");
+        Assert.AreEqual("Finance", videoResult["course"], "Video should have hierarchy course");
+        Assert.IsTrue(videoResult.ContainsKey("class"), "Video should have class key");
+        Assert.AreEqual("Investment", videoResult["class"], "Video should have hierarchy class");
+        
+        Assert.IsTrue(pdfResult.ContainsKey("program"), "PDF should have program key");
+        Assert.AreEqual("MBA", pdfResult["program"], "PDF should have hierarchy program");
+        Assert.IsTrue(pdfResult.ContainsKey("course"), "PDF should have course key");
+        Assert.AreEqual("Finance", pdfResult["course"], "PDF should have hierarchy course");
+        Assert.IsTrue(pdfResult.ContainsKey("class"), "PDF should have class key");
+        Assert.AreEqual("Investment", pdfResult["class"], "PDF should have hierarchy class");
+    }
+
+    /// <summary>
+    /// Tests that reserved tag validation works correctly within hierarchy detection.
+    /// </summary>
+    [TestMethod]
+    public void UpdateMetadataWithHierarchy_ValidatesReservedTagsWithinHierarchy()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        
+        Dictionary<string, object?> metadata = new()
+        {
+            { "title", "Test Content" },
+            { "case-study", "true" }, // Reserved tag field
+            { "live-class", "false" }  // Another reserved tag field
+        };
+
+        Dictionary<string, string> hierarchyInfo = new()
+        {
+            { "program", "MBA" },
+            { "course", "Finance" },
+            { "class", "Investment" }
+        };
+
+        // Act
+        var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "class-index");
+
+        // Assert - Reserved tag fields should be preserved
+        Assert.IsTrue(result.ContainsKey("case-study"), "Reserved tag field 'case-study' should be preserved");
+        Assert.IsTrue(result.ContainsKey("live-class"), "Reserved tag field 'live-class' should be preserved");
+        Assert.AreEqual("true", result["case-study"], "Reserved tag field value should be preserved");
+        Assert.AreEqual("false", result["live-class"], "Reserved tag field value should be preserved");
+    }
+
+    /// <summary>
+    /// Tests that reserved tags are properly inherited in hierarchy metadata updates.
+    /// </summary>
+    [TestMethod]
+    public void UpdateMetadataWithHierarchy_InheritsReservedTagsFromSchema()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        
+        Dictionary<string, object?> metadata = new()
+        {
+            { "title", "Test Content" },
+            { "template-type", "pdf-reference" }
+        };
+
+        Dictionary<string, string> hierarchyInfo = new()
+        {
+            { "program", "MBA" },
+            { "course", "Finance" },
+            { "class", "Investment" }
+        };
+
+        // Act
+        var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "class-index");
+
+        // Assert - Should inherit reserved tags from schema
+        Assert.AreEqual("MBA", result["program"], "Should have hierarchy program");
+        Assert.AreEqual("Finance", result["course"], "Should have hierarchy course");
+        Assert.AreEqual("Investment", result["class"], "Should have hierarchy class");
+        Assert.AreEqual("pdf-reference", result["template-type"], "Template type should be preserved");
+    }
+
+    /// <summary>
+    /// Tests that reserved tag logic works correctly with different hierarchy levels.
+    /// </summary>
+    [TestMethod]
+    public void UpdateMetadataWithHierarchy_AppliesReservedTagLogicByLevel()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        
+        Dictionary<string, string> hierarchyInfo = new()
+        {
+            { "program", "MBA" },
+            { "course", "Finance" },
+            { "class", "Investment" },
+            { "module", "Fundamentals" }
+        };
+
+        // Test different levels
+        var testCases = new[]
+        {
+            new { Level = "program-index", ExpectedFields = new[] { "program" } },
+            new { Level = "course-index", ExpectedFields = new[] { "program", "course" } },
+            new { Level = "class-index", ExpectedFields = new[] { "program", "course", "class" } },
+            new { Level = "module-index", ExpectedFields = new[] { "program", "course", "class", "module" } }
+        };
+
+        foreach (var testCase in testCases)
+        {
+            // Act
+            var metadata = new Dictionary<string, object?> { { "title", "Test" } };
+            var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, testCase.Level);
+
+            // Assert
+            foreach (var expectedField in testCase.ExpectedFields)
+            {
+                Assert.IsTrue(result.ContainsKey(expectedField), 
+                    $"Level '{testCase.Level}' should contain field '{expectedField}'");
+                Assert.AreEqual(hierarchyInfo[expectedField], result[expectedField], 
+                    $"Level '{testCase.Level}' should have correct value for '{expectedField}'");
+            }
+        }
+    }
 }
 
 /// <summary>

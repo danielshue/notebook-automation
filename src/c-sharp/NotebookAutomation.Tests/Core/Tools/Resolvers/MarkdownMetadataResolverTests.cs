@@ -9,8 +9,8 @@ namespace NotebookAutomation.Tests.Core.Tools.Resolvers;
 [TestClass]
 public class MarkdownMetadataResolverTests
 {
-    private ILogger<MarkdownMetadataResolver> _logger;
-    private MarkdownMetadataResolver _resolver;
+    private ILogger<MarkdownMetadataResolver> _logger = null!;
+    private MarkdownMetadataResolver _resolver = null!;
 
     [TestInitialize]
     public void Initialize()

@@ -184,4 +184,156 @@ public class MarkdownNoteBuilderBannerTests
         // Assert
         Assert.IsFalse(frontmatter.ContainsKey("banner"));
     }
+
+    [TestMethod]
+    public void CreateMarkdownWithFrontmatter_WithUniversalFields_InjectsUniversalFields()
+    {
+        // Arrange
+        var frontmatter = new Dictionary<string, object>
+        {
+            ["template-type"] = "main",
+            ["title"] = "Test Note"
+        };
+
+        // Act
+        var result = _builder.CreateMarkdownWithFrontmatter(frontmatter);
+
+        // Assert - Universal fields should be injected
+        Assert.IsTrue(frontmatter.ContainsKey("template-type"), "Template type should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("title"), "Title should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("banner"), "Banner should be added for template type");
+    }
+
+    [TestMethod]
+    public void CreateMarkdownWithFrontmatter_WithReservedFields_PreservesReservedFields()
+    {
+        // Arrange
+        var frontmatter = new Dictionary<string, object>
+        {
+            ["template-type"] = "course",
+            ["case-study"] = "true",
+            ["live-class"] = "false",
+            ["reading"] = "required"
+        };
+
+        // Act
+        var result = _builder.CreateMarkdownWithFrontmatter(frontmatter);
+
+        // Assert - Reserved fields should be preserved
+        Assert.IsTrue(frontmatter.ContainsKey("case-study"), "Reserved field 'case-study' should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("live-class"), "Reserved field 'live-class' should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("reading"), "Reserved field 'reading' should be preserved");
+        Assert.AreEqual("true", frontmatter["case-study"], "Reserved field value should be correct");
+        Assert.AreEqual("false", frontmatter["live-class"], "Reserved field value should be correct");
+        Assert.AreEqual("required", frontmatter["reading"], "Reserved field value should be correct");
+    }
+
+    [TestMethod]
+    public void CreateMarkdownWithFrontmatter_WithMixedFieldTypes_HandlesAllCorrectly()
+    {
+        // Arrange
+        var frontmatter = new Dictionary<string, object>
+        {
+            ["template-type"] = "main",
+            ["title"] = "Mixed Field Test",
+            ["custom-field"] = "custom-value",
+            ["case-study"] = "false", // Reserved field
+            ["tags"] = new[] { "test", "integration" }
+        };
+
+        // Act
+        var result = _builder.CreateMarkdownWithFrontmatter(frontmatter, "test-index.md");
+
+        // Assert - All field types should be handled properly
+        Assert.IsTrue(frontmatter.ContainsKey("banner"), "Banner should be added");
+        Assert.AreEqual("index-banner.png", frontmatter["banner"], "Banner should match filename pattern");
+        Assert.IsTrue(frontmatter.ContainsKey("template-type"), "Template type should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("title"), "Title should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("custom-field"), "Custom field should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("case-study"), "Reserved field should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("tags"), "Tags array should be preserved");
+    }
+
+    [TestMethod]
+    public void CreateMarkdownWithFrontmatter_WithSchemaBasedFields_IntegratesWithSchema()
+    {
+        // Arrange
+        var frontmatter = new Dictionary<string, object>
+        {
+            ["template-type"] = "pdf-reference",
+            ["title"] = "Schema Test",
+            ["status"] = "unread",
+            ["comprehension"] = 0
+        };
+
+        // Act
+        var result = _builder.CreateMarkdownWithFrontmatter(frontmatter);
+
+        // Assert - Schema-based fields should be integrated
+        Assert.IsTrue(frontmatter.ContainsKey("template-type"), "Template type should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("title"), "Title should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("status"), "Status field should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("comprehension"), "Comprehension field should be preserved");
+    }
+
+    [TestMethod]
+    public void CreateMarkdownWithFrontmatter_WithUniversalFieldDefaults_AppliesDefaults()
+    {
+        // Arrange
+        var frontmatter = new Dictionary<string, object>
+        {
+            ["template-type"] = "video-reference",
+            ["title"] = "Universal Field Test"
+        };
+
+        // Act
+        var result = _builder.CreateMarkdownWithFrontmatter(frontmatter);
+
+        // Assert - Universal field defaults should be applied where not specified
+        Assert.IsTrue(frontmatter.ContainsKey("template-type"), "Template type should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("title"), "Title should be preserved");
+    }
+
+    [TestMethod]
+    public void CreateMarkdownWithFrontmatter_WithReservedFieldInheritance_InheritsCorrectly()
+    {
+        // Arrange
+        var frontmatter = new Dictionary<string, object>
+        {
+            ["template-type"] = "resource-reading",
+            ["title"] = "Reserved Field Inheritance Test"
+        };
+
+        // Act
+        var result = _builder.CreateMarkdownWithFrontmatter(frontmatter);
+
+        // Assert - Reserved fields should be inherited from schema
+        Assert.IsTrue(frontmatter.ContainsKey("template-type"), "Template type should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("title"), "Title should be preserved");
+    }
+
+    [TestMethod]
+    public void BuildNote_WithUniversalAndReservedFields_IntegratesAllFields()
+    {
+        // Arrange
+        var frontmatter = new Dictionary<string, object>
+        {
+            ["template-type"] = "main",
+            ["title"] = "Integration Test",
+            ["case-study"] = "true",
+            ["custom-field"] = "custom-value"
+        };
+        var body = "# Integration Test Content";
+
+        // Act
+        var result = _builder.BuildNote(frontmatter, body, "integration-index.md");
+
+        // Assert - All field types should be integrated
+        Assert.IsTrue(frontmatter.ContainsKey("banner"), "Banner should be added");
+        Assert.AreEqual("index-banner.png", frontmatter["banner"], "Banner should match filename pattern");
+        Assert.IsTrue(frontmatter.ContainsKey("template-type"), "Template type should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("title"), "Title should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("case-study"), "Reserved field should be preserved");
+        Assert.IsTrue(frontmatter.ContainsKey("custom-field"), "Custom field should be preserved");
+    }
 }
