@@ -1,5 +1,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using NotebookAutomation.Core.Tools;
+
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace NotebookAutomation.Cli.Commands;
@@ -393,16 +395,17 @@ internal class TagCommands
             string activeConfigPath = DiscoverActiveConfigPath(configPath);
             AnsiConsoleHelper.WriteInfo($"Using config file: {activeConfigPath}\n");                // Create a new TagProcessor with command-specific options
 
-            // For TagProcessor we need to get the IYamlHelper from DI
+            // For TagProcessor we need to get the IYamlHelper and MetadataSchemaLoader from DI
             var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
             var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
+            var schemaLoader = serviceProvider.GetRequiredService<IMetadataSchemaLoader>();
             var tagProcessor = new TagProcessor(
                 tagProcessorLogger,
                 failedLogger,
                 yamlHelper,
                 dryRun,
                 verbose,
-                resolverRegistry: null);
+                resolverRegistry: schemaLoader.ResolverRegistry);
 
             switch (command.ToLowerInvariant())
             {
@@ -513,13 +516,14 @@ internal class TagCommands
             logger.LogDebug($"Executing update-frontmatter command on path: {path}, key: {key}, value: {value}");
             var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
             var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
+            var schemaLoader = serviceProvider.GetRequiredService<IMetadataSchemaLoader>();
             var tagProcessor = new TagProcessor(
                 tagProcessorLogger,
                 failedLogger,
                 yamlHelper,
                 dryRun,
                 verbose,
-                resolverRegistry: null);
+                resolverRegistry: schemaLoader.ResolverRegistry);
 
             AnsiConsoleHelper.WriteInfo($"Updating frontmatter key '{key}' to value '{value}' in {path}...");
             if (dryRun)
@@ -619,7 +623,8 @@ internal class TagCommands
             // Create processor
             var tagProcessorLogger = loggerFactory.CreateLogger<TagProcessor>();
             var yamlHelper = serviceProvider.GetRequiredService<IYamlHelper>();
-            var processor = new TagProcessor(tagProcessorLogger, failedLogger, yamlHelper, false, verbose, resolverRegistry: null);
+            var schemaLoader = serviceProvider.GetRequiredService<IMetadataSchemaLoader>();
+            var processor = new TagProcessor(tagProcessorLogger, failedLogger, yamlHelper, false, verbose, resolverRegistry: schemaLoader.ResolverRegistry);
 
             // Run diagnosis
             var results = await processor.DiagnoseFrontmatterIssuesAsync(path).ConfigureAwait(false);
