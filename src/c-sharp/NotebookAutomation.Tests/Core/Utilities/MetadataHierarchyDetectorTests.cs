@@ -2200,16 +2200,22 @@ class: SingleClass
         };
 
         // Act
-        var videoResult = detector.UpdateMetadataWithHierarchy(videoMetadata, hierarchyInfo, "");
-        var pdfResult = detector.UpdateMetadataWithHierarchy(pdfMetadata, hierarchyInfo, "");
+        var videoResult = detector.UpdateMetadataWithHierarchy(videoMetadata, hierarchyInfo, "video-reference");
+        var pdfResult = detector.UpdateMetadataWithHierarchy(pdfMetadata, hierarchyInfo, "pdf-reference");
 
         // Assert - Both should have appropriate reserved tags based on template type
+        Assert.IsTrue(videoResult.ContainsKey("program"), "Video should have program key");
         Assert.AreEqual("MBA", videoResult["program"], "Video should have hierarchy program");
+        Assert.IsTrue(videoResult.ContainsKey("course"), "Video should have course key");
         Assert.AreEqual("Finance", videoResult["course"], "Video should have hierarchy course");
+        Assert.IsTrue(videoResult.ContainsKey("class"), "Video should have class key");
         Assert.AreEqual("Investment", videoResult["class"], "Video should have hierarchy class");
         
+        Assert.IsTrue(pdfResult.ContainsKey("program"), "PDF should have program key");
         Assert.AreEqual("MBA", pdfResult["program"], "PDF should have hierarchy program");
+        Assert.IsTrue(pdfResult.ContainsKey("course"), "PDF should have course key");
         Assert.AreEqual("Finance", pdfResult["course"], "PDF should have hierarchy course");
+        Assert.IsTrue(pdfResult.ContainsKey("class"), "PDF should have class key");
         Assert.AreEqual("Investment", pdfResult["class"], "PDF should have hierarchy class");
     }
 

@@ -10,8 +10,8 @@ namespace NotebookAutomation.Tests.Core.Tools.Resolvers;
 [TestClass]
 public class ResolverRegistryIntegrationTests
 {
-    private ILogger<MetadataSchemaLoader> _logger;
-    private FieldValueResolverRegistry _registry;
+    private ILogger<MetadataSchemaLoader> _logger = null!;
+    private FieldValueResolverRegistry _registry = null!;
 
     [TestInitialize]
     public void Initialize()

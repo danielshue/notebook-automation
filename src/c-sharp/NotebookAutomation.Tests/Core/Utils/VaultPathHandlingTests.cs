@@ -222,15 +222,18 @@ public class VaultPathHandlingTests
         var metadata = new Dictionary<string, object?>
         {
             { "title", "Universal Field Test" },
-            { "template-type", "course-index" }
+            { "template-type", "class-index" }
         };
 
         // Act
-        var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "course-index");
+        var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "class-index");
 
         // Assert - Universal fields should be integrated through path handling
+        Assert.IsTrue(result.ContainsKey("program"), "Result should contain program key");
         Assert.AreEqual("Executive Program", result["program"], "Universal field injection should work with path handling");
+        Assert.IsTrue(result.ContainsKey("course"), "Result should contain course key");
         Assert.AreEqual("Leadership", result["course"], "Universal field injection should work with path handling");
+        Assert.IsTrue(result.ContainsKey("class"), "Result should contain class key");
         Assert.AreEqual("Team Management", result["class"], "Universal field injection should work with path handling");
     }
 
@@ -350,9 +353,9 @@ public class VaultPathHandlingTests
         var testCases = new[]
         {
             new { FileName = "index.md", TemplateType = "class-index" },
-            new { FileName = "lecture.mp4", TemplateType = "" },
-            new { FileName = "transcript.md", TemplateType = "" },
-            new { FileName = "assignment.pdf", TemplateType = "" }
+            new { FileName = "lecture.mp4", TemplateType = "video-reference" },
+            new { FileName = "transcript.md", TemplateType = "resource-reading" },
+            new { FileName = "assignment.pdf", TemplateType = "pdf-reference" }
         };
 
         foreach (var testCase in testCases)
@@ -366,8 +369,11 @@ public class VaultPathHandlingTests
             var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, testCase.TemplateType);
 
             // Assert - Schema loader integration should work across file types
+            Assert.IsTrue(result.ContainsKey("program"), $"File type '{testCase.FileName}' should have program key");
             Assert.AreEqual("Engineering", result["program"], $"File type '{testCase.FileName}' should have correct hierarchy");
+            Assert.IsTrue(result.ContainsKey("course"), $"File type '{testCase.FileName}' should have course key");
             Assert.AreEqual("Software Engineering", result["course"], $"File type '{testCase.FileName}' should have correct hierarchy");
+            Assert.IsTrue(result.ContainsKey("class"), $"File type '{testCase.FileName}' should have class key");
             Assert.AreEqual("Design Patterns", result["class"], $"File type '{testCase.FileName}' should have correct hierarchy");
         }
     }

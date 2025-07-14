@@ -9,8 +9,8 @@ namespace NotebookAutomation.Tests.Core.Tools.Resolvers;
 [TestClass]
 public class ResourceMetadataResolverTests
 {
-    private ILogger<ResourceMetadataResolver> _logger;
-    private ResourceMetadataResolver _resolver;
+    private ILogger<ResourceMetadataResolver> _logger = null!;
+    private ResourceMetadataResolver _resolver = null!;
 
     [TestInitialize]
     public void Initialize()

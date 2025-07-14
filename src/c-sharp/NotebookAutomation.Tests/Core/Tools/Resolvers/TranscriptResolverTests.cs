@@ -9,8 +9,8 @@ namespace NotebookAutomation.Tests.Core.Tools.Resolvers;
 [TestClass]
 public class TranscriptResolverTests
 {
-    private ILogger<TranscriptResolver> _logger;
-    private TranscriptResolver _resolver;
+    private ILogger<TranscriptResolver> _logger = null!;
+    private TranscriptResolver _resolver = null!;
 
     [TestInitialize]
     public void Initialize()
