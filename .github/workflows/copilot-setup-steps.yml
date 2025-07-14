@@ -55,9 +55,3 @@ jobs:
 
       - name: Restore .NET dependencies
         run: dotnet restore src/c-sharp/NotebookAutomation.sln
-
-      - name: Setup Node.js (for Obsidian plugin)
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18.x"
-          cache: "npm"
