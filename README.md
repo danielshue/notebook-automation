@@ -107,26 +107,98 @@ The toolkit includes sophisticated synchronization capabilities that bridge your
 
 ## 📖 Documentation
 
-### Metadata Schema Reserved Tags and Universal Fields
+## 🔧 Metadata Schema System
 
-The metadata schema system supports both universal fields and reserved tags. Reserved tags (e.g., `auto-generated-state`) are included in the list of universal fields and are inherited as fields by all template types. This ensures that reserved tags are present in every template type for consistent metadata automation. Reserved tags are protected and cannot be overridden, but they are always present as fields in the schema. All top-level YAML keys must use PascalCase to match C# property names, and the deserializer is case-sensitive.
+The Notebook Automation toolkit features a powerful, extensible metadata schema system that provides unified metadata management across all processing operations.
 
-**Example:**
+### Schema Loader and Registry Pattern
 
-```yaml
-UniversalFields:
-  - auto-generated-state
-ReservedTags:
-  - auto-generated-state
+The **MetadataSchemaLoader** serves as the central component for schema-driven metadata automation, supporting:
+
+- **Unified Schema File**: Single `metadata-schema.yml` configuration for all metadata operations
+- **Registry Pattern**: Dynamic registration and runtime extension of field value resolvers  
+- **Plugin Extensibility**: Support for custom resolvers loaded from DLL plugins
+- **Inheritance System**: Recursive template type inheritance with base types and universal fields
+- **Validation**: Robust schema validation with reserved tag enforcement
+
+```csharp
+// Load schema and register resolvers
+var schemaLoader = new MetadataSchemaLoader("config/metadata-schema.yml", logger);
+schemaLoader.LoadResolversFromDirectory("./resolvers");
+
+// Access template definitions
+var pdfSchema = schemaLoader.TemplateTypes["pdf-reference"];
+
+// Resolve field values dynamically
+var dateCreated = schemaLoader.ResolveFieldValue("pdf-reference", "date-created", context);
 ```
 
-In this example, `auto-generated-state` will be present as a field in every template type that inherits universal fields.
+### Reserved Tags and Universal Fields
+
+The metadata schema system enforces consistent metadata through reserved tags and universal fields:
+
+- **Universal Fields**: Automatically inherited by all template types (e.g., `auto-generated-state`, `date-created`, `publisher`)
+- **Reserved Tags**: Protected system tags that cannot be overridden (e.g., `case-study`, `video`, `pdf`)
+- **Field Inheritance**: Reserved tags are automatically included as fields in all template types
+- **Validation**: Automatic validation prevents accidental overrides and ensures data integrity
+
+**Schema Structure:**
+
+```yaml
+# NOTE: All top-level keys must use PascalCase for C# compatibility
+TemplateTypes:
+  pdf-reference:
+    BaseTypes:
+      - universal-fields
+    Type: note/case-study
+    RequiredFields:
+      - comprehension
+      - status
+      - tags
+    Fields:
+      date-created:
+        Resolver: DateCreatedResolver
+      status:
+        Default: unread
+
+UniversalFields:
+  - auto-generated-state
+  - date-created
+  - publisher
+
+ReservedTags:
+  - auto-generated-state
+  - case-study
+  - video
+  - pdf
+```
+
+### Migration from Legacy metadata.yaml
+
+**Breaking Change**: The system has migrated from legacy `metadata.yaml` to the new `metadata-schema.yml` format.
+
+**Key Changes:**
+- File extension changed from `.yaml` to `.yml`
+- Schema structure unified under PascalCase top-level keys
+- Template definitions restructured with inheritance support
+- Reserved tag logic enforced automatically
+
+**Migration Steps:**
+1. Update file references from `metadata.yaml` to `metadata-schema.yml`
+2. Convert template definitions to new schema structure
+3. Update code to use `MetadataSchemaLoader` instead of legacy template managers
+4. Test reserved tag inheritance and validation
+
+For detailed migration instructions, see the [Migration Guide](docs/migration-guide.md).
 
 | Section | Description |
 |---------|-------------|
 | [**Getting Started**](docs/getting-started/index.md) | Installation, setup, and first steps |
 | [**User Guide**](docs/user-guide/index.md) | Comprehensive usage documentation |
 | [**Configuration**](docs/configuration/index.md) | Settings and customization options |
+| [**Migration Guide**](docs/migration-guide.md) | **NEW**: Upgrade from legacy metadata.yaml to new schema |
+| [**Metadata Schema**](docs/metadata-schema-configuration.md) | **NEW**: Complete metadata-schema.yml configuration reference |
+| [**Plugin Development**](docs/plugin-development.md) | **NEW**: Extensible resolver development and registry usage |
 | [**Tutorials**](docs/tutorials/index.md) | Step-by-step examples and workflows |
 | [**API Reference**](docs/api/index.md) | Detailed API documentation |
 | [**Developer Guide**](docs/developer-guide/index.md) | Building and contributing |

@@ -46,29 +46,59 @@ See the `config/` directory for example configurations:
 - `config.json` - Basic configuration
 - `example-config-with-timeout.json` - Configuration with timeout settings
 
-### Metadata Configuration
+### Metadata Schema Configuration
 
-Customize metadata extraction using `config/metadata.yaml`:
+The metadata system is configured using the unified `metadata-schema.yml` file, which defines template types, universal fields, type mappings, and reserved tags:
 
 ```yaml
-metadata:
-  course:
-    required_fields:
-      - name
-      - code
-      - instructor
-    optional_fields:
-      - semester
-      - year
+# NOTE: All top-level keys must use PascalCase for C# compatibility
+TemplateTypes:
+  pdf-reference:
+    BaseTypes:
+      - universal-fields
+    Type: note/case-study
+    RequiredFields:
+      - comprehension
+      - status
+      - completion-date
+      - authors
+      - tags
+    Fields:
+      publisher:
+        Default: University of Illinois at Urbana-Champaign
+      status:
+        Default: unread
+      comprehension:
+        Default: 0
+      date-created:
+        Resolver: DateCreatedResolver
+      title:
+        Default: "PDF Note"
+      tags:
+        Default: [pdf, reference]
+      page-count:
+        Resolver: PdfPageCountResolver
 
-  assignment:
-    required_fields:
-      - title
-      - due_date
-    optional_fields:
-      - points
-      - description
+UniversalFields:
+  - auto-generated-state
+  - date-created
+  - publisher
+
+ReservedTags:
+  - auto-generated-state
+  - case-study
+  - video
+  - pdf
 ```
+
+**Key Features:**
+- **Template Types**: Define structured schemas for different content types
+- **Universal Fields**: Fields automatically inherited by all template types
+- **Reserved Tags**: Protected system tags that cannot be overridden
+- **Field Resolvers**: Dynamic field population through registered resolvers
+- **Type Mapping**: Canonical type normalization for consistent processing
+
+For detailed schema configuration, see the [Metadata Schema Configuration Guide](../metadata-schema-configuration.md).
 
 ## Environment Variables
 

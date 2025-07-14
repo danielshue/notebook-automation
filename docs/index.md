@@ -119,6 +119,9 @@ This ensures your knowledge base remains fast and navigable while keeping all re
 | [Getting Started](getting-started/) | Installation, initial setup, and first steps |
 | [User Guide](user-guide/) | Complete usage documentation and examples |
 | [Configuration](configuration/) | System configuration, AI services, and integrations |
+| [Migration Guide](migration-guide.md) | **NEW**: Upgrade from legacy metadata.yaml to new schema |
+| [Metadata Schema](metadata-schema-configuration.md) | **NEW**: Complete metadata-schema.yml configuration reference |
+| [Plugin Development](plugin-development.md) | **NEW**: Extensible resolver development and registry usage |
 | [Developer Guide](developer-guide/) | Building from source, contributing, and architecture |
 | [API Reference](api/) | Complete C# API documentation |
 | [Troubleshooting](troubleshooting/) | Common issues, solutions, and debugging |
