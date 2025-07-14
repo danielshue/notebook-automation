@@ -100,16 +100,28 @@ public class VideoNoteBatchProcessorTests
             "---\ntitle: Test Video\ntags:\n  - test\n---\n\n## Note\n\nThis is a test note.");        // Instead of mocking DocumentNoteBatchProcessor, use a real instance
 
         // This avoids the issues with constructor parameters in mocks
+        var mockYamlHelper = new Mock<IYamlHelper>().Object;
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+            Mock.Of<ILogger<MetadataHierarchyDetector>>(),
+            _appConfig);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
+        var courseStructureExtractor = new CourseStructureExtractor(NullLogger<CourseStructureExtractor>.Instance, _appConfig);
+        var markdownNoteBuilder = new MarkdownNoteBuilder(mockYamlHelper, _appConfig);
+        
+        var videoNoteProcessor = new VideoNoteProcessor(
+            new Mock<ILogger<VideoNoteProcessor>>().Object,
+            new AISummarizer(new Mock<ILogger<AISummarizer>>().Object, null, null),
+            mockYamlHelper,
+            hierarchyDetector,
+            templateManager,
+            courseStructureExtractor,
+            markdownNoteBuilder,
+            new Mock<IOneDriveService>().Object,
+            _appConfig);
+            
         var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(
             new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>().Object,
-            new VideoNoteProcessor(new Mock<ILogger<VideoNoteProcessor>>().Object,
-                new AISummarizer(new Mock<ILogger<AISummarizer>>().Object, null, null),
-                new Mock<IYamlHelper>().Object,
-                new Mock<IMetadataHierarchyDetector>().Object,
-                MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(),
-                new CourseStructureExtractor(NullLogger<CourseStructureExtractor>.Instance, _appConfig),
-                new MarkdownNoteBuilder(new Mock<IYamlHelper>().Object, _appConfig),
-                new Mock<IOneDriveService>().Object),
+            videoNoteProcessor,
             new AISummarizer(new Mock<ILogger<AISummarizer>>().Object, null, null));
 
         // Fix TestContext issue

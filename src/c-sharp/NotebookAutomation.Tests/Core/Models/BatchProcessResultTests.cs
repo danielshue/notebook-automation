@@ -31,8 +31,9 @@ public class BatchProcessResultTests
         var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             mockAppConfig.Object);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
 
-        PdfNoteProcessor pdfNoteProcessor = new(_pdfLoggerMock.Object, _aiSummarizerMock.Object, Mock.Of<IYamlHelper>(), hierarchyDetector, Mock.Of<IMetadataTemplateManager>(), Mock.Of<ICourseStructureExtractor>(), markdownNoteBuilder);
+        PdfNoteProcessor pdfNoteProcessor = new(_pdfLoggerMock.Object, _aiSummarizerMock.Object, Mock.Of<IYamlHelper>(), hierarchyDetector, templateManager, Mock.Of<ICourseStructureExtractor>(), markdownNoteBuilder);
         DocumentNoteBatchProcessor<PdfNoteProcessor> batchProcessor = new(_loggerMock.Object, pdfNoteProcessor, _aiSummarizerMock.Object);
         _processor = new PdfNoteBatchProcessor(batchProcessor);
         _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());

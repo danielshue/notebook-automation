@@ -40,7 +40,7 @@ public class PdfNoteBatchProcessorTests
             var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
                 Mock.Of<ILogger<MetadataHierarchyDetector>>(),
                 mockAppConfig);
-            var templateManager = Mock.Of<IMetadataTemplateManager>();
+            var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
             var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>(); return new PdfNoteProcessor(
                 Mock.Of<ILogger<PdfNoteProcessor>>(),
                 new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>()),
