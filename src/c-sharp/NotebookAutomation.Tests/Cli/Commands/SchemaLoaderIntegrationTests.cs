@@ -18,7 +18,7 @@ public class SchemaLoaderIntegrationTests
     {
         // Arrange
         var logger = new Mock<ILogger<MetadataSchemaLoader>>();
-        var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yaml");
+        var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
         
         // Skip test if schema file doesn't exist in test environment
         if (!File.Exists(schemaPath))
@@ -46,7 +46,7 @@ public class SchemaLoaderIntegrationTests
     {
         // Arrange
         var logger = new Mock<ILogger<MetadataSchemaLoader>>();
-        var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yaml");
+        var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
         
         // Skip test if schema file doesn't exist in test environment
         if (!File.Exists(schemaPath))
@@ -73,7 +73,7 @@ public class SchemaLoaderIntegrationTests
     {
         // Arrange
         var logger = new Mock<ILogger<MetadataSchemaLoader>>();
-        var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yaml");
+        var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
         
         // Skip test if schema file doesn't exist in test environment
         if (!File.Exists(schemaPath))
@@ -125,7 +125,7 @@ public class SchemaLoaderIntegrationTests
     {
         // Arrange
         var logger = new Mock<ILogger<MetadataSchemaLoader>>();
-        var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yaml");
+        var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
         
         // Skip test if schema file doesn't exist in test environment
         if (!File.Exists(schemaPath))

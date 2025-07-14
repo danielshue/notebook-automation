@@ -37,7 +37,9 @@ public class PathsConfig
     /// </summary>
     /// <remarks>
     /// The metadata file contains structured information about the application's resources.
+    /// This property is deprecated. Use <see cref="MetadataSchemaFile"/> instead.
     /// </remarks>
+    [Obsolete("Use MetadataSchemaFile instead. This property will be removed in a future version.")]
     [JsonPropertyName("metadata_file")]
     public virtual string MetadataFile { get; set; } = string.Empty;
 

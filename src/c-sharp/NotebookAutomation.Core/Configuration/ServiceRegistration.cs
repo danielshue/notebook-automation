@@ -576,7 +576,7 @@ public static class ServiceRegistration
             // If not configured, use default path
             if (string.IsNullOrWhiteSpace(schemaPath))
             {
-                schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yaml");
+                schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
             }
             
             return new MetadataSchemaLoader(schemaPath, logger);
