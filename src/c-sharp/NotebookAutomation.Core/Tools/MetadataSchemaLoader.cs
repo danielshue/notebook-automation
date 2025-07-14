@@ -361,6 +361,7 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
     /// <para><b>Security:</b> Only trusted DLLs should be placed in the directory. Loading arbitrary DLLs may pose security risks.</para>
     /// <para><b>Performance:</b> Loading many DLLs may impact startup time. This method is intended for extensibility, not frequent invocation.</para>
     /// <para><b>Error Handling:</b> All exceptions are caught and logged; no exceptions are propagated to the caller.</para>
+    /// <para><b>Security Note:</b> This method loads and executes code from external DLL files. Only load plugins from trusted sources and validate plugin integrity before deployment.</para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -370,38 +371,70 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
     /// </example>
     public void LoadResolversFromDirectory(string directoryPath)
     {
+        // Validate directory existence before attempting to scan
         if (!Directory.Exists(directoryPath))
         {
             _logger.LogWarning($"Resolver directory not found: {directoryPath}");
             return;
         }
+        
+        // Scan for DLL files in the specified directory
         var dllFiles = Directory.GetFiles(directoryPath, "*.dll");
+        _logger.LogInformation($"Found {dllFiles.Length} DLL files in resolver directory: {directoryPath}");
+        
         foreach (var dll in dllFiles)
         {
             try
             {
+                // Load assembly from DLL file
+                // Security consideration: This loads and executes code from external files
                 var assembly = Assembly.LoadFrom(dll);
+                _logger.LogDebug($"Loaded assembly: {assembly.FullName} from {dll}");
+                
+                // Scan assembly for IFieldValueResolver implementations
+                var resolverTypes = 0;
                 foreach (var type in assembly.GetTypes())
                 {
-                    if (typeof(IFieldValueResolver).IsAssignableFrom(type) && !type.IsAbstract && type.IsClass)
+                    // Check if type implements IFieldValueResolver interface
+                    if (typeof(IFieldValueResolver).IsAssignableFrom(type) && 
+                        !type.IsAbstract && 
+                        type.IsClass)
                     {
-                        var resolver = (IFieldValueResolver?)Activator.CreateInstance(type);
-                        if (resolver != null)
+                        try
                         {
-                            ResolverRegistry.Register(type.FullName ?? type.Name, resolver);
-                            _logger.LogInformation($"Registered resolver: {type.FullName ?? type.Name} from {dll}");
-                            
-                            // Log additional info for file type resolvers
-                            if (resolver is IFileTypeMetadataResolver fileTypeResolver)
+                            // Instantiate resolver using parameterless constructor
+                            // Note: This assumes resolvers have default constructors
+                            var resolver = (IFieldValueResolver?)Activator.CreateInstance(type);
+                            if (resolver != null)
                             {
-                                _logger.LogInformation($"Registered file type resolver for '{fileTypeResolver.FileType}': {type.FullName ?? type.Name}");
+                                // Register resolver using full type name for uniqueness
+                                var resolverName = type.FullName ?? type.Name;
+                                ResolverRegistry.Register(resolverName, resolver);
+                                _logger.LogInformation($"Registered resolver: {resolverName} from {dll}");
+                                resolverTypes++;
+                                
+                                // Log additional information for file type resolvers
+                                if (resolver is IFileTypeMetadataResolver fileTypeResolver)
+                                {
+                                    _logger.LogInformation($"Registered file type resolver for '{fileTypeResolver.FileType}': {resolverName}");
+                                }
                             }
                         }
+                        catch (Exception ex)
+                        {
+                            _logger.LogError(ex, $"Failed to instantiate resolver type: {type.FullName} from {dll}");
+                        }
                     }
+                }
+                
+                if (resolverTypes == 0)
+                {
+                    _logger.LogWarning($"No IFieldValueResolver implementations found in {dll}");
                 }
             }
             catch (Exception ex)
             {
+                // Log assembly loading errors and continue with other DLLs
                 _logger.LogError(ex, $"Failed to load resolver DLL: {dll}");
             }
         }
@@ -483,6 +516,7 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
     /// <para>If a resolver is registered for the field, it is invoked with the provided context; otherwise, the default value from the schema is returned.</para>
     /// <para>If the template type or field does not exist, <c>null</c> is returned. No exceptions are thrown for missing types or fields.</para>
     /// <para>Inheritance is handled recursively, so fields from base types and universal fields are always available.</para>
+    /// <para><b>Security Note:</b> Resolver context may contain file paths and user input. Resolvers should validate and sanitize context data appropriately.</para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -492,31 +526,61 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
     /// </example>
     public object? ResolveFieldValue(string templateType, string fieldName, Dictionary<string, object>? context = null)
     {
+        // Early validation - check if template type exists
         if (!TemplateTypes.ContainsKey(templateType)) return null;
+        
         var typeSchema = TemplateTypes[templateType];
+        
+        // Check if field exists in the resolved schema (after inheritance)
         if (!typeSchema.Fields.ContainsKey(fieldName)) return null;
+        
         var fieldSchema = typeSchema.Fields[fieldName];
+        
+        // If field has a resolver configured, attempt to use it
         if (!string.IsNullOrEmpty(fieldSchema.Resolver))
         {
-            // Try short name first, then look for full names that end with the short name
+            // Phase 1: Try exact resolver name match
+            // This is the most common case and provides fastest lookup
             var resolver = ResolverRegistry.Get(fieldSchema.Resolver);
+            
+            // Phase 2: Fallback to partial name matching
+            // This supports scenarios where resolvers are registered with full class names
+            // but schema uses short names (e.g., "DateCreatedResolver" vs "MyNamespace.DateCreatedResolver")
             if (resolver == null)
             {
-                // Look for any registered resolver that ends with the short name
+                // Look for any registered resolver that ends with the specified name
+                // This allows flexible resolver naming while maintaining schema simplicity
                 foreach (var kvp in ResolverRegistry.GetAll())
                 {
+                    // Check both full suffix match and exact match for safety
                     if (kvp.Key.EndsWith($".{fieldSchema.Resolver}") || kvp.Key == fieldSchema.Resolver)
                     {
                         resolver = kvp.Value;
-                        break;
+                        break; // Use first match - registry should avoid naming conflicts
                     }
                 }
             }
+            
+            // If resolver found, invoke it with context
             if (resolver != null)
             {
-                return resolver.Resolve(fieldName, context);
+                try
+                {
+                    // Invoke resolver with field name and context
+                    // Context may contain file paths, user data, or other metadata
+                    return resolver.Resolve(fieldName, context);
+                }
+                catch (Exception ex)
+                {
+                    // Log resolver errors but don't throw - fall back to default value
+                    _logger.LogError(ex, "Error resolving field '{FieldName}' with resolver '{ResolverName}'", 
+                        fieldName, fieldSchema.Resolver);
+                }
             }
         }
+        
+        // Fallback to default value from schema
+        // This ensures graceful degradation when resolvers are unavailable
         return fieldSchema.Default;
     }
 
@@ -531,6 +595,7 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
     /// <para>Fields from base types are added only if they do not already exist in the derived type. Universal fields are always included if not present.</para>
     /// <para>This method is called recursively for each base type, ensuring deep inheritance is handled.</para>
     /// <para>Mutates <paramref name="typeSchema"/> in place; does not return a value.</para>
+    /// <para><b>Security Note:</b> This method processes user-provided YAML configuration. Field names and values are validated but not sanitized, as they are used internally for metadata generation.</para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -543,25 +608,36 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
     /// </example>
     private void ResolveTemplateType(string typeName, TemplateTypeSchema typeSchema, MetadataSchemaConfig schema)
     {
-        // Recursively inherit fields from base-types
+        // Phase 1: Recursively inherit fields from base-types
+        // This ensures that inheritance is resolved depth-first, allowing complex inheritance hierarchies
         if (typeSchema.BaseTypes != null)
         {
             foreach (var baseType in typeSchema.BaseTypes)
             {
+                // Special handling for universal fields inheritance
+                // Universal fields are a reserved base type that refers to the UniversalFields collection
                 if (baseType == "universal-fields" && schema.UniversalFields != null)
                 {
                     foreach (var field in schema.UniversalFields)
                     {
-                        // Reserved tags are allowed as fields per user request
+                        // Only add universal fields if they don't already exist in the derived type
+                        // This allows template types to override universal field definitions
                         if (!typeSchema.Fields.ContainsKey(field))
                             typeSchema.Fields[field] = new FieldSchema();
                     }
                 }
+                // Handle inheritance from other template types
                 else if (schema.TemplateTypes != null && schema.TemplateTypes.TryGetValue(baseType, out var baseSchema))
                 {
+                    // Recursively resolve the base type first to ensure all its inheritance is complete
+                    // This prevents incomplete inheritance when there are multiple levels of inheritance
                     ResolveTemplateType(baseType, baseSchema, schema);
+                    
+                    // Copy all fields from the base type to the derived type
                     foreach (var fieldKvp in baseSchema.Fields)
                     {
+                        // Only inherit fields that don't already exist in the derived type
+                        // This implements proper field overriding semantics
                         if (!typeSchema.Fields.ContainsKey(fieldKvp.Key))
                             typeSchema.Fields[fieldKvp.Key] = fieldKvp.Value;
                     }
@@ -569,13 +645,18 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
             }
         }
         
-        // Inject reserved tags as fields
+        // Phase 2: Inject reserved tags as fields
+        // Reserved tags are automatically added to all template types for system consistency
+        // This ensures that reserved tags are always available for validation and processing
         if (schema.ReservedTags != null)
         {
             foreach (var reservedTag in schema.ReservedTags)
             {
+                // Add reserved tags as fields only if they don't already exist
+                // This prevents overriding explicit field definitions for reserved tags
                 if (!typeSchema.Fields.ContainsKey(reservedTag))
                 {
+                    // Create empty field schema - reserved tags typically don't have defaults or resolvers
                     typeSchema.Fields[reservedTag] = new FieldSchema();
                 }
             }
