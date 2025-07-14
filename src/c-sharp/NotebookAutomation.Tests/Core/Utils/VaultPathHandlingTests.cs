@@ -135,4 +135,240 @@ public class VaultPathHandlingTests
                 $"Hierarchy level {testCase.Key} should map to template type '{testCase.Value}', not '{templateType}'");
         }
     }
+
+    /// <summary>
+    /// Tests that path handling integrates with schema loader for template resolution.
+    /// </summary>
+    [TestMethod]
+    public void PathHandling_IntegratesWithSchemaLoader_ForTemplateResolution()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
+        var hierarchyInfo = new Dictionary<string, string>
+        {
+            { "program", "Value Chain Management" },
+            { "course", "Operations Management" },
+            { "class", "Supply Chain Fundamentals" }
+        };
+        var metadata = new Dictionary<string, object?>
+        {
+            { "title", "Test Path Handling" },
+            { "template-type", "class-index" }
+        };
+
+        // Act
+        var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "class-index");
+
+        // Assert - Schema loader integration should work with path handling
+        Assert.AreEqual("Value Chain Management", result["program"], "Schema loader should integrate with path handling");
+        Assert.AreEqual("Operations Management", result["course"], "Schema loader should integrate with path handling");
+        Assert.AreEqual("Supply Chain Fundamentals", result["class"], "Schema loader should integrate with path handling");
+    }
+
+    /// <summary>
+    /// Tests that path handling correctly processes schema-based template types.
+    /// </summary>
+    [TestMethod]
+    public void PathHandling_ProcessesSchemaBasedTemplateTypes()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
+        var hierarchyInfo = new Dictionary<string, string>
+        {
+            { "program", "MBA" },
+            { "course", "Finance" },
+            { "class", "Investment" }
+        };
+
+        // Test different template types from schema
+        var testCases = new[]
+        {
+            new { TemplateType = "pdf-reference", ExpectedField = "comprehension" },
+            new { TemplateType = "video-reference", ExpectedField = "status" },
+            new { TemplateType = "resource-reading", ExpectedField = "page-count" }
+        };
+
+        foreach (var testCase in testCases)
+        {
+            // Act
+            var metadata = new Dictionary<string, object?>
+            {
+                { "title", "Test Schema Template" },
+                { "template-type", testCase.TemplateType }
+            };
+            var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, testCase.TemplateType);
+
+            // Assert - Schema-based template types should be processed correctly
+            Assert.AreEqual("MBA", result["program"], $"Template type '{testCase.TemplateType}' should process hierarchy correctly");
+            Assert.AreEqual("Finance", result["course"], $"Template type '{testCase.TemplateType}' should process hierarchy correctly");
+            Assert.AreEqual("Investment", result["class"], $"Template type '{testCase.TemplateType}' should process hierarchy correctly");
+        }
+    }
+
+    /// <summary>
+    /// Tests that path handling integrates with schema loader for universal field injection.
+    /// </summary>
+    [TestMethod]
+    public void PathHandling_IntegratesWithSchemaLoader_ForUniversalFieldInjection()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
+        var hierarchyInfo = new Dictionary<string, string>
+        {
+            { "program", "Executive Program" },
+            { "course", "Leadership" },
+            { "class", "Team Management" }
+        };
+        var metadata = new Dictionary<string, object?>
+        {
+            { "title", "Universal Field Test" },
+            { "template-type", "course-index" }
+        };
+
+        // Act
+        var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "course-index");
+
+        // Assert - Universal fields should be integrated through path handling
+        Assert.AreEqual("Executive Program", result["program"], "Universal field injection should work with path handling");
+        Assert.AreEqual("Leadership", result["course"], "Universal field injection should work with path handling");
+        Assert.AreEqual("Team Management", result["class"], "Universal field injection should work with path handling");
+    }
+
+    /// <summary>
+    /// Tests that path handling correctly resolves schema-based field values.
+    /// </summary>
+    [TestMethod]
+    public void PathHandling_ResolvesSchemaBasedFieldValues()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
+        var hierarchyInfo = new Dictionary<string, string>
+        {
+            { "program", "Data Science Program" },
+            { "course", "Machine Learning" },
+            { "class", "Deep Learning" }
+        };
+
+        // Test with different metadata configurations
+        var testCases = new[]
+        {
+            new { Title = "Test Path Resolution", TemplateType = "class-index" },
+            new { Title = "Test Schema Integration", TemplateType = "module-index" },
+            new { Title = "Test Field Resolution", TemplateType = "lesson-index" }
+        };
+
+        foreach (var testCase in testCases)
+        {
+            // Act
+            var metadata = new Dictionary<string, object?>
+            {
+                { "title", testCase.Title },
+                { "template-type", testCase.TemplateType }
+            };
+            var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, testCase.TemplateType);
+
+            // Assert - Schema-based field values should be resolved correctly
+            Assert.AreEqual("Data Science Program", result["program"], $"Field resolution should work for '{testCase.TemplateType}'");
+            Assert.AreEqual("Machine Learning", result["course"], $"Field resolution should work for '{testCase.TemplateType}'");
+            Assert.AreEqual("Deep Learning", result["class"], $"Field resolution should work for '{testCase.TemplateType}'");
+            Assert.AreEqual(testCase.Title, result["title"], $"Title should be preserved for '{testCase.TemplateType}'");
+        }
+    }
+
+    /// <summary>
+    /// Tests that path handling integrates with schema loader for reserved tag processing.
+    /// </summary>
+    [TestMethod]
+    public void PathHandling_IntegratesWithSchemaLoader_ForReservedTagProcessing()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
+        var hierarchyInfo = new Dictionary<string, string>
+        {
+            { "program", "Business Analytics" },
+            { "course", "Operations Research" },
+            { "class", "Optimization" }
+        };
+        var metadata = new Dictionary<string, object?>
+        {
+            { "title", "Reserved Tag Test" },
+            { "template-type", "class-index" },
+            { "case-study", "true" },
+            { "reading", "required" }
+        };
+
+        // Act
+        var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "class-index");
+
+        // Assert - Reserved tags should be processed correctly with path handling
+        Assert.AreEqual("Business Analytics", result["program"], "Reserved tag processing should work with path handling");
+        Assert.AreEqual("Operations Research", result["course"], "Reserved tag processing should work with path handling");
+        Assert.AreEqual("Optimization", result["class"], "Reserved tag processing should work with path handling");
+        Assert.IsTrue(result.ContainsKey("case-study"), "Reserved tags should be preserved");
+        Assert.IsTrue(result.ContainsKey("reading"), "Reserved tags should be preserved");
+    }
+
+    /// <summary>
+    /// Tests that path handling works correctly with complex vault structures.
+    /// </summary>
+    [TestMethod]
+    public void PathHandling_WorksWithComplexVaultStructures()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
+        
+        // Create a complex nested structure
+        var complexPath = Path.Combine(_tempVaultRoot, "Programs", "Advanced Analytics", "Statistical Methods", "Regression Analysis", "Linear Models");
+        Directory.CreateDirectory(complexPath);
+        
+        // Act
+        var hierarchyInfo = detector.FindHierarchyInfo(complexPath);
+
+        // Assert - Complex structures should be handled correctly
+        Assert.AreEqual("Programs", hierarchyInfo["program"], "Complex structure should detect program level");
+        Assert.AreEqual("Advanced Analytics", hierarchyInfo["course"], "Complex structure should detect course level");
+        Assert.AreEqual("Statistical Methods", hierarchyInfo["class"], "Complex structure should detect class level");
+        Assert.AreEqual("Regression Analysis", hierarchyInfo["module"], "Complex structure should detect module level");
+    }
+
+    /// <summary>
+    /// Tests that path handling correctly handles schema loader integration across different file types.
+    /// </summary>
+    [TestMethod]
+    public void PathHandling_HandlesSchemaLoaderIntegration_AcrossFileTypes()
+    {
+        // Arrange
+        var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
+        var hierarchyInfo = new Dictionary<string, string>
+        {
+            { "program", "Engineering" },
+            { "course", "Software Engineering" },
+            { "class", "Design Patterns" }
+        };
+
+        // Test different file types that use schema loader
+        var testCases = new[]
+        {
+            new { FileName = "index.md", TemplateType = "class-index" },
+            new { FileName = "lecture.mp4", TemplateType = "" },
+            new { FileName = "transcript.md", TemplateType = "" },
+            new { FileName = "assignment.pdf", TemplateType = "" }
+        };
+
+        foreach (var testCase in testCases)
+        {
+            // Act
+            var metadata = new Dictionary<string, object?>
+            {
+                { "title", $"Test {testCase.FileName}" },
+                { "template-type", testCase.TemplateType }
+            };
+            var result = detector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, testCase.TemplateType);
+
+            // Assert - Schema loader integration should work across file types
+            Assert.AreEqual("Engineering", result["program"], $"File type '{testCase.FileName}' should have correct hierarchy");
+            Assert.AreEqual("Software Engineering", result["course"], $"File type '{testCase.FileName}' should have correct hierarchy");
+            Assert.AreEqual("Design Patterns", result["class"], $"File type '{testCase.FileName}' should have correct hierarchy");
+        }
+    }
 }

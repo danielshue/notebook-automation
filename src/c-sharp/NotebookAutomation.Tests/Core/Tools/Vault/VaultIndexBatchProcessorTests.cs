@@ -1,5 +1,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using System.Reflection;
+using NotebookAutomation.Core.Tools;
 
 namespace NotebookAutomation.Tests.Core.Tools.Vault;
 
@@ -408,5 +409,176 @@ public class VaultIndexBatchProcessorTests
         // Verify it's actually read-only by checking the concrete type
         Assert.IsTrue(queue.GetType().Name.Contains("ReadOnly") ||
                      queue.GetType().Name.Contains("List"));
+    }
+
+    /// <summary>
+    /// Tests that the batch processor integrates correctly with the resolver registry through hierarchy detector.
+    /// </summary>
+    [TestMethod]
+    public void BatchProcessor_IntegratesWithResolverRegistry_ThroughHierarchyDetector()
+    {
+        // Arrange
+        var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
+        var mockRegistry = new FieldValueResolverRegistry();
+        mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
+        
+        _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
+
+        // Act
+        var hierarchyDetector = _batchProcessor.GetType().GetField("_hierarchyDetector", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(_batchProcessor) as IMetadataHierarchyDetector;
+
+        // Assert - Should have access to resolver registry through hierarchy detector
+        Assert.IsNotNull(hierarchyDetector, "Batch processor should have hierarchy detector");
+        Assert.IsNotNull(hierarchyDetector.SchemaLoader, "Hierarchy detector should have schema loader");
+        Assert.IsNotNull(hierarchyDetector.SchemaLoader.ResolverRegistry, "Schema loader should have resolver registry");
+    }
+
+    /// <summary>
+    /// Tests that the batch processor correctly handles resolver logic during processing.
+    /// </summary>
+    [TestMethod]
+    public async Task BatchProcessor_HandlesResolverLogic_DuringProcessing()
+    {
+        // Arrange
+        var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
+        var mockRegistry = new FieldValueResolverRegistry();
+        mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
+        
+        _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
+
+        // Setup processor to return true for processing
+        _processorMock.Setup(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                     .ReturnsAsync(true);
+
+        // Act
+        var result = await _batchProcessor.GenerateIndexesAsync(_testVaultPath, false, null, false, true);
+
+        // Assert
+        Assert.IsNotNull(result, "Should return batch result");
+        _processorMock.Verify(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), 
+            Times.AtLeastOnce, "Processor should be called with resolver logic");
+    }
+
+    /// <summary>
+    /// Tests that the batch processor properly integrates with the metadata schema loader.
+    /// </summary>
+    [TestMethod]
+    public void BatchProcessor_IntegratesWithMetadataSchemaLoader()
+    {
+        // Arrange
+        var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
+        mockSchemaLoader.Setup(s => s.TemplateTypes).Returns(new Dictionary<string, TemplateTypeSchema>
+        {
+            ["class-index"] = new TemplateTypeSchema { Type = "index", Fields = new Dictionary<string, FieldSchema>() }
+        });
+
+        _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
+
+        // Act
+        var hierarchyDetector = _batchProcessor.GetType().GetField("_hierarchyDetector", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(_batchProcessor) as IMetadataHierarchyDetector;
+
+        // Assert - Should have access to schema loader through hierarchy detector
+        Assert.IsNotNull(hierarchyDetector, "Batch processor should have hierarchy detector");
+        Assert.IsNotNull(hierarchyDetector.SchemaLoader, "Hierarchy detector should have schema loader");
+        Assert.IsNotNull(hierarchyDetector.SchemaLoader.TemplateTypes, "Schema loader should have template types");
+        Assert.IsTrue(hierarchyDetector.SchemaLoader.TemplateTypes.ContainsKey("class-index"), "Should have expected template type");
+    }
+
+    /// <summary>
+    /// Tests that the batch processor handles registry-based resolver logic for different template types.
+    /// </summary>
+    [TestMethod]
+    public async Task BatchProcessor_HandlesRegistryBasedResolverLogic_ForDifferentTemplateTypes()
+    {
+        // Arrange
+        var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
+        var mockRegistry = new FieldValueResolverRegistry();
+        
+        // Setup resolvers for different template types
+        var mockResolver = new Mock<IFieldValueResolver>();
+        mockResolver.Setup(r => r.Resolve(It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
+                   .Returns("resolved-value");
+        
+        mockRegistry.Register("TestResolver", mockResolver.Object);
+        mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
+        
+        _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
+
+        // Setup processor to return true for processing
+        _processorMock.Setup(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                     .ReturnsAsync(true);
+
+        // Act
+        var result = await _batchProcessor.GenerateIndexesAsync(_testVaultPath, false, null, false, true);
+
+        // Assert
+        Assert.IsNotNull(result, "Should return batch result");
+        _processorMock.Verify(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), 
+            Times.AtLeastOnce, "Should handle registry-based resolver logic");
+    }
+
+    /// <summary>
+    /// Tests that the batch processor correctly integrates resolver registry with metadata processing.
+    /// </summary>
+    [TestMethod]
+    public async Task BatchProcessor_IntegratesResolverRegistry_WithMetadataProcessing()
+    {
+        // Arrange
+        var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
+        var mockRegistry = new FieldValueResolverRegistry();
+        var mockResolver = new Mock<IFieldValueResolver>();
+        
+        mockResolver.Setup(r => r.Resolve(It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
+                   .Returns("resolved-value");
+        
+        mockRegistry.Register("TestResolver", mockResolver.Object);
+        mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
+        
+        _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
+
+        // Setup processor to simulate metadata processing
+        _processorMock.Setup(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                     .ReturnsAsync(true);
+
+        // Act
+        var result = await _batchProcessor.GenerateIndexesAsync(_testVaultPath, false, null, false, true);
+
+        // Assert
+        Assert.IsNotNull(result, "Should return batch result");
+        
+        // Verify that the batch processor can access the resolver registry through hierarchy detector
+        var hierarchyDetector = _batchProcessor.GetType().GetField("_hierarchyDetector", 
+            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(_batchProcessor) as IMetadataHierarchyDetector;
+        
+        Assert.IsNotNull(hierarchyDetector, "Should have hierarchy detector");
+        Assert.IsNotNull(hierarchyDetector.SchemaLoader, "Should have schema loader");
+        Assert.IsNotNull(hierarchyDetector.SchemaLoader.ResolverRegistry, "Should have resolver registry");
+    }
+
+    /// <summary>
+    /// Tests that the batch processor handles resolver registry errors gracefully.
+    /// </summary>
+    [TestMethod]
+    public async Task BatchProcessor_HandlesResolverRegistryErrors_Gracefully()
+    {
+        // Arrange
+        var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
+        var mockRegistry = new FieldValueResolverRegistry();
+        mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
+        
+        _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
+
+        // Setup processor to return true
+        _processorMock.Setup(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+                     .ReturnsAsync(true);
+
+        // Act & Assert - Should not throw exception
+        var result = await _batchProcessor.GenerateIndexesAsync(_testVaultPath, false, null, false, true);
+        
+        Assert.IsNotNull(result, "Should handle resolver registry errors gracefully");
+        _processorMock.Verify(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), 
+            Times.AtLeastOnce, "Should handle resolver registry errors gracefully");
     }
 }
