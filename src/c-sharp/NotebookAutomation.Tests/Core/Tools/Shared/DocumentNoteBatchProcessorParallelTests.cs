@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using System.Reflection;
 
@@ -21,10 +23,10 @@ public class DocumentNoteBatchProcessorParallelTests
         var mockAppConfig = new AppConfig();
         mockAppConfig.Paths = new PathsConfig { NotebookVaultFullpathRoot = Path.GetTempPath() }; var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, mockAppConfig);
-        var hierarchyDetector = new MetadataHierarchyDetector(
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             mockAppConfig);
-        var templateManager = Mock.Of<IMetadataTemplateManager>();
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>(); var pdfProcessor = new PdfNoteProcessor(
             Mock.Of<ILogger<PdfNoteProcessor>>(),
             new TestableAISummarizer(Mock.Of<ILogger<AISummarizer>>()),

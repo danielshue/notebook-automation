@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Tools;
 
@@ -6,7 +8,7 @@ public class VideoNoteProcessorTests
 {
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
-        return new MetadataHierarchyDetector(
+        return MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             new AppConfig());
     }
@@ -31,10 +33,7 @@ public class VideoNoteProcessorTests
             promptService,
             null);
         Mock<IYamlHelper> yamlHelperMock = new();
-        var hierarchyDetector = CreateMetadataHierarchyDetector(); var templateManager = new MetadataTemplateManager(
-            Mock.Of<ILogger<MetadataTemplateManager>>(),
-            appConfig,
-            yamlHelperMock.Object);
+        var hierarchyDetector = CreateMetadataHierarchyDetector(); var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelperMock.Object, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer, yamlHelperMock.Object, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder);

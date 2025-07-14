@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Tests.Core.TestDoubles;
 
@@ -27,7 +29,7 @@ public class MarkdownNoteProcessorTests
     {
         var logger = new Mock<ILogger<MetadataHierarchyDetector>>().Object;
         var appConfig = new AppConfig { Paths = new PathsConfig { NotebookVaultFullpathRoot = Environment.CurrentDirectory } };
-        return new MetadataHierarchyDetector(logger, appConfig);
+        return MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
     }
 
     /// <summary>

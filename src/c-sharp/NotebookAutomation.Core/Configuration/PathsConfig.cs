@@ -41,6 +41,16 @@ public class PathsConfig
     [JsonPropertyName("metadata_file")]
     public virtual string MetadataFile { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Gets or sets path to the metadata schema file.
+    /// </summary>
+    /// <remarks>
+    /// The metadata schema file contains the schema definitions for template types, universal fields,
+    /// type mappings, and reserved tags used by the metadata automation system.
+    /// </remarks>
+    [JsonPropertyName("metadata_schema_file")]
+    public virtual string MetadataSchemaFile { get; set; } = string.Empty;
+
     /// <summary>    /// Gets or sets base path for OneDrive resources.
     /// </summary>
     /// <remarks>

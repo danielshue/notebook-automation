@@ -1,3 +1,5 @@
+using NotebookAutomation.Tests.Core.Helpers;
+using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Tests.Core.TestDoubles;
 
@@ -159,7 +161,7 @@ metadata:
             _aiSummarizer,
             _yamlHelperMock.Object,
             CreateMetadataHierarchyDetector(),
-            new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
+            MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(),
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
@@ -201,7 +203,7 @@ metadata:
             _aiSummarizer,
             _yamlHelperMock.Object,
             CreateMetadataHierarchyDetector(),
-            new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
+            MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(),
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
@@ -244,7 +246,7 @@ metadata:
             _aiSummarizer,
             _yamlHelperMock.Object,
             CreateMetadataHierarchyDetector(),
-            new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
+            MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(),
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
@@ -280,10 +282,7 @@ metadata:
             _aiSummarizer,
             _yamlHelperMock.Object,
             CreateMetadataHierarchyDetector(),
-            new MetadataTemplateManager(
-                Mock.Of<ILogger<MetadataTemplateManager>>(),
-                _testAppConfig,
-                _yamlHelperMock.Object),
+            MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(),
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             null, // OneDriveService is null to disable OneDrive functionality
@@ -327,7 +326,7 @@ metadata:
             _aiSummarizer,
             _yamlHelperMock.Object,
             CreateMetadataHierarchyDetector(),
-            new MetadataTemplateManager(NullLogger<MetadataTemplateManager>.Instance, _testAppConfig, _yamlHelperMock.Object),
+            MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(),
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
@@ -354,10 +353,9 @@ metadata:
     }
     private MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
-        return new MetadataHierarchyDetector(
+        return MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             NullLogger<MetadataHierarchyDetector>.Instance,
-            _testAppConfig)
-        ;
+            _testAppConfig);
     }
 
     /// <summary>
@@ -366,13 +364,10 @@ metadata:
 
     private VideoNoteProcessor CreateVideoNoteProcessor()
     {
-        var hierarchyDetector = new MetadataHierarchyDetector(
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             Mock.Of<ILogger<MetadataHierarchyDetector>>(),
             _testAppConfig);
-        var templateManager = new MetadataTemplateManager(
-            Mock.Of<ILogger<MetadataTemplateManager>>(),
-            _testAppConfig,
-            _yamlHelperMock.Object);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var courseStructureExtractor = new CourseStructureExtractor(
             Mock.Of<ILogger<CourseStructureExtractor>>());
         var markdownNoteBuilder = new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig);
