@@ -489,17 +489,19 @@ jobs:
           PLUGIN_DIR="$PLUGIN_ID"
           mkdir -p "$PLUGIN_DIR"
           # Copy required plugin files (fail if missing)
-          for f in main.js manifest.json styles.css default-config.json metadata-schema.yml; do
-            if [ ! -f "src/obsidian-plugin/dist/$f" ] && [ ! -f "src/obsidian-plugin/$f" ] && [ ! -f "config/$f" ]; then
+          for f in main.js manifest.json styles.css default-config.json metadata-schema.yml BaseBlockTemplate.yml chunk_summary_prompt.md final_summary_prompt.md; do
+            if [ ! -f "src/obsidian-plugin/dist/$f" ] && [ ! -f "src/obsidian-plugin/$f" ] && [ ! -f "config/$f" ] && [ ! -f "prompts/$f" ]; then
               echo "❌ Required file missing: $f"; exit 1
             fi
-            # Prefer dist/ for built files, fallback to root for manifest/styles/config, fallback to config for metadata-schema.yml
+            # Prefer dist/ for built files, fallback to root for manifest/styles/config, fallback to config/prompts for others
             if [ -f "src/obsidian-plugin/dist/$f" ]; then
               cp "src/obsidian-plugin/dist/$f" "$PLUGIN_DIR/"
             elif [ -f "src/obsidian-plugin/$f" ]; then
               cp "src/obsidian-plugin/$f" "$PLUGIN_DIR/"
             elif [ -f "config/$f" ]; then
               cp "config/$f" "$PLUGIN_DIR/"
+            elif [ -f "prompts/$f" ]; then
+              cp "prompts/$f" "$PLUGIN_DIR/"
             fi
           done
           # Copy all executables if present

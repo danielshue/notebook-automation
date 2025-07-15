@@ -523,6 +523,7 @@ interface NotebookAutomationSettings {
   recursiveDirectorySync?: boolean;
   recursiveIndexBuild?: boolean;
   advancedConfiguration?: boolean;
+  baseBlockTemplateFilename?: string;
 }
 
 const DEFAULT_SETTINGS: NotebookAutomationSettings = {
@@ -542,6 +543,7 @@ const DEFAULT_SETTINGS: NotebookAutomationSettings = {
   recursiveDirectorySync: true,
   recursiveIndexBuild: false,
   advancedConfiguration: false,
+  baseBlockTemplateFilename: "BaseBlockTemplate.yml",
 };
 
 export default class NotebookAutomationPlugin extends Plugin {
@@ -1689,6 +1691,20 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
           });
       });
 
+    // Base Block Template Filename (Advanced)
+    if (this.plugin.settings.advancedConfiguration) {
+      new Setting(flagsGroup)
+        .setName("Base Block Template Filename")
+        .setDesc("Filename for the base block template used in markdown generation. This should match the template file present in your config directory. Changing this allows you to use a custom template for generated markdown blocks.")
+        .addText(text => {
+          text.setValue(this.plugin.settings.baseBlockTemplateFilename || "BaseBlockTemplate.yml")
+            .onChange(async (value) => {
+              this.plugin.settings.baseBlockTemplateFilename = value;
+              await this.plugin.saveSettings();
+            });
+        });
+    }
+
     // Configuration section
     containerEl.createEl("h3", { text: "Configuration", cls: "notebook-automation-section-header" });
 
@@ -1939,6 +1955,13 @@ class NotebookAutomationSettingTab extends PluginSettingTab {
       },
     ];
     const paths = configJson.paths || {};
+    // Add base_block_template_filename to config display
+    keyMeta.push({
+      key: 'base_block_template_filename',
+      label: 'Base Block Template Filename',
+      desc: 'Filename for the base block template used in markdown generation.',
+      icon: ''
+    });
     const updatedPaths: Record<string, string> = { ...paths };
 
     // Add path configuration fields

@@ -31,7 +31,13 @@ const pluginFiles = [
     { src: 'styles.css', dest: 'styles.css', required: true },
     { src: 'default-config.json', dest: 'default-config.json', required: true },
     // Add metadata-schema.yml from config folder
-    { src: '../config/metadata-schema.yml', dest: 'metadata-schema.yml', required: true }
+    { src: '../config/metadata-schema.yml', dest: 'metadata-schema.yml', required: true },
+    // Add BaseBlockTemplate.yml from config folder
+    { src: '../config/BaseBlockTemplate.yml', dest: 'BaseBlockTemplate.yml', required: true },
+    // Add chunk_summary_prompt.md from prompts folder
+    { src: '../prompts/chunk_summary_prompt.md', dest: 'chunk_summary_prompt.md', required: true },
+    // Add final_summary_prompt.md from prompts folder
+    { src: '../prompts/final_summary_prompt.md', dest: 'final_summary_prompt.md', required: true }
 ];
 
 console.log('📋 Copying plugin files...');
@@ -40,9 +46,11 @@ const moduleDir = fileURLToPath(new URL('.', import.meta.url));
 
 for (const file of pluginFiles) {
     let srcPath;
-    if (file.src === '../config/metadata-schema.yml') {
-        // Use absolute path for metadata-schema.yml
-        srcPath = resolve(moduleDir, '../../config/metadata-schema.yml');
+    // Use absolute paths for files outside plugin folder
+    if (file.src.startsWith('../config/')) {
+        srcPath = resolve(moduleDir, '../../config/', file.src.replace('../config/', ''));
+    } else if (file.src.startsWith('../prompts/')) {
+        srcPath = resolve(moduleDir, '../../prompts/', file.src.replace('../prompts/', ''));
     } else {
         srcPath = join(currentDir, file.src);
     }

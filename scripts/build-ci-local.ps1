@@ -145,12 +145,16 @@ try {
                     throw "Plugin build failed with exit code $LASTEXITCODE"
                 }
 
+
                 # Verify build outputs
                 $mainJs = Join-Path $pluginDistPath "main.js"
                 $manifestJson = Join-Path $pluginDistPath "manifest.json"
                 $stylesCss = Join-Path $pluginDistPath "styles.css"
                 $defaultConfigJson = Join-Path $pluginDistPath "default-config.json"
                 $metadataSchemaYml = Join-Path $pluginDistPath "metadata-schema.yml"
+                $baseBlockTemplateYml = Join-Path $RepositoryRoot "config\BaseBlockTemplate.yml"
+                $chunkSummaryPromptMd = Join-Path $RepositoryRoot "prompts\chunk_summary_prompt.md"
+                $finalSummaryPromptMd = Join-Path $RepositoryRoot "prompts\final_summary_prompt.md"
 
                 $buildOutputs = @()
                 if (Test-Path $mainJs) { $buildOutputs += "✓ main.js" }
@@ -158,6 +162,9 @@ try {
                 if (Test-Path $stylesCss) { $buildOutputs += "✓ styles.css" }
                 if (Test-Path $defaultConfigJson) { $buildOutputs += "✓ default-config.json" }
                 if (Test-Path $metadataSchemaYml) { $buildOutputs += "✓ metadata-schema.yml" }
+                if (Test-Path $baseBlockTemplateYml) { $buildOutputs += "✓ BaseBlockTemplate.yml" }
+                if (Test-Path $chunkSummaryPromptMd) { $buildOutputs += "✓ chunk_summary_prompt.md" }
+                if (Test-Path $finalSummaryPromptMd) { $buildOutputs += "✓ final_summary_prompt.md" }
 
                 # Ensure metadata-schema.yml is present in dist, copy from config if missing
                 if (-not (Test-Path $metadataSchemaYml)) {
@@ -171,6 +178,10 @@ try {
                         Write-Warning "metadata-schema.yml not found in config folder. Plugin may be incomplete."
                     }
                 }
+                # Copy additional plugin files to dist
+                if (Test-Path $baseBlockTemplateYml) { Copy-Item $baseBlockTemplateYml $pluginDistPath -Force }
+                if (Test-Path $chunkSummaryPromptMd) { Copy-Item $chunkSummaryPromptMd $pluginDistPath -Force }
+                if (Test-Path $finalSummaryPromptMd) { Copy-Item $finalSummaryPromptMd $pluginDistPath -Force }
 
                 if ($buildOutputs.Count -gt 0) {
                     Write-Success "Obsidian plugin build completed successfully"
@@ -726,17 +737,31 @@ try {
                 throw "npm run build failed with exit code $LASTEXITCODE"
             }
 
+
             # Verify build outputs
             $mainJs = Join-Path $pluginDistPath "main.js"
             $manifestJson = Join-Path $pluginDistPath "manifest.json"
             $stylesCss = Join-Path $pluginDistPath "styles.css"
             $defaultConfigJson = Join-Path $pluginDistPath "default-config.json"
+            $metadataSchemaYml = Join-Path $pluginDistPath "metadata-schema.yml"
+            $baseBlockTemplateYml = Join-Path $RepositoryRoot "config\BaseBlockTemplate.yml"
+            $chunkSummaryPromptMd = Join-Path $RepositoryRoot "prompts\chunk_summary_prompt.md"
+            $finalSummaryPromptMd = Join-Path $RepositoryRoot "prompts\final_summary_prompt.md"
 
             $buildOutputs = @()
             if (Test-Path $mainJs) { $buildOutputs += "main.js" }
             if (Test-Path $manifestJson) { $buildOutputs += "manifest.json" }
             if (Test-Path $stylesCss) { $buildOutputs += "styles.css" }
             if (Test-Path $defaultConfigJson) { $buildOutputs += "default-config.json" }
+            if (Test-Path $metadataSchemaYml) { $buildOutputs += "metadata-schema.yml" }
+            if (Test-Path $baseBlockTemplateYml) { $buildOutputs += "BaseBlockTemplate.yml" }
+            if (Test-Path $chunkSummaryPromptMd) { $buildOutputs += "chunk_summary_prompt.md" }
+            if (Test-Path $finalSummaryPromptMd) { $buildOutputs += "final_summary_prompt.md" }
+
+            # Copy additional plugin files to dist
+            if (Test-Path $baseBlockTemplateYml) { Copy-Item $baseBlockTemplateYml $pluginDistPath -Force }
+            if (Test-Path $chunkSummaryPromptMd) { Copy-Item $chunkSummaryPromptMd $pluginDistPath -Force }
+            if (Test-Path $finalSummaryPromptMd) { Copy-Item $finalSummaryPromptMd $pluginDistPath -Force }
 
             if ($buildOutputs.Count -gt 0) {
                 Write-Host "Successfully built plugin files:" -ForegroundColor $Yellow
@@ -761,20 +786,8 @@ try {
                     }
 
                     # Copy plugin files from the 'dist' directory
-                    $filesToCopy = @("main.js", "manifest.json", "styles.css")
+                    $filesToCopy = @("main.js", "manifest.json", "styles.css", "default-config.json", "metadata-schema.yml", "BaseBlockTemplate.yml", "chunk_summary_prompt.md", "final_summary_prompt.md")
                     $distAbsolutePath = Join-Path $RepositoryRoot "dist"
-                    if (Test-Path (Join-Path $distAbsolutePath "default-config.json")) {
-                        $filesToCopy += "default-config.json"
-                    }
-
-                    # Ensure 'dist' directory exists and contains the required files
-                    $mainJsAbsolutePath = Join-Path $distAbsolutePath "main.js"
-                    if (-not (Test-Path $mainJsAbsolutePath)) {
-                        throw "Error: '$mainJsAbsolutePath' not found. Ensure the build process generates this file."
-                    }
-                    if (-not (Test-Path (Join-Path $distAbsolutePath "default-config.json"))) {
-                        Write-Warning "Warning: 'default-config.json' not found in $distAbsolutePath. Skipping this file."
-                    }
 
                     foreach ($file in $filesToCopy) {
                         $src = Join-Path $distAbsolutePath $file

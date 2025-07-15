@@ -8,7 +8,8 @@
         "metadata_file": "D:/source/notebook-automation/config/metadata.yaml",
         "onedrive_resources_basepath": "/Education/MBA-Resources",
         "logging_dir": "d:/source/notebook-automation/logs",
-        "prompts_path": "d:/source/notebook-automation/prompts"
+        "prompts_path": "d:/source/notebook-automation/prompts",
+        "base_block_template_filename": "BaseBlockTemplate.yml"
     },
     "logging": {
         "max_file_size_mb": 50,

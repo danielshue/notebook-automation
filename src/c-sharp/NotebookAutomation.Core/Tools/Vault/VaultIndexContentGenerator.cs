@@ -93,6 +93,7 @@ public class VaultIndexContentGenerator(
     private readonly IMetadataHierarchyDetector _hierarchyDetector = hierarchyDetector;
     private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder;
     private readonly string _defaultVaultRootPath = appConfig.Paths.NotebookVaultFullpathRoot;
+    private readonly string _baseBlockTemplateFilename = appConfig.Paths.BaseBlockTemplateFilename;
 
     // Cache for discovered root index filenames to avoid expensive file system lookups
     private readonly Dictionary<string, string> _discoveredIndexFilenames = new();
@@ -899,9 +900,9 @@ public class VaultIndexContentGenerator(
         // Possible locations for the template file
         List<string> possiblePaths = new()
         {
-            Path.Combine(!string.IsNullOrEmpty(vaultPath) ? vaultPath : _defaultVaultRootPath, "..", "config", "BaseBlockTemplate.yaml"),
-            Path.Combine(Directory.GetCurrentDirectory(), "config", "BaseBlockTemplate.yaml"),
-            Path.Combine(AppContext.BaseDirectory, "config", "BaseBlockTemplate.yaml"),
+            Path.Combine(!string.IsNullOrEmpty(vaultPath) ? vaultPath : _defaultVaultRootPath, "..", "config", _baseBlockTemplateFilename),
+            Path.Combine(Directory.GetCurrentDirectory(), "config", _baseBlockTemplateFilename),
+            Path.Combine(AppContext.BaseDirectory, "config", _baseBlockTemplateFilename),
         };
 
         // Check each possible path
@@ -918,10 +919,10 @@ public class VaultIndexContentGenerator(
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
         for (int i = 0; i < 8 && dir != null; i++, dir = dir.Parent)
         {
-            var candidate = Path.Combine(dir.FullName, "config", "BaseBlockTemplate.yaml");
+            var candidate = Path.Combine(dir.FullName, "config", _baseBlockTemplateFilename);
             if (File.Exists(candidate))
             {
-                _logger.LogDebug($"Found BaseBlockTemplate.yaml by walking up from executable: {candidate}");
+                _logger.LogDebug($"Found {_baseBlockTemplateFilename} by walking up from executable: {candidate}");
                 return candidate;
             }
         }
