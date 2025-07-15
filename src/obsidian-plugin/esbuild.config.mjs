@@ -13,13 +13,13 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === "production");
 
-// Point to repository root dist directory
-const rootDistDir = resolve("../../dist");
-const outputFile = resolve(rootDistDir, "main.js");
+// Point to plugin dist directory
+const pluginDistDir = resolve("./dist");
+const outputFile = resolve(pluginDistDir, "main.js");
 
-// Ensure repository root dist directory exists
+// Ensure plugin dist directory exists
 try {
-	mkdirSync(rootDistDir, { recursive: true });
+	mkdirSync(pluginDistDir, { recursive: true });
 } catch (err) {
 	// Directory already exists, ignore
 }

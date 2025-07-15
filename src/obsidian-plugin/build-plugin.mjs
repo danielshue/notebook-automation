@@ -11,7 +11,7 @@ import { resolve, join } from "path";
  * 3. Ensuring executables from CI builds are preserved in the dist directory
  */
 
-const distRoot = resolve('../../dist');
+const distRoot = resolve('./dist');
 const currentDir = process.cwd();
 
 console.log('🔨 Building Obsidian plugin...');
