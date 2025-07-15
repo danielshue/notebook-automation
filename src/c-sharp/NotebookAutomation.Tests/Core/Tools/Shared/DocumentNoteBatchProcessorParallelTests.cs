@@ -1,8 +1,8 @@
-using NotebookAutomation.Tests.Core.Helpers;
-using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using System.Reflection;
 
+using NotebookAutomation.Core.Tools;
+using NotebookAutomation.Tests.Core.Helpers;
 using NotebookAutomation.Tests.Core.TestDoubles;
 
 namespace NotebookAutomation.Tests.Core.Tools.Shared;

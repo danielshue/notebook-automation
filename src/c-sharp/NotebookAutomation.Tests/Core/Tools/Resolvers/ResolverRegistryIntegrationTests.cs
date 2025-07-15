@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+
 using NotebookAutomation.Core.Tools;
 using NotebookAutomation.Core.Tools.Resolvers;
 
@@ -45,7 +46,7 @@ public class ResolverRegistryIntegrationTests
         Assert.IsNotNull(_registry.GetFileTypeResolver("tag"));
         Assert.IsNotNull(_registry.GetFileTypeResolver("resource"));
         Assert.IsNotNull(_registry.GetFileTypeResolver("transcript"));
-        
+
         Assert.AreEqual(4, _registry.GetAllFileTypeResolvers().Count);
     }
 
@@ -63,7 +64,7 @@ public class ResolverRegistryIntegrationTests
         var retrievedResolver = _registry.Get("MarkdownMetadataResolver");
         Assert.IsNotNull(retrievedResolver);
         Assert.IsInstanceOfType(retrievedResolver, typeof(MarkdownMetadataResolver));
-        
+
         // Should also be available as file type resolver
         var fileTypeResolver = _registry.GetFileTypeResolver("markdown");
         Assert.IsNotNull(fileTypeResolver);
@@ -76,7 +77,7 @@ public class ResolverRegistryIntegrationTests
         // Arrange
         var markdownLogger = new Mock<ILogger<MarkdownMetadataResolver>>().Object;
         var tagLogger = new Mock<ILogger<TagResolver>>().Object;
-        
+
         var markdownResolver = new MarkdownMetadataResolver(markdownLogger);
         var tagResolver = new TagResolver(tagLogger);
 
@@ -111,10 +112,10 @@ This is a test document with some content.";
             Assert.IsTrue(markdownMetadata.ContainsKey("title"));
             Assert.IsTrue(markdownMetadata.ContainsKey("tags"));
             Assert.IsTrue(markdownMetadata.ContainsKey("word-count"));
-            
+
             Assert.IsTrue(tagMetadata.ContainsKey("normalized-tags"));
             Assert.IsTrue(tagMetadata.ContainsKey("tag-count"));
-            
+
             var normalizedTags = tagMetadata["normalized-tags"] as List<string>;
             Assert.IsNotNull(normalizedTags);
             Assert.IsTrue(normalizedTags.Count > 0);
@@ -133,7 +134,7 @@ This is a test document with some content.";
     {
         // Arrange
         var initialResolverCount = _registry.GetAllFileTypeResolvers().Count;
-        
+
         // Act - Add resolvers at runtime
         var markdownLogger = new Mock<ILogger<MarkdownMetadataResolver>>().Object;
         var markdownResolver = new MarkdownMetadataResolver(markdownLogger);
@@ -145,7 +146,7 @@ This is a test document with some content.";
 
         // Assert
         Assert.AreEqual(initialResolverCount + 2, _registry.GetAllFileTypeResolvers().Count);
-        
+
         // Act - Replace existing resolver
         var newTagLogger = new Mock<ILogger<TagResolver>>().Object;
         var newTagResolver = new TagResolver(newTagLogger);
@@ -162,7 +163,7 @@ This is a test document with some content.";
         // Arrange
         var markdownLogger = new Mock<ILogger<MarkdownMetadataResolver>>().Object;
         var resourceLogger = new Mock<ILogger<ResourceMetadataResolver>>().Object;
-        
+
         var markdownResolver = new MarkdownMetadataResolver(markdownLogger);
         var resourceResolver = new ResourceMetadataResolver(resourceLogger);
 
@@ -186,18 +187,18 @@ This is a test document.";
 
             // Act - Get metadata from both resolvers
             var context = new Dictionary<string, object> { ["filePath"] = markdownFile };
-            
+
             var markdownMetadata = markdownResolver.ExtractMetadata(context);
             var resourceMetadata = resourceResolver.ExtractMetadata(context);
 
             // Assert - Both should provide different but complementary metadata
             Assert.IsTrue(markdownMetadata.ContainsKey("title"));
             Assert.IsTrue(markdownMetadata.ContainsKey("word-count"));
-            
+
             Assert.IsTrue(resourceMetadata.ContainsKey("file-name"));
             Assert.IsTrue(resourceMetadata.ContainsKey("file-extension"));
             Assert.IsTrue(resourceMetadata.ContainsKey("file-size"));
-            
+
             // Combined metadata should be comprehensive
             var combinedMetadata = new Dictionary<string, object>(markdownMetadata);
             foreach (var kvp in resourceMetadata)
@@ -205,7 +206,7 @@ This is a test document.";
                 if (!combinedMetadata.ContainsKey(kvp.Key))
                     combinedMetadata[kvp.Key] = kvp.Value;
             }
-            
+
             Assert.IsTrue(combinedMetadata.Count > markdownMetadata.Count);
             Assert.IsTrue(combinedMetadata.Count > resourceMetadata.Count);
         }
@@ -231,7 +232,7 @@ This is a test document.";
 
         // Act
         var context = new Dictionary<string, object> { ["filePath"] = "/test/path" };
-        
+
         // Should not throw exception
         try
         {

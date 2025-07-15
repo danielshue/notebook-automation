@@ -1,7 +1,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using System.Text.Json;
+
 using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Tools;
-using System.Text.Json;
 
 namespace NotebookAutomation.Tests.Core.Configuration;
 

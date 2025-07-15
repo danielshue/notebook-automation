@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+
 using NotebookAutomation.Core.Tools.Resolvers;
 
 namespace NotebookAutomation.Tests.Core.Tools.Resolvers;
@@ -191,7 +192,7 @@ More content here.";
         Assert.IsTrue(metadata.ContainsKey("author"));
         Assert.IsTrue(metadata.ContainsKey("word-count"));
         Assert.IsTrue(metadata.ContainsKey("heading-count"));
-        
+
         Assert.AreEqual("Test Document", metadata["title"]);
         Assert.AreEqual(2, metadata["heading-count"]);
         Assert.IsTrue((int)metadata["word-count"] > 0);
@@ -255,7 +256,7 @@ Content here.";
         var content = @"# Test Document
 
 This is test content.";
-        
+
         try
         {
             File.WriteAllText(tempFile, content);

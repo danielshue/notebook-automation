@@ -16,18 +16,18 @@ internal static class MetadataSchemaLoaderHelper
     public static MetadataSchemaLoader CreateTestMetadataSchemaLoader(ILogger<MetadataSchemaLoader>? logger = null)
     {
         logger ??= NullLogger<MetadataSchemaLoader>.Instance;
-        
+
         // Use the test metadata-schema.yml file - use absolute path from repository root
         // Assembly location is in bin/Debug/net8.0, so we need to go up 5 levels to get to repo root
         var repositoryRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(MetadataSchemaLoaderHelper).Assembly.Location)!, "../../../../../.."));
         var testSchemaPath = Path.Combine(repositoryRoot, "config", "metadata-schema.yml");
-        
+
         // If the test schema file doesn't exist, fall back to a minimal schema
         if (!File.Exists(testSchemaPath))
         {
             testSchemaPath = CreateMinimalTestSchemaFile();
         }
-        
+
         return new MetadataSchemaLoader(testSchemaPath, logger);
     }
 
@@ -43,7 +43,7 @@ internal static class MetadataSchemaLoaderHelper
     {
         logger ??= NullLogger<MetadataTemplateManager>.Instance;
         schemaLoader ??= CreateTestMetadataSchemaLoader();
-        
+
         return new MetadataTemplateManager(logger, schemaLoader);
     }
 
@@ -63,7 +63,7 @@ internal static class MetadataSchemaLoaderHelper
     {
         logger ??= NullLogger<MetadataHierarchyDetector>.Instance;
         schemaLoader ??= CreateTestMetadataSchemaLoader();
-        
+
         appConfig ??= new AppConfig
         {
             Paths = new PathsConfig
@@ -71,7 +71,7 @@ internal static class MetadataSchemaLoaderHelper
                 NotebookVaultFullpathRoot = vaultRootOverride ?? Path.GetTempPath()
             }
         };
-        
+
         return new MetadataHierarchyDetector(logger, appConfig, schemaLoader, vaultRootOverride);
     }
 
@@ -82,7 +82,7 @@ internal static class MetadataSchemaLoaderHelper
     private static string CreateMinimalTestSchemaFile()
     {
         var tempSchemaPath = Path.Combine(Path.GetTempPath(), $"test-metadata-schema-{Guid.NewGuid():N}.yaml");
-        
+
         var minimalSchema = @"TemplateTypes:
   video-reference:
     BaseTypes:
@@ -130,7 +130,7 @@ ReservedTags:
   - video
   - pdf
 ";
-        
+
         File.WriteAllText(tempSchemaPath, minimalSchema);
         return tempSchemaPath;
     }

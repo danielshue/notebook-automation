@@ -1,9 +1,9 @@
-using NotebookAutomation.Tests.Core.Helpers;
 using NotebookAutomation.Core.Tools;
 // Copyright (c) 2025 Daniel Shue.
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using NotebookAutomation.Core.Tools.Vault;
+using NotebookAutomation.Tests.Core.Helpers;
 
 namespace NotebookAutomation.Tests.Core.Tools.Vault;
 

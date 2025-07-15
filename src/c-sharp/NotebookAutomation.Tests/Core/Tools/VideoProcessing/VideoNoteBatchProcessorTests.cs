@@ -1,5 +1,5 @@
-using NotebookAutomation.Tests.Core.Helpers;
 using NotebookAutomation.Core.Tools;
+using NotebookAutomation.Tests.Core.Helpers;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Tests.Core.TestDoubles;
 
@@ -98,7 +98,7 @@ public class VideoNoteBatchProcessorTests
         File.WriteAllText(
             Path.Combine(_outputDir, "test.md"),
             "---\ntitle: Test Video\ntags:\n  - test\n---\n\n## Note\n\nThis is a test note.");
-            
+
         var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(
             new Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>>().Object,
             videoNoteProcessor,

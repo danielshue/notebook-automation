@@ -1208,7 +1208,7 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
     public Dictionary<string, object?> InjectReservedTags(Dictionary<string, object?> metadata, string templateType)
     {
         var reservedTags = SchemaLoader.ReservedTags;
-        
+
         if (reservedTags.Count == 0)
         {
             Logger.LogDebug("No reserved tags defined in schema");
@@ -1256,11 +1256,11 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
     public string MapHierarchyLevelToTemplateType(int hierarchyLevel, bool validateWithSchema = true)
     {
         string templateType = GetTemplateTypeFromHierarchyLevel(hierarchyLevel);
-        
+
         if (validateWithSchema && !SchemaLoader.TemplateTypes.ContainsKey(templateType))
         {
             Logger.LogWarning($"Template type '{templateType}' for hierarchy level {hierarchyLevel} not found in schema. Available types: {string.Join(", ", SchemaLoader.TemplateTypes.Keys)}");
-            
+
             // Try to find a suitable fallback from available template types
             var availableTypes = SchemaLoader.TemplateTypes.Keys.ToList();
             string fallbackType = hierarchyLevel switch
@@ -1273,11 +1273,11 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
                 5 => availableTypes.FirstOrDefault(t => t.Contains("lesson")) ?? availableTypes.FirstOrDefault() ?? "unknown",
                 _ => availableTypes.FirstOrDefault() ?? "unknown"
             };
-            
+
             Logger.LogInformation($"Using fallback template type '{fallbackType}' for hierarchy level {hierarchyLevel}");
             return fallbackType;
         }
-        
+
         return templateType;
     }
 }

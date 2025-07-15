@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+
 using NotebookAutomation.Core.Tools.Resolvers;
 
 namespace NotebookAutomation.Tests.Core.Tools.Resolvers;
@@ -73,8 +74,8 @@ public class TagResolverTests
     public void Resolve_Should_Normalize_Tags()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "Machine Learning", "AI/Deep Learning", "python programming" }
         };
 
@@ -92,8 +93,8 @@ public class TagResolverTests
     public void Resolve_Should_Count_Tags()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "tag1", "tag2", "tag3" }
         };
 
@@ -108,8 +109,8 @@ public class TagResolverTests
     public void Resolve_Should_Identify_Invalid_Tags()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "valid-tag", "reserved-tag", "another-tag" },
             ["reservedTags"] = new[] { "reserved-tag" }
         };
@@ -127,8 +128,8 @@ public class TagResolverTests
     public void Resolve_Should_Create_Hierarchical_Structure()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "ai/machine-learning", "ai/deep-learning", "programming/python" }
         };
 
@@ -145,8 +146,8 @@ public class TagResolverTests
     public void Resolve_Should_Calculate_Hierarchy_Depth()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "ai/machine-learning/supervised", "simple-tag", "category/subcategory" }
         };
 
@@ -174,8 +175,8 @@ public class TagResolverTests
     public void Resolve_Should_Generate_Suggested_Tags_From_Content()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "existing-tag" },
             ["content"] = "This document discusses machine learning algorithms and artificial intelligence research in Python programming."
         };
@@ -193,8 +194,8 @@ public class TagResolverTests
     public void ExtractMetadata_Should_Return_Comprehensive_Tag_Analysis()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "Machine Learning", "AI/Deep Learning", "python programming", "reserved-tag" },
             ["reservedTags"] = new[] { "reserved-tag" },
             ["content"] = "This document discusses machine learning and artificial intelligence."
@@ -209,11 +210,11 @@ public class TagResolverTests
         Assert.IsTrue(metadata.ContainsKey("invalid-tags"));
         Assert.IsTrue(metadata.ContainsKey("hierarchical-tags"));
         Assert.IsTrue(metadata.ContainsKey("tag-validation-report"));
-        
+
         var normalizedTags = metadata["normalized-tags"] as List<string>;
         Assert.IsNotNull(normalizedTags);
         Assert.IsTrue(normalizedTags.Count > 0);
-        
+
         var invalidTags = metadata["invalid-tags"] as List<string>;
         Assert.IsNotNull(invalidTags);
         Assert.IsTrue(invalidTags.Contains("reserved-tag"));
@@ -249,8 +250,8 @@ public class TagResolverTests
     public void ExtractMetadata_Should_Remove_Duplicate_Tags()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "duplicate-tag", "Duplicate Tag", "DUPLICATE-TAG", "other-tag" }
         };
 
@@ -269,8 +270,8 @@ public class TagResolverTests
     public void ExtractMetadata_Should_Handle_Different_Tag_Separators()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "category|subcategory", "another|deep|hierarchy" },
             ["tagSeparator"] = "|"
         };
@@ -287,8 +288,8 @@ public class TagResolverTests
     public void ExtractMetadata_Should_Preserve_Case_When_Configured()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "CamelCase", "PascalCase" },
             ["normalizeCase"] = false
         };
@@ -307,8 +308,8 @@ public class TagResolverTests
     public void ExtractMetadata_Should_Skip_Reserved_Validation_When_Configured()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["tags"] = new[] { "reserved-tag", "normal-tag" },
             ["reservedTags"] = new[] { "reserved-tag" },
             ["validateReserved"] = false

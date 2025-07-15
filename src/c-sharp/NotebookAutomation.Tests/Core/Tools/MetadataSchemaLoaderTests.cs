@@ -208,7 +208,7 @@ namespace NotebookAutomation.Tests.Core.Tools
                 var template = loader.TemplateTypes[templateType];
                 foreach (var reservedTag in reservedTags)
                 {
-                    Assert.IsTrue(template.Fields.ContainsKey(reservedTag), 
+                    Assert.IsTrue(template.Fields.ContainsKey(reservedTag),
                         $"Template type '{templateType}' should inherit reserved tag '{reservedTag}'");
                 }
             }
@@ -232,7 +232,7 @@ namespace NotebookAutomation.Tests.Core.Tools
                 var template = loader.TemplateTypes[templateType];
                 foreach (var universalField in universalFields)
                 {
-                    Assert.IsTrue(template.Fields.ContainsKey(universalField), 
+                    Assert.IsTrue(template.Fields.ContainsKey(universalField),
                         $"Template type '{templateType}' should have universal field '{universalField}' injected");
                 }
             }
@@ -255,7 +255,7 @@ namespace NotebookAutomation.Tests.Core.Tools
                 foreach (var templateType in loader.TemplateTypes.Keys)
                 {
                     var template = loader.TemplateTypes[templateType];
-                    Assert.IsTrue(template.Fields.ContainsKey(reservedTag), 
+                    Assert.IsTrue(template.Fields.ContainsKey(reservedTag),
                         $"Reserved tag '{reservedTag}' should be present in template '{templateType}'");
                 }
             }
@@ -275,15 +275,15 @@ namespace NotebookAutomation.Tests.Core.Tools
             var videoTemplate = loader.TemplateTypes["video-reference"];
 
             // Assert - Universal fields should maintain their characteristics
-            Assert.IsTrue(pdfTemplate.Fields.ContainsKey("publisher"), 
+            Assert.IsTrue(pdfTemplate.Fields.ContainsKey("publisher"),
                 "PDF template should have universal field 'publisher'");
-            Assert.IsTrue(videoTemplate.Fields.ContainsKey("publisher"), 
+            Assert.IsTrue(videoTemplate.Fields.ContainsKey("publisher"),
                 "Video template should have universal field 'publisher'");
-            
+
             // Both templates should have the same universal field behavior
-            Assert.IsTrue(pdfTemplate.Fields.ContainsKey("date-created"), 
+            Assert.IsTrue(pdfTemplate.Fields.ContainsKey("date-created"),
                 "PDF template should have universal field 'date-created'");
-            Assert.IsTrue(videoTemplate.Fields.ContainsKey("date-created"), 
+            Assert.IsTrue(videoTemplate.Fields.ContainsKey("date-created"),
                 "Video template should have universal field 'date-created'");
         }
 
@@ -296,14 +296,14 @@ namespace NotebookAutomation.Tests.Core.Tools
             // Arrange
             var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
             var mockResolver = new MockDateCreatedResolver("2023-01-01");
-            
+
             // Act
             loader.ResolverRegistry.Register("TestResolver", mockResolver);
 
             // Assert
-            Assert.IsNotNull(loader.ResolverRegistry.Get("TestResolver"), 
+            Assert.IsNotNull(loader.ResolverRegistry.Get("TestResolver"),
                 "Resolver registry should store registered resolvers");
-            Assert.AreSame(mockResolver, loader.ResolverRegistry.Get("TestResolver"), 
+            Assert.AreSame(mockResolver, loader.ResolverRegistry.Get("TestResolver"),
                 "Resolver registry should return the same instance");
         }
 
@@ -319,13 +319,13 @@ namespace NotebookAutomation.Tests.Core.Tools
 
             // Act
             loader.ResolverRegistry.Register("PluginResolver", pluginResolver);
-            
+
             // Assert
             var registeredResolver = loader.ResolverRegistry.Get("PluginResolver");
             Assert.IsNotNull(registeredResolver, "Plugin resolver should be registered");
-            
+
             var resolvedValue = registeredResolver.Resolve("test-field");
-            Assert.AreEqual("plugin-resolved-value", resolvedValue, 
+            Assert.AreEqual("plugin-resolved-value", resolvedValue,
                 "Plugin resolver should resolve values correctly");
         }
     }

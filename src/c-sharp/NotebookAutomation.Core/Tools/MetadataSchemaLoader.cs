@@ -84,7 +84,7 @@ public class FieldValueResolverRegistry
     public void Register(string resolverName, IFieldValueResolver resolver)
     {
         _resolvers[resolverName] = resolver;
-        
+
         // Also register as file type resolver if applicable
         if (resolver is IFileTypeMetadataResolver fileTypeResolver)
         {
@@ -377,11 +377,11 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
             _logger.LogWarning($"Resolver directory not found: {directoryPath}");
             return;
         }
-        
+
         // Scan for DLL files in the specified directory
         var dllFiles = Directory.GetFiles(directoryPath, "*.dll");
         _logger.LogInformation($"Found {dllFiles.Length} DLL files in resolver directory: {directoryPath}");
-        
+
         foreach (var dll in dllFiles)
         {
             try
@@ -390,14 +390,14 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                 // Security consideration: This loads and executes code from external files
                 var assembly = Assembly.LoadFrom(dll);
                 _logger.LogDebug($"Loaded assembly: {assembly.FullName} from {dll}");
-                
+
                 // Scan assembly for IFieldValueResolver implementations
                 var resolverTypes = 0;
                 foreach (var type in assembly.GetTypes())
                 {
                     // Check if type implements IFieldValueResolver interface
-                    if (typeof(IFieldValueResolver).IsAssignableFrom(type) && 
-                        !type.IsAbstract && 
+                    if (typeof(IFieldValueResolver).IsAssignableFrom(type) &&
+                        !type.IsAbstract &&
                         type.IsClass)
                     {
                         try
@@ -412,7 +412,7 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                                 ResolverRegistry.Register(resolverName, resolver);
                                 _logger.LogInformation($"Registered resolver: {resolverName} from {dll}");
                                 resolverTypes++;
-                                
+
                                 // Log additional information for file type resolvers
                                 if (resolver is IFileTypeMetadataResolver fileTypeResolver)
                                 {
@@ -426,7 +426,7 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                         }
                     }
                 }
-                
+
                 if (resolverTypes == 0)
                 {
                     _logger.LogWarning($"No IFieldValueResolver implementations found in {dll}");
@@ -528,21 +528,21 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
     {
         // Early validation - check if template type exists
         if (!TemplateTypes.ContainsKey(templateType)) return null;
-        
+
         var typeSchema = TemplateTypes[templateType];
-        
+
         // Check if field exists in the resolved schema (after inheritance)
         if (!typeSchema.Fields.ContainsKey(fieldName)) return null;
-        
+
         var fieldSchema = typeSchema.Fields[fieldName];
-        
+
         // If field has a resolver configured, attempt to use it
         if (!string.IsNullOrEmpty(fieldSchema.Resolver))
         {
             // Phase 1: Try exact resolver name match
             // This is the most common case and provides fastest lookup
             var resolver = ResolverRegistry.Get(fieldSchema.Resolver);
-            
+
             // Phase 2: Fallback to partial name matching
             // This supports scenarios where resolvers are registered with full class names
             // but schema uses short names (e.g., "DateCreatedResolver" vs "MyNamespace.DateCreatedResolver")
@@ -560,7 +560,7 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                     }
                 }
             }
-            
+
             // If resolver found, invoke it with context
             if (resolver != null)
             {
@@ -573,12 +573,12 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                 catch (Exception ex)
                 {
                     // Log resolver errors but don't throw - fall back to default value
-                    _logger.LogError(ex, "Error resolving field '{FieldName}' with resolver '{ResolverName}'", 
+                    _logger.LogError(ex, "Error resolving field '{FieldName}' with resolver '{ResolverName}'",
                         fieldName, fieldSchema.Resolver);
                 }
             }
         }
-        
+
         // Fallback to default value from schema
         // This ensures graceful degradation when resolvers are unavailable
         return fieldSchema.Default;
@@ -632,7 +632,7 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                     // Recursively resolve the base type first to ensure all its inheritance is complete
                     // This prevents incomplete inheritance when there are multiple levels of inheritance
                     ResolveTemplateType(baseType, baseSchema, schema);
-                    
+
                     // Copy all fields from the base type to the derived type
                     foreach (var fieldKvp in baseSchema.Fields)
                     {
@@ -644,7 +644,7 @@ public class MetadataSchemaLoader : IMetadataSchemaLoader
                 }
             }
         }
-        
+
         // Phase 2: Inject reserved tags as fields
         // Reserved tags are automatically added to all template types for system consistency
         // This ensures that reserved tags are always available for validation and processing

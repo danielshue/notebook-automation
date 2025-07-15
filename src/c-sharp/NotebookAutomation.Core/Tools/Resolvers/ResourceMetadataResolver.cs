@@ -1,5 +1,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using System.Text.RegularExpressions;
+
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 
@@ -58,7 +59,7 @@ namespace NotebookAutomation.Core.Tools.Resolvers;
 public class ResourceMetadataResolver : IFileTypeMetadataResolver
 {
     private readonly ILogger<ResourceMetadataResolver> _logger;
-    
+
     // File type mappings
     private static readonly Dictionary<string, string> ImageExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -146,7 +147,7 @@ public class ResourceMetadataResolver : IFileTypeMetadataResolver
         try
         {
             var fileInfo = new FileInfo(filePath);
-            
+
             return fieldName switch
             {
                 "file-name" => fileInfo.Name,
@@ -199,25 +200,25 @@ public class ResourceMetadataResolver : IFileTypeMetadataResolver
         try
         {
             var fileInfo = new FileInfo(filePath);
-            
+
             // Basic file metadata
             metadata["file-name"] = fileInfo.Name;
             metadata["file-extension"] = fileInfo.Extension;
             metadata["file-size"] = fileInfo.Length;
             metadata["date-created"] = fileInfo.CreationTimeUtc.ToString("yyyy-MM-dd");
             metadata["date-modified"] = fileInfo.LastWriteTimeUtc.ToString("yyyy-MM-dd");
-            
+
             // Resource type and MIME type
             var resourceType = GetResourceType(fileInfo.Extension);
             metadata["resource-type"] = resourceType;
             metadata["mime-type"] = GetMimeType(fileInfo.Extension);
-            
+
             // Type-specific metadata
             if (resourceType == "image")
             {
-                var extractImageMetadata = !context.ContainsKey("extractImageMetadata") || 
+                var extractImageMetadata = !context.ContainsKey("extractImageMetadata") ||
                                          (context["extractImageMetadata"] is bool extract && extract);
-                
+
                 if (extractImageMetadata)
                 {
                     var dimensions = GetImageDimensions(filePath);
@@ -226,7 +227,7 @@ public class ResourceMetadataResolver : IFileTypeMetadataResolver
                         metadata["image-width"] = dimensions.Value.Width;
                         metadata["image-height"] = dimensions.Value.Height;
                     }
-                    
+
                     var format = GetImageFormat(filePath);
                     if (format != null)
                     {
@@ -234,8 +235,8 @@ public class ResourceMetadataResolver : IFileTypeMetadataResolver
                     }
                 }
             }
-            
-            _logger.LogDebug("Extracted {Count} metadata fields from resource file '{FilePath}'", 
+
+            _logger.LogDebug("Extracted {Count} metadata fields from resource file '{FilePath}'",
                            metadata.Count, filePath);
         }
         catch (Exception ex)
@@ -257,7 +258,7 @@ public class ResourceMetadataResolver : IFileTypeMetadataResolver
             return "document";
         if (MediaExtensions.ContainsKey(extension))
             return "media";
-        
+
         return "unknown";
     }
 
@@ -272,7 +273,7 @@ public class ResourceMetadataResolver : IFileTypeMetadataResolver
             return docMime;
         if (MediaExtensions.TryGetValue(extension, out var mediaMime))
             return mediaMime;
-        
+
         return "application/octet-stream";
     }
 

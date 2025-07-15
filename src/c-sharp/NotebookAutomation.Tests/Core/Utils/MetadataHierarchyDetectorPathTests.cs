@@ -1,5 +1,5 @@
-using NotebookAutomation.Tests.Core.Helpers;
 using NotebookAutomation.Core.Tools;
+using NotebookAutomation.Tests.Core.Helpers;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 namespace NotebookAutomation.Tests.Core.Utils;

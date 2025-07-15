@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+
 using NotebookAutomation.Core.Tools.Resolvers;
 
 namespace NotebookAutomation.Tests.Core.Tools.Resolvers;
@@ -88,8 +89,8 @@ This is the second line of the transcript.
         try
         {
             File.WriteAllText(tempFile, srtContent);
-            var context = new Dictionary<string, object> 
-            { 
+            var context = new Dictionary<string, object>
+            {
                 ["filePath"] = "/path/to/video.mp4",
                 ["transcriptPath"] = tempFile
             };
@@ -111,8 +112,8 @@ This is the second line of the transcript.
     public void Resolve_Should_Return_False_For_Transcript_Exists_Without_File()
     {
         // Arrange
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["filePath"] = "/path/to/video.mp4"
         };
 
@@ -351,7 +352,7 @@ This is the second line of the transcript.
             Assert.IsTrue(metadata.ContainsKey("transcript-duration"));
             Assert.IsTrue(metadata.ContainsKey("transcript-content"));
             Assert.IsTrue(metadata.ContainsKey("transcript-segments"));
-            
+
             Assert.AreEqual(true, metadata["transcript-exists"]);
             Assert.AreEqual(newPath, metadata["transcript-path"]);
             Assert.AreEqual("srt", metadata["transcript-format"]);
@@ -415,7 +416,7 @@ This is the second line of the transcript.
             Assert.IsTrue(metadata.ContainsKey("transcript-format"));
             Assert.IsTrue(metadata.ContainsKey("transcript-word-count"));
             Assert.IsTrue(metadata.ContainsKey("transcript-content"));
-            
+
             Assert.AreEqual(true, metadata["transcript-exists"]);
             Assert.AreEqual("txt", metadata["transcript-format"]);
             Assert.AreEqual(11, metadata["transcript-word-count"]);
@@ -442,8 +443,8 @@ This is the second line of the transcript.
         {
             File.Move(tempFile, newPath);
             File.WriteAllText(newPath, textContent);
-            var context = new Dictionary<string, object> 
-            { 
+            var context = new Dictionary<string, object>
+            {
                 ["filePath"] = newPath,
                 ["extractContent"] = false
             };
@@ -480,8 +481,8 @@ Hello world, this is a test transcript.
         {
             File.Move(tempFile, newPath);
             File.WriteAllText(newPath, srtContent);
-            var context = new Dictionary<string, object> 
-            { 
+            var context = new Dictionary<string, object>
+            {
                 ["filePath"] = newPath,
                 ["extractTimings"] = false
             };

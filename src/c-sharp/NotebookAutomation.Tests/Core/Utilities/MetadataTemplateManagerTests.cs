@@ -196,7 +196,7 @@ public class MetadataTemplateManagerTests
         object tagsObj = enhanced["tags"];
         Assert.IsInstanceOfType<string[]>(tagsObj, "Tags should be a string array");
         string[] tags = (string[])tagsObj;
-        
+
         // Should contain the reserved tag "video"
         Assert.IsTrue(tags.Contains("video"), "Reserved tag 'video' should be present");
     }

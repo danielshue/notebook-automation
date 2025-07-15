@@ -24,16 +24,28 @@ if (!existsSync(distRoot)) {
     mkdirSync(distRoot, { recursive: true });
 }
 
+
 // Copy required plugin files (excluding main.js which is built by esbuild)
 const pluginFiles = [
     { src: 'manifest.json', dest: 'manifest.json', required: true },
     { src: 'styles.css', dest: 'styles.css', required: true },
-    { src: 'default-config.json', dest: 'default-config.json', required: true }
+    { src: 'default-config.json', dest: 'default-config.json', required: true },
+    // Add metadata-schema.yml from config folder
+    { src: '../config/metadata-schema.yml', dest: 'metadata-schema.yml', required: true }
 ];
 
 console.log('📋 Copying plugin files...');
+import { fileURLToPath } from 'url';
+const moduleDir = fileURLToPath(new URL('.', import.meta.url));
+
 for (const file of pluginFiles) {
-    const srcPath = join(currentDir, file.src);
+    let srcPath;
+    if (file.src === '../config/metadata-schema.yml') {
+        // Use absolute path for metadata-schema.yml
+        srcPath = resolve(moduleDir, '../../config/metadata-schema.yml');
+    } else {
+        srcPath = join(currentDir, file.src);
+    }
     const destPath = join(distRoot, file.dest);
 
     if (existsSync(srcPath)) {

@@ -86,13 +86,13 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
         }
 
         _logger.LogInformation("Template found for type: {TemplateType}", templateType);
-        
+
         // Create a dictionary from the schema with resolved field values
         var template = new Dictionary<string, object>();
-        
+
         // Add template-type field
         template["template-type"] = templateType;
-        
+
         // Add type field if defined in schema
         if (!string.IsNullOrEmpty(templateSchema.Type))
         {
@@ -195,8 +195,8 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
         foreach (var fieldName in template.Keys)
         {
             // Skip fields that already have specific values
-            if (enhancedMetadata.ContainsKey(fieldName) && 
-                enhancedMetadata[fieldName] != null && 
+            if (enhancedMetadata.ContainsKey(fieldName) &&
+                enhancedMetadata[fieldName] != null &&
                 !string.IsNullOrWhiteSpace(enhancedMetadata[fieldName].ToString()))
             {
                 continue;
@@ -247,11 +247,11 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
         // Check required fields
         foreach (var requiredField in templateSchema.RequiredFields)
         {
-            if (!metadata.ContainsKey(requiredField) || 
-                metadata[requiredField] == null || 
+            if (!metadata.ContainsKey(requiredField) ||
+                metadata[requiredField] == null ||
                 string.IsNullOrWhiteSpace(metadata[requiredField].ToString()))
             {
-                _logger.LogWarning("Required field missing or empty: {Field} for template type: {TemplateType}", 
+                _logger.LogWarning("Required field missing or empty: {Field} for template type: {TemplateType}",
                     requiredField, templateType);
                 return false;
             }
@@ -306,8 +306,8 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
     private void ApplyFieldSpecificLogic(Dictionary<string, object> enhancedMetadata, string noteType, Dictionary<string, object> template)
     {
         // Handle status field based on note type
-        if (template.ContainsKey("status") && 
-            (!enhancedMetadata.ContainsKey("status") || 
+        if (template.ContainsKey("status") &&
+            (!enhancedMetadata.ContainsKey("status") ||
              string.IsNullOrWhiteSpace(enhancedMetadata["status"]?.ToString())))
         {
             enhancedMetadata["status"] = noteType switch
@@ -319,16 +319,16 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
         }
 
         // Handle date-created field
-        if (template.ContainsKey("date-created") && 
-            (!enhancedMetadata.ContainsKey("date-created") || 
+        if (template.ContainsKey("date-created") &&
+            (!enhancedMetadata.ContainsKey("date-created") ||
              string.IsNullOrWhiteSpace(enhancedMetadata["date-created"]?.ToString())))
         {
             enhancedMetadata["date-created"] = DateTime.Now.ToString("yyyy-MM-dd");
         }
 
         // Handle tags field normalization
-        if (enhancedMetadata.ContainsKey("tags") && 
-            enhancedMetadata["tags"] is System.Collections.IEnumerable enumerable && 
+        if (enhancedMetadata.ContainsKey("tags") &&
+            enhancedMetadata["tags"] is System.Collections.IEnumerable enumerable &&
             enhancedMetadata["tags"] is not string)
         {
             var tagArray = enumerable.Cast<object>()

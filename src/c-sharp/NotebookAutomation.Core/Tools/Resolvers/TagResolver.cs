@@ -69,12 +69,12 @@ namespace NotebookAutomation.Core.Tools.Resolvers;
 public class TagResolver : IFileTypeMetadataResolver
 {
     private readonly ILogger<TagResolver> _logger;
-    
+
     // Regex patterns for tag processing
     private static readonly Regex InvalidCharsPattern = new(@"[^\w\s\-\/]", RegexOptions.Compiled);
     private static readonly Regex WhitespacePattern = new(@"\s+", RegexOptions.Compiled);
     private static readonly Regex WordBoundaryPattern = new(@"\b\w+\b", RegexOptions.Compiled);
-    
+
     // Common academic and technical keywords for tag suggestions
     private static readonly HashSet<string> CommonKeywords = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -145,9 +145,9 @@ public class TagResolver : IFileTypeMetadataResolver
             if (!tags.Any())
                 return fieldName == "tag-count" ? 0 : null;
 
-            var normalizeCase = !context!.ContainsKey("normalizeCase") || 
+            var normalizeCase = !context!.ContainsKey("normalizeCase") ||
                                (context["normalizeCase"] is bool normalize && normalize);
-            var validateReserved = !context.ContainsKey("validateReserved") || 
+            var validateReserved = !context.ContainsKey("validateReserved") ||
                                   (context["validateReserved"] is bool validate && validate);
             var reservedTags = ExtractReservedTags(context);
             var tagSeparator = context.ContainsKey("tagSeparator") && context["tagSeparator"] is string sep ? sep : "/";
@@ -208,16 +208,16 @@ public class TagResolver : IFileTypeMetadataResolver
                 return metadata;
             }
 
-            var normalizeCase = !context.ContainsKey("normalizeCase") || 
+            var normalizeCase = !context.ContainsKey("normalizeCase") ||
                                (context["normalizeCase"] is bool normalize && normalize);
-            var validateReserved = !context.ContainsKey("validateReserved") || 
+            var validateReserved = !context.ContainsKey("validateReserved") ||
                                   (context["validateReserved"] is bool validate && validate);
             var reservedTags = ExtractReservedTags(context);
             var tagSeparator = context.ContainsKey("tagSeparator") && context["tagSeparator"] is string sep ? sep : "/";
 
             // Perform tag normalization
             var normalizedTags = NormalizeTags(tags, normalizeCase, tagSeparator);
-            
+
             // Validate against reserved tags
             var invalidTags = validateReserved ? ValidateAgainstReserved(normalizedTags, reservedTags) : new List<string>();
             var validTags = normalizedTags.Except(invalidTags).ToList();
@@ -225,10 +225,10 @@ public class TagResolver : IFileTypeMetadataResolver
             // Build metadata
             metadata["normalized-tags"] = validTags;
             metadata["tag-count"] = validTags.Count;
-            
+
             if (invalidTags.Any())
                 metadata["invalid-tags"] = invalidTags;
-            
+
             // Hierarchical organization
             var hierarchicalTags = OrganizeHierarchically(validTags, tagSeparator);
             if (hierarchicalTags.Any())
@@ -236,16 +236,16 @@ public class TagResolver : IFileTypeMetadataResolver
                 metadata["hierarchical-tags"] = hierarchicalTags;
                 metadata["tag-hierarchy-depth"] = GetMaxHierarchyDepth(validTags, tagSeparator);
             }
-            
+
             // Generate suggestions if content is available
             var suggestedTags = GenerateSuggestedTags(context);
             if (suggestedTags.Any())
                 metadata["suggested-tags"] = suggestedTags;
-            
+
             // Generate validation report
             metadata["tag-validation-report"] = GenerateValidationReport(tags, normalizedTags, invalidTags);
-            
-            _logger.LogDebug("Processed {OriginalCount} tags, normalized to {NormalizedCount} valid tags", 
+
+            _logger.LogDebug("Processed {OriginalCount} tags, normalized to {NormalizedCount} valid tags",
                            tags.Count, validTags.Count);
         }
         catch (Exception ex)
@@ -332,18 +332,18 @@ public class TagResolver : IFileTypeMetadataResolver
         var escapedSeparator = Regex.Escape(tagSeparator);
         var invalidCharsPattern = new Regex($@"[^\w\s\-\/{escapedSeparator}]", RegexOptions.Compiled);
         var normalized = invalidCharsPattern.Replace(tag, "");
-        
+
         // Replace whitespace with hyphens
         normalized = WhitespacePattern.Replace(normalized, "-");
-        
+
         // Normalize case if requested
         if (normalizeCase)
             normalized = normalized.ToLowerInvariant();
-        
+
         // Clean up separators
         normalized = normalized.Replace("/" + tagSeparator, tagSeparator);
         normalized = normalized.Trim('-', '/');
-        
+
         // Trim the tag separator from the beginning and end
         if (tagSeparator.Length == 1)
             normalized = normalized.Trim(tagSeparator[0]);
@@ -355,11 +355,11 @@ public class TagResolver : IFileTypeMetadataResolver
             while (normalized.EndsWith(tagSeparator))
                 normalized = normalized.Substring(0, normalized.Length - tagSeparator.Length);
         }
-        
+
         // Remove consecutive separators
         while (normalized.Contains(tagSeparator + tagSeparator))
             normalized = normalized.Replace(tagSeparator + tagSeparator, tagSeparator);
-        
+
         return normalized;
     }
 
@@ -397,7 +397,7 @@ public class TagResolver : IFileTypeMetadataResolver
             for (int i = 0; i < parts.Length; i++)
             {
                 var part = parts[i];
-                
+
                 if (i == parts.Length - 1)
                 {
                     // Leaf node
@@ -409,7 +409,7 @@ public class TagResolver : IFileTypeMetadataResolver
                     // Branch node
                     if (!current.ContainsKey(part))
                         current[part] = new Dictionary<string, object>();
-                    
+
                     current = (Dictionary<string, object>)current[part];
                 }
             }
@@ -455,7 +455,7 @@ public class TagResolver : IFileTypeMetadataResolver
 
             // Find common keywords
             var keywordMatches = words.Intersect(CommonKeywords, StringComparer.OrdinalIgnoreCase).ToList();
-            
+
             // Generate suggestions from keywords
             foreach (var keyword in keywordMatches)
             {
@@ -530,7 +530,7 @@ public class TagResolver : IFileTypeMetadataResolver
             ["invalid-count"] = invalidTags.Count,
             ["duplicate-count"] = originalTags.Count - originalTags.Distinct().Count(),
             ["validation-success"] = !invalidTags.Any(),
-            ["normalization-applied"] = originalTags.Count != normalizedTags.Count || 
+            ["normalization-applied"] = originalTags.Count != normalizedTags.Count ||
                                       !originalTags.SequenceEqual(normalizedTags)
         };
     }

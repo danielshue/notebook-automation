@@ -1,8 +1,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using NotebookAutomation.Core.Tools;
+
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using NotebookAutomation.Core.Tools;
 
 namespace NotebookAutomation.Core.Configuration;
 
@@ -569,16 +570,16 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<MetadataSchemaLoader>();
             var appConfig = provider.GetRequiredService<AppConfig>();
-            
+
             // Get the metadata schema file path from configuration
             string schemaPath = appConfig.Paths.MetadataSchemaFile;
-            
+
             // If not configured, use default path
             if (string.IsNullOrWhiteSpace(schemaPath))
             {
                 schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
             }
-            
+
             return new MetadataSchemaLoader(schemaPath, logger);
         });
 

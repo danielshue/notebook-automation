@@ -1,5 +1,3 @@
-using NotebookAutomation.Tests.Core.Helpers;
-using NotebookAutomation.Core.Tools;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System;
@@ -12,7 +10,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
 using NotebookAutomation.Core.Configuration;
+using NotebookAutomation.Core.Tools;
 using NotebookAutomation.Core.Utils;
+using NotebookAutomation.Tests.Core.Helpers;
 
 namespace NotebookAutomation.Tests.Core.Utils;
 
@@ -319,11 +319,11 @@ public class VaultPathHandlingTests
     {
         // Arrange
         var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _tempVaultRoot);
-        
+
         // Create a complex nested structure
         var complexPath = Path.Combine(_tempVaultRoot, "Programs", "Advanced Analytics", "Statistical Methods", "Regression Analysis", "Linear Models");
         Directory.CreateDirectory(complexPath);
-        
+
         // Act
         var hierarchyInfo = detector.FindHierarchyInfo(complexPath);
 

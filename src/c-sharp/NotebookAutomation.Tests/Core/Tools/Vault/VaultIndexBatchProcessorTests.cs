@@ -1,5 +1,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using System.Reflection;
+
 using NotebookAutomation.Core.Tools;
 
 namespace NotebookAutomation.Tests.Core.Tools.Vault;
@@ -421,11 +422,11 @@ public class VaultIndexBatchProcessorTests
         var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
         var mockRegistry = new FieldValueResolverRegistry();
         mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
-        
+
         _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
 
         // Act
-        var hierarchyDetector = _batchProcessor.GetType().GetField("_hierarchyDetector", 
+        var hierarchyDetector = _batchProcessor.GetType().GetField("_hierarchyDetector",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(_batchProcessor) as IMetadataHierarchyDetector;
 
         // Assert - Should have access to resolver registry through hierarchy detector
@@ -444,7 +445,7 @@ public class VaultIndexBatchProcessorTests
         var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
         var mockRegistry = new FieldValueResolverRegistry();
         mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
-        
+
         _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
 
         // Setup processor to return true for processing
@@ -456,7 +457,7 @@ public class VaultIndexBatchProcessorTests
 
         // Assert
         Assert.IsNotNull(result, "Should return batch result");
-        _processorMock.Verify(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), 
+        _processorMock.Verify(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()),
             Times.AtLeastOnce, "Processor should be called with resolver logic");
     }
 
@@ -476,7 +477,7 @@ public class VaultIndexBatchProcessorTests
         _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
 
         // Act
-        var hierarchyDetector = _batchProcessor.GetType().GetField("_hierarchyDetector", 
+        var hierarchyDetector = _batchProcessor.GetType().GetField("_hierarchyDetector",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(_batchProcessor) as IMetadataHierarchyDetector;
 
         // Assert - Should have access to schema loader through hierarchy detector
@@ -495,15 +496,15 @@ public class VaultIndexBatchProcessorTests
         // Arrange
         var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
         var mockRegistry = new FieldValueResolverRegistry();
-        
+
         // Setup resolvers for different template types
         var mockResolver = new Mock<IFieldValueResolver>();
         mockResolver.Setup(r => r.Resolve(It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
                    .Returns("resolved-value");
-        
+
         mockRegistry.Register("TestResolver", mockResolver.Object);
         mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
-        
+
         _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
 
         // Setup processor to return true for processing
@@ -515,7 +516,7 @@ public class VaultIndexBatchProcessorTests
 
         // Assert
         Assert.IsNotNull(result, "Should return batch result");
-        _processorMock.Verify(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), 
+        _processorMock.Verify(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()),
             Times.AtLeastOnce, "Should handle registry-based resolver logic");
     }
 
@@ -529,13 +530,13 @@ public class VaultIndexBatchProcessorTests
         var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
         var mockRegistry = new FieldValueResolverRegistry();
         var mockResolver = new Mock<IFieldValueResolver>();
-        
+
         mockResolver.Setup(r => r.Resolve(It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
                    .Returns("resolved-value");
-        
+
         mockRegistry.Register("TestResolver", mockResolver.Object);
         mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
-        
+
         _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
 
         // Setup processor to simulate metadata processing
@@ -547,11 +548,11 @@ public class VaultIndexBatchProcessorTests
 
         // Assert
         Assert.IsNotNull(result, "Should return batch result");
-        
+
         // Verify that the batch processor can access the resolver registry through hierarchy detector
-        var hierarchyDetector = _batchProcessor.GetType().GetField("_hierarchyDetector", 
+        var hierarchyDetector = _batchProcessor.GetType().GetField("_hierarchyDetector",
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)?.GetValue(_batchProcessor) as IMetadataHierarchyDetector;
-        
+
         Assert.IsNotNull(hierarchyDetector, "Should have hierarchy detector");
         Assert.IsNotNull(hierarchyDetector.SchemaLoader, "Should have schema loader");
         Assert.IsNotNull(hierarchyDetector.SchemaLoader.ResolverRegistry, "Should have resolver registry");
@@ -567,7 +568,7 @@ public class VaultIndexBatchProcessorTests
         var mockSchemaLoader = new Mock<IMetadataSchemaLoader>();
         var mockRegistry = new FieldValueResolverRegistry();
         mockSchemaLoader.Setup(s => s.ResolverRegistry).Returns(mockRegistry);
-        
+
         _hierarchyDetectorMock.Setup(h => h.SchemaLoader).Returns(mockSchemaLoader.Object);
 
         // Setup processor to return true
@@ -576,9 +577,9 @@ public class VaultIndexBatchProcessorTests
 
         // Act & Assert - Should not throw exception
         var result = await _batchProcessor.GenerateIndexesAsync(_testVaultPath, false, null, false, true);
-        
+
         Assert.IsNotNull(result, "Should handle resolver registry errors gracefully");
-        _processorMock.Verify(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()), 
+        _processorMock.Verify(p => p.GenerateIndexAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()),
             Times.AtLeastOnce, "Should handle resolver registry errors gracefully");
     }
 }

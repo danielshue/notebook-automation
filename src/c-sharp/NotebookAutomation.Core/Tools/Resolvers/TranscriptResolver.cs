@@ -65,14 +65,16 @@ namespace NotebookAutomation.Core.Tools.Resolvers;
 public class TranscriptResolver : IFileTypeMetadataResolver
 {
     private readonly ILogger<TranscriptResolver> _logger;
-    
+
     // Transcript file patterns for discovery
     private static readonly string[] TranscriptExtensions = { ".srt", ".vtt", ".txt", ".json" };
     private static readonly string[] VideoExtensions = { ".mp4", ".avi", ".mkv", ".mov", ".wmv", ".flv", ".webm" };
     private static readonly string[] AudioExtensions = { ".mp3", ".wav", ".flac", ".aac", ".ogg", ".wma" };
-    
+
     // Regex patterns for transcript parsing
-    private static readonly Regex SrtPattern = new(@"(\d+)\s*\n(\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2},\d{3})\s*\n(.*?)\n\n", RegexOptions.Singleline | RegexOptions.Compiled);
+    // Updated SRT pattern to match blocks even if not followed by double newline (last block)
+    // Updated SRT pattern: matches blocks separated by a single blank line and last block even if only a single newline
+    private static readonly Regex SrtPattern = new(@"(\d+)\s*\n(\d{2}:\d{2}:\d{2},\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2},\d{3})\s*\n(.*?)(?:\r?\n\r?\n|\r?\n$|$)", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex VttPattern = new(@"(\d{2}:\d{2}:\d{2}\.\d{3})\s*-->\s*(\d{2}:\d{2}:\d{2}\.\d{3})\s*\n(.*?)\n\n", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex TimePattern = new(@"(\d{2}):(\d{2}):(\d{2})[,\.](\d{3})", RegexOptions.Compiled);
     private static readonly Regex SpeakerPattern = new(@"^\s*([A-Z][a-z\s]+):\s*(.*)$", RegexOptions.Multiline | RegexOptions.Compiled);
@@ -139,19 +141,19 @@ public class TranscriptResolver : IFileTypeMetadataResolver
         try
         {
             var transcriptPath = DiscoverTranscriptPath(filePath, context);
-            
+
             if (fieldName == "transcript-exists")
                 return transcriptPath != null;
-            
+
             if (fieldName == "transcript-path")
                 return transcriptPath;
-            
+
             if (string.IsNullOrEmpty(transcriptPath) || !File.Exists(transcriptPath))
                 return null;
 
             var content = File.ReadAllText(transcriptPath);
             var format = GetTranscriptFormat(transcriptPath);
-            
+
             return fieldName switch
             {
                 "transcript-format" => format,
@@ -199,46 +201,46 @@ public class TranscriptResolver : IFileTypeMetadataResolver
         try
         {
             var transcriptPath = DiscoverTranscriptPath(filePath, context);
-            
+
             metadata["transcript-exists"] = transcriptPath != null;
-            
+
             if (transcriptPath == null || !File.Exists(transcriptPath))
                 return metadata;
 
             metadata["transcript-path"] = transcriptPath;
-            
+
             var content = File.ReadAllText(transcriptPath);
             var format = GetTranscriptFormat(transcriptPath);
-            
+
             metadata["transcript-format"] = format;
             metadata["transcript-word-count"] = GetWordCount(content);
             metadata["transcript-speaker-count"] = GetSpeakerCount(content);
-            
+
             var duration = GetTranscriptDuration(content, format);
             if (duration.HasValue)
                 metadata["transcript-duration"] = duration.Value;
-            
+
             // Extract content if requested
-            var extractContent = !context.ContainsKey("extractContent") || 
+            var extractContent = !context.ContainsKey("extractContent") ||
                                 (context["extractContent"] is bool extract && extract);
-            
+
             if (extractContent)
             {
                 metadata["transcript-content"] = ExtractPlainTextContent(content, format);
             }
-            
+
             // Extract timing information if requested
-            var extractTimings = !context.ContainsKey("extractTimings") || 
+            var extractTimings = !context.ContainsKey("extractTimings") ||
                                (context["extractTimings"] is bool timings && timings);
-            
+
             if (extractTimings)
             {
                 var segments = ExtractSegments(content, format);
                 if (segments.Any())
                     metadata["transcript-segments"] = segments;
             }
-            
-            _logger.LogDebug("Extracted {Count} metadata fields from transcript file '{TranscriptPath}'", 
+
+            _logger.LogDebug("Extracted {Count} metadata fields from transcript file '{TranscriptPath}'",
                            metadata.Count, transcriptPath);
         }
         catch (Exception ex)
@@ -286,11 +288,11 @@ public class TranscriptResolver : IFileTypeMetadataResolver
             if (string.IsNullOrEmpty(searchDirectory) || !Directory.Exists(searchDirectory))
                 return null;
 
-        // Search patterns in order of preference
-        var searchPatterns = new[]
-        {
+            // Search patterns in order of preference
+            var searchPatterns = new[]
+            {
             $"{baseName}.srt",
-            $"{baseName}.vtt", 
+            $"{baseName}.vtt",
             $"{baseName}.txt",
             $"{baseName}.json",
             $"{baseName}_transcript.txt",
@@ -298,57 +300,57 @@ public class TranscriptResolver : IFileTypeMetadataResolver
             $"{baseName}_transcript.vtt"
         };
 
-        // Search in the same directory first
-        foreach (var pattern in searchPatterns)
-        {
-            var transcriptPath = Path.Combine(searchDirectory, pattern);
-            if (File.Exists(transcriptPath))
+            // Search in the same directory first
+            foreach (var pattern in searchPatterns)
             {
-                _logger.LogDebug("Found transcript file: {TranscriptPath}", transcriptPath);
-                return transcriptPath;
-            }
-        }
-
-        // Search in subdirectories if search radius allows
-        if (searchRadius > 0)
-        {
-            try
-            {
-                var directories = Directory.GetDirectories(searchDirectory, "*", SearchOption.AllDirectories)
-                    .Where(d => GetDirectoryDepth(d, searchDirectory) <= searchRadius);
-
-                foreach (var directory in directories)
+                var transcriptPath = Path.Combine(searchDirectory, pattern);
+                if (File.Exists(transcriptPath))
                 {
-                    foreach (var pattern in searchPatterns)
+                    _logger.LogDebug("Found transcript file: {TranscriptPath}", transcriptPath);
+                    return transcriptPath;
+                }
+            }
+
+            // Search in subdirectories if search radius allows
+            if (searchRadius > 0)
+            {
+                try
+                {
+                    var directories = Directory.GetDirectories(searchDirectory, "*", SearchOption.AllDirectories)
+                        .Where(d => GetDirectoryDepth(d, searchDirectory) <= searchRadius);
+
+                    foreach (var directory in directories)
                     {
-                        var transcriptPath = Path.Combine(directory, pattern);
-                        if (File.Exists(transcriptPath))
+                        foreach (var pattern in searchPatterns)
                         {
-                            _logger.LogDebug("Found transcript file: {TranscriptPath}", transcriptPath);
-                            return transcriptPath;
+                            var transcriptPath = Path.Combine(directory, pattern);
+                            if (File.Exists(transcriptPath))
+                            {
+                                _logger.LogDebug("Found transcript file: {TranscriptPath}", transcriptPath);
+                                return transcriptPath;
+                            }
                         }
                     }
                 }
+                catch (DirectoryNotFoundException)
+                {
+                    // Directory doesn't exist, which is expected for non-existent paths
+                    _logger.LogDebug("Directory '{SearchDirectory}' does not exist for transcript search", searchDirectory);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Error searching subdirectories for transcript files in '{SearchDirectory}'", searchDirectory);
+                }
             }
-            catch (DirectoryNotFoundException)
-            {
-                // Directory doesn't exist, which is expected for non-existent paths
-                _logger.LogDebug("Directory '{SearchDirectory}' does not exist for transcript search", searchDirectory);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Error searching subdirectories for transcript files in '{SearchDirectory}'", searchDirectory);
-            }
-        }
 
-        return null;
+            return null;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error searching for transcript file for media file '{MediaFilePath}'", mediaFilePath);
+            return null;
+        }
     }
-    catch (Exception ex)
-    {
-        _logger.LogWarning(ex, "Error searching for transcript file for media file '{MediaFilePath}'", mediaFilePath);
-        return null;
-    }
-}
 
     /// <summary>
     /// Gets the directory depth relative to a base directory.
@@ -435,7 +437,7 @@ public class TranscriptResolver : IFileTypeMetadataResolver
             var json = JsonDocument.Parse(content);
             if (json.RootElement.TryGetProperty("duration", out var durationProp))
                 return durationProp.GetDouble();
-            
+
             // Try to find the last segment
             if (json.RootElement.TryGetProperty("segments", out var segmentsProp) && segmentsProp.ValueKind == JsonValueKind.Array)
             {
@@ -476,8 +478,14 @@ public class TranscriptResolver : IFileTypeMetadataResolver
     private int GetWordCount(string content)
     {
         var plainText = StripTimingInformation(content);
-        var matches = WordCountPattern.Matches(plainText);
-        return matches.Count;
+        // Remove empty lines and trim whitespace
+        var lines = plainText.Split('\n').Select(l => l.Trim()).Where(l => !string.IsNullOrWhiteSpace(l));
+        var wordCount = 0;
+        foreach (var line in lines)
+        {
+            wordCount += WordCountPattern.Matches(line).Count;
+        }
+        return wordCount;
     }
 
     /// <summary>
@@ -487,7 +495,7 @@ public class TranscriptResolver : IFileTypeMetadataResolver
     {
         var speakers = new HashSet<string>();
         var matches = SpeakerPattern.Matches(content);
-        
+
         foreach (Match match in matches)
         {
             var speaker = match.Groups[1].Value.Trim();
@@ -519,7 +527,7 @@ public class TranscriptResolver : IFileTypeMetadataResolver
     private string ExtractSrtText(string content)
     {
         var matches = SrtPattern.Matches(content);
-        var textParts = matches.Select(match => match.Groups[4].Value.Trim()).ToArray();
+        var textParts = matches.Select(match => match.Groups[4].Value.Trim()).Where(t => !string.IsNullOrWhiteSpace(t)).ToArray();
         return string.Join("\n", textParts);
     }
 
@@ -596,12 +604,17 @@ public class TranscriptResolver : IFileTypeMetadataResolver
 
         foreach (Match match in matches)
         {
-            segments.Add(new
+            var segmentText = match.Groups[4].Value.Trim();
+            if (!string.IsNullOrWhiteSpace(segmentText))
             {
-                start = ParseTimeToSeconds(match.Groups[2].Value),
-                end = ParseTimeToSeconds(match.Groups[3].Value),
-                text = match.Groups[4].Value.Trim()
-            });
+                var segment = new Dictionary<string, object>
+                {
+                    { "start", ParseTimeToSeconds(match.Groups[2].Value) },
+                    { "end", ParseTimeToSeconds(match.Groups[3].Value) },
+                    { "text", segmentText }
+                };
+                segments.Add(segment);
+            }
         }
 
         return segments;
@@ -617,12 +630,17 @@ public class TranscriptResolver : IFileTypeMetadataResolver
 
         foreach (Match match in matches)
         {
-            segments.Add(new
+            var segmentText = match.Groups[3].Value.Trim();
+            if (!string.IsNullOrWhiteSpace(segmentText))
             {
-                start = ParseTimeToSeconds(match.Groups[1].Value),
-                end = ParseTimeToSeconds(match.Groups[2].Value),
-                text = match.Groups[3].Value.Trim()
-            });
+                var segment = new Dictionary<string, object>
+                {
+                    { "start", ParseTimeToSeconds(match.Groups[1].Value) },
+                    { "end", ParseTimeToSeconds(match.Groups[2].Value) },
+                    { "text", segmentText }
+                };
+                segments.Add(segment);
+            }
         }
 
         return segments;
@@ -634,7 +652,7 @@ public class TranscriptResolver : IFileTypeMetadataResolver
     private List<object> ExtractJsonSegments(string content)
     {
         var segments = new List<object>();
-        
+
         try
         {
             var json = JsonDocument.Parse(content);
@@ -643,16 +661,16 @@ public class TranscriptResolver : IFileTypeMetadataResolver
                 foreach (var segment in segmentsProp.EnumerateArray())
                 {
                     var segmentObj = new Dictionary<string, object>();
-                    
+
                     if (segment.TryGetProperty("start", out var startProp))
                         segmentObj["start"] = startProp.GetDouble();
-                    
+
                     if (segment.TryGetProperty("end", out var endProp))
                         segmentObj["end"] = endProp.GetDouble();
-                    
+
                     if (segment.TryGetProperty("text", out var textProp))
                         segmentObj["text"] = textProp.GetString() ?? "";
-                    
+
                     segments.Add(segmentObj);
                 }
             }
@@ -670,22 +688,16 @@ public class TranscriptResolver : IFileTypeMetadataResolver
     /// </summary>
     private string StripTimingInformation(string content)
     {
-        // Ensure content ends with double newline for proper SRT parsing
-        if (!content.EndsWith("\n\n"))
-        {
-            content = content.TrimEnd() + "\n\n";
-        }
-        
         // Remove SRT timing
         content = SrtPattern.Replace(content, "$4\n");
-        
+
         // Remove VTT timing
         content = VttPattern.Replace(content, "$3\n");
-        
+
         // Remove common timing patterns
         content = Regex.Replace(content, @"\d{2}:\d{2}:\d{2}[,\.]\d{3}", "");
         content = Regex.Replace(content, @"-->\s*", "");
-        
-        return content;
+
+        return content.Trim();
     }
 }

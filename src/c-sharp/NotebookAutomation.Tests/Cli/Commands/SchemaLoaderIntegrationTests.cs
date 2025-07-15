@@ -19,17 +19,17 @@ public class SchemaLoaderIntegrationTests
         // Arrange
         var logger = new Mock<ILogger<MetadataSchemaLoader>>();
         var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
-        
+
         // Skip test if schema file doesn't exist in test environment
         if (!File.Exists(schemaPath))
         {
             Assert.Inconclusive("Schema file not found in test environment");
             return;
         }
-        
+
         // Act
         var schemaLoader = new MetadataSchemaLoader(schemaPath, logger.Object);
-        
+
         // Assert
         Assert.IsNotNull(schemaLoader.ReservedTags);
         Assert.IsTrue(schemaLoader.ReservedTags.Count > 0);
@@ -47,17 +47,17 @@ public class SchemaLoaderIntegrationTests
         // Arrange
         var logger = new Mock<ILogger<MetadataSchemaLoader>>();
         var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
-        
+
         // Skip test if schema file doesn't exist in test environment
         if (!File.Exists(schemaPath))
         {
             Assert.Inconclusive("Schema file not found in test environment");
             return;
         }
-        
+
         // Act
         var schemaLoader = new MetadataSchemaLoader(schemaPath, logger.Object);
-        
+
         // Assert
         Assert.IsNotNull(schemaLoader.TemplateTypes);
         Assert.IsTrue(schemaLoader.TemplateTypes.Count > 0);
@@ -74,17 +74,17 @@ public class SchemaLoaderIntegrationTests
         // Arrange
         var logger = new Mock<ILogger<MetadataSchemaLoader>>();
         var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
-        
+
         // Skip test if schema file doesn't exist in test environment
         if (!File.Exists(schemaPath))
         {
             Assert.Inconclusive("Schema file not found in test environment");
             return;
         }
-        
+
         // Act
         var schemaLoader = new MetadataSchemaLoader(schemaPath, logger.Object);
-        
+
         // Assert
         Assert.IsNotNull(schemaLoader.ResolverRegistry);
         Assert.IsInstanceOfType(schemaLoader.ResolverRegistry, typeof(FieldValueResolverRegistry));
@@ -102,7 +102,7 @@ public class SchemaLoaderIntegrationTests
         var failedLogger = new Mock<ILogger>();
         var yamlHelper = new Mock<IYamlHelper>();
         var resolverRegistry = new FieldValueResolverRegistry();
-        
+
         // Act
         var tagProcessor = new TagProcessor(
             logger.Object,
@@ -111,7 +111,7 @@ public class SchemaLoaderIntegrationTests
             dryRun: false,
             verbose: false,
             resolverRegistry: resolverRegistry);
-        
+
         // Assert
         Assert.IsNotNull(tagProcessor);
         Assert.IsNotNull(tagProcessor.Stats);
@@ -126,18 +126,18 @@ public class SchemaLoaderIntegrationTests
         // Arrange
         var logger = new Mock<ILogger<MetadataSchemaLoader>>();
         var schemaPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config", "metadata-schema.yml");
-        
+
         // Skip test if schema file doesn't exist in test environment
         if (!File.Exists(schemaPath))
         {
             Assert.Inconclusive("Schema file not found in test environment");
             return;
         }
-        
+
         // Act
         var schemaLoader = new MetadataSchemaLoader(schemaPath, logger.Object);
         var resolverRegistry = schemaLoader.ResolverRegistry;
-        
+
         // Assert - Verify that the schema loader provides the expected functionality
         Assert.IsNotNull(schemaLoader);
         Assert.IsNotNull(schemaLoader.ReservedTags);
@@ -145,11 +145,11 @@ public class SchemaLoaderIntegrationTests
         Assert.IsNotNull(schemaLoader.TypeMapping);
         Assert.IsNotNull(schemaLoader.UniversalFields);
         Assert.IsNotNull(resolverRegistry);
-        
+
         // Verify that the schema contains expected content
         Assert.IsTrue(schemaLoader.ReservedTags.Count > 0);
         Assert.IsTrue(schemaLoader.TemplateTypes.Count > 0);
-        
+
         // Verify that the reserved tags are correctly loaded
         var reservedTags = schemaLoader.ReservedTags;
         Assert.IsTrue(reservedTags.Any(tag => tag.Contains("case-study") || tag.Contains("video") || tag.Contains("pdf")));

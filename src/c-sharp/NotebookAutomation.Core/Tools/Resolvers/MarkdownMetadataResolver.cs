@@ -1,5 +1,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using System.Text.RegularExpressions;
+
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -55,7 +56,7 @@ public class MarkdownMetadataResolver : IFileTypeMetadataResolver
 {
     private readonly ILogger<MarkdownMetadataResolver> _logger;
     private readonly IDeserializer _yamlDeserializer;
-    
+
     // Regex patterns for markdown parsing
     private static readonly Regex FrontmatterPattern = new(@"^---\s*\n(.*?)\n---\s*\n", RegexOptions.Singleline | RegexOptions.Compiled);
     private static readonly Regex HeadingPattern = new(@"^#+\s+(.+)$", RegexOptions.Multiline | RegexOptions.Compiled);
@@ -107,7 +108,7 @@ public class MarkdownMetadataResolver : IFileTypeMetadataResolver
         // Standard markdown metadata fields this resolver can handle
         var supportedFields = new HashSet<string>
         {
-            "title", "tags", "date-created", "date-modified", "word-count", 
+            "title", "tags", "date-created", "date-modified", "word-count",
             "heading-count", "frontmatter", "author", "description", "keywords"
         };
 
@@ -143,7 +144,7 @@ public class MarkdownMetadataResolver : IFileTypeMetadataResolver
 
             // Extract frontmatter
             var frontmatter = ExtractFrontmatter(content);
-            
+
             // First check if field exists in frontmatter
             if (frontmatter?.ContainsKey(fieldName) == true)
                 return frontmatter[fieldName];
@@ -208,7 +209,7 @@ public class MarkdownMetadataResolver : IFileTypeMetadataResolver
             // Add derived metadata
             metadata["word-count"] = GetWordCount(content);
             metadata["heading-count"] = GetHeadingCount(content);
-            
+
             // Add file system metadata if file path is available
             if (context.ContainsKey("filePath") && context["filePath"] is string filePath)
             {
@@ -311,7 +312,7 @@ public class MarkdownMetadataResolver : IFileTypeMetadataResolver
     {
         // Remove frontmatter
         var contentWithoutFrontmatter = FrontmatterPattern.Replace(content, "");
-        
+
         // Count words using regex
         var matches = WordCountPattern.Matches(contentWithoutFrontmatter);
         return matches.Count;

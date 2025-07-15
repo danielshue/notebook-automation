@@ -1,5 +1,5 @@
-using NotebookAutomation.Tests.Core.Helpers;
 using NotebookAutomation.Core.Tools;
+using NotebookAutomation.Tests.Core.Helpers;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Utils;
 
@@ -1897,7 +1897,7 @@ class: SingleClass
         };
 
         MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
-            _loggerMock.Object, 
+            _loggerMock.Object,
             nestedConfig);
 
         // Create the test path structure
@@ -1952,7 +1952,7 @@ class: SingleClass
         };
 
         MetadataHierarchyDetector detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
-            _loggerMock.Object, 
+            _loggerMock.Object,
             userConfig);
 
         // Create the exact path structure mentioned
@@ -2147,7 +2147,7 @@ class: SingleClass
     {
         // Arrange
         var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
-        
+
         Dictionary<string, object?> metadata = new()
         {
             { "title", "Test Content" },
@@ -2179,7 +2179,7 @@ class: SingleClass
     {
         // Arrange
         var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
-        
+
         Dictionary<string, object?> videoMetadata = new()
         {
             { "title", "Test Video" },
@@ -2210,7 +2210,7 @@ class: SingleClass
         Assert.AreEqual("Finance", videoResult["course"], "Video should have hierarchy course");
         Assert.IsTrue(videoResult.ContainsKey("class"), "Video should have class key");
         Assert.AreEqual("Investment", videoResult["class"], "Video should have hierarchy class");
-        
+
         Assert.IsTrue(pdfResult.ContainsKey("program"), "PDF should have program key");
         Assert.AreEqual("MBA", pdfResult["program"], "PDF should have hierarchy program");
         Assert.IsTrue(pdfResult.ContainsKey("course"), "PDF should have course key");
@@ -2227,7 +2227,7 @@ class: SingleClass
     {
         // Arrange
         var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
-        
+
         Dictionary<string, object?> metadata = new()
         {
             { "title", "Test Content" },
@@ -2260,7 +2260,7 @@ class: SingleClass
     {
         // Arrange
         var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
-        
+
         Dictionary<string, object?> metadata = new()
         {
             { "title", "Test Content" },
@@ -2292,7 +2292,7 @@ class: SingleClass
     {
         // Arrange
         var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
-        
+
         Dictionary<string, string> hierarchyInfo = new()
         {
             { "program", "MBA" },
@@ -2319,9 +2319,9 @@ class: SingleClass
             // Assert
             foreach (var expectedField in testCase.ExpectedFields)
             {
-                Assert.IsTrue(result.ContainsKey(expectedField), 
+                Assert.IsTrue(result.ContainsKey(expectedField),
                     $"Level '{testCase.Level}' should contain field '{expectedField}'");
-                Assert.AreEqual(hierarchyInfo[expectedField], result[expectedField], 
+                Assert.AreEqual(hierarchyInfo[expectedField], result[expectedField],
                     $"Level '{testCase.Level}' should have correct value for '{expectedField}'");
             }
         }

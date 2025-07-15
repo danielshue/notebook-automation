@@ -149,15 +149,28 @@ try {
                 $mainJs = Join-Path $pluginDistPath "main.js"
                 $manifestJson = Join-Path $pluginDistPath "manifest.json"
                 $stylesCss = Join-Path $pluginDistPath "styles.css"
+                $defaultConfigJson = Join-Path $pluginDistPath "default-config.json"
+                $metadataSchemaYml = Join-Path $pluginDistPath "metadata-schema.yml"
 
                 $buildOutputs = @()
                 if (Test-Path $mainJs) { $buildOutputs += "✓ main.js" }
                 if (Test-Path $manifestJson) { $buildOutputs += "✓ manifest.json" }
                 if (Test-Path $stylesCss) { $buildOutputs += "✓ styles.css" }
-
-                # Add default-config.json to the list of build outputs
-                $defaultConfigJson = Join-Path $pluginDistPath "default-config.json"
                 if (Test-Path $defaultConfigJson) { $buildOutputs += "✓ default-config.json" }
+                if (Test-Path $metadataSchemaYml) { $buildOutputs += "✓ metadata-schema.yml" }
+
+                # Ensure metadata-schema.yml is present in dist, copy from config if missing
+                if (-not (Test-Path $metadataSchemaYml)) {
+                    $configSchemaPath = Join-Path $RepositoryRoot "config\metadata-schema.yml"
+                    if (Test-Path $configSchemaPath) {
+                        Copy-Item $configSchemaPath $metadataSchemaYml -Force
+                        Write-Host "✓ Copied metadata-schema.yml from config to dist folder" -ForegroundColor $Green
+                        $buildOutputs += "✓ metadata-schema.yml (copied)"
+                    }
+                    else {
+                        Write-Warning "metadata-schema.yml not found in config folder. Plugin may be incomplete."
+                    }
+                }
 
                 if ($buildOutputs.Count -gt 0) {
                     Write-Success "Obsidian plugin build completed successfully"

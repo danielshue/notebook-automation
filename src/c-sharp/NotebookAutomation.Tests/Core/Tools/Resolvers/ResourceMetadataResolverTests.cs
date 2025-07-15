@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+
 using NotebookAutomation.Core.Tools.Resolvers;
 
 namespace NotebookAutomation.Tests.Core.Tools.Resolvers;
@@ -363,7 +364,7 @@ public class ResourceMetadataResolverTests
             Assert.IsTrue(metadata.ContainsKey("date-modified"));
             Assert.IsTrue(metadata.ContainsKey("resource-type"));
             Assert.IsTrue(metadata.ContainsKey("mime-type"));
-            
+
             Assert.AreEqual(Path.GetFileName(pdfFile), metadata["file-name"]);
             Assert.AreEqual(".pdf", metadata["file-extension"]);
             Assert.AreEqual("document", metadata["resource-type"]);
@@ -424,8 +425,8 @@ public class ResourceMetadataResolverTests
         // Arrange
         var tempFile = Path.GetTempFileName();
         var jpgFile = Path.ChangeExtension(tempFile, ".jpg");
-        var context = new Dictionary<string, object> 
-        { 
+        var context = new Dictionary<string, object>
+        {
             ["filePath"] = jpgFile,
             ["extractImageMetadata"] = false
         };
@@ -484,9 +485,9 @@ public class ResourceMetadataResolverTests
                 var metadata = _resolver.ExtractMetadata(context);
 
                 // Assert
-                Assert.AreEqual(testCase.Value.expectedType, metadata["resource-type"], 
+                Assert.AreEqual(testCase.Value.expectedType, metadata["resource-type"],
                     $"Resource type mismatch for {testCase.Key}");
-                Assert.AreEqual(testCase.Value.expectedMime, metadata["mime-type"], 
+                Assert.AreEqual(testCase.Value.expectedMime, metadata["mime-type"],
                     $"MIME type mismatch for {testCase.Key}");
             }
             finally
