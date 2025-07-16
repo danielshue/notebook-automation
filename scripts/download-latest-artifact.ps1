@@ -5,28 +5,27 @@
 # Examples:
 #   .\download-latest-artifact.ps1                              # Download complete plugin package
 #   pwsh .\download-latest-artifact.ps1 -ListOnly               # List available artifacts without downloading
-#   pwsh .\download-latest-artifact.ps1 -Version "1.0.1"        # Download specific version (SemVer)
 #
 # Parameters:
 #   -Workflow: GitHub Actions workflow file name (default: ci-cross-platform.yml)
-#   -Version: Specific SemVer to download (optional, downloads latest if not specified)
+#   -Version: Specific SemVer to download (not supported for this artifact type)
 #   -ListOnly: Only list available artifacts without downloading
 #
-# Note: Downloads the complete notebook-automation package to ../dist/notebook-automation/
-#       This includes the Obsidian plugin files (main.js, manifest.json, styles.css) and 
+# Note: Downloads the complete notebook-automation-obsidian-plugin artifact to ../dist/notebook-automation/
+#       This includes the Obsidian plugin files (main.js, manifest.json, styles.css, default-config.json, etc.) and 
 #       all platform executables (na-win-x64.exe, na-macos-arm64, na-linux-x64, etc.)
 #       Ready for direct installation into Obsidian plugins folder.
 
 param(
     [string]$Workflow = "ci-cross-platform.yml",
-    [string]$Version = "",  # Specific SemVer to download (optional)
+    [string]$Version = "",  # Version filtering not supported for this artifact type
     [switch]$ListOnly  # Only list available artifacts without downloading
 )
 
-Write-Host "Downloading notebook-automation package:" -ForegroundColor Green
+Write-Host "Downloading notebook-automation-obsidian-plugin package:" -ForegroundColor Green
 Write-Host "  Workflow: $Workflow"
 if ($Version) {
-    Write-Host "  Version: $Version"
+    Write-Host "  Version: $Version (note: version filtering not supported for this artifact type)"
 }
 if ($ListOnly) {
     Write-Host "  Mode: List only (no download)"
@@ -132,43 +131,26 @@ $artifacts | ForEach-Object {
 
 # Filter artifacts based on parameters
 $filteredArtifacts = $artifacts | Where-Object { 
-    $_.name -like "notebook-automation*" 
+    $_.name -eq "notebook-automation-obsidian-plugin" 
 } | Sort-Object -Property created_at -Descending | Select-Object -First 1
 
 if (-not $filteredArtifacts) {
-    Write-Host "No suitable artifact found containing the notebook-automation folder." -ForegroundColor Yellow
+    Write-Host "No suitable artifact found containing the notebook-automation-obsidian-plugin." -ForegroundColor Yellow
     exit 1
 }
 
 # Apply version filter if specified
 if ($Version) {
-    Write-Host "Filtering for version: $Version"
-    $filteredArtifacts = $filteredArtifacts | Where-Object { 
-        $_.name -like "*$Version*"
-    }
-    if (-not $filteredArtifacts) {
-        Write-Host "No artifacts found for version '$Version'. Available versions:" -ForegroundColor Yellow
-        $artifacts | Where-Object { $_.name -eq "notebook-automation" } | ForEach-Object {
-            Write-Host "  - latest (from notebook-automation artifact)"
-        }
-        exit 1
-    }
+    Write-Host "Version filtering not supported for this artifact type." -ForegroundColor Yellow
+    Write-Host "The notebook-automation-obsidian-plugin artifact contains the latest build from the workflow run."
+    Write-Host "Use specific workflow run or tag-based releases for version control."
 }
-else {
-    Write-Host "No version specified. Fetching the latest artifact..."
-    # Adjust artifact filtering to include 'notebook-automation-obsidian-plugin' for plugin files and executables
-    $filteredArtifacts = $artifacts | Where-Object { 
-        $_.name -like "notebook-automation-obsidian-plugin*" 
-    } | Sort-Object -Property created_at -Descending | Select-Object -First 1
 
-    if (-not $filteredArtifacts) {
-        Write-Host "No suitable artifact found containing the required files." -ForegroundColor Yellow
-        exit 1
-    }
-}
+# Use the notebook-automation-obsidian-plugin artifact
+Write-Host "Using the notebook-automation-obsidian-plugin artifact (contains complete plugin package)..."
 
 if (-not $filteredArtifacts) {
-    Write-Host "No notebook-automation artifact found"
+    Write-Host "No notebook-automation-obsidian-plugin artifact found"
     Write-Host "Available artifacts:"
     $artifacts | ForEach-Object {
         Write-Host "  - $($_.name)"
@@ -176,7 +158,7 @@ if (-not $filteredArtifacts) {
     exit 1
 }
 
-Write-Host "Found notebook-automation artifact to download:"
+Write-Host "Found notebook-automation-obsidian-plugin artifact to download:"
 $filteredArtifacts | ForEach-Object {
     Write-Host "  - $($_.name)"
 }
@@ -200,15 +182,11 @@ foreach ($artifact in $filteredArtifacts) {
         # Use the artifact download command with the artifact ID
         gh api repos/:owner/:repo/actions/artifacts/$($artifact.id)/zip --method GET > "$DistPath/$($artifact.name).zip"
         
-        # This is the complete plugin package - extract to a subdirectory to preserve structure
-        $extractPath = Join-Path $DistPath "notebook-automation"
-        if (-not (Test-Path $extractPath)) {
-            New-Item -ItemType Directory -Path $extractPath -Force
-        }
-        Expand-Archive -Path "$DistPath/$($artifact.name).zip" -DestinationPath $extractPath -Force
+        # Extract the complete plugin package directly - the artifact contains the plugin directory structure
+        Expand-Archive -Path "$DistPath/$($artifact.name).zip" -DestinationPath $DistPath -Force
         
         Write-Host "✓ Downloaded complete plugin package: $($artifact.name)"
-        Write-Host "  Plugin files and executables available in: $extractPath"
+        Write-Host "  Plugin files and executables available in: $DistPath"
         
         Remove-Item "$DistPath/$($artifact.name).zip"
         $downloadedAny = $true
@@ -235,35 +213,65 @@ if ($downloadedAny) {
     Write-Host ""
     Write-Host "Package summary:"
     
-    # Check in notebook-automation subdirectory
-    $pluginDir = Join-Path $DistPath "notebook-automation"
-    if (Test-Path $pluginDir) {
-        # Check for plugin files
-        $pluginFiles = Get-ChildItem -Path "$pluginDir" -File | Where-Object { 
-            $_.Name -in @("main.js", "manifest.json", "styles.css")
+    # Check in the detected plugin directory
+    $summaryPluginDir = $null
+    $summaryPluginFiles = $null
+    $summaryExecutables = $null
+    
+    # First, check if files are in a notebook-automation subdirectory
+    $possibleDir = Join-Path $DistPath "notebook-automation"
+    if (Test-Path $possibleDir) {
+        $testFiles = Get-ChildItem -Path "$possibleDir" -File -ErrorAction SilentlyContinue
+        if ($testFiles -and ($testFiles | Where-Object { $_.Name -in @("main.js", "manifest.json", "styles.css") }).Count -ge 3) {
+            $summaryPluginDir = $possibleDir
+        }
+    }
+    
+    # If not found in subdirectory, check if files are directly in dist folder
+    if (-not $summaryPluginDir) {
+        $testFiles = Get-ChildItem -Path "$DistPath" -File -ErrorAction SilentlyContinue
+        if ($testFiles -and ($testFiles | Where-Object { $_.Name -in @("main.js", "manifest.json", "styles.css") }).Count -ge 3) {
+            $summaryPluginDir = $DistPath
+        }
+    }
+    
+    if ($summaryPluginDir) {
+        # Check for required plugin files
+        $requiredFiles = @("main.js", "manifest.json", "styles.css", "default-config.json", "metadata-schema.yml", "BaseBlockTemplate.yml", "chunk_summary_prompt.md", "final_summary_prompt.md")
+        $summaryPluginFiles = Get-ChildItem -Path "$summaryPluginDir" -File | Where-Object { 
+            $_.Name -in $requiredFiles
         }
         
         # Check for executables
-        $executables = Get-ChildItem -Path "$pluginDir" -File | Where-Object { 
+        $summaryExecutables = Get-ChildItem -Path "$summaryPluginDir" -File | Where-Object { 
             $_.Name -like "na-*"
         }
         
-        if ($pluginFiles) {
+        if ($summaryPluginFiles.Count -ge 4) {
+            # At least the core files should be present
             Write-Host "  ✓ Found complete Obsidian plugin package:"
-            Write-Host "    Plugin files: $($pluginFiles.Count)"
-            Write-Host "    Executables: $($executables.Count)"
+            Write-Host "    Plugin files: $($summaryPluginFiles.Count)/$($requiredFiles.Count)"
+            Write-Host "    Executables: $($summaryExecutables.Count)"
             Write-Host ""
-            Write-Host "  Installation: Copy the entire 'notebook-automation' directory to your Obsidian plugins folder"
+            Write-Host "  Plugin files found:"
+            $summaryPluginFiles | ForEach-Object {
+                Write-Host "    - $($_.Name)"
+            }
+            Write-Host ""
+            Write-Host "  Installation: Copy the contents to your Obsidian plugins folder"
+            if ($summaryPluginDir -ne $DistPath) {
+                Write-Host "    Source: $summaryPluginDir"
+            }
         }
         
-        if ($executables) {
+        if ($summaryExecutables) {
             Write-Host ""
             Write-Host "  Available executables:"
             
             # Group by platform for better display
-            $windowsExes = $executables | Where-Object { $_.Name -like "na-win-*" }
-            $macosExes = $executables | Where-Object { $_.Name -like "na-macos-*" }
-            $linuxExes = $executables | Where-Object { $_.Name -like "na-linux-*" }
+            $windowsExes = $summaryExecutables | Where-Object { $_.Name -like "na-win-*" }
+            $macosExes = $summaryExecutables | Where-Object { $_.Name -like "na-macos-*" }
+            $linuxExes = $summaryExecutables | Where-Object { $_.Name -like "na-linux-*" }
             
             if ($windowsExes) {
                 Write-Host "    Windows:"
@@ -291,39 +299,105 @@ if ($downloadedAny) {
         }
     }
     else {
-        Write-Host "  ✗ notebook-automation directory not found"
+        Write-Host "  ✗ Plugin directory not found"
+        Write-Host "  Contents of dist directory:"
+        Get-ChildItem -Path "$DistPath" | ForEach-Object {
+            Write-Host "    - $($_.Name)"
+        }
     }
     
     # Show usage instructions
     Write-Host ""
     Write-Host "Usage Instructions:" -ForegroundColor Cyan
-    Write-Host "  1. Copy the 'notebook-automation' directory to your Obsidian plugins folder"
-    Write-Host "  2. Enable the plugin in Obsidian settings"
-    Write-Host "  3. The plugin will automatically use the appropriate executable for your platform"
-    Write-Host ""
-    Write-Host "Manual executable usage:" -ForegroundColor Cyan
-    Write-Host "  Windows x64:  $pluginDir/na-win-x64.exe --help"
-    Write-Host "  Windows ARM64: $pluginDir/na-win-arm64.exe --help"
-    Write-Host "  macOS x64:    $pluginDir/na-macos-x64 --help"
-    Write-Host "  macOS ARM64:  $pluginDir/na-macos-arm64 --help"
-    Write-Host "  Linux x64:    $pluginDir/na-linux-x64 --help"
-    Write-Host "  Linux ARM64:  $pluginDir/na-linux-arm64 --help"
+    if ($summaryPluginDir -and $summaryPluginDir -ne $DistPath) {
+        Write-Host "  1. Copy the 'notebook-automation' directory to your Obsidian plugins folder"
+        Write-Host "  2. Enable the plugin in Obsidian settings"
+        Write-Host "  3. The plugin will automatically use the appropriate executable for your platform"
+        Write-Host ""
+        Write-Host "Manual executable usage:" -ForegroundColor Cyan
+        Write-Host "  Windows x64:  $summaryPluginDir/na-win-x64.exe --help"
+        Write-Host "  Windows ARM64: $summaryPluginDir/na-win-arm64.exe --help"
+        Write-Host "  macOS x64:    $summaryPluginDir/na-macos-x64 --help"
+        Write-Host "  macOS ARM64:  $summaryPluginDir/na-macos-arm64 --help"
+        Write-Host "  Linux x64:    $summaryPluginDir/na-linux-x64 --help"
+        Write-Host "  Linux ARM64:  $summaryPluginDir/na-linux-arm64 --help"
+    }
+    else {
+        Write-Host "  1. Copy the contents of the dist directory to your Obsidian plugins folder"
+        Write-Host "  2. Enable the plugin in Obsidian settings"
+        Write-Host "  3. The plugin will automatically use the appropriate executable for your platform"
+        Write-Host ""
+        Write-Host "Manual executable usage:" -ForegroundColor Cyan
+        Write-Host "  Windows x64:  $DistPath/na-win-x64.exe --help"
+        Write-Host "  Windows ARM64: $DistPath/na-win-arm64.exe --help"
+        Write-Host "  macOS x64:    $DistPath/na-macos-x64 --help"
+        Write-Host "  macOS ARM64:  $DistPath/na-macos-arm64 --help"
+        Write-Host "  Linux x64:    $DistPath/na-linux-x64 --help"
+        Write-Host "  Linux ARM64:  $DistPath/na-linux-arm64 --help"
+    }
 }
 else {
     Write-Host "No artifacts were downloaded."
 }
 
-# Ensure Obsidian plugin files are extracted into the notebook-automation folder
-$pluginFiles = Get-ChildItem -Path "$extractPath" -File | Where-Object {
-    $_.Name -in @("main.js", "manifest.json", "styles.css")
+# Ensure Obsidian plugin files are extracted - check multiple possible locations
+$pluginDir = $null
+$corePluginFiles = $null
+
+# First, check if files are in a notebook-automation subdirectory
+$possiblePluginDir = Join-Path $DistPath "notebook-automation"
+if (Test-Path $possiblePluginDir) {
+    $testFiles = Get-ChildItem -Path "$possiblePluginDir" -File -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -in @("main.js", "manifest.json", "styles.css")
+    }
+    if ($testFiles -and $testFiles.Count -ge 3) {
+        $pluginDir = $possiblePluginDir
+        $corePluginFiles = $testFiles
+    }
 }
 
-if (-not $pluginFiles) {
-    Write-Host "✗ Obsidian plugin files not found in the extracted artifact." -ForegroundColor Red
+# If not found in subdirectory, check if files are directly in dist folder
+if (-not $corePluginFiles) {
+    $testFiles = Get-ChildItem -Path "$DistPath" -File -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -in @("main.js", "manifest.json", "styles.css")
+    }
+    if ($testFiles -and $testFiles.Count -ge 3) {
+        $pluginDir = $DistPath
+        $corePluginFiles = $testFiles
+    }
+}
+
+if (-not $corePluginFiles -or $corePluginFiles.Count -lt 3) {
+    Write-Host "✗ Core Obsidian plugin files not found in the extracted artifact." -ForegroundColor Red
+    Write-Host "Expected: main.js, manifest.json, styles.css"
+    Write-Host "Searched in:"
+    Write-Host "  - $possiblePluginDir"
+    Write-Host "  - $DistPath"
+    Write-Host "Contents of dist directory:"
+    Get-ChildItem -Path "$DistPath" -Recurse | ForEach-Object {
+        $relativePath = $_.FullName.Replace($DistPath, "")
+        Write-Host "  $relativePath"
+    }
+    if ($corePluginFiles) {
+        Write-Host "Found: $($corePluginFiles.Name -join ', ')"
+    }
     exit 1
 }
 
-Write-Host "✓ Found Obsidian plugin files:"
-$pluginFiles | ForEach-Object {
+Write-Host "✓ Found core Obsidian plugin files:"
+$corePluginFiles | ForEach-Object {
     Write-Host "  - $($_.Name)"
+}
+
+# Check for additional plugin files
+$additionalFiles = Get-ChildItem -Path "$pluginDir" -File | Where-Object {
+    $_.Name -in @("default-config.json", "metadata-schema.yml", "BaseBlockTemplate.yml", "chunk_summary_prompt.md", "final_summary_prompt.md")
+}
+
+if ($additionalFiles) {
+    Write-Host ""
+    Write-Host "✓ Found additional plugin files:"
+    $additionalFiles | ForEach-Object {
+        Write-Host "  - $($_.Name)"
+    }
 }

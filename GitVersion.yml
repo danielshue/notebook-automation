@@ -1,2 +1,9 @@
-next-version: 1.0.0
+next-version: 0.1.0-beta.5
 mode: ContinuousDelivery
+branches:
+  main:
+    mode: ContinuousDelivery
+    tag: ''
+  develop:
+    mode: ContinuousDelivery
+    tag: 'beta'

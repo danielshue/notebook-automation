@@ -1,2 +1,5 @@
 # Custom Dictionary Words
+aiservice
+danshue
 frontmatter
+gies

@@ -12,6 +12,88 @@ The `metadata-schema.yml` file defines the structure, validation rules, and beha
 - **Reserved Tag Logic**: Protected system tags with automatic validation
 - **Type Mapping**: Canonical type normalization and aliasing
 
+## Schema Loader and Registry Pattern
+
+The **MetadataSchemaLoader** serves as the central component for schema-driven metadata automation, supporting:
+
+- **Unified Schema File**: Single `metadata-schema.yml` configuration for all metadata operations
+- **Registry Pattern**: Dynamic registration and runtime extension of field value resolvers  
+- **Plugin Extensibility**: Support for custom resolvers loaded from DLL plugins
+- **Inheritance System**: Recursive template type inheritance with base types and universal fields
+- **Validation**: Robust schema validation with reserved tag enforcement
+
+```csharp
+// Load schema and register resolvers
+var schemaLoader = new MetadataSchemaLoader("config/metadata-schema.yml", logger);
+schemaLoader.LoadResolversFromDirectory("./resolvers");
+
+// Access template definitions
+var pdfSchema = schemaLoader.TemplateTypes["pdf-reference"];
+
+// Resolve field values dynamically
+var dateCreated = schemaLoader.ResolveFieldValue("pdf-reference", "date-created", context);
+```
+
+## Reserved Tags and Universal Fields
+
+The metadata schema system enforces consistent metadata through reserved tags and universal fields:
+
+- **Universal Fields**: Automatically inherited by all template types (e.g., `auto-generated-state`, `date-created`, `publisher`)
+- **Reserved Tags**: Protected system tags that cannot be overridden (e.g., `case-study`, `video`, `pdf`)
+- **Field Inheritance**: Reserved tags are automatically included as fields in all template types
+- **Validation**: Automatic validation prevents accidental overrides and ensures data integrity
+
+**Schema Structure:**
+
+```yaml
+# NOTE: All top-level keys must use PascalCase for C# compatibility
+TemplateTypes:
+  pdf-reference:
+    BaseTypes:
+      - universal-fields
+    Type: note/case-study
+    RequiredFields:
+      - comprehension
+      - status
+      - tags
+    Fields:
+      date-created:
+        Resolver: DateCreatedResolver
+      status:
+        Default: unread
+
+UniversalFields:
+  - auto-generated-state
+  - date-created
+  - publisher
+
+ReservedTags:
+  - auto-generated-state
+  - case-study
+  - video
+  - pdf
+```
+
+## Migration from Legacy metadata.yaml
+
+**Breaking Change**: The system has migrated from legacy `metadata.yaml` to the new `metadata-schema.yml` format.
+
+**Key Changes:**
+
+- File extension changed from `.yaml` to `.yml`
+- Schema structure unified under PascalCase top-level keys
+- Template definitions restructured with inheritance support
+- Reserved tag logic enforced automatically
+
+**Migration Steps:**
+
+1. Update file references from `metadata.yaml` to `metadata-schema.yml`
+2. Convert template definitions to new schema structure
+3. Update code to use `MetadataSchemaLoader` instead of legacy template managers
+4. Test reserved tag inheritance and validation
+
+For detailed migration instructions, see the [Migration Guide](migration-guide.md).
+
 ## File Structure
 
 ### Top-Level Sections
@@ -88,11 +170,13 @@ TemplateTypes:
 Template types support recursive inheritance through the `BaseTypes` property:
 
 #### Base Type Resolution
+
 - **universal-fields**: Inherits all fields from the `UniversalFields` section
 - **template-type-name**: Inherits all fields from another template type
 - **Recursive**: Base types are resolved recursively, supporting deep inheritance chains
 
 #### Field Inheritance Rules
+
 1. Fields from base types are added only if they don't already exist in the derived type
 2. Universal fields are always included if not present
 3. Reserved tags are automatically injected as fields in all template types
@@ -103,6 +187,7 @@ Template types support recursive inheritance through the `BaseTypes` property:
 Each field in the `Fields` section can specify:
 
 #### Default Values
+
 Static default values used when no resolver is present:
 
 ```yaml
@@ -116,6 +201,7 @@ Fields:
 ```
 
 #### Resolvers
+
 Dynamic value resolution through registered resolvers:
 
 ```yaml
@@ -127,7 +213,9 @@ Fields:
 ```
 
 #### Resolver Lookup
+
 The system supports flexible resolver lookup:
+
 1. **Exact match**: Looks for resolver with exact name
 2. **Suffix match**: Looks for registered resolvers ending with the specified name
 3. **Fallback**: Uses default value if no resolver is found
@@ -382,12 +470,14 @@ var resolver = schemaLoader.ResolverRegistry.Get("DateCreatedResolver");
 ### Case Sensitivity Issues
 
 ❌ **Wrong**: Using camelCase or snake_case
+
 ```yaml
 templateTypes:    # Will fail - camelCase
 template_types:   # Will fail - snake_case
 ```
 
 ✅ **Correct**: Using PascalCase
+
 ```yaml
 TemplateTypes:    # Correct - PascalCase
 ```
@@ -395,6 +485,7 @@ TemplateTypes:    # Correct - PascalCase
 ### Missing Required Fields
 
 ❌ **Wrong**: Forgetting to define required fields
+
 ```yaml
 TemplateTypes:
   pdf-reference:
@@ -403,6 +494,7 @@ TemplateTypes:
 ```
 
 ✅ **Correct**: Defining required fields
+
 ```yaml
 TemplateTypes:
   pdf-reference:
@@ -415,6 +507,7 @@ TemplateTypes:
 ### Resolver Not Found
 
 ❌ **Wrong**: Using unregistered resolver
+
 ```yaml
 Fields:
   date-created:
@@ -422,6 +515,7 @@ Fields:
 ```
 
 ✅ **Correct**: Register resolver before use
+
 ```csharp
 schemaLoader.ResolverRegistry.Register("DateCreatedResolver", new DateCreatedResolver());
 ```
