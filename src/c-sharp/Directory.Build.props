@@ -40,7 +40,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GitVersion_SemVer)' == ''">
-    <GitVersion_SemVer>0.1.0-beta.6</GitVersion_SemVer>
+    <GitVersion_SemVer>0.1.0-beta.7</GitVersion_SemVer>
     <GitVersion_AssemblySemVer>0.1.0.0</GitVersion_AssemblySemVer>
     <GitVersion_AssemblySemFileVer>0.1.0.0</GitVersion_AssemblySemFileVer>
     <GitVersion_InformationalVersion>0.1.0-fallback</GitVersion_InformationalVersion>
@@ -64,6 +64,7 @@
     -->
   </ItemGroup>
 </Project>
+
 
 
 
