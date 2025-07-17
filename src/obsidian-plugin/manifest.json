@@ -1,7 +1,7 @@
 {
   "id": "notebook-automation",
   "name": "Notebook Automation",
-  "version": "0.1.0-beta.5",
+  "version": "0.1.0-beta.6",
   "minAppVersion": "0.15.0",
   "description": "Automate notebook workflows: launch, import, and index resource files from OneDrive or local folders for the selected Vault folder.",
   "author": "Dan Shue",

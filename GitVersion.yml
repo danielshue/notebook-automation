@@ -1,4 +1,4 @@
-next-version: 0.1.0-beta.5
+next-version: 0.1.0-beta.6
 mode: ContinuousDelivery
 branches:
   main:
