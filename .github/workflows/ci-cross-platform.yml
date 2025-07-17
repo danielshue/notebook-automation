@@ -489,7 +489,7 @@ jobs:
           name: all-platform-executables-${{ needs.consolidate-artifacts.outputs.informational-version }}
           path: consolidated-executables
 
-      - name: Prepare plugin directory for BRAT/Community Release
+      - name: Prepare plugin directory and zip for BRAT/Community Release
         run: |
           PLUGIN_ID="notebook-automation"
           PLUGIN_DIR="$PLUGIN_ID"
@@ -514,6 +514,10 @@ jobs:
           if [ -d consolidated-executables ]; then
             cp consolidated-executables/* "$PLUGIN_DIR/" 2>/dev/null || true
           fi
+          # Copy the plugin zip for release asset
+          if [ -f "src/obsidian-plugin/dist/notebook-automation-obsidian-plugin.zip" ]; then
+            cp "src/obsidian-plugin/dist/notebook-automation-obsidian-plugin.zip" "$PLUGIN_DIR/"
+          fi
           ls -la "$PLUGIN_DIR"
 
       - name: Upload plugin and executables as artifact
@@ -524,7 +528,7 @@ jobs:
           retention-days: 7
 
       # Only create a GitHub release if this is a tag push
-      - name: Create GitHub release with plugin and executables
+      - name: Create GitHub release with plugin, zip, and executables
         if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -533,4 +537,5 @@ jobs:
           gh release create "$tag" \
             --title="$tag" \
             --draft \
-            notebook-automation/*
+            notebook-automation/* \
+            notebook-automation/notebook-automation-obsidian-plugin.zip
