@@ -196,15 +196,21 @@ Write-Host "💻 Updating CLI versioning..." -ForegroundColor Blue
 
 # Update GitVersion.yml
 $gitVersionContent = @"
-next-version: $targetVersion
 mode: ContinuousDelivery
+next-version: $targetVersion
 branches:
+  master:
+    regex: ^master$
+    mode: ContinuousDelivery
+    label: ''
   main:
+    regex: ^main$
     mode: ContinuousDelivery
-    tag: ''
+    label: ''
   develop:
+    regex: ^develop$
     mode: ContinuousDelivery
-    tag: 'beta'
+    label: 'beta'
 "@
 
 Set-Content -Path $GitVersionPath -Value $gitVersionContent

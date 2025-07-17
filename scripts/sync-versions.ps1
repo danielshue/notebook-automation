@@ -58,8 +58,21 @@ else {
 # Step 2: Update GitVersion.yml to use the target version
 Write-Host "🔧 Updating GitVersion.yml"
 $gitVersionContent = @"
-next-version: $targetVersion
 mode: ContinuousDelivery
+next-version: $targetVersion
+branches:
+  master:
+    regex: ^master$
+    mode: ContinuousDelivery
+    label: ''
+  main:
+    regex: ^main$
+    mode: ContinuousDelivery
+    label: ''
+  develop:
+    regex: ^develop$
+    mode: ContinuousDelivery
+    label: 'beta'
 "@
 
 Set-Content -Path $GitVersionPath -Value $gitVersionContent
