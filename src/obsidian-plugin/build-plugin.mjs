@@ -132,6 +132,51 @@ if (allPresent) {
     } catch (error) {
         console.log(`   Could not list dist contents: ${error.message}`);
     }
+
+    // --- Zip plugin files for BRAT and release uploads ---
+    try {
+        // Only require standard Node.js modules
+        const { execSync } = await import('child_process');
+        const zipName = 'notebook-automation-obsidian-plugin.zip';
+        const zipPath = join(distRoot, zipName);
+        // List of files to include in the zip
+        const filesToZip = [
+            'BaseBlockTemplate.yml',
+            'chunk_summary_prompt.md',
+            'default-config.json',
+            'final_summary_prompt.md',
+            'main.js',
+            'manifest.json',
+            'metadata-schema.yml',
+            'styles.css',
+        ];
+        // Only include files that exist
+        const filesPresent = filesToZip.filter(f => existsSync(join(distRoot, f)));
+        if (filesPresent.length === 0) {
+            throw new Error('No plugin files found to zip.');
+        }
+        // Build the zip command (cross-platform)
+        // On Windows, use PowerShell Compress-Archive; on others, use zip
+        let zipCmd;
+        if (process.platform === 'win32') {
+            // Use PowerShell Compress-Archive
+            const filesArg = filesPresent.map(f => `-Path '${join(distRoot, f)}'`).join(' ');
+            zipCmd = `powershell -Command "Compress-Archive -Path ${filesPresent.map(f => `'${join(distRoot, f)}'`).join(',')} -DestinationPath '${zipPath}' -Force"`;
+        } else {
+            // Use zip CLI
+            const filesArg = filesPresent.map(f => `'${f}'`).join(' ');
+            zipCmd = `cd '${distRoot}' && zip -r '${zipName}' ${filesArg}`;
+        }
+        console.log(`\n📦 Creating plugin zip for release/BRAT: ${zipPath}`);
+        execSync(zipCmd, { stdio: 'inherit' });
+        if (existsSync(zipPath)) {
+            console.log(`   ✅ Created ${zipName} in dist/`);
+        } else {
+            console.error(`   ❌ Failed to create ${zipName}`);
+        }
+    } catch (err) {
+        console.error('   ⚠️  Could not create plugin zip:', err.message);
+    }
 } else {
     console.error('❌ Plugin build incomplete - some required files are missing');
     process.exit(1);
