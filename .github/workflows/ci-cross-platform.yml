@@ -324,6 +324,9 @@ jobs:
         if: always() && runner.os == 'Windows'
         shell: pwsh
         run: |
+          # Ensure executables directory exists
+          New-Item -ItemType Directory -Force -Path "publish/executables"
+
           # Publish x64 executable
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id }}
           if (!(Test-Path publish/temp-${{ matrix.runtime-id }})) { Write-Host "dotnet publish x64 failed"; exit 1 }
@@ -344,6 +347,9 @@ jobs:
         if: always() && runner.os != 'Windows'
         shell: bash
         run: |
+          # Ensure executables directory exists
+          mkdir -p publish/executables
+
           # Publish x64 executable
           dotnet publish src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj -c Release -r ${{ matrix.runtime-id }} /p:PublishSingleFile=true /p:SelfContained=true --output publish/temp-${{ matrix.runtime-id }}
           if [ $? -ne 0 ]; then echo "dotnet publish x64 failed"; exit 1; fi
