@@ -70,27 +70,60 @@ for (const file of pluginFiles) {
 // Handle executables - ensure they're preserved in the dist directory
 console.log('🔍 Processing executables...');
 try {
+    let executables = [];
+    
     if (existsSync(distRoot)) {
         const files = readdirSync(distRoot);
-        const executables = files.filter(f =>
+        executables = files.filter(f =>
             f.startsWith('na-') &&
             (f.endsWith('.exe') || (!f.includes('.') && f.includes('-')))
         );
-
-        if (executables.length > 0) {
-            console.log(`   ✅ Found ${executables.length} executables in dist:`);
-            executables.forEach(exe => {
-                const exePath = join(distRoot, exe);
-                if (existsSync(exePath)) {
-                    console.log(`      ✅ ${exe} (preserved in dist)`);
-                } else {
-                    console.log(`      ⚠️  ${exe} (missing from dist)`);
+    }
+    
+    // If no executables found in dist, check the publish directory
+    if (executables.length === 0) {
+        const publishRoot = resolve('../../publish');
+        if (existsSync(publishRoot)) {
+            console.log('   📂 Copying executables from publish directory...');
+            const publishDirs = readdirSync(publishRoot);
+            
+            for (const platformDir of publishDirs) {
+                const platformPath = join(publishRoot, platformDir);
+                if (existsSync(platformPath)) {
+                    const platformFiles = readdirSync(platformPath);
+                    const platformExecutables = platformFiles.filter(f => 
+                        f === 'na.exe' || f === 'na' || f.startsWith('na-')
+                    );
+                    
+                    for (const exe of platformExecutables) {
+                        const srcPath = join(platformPath, exe);
+                        // Rename to include platform info for clarity
+                        const destName = exe === 'na.exe' ? `na-${platformDir}.exe` : 
+                                       exe === 'na' ? `na-${platformDir}` : exe;
+                        const destPath = join(distRoot, destName);
+                        
+                        copyFileSync(srcPath, destPath);
+                        console.log(`   ✅ ${exe} → ${destName} (from ${platformDir})`);
+                        executables.push(destName);
+                    }
                 }
-            });
-        } else {
-            console.log('   ℹ️  No executables found (normal for local development)');
-            console.log('   ℹ️  Executables will be added by CI workflow');
+            }
         }
+    }
+
+    if (executables.length > 0) {
+        console.log(`   ✅ Found ${executables.length} executables in dist:`);
+        executables.forEach(exe => {
+            const exePath = join(distRoot, exe);
+            if (existsSync(exePath)) {
+                console.log(`      ✅ ${exe} (available in dist)`);
+            } else {
+                console.log(`      ⚠️  ${exe} (missing from dist)`);
+            }
+        });
+    } else {
+        console.log('   ℹ️  No executables found in dist or publish directories');
+        console.log('   ℹ️  Run dotnet publish to generate executables');
     }
 } catch (error) {
     console.log(`   ⚠️  Could not process executables: ${error.message}`);
@@ -150,6 +183,15 @@ if (allPresent) {
             'metadata-schema.yml',
             'styles.css',
         ];
+        
+        // Add any executables that exist in dist
+        const distFiles = readdirSync(distRoot);
+        const executables = distFiles.filter(f => 
+            f.startsWith('na-') && 
+            (f.endsWith('.exe') || (!f.includes('.') && f.includes('-')))
+        );
+        filesToZip.push(...executables);
+        
         // Only include files that exist
         const filesPresent = filesToZip.filter(f => existsSync(join(distRoot, f)));
         if (filesPresent.length === 0) {
@@ -159,9 +201,9 @@ if (allPresent) {
         // On Windows, use PowerShell Compress-Archive; on others, use zip
         let zipCmd;
         if (process.platform === 'win32') {
-            // Use PowerShell Compress-Archive
-            const filesArg = filesPresent.map(f => `-Path '${join(distRoot, f)}'`).join(' ');
-            zipCmd = `powershell -Command "Compress-Archive -Path ${filesPresent.map(f => `'${join(distRoot, f)}'`).join(',')} -DestinationPath '${zipPath}' -Force"`;
+            // Use PowerShell Compress-Archive with explicit module import
+            const filesArg = filesPresent.map(f => `'${join(distRoot, f)}'`).join(',');
+            zipCmd = `pwsh -Command "Import-Module Microsoft.PowerShell.Archive -Force; Compress-Archive -Path ${filesArg} -DestinationPath '${zipPath}' -Force"`;
         } else {
             // Use zip CLI
             const filesArg = filesPresent.map(f => `'${f}'`).join(' ');
