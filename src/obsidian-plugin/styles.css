@@ -581,21 +581,33 @@ textarea.notebook-automation-path-input,
 
 /* Enhanced field validation message styling */
 .notebook-automation-field-validation {
-  color: var(--color-red) !important;
-  font-size: 12px !important;
-  margin-top: 6px !important;
-  font-weight: 500 !important;
-  display: none; /* Default hidden state */
-  padding: 0.5em 0.8em !important;
-  background: var(--background-modifier-error) !important;
+  display: block !important;
+  width: 100% !important;
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+  padding: 8px 12px !important;
+  text-align: left !important;
+  background-color: var(--background-modifier-error) !important;
+  border: 1px solid var(--color-red) !important;
   border-radius: 4px !important;
-  border-left: 3px solid var(--color-red) !important;
+  font-size: 0.9em !important;
+  line-height: 1.4 !important;
+  opacity: 0 !important;
+  max-height: 0 !important;
+  overflow: hidden !important;
+  transition: all 0.2s ease !important;
 }
 
-/* Enhanced validation states */
 .notebook-automation-field-validation.visible {
-  display: block !important;
+  opacity: 1 !important;
+  max-height: 200px !important;
   animation: slideIn 0.2s ease !important;
+}
+
+/* Success validation styling */
+.notebook-automation-field-validation:has([style*="color-green"]) {
+  background-color: var(--background-modifier-success) !important;
+  border-color: var(--color-green) !important;
 }
 
 @keyframes slideIn {
@@ -852,6 +864,21 @@ textarea.notebook-automation-path-input[data-scopes] {
   margin: 0 !important;
 }
 
+/* Enhanced toggle styling - ONLY for Notebook Automation settings */
+.notebook-automation-settings .setting-item .setting-item-control .mod-toggle {
+  min-width: 42px !important;
+  min-height: 24px !important;
+  transform: scale(1.1) !important;
+}
+
+/* Right-align ONLY toggle controls in Notebook Automation settings */
+.notebook-automation-settings .setting-item .setting-item-control:has(.mod-toggle) {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  min-width: 60px !important;
+}
+
 .notebook-automation-save-info {
   margin-top: 1.5em !important;
   margin-bottom: 1em !important;
@@ -1054,4 +1081,75 @@ textarea.notebook-automation-path-input[data-scopes] {
 .notebook-automation-hidden {
   display: none !important;
   visibility: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+}
+
+/* Configuration status area tweaks */
+.notebook-automation-config-status .icon,
+.notebook-automation-config-status::before,
+.notebook-automation-config-status *::before {
+  display: none !important;
+}
+
+.notebook-automation-config-status {
+  padding-left: 0 !important;
+  margin-left: 0 !important;
+}
+
+.notebook-automation-config-status > div {
+  padding-left: 8px !important;
+  margin-left: 0 !important;
+}
+
+/* Banner section spacing adjustments */
+.notebook-automation-banners-section .setting-item {
+  margin-bottom: 16px !important;
+}
+
+.notebook-automation-banners-section .setting-item:has(select) {
+  margin-bottom: 8px !important;
+}
+
+.notebook-automation-markdown-banner-settings {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.notebook-automation-markdown-banner-settings .setting-item:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Section header styling overrides */
+.notebook-automation-section-header {
+  border-top: none !important;
+  border-bottom: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Specifically target Advanced Configuration header to remove any extra spacing */
+.notebook-automation-section-header:contains('Advanced Configuration'),
+h3.notebook-automation-section-header {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Configuration section specific styling - remove any lines or borders */
+.notebook-automation-config-input {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+.notebook-automation-config-input.setting-item {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
