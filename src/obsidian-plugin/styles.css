@@ -2,3 +2,924 @@
   styles.css - Notebook Automation Obsidian Plugin
   This stylesheet is included for plugin compatibility and can be extended for custom styles.
 */
+
+/* Notebook Automation Settings Tab Styles */
+
+/* Basic layout with improved spacing */
+.notebook-automation-settings { 
+  padding: 2em 2.5em 2.5em 2.5em; 
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Enhanced section headers with clean, consistent typography */
+.notebook-automation-section-header { 
+  margin-top: 2.5em; 
+  margin-bottom: 1.2em;
+  font-size: 1.3em; 
+  font-weight: 600; 
+  color: var(--text-normal);
+  border: none;
+  padding: 0;
+  position: relative;
+}
+
+.notebook-automation-section-header:first-child {
+  margin-top: 0;
+}
+
+/* Remove accent line for clean headers */
+.notebook-automation-section-header::after {
+  display: none;
+}
+
+.notebook-automation-settings-group { 
+  margin-bottom: 2em; 
+}
+
+.notebook-automation-config-fields { 
+  margin-top: 1.8em; 
+}
+
+/* Enhanced setting item styling */
+.notebook-automation-custom-setting { 
+  margin-bottom: 1.5em;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+  transition: none;
+}
+
+.notebook-automation-custom-setting:hover {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+/* Override default Obsidian setting-item flexbox layout to force vertical layout */
+.notebook-automation-custom-setting.setting-item {
+  display: block !important;
+  flex-direction: column !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.notebook-automation-custom-setting .setting-item-info {
+  width: 100% !important;
+  margin-bottom: 12px !important;
+  flex: none !important;
+}
+
+.notebook-automation-custom-setting .setting-item-info .setting-item-name {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: var(--text-normal) !important;
+  margin-bottom: 4px !important;
+}
+
+.notebook-automation-custom-setting .setting-item-info .setting-item-description {
+  font-size: 13px !important;
+  color: var(--text-muted) !important;
+  line-height: 1.4 !important;
+  margin-top: 4px !important;
+}
+
+.notebook-automation-custom-setting .setting-item-control {
+  width: 100% !important;
+  margin-left: 0 !important;
+  flex: none !important;
+  text-align: left !important;
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+}
+
+/* Enhanced dropdown/select styling with arrows */
+.notebook-automation-provider-select,
+select.notebook-automation-path-input {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23666"><path d="M4 6l4 4 4-4H4z"/></svg>') !important;
+  background-repeat: no-repeat !important;
+  background-position: right 16px center !important;
+  background-size: 14px !important;
+  padding-right: 44px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+/* Dark theme dropdown arrow */
+.theme-dark .notebook-automation-provider-select,
+.theme-dark select.notebook-automation-path-input {
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="%23ccc"><path d="M4 6l4 4 4-4H4z"/></svg>') !important;
+}
+
+/* Enhanced hover state for dropdowns */
+.notebook-automation-provider-select:hover,
+select.notebook-automation-path-input:hover {
+  border-color: var(--interactive-accent) !important;
+  background-color: var(--background-secondary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Enhanced focus state for dropdowns */
+.notebook-automation-provider-select:focus,
+select.notebook-automation-path-input:focus {
+  border-color: var(--interactive-accent) !important;
+  background-color: var(--background-secondary) !important;
+  box-shadow: 0 0 0 3px var(--interactive-accent-hover) !important;
+  outline: none !important;
+}
+
+/* Enhanced consolidated input styling with modern design */
+.notebook-automation-input-control input:not([type="checkbox"]):not([type="button"]):not(.notebook-automation-numeric-input),
+.notebook-automation-input-control textarea,
+.notebook-automation-provider-select,
+.notebook-automation-path-input:not([type="checkbox"]):not([type="button"]):not(.notebook-automation-numeric-input) {
+  width: 425px !important;
+  min-width: 425px !important;
+  max-width: 425px !important;
+  height: 38px !important;
+  padding: 10px 16px !important;
+  font-size: 14px !important;
+  font-family: var(--font-interface) !important;
+  margin-top: 0.3em !important;
+  margin-bottom: 0.3em !important;
+  border-radius: 6px !important;
+  border: 2px solid var(--background-modifier-border) !important;
+  background: var(--background-primary) !important;
+  color: var(--text-normal) !important;
+  box-sizing: border-box !important;
+  flex: none !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+}
+
+/* Path input specific styling - left aligned for better readability */
+.notebook-automation-path-input:not([type="checkbox"]):not([type="button"]),
+.notebook-automation-input-control input[type="text"],
+.notebook-automation-input-control textarea {
+  text-align: left !important;
+  font-family: var(--font-monospace) !important;
+  font-size: 13px !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* Force left alignment for all path inputs - override any conflicting styles */
+input.notebook-automation-path-input,
+textarea.notebook-automation-path-input {
+  text-align: left !important;
+}
+
+/* Ensure consistent alignment in all configuration sections */
+.notebook-automation-paths-section input,
+.notebook-automation-logging-section input,
+.notebook-automation-extensions-section textarea,
+.notebook-automation-banners-section textarea,
+.notebook-automation-ai-section input:not(.notebook-automation-numeric-input),
+.notebook-automation-graph-section input,
+.notebook-automation-other-section textarea {
+  text-align: left !important;
+}
+
+/* Force left alignment for extension textareas specifically */
+.notebook-automation-extensions-section textarea.notebook-automation-path-input {
+  text-align: left !important;
+  vertical-align: top !important;
+}
+
+/* Enhanced input hover states */
+.notebook-automation-input-control input:not([type="checkbox"]):not([type="button"]):hover,
+.notebook-automation-input-control textarea:hover,
+.notebook-automation-provider-select:hover,
+.notebook-automation-path-input:not([type="checkbox"]):not([type="button"]):hover {
+  border-color: var(--interactive-accent) !important;
+  background-color: var(--background-secondary) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Enhanced input focus states */
+.notebook-automation-input-control input:not([type="checkbox"]):not([type="button"]):focus,
+.notebook-automation-input-control textarea:focus,
+.notebook-automation-provider-select:focus,
+.notebook-automation-path-input:not([type="checkbox"]):not([type="button"]):focus {
+  border-color: var(--interactive-accent) !important;
+  background-color: var(--background-primary) !important;
+  box-shadow: 0 0 0 3px var(--interactive-accent-hover) !important;
+  outline: none !important;
+  transform: none !important;
+}
+
+/* Enhanced textarea styling with path-optimized appearance */
+textarea.notebook-automation-path-input,
+.notebook-automation-input-control textarea {
+  width: 425px !important;
+  min-width: 425px !important;
+  max-width: 425px !important;
+  min-height: 90px !important;
+  height: auto !important;
+  padding: 12px 16px !important;
+  resize: vertical !important;
+  flex: none !important;
+  line-height: 1.4 !important;
+  font-family: var(--font-monospace) !important;
+  font-size: 13px !important;
+  text-align: left !important;
+  letter-spacing: 0.3px !important;
+  background: linear-gradient(145deg, var(--background-primary), var(--background-secondary)) !important;
+}
+
+/* File path input specific enhancements */
+.notebook-automation-path-input:not([type="checkbox"]):not([type="button"]):not(.notebook-automation-numeric-input) {
+  background: linear-gradient(145deg, var(--background-primary), rgba(var(--mono-rgb-100), 0.02)) !important;
+  border-left: 3px solid var(--text-accent) !important;
+  text-align: left !important;
+}
+
+.notebook-automation-path-input:not([type="checkbox"]):not([type="button"]):not(.notebook-automation-numeric-input):focus {
+  border-left: 3px solid var(--interactive-accent) !important;
+  text-align: left !important;
+}
+
+/* Paths section specific - ensure left alignment */
+.notebook-automation-paths-section input.notebook-automation-path-input,
+.notebook-automation-paths-section textarea.notebook-automation-path-input {
+  text-align: left !important;
+}
+
+/* Enhanced numeric input styling - smaller and right-aligned */
+.notebook-automation-numeric-input {
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+  height: 32px !important;
+  text-align: right !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  padding: 6px 12px !important;
+  margin-left: auto !important;
+  background: linear-gradient(145deg, var(--background-primary), var(--background-secondary-alt)) !important;
+  border-left: 3px solid var(--color-orange) !important;
+  font-family: var(--font-monospace) !important;
+}
+
+.notebook-automation-numeric-input:focus {
+  border-left: 3px solid var(--interactive-accent) !important;
+  text-align: center !important;
+}
+
+.notebook-automation-numeric-input:hover {
+  background: var(--background-secondary) !important;
+  border-left: 3px solid var(--interactive-accent) !important;
+}
+
+/* Special layout for numeric inputs - inline with description */
+.notebook-automation-custom-setting.numeric-inline {
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.notebook-automation-custom-setting.numeric-inline:hover {
+  background: transparent !important;
+  border: none !important;
+}
+
+.notebook-automation-custom-setting.numeric-inline .setting-item-info {
+  margin-bottom: 0 !important;
+  flex: 1 !important;
+}
+
+.notebook-automation-custom-setting.numeric-inline .setting-item-control {
+  margin-left: 1em !important;
+  flex: none !important;
+  align-self: center !important;
+}
+
+.notebook-automation-custom-setting.numeric-inline.setting-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+}
+
+/* Enhanced toggle styling */
+.notebook-automation-toggle {
+  margin: 6px 12px !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+}
+
+.notebook-automation-toggle:hover {
+  transform: scale(1.05) !important;
+}
+
+/* Enhanced button styling */
+.notebook-automation-input-control button {
+  width: auto !important;
+  min-width: 120px !important;
+  height: 38px !important;
+  padding: 10px 20px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  border-radius: 6px !important;
+  border: 2px solid var(--interactive-accent) !important;
+  background: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.notebook-automation-input-control button:hover {
+  background: var(--interactive-accent-hover) !important;
+  border-color: var(--interactive-accent-hover) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+.notebook-automation-input-control button:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Enhanced section spacing and headers */
+.notebook-automation-provider-fields { 
+  margin-top: 1em; 
+  padding-top: 1em;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.notebook-automation-additional-fields { 
+  margin-top: 1.5em; 
+  padding-top: 1em;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+/* Enhanced section headers - consistent clean styling */
+.notebook-automation-ai-header { 
+  margin-top: 2em; 
+  margin-bottom: 1em;
+  font-size: 1.15em; 
+  font-weight: 600; 
+  color: var(--text-normal);
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: 0;
+}
+
+/* Enhanced sub-headers */
+.notebook-automation-sub-header { 
+  margin-top: 1.5em; 
+  margin-bottom: 0.8em;
+  font-size: 1.05em; 
+  font-weight: 500; 
+  color: var(--text-normal);
+  padding: 0.5em 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+/* Enhanced version info - clean, outside container styling */
+.notebook-automation-version { 
+  font-size: 0.9em; 
+  color: var(--text-faint); 
+  margin-bottom: 1em;
+  text-align: center;
+  padding: 0.8em 0;
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+/* Enhanced config status styling */
+.notebook-automation-config-status { 
+  margin-top: 1em; 
+  margin-bottom: 1.5em;
+  padding: 1em 1.2em;
+  border-radius: 8px !important;
+  background: linear-gradient(145deg, var(--background-secondary), var(--background-secondary-alt)) !important;
+  border: 1px solid var(--background-modifier-border) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  position: relative;
+}
+
+.notebook-automation-config-status::before {
+  content: '⚙️';
+  position: absolute;
+  left: 1.2em;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2em;
+}
+
+.notebook-automation-config-status > * {
+  margin-left: 2.5em;
+}
+
+/* Enhanced section spacing - clean, borderless sections */
+.notebook-automation-paths-section { 
+  margin-bottom: 2.5em; 
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+.notebook-automation-ai-section { 
+  margin-bottom: 2.5em; 
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+.notebook-automation-graph-section { 
+  margin-bottom: 2.5em; 
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+.notebook-automation-timeout-section { 
+  margin-bottom: 2.5em; 
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+/* Ensure timeout section items have no default container styling */
+.notebook-automation-timeout-section .notebook-automation-custom-setting.setting-item {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-bottom: 1.5em !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Ensure timeout section numeric-inline items also have no container styling */
+.notebook-automation-timeout-section .notebook-automation-custom-setting.numeric-inline {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-bottom: 1.5em !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Ensure timeout section numeric inputs are properly sized and aligned */
+.notebook-automation-timeout-section .notebook-automation-numeric-input {
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+  height: 32px !important;
+  text-align: right !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+  padding: 6px 12px !important;
+  margin-left: auto !important;
+  background: linear-gradient(145deg, var(--background-primary), var(--background-secondary-alt)) !important;
+  border-left: 3px solid var(--color-orange) !important;
+  font-family: var(--font-monospace) !important;
+  border-radius: 6px !important;
+  border-right: 2px solid var(--background-modifier-border) !important;
+  border-top: 2px solid var(--background-modifier-border) !important;
+  border-bottom: 2px solid var(--background-modifier-border) !important;
+}
+
+/* Very specific override to force timeout numeric inputs to be short */
+.notebook-automation-timeout-section input[type="number"].notebook-automation-numeric-input,
+.notebook-automation-timeout-section input.notebook-automation-numeric-input {
+  width: 80px !important;
+  min-width: 80px !important;
+  max-width: 80px !important;
+}
+
+.notebook-automation-timeout-section .notebook-automation-numeric-input:focus {
+  border-left: 3px solid var(--interactive-accent) !important;
+  text-align: center !important;
+}
+
+.notebook-automation-timeout-section .notebook-automation-numeric-input:hover {
+  background: var(--background-secondary) !important;
+  border-left: 3px solid var(--interactive-accent) !important;
+}
+
+.notebook-automation-logging-section { 
+  margin-bottom: 2.5em; 
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+/* Ensure logging section items have no default container styling */
+.notebook-automation-logging-section .notebook-automation-custom-setting.setting-item {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-bottom: 1.5em !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* Additional aggressive overrides for logging section to remove all possible container styling */
+.notebook-automation-logging-section .setting-item {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.notebook-automation-logging-section .notebook-automation-custom-setting {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+.notebook-automation-banners-section { 
+  margin-bottom: 2.5em; 
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+.notebook-automation-other-section { 
+  margin-bottom: 2.5em; 
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+.notebook-automation-extensions-section { 
+  margin-bottom: 2.5em; 
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  border: none;
+}
+
+/* Enhanced utility styles */
+.mod-warning { 
+  color: var(--color-red); 
+  font-weight: 600; 
+  background: var(--background-modifier-error);
+  padding: 0.5em 0.8em;
+  border-radius: 4px;
+  border-left: 4px solid var(--color-red);
+}
+
+/* Enhanced field validation message styling */
+.notebook-automation-field-validation {
+  color: var(--color-red) !important;
+  font-size: 12px !important;
+  margin-top: 6px !important;
+  font-weight: 500 !important;
+  display: none; /* Default hidden state */
+  padding: 0.5em 0.8em !important;
+  background: var(--background-modifier-error) !important;
+  border-radius: 4px !important;
+  border-left: 3px solid var(--color-red) !important;
+}
+
+/* Enhanced validation states */
+.notebook-automation-field-validation.visible {
+  display: block !important;
+  animation: slideIn 0.2s ease !important;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.notebook-automation-input-invalid {
+  border-color: var(--color-red) !important;
+  background-color: rgba(255, 0, 0, 0.05) !important;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1) !important;
+}
+
+/* Version section styling - clean, outside container */
+.notebook-automation-version {
+  margin-top: 2em !important;
+  text-align: center !important;
+  border: none !important;
+  background: none !important;
+  padding-top: 1em !important;
+}
+
+/* Config status styling */
+.notebook-automation-config-status {
+  margin-top: 0.5em; 
+  margin-bottom: 1em;
+  border-radius: 4px !important;
+  background-color: var(--background-secondary-alt) !important;
+  border: 1px solid var(--background-modifier-border) !important;
+}
+
+/* Base block validation styling */
+.notebook-automation-base-block-validation {
+  color: var(--text-error) !important;
+  font-size: 0.8em !important;
+  margin-top: 4px !important;
+  display: none !important;
+}
+
+.notebook-automation-base-block-validation.visible {
+  display: block !important;
+}
+
+/* Specific textarea row sizing with enhanced styling */
+textarea.notebook-automation-path-input[data-video-ext] {
+  min-height: 110px; /* Approximately 4 rows */
+  background: linear-gradient(145deg, var(--background-primary), var(--background-secondary)) !important;
+  text-align: left !important;
+}
+
+textarea.notebook-automation-path-input[data-pdf-ext] {
+  min-height: 70px; /* Approximately 2 rows */
+  background: linear-gradient(145deg, var(--background-primary), var(--background-secondary)) !important;
+  text-align: left !important;
+}
+
+/* Ensure extension section containers are left-aligned */
+.notebook-automation-extensions-section .setting-item-control {
+  display: flex !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  text-align: left !important;
+}
+
+.notebook-automation-extensions-section input,
+.notebook-automation-extensions-section textarea {
+  text-align: left !important;
+  align-self: flex-start !important;
+}
+
+textarea.notebook-automation-path-input[data-template-banners] {
+  min-height: 110px; /* Approximately 4 rows */
+  background: linear-gradient(145deg, var(--background-primary), var(--background-secondary)) !important;
+  text-align: left !important;
+}
+
+textarea.notebook-automation-path-input[data-filename-patterns] {
+  min-height: 110px; /* Approximately 4 rows */
+  background: linear-gradient(145deg, var(--background-primary), var(--background-secondary)) !important;
+  text-align: left !important;
+}
+
+textarea.notebook-automation-path-input[data-scopes] {
+  min-height: 90px; /* Approximately 3 rows */
+  background: linear-gradient(145deg, var(--background-primary), var(--background-secondary)) !important;
+  text-align: left !important;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .notebook-automation-settings {
+    padding: 1.5em 1em;
+    max-width: none;
+  }
+  
+  .notebook-automation-input-control input:not([type="checkbox"]):not([type="button"]),
+  .notebook-automation-input-control textarea,
+  .notebook-automation-provider-select,
+  .notebook-automation-path-input:not([type="checkbox"]):not([type="button"]),
+  textarea.notebook-automation-path-input {
+    width: 100% !important;
+    min-width: 280px !important;
+    max-width: 100% !important;
+  }
+  
+  .notebook-automation-custom-setting {
+    padding: 1em;
+  }
+  
+  .notebook-automation-section-header {
+    font-size: 1.2em;
+  }
+  
+  /* Stack numeric inputs vertically on mobile */
+  .notebook-automation-custom-setting.numeric-inline.setting-item {
+    display: block !important;
+    flex-direction: column !important;
+  }
+  
+  .notebook-automation-custom-setting.numeric-inline .setting-item-info {
+    margin-bottom: 0.8em !important;
+  }
+  
+  .notebook-automation-custom-setting.numeric-inline .setting-item-control {
+    margin-left: 0 !important;
+    text-align: right !important;
+  }
+  
+  .notebook-automation-numeric-input {
+    width: 100px !important;
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+}
+
+/* Smooth scrolling for long forms */
+.notebook-automation-container {
+  scroll-behavior: smooth;
+}
+
+/* Enhanced focus ring for accessibility */
+*:focus-visible {
+  outline: 2px solid var(--interactive-accent) !important;
+  outline-offset: 2px !important;
+  border-radius: 4px !important;
+}
+
+/* Print styles */
+@media print {
+  .notebook-automation-settings {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .notebook-automation-custom-setting {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .notebook-automation-custom-setting {
+    border-width: 2px !important;
+  }
+  
+  .notebook-automation-input-control input,
+  .notebook-automation-input-control textarea,
+  .notebook-automation-provider-select {
+    border-width: 3px !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+/* Additional utility classes for inline styling replacement */
+.notebook-automation-flex-display {
+  display: flex !important;
+}
+
+.notebook-automation-block-display {
+  display: block !important;
+}
+
+.notebook-automation-none-display {
+  display: none !important;
+}
+
+.notebook-automation-save-info {
+  margin-top: 1.5em !important;
+  margin-bottom: 1em !important;
+  padding: 0.5em 0 !important;
+  background: none !important;
+  border-radius: 0 !important;
+  font-size: 0.9em !important;
+  color: var(--text-muted) !important;
+  border: none !important;
+  position: relative !important;
+}
+
+.notebook-automation-save-info::before {
+  content: '💾';
+  position: static;
+  left: auto;
+  top: auto;
+  transform: none;
+  font-size: 1.1em;
+  margin-right: 0.5em;
+}
+
+.notebook-automation-save-info > * {
+  margin-left: 0;
+}
+
+.notebook-automation-save-setting {
+  margin-top: 1em !important;
+  padding: 0 !important;
+  background: none !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+.notebook-automation-warning-div {
+  margin-top: 1em !important;
+  padding: 1em 1.2em !important;
+  background: var(--background-modifier-error) !important;
+  border-radius: 8px !important;
+  border: 2px solid var(--color-red) !important;
+  border-left: 6px solid var(--color-red) !important;
+  position: relative !important;
+  animation: shake 0.3s ease !important;
+}
+
+.notebook-automation-warning-div::before {
+  content: '⚠️';
+  position: absolute;
+  left: 1.2em;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2em;
+}
+
+.notebook-automation-warning-div > * {
+  margin-left: 2.5em;
+}
+
+@keyframes shake {
+  0%, 20%, 50%, 80%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-5px); }
+  30% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  90% { transform: translateX(3px); }
+}
+
+.notebook-automation-success-div {
+  margin-top: 1em !important;
+  padding: 1em 1.2em !important;
+  background: var(--background-modifier-success) !important;
+  border-radius: 8px !important;
+  border: 2px solid var(--color-green) !important;
+  border-left: 6px solid var(--color-green) !important;
+  position: relative !important;
+  animation: fadeIn 0.3s ease !important;
+}
+
+.notebook-automation-success-div::before {
+  content: '✅';
+  position: absolute;
+  left: 1.2em;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.2em;
+}
+
+.notebook-automation-success-div > * {
+  margin-left: 2.5em;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Container styling */
+.notebook-automation-container {
+  overflow-y: auto !important;
+  max-height: 80vh !important;
+}
+
+/* Config file setting styling */
+.notebook-automation-config-file-control {
+  flex-direction: column !important;
+}
+
+.notebook-automation-config-path-input {
+  margin-bottom: 0.5em !important;
+}
+
+.notebook-automation-validate-btn {
+  margin-bottom: 0.5em !important;
+}
+
+.notebook-automation-config-status {
+  margin-top: 0.5em; 
+  margin-bottom: 1em;
+  padding: 0.5em !important;
+  border-radius: 4px !important;
+  background-color: var(--background-secondary-alt) !important;
+  border: 1px solid var(--background-modifier-border) !important;
+}

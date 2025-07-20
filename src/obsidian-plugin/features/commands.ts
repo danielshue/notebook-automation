@@ -147,6 +147,12 @@ export async function handleNotebookAutomationCommand(plugin: NotebookAutomation
     new Notice("❌ No configuration file found. Please set up configuration in plugin settings.");
     return;
   }
+
+  // Check AI provider environment variables before execution
+  const aiProviderValidation = await validateAIProviderBeforeExecution(plugin);
+  if (!aiProviderValidation.isValid) {
+    return; // Validation function handles opening settings and showing error
+  }
   
   try {
     await executeNotebookAutomationCommand(plugin, action, relPath);
@@ -353,4 +359,164 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
       reject(new Error(`Failed to start ${commandDescription}: ${error.message}`));
     });
   });
+}
+
+async function validateAIProviderBeforeExecution(plugin: NotebookAutomationPlugin): Promise<{ isValid: boolean }> {
+  try {
+    // Load the current configuration to determine the AI provider
+    const loadedConfig = (window as any).notebookAutomationLoadedConfig;
+    let configToCheck = loadedConfig;
+
+    // If no config is loaded in the settings, try to load it using the same priority logic
+    if (!configToCheck) {
+      configToCheck = await loadConfigForValidation(plugin);
+    }
+
+    if (!configToCheck || !configToCheck.aiservice) {
+      // No AI service configuration found, assume it's okay
+      return { isValid: true };
+    }
+
+    const provider = configToCheck.aiservice.provider;
+    if (!provider) {
+      // No provider specified, assume it's okay
+      return { isValid: true };
+    }
+
+    // Import the validation function from the settings tab
+    const { NotebookAutomationSettingTab } = await import('../ui/NotebookAutomationSettingTab');
+    const validation = NotebookAutomationSettingTab.validateAIProviderEnvironment(provider);
+
+    if (!validation.isValid) {
+      // Show error notice
+      new Notice(`❌ Missing environment variable: ${validation.missingVar}`, 8000);
+      
+      // Open settings and scroll to AI section
+      await openSettingsAndScrollToAIProvider(plugin, provider, validation);
+      return { isValid: false };
+    }
+
+    return { isValid: true };
+  } catch (error) {
+    console.error('[Notebook Automation] Error validating AI provider:', error);
+    // If validation fails, allow execution to proceed (fail-safe)
+    return { isValid: true };
+  }
+}
+
+async function loadConfigForValidation(plugin: NotebookAutomationPlugin): Promise<any> {
+  try {
+    // @ts-ignore
+    const fs = window.require ? window.require('fs') : null;
+    // @ts-ignore
+    const path = window.require ? window.require('path') : null;
+    
+    if (!fs || !path) {
+      return null;
+    }
+
+    let configPath = '';
+    
+    // Use same priority logic as executeNotebookAutomationCommand
+    const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
+    if (envConfigPath && fs.existsSync(envConfigPath)) {
+      configPath = envConfigPath;
+    } else {
+      // Check for default-config.json
+      let pluginDir = plugin.manifest?.dir;
+      if (pluginDir) {
+        const adapter = plugin.app?.vault?.adapter;
+        // @ts-ignore
+        if (adapter && typeof adapter.getBasePath === 'function') {
+          try {
+            // @ts-ignore
+            const vaultRoot = adapter.getBasePath();
+            if (vaultRoot && !path.isAbsolute(pluginDir)) {
+              pluginDir = path.join(vaultRoot, pluginDir);
+            }
+          } catch (err) {
+            // Continue with original pluginDir
+          }
+        }
+        const defaultConfigPath = path.join(pluginDir, 'default-config.json');
+        if (fs.existsSync(defaultConfigPath)) {
+          configPath = defaultConfigPath;
+        } else if (plugin.settings.configPath && fs.existsSync(plugin.settings.configPath)) {
+          configPath = plugin.settings.configPath;
+        }
+      }
+    }
+
+    if (configPath) {
+      const content = fs.readFileSync(configPath, 'utf8');
+      return JSON.parse(content);
+    }
+
+    return null;
+  } catch (error) {
+    console.error('[Notebook Automation] Error loading config for validation:', error);
+    return null;
+  }
+}
+
+async function openSettingsAndScrollToAIProvider(plugin: NotebookAutomationPlugin, provider: string, validation: { missingVar?: string, description?: string }): Promise<void> {
+  try {
+    // Open the plugin settings
+    // @ts-ignore
+    const settingTab = plugin.app.setting.openTabById(plugin.manifest.id);
+    if (settingTab) {
+      // Wait a bit for the settings to render
+      setTimeout(() => {
+        // Find and scroll to the AI provider section
+        const aiSection = document.querySelector('.notebook-automation-ai-section');
+        if (aiSection) {
+          aiSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          
+          // Highlight the AI section temporarily
+          const originalBorder = (aiSection as HTMLElement).style.border;
+          (aiSection as HTMLElement).style.border = '2px solid var(--color-red)';
+          (aiSection as HTMLElement).style.borderRadius = '4px';
+          
+          setTimeout(() => {
+            (aiSection as HTMLElement).style.border = originalBorder;
+          }, 3000);
+
+          // Show additional error message in the settings
+          const errorDiv = document.createElement('div');
+          errorDiv.style.cssText = `
+            margin-top: 8px;
+            padding: 12px;
+            background-color: var(--background-modifier-error);
+            border: 1px solid var(--color-red);
+            border-radius: 4px;
+            font-size: 0.9em;
+          `;
+          errorDiv.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+              <span style="font-size: 16px;">❌</span>
+              <strong style="color: var(--color-red);">Command Execution Blocked</strong>
+            </div>
+            <div>
+              Cannot execute commands with the <strong>${provider.toUpperCase()}</strong> provider because the required 
+              environment variable <code>${validation.missingVar}</code> is not set.
+            </div>
+            <div style="margin-top: 8px; font-size: 0.85em; font-style: italic;">
+              Set this environment variable in your system settings, then restart Obsidian.
+            </div>
+          `;
+          
+          aiSection.appendChild(errorDiv);
+          
+          // Remove the error message after 10 seconds
+          setTimeout(() => {
+            if (errorDiv.parentNode) {
+              errorDiv.parentNode.removeChild(errorDiv);
+            }
+          }, 10000);
+        }
+      }, 100);
+    }
+  } catch (error) {
+    console.error('[Notebook Automation] Error opening settings:', error);
+  }
 }
