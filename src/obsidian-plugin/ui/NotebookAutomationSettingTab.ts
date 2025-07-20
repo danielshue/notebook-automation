@@ -150,7 +150,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     containerEl.empty();
     containerEl.classList.add('notebook-automation-container');
     containerEl.addClass('notebook-automation-settings');
-    containerEl.createEl('h2', { text: 'Notebook Automation Settings' });
 
     // Feature toggles section
     containerEl.createEl("h3", { text: "Features", cls: "notebook-automation-section-header" });
@@ -277,13 +276,27 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.bannersEnabled = value;
             await this.plugin.saveSettings();
-            // Toggle Banners Configuration section visibility
-            const bannersSection = document.querySelector('.notebook-automation-banners-section') as HTMLElement;
-            if (bannersSection) {
-              bannersSection.classList.toggle('notebook-automation-none-display', !value);
-            }
             // Update the global CSS rule by re-injecting styles
             this.injectCustomStyles();
+            
+            // If banners are enabled and no config is loaded, create a minimal config to show the configuration section
+            if (value && !(window as any).notebookAutomationLoadedConfig) {
+              const minimalConfig = {
+                banners: {
+                  enabled: true,
+                  default: "gies-banner.png",
+                  format: "image"
+                }
+              };
+              this.displayLoadedConfig(minimalConfig, undefined);
+            } else if (!value) {
+              // If banners are disabled, refresh the display to hide the banners section
+              const currentConfig = (window as any).notebookAutomationLoadedConfig;
+              const currentPath = (window as any).notebookAutomationLoadedConfigPath;
+              if (currentConfig) {
+                this.displayLoadedConfig(currentConfig, currentPath);
+              }
+            }
           });
       });
 
@@ -355,32 +368,154 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           });
       });
 
+    // Add banners section header and controls (independent of advanced configuration)
+    const bannersHeaderEl = containerEl.createEl('h3', {
+      text: 'Banners Configuration',
+      cls: 'notebook-automation-section-header notebook-automation-banners-header'
+    });
+
+    // Create banners section container
+    const bannersContainer = containerEl.createDiv({ cls: 'notebook-automation-banners-section' });
+    
+    // Add expanded description for banner functionality
+    const bannerDescriptionDiv = bannersContainer.createDiv({ cls: 'notebook-automation-section-description' });
+    bannerDescriptionDiv.innerHTML = `
+      <p>Configure banner images for generated markdown files. This functionality integrates with the 
+      <a href="https://github.com/noatpad/obsidian-banners" target="_blank">Obsidian Banner Plugin</a> 
+      to display attractive header images at the top of your notes.</p>
+      
+      <p><strong>Image Requirements:</strong> Banner images must be stored within your Obsidian vault. 
+      When specifying banner filenames, the system uses wiki-style links to resolve the file path 
+      (e.g., "gies-banner.png" will be resolved to [[gies-banner.png]] format internally).</p>
+      
+      <p><strong>How it works:</strong> When generating markdown files from videos, PDFs, or other content, 
+      the plugin will automatically add the appropriate banner image based on content type, filename patterns, 
+      or fallback to the default banner you specify below.</p>
+    `;
+    
+    // Add banner format setting first
+    const bannerFormatSetting = new Setting(bannersContainer)
+      .setName('Banner Format')
+      .setDesc('Choose how banners are added to generated files. "Image" mode integrates with the <a href="https://github.com/noatpad/obsidian-banners" target="_blank">Obsidian Banner Plugin</a> to display header images at the top of created index files. "Markdown" mode inserts custom markdown content into each generated file based on the template and filename patterns you configure below.');
+    
+    bannerFormatSetting.settingEl.addClass('notebook-automation-custom-setting');
+    
+    // Create dropdown for banner format
+    const bannerFormatSelect = bannerFormatSetting.controlEl.createEl('select', {
+      cls: 'notebook-automation-provider-select'
+    });
+    
+    // Add format options
+    const formatOptions = [
+      { value: 'image', text: 'Image' },
+      { value: 'markdown', text: 'Markdown' }
+    ];
+    
+    formatOptions.forEach(option => {
+      const optionEl = bannerFormatSelect.createEl('option', { 
+        value: option.value, 
+        text: option.text 
+      });
+    });
+    
+    // Load current value or set default
+    const currentFormat = (this.plugin.settings as any).bannerFormat || 'image';
+    bannerFormatSelect.value = currentFormat;
+    
+    // Add default banner setting (conditionally visible)
+    const defaultBannerSetting = new Setting(bannersContainer)
+      .setName('Default Image Banner')
+      .setDesc('Default banner image filename to use when no specific banner is configured for a content type. This image should exist in your Obsidian vault. Enter just the filename (e.g., "gies-banner.png") - the system will automatically resolve it using wiki-link format. This banner will be used as a fallback when no content-specific or filename-pattern banners are defined.');
+    
+    defaultBannerSetting.settingEl.addClass('notebook-automation-custom-setting');
+    defaultBannerSetting.settingEl.id = 'defaultBannerContainer';
+    const defaultBannerInput = defaultBannerSetting.controlEl.createEl('input', {
+      type: 'text',
+      cls: 'notebook-automation-path-input',
+      placeholder: 'e.g., gies-banner.png'
+    });
+    
+    // Load value from plugin settings or set default
+    defaultBannerInput.value = (this.plugin.settings as any).defaultBanner || 'gies-banner.png';
+    defaultBannerInput.oninput = async (e: any) => {
+      (this.plugin.settings as any).defaultBanner = e.target.value;
+      await this.plugin.saveSettings();
+    };
+    
+    // Create container for markdown-specific settings
+    const markdownSettingsContainer = bannersContainer.createDiv({ 
+      cls: 'notebook-automation-markdown-banner-settings' 
+    });
+    
+    // Function to update settings visibility and content based on format
+    const updateFormatSettings = (format: string) => {
+      console.log('updateFormatSettings called with format:', format);
+      markdownSettingsContainer.empty();
+      
+      if (format === 'markdown') {
+        // Hide default banner setting for markdown format
+        console.log('Hiding default banner setting for markdown format');
+        defaultBannerSetting.settingEl.style.display = 'none';
+        defaultBannerSetting.settingEl.addClass('notebook-automation-hidden');
+        // Add markdown-specific banner settings
+        this.addMarkdownBannerSettings(markdownSettingsContainer);
+      } else {
+        // Show default banner setting for image format
+        console.log('Showing default banner setting for image format');
+        defaultBannerSetting.settingEl.style.display = '';
+        defaultBannerSetting.settingEl.removeClass('notebook-automation-hidden');
+      }
+    };
+    
+    // Initial setup
+    updateFormatSettings(currentFormat);
+    
+    // Handle format selection change
+    bannerFormatSelect.onchange = async (e: any) => {
+      const selectedFormat = e.target.value;
+      (this.plugin.settings as any).bannerFormat = selectedFormat;
+      await this.plugin.saveSettings();
+      
+      // Update format-specific settings visibility
+      updateFormatSettings(selectedFormat);
+    };
+
     // Configuration section (show only if advanced configuration is enabled)
     if (this.plugin.settings.advancedConfiguration) {
+      // Add Advanced Configuration section header
+      const advancedHeaderEl = containerEl.createEl('h3', {
+        text: 'Advanced Configuration',
+        cls: 'notebook-automation-section-header'
+      });
+      
       // Config file path setting
       const configFileSetting = new Setting(containerEl)
         .setName('Custom Config File (Optional)')
-        .setDesc('Enter the path to a custom config.json file. Priority order: 1) NOTEBOOKAUTOMATION_CONFIG environment variable, 2) default-config.json from plugin directory, 3) this custom path setting. This allows you to override the default configuration if needed.');
+        .setDesc(this.getConfigFileDescription());
     
-    configFileSetting.settingEl.addClass("notebook-automation-config-input");
-    configFileSetting.controlEl.classList.add('notebook-automation-flex-display');
-    configFileSetting.controlEl.classList.add('notebook-automation-config-file-control');
-    
-    const configPathInput = document.createElement("input");
-    configPathInput.type = "text";
-    configPathInput.placeholder = "Optional: Path to custom config.json...";
-    configPathInput.value = this.plugin.settings.configPath || "";
-    configPathInput.classList.add('notebook-automation-config-path-input');
-    configPathInput.onchange = async (e: any) => {
-      this.plugin.settings.configPath = e.target.value;
-      await this.plugin.saveSettings();
-    };
-    configFileSetting.controlEl.appendChild(configPathInput);
+      configFileSetting.settingEl.addClass("notebook-automation-config-input");
+      
+      // Create container for input and button below the description
+      const configPathContainer = containerEl.createDiv({
+        cls: 'notebook-automation-config-path-container'
+      });
+      
+      const configPathInput = configPathContainer.createEl("input", {
+        type: "text",
+        placeholder: "Optional: Path to custom config.json...",
+        cls: 'notebook-automation-config-path-input'
+      });
+      configPathInput.value = this.plugin.settings.configPath || "";
+      configPathInput.onchange = async (e: any) => {
+        this.plugin.settings.configPath = e.target.value;
+        await this.plugin.saveSettings();
+      };
 
-    // Validate & Load button
-    const validateBtn = document.createElement("button");
-    validateBtn.textContent = "🔍 Validate & Load Config";
-    validateBtn.classList.add('notebook-automation-validate-btn');
+      // Validate & Load button
+      const validateBtn = configPathContainer.createEl("button", {
+        text: "🔍 Validate & Load Config",
+        cls: 'notebook-automation-validate-btn'
+      });
     validateBtn.onclick = async () => {
       const path = this.plugin.settings.configPath;
       if (!path) {
@@ -416,75 +551,9 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         this.displayLoadedConfig(null, undefined, configError);
       }
     };
-    configFileSetting.controlEl.appendChild(validateBtn);
 
     // Check for default-config.json in plugin directory first
     this.checkAndLoadDefaultConfig();
-
-    // Add config status section
-    const configStatusDiv = containerEl.createDiv({ cls: "notebook-automation-config-status" });
-    configStatusDiv.classList.add('notebook-automation-config-status');
-
-    if ((window as any).notebookAutomationLoadedConfig) {
-      // Check for environment variable first
-      const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
-      if (envConfigPath) {
-        configStatusDiv.innerHTML = `
-          <div style="color: var(--color-green); font-weight: bold;">✅ Configuration Status</div>
-          <div style="margin-top: 0.3em; font-size: 0.9em;">
-            🌍 Using config from NOTEBOOKAUTOMATION_CONFIG environment variable<br>
-            📁 Path: ${envConfigPath}
-            ${this.plugin.settings.configPath ? `<br>📝 Custom config path also set: ${this.plugin.settings.configPath}` : ''}
-          </div>
-        `;
-      } else {
-        // Try to determine if this is the default config or a custom one
-        try {
-          // @ts-ignore
-          const path = window.require ? window.require('path') : null;
-          if (path && this.plugin.manifest?.dir) {
-            const adapter = this.plugin.app?.vault?.adapter;
-            let resolvedPluginDir = this.plugin.manifest.dir;
-            // @ts-ignore
-            if (adapter && typeof adapter.getBasePath === 'function') {
-              try {
-                // @ts-ignore
-                const vaultRoot = adapter.getBasePath();
-                resolvedPluginDir = path.resolve(vaultRoot, this.plugin.manifest.dir);
-              } catch (err) {
-                // Fallback to original path
-              }
-            }
-
-            const defaultConfigPath = path.join(resolvedPluginDir, 'default-config.json');
-            configStatusDiv.innerHTML = `
-              <div style="color: var(--color-green); font-weight: bold;">✅ Configuration Status</div>
-              <div style="margin-top: 0.3em; font-size: 0.9em;">
-                🔄 Using default-config.json from plugin directory<br>
-                📁 Path: ${defaultConfigPath}
-                ${this.plugin.settings.configPath ? `<br>📝 Custom config path also set: ${this.plugin.settings.configPath}` : ''}
-              </div>
-            `;
-          }
-        } catch (err) {
-          configStatusDiv.innerHTML = `
-            <div style="color: var(--color-green); font-weight: bold;">✅ Configuration Status</div>
-            <div style="margin-top: 0.3em; font-size: 0.9em;">🔄 Configuration loaded successfully</div>
-          `;
-        }
-      }
-    } else {
-      const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
-      configStatusDiv.innerHTML = `
-        <div style="color: var(--color-orange); font-weight: bold;">⚠️ Configuration Status</div>
-        <div style="margin-top: 0.3em; font-size: 0.9em;">
-          ${envConfigPath ? `🌍 NOTEBOOKAUTOMATION_CONFIG environment variable set: ${envConfigPath}<br>` : ''}
-          📄 No default-config.json found in plugin directory<br>
-          💡 You can create one by configuring settings below and saving
-          ${this.plugin.settings.configPath ? `<br>📝 Custom config path set: ${this.plugin.settings.configPath}` : ''}
-        </div>
-      `;
-    }
 
     // Always show config fields (create default structure if no config loaded)
     let configToDisplay = (window as any).notebookAutomationLoadedConfig;
@@ -510,17 +579,63 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Display loaded config fields
     const configPath = (window as any).notebookAutomationLoadedConfigPath;
     this.displayLoadedConfig(configToDisplay, configPath);
-    }
 
-    // Create version div
-    const versionDiv = containerEl.createDiv({ cls: "notebook-automation-version" });
-    versionDiv.setText("Notebook Automation version: Loading...");
-    
-    this.getNaVersion().then(ver => {
-      // Convert line feeds to HTML breaks for proper display
-      const formattedVersion = ver.replace(/\n/g, '<br>');
-      versionDiv.innerHTML = formattedVersion;
-    });
+    // Add save button for configuration
+    this.addSaveButton(containerEl, configToDisplay);
+
+    // Always show Configuration Status section at the very bottom (before version)
+    containerEl.createEl("h3", { text: "Configuration Status", cls: "notebook-automation-section-header" });
+    const statusContainer = containerEl.createDiv({ cls: "notebook-automation-settings-group" });
+
+    // Environment variable detection and status display
+    // @ts-ignore
+    const process = window.require ? window.require('process') : null;
+    const envConfigPath = process?.env?.NOTEBOOKAUTOMATION_CONFIG;
+
+    if (envConfigPath) {
+      // @ts-ignore
+      const fs = window.require ? window.require('fs') : null;
+      const envFileExists = fs ? fs.existsSync(envConfigPath) : false;
+
+      if (envFileExists) {
+        const statusDiv = statusContainer.createDiv({ cls: 'notebook-automation-env-warning' });
+        statusDiv.classList.add('notebook-automation-success-div');
+        statusDiv.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">✅</span>
+            <strong style="color: var(--color-green);">Environment Config Available</strong>
+          </div>
+          <div style="font-size: 0.9em; margin-top: 4px;">
+            <code>NOTEBOOKAUTOMATION_CONFIG</code> is set and points to an existing file.
+          </div>
+          <div class="notebook-automation-file-path" style="margin-top: 8px;">${envConfigPath}</div>
+        `;
+      } else {
+        const statusDiv = statusContainer.createDiv({ cls: 'notebook-automation-env-warning' });
+        statusDiv.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 16px;">⚠️</span>
+            <strong>Environment Config Path Not Found</strong>
+          </div>
+          <div style="font-size: 0.9em; margin-top: 4px;">
+            <code>NOTEBOOKAUTOMATION_CONFIG</code> is set but the file does not exist.
+          </div>
+          <div class="notebook-automation-file-path" style="margin-top: 8px;">${envConfigPath}</div>
+        `;
+      }
+    } else {
+      const statusDiv = statusContainer.createDiv({ cls: 'notebook-automation-env-warning' });
+      statusDiv.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">ℹ️</span>
+          <strong>No Environment Config</strong>
+        </div>
+        <div style="font-size: 0.9em; margin-top: 4px;">
+          <code>NOTEBOOKAUTOMATION_CONFIG</code> environment variable is not set. Using default config priority order.
+        </div>
+      `;
+    }
+    }
   }
 
   checkAndLoadDefaultConfig() {
@@ -557,7 +672,16 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         }
       }
       
-      // Second priority: Use default-config.json from plugin directory
+      // Second priority: User-configured custom path
+      if (!configPath && this.plugin.settings.configPath) {
+        const userConfigPath = this.plugin.settings.configPath;
+        if (fs.existsSync(userConfigPath) && fs.statSync(userConfigPath).isFile()) {
+          configPath = userConfigPath;
+          console.log('[Notebook Automation] Auto-loading user-configured config path:', configPath);
+        }
+      }
+      
+      // Third priority: Use default-config.json from plugin directory
       if (!configPath) {
         // Get plugin directory
         const pluginDir = this.plugin.manifest?.dir;
@@ -583,15 +707,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
             configPath = defaultConfigPath;
             console.log('[Notebook Automation] Auto-loading default-config.json from plugin directory:', configPath);
           }
-        }
-      }
-      
-      // Third priority: Fallback to user-configured path
-      if (!configPath && this.plugin.settings.configPath) {
-        const userConfigPath = this.plugin.settings.configPath;
-        if (fs.existsSync(userConfigPath) && fs.statSync(userConfigPath).isFile()) {
-          configPath = userConfigPath;
-          console.log('[Notebook Automation] Auto-loading user-configured config path:', configPath);
         }
       }
 
@@ -647,14 +762,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       containerEl.insertBefore(fieldsDiv, versionDiv);
     }
 
-    // Add banners section (show only if banners are enabled)
-    if (this.plugin.settings.bannersEnabled) {
-      this.addBannersSection(fieldsDiv, configJson);
-    }
-
-    // Add logging section (always show when config is loaded)
-    this.addLoggingSection(fieldsDiv, configJson);
-
     // Add paths section (show only if advanced configuration is enabled)
     if (this.plugin.settings.advancedConfiguration) {
       this.addPathsSection(fieldsDiv, configJson);
@@ -679,17 +786,31 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     if (this.plugin.settings.advancedConfiguration) {
       this.addTimeoutSection(fieldsDiv, configJson);
     }
+
+    // Add logging section (show only if advanced configuration is enabled)
+    if (this.plugin.settings.advancedConfiguration) {
+      this.addLoggingSection(fieldsDiv, configJson);
+    }
     
-    // Add other configuration section
-    this.addOtherConfigSection(fieldsDiv, configJson);
+    // Add other configuration section (only if advanced configuration is enabled)
+    if (this.plugin.settings.advancedConfiguration) {
+      this.addOtherConfigSection(fieldsDiv, configJson);
+    }
     
-    // Add save button outside the main container
-    this.addSaveButton(containerEl, configJson);
+    // Save button is handled by the main display method, not here
   }
 
   addPathsSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
-    fieldsDiv.createEl('h4', { text: 'Paths Configuration', cls: 'notebook-automation-ai-header' });
+    fieldsDiv.createEl('h3', { text: 'Paths Configuration', cls: 'notebook-automation-section-header' });
+    
+    // Add section description
+    const pathsDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
+    pathsDescriptionDiv.innerHTML = `
+      <p>Configure file paths and directories used by the notebook automation system. These settings define where the plugin looks for templates, where it saves generated content, and how it organizes your automated workflows.</p>
+      
+      <p><strong>Key features:</strong> Template file locations for consistent formatting, output directory management for organized content structure, and working directory settings for processing operations.</p>
+    `;
     
     const pathsSection = fieldsDiv.createDiv({ cls: 'notebook-automation-paths-section' });
 
@@ -889,7 +1010,15 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
   addAIServiceSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
-    fieldsDiv.createEl('h4', { text: 'AI Service Configuration', cls: 'notebook-automation-ai-header' });
+    fieldsDiv.createEl('h3', { text: 'AI Service Configuration', cls: 'notebook-automation-section-header' });
+    
+    // Add section description
+    const aiDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
+    aiDescriptionDiv.innerHTML = `
+      <p>Configure AI services for automated content processing, summarization, and analysis. These settings connect the plugin to AI providers for generating summaries, extracting key insights, and creating structured content from your materials.</p>
+      
+      <p><strong>Supported providers:</strong> <a href="https://azure.microsoft.com/en-us/products/ai-services/openai-service" target="_blank">Azure OpenAI</a> for enterprise-grade AI, <a href="https://openai.com/api/" target="_blank">OpenAI</a> for direct API access, and <a href="https://www.ibm.com/products/watsonx-ai" target="_blank">IBM watsonx.ai</a> (Foundry) for comprehensive AI workflows.</p>
+    `;
     
     const aiSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section' });
 
@@ -1044,7 +1173,15 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
   addMicrosoftGraphSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
-    fieldsDiv.createEl('h4', { text: 'Microsoft Graph Configuration', cls: 'notebook-automation-ai-header' });
+    fieldsDiv.createEl('h3', { text: 'Microsoft Graph Configuration', cls: 'notebook-automation-section-header' });
+    
+    // Add section description
+    const graphDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
+    graphDescriptionDiv.innerHTML = `
+      <p>Configure Microsoft Graph API integration for accessing OneDrive, SharePoint, and other Microsoft 365 services. This enables the plugin to process shared files and documents directly from your organization's cloud storage.</p>
+      
+      <p><strong>Requirements:</strong> A registered <a href="https://docs.microsoft.com/en-us/graph/auth-register-app-v2" target="_blank">Azure AD application</a> with appropriate permissions for Microsoft Graph API access. Used primarily for OneDrive shared link processing and collaborative document workflows.</p>
+    `;
     
     const graphSection = fieldsDiv.createDiv({ cls: 'notebook-automation-graph-section' });
 
@@ -1162,7 +1299,15 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
   addTimeoutSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
-    fieldsDiv.createEl('h4', { text: 'Timeout Configuration', cls: 'notebook-automation-ai-header' });
+    fieldsDiv.createEl('h3', { text: 'Timeout Configuration', cls: 'notebook-automation-section-header' });
+    
+    // Add section description
+    const timeoutDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
+    timeoutDescriptionDiv.innerHTML = `
+      <p>Configure timeout settings and rate limiting for AI service requests and file processing operations. These settings help manage system performance, prevent API overload, and ensure reliable processing of large document collections.</p>
+      
+      <p><strong>Key controls:</strong> Request timeouts to prevent hanging operations, retry mechanisms for handling temporary failures, parallelism limits for optimal resource usage, and rate limiting to respect API quotas and prevent throttling.</p>
+    `;
     
     const timeoutSection = fieldsDiv.createDiv({ cls: 'notebook-automation-timeout-section' });
 
@@ -1258,14 +1403,22 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
   addLoggingSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
-    fieldsDiv.createEl('h4', { text: 'Logging Configuration', cls: 'notebook-automation-ai-header' });
+    fieldsDiv.createEl('h3', { text: 'Logging Configuration', cls: 'notebook-automation-section-header' });
+    
+    // Add section description
+    const loggingDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
+    loggingDescriptionDiv.innerHTML = `
+      <p>Configure logging behavior for debugging, monitoring, and troubleshooting automation processes. These settings control what information is captured, where logs are stored, and how detailed the logging output should be.</p>
+      
+      <p><strong>Log management:</strong> Directory configuration for organized log storage, log level settings to control verbosity from basic info to detailed debugging, and retention policies for managing disk space usage.</p>
+    `;
     
     const loggingSection = fieldsDiv.createDiv({ cls: 'notebook-automation-logging-section' });
 
     const loggingConfig = configJson.logging || {};
     const pathsConfig = configJson.paths || {};
     
-    // Add logging directory path field
+    // Add logging directory path field with inline button
     const logDirDiv = loggingSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
     const logDirInfoDiv = logDirDiv.createDiv({ cls: 'setting-item-info' });
     const logDirNameDiv = logDirInfoDiv.createDiv({ cls: 'setting-item-name' });
@@ -1274,12 +1427,36 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     logDirDescDiv.setText('Directory path where log files are stored');
 
     const logDirControlDiv = logDirDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    const logDirInput = logDirControlDiv.createEl('input', {
+    
+    // Create container for input and button
+    const logDirInputContainer = logDirControlDiv.createDiv({ cls: 'notebook-automation-input-button-container' });
+    
+    const logDirInput = logDirInputContainer.createEl('input', {
       type: 'text',
-      cls: 'notebook-automation-path-input'
+      cls: 'notebook-automation-path-input notebook-automation-path-with-button'
     });
     logDirInput.value = pathsConfig.logging_dir || 'd:/source/notebook-automation/logs';
     logDirInput.placeholder = 'Enter logging directory path...';
+
+    // Add the Open Directory button inline
+    const openDirButton = logDirInputContainer.createEl('button', {
+      cls: 'notebook-automation-inline-button',
+      text: 'Open Directory'
+    });
+    openDirButton.onclick = () => {
+      // Get the current logging directory path from the input field
+      const currentLogDir = logDirInput.value || 'd:/source/notebook-automation/logs';
+      
+      try {
+        // @ts-ignore
+        const { shell } = window.require('electron');
+        shell.openPath(currentLogDir);
+        new Notice(`Opening logging directory: ${currentLogDir}`);
+      } catch (error) {
+        console.error('Failed to open logging directory:', error);
+        new Notice(`Failed to open logging directory: ${currentLogDir}`);
+      }
+    };
 
     // Create validation message element for logging directory
     const logDirValidationMessage = logDirControlDiv.createDiv({ cls: 'notebook-automation-field-validation' });
@@ -1388,39 +1565,19 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         };
       }
     });
-
-    // Add button to open logging directory (now logDirInput is in scope)
-    const buttonDiv = loggingSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-    const buttonInfoDiv = buttonDiv.createDiv({ cls: 'setting-item-info' });
-    const buttonNameDiv = buttonInfoDiv.createDiv({ cls: 'setting-item-name' });
-    buttonNameDiv.setText('Open Logging Directory');
-    const buttonDescDiv = buttonInfoDiv.createDiv({ cls: 'setting-item-description' });
-    buttonDescDiv.setText('Open the logging directory in file explorer');
-
-    const buttonControlDiv = buttonDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    const openDirButton = buttonControlDiv.createEl('button', {
-      cls: 'mod-cta',
-      text: 'Open Directory'
-    });
-    openDirButton.onclick = () => {
-      // Get the current logging directory path from the input field
-      const currentLogDir = logDirInput.value || 'd:/source/notebook-automation/logs';
-      
-      try {
-        // @ts-ignore
-        const { shell } = window.require('electron');
-        shell.openPath(currentLogDir);
-        new Notice(`Opening logging directory: ${currentLogDir}`);
-      } catch (error) {
-        console.error('Failed to open logging directory:', error);
-        new Notice(`Failed to open logging directory: ${currentLogDir}`);
-      }
-    };
   }
 
   addExtensionsSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
-    fieldsDiv.createEl('h4', { text: 'File Extensions', cls: 'notebook-automation-ai-header' });
+    fieldsDiv.createEl('h3', { text: 'File Extensions', cls: 'notebook-automation-section-header' });
+    
+    // Add section description
+    const extensionsDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
+    extensionsDescriptionDiv.innerHTML = `
+      <p>Define which file types the automation system can process. These extensions determine what files are recognized and handled by the various processing modules.</p>
+      
+      <p><strong>Supported types:</strong> Video files for transcript generation and content extraction, PDF documents for text and image extraction, and additional formats for specialized processing workflows.</p>
+    `;
     
     const extensionsSection = fieldsDiv.createDiv({ cls: 'notebook-automation-extensions-section' });
 
@@ -1473,7 +1630,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     };
 
     // PDF Extract Images toggle
-    const pdfExtractDiv = extensionsSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
+    const pdfExtractDiv = extensionsSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting checkbox-inline' });
     const pdfExtractInfoDiv = pdfExtractDiv.createDiv({ cls: 'setting-item-info' });
     const pdfExtractNameDiv = pdfExtractInfoDiv.createDiv({ cls: 'setting-item-name' });
     pdfExtractNameDiv.setText('PDF Extract Images');
@@ -1483,7 +1640,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const pdfExtractControlDiv = pdfExtractDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
     const pdfExtractToggle = pdfExtractControlDiv.createEl('input', {
       type: 'checkbox',
-      cls: 'notebook-automation-toggle'
+      cls: 'notebook-automation-checkbox'
     });
     pdfExtractToggle.checked = configJson.pdf_extract_images || false;
     pdfExtractToggle.onchange = (e: any) => {
@@ -1497,7 +1654,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
   addBannersSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
-    fieldsDiv.createEl('h4', { text: 'Banners Configuration', cls: 'notebook-automation-ai-header' });
+    fieldsDiv.createEl('h3', { text: 'Banners Configuration', cls: 'notebook-automation-section-header' });
     
     const bannersSection = fieldsDiv.createDiv({ cls: 'notebook-automation-banners-section' });
 
@@ -1505,7 +1662,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
     // Basic banner fields
     const bannerFields = [
-      { key: 'default', label: 'Default Banner', desc: 'Default banner image filename', type: 'text' },
+      { key: 'default', label: 'Default Image Banner', desc: 'Default banner image filename', type: 'text' },
       { key: 'format', label: 'Banner Format', desc: 'Banner format (e.g., image)', type: 'text' }
     ];
 
@@ -1601,7 +1758,15 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
   addOtherConfigSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
-    fieldsDiv.createEl('h4', { text: 'Other Configuration', cls: 'notebook-automation-ai-header' });
+    fieldsDiv.createEl('h3', { text: 'Other Configuration', cls: 'notebook-automation-section-header' });
+    
+    // Add section description
+    const otherDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
+    otherDescriptionDiv.innerHTML = `
+      <p>Additional configuration options for specialized features and advanced automation workflows. These settings provide fine-grained control over specific processing behaviors and experimental features.</p>
+      
+      <p><strong>Advanced options:</strong> Specialized file type handling, custom processing parameters, experimental feature toggles, and integration settings for third-party tools and services.</p>
+    `;
     
     const otherSection = fieldsDiv.createDiv({ cls: 'notebook-automation-other-section' });
 
@@ -1703,35 +1868,165 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
   addSaveButton(containerElement: HTMLElement, configJson: any) {
     // Get the path of the currently loaded config file
     const loadedConfigPath = (window as any).notebookAutomationLoadedConfigPath;
-
-    // Show save target information
-    const saveInfoDiv = containerElement.createDiv({ cls: 'notebook-automation-save-info' });
+    
+    // Check if we're using a custom config file (not default-config.json)
+    let isCustomConfig = false;
+    let defaultConfigPath = '';
     
     if (loadedConfigPath) {
       // @ts-ignore
       const path = window.require ? window.require('path') : null;
-      const fileName = path ? path.basename(loadedConfigPath) : loadedConfigPath;
+      if (path && this.plugin.manifest?.dir) {
+        const adapter = this.plugin.app?.vault?.adapter;
+        let resolvedPluginDir = this.plugin.manifest.dir;
+        // @ts-ignore
+        if (adapter && typeof adapter.getBasePath === 'function') {
+          try {
+            // @ts-ignore
+            const vaultRoot = adapter.getBasePath();
+            resolvedPluginDir = path.resolve(vaultRoot, this.plugin.manifest.dir);
+          } catch (err) {
+            // Fallback to original path
+          }
+        }
+        
+        defaultConfigPath = path.join(resolvedPluginDir, 'default-config.json');
+        const normalizedLoadedPath = path.resolve(loadedConfigPath);
+        const normalizedDefaultPath = path.resolve(defaultConfigPath);
+        
+        isCustomConfig = normalizedLoadedPath !== normalizedDefaultPath;
+      }
+    }
+
+    // Show save target information
+    const saveInfoDiv = containerElement.createDiv({ cls: 'notebook-automation-save-info' });
+    
+    // Determine which config file will be used for saving
+    let displayPath = loadedConfigPath;
+    let configDescription = 'Currently loaded config';
+    
+    if (!displayPath && (this.plugin.settings.bannersEnabled || this.plugin.settings.advancedConfiguration)) {
+      // If no loaded config but any configuration feature is enabled, we'll use default config
+      // First check for NOTEBOOKAUTOMATION_CONFIG environment variable
+      // @ts-ignore
+      const process = window.require ? window.require('process') : null;
+      const envConfigPath = process?.env?.NOTEBOOKAUTOMATION_CONFIG;
+      
+      if (envConfigPath) {
+        displayPath = envConfigPath;
+        configDescription = 'Environment config (NOTEBOOKAUTOMATION_CONFIG)';
+      } else {
+        // Fallback to plugin directory default config
+        // @ts-ignore
+        const path = window.require ? window.require('path') : null;
+        if (path && this.plugin.manifest?.dir) {
+          const adapter = this.plugin.app?.vault?.adapter;
+          let resolvedPluginDir = this.plugin.manifest.dir;
+          // @ts-ignore
+          if (adapter && typeof adapter.getBasePath === 'function') {
+            try {
+              // @ts-ignore
+              const vaultRoot = adapter.getBasePath();
+              resolvedPluginDir = path.resolve(vaultRoot, this.plugin.manifest.dir);
+            } catch (err) {
+              // Fallback to original path
+            }
+          }
+          displayPath = path.join(resolvedPluginDir, 'default-config.json');
+          configDescription = 'Default plugin config';
+        }
+      }
+    }
+    
+    if (displayPath) {
+      // @ts-ignore
+      const path = window.require ? window.require('path') : null;
+      const fileName = path ? path.basename(displayPath) : displayPath;
       
       saveInfoDiv.innerHTML = `
-        <div style="margin-bottom: 4px;"><strong>Save target:</strong> Currently loaded config</div>
-        <div style="font-family: monospace; word-break: break-all;">📁 ${loadedConfigPath}</div>
+        <div style="margin-bottom: 4px;"><strong>Save target:</strong> ${configDescription}</div>
+        <div class="notebook-automation-file-path">${displayPath}</div>
       `;
     } else {
       saveInfoDiv.innerHTML = `
-        <div style="margin-bottom: 4px;"><strong>⚠️ No config file loaded</strong></div>
-        <div style="font-style: italic;">Load a config file first to enable saving</div>
+        <div style="margin-bottom: 4px;"><strong>⚠️ No config file available</strong></div>
+        <div style="font-style: italic;">Enable a feature that requires configuration to save settings</div>
       `;
+    }
+
+    // Add checkbox for updating default config (only show if using custom config)
+    let updateDefaultCheckbox: HTMLInputElement | null = null;
+    if (isCustomConfig && defaultConfigPath) {
+      const checkboxContainer = containerElement.createDiv({ cls: 'notebook-automation-default-config-option' });
+      const checkboxSetting = new Setting(checkboxContainer);
+      checkboxSetting.settingEl.classList.add('notebook-automation-custom-setting', 'checkbox-inline');
+      
+      checkboxSetting
+        .setName('Also update default configuration file')
+        .addToggle(toggle => {
+          const checkboxEl = toggle.toggleEl.querySelector('input[type="checkbox"]') as HTMLInputElement;
+          if (checkboxEl) {
+            updateDefaultCheckbox = checkboxEl;
+          }
+          toggle.setValue(false)
+            .onChange(async (value) => {
+              // Value is automatically handled by the toggle
+            });
+        });
+      
+      // Add the path as a separate element for better styling
+      const pathDiv = checkboxContainer.createDiv({ cls: 'notebook-automation-file-path' });
+      pathDiv.innerHTML = `Update: ${defaultConfigPath}`;
+      pathDiv.style.marginTop = '0.3em';
+      pathDiv.style.fontSize = '0.9em';
+      pathDiv.style.color = 'var(--text-muted)';
     }
 
     // Save button for config fields (always on its own line)
     const saveSetting = new Setting(containerElement);
     saveSetting.settingEl.classList.add('notebook-automation-save-setting');
+    
+    // Determine if we should enable the save button
+    const shouldEnableSave = loadedConfigPath || this.plugin.settings.bannersEnabled || this.plugin.settings.advancedConfiguration;
+    
     saveSetting.addButton(btn => {
-      btn.setButtonText('💾 Save')
+      btn.setButtonText('Save')
         .setCta()
-        .setDisabled(!loadedConfigPath)
+        .setDisabled(!shouldEnableSave)
         .onClick(async () => {
-          if (!loadedConfigPath) {
+          // If no loaded config path but any configuration feature is enabled, use default config
+          let targetPath = loadedConfigPath;
+          if (!targetPath && (this.plugin.settings.bannersEnabled || this.plugin.settings.advancedConfiguration)) {
+            // First check for NOTEBOOKAUTOMATION_CONFIG environment variable
+            // @ts-ignore
+            const process = window.require ? window.require('process') : null;
+            const envConfigPath = process?.env?.NOTEBOOKAUTOMATION_CONFIG;
+            
+            if (envConfigPath) {
+              targetPath = envConfigPath;
+            } else {
+              // Fallback to plugin directory default config
+              // @ts-ignore
+              const path = window.require ? window.require('path') : null;
+              if (path && this.plugin.manifest?.dir) {
+                const adapter = this.plugin.app?.vault?.adapter;
+                let resolvedPluginDir = this.plugin.manifest.dir;
+                // @ts-ignore
+                if (adapter && typeof adapter.getBasePath === 'function') {
+                  try {
+                    // @ts-ignore
+                    const vaultRoot = adapter.getBasePath();
+                    resolvedPluginDir = path.resolve(vaultRoot, this.plugin.manifest.dir);
+                  } catch (err) {
+                    // Fallback to original path
+                  }
+                }
+                targetPath = path.join(resolvedPluginDir, 'default-config.json');
+              }
+            }
+          }
+          
+          if (!targetPath) {
             new Notice('❌ No config file loaded. Please load a config file first.');
             return;
           }
@@ -1744,17 +2039,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
             if (!fs || !path) {
               new Notice('File system access is not available in this environment.');
               return;
-            }
-
-            // Ensure directory exists
-            const configDir = path.dirname(loadedConfigPath);
-            if (!fs.existsSync(configDir)) {
-              try {
-                fs.mkdirSync(configDir, { recursive: true });
-              } catch (mkdirErr) {
-                new Notice('Failed to create config directory: ' + (mkdirErr instanceof Error ? mkdirErr.message : String(mkdirErr)));
-                return;
-              }
             }
 
             const currentConfig = (window as any).notebookAutomationLoadedConfig || {};
@@ -1790,11 +2074,39 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
               }
             };
 
-            // Write to the loaded config file
-            fs.writeFileSync(loadedConfigPath, JSON.stringify(configToSave, null, 4), 'utf8');
+            // Function to ensure directory exists and write config
+            const writeConfigFile = (filePath: string, config: any) => {
+              const configDir = path.dirname(filePath);
+              if (!fs.existsSync(configDir)) {
+                try {
+                  fs.mkdirSync(configDir, { recursive: true });
+                } catch (mkdirErr) {
+                  throw new Error('Failed to create config directory: ' + (mkdirErr instanceof Error ? mkdirErr.message : String(mkdirErr)));
+                }
+              }
+              fs.writeFileSync(filePath, JSON.stringify(config, null, 4), 'utf8');
+            };
+
+            // Write to the target config file
+            writeConfigFile(targetPath, configToSave);
             
-            const fileName = path.basename(loadedConfigPath);
-            new Notice(`✅ Config saved successfully to ${fileName}`);
+            const fileName = path.basename(targetPath);
+            let successMessage = `✅ Config saved successfully to ${fileName}`;
+
+            // Also write to default config if checkbox is checked
+            if (updateDefaultCheckbox && updateDefaultCheckbox.checked && defaultConfigPath) {
+              try {
+                writeConfigFile(defaultConfigPath, configToSave);
+                const defaultFileName = path.basename(defaultConfigPath);
+                successMessage += ` and ${defaultFileName}`;
+              } catch (defaultErr) {
+                console.error('[Notebook Automation] Error saving to default config:', defaultErr);
+                new Notice(`⚠️ Saved to custom config but failed to save to default: ${defaultErr instanceof Error ? defaultErr.message : String(defaultErr)}`);
+                return;
+              }
+            }
+
+            new Notice(successMessage);
 
             // Update global loaded config
             (window as any).notebookAutomationLoadedConfig = configToSave;
@@ -1805,6 +2117,112 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           }
         });
     });
+    
+    // Add version information at the bottom
+    const versionDiv = containerElement.createDiv({ cls: "notebook-automation-version" });
+    versionDiv.setText("Notebook Automation version: Loading...");
+    
+    this.getNaVersion().then(ver => {
+      // Convert line feeds to HTML breaks for proper display
+      const formattedVersion = ver.replace(/\n/g, '<br>');
+      versionDiv.innerHTML = formattedVersion;
+    });
+  }
+
+  /**
+   * Generates platform-appropriate configuration file description with correct path examples.
+   */
+  getConfigFileDescription(): string {
+    const isWindows = process.platform === 'win32';
+    
+    if (isWindows) {
+      return 'If you want to use different configurations, you can override the plugin\'s default configuration file that used (default-config.json). Enter a file path to your custom your configuration file "e.g. config.json" to be used for this plugin. Configuration settings have the following priority for loading:\n\n1) NOTEBOOKAUTOMATION_CONFIG environment variable (NOTEBOOKAUTOMATION_CONFIG="C:\\Users\\YourName\\notebook\\config.json")\n2) Custom file path to configuration file ("C:\\Users\\YourName\\school-work\\my_config.json")\n3) Plugin Directory defaults file "default-config.json"';
+    } else {
+      return 'If you want to use different configurations, you can override the plugin\'s default configuration file that used (default-config.json). Enter a file path to your custom your configuration file "e.g. config.json" to be used for this plugin. Configuration settings have the following priority for loading:\n\n1) NOTEBOOKAUTOMATION_CONFIG environment variable (NOTEBOOKAUTOMATION_CONFIG="~/notebook/config.json")\n2) Custom file path to configuration file ("~/school-work/my_config.json")\n3) Plugin Directory defaults file "default-config.json"';
+    }
+  }
+
+  /**
+   * Adds markdown-specific banner configuration settings.
+   */
+  addMarkdownBannerSettings(container: HTMLElement) {
+    // Template Banners setting
+    const templateBannersSetting = new Setting(container)
+      .setName('Template Banners')
+      .setDesc('JSON configuration for banners based on content templates. Define banners for different content types like "main", "program", "course", "assignment". Example: {"main": "main-header.png", "course": "course-header.png"}');
+    
+    templateBannersSetting.settingEl.addClass('notebook-automation-custom-setting');
+    const templateBannersTextarea = templateBannersSetting.controlEl.createEl('textarea', {
+      cls: 'notebook-automation-path-input',
+      attr: { 'data-template-banners': 'true' }
+    });
+    
+    // Load current template banners or set default
+    const currentTemplateBanners = (this.plugin.settings as any).templateBanners || {};
+    const defaultTemplateBanners = {
+      "main": "main-header.png",
+      "program": "program-header.png", 
+      "course": "course-header.png",
+      "assignment": "assignment-header.png"
+    };
+    
+    // Use default values if current is empty
+    const templateBannersToShow = Object.keys(currentTemplateBanners).length === 0 
+      ? defaultTemplateBanners 
+      : currentTemplateBanners;
+      
+    templateBannersTextarea.value = JSON.stringify(templateBannersToShow, null, 2);
+    templateBannersTextarea.placeholder = 'Enter template banners JSON...';
+    
+    templateBannersTextarea.oninput = async (e: any) => {
+      try {
+        const parsedValue = JSON.parse(e.target.value);
+        (this.plugin.settings as any).templateBanners = parsedValue;
+        await this.plugin.saveSettings();
+        templateBannersTextarea.classList.remove('notebook-automation-input-invalid');
+      } catch (error) {
+        templateBannersTextarea.classList.add('notebook-automation-input-invalid');
+      }
+    };
+
+    // Filename Patterns setting
+    const filenamePatternsetting = new Setting(container)
+      .setName('Filename Patterns')
+      .setDesc('JSON configuration for banners based on filename patterns. Use wildcards (*) to match filenames. Example: {"*index*": "index-banner.png", "assignment-*": "assignment-banner.png", "*final*": "final-project-banner.png"}');
+    
+    filenamePatternsetting.settingEl.addClass('notebook-automation-custom-setting');
+    const filenamePatternsTextarea = filenamePatternsetting.controlEl.createEl('textarea', {
+      cls: 'notebook-automation-path-input',
+      attr: { 'data-filename-patterns': 'true' }
+    });
+    
+    // Load current filename patterns or set default
+    const currentFilenamePatterns = (this.plugin.settings as any).filenamePatterns || {};
+    const defaultFilenamePatterns = {
+      "*index*": "index-banner.png",
+      "*readme*": "readme-banner.png",
+      "assignment-*": "assignment-banner.png",
+      "*final*": "final-project-banner.png"
+    };
+    
+    // Use default values if current is empty
+    const filenamePatternsToShow = Object.keys(currentFilenamePatterns).length === 0 
+      ? defaultFilenamePatterns 
+      : currentFilenamePatterns;
+      
+    filenamePatternsTextarea.value = JSON.stringify(filenamePatternsToShow, null, 2);
+    filenamePatternsTextarea.placeholder = 'Enter filename patterns JSON...';
+    
+    filenamePatternsTextarea.oninput = async (e: any) => {
+      try {
+        const parsedValue = JSON.parse(e.target.value);
+        (this.plugin.settings as any).filenamePatterns = parsedValue;
+        await this.plugin.saveSettings();
+        filenamePatternsTextarea.classList.remove('notebook-automation-input-invalid');
+      } catch (error) {
+        filenamePatternsTextarea.classList.add('notebook-automation-input-invalid');
+      }
+    };
   }
 
   /**
@@ -1822,13 +2240,15 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     style.textContent = `
       /* Dynamic visibility for sections based on plugin settings */
       .notebook-automation-graph-section { display: ${this.plugin.settings.oneDriveSharedLink ? 'block' : 'none'}; }
+      .notebook-automation-banners-section { display: ${this.plugin.settings.bannersEnabled ? 'block' : 'none'}; }
+      .notebook-automation-banners-header { display: ${this.plugin.settings.bannersEnabled ? 'block' : 'none'}; }
       .notebook-automation-timeout-section { display: ${this.plugin.settings.advancedConfiguration ? 'block' : 'none'}; }
       .notebook-automation-other-section { display: ${this.plugin.settings.advancedConfiguration ? 'block' : 'none'}; }
       .notebook-automation-paths-section { display: ${this.plugin.settings.advancedConfiguration ? 'block' : 'none'}; }
       .notebook-automation-ai-service-section { display: ${this.plugin.settings.advancedConfiguration ? 'block' : 'none'}; }
+      .notebook-automation-logging-section { display: ${this.plugin.settings.advancedConfiguration ? 'block' : 'none'}; }
       
       /* Always show these sections when config is loaded */
-      .notebook-automation-logging-section { display: block; }
       .notebook-automation-extensions-section { display: block; }
     `;
     document.head.appendChild(style);
