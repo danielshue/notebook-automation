@@ -879,6 +879,51 @@ textarea.notebook-automation-path-input[data-scopes] {
   min-width: 60px !important;
 }
 
+/* Custom PDF Extract Images setting with inline toggle */
+.pdf-extract-setting {
+  margin-bottom: 1.5em !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.pdf-extract-title-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 8px !important;
+}
+
+.pdf-extract-title-row .setting-item-name {
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: var(--text-normal) !important;
+  flex: 1 !important;
+}
+
+.pdf-extract-toggle-container {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  min-width: 60px !important;
+}
+
+.pdf-extract-toggle {
+  width: 18px !important;
+  height: 18px !important;
+  cursor: pointer !important;
+  accent-color: var(--interactive-accent) !important;
+  transform: scale(1.2) !important;
+}
+
+.pdf-extract-setting .setting-item-description {
+  font-size: 13px !important;
+  color: var(--text-muted) !important;
+  line-height: 1.4 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
 .notebook-automation-save-info {
   margin-top: 1.5em !important;
   margin-bottom: 1em !important;

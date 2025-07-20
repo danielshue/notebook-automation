@@ -255,18 +255,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           });
       });
 
-    // PDF Extract Images flag
-    new Setting(flagsGroup)
-      .setName("PDF Extract Images")
-      .setDesc("Extract images from PDF files during processing. When enabled, the automation will extract and save images found in PDF documents alongside the generated markdown notes. This is useful for preserving diagrams, charts, and other visual content from academic papers and documents.")
-      .addToggle(toggle => {
-        toggle.setValue(this.plugin.settings.pdfExtractImages || false)
-          .onChange(async (value) => {
-            this.plugin.settings.pdfExtractImages = value;
-            await this.plugin.saveSettings();
-          });
-      });
-
     // Banners Enabled flag
     new Setting(flagsGroup)
       .setName("Banners Enabled")
@@ -1890,27 +1878,33 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       }
     };
 
-    // PDF Extract Images toggle
-    const pdfExtractDiv = extensionsSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting checkbox-inline' });
-    const pdfExtractInfoDiv = pdfExtractDiv.createDiv({ cls: 'setting-item-info' });
-    const pdfExtractNameDiv = pdfExtractInfoDiv.createDiv({ cls: 'setting-item-name' });
-    pdfExtractNameDiv.setText('PDF Extract Images');
-    const pdfExtractDescDiv = pdfExtractInfoDiv.createDiv({ cls: 'setting-item-description' });
-    pdfExtractDescDiv.setText('Enable image extraction from PDF files during processing');
-
-    const pdfExtractControlDiv = pdfExtractDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    const pdfExtractToggle = pdfExtractControlDiv.createEl('input', {
+    // PDF Extract Images toggle - custom layout with inline toggle
+    const pdfExtractContainer = extensionsSection.createDiv({ cls: 'notebook-automation-custom-setting pdf-extract-setting' });
+    
+    // Create title row with toggle
+    const titleRow = pdfExtractContainer.createDiv({ cls: 'pdf-extract-title-row' });
+    const titleText = titleRow.createSpan({ cls: 'setting-item-name', text: 'PDF Extract Images' });
+    const toggleContainer = titleRow.createDiv({ cls: 'pdf-extract-toggle-container' });
+    
+    // Create toggle
+    const pdfExtractToggle = toggleContainer.createEl('input', { 
       type: 'checkbox',
-      cls: 'notebook-automation-checkbox'
+      cls: 'pdf-extract-toggle'
     });
     pdfExtractToggle.checked = configJson.pdf_extract_images || false;
-    pdfExtractToggle.onchange = (e: any) => {
-      const value = e.target.checked;
+    pdfExtractToggle.addEventListener('change', (e) => {
+      const value = (e.target as HTMLInputElement).checked;
       // Update global config
       if ((window as any).notebookAutomationLoadedConfig) {
         (window as any).notebookAutomationLoadedConfig.pdf_extract_images = value;
       }
-    };
+    });
+    
+    // Create description row
+    const descRow = pdfExtractContainer.createDiv({ 
+      cls: 'setting-item-description',
+      text: 'Extract images from PDF files during processing. When enabled, the automation will extract and save images found in PDF documents alongside the generated markdown notes. This is useful for preserving diagrams, charts, and other visual content from academic papers and documents.'
+    });
   }
 
   addBannersSection(fieldsDiv: HTMLDivElement, configJson: any) {
