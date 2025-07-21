@@ -89,8 +89,8 @@ function Write-Error {
     Write-Host "❌ $Message" -ForegroundColor $Red
 }
 
-# Update pluginDistPath to point to the repository's dist directory
-$pluginDistPath = Join-Path $RepositoryRoot "dist"
+# Update pluginDistPath to point to the obsidian plugin's dist directory
+$pluginDistPath = Join-Path $RepositoryRoot "src\obsidian-plugin\dist"
 
 try {
     Write-Host "🚀 Starting Local CI Build Pipeline" -ForegroundColor $Cyan
@@ -209,7 +209,7 @@ try {
 
                     # Copy plugin files from the 'dist' directory
                     $filesToCopy = @("main.js", "manifest.json", "styles.css")
-                    $distAbsolutePath = Join-Path $RepositoryRoot "dist"
+                    $distAbsolutePath = $pluginDistPath
                     if (Test-Path (Join-Path $distAbsolutePath "default-config.json")) {
                         $filesToCopy += "default-config.json"
                     }
