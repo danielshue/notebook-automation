@@ -144,6 +144,48 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     this.plugin = plugin;
   }
 
+  /**
+   * Formats a validation error message with improved styling and icons.
+   */
+  formatValidationError(title: string, message: string, icon: string = 'alert-triangle'): string {
+    return `
+      <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px;">
+        <div style="flex-shrink: 0; margin-top: 2px;">
+          <span style="font-size: 14px; color: var(--text-error);">⚠️</span>
+        </div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; color: var(--text-error); margin-bottom: 4px; font-size: 0.9em;">
+            ${title}
+          </div>
+          <div style="font-size: 0.8em; line-height: 1.4; color: var(--text-muted);">
+            ${message}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  /**
+   * Formats a validation success message with improved styling and icons.
+   */
+  formatValidationSuccess(title: string, message: string): string {
+    return `
+      <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px;">
+        <div style="flex-shrink: 0; margin-top: 2px;">
+          <span style="font-size: 14px; color: #4ade80;">✅</span>
+        </div>
+        <div style="flex: 1;">
+          <div style="font-weight: 600; color: #22c55e; margin-bottom: 4px; font-size: 0.9em;">
+            ${title}
+          </div>
+          <div style="font-size: 0.8em; line-height: 1.4; color: var(--text-muted);">
+            ${message}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   display(): void {
     this.injectCustomStyles();
     const { containerEl } = this;
@@ -1079,33 +1121,39 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Add validation message element for base block template
     const baseBlockValidation = baseBlockControlDiv.createDiv({ cls: 'notebook-automation-base-block-validation' });
 
-    // Initial validation for existing value
-    const currentBaseBlockValue = baseBlockInput.value;
-    if (currentBaseBlockValue && !isValidFilePath(currentBaseBlockValue)) {
-      baseBlockValidation.classList.add('visible');
-      baseBlockValidation.textContent = getPathValidationErrorMessage('file');
-      baseBlockInput.classList.add('notebook-automation-input-invalid');
-    }
-
-    baseBlockInput.oninput = async (e: any) => {
-      const inputValue = e.target.value;
-      
-      // Path validation
-      if (inputValue && !isValidFilePath(inputValue)) {
+      // Initial validation for existing value
+      const currentBaseBlockValue = baseBlockInput.value;
+      if (currentBaseBlockValue && !isValidFilePath(currentBaseBlockValue)) {
         baseBlockValidation.classList.add('visible');
-        baseBlockValidation.textContent = getPathValidationErrorMessage('file');
+        baseBlockValidation.innerHTML = this.formatValidationError(
+          'Invalid File Path',
+          getPathValidationErrorMessage('file'),
+          'file-x'
+        );
         baseBlockInput.classList.add('notebook-automation-input-invalid');
-      } else {
-        baseBlockValidation.classList.remove('visible');
-        baseBlockInput.classList.remove('notebook-automation-input-invalid');
       }
-      
-      // Save to plugin settings
-      this.plugin.settings.baseBlockTemplateFilename = inputValue;
-      await this.plugin.saveSettings();
-    };
 
-    const keyMeta = [
+      baseBlockInput.oninput = async (e: any) => {
+        const inputValue = e.target.value;
+        
+        // Path validation
+        if (inputValue && !isValidFilePath(inputValue)) {
+          baseBlockValidation.classList.add('visible');
+          baseBlockValidation.innerHTML = this.formatValidationError(
+            'Invalid File Path',
+            getPathValidationErrorMessage('file'),
+            'file-x'
+          );
+          baseBlockInput.classList.add('notebook-automation-input-invalid');
+        } else {
+          baseBlockValidation.classList.remove('visible');
+          baseBlockInput.classList.remove('notebook-automation-input-invalid');
+        }
+        
+        // Save to plugin settings
+        this.plugin.settings.baseBlockTemplateFilename = inputValue;
+        await this.plugin.saveSettings();
+      };    const keyMeta = [
       {
         key: 'onedrive_fullpath_root',
         label: 'OneDrive Root Path',
@@ -1191,21 +1239,25 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         if (currentValue) {
           let isValid = true;
           let errorMessage = '';
+          let errorTitle = 'Invalid Input';
           
           if (meta.validateFilePath && !isValidFilePath(currentValue)) {
             isValid = false;
             errorMessage = getPathValidationErrorMessage('file');
+            errorTitle = 'Invalid File Path';
           } else if (meta.validateDirectoryPath && !isValidDirectoryPath(currentValue)) {
             isValid = false;
             errorMessage = getPathValidationErrorMessage('directory');
+            errorTitle = 'Invalid Directory Path';
           } else if (meta.validatePath && !isValidFilePath(currentValue)) {
             isValid = false;
             errorMessage = getPathValidationErrorMessage('path');
+            errorTitle = 'Invalid Path';
           }
           
           if (!isValid) {
             validationMessage.classList.add('visible');
-            validationMessage.textContent = errorMessage;
+            validationMessage.innerHTML = this.formatValidationError(errorTitle, errorMessage);
             input.classList.add('notebook-automation-input-invalid');
           }
         }
@@ -1218,23 +1270,27 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         if (validationMessage && (meta.validateFilePath || meta.validateDirectoryPath || meta.validatePath)) {
           let isValid = true;
           let errorMessage = '';
+          let errorTitle = 'Invalid Input';
           
           if (inputValue) {
             if (meta.validateFilePath && !isValidFilePath(inputValue)) {
               isValid = false;
               errorMessage = getPathValidationErrorMessage('file');
+              errorTitle = 'Invalid File Path';
             } else if (meta.validateDirectoryPath && !isValidDirectoryPath(inputValue)) {
               isValid = false;
               errorMessage = getPathValidationErrorMessage('directory');
+              errorTitle = 'Invalid Directory Path';
             } else if (meta.validatePath && !isValidFilePath(inputValue)) {
               isValid = false;
               errorMessage = getPathValidationErrorMessage('path');
+              errorTitle = 'Invalid Path';
             }
           }
           
           if (!isValid) {
             validationMessage.classList.add('visible');
-            validationMessage.textContent = errorMessage;
+            validationMessage.innerHTML = this.formatValidationError(errorTitle, errorMessage);
             input.classList.add('notebook-automation-input-invalid');
           } else {
             validationMessage.classList.remove('visible');
@@ -1350,7 +1406,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           const currentValue = fieldInput.value;
           if (currentValue && !isValidUrl(currentValue)) {
             validationMessage.classList.add('visible');
-            validationMessage.textContent = 'Please enter a valid URL (must start with http:// or https://)';
+            validationMessage.innerHTML = this.formatValidationError(
+              'Invalid URL',
+              'Please enter a valid URL starting with http:// or https://. Example: https://api.openai.com/v1 or https://your-resource.openai.azure.com/'
+            );
             fieldInput.classList.add('notebook-automation-input-invalid');
           }
         }
@@ -1362,7 +1421,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           if (field.validateUrl && validationMessage) {
             if (inputValue && !isValidUrl(inputValue)) {
               validationMessage.classList.add('visible');
-              validationMessage.textContent = 'Please enter a valid URL (must start with http:// or https://)';
+              validationMessage.innerHTML = this.formatValidationError(
+                'Invalid URL',
+                'Please enter a valid URL starting with http:// or https://. Example: https://api.openai.com/v1 or https://your-resource.openai.azure.com/'
+              );
               fieldInput.classList.add('notebook-automation-input-invalid');
             } else {
               validationMessage.classList.remove('visible');
@@ -1401,14 +1463,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       
       // Validate the new provider immediately with feedback
       this.addAIProviderValidation(providerValidationDiv, selectedProvider);
-      
-      // Show immediate feedback notice
-      const validation = NotebookAutomationSettingTab.validateAIProviderEnvironment(selectedProvider);
-      if (validation.isValid) {
-        new Notice(`✅ ${selectedProvider.toUpperCase()} provider: Environment variable is set`, 3000);
-      } else if (validation.missingVar) {
-        new Notice(`⚠️ ${selectedProvider.toUpperCase()} provider: Missing ${validation.missingVar} environment variable`, 5000);
-      }
       
       // Update global config
       if ((window as any).notebookAutomationLoadedConfig) {
@@ -1470,11 +1524,17 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         if (currentValue) {
           if (field.validateUrl && !isValidUrl(currentValue)) {
             validationMessage.classList.add('visible');
-            validationMessage.textContent = 'Please enter a valid URL (must start with http:// or https://)';
+            validationMessage.innerHTML = this.formatValidationError(
+              'Invalid URL',
+              'Please enter a valid URL starting with http:// or https://. Example: https://graph.microsoft.com/v1.0 or https://login.microsoftonline.com/your-tenant-id'
+            );
             fieldInput.classList.add('notebook-automation-input-invalid');
           } else if (field.validateGuid && !isValidGuid(currentValue)) {
             validationMessage.classList.add('visible');
-            validationMessage.textContent = 'Please enter a valid GUID (e.g., 12345678-1234-5678-9abc-123456789012)';
+            validationMessage.innerHTML = this.formatValidationError(
+              'Invalid GUID Format',
+              'Please enter a valid GUID in the format: 12345678-1234-5678-9abc-123456789012. You can find your application\'s Client ID in the Azure portal under App registrations.'
+            );
             fieldInput.classList.add('notebook-automation-input-invalid');
           }
         }
@@ -1487,20 +1547,23 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         if (validationMessage) {
           let isValid = true;
           let errorMessage = '';
+          let errorTitle = 'Invalid Input';
           
           if (inputValue) {
             if (field.validateUrl && !isValidUrl(inputValue)) {
               isValid = false;
-              errorMessage = 'Please enter a valid URL (must start with http:// or https://)';
+              errorMessage = 'Please enter a valid URL starting with http:// or https://. Example: https://graph.microsoft.com/v1.0 or https://login.microsoftonline.com/your-tenant-id';
+              errorTitle = 'Invalid URL';
             } else if (field.validateGuid && !isValidGuid(inputValue)) {
               isValid = false;
-              errorMessage = 'Please enter a valid GUID (e.g., 12345678-1234-5678-9abc-123456789012)';
+              errorMessage = 'Please enter a valid GUID in the format: 12345678-1234-5678-9abc-123456789012. You can find your application\'s Client ID in the Azure portal under App registrations.';
+              errorTitle = 'Invalid GUID Format';
             }
           }
           
           if (!isValid) {
             validationMessage.classList.add('visible');
-            validationMessage.textContent = errorMessage;
+            validationMessage.innerHTML = this.formatValidationError(errorTitle, errorMessage);
             fieldInput.classList.add('notebook-automation-input-invalid');
           } else {
             validationMessage.classList.remove('visible');
@@ -1613,7 +1676,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           if (validationMessage) {
             if (numericValue && (value < 1 || value > 999999)) {
               validationMessage.classList.add('visible');
-              validationMessage.textContent = 'Please enter a number between 1 and 999,999';
+              validationMessage.innerHTML = this.formatValidationError(
+                'Invalid Number',
+                `Please enter a valid number between 1 and 999,999. This setting controls ${field.label.toLowerCase()} and must be within reasonable limits for proper system operation.`
+              );
               fieldInput.classList.add('notebook-automation-input-invalid');
             } else {
               validationMessage.classList.remove('visible');
@@ -1714,7 +1780,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const initialLogDirValue = logDirInput.value;
     if (initialLogDirValue && !isValidDirectoryPath(initialLogDirValue)) {
       logDirValidationMessage.classList.add('visible');
-      logDirValidationMessage.textContent = getPathValidationErrorMessage('directory');
+      logDirValidationMessage.innerHTML = this.formatValidationError(
+        'Invalid Logging Directory',
+        getPathValidationErrorMessage('directory') + ' This directory will be used to store application logs and debug information.'
+      );
       logDirInput.classList.add('notebook-automation-input-invalid');
     }
 
@@ -1724,7 +1793,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       // Directory path validation
       if (inputValue && !isValidDirectoryPath(inputValue)) {
         logDirValidationMessage.classList.add('visible');
-        logDirValidationMessage.textContent = getPathValidationErrorMessage('directory');
+        logDirValidationMessage.innerHTML = this.formatValidationError(
+          'Invalid Logging Directory',
+          getPathValidationErrorMessage('directory') + ' This directory will be used to store application logs and debug information.'
+        );
         logDirInput.classList.add('notebook-automation-input-invalid');
       } else {
         logDirValidationMessage.classList.remove('visible');
@@ -1785,7 +1857,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           if (validationMessage) {
             if (numericValue && (value < 1 || value > 999999)) {
               validationMessage.classList.add('visible');
-              validationMessage.textContent = 'Please enter a number between 1 and 999,999';
+              validationMessage.innerHTML = this.formatValidationError(
+                'Invalid Number',
+                `Please enter a valid number between 1 and 999,999. This controls ${field.label.toLowerCase()} for log file management and must be within reasonable limits.`
+              );
               fieldInput.classList.add('notebook-automation-input-invalid');
             } else {
               validationMessage.classList.remove('visible');
@@ -2049,7 +2124,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const invalidVideoExts = initialVideoExtensions.filter((ext: string) => ext && !isValidFileExtension(ext));
     if (invalidVideoExts.length > 0) {
       videoExtValidationMessage.classList.add('visible');
-      videoExtValidationMessage.textContent = `Invalid extensions: ${invalidVideoExts.join(', ')} (must start with . and contain only letters/numbers)`;
+      videoExtValidationMessage.innerHTML = this.formatValidationError(
+        'Invalid Video Extensions',
+        `The following extensions are invalid: <strong>${invalidVideoExts.join(', ')}</strong><br><br>File extensions must start with a dot (.) and contain only letters and numbers. Examples: .mp4, .mov, .avi, .mkv`
+      );
       videoExtTextarea.classList.add('notebook-automation-input-invalid');
     }
     
@@ -2059,7 +2137,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       
       if (invalidExtensions.length > 0) {
         videoExtValidationMessage.classList.add('visible');
-        videoExtValidationMessage.textContent = `Invalid extensions: ${invalidExtensions.join(', ')} (must start with . and contain only letters/numbers)`;
+        videoExtValidationMessage.innerHTML = this.formatValidationError(
+          'Invalid Video Extensions',
+          `The following extensions are invalid: <strong>${invalidExtensions.join(', ')}</strong><br><br>File extensions must start with a dot (.) and contain only letters and numbers. Examples: .mp4, .mov, .avi, .mkv`
+        );
         videoExtTextarea.classList.add('notebook-automation-input-invalid');
       } else {
         videoExtValidationMessage.classList.remove('visible');
@@ -2096,7 +2177,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const invalidPdfExts = initialPdfExtensions.filter((ext: string) => ext && !isValidFileExtension(ext));
     if (invalidPdfExts.length > 0) {
       pdfExtValidationMessage.classList.add('visible');
-      pdfExtValidationMessage.textContent = `Invalid extensions: ${invalidPdfExts.join(', ')} (must start with . and contain only letters/numbers)`;
+      pdfExtValidationMessage.innerHTML = this.formatValidationError(
+        'Invalid PDF Extensions',
+        `The following extensions are invalid: <strong>${invalidPdfExts.join(', ')}</strong><br><br>File extensions must start with a dot (.) and contain only letters and numbers. Typical PDF extension: .pdf`
+      );
       pdfExtTextarea.classList.add('notebook-automation-input-invalid');
     }
     
@@ -2106,7 +2190,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       
       if (invalidExtensions.length > 0) {
         pdfExtValidationMessage.classList.add('visible');
-        pdfExtValidationMessage.textContent = `Invalid extensions: ${invalidExtensions.join(', ')} (must start with . and contain only letters/numbers)`;
+        pdfExtValidationMessage.innerHTML = this.formatValidationError(
+          'Invalid PDF Extensions',
+          `The following extensions are invalid: <strong>${invalidExtensions.join(', ')}</strong><br><br>File extensions must start with a dot (.) and contain only letters and numbers. Typical PDF extension: .pdf`
+        );
         pdfExtTextarea.classList.add('notebook-automation-input-invalid');
       } else {
         pdfExtValidationMessage.classList.remove('visible');
@@ -2280,31 +2367,17 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     if (!isEnvVarSet) {
       // Show warning validation
       validationContainer.classList.add('visible');
-      validationContainer.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-          <span style="font-size: 16px;">⚠️</span>
-          <strong style="color: var(--color-red);">Environment Variable Missing</strong>
-        </div>
-        <div style="font-size: 0.9em; margin-bottom: 8px;">
-          The <code>${envInfo.varName}</code> environment variable is not set for the ${provider.toUpperCase()} provider.
-          <br>This will cause command execution to fail.
-        </div>
-        <div style="font-size: 0.85em; font-style: italic;">
-          Set <code>${envInfo.varName}</code> in your system environment variables, then restart Obsidian.
-        </div>
-      `;
+      validationContainer.innerHTML = this.formatValidationError(
+        'Environment Variable Missing',
+        `The <code>${envInfo.varName}</code> environment variable is not set for the ${provider.toUpperCase()} provider. This will cause command execution to fail.<br><br><strong>Solution:</strong> Set <code>${envInfo.varName}</code> in your system environment variables, then restart Obsidian.`
+      );
     } else {
-      // Show success validation
+      // Show success validation  
       validationContainer.classList.add('visible');
-      validationContainer.innerHTML = `
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 16px;">✅</span>
-          <strong style="color: var(--color-green);">Environment Variable Set</strong>
-        </div>
-        <div style="font-size: 0.9em; margin-top: 4px;">
-          <code>${envInfo.varName}</code> is configured for the ${provider.toUpperCase()} provider.
-        </div>
-      `;
+      validationContainer.innerHTML = this.formatValidationSuccess(
+        'Environment Variable Set',
+        `<code>${envInfo.varName}</code> is configured for the ${provider.toUpperCase()} provider.`
+      );
     }
   }
 

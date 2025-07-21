@@ -585,17 +585,18 @@ textarea.notebook-automation-path-input,
   width: 100% !important;
   margin-top: 8px !important;
   margin-bottom: 0 !important;
-  padding: 8px 12px !important;
+  padding: 0 !important;
   text-align: left !important;
-  background-color: var(--background-modifier-error) !important;
-  border: 1px solid var(--color-red) !important;
-  border-radius: 4px !important;
-  font-size: 0.9em !important;
-  line-height: 1.4 !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  font-size: 0.85em !important;
+  line-height: 1.5 !important;
   opacity: 0 !important;
   max-height: 0 !important;
   overflow: hidden !important;
   transition: all 0.2s ease !important;
+  color: var(--text-muted) !important;
 }
 
 .notebook-automation-field-validation.visible {
@@ -606,8 +607,8 @@ textarea.notebook-automation-path-input,
 
 /* Success validation styling */
 .notebook-automation-field-validation:has([style*="color-green"]) {
-  background-color: var(--background-modifier-success) !important;
-  border-color: var(--color-green) !important;
+  background-color: transparent !important;
+  border: none !important;
 }
 
 @keyframes slideIn {
@@ -622,9 +623,8 @@ textarea.notebook-automation-path-input,
 }
 
 .notebook-automation-input-invalid {
-  border-color: var(--color-red) !important;
-  background-color: rgba(255, 0, 0, 0.05) !important;
-  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.1) !important;
+  border-color: var(--text-error) !important;
+  border-width: 2px !important;
 }
 
 
