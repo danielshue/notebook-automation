@@ -1212,110 +1212,20 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     
     const pathsSection = fieldsDiv.createDiv({ cls: 'notebook-automation-paths-section' });
 
-    // Base Block Template setting (using plugin settings, not config JSON)
-    const baseBlockDiv = pathsSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-    const baseBlockInfoDiv = baseBlockDiv.createDiv({ cls: 'setting-item-info' });
-    const baseBlockNameDiv = baseBlockInfoDiv.createDiv({ cls: 'setting-item-name' });
-    baseBlockNameDiv.setText('Base Block Template File Path');
-    const baseBlockDescDiv = baseBlockInfoDiv.createDiv({ cls: 'setting-item-description' });
-    baseBlockDescDiv.setText('Path to the YAML template file for class index page generation. Supports absolute paths or relative paths (resolved from plugin directory).');
-
-    const baseBlockControlDiv = baseBlockDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    
-    // Create container for input and browse button
-    const baseBlockInputContainer = baseBlockControlDiv.createDiv({ cls: 'notebook-automation-input-button-container' });
-    
-    const baseBlockInput = baseBlockInputContainer.createEl('input', {
-      type: 'text',
-      cls: 'notebook-automation-path-input notebook-automation-path-with-button'
-    });
-    // Use config JSON value if available, otherwise fall back to plugin settings
-    const configValue = configJson?.paths?.base_block_template_filename;
-    baseBlockInput.value = configValue || this.plugin.settings.baseBlockTemplateFilename || 'BaseBlockTemplate.yml';
-    baseBlockInput.placeholder = 'Enter base block template file path...';
-
-    // Add browse button for base block template file
-    const browseBaseBlockButton = baseBlockInputContainer.createEl('button', {
-      cls: 'notebook-automation-inline-button',
-      text: 'Browse'
-    });
-    browseBaseBlockButton.onclick = async () => {
-      const selectedPath = await browseForFile([
-        { name: 'YAML Files', extensions: ['yml', 'yaml'] },
-        { name: 'All Files', extensions: ['*'] }
-      ]);
-      
-      if (selectedPath) {
-        baseBlockInput.value = selectedPath;
-        // Save to plugin settings
-        this.plugin.settings.baseBlockTemplateFilename = selectedPath;
-        await this.plugin.saveSettings();
-        
-        // Update the global config for JSON serialization
-        if ((window as any).notebookAutomationLoadedConfig) {
-          if (!(window as any).notebookAutomationLoadedConfig.paths) {
-            (window as any).notebookAutomationLoadedConfig.paths = {};
-          }
-          (window as any).notebookAutomationLoadedConfig.paths.base_block_template_filename = selectedPath;
-        }
-        
-        // Trigger validation
-        baseBlockInput.dispatchEvent(new Event('input'));
-        
-        new Notice(`Selected base block template: ${selectedPath}`);
-      }
-    };
-
-    // Add validation message element for base block template
-    const baseBlockValidation = baseBlockControlDiv.createDiv({ cls: 'notebook-automation-base-block-validation' });
-
-      // Initial validation for existing value
-      const currentBaseBlockValue = baseBlockInput.value;
-      if (currentBaseBlockValue && !isValidFilePath(currentBaseBlockValue)) {
-        baseBlockValidation.classList.add('visible');
-        baseBlockValidation.innerHTML = this.formatValidationError(
-          'Invalid File Path',
-          getPathValidationErrorMessage('file'),
-          'file-x'
-        );
-        baseBlockInput.classList.add('notebook-automation-input-invalid');
-      }
-
-      baseBlockInput.oninput = async (e: any) => {
-        const inputValue = e.target.value;
-        
-        // Path validation
-        if (inputValue && !isValidFilePath(inputValue)) {
-          baseBlockValidation.classList.add('visible');
-          baseBlockValidation.innerHTML = this.formatValidationError(
-            'Invalid File Path',
-            getPathValidationErrorMessage('file'),
-            'file-x'
-          );
-          baseBlockInput.classList.add('notebook-automation-input-invalid');
-        } else {
-          baseBlockValidation.classList.remove('visible');
-          baseBlockInput.classList.remove('notebook-automation-input-invalid');
-        }
-        
-        // Save to plugin settings
-        this.plugin.settings.baseBlockTemplateFilename = inputValue;
-        await this.plugin.saveSettings();
-        
-        // Update the global config for JSON serialization
-        if ((window as any).notebookAutomationLoadedConfig) {
-          if (!(window as any).notebookAutomationLoadedConfig.paths) {
-            (window as any).notebookAutomationLoadedConfig.paths = {};
-          }
-          (window as any).notebookAutomationLoadedConfig.paths.base_block_template_filename = inputValue;
-        }
-      };    const keyMeta = [
+    const keyMeta = [
       {
         key: 'onedrive_fullpath_root',
         label: 'OneDrive Root Path',
         desc: 'Absolute path to your local OneDrive folder (e.g., C:\\Users\\YourName\\OneDrive). Used for syncing content between OneDrive and your vault.',
         icon: '',
         validateDirectoryPath: true
+      },
+      {
+        key: 'onedrive_resources_basepath',
+        label: 'OneDrive Resources Base Path',
+        desc: 'Path within OneDrive (relative to OneDrive root) where educational resources are located. Used to locate course materials for automation.',
+        icon: '',
+        validatePath: true
       },
       {
         key: 'notebook_vault_fullpath_root',
@@ -1339,11 +1249,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         validateFilePath: true
       },
       {
-        key: 'onedrive_resources_basepath',
-        label: 'OneDrive Resources Base Path',
-        desc: 'Path within OneDrive (relative to OneDrive root) where educational resources are located. Used to locate course materials for automation.',
+        key: 'base_block_template_filename',
+        label: 'Base Block Template File Path',
+        desc: 'Path to the YAML template file for class index page generation. Supports absolute paths or relative paths (resolved from plugin directory).',
         icon: '',
-        validatePath: true
+        validateFilePath: true
       },
       {
         key: 'prompts_path',
@@ -1385,7 +1295,12 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         type: 'text',
         cls: needsBrowse || isVaultPath ? 'notebook-automation-path-input notebook-automation-path-with-button' : 'notebook-automation-path-input'
       });
-      input.value = updatedPaths[meta.key] || '';
+      // Special handling for base_block_template_filename to use plugin settings as fallback
+      if (meta.key === 'base_block_template_filename') {
+        input.value = updatedPaths[meta.key] || this.plugin.settings.baseBlockTemplateFilename || 'BaseBlockTemplate.yml';
+      } else {
+        input.value = updatedPaths[meta.key] || '';
+      }
       input.placeholder = `Enter ${meta.label.toLowerCase()}...`;
 
       // Add browse button for directory/file fields
@@ -1402,7 +1317,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           } else if (meta.validateFilePath) {
             // Determine file filters based on the field
             let filters = [{ name: 'All Files', extensions: ['*'] }];
-            if (meta.key === 'metadata_schema_file') {
+            if (meta.key === 'metadata_schema_file' || meta.key === 'base_block_template_filename') {
               filters = [
                 { name: 'YAML Files', extensions: ['yml', 'yaml'] },
                 { name: 'All Files', extensions: ['*'] }
@@ -1414,6 +1329,12 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           if (selectedPath) {
             input.value = selectedPath;
             updatedPaths[meta.key] = selectedPath;
+            
+            // Special handling for base_block_template_filename to save to plugin settings
+            if (meta.key === 'base_block_template_filename') {
+              this.plugin.settings.baseBlockTemplateFilename = selectedPath;
+              this.plugin.saveSettings();
+            }
             
             // Update the global config
             if ((window as any).notebookAutomationLoadedConfig) {
@@ -1538,6 +1459,13 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         }
 
         updatedPaths[meta.key] = inputValue;
+        
+        // Special handling for base_block_template_filename to save to plugin settings
+        if (meta.key === 'base_block_template_filename') {
+          this.plugin.settings.baseBlockTemplateFilename = inputValue;
+          this.plugin.saveSettings();
+        }
+        
         // Update the global config
         if ((window as any).notebookAutomationLoadedConfig) {
           if (!(window as any).notebookAutomationLoadedConfig.paths) {
