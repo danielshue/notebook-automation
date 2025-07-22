@@ -212,4 +212,178 @@ public class MetadataSchemaConfigMigrationTests
             File.Delete(tempFile);
         }
     }
+
+    /// <summary>
+    /// Tests that the notebook_vault_resources_basepath configuration is properly loaded from in-memory configuration.
+    /// </summary>
+    [TestMethod]
+    public void AppConfig_Should_Load_NotebookVaultResourcesBasepath_From_Configuration()
+    {
+        // Arrange
+        var configValues = new Dictionary<string, string?>
+        {
+            { "paths:notebook_vault_fullpath_root", "/test/vault" },
+            { "paths:notebook_vault_resources_basepath", "01_Projects\\MBA" }
+        };
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configValues)
+            .Build();
+
+        var logger = new Mock<ILogger<AppConfig>>();
+
+        // Act
+        var appConfig = new AppConfig(configuration, logger.Object);
+
+        // Assert
+        Assert.AreEqual("01_Projects\\MBA", appConfig.Paths.NotebookVaultResourcesBasepath);
+        Assert.AreEqual("/test/vault", appConfig.Paths.NotebookVaultFullpathRoot);
+    }
+
+    /// <summary>
+    /// Tests that the notebook_vault_resources_basepath serializes and deserializes correctly with JSON.
+    /// </summary>
+    [TestMethod]
+    public void PathsConfig_Should_Serialize_And_Deserialize_NotebookVaultResourcesBasepath()
+    {
+        // Arrange
+        var originalConfig = new PathsConfig
+        {
+            NotebookVaultFullpathRoot = "D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test",
+            NotebookVaultResourcesBasepath = "01_Projects\\MBA",
+            OnedriveFullpathRoot = "C:\\Users\\user\\OneDrive\\",
+            OnedriveResourcesBasepath = "Education\\MBA-Resources"
+        };
+
+        // Act
+        var json = JsonSerializer.Serialize(originalConfig);
+        var deserializedConfig = JsonSerializer.Deserialize<PathsConfig>(json);
+
+        // Assert
+        Assert.IsNotNull(deserializedConfig);
+        Assert.AreEqual(originalConfig.NotebookVaultFullpathRoot, deserializedConfig.NotebookVaultFullpathRoot);
+        Assert.AreEqual(originalConfig.NotebookVaultResourcesBasepath, deserializedConfig.NotebookVaultResourcesBasepath);
+        Assert.AreEqual(originalConfig.OnedriveFullpathRoot, deserializedConfig.OnedriveFullpathRoot);
+        Assert.AreEqual(originalConfig.OnedriveResourcesBasepath, deserializedConfig.OnedriveResourcesBasepath);
+    }
+
+    /// <summary>
+    /// Tests that the JSON property name mapping works correctly for notebook_vault_resources_basepath.
+    /// </summary>
+    [TestMethod]
+    public void PathsConfig_Should_Map_Json_Property_Name_For_NotebookVaultResourcesBasepath()
+    {
+        // Arrange - Create JSON with the exact property name used in config files
+        var json = @"{
+            ""notebook_vault_fullpath_root"": ""D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test"",
+            ""notebook_vault_resources_basepath"": ""01_Projects\\MBA"",
+            ""onedrive_fullpath_root"": ""C:\\Users\\user\\OneDrive\\"",
+            ""onedrive_resources_basepath"": ""Education\\MBA-Resources""
+        }";
+
+        // Act
+        var deserializedConfig = JsonSerializer.Deserialize<PathsConfig>(json);
+
+        // Assert
+        Assert.IsNotNull(deserializedConfig);
+        Assert.AreEqual("D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test", deserializedConfig.NotebookVaultFullpathRoot);
+        Assert.AreEqual("01_Projects\\MBA", deserializedConfig.NotebookVaultResourcesBasepath);
+        Assert.AreEqual("C:\\Users\\user\\OneDrive\\", deserializedConfig.OnedriveFullpathRoot);
+        Assert.AreEqual("Education\\MBA-Resources", deserializedConfig.OnedriveResourcesBasepath);
+    }
+
+    /// <summary>
+    /// Tests loading configuration from a JSON file that includes notebook_vault_resources_basepath.
+    /// </summary>
+    [TestMethod]
+    public void AppConfig_Should_Load_NotebookVaultResourcesBasepath_From_JsonFile()
+    {
+        // Arrange - Create a config JSON that matches the real config file structure
+        var configJson = @"{
+            ""ConfigFilePath"": ""test-config.json"",
+            ""paths"": {
+                ""onedrive_fullpath_root"": ""C:\\Users\\user\\OneDrive\\"",
+                ""onedrive_resources_basepath"": ""Education\\MBA-Resources"",
+                ""notebook_vault_fullpath_root"": ""D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test"",
+                ""notebook_vault_resources_basepath"": ""01_Projects\\MBA"",
+                ""metadata_schema_file"": ""D:\\source\\notebook-automation\\config\\metadata-schema.yml"",
+                ""logging_dir"": ""D:\\source\\notebook-automation\\logs"",
+                ""prompts_path"": ""D:\\source\\notebook-automation\\prompts""
+            }
+        }";
+
+        var tempFile = Path.GetTempFileName();
+        File.WriteAllText(tempFile, configJson);
+
+        try
+        {
+            // Act
+            var appConfig = AppConfig.LoadFromJsonFile(tempFile);
+
+            // Assert
+            Assert.AreEqual("D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test", appConfig.Paths.NotebookVaultFullpathRoot);
+            Assert.AreEqual("01_Projects\\MBA", appConfig.Paths.NotebookVaultResourcesBasepath);
+            Assert.AreEqual("C:\\Users\\user\\OneDrive\\", appConfig.Paths.OnedriveFullpathRoot);
+            Assert.AreEqual("Education\\MBA-Resources", appConfig.Paths.OnedriveResourcesBasepath);
+            Assert.AreEqual("D:\\source\\notebook-automation\\config\\metadata-schema.yml", appConfig.Paths.MetadataSchemaFile);
+        }
+        finally
+        {
+            File.Delete(tempFile);
+        }
+    }
+
+    /// <summary>
+    /// Tests that NotebookVaultResourcesBasepath handles empty/null values correctly.
+    /// </summary>
+    [TestMethod]
+    public void PathsConfig_Should_Handle_Empty_NotebookVaultResourcesBasepath()
+    {
+        // Arrange
+        var configValues = new Dictionary<string, string?>
+        {
+            { "paths:notebook_vault_fullpath_root", "/test/vault" },
+            { "paths:notebook_vault_resources_basepath", "" }
+        };
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configValues)
+            .Build();
+
+        var logger = new Mock<ILogger<AppConfig>>();
+
+        // Act
+        var appConfig = new AppConfig(configuration, logger.Object);
+
+        // Assert
+        Assert.AreEqual("", appConfig.Paths.NotebookVaultResourcesBasepath);
+        Assert.AreEqual("/test/vault", appConfig.Paths.NotebookVaultFullpathRoot);
+    }
+
+    /// <summary>
+    /// Tests that NotebookVaultResourcesBasepath handles missing configuration correctly.
+    /// </summary>
+    [TestMethod]
+    public void PathsConfig_Should_Default_NotebookVaultResourcesBasepath_When_Missing()
+    {
+        // Arrange - Configuration without notebook_vault_resources_basepath
+        var configValues = new Dictionary<string, string?>
+        {
+            { "paths:notebook_vault_fullpath_root", "/test/vault" },
+            { "paths:onedrive_fullpath_root", "/test/onedrive" }
+        };
+
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configValues)
+            .Build();
+
+        var logger = new Mock<ILogger<AppConfig>>();
+
+        // Act
+        var appConfig = new AppConfig(configuration, logger.Object);
+
+        // Assert
+        Assert.AreEqual(string.Empty, appConfig.Paths.NotebookVaultResourcesBasepath);
+        Assert.AreEqual("/test/vault", appConfig.Paths.NotebookVaultFullpathRoot);
+    }
 }

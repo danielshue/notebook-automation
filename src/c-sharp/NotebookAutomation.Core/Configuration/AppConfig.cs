@@ -122,11 +122,14 @@ public class AppConfig : IConfiguration
                     Paths = new PathsConfig
                     {
                         NotebookVaultFullpathRoot = pathsSection["notebook_vault_fullpath_root"] ?? string.Empty,
-                        OnedriveResourcesBasepath = pathsSection["onedrive_resources_basepath"] ?? string.Empty,
-                        LoggingDir = pathsSection["logging_dir"] ?? string.Empty,
+                        NotebookVaultResourcesBasepath = pathsSection["notebook_vault_resources_basepath"] ?? string.Empty,
                         OnedriveFullpathRoot = pathsSection["onedrive_fullpath_root"] ?? string.Empty,
+                        OnedriveResourcesBasepath = pathsSection["onedrive_resources_basepath"] ?? string.Empty,
                         MetadataFile = pathsSection["metadata_file"] ?? string.Empty,
                         MetadataSchemaFile = pathsSection["metadata_schema_file"] ?? string.Empty,
+                        LoggingDir = pathsSection["logging_dir"] ?? string.Empty,
+                        PromptsPath = pathsSection["prompts_path"] ?? string.Empty,
+                        BaseBlockTemplateFilename = pathsSection["base_block_template_filename"] ?? "BaseBlockTemplate.yml"
                     };
                 } // Load Microsoft Graph configuration
 
