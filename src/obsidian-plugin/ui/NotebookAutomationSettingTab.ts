@@ -19,6 +19,56 @@ function isValidGuid(string: string): boolean {
   return guidRegex.test(string);
 }
 
+// File/Directory browse utility functions
+function browseForDirectory(): Promise<string | null> {
+  return new Promise((resolve) => {
+    try {
+      // @ts-ignore
+      const { dialog } = window.require ? window.require('electron').remote || window.require('@electron/remote') : null;
+      if (!dialog) {
+        new Notice('Directory browsing not available in this environment.');
+        resolve(null);
+        return;
+      }
+      
+      const result = dialog.showOpenDialogSync({
+        properties: ['openDirectory'],
+        title: 'Select Directory'
+      });
+      
+      resolve(result && result.length > 0 ? result[0] : null);
+    } catch (err) {
+      new Notice('Error opening directory browser: ' + (err instanceof Error ? err.message : String(err)));
+      resolve(null);
+    }
+  });
+}
+
+function browseForFile(filters?: Array<{name: string, extensions: string[]}>): Promise<string | null> {
+  return new Promise((resolve) => {
+    try {
+      // @ts-ignore
+      const { dialog } = window.require ? window.require('electron').remote || window.require('@electron/remote') : null;
+      if (!dialog) {
+        new Notice('File browsing not available in this environment.');
+        resolve(null);
+        return;
+      }
+      
+      const result = dialog.showOpenDialogSync({
+        properties: ['openFile'],
+        title: 'Select File',
+        filters: filters || [{ name: 'All Files', extensions: ['*'] }]
+      });
+      
+      resolve(result && result.length > 0 ? result[0] : null);
+    } catch (err) {
+      new Notice('Error opening file browser: ' + (err instanceof Error ? err.message : String(err)));
+      resolve(null);
+    }
+  });
+}
+
 // File extension validation utility function
 function isValidFileExtension(string: string): boolean {
   const extensionRegex = /^\.[a-zA-Z0-9]+$/;
@@ -193,14 +243,14 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     containerEl.classList.add('notebook-automation-container');
     containerEl.addClass('notebook-automation-settings');
 
-    // Feature toggles section
+    // 1. Feature toggles section
     containerEl.createEl("h3", { text: "Features", cls: "notebook-automation-section-header" });
     const featureGroup = containerEl.createDiv({ cls: "notebook-automation-settings-group" });
 
-    // Enable AI Video Summary
+    // AI Video Summary
     new Setting(featureGroup)
-      .setName("Enable AI Video Summary")
-      .setDesc("Enables AI-powered video summarization features in context menus. When enabled, you can right-click on folders to 'Import & AI Summarize All Videos' (processes all video files in the folder and generates intelligent summaries using AI) or right-click on existing markdown files to 'Reprocess AI Summary (Video)' (regenerates the AI summary for video content). The AI analyzes video transcripts, identifies key concepts, and creates structured markdown notes with summaries, key points, and timestamps.")
+      .setName("AI Video Summary")
+      .setDesc("Enables AI-powered video summarization features in context menus. Right-click folders to import and summarize all videos, or reprocess existing video summaries with AI analysis.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.enableVideoSummary ?? true)
           .onChange(async (value) => {
@@ -209,10 +259,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           });
       });
 
-    // Enable AI PDF Summary
+    // AI PDF Summary
     new Setting(featureGroup)
-      .setName("Enable AI PDF Summary")
-      .setDesc("Enables AI-powered PDF document summarization features in context menus. When enabled, you can right-click on folders to 'Import & AI Summarize All PDFs' (processes all PDF files in the folder and generates intelligent summaries using AI) or right-click on existing markdown files to 'Reprocess AI Summary (PDF)' (regenerates the AI summary for PDF content). The AI extracts text from PDFs, analyzes document structure, identifies main themes and concepts, and creates comprehensive markdown notes with summaries, key insights, and important quotes.")
+      .setName("AI PDF Summary")
+      .setDesc("Enables AI-powered PDF document summarization features in context menus. Right-click folders to import and summarize all PDFs, or reprocess existing PDF summaries with AI analysis.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.enablePdfSummary ?? true)
           .onChange(async (value) => {
@@ -221,10 +271,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           });
       });
 
-    // Enable Index Creation
+    // Index Creation
     new Setting(featureGroup)
-      .setName("Enable Index Creation")
-      .setDesc("Enables automatic index generation features for organizing and navigating your notebook structure. When enabled, you can right-click on folders to 'Build Index for This Folder' (creates a comprehensive index of all files and subfolders in the selected directory) or 'Build Indexes for This Folder and All Subfolders' (recursively generates indexes for the entire folder hierarchy). These indexes provide structured navigation, file summaries, and cross-references to help you quickly find and access content across your notebook.")
+      .setName("Index Creation")
+      .setDesc("Enables automatic index generation for organizing notebook structure. Right-click folders to build comprehensive indexes with file summaries and navigation links.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.enableIndexCreation ?? true)
           .onChange(async (value) => {
@@ -233,10 +283,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           });
       });
 
-    // Enable Ensure Metadata
+    // Ensure Metadata
     new Setting(featureGroup)
-      .setName("Enable Ensure Metadata")
-      .setDesc("Enables metadata consistency management features to maintain proper YAML frontmatter across your notebook. When enabled, you can right-click on folders to 'Ensure Metadata Consistency' which automatically analyzes all markdown files in the directory hierarchy and ensures they have proper metadata fields (such as tags, categories, dates, and custom properties) based on their location, filename patterns, and content. This helps maintain organized, searchable, and properly categorized notes throughout your vault.")
+      .setName("Ensure Metadata")
+      .setDesc("Enables metadata consistency management to maintain proper YAML frontmatter across your notebook. Right-click folders to automatically ensure all markdown files have consistent metadata fields.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.enableEnsureMetadata ?? true)
           .onChange(async (value) => {
@@ -252,7 +302,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Verbose flag
     new Setting(flagsGroup)
       .setName("Verbose Mode")
-      .setDesc("Enable detailed output during command execution. This will show additional information about what the automation is doing, including progress updates, file processing details, and step-by-step operations. Useful for monitoring long-running tasks and understanding what's happening behind the scenes.")
+      .setDesc("Enable detailed output during command execution with progress updates and processing details. Useful for monitoring long-running tasks and understanding operations.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.verbose || false)
           .onChange(async (value) => {
@@ -264,7 +314,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Debug flag
     new Setting(flagsGroup)
       .setName("Debug Mode")
-      .setDesc("Enable comprehensive debug logging for technical troubleshooting. This provides the most detailed output including API calls, configuration parsing, file system operations, error stack traces, and internal processing steps. Essential for diagnosing issues or understanding unexpected behavior. Note: This generates significantly more output than verbose mode.")
+      .setDesc("Enable comprehensive debug logging for technical troubleshooting including API calls, configuration parsing, and error traces. Generates significantly more output than verbose mode for diagnosing issues.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.debug || false)
           .onChange(async (value) => {
@@ -276,7 +326,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Dry-run flag
     new Setting(flagsGroup)
       .setName("Dry Run")
-      .setDesc("Simulate all operations without making any actual changes to files or folders. This allows you to preview what the automation would do, including which files would be created, modified, or processed, without any risk of unwanted changes. Perfect for testing configurations or understanding the impact of operations before committing to them.")
+      .setDesc("Simulate all operations without making actual changes to files or folders. Allows you to preview what the automation would do without risk of unwanted modifications.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.dryRun || false)
           .onChange(async (value) => {
@@ -288,7 +338,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Force flag
     new Setting(flagsGroup)
       .setName("Force Mode")
-      .setDesc("Override safety checks and force operations to proceed even when they would normally be skipped or blocked. This includes processing files that already exist, regenerating summaries that are up-to-date, ignoring file locks, and bypassing validation warnings. Use with caution as this can overwrite existing work or ignore important safety mechanisms.")
+      .setDesc("Override safety checks and force operations to proceed even when normally skipped or blocked. Use with caution as this can overwrite existing work or ignore important safety mechanisms.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.force || false)
           .onChange(async (value) => {
@@ -300,7 +350,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Banners Enabled flag
     new Setting(flagsGroup)
       .setName("Banners Enabled")
-      .setDesc("Enable banner images in generated content. When enabled, the automation will include banner images at the top of generated markdown files based on the configured banner settings and filename patterns.")
+      .setDesc("Enable banner images or markdown content at the top of generated index pages. Uses configured banner settings and filename patterns to determine appropriate content.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.bannersEnabled || false)
           .onChange(async (value) => {
@@ -410,23 +460,19 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Add expanded description for banner functionality
     const bannerDescriptionDiv = bannersContainer.createDiv({ cls: 'notebook-automation-section-description' });
     bannerDescriptionDiv.innerHTML = `
-      <p>Configure banner images for generated markdown files. This functionality integrates with the 
-      <a href="https://github.com/noatpad/obsidian-banners" target="_blank">Obsidian Banner Plugin</a> 
-      to display attractive header images at the top of your notes.</p>
-      
-      <p><strong>Image Requirements:</strong> Banner images must be stored within your Obsidian vault. 
-      When specifying banner filenames, the system uses wiki-style links to resolve the file path 
-      (e.g., "gies-banner.png" will be resolved to [[gies-banner.png]] format internally).</p>
-      
-      <p><strong>How it works:</strong> When generating markdown files from videos, PDFs, or other content, 
-      the plugin will automatically add the appropriate banner image based on content type, filename patterns, 
-      or fallback to the default banner you specify below.</p>
+      <p>Configure banner images for generated markdown files that integrate with the 
+      <a href="https://github.com/noatpad/obsidian-banners" target="_blank">Obsidian Banner Plugin</a>. 
+      Images must be stored within your vault and are automatically selected based on content type or filename patterns.</p>
     `;
     
     // Add banner format setting first
     const bannerFormatSetting = new Setting(bannersContainer)
       .setName('Banner Format')
-      .setDesc('Choose how banners are added to generated files. "Image" mode integrates with the <a href="https://github.com/noatpad/obsidian-banners" target="_blank">Obsidian Banner Plugin</a> to display header images at the top of created index files. "Markdown" mode inserts custom markdown content into each generated file based on the template and filename patterns you configure below.');
+      .setDesc('Choose how banners are added to generated files. "Image" mode integrates with the Obsidian Banner Plugin to display header images at the top of created index files. "Markdown" mode inserts custom markdown content into each generated file based on the template and filename patterns you configure below.');
+    
+    // Create custom description with HTML rendering to replace the basic one
+    const bannerFormatDesc = bannerFormatSetting.descEl;
+    bannerFormatDesc.innerHTML = 'Choose how banners are added to generated files. "Image" mode integrates with the <a href="https://github.com/noatpad/obsidian-banners" target="_blank">Obsidian Banner Plugin</a> to display header images at the top of created index files. "Markdown" mode inserts custom markdown content into each generated file based on the template and filename patterns you configure below.';
     
     bannerFormatSetting.settingEl.addClass('notebook-automation-custom-setting');
     
@@ -510,78 +556,112 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       updateFormatSettings(selectedFormat);
     };
 
-    // Configuration section (show only if advanced configuration is enabled)
-    if (this.plugin.settings.advancedConfiguration) {
-      // Add section header
-      containerEl.createEl('h3', { 
-        text: 'Advanced Configuration',
-        cls: 'notebook-automation-section-header'
-      });
-      
-      // Config file path setting
-      const configFileSetting = new Setting(containerEl)
-        .setName('Custom Config File (Optional)');
+    // Always show these three sections at the bottom in this order:
+    // 1. Configuration Status, 2. Save Configuration, 3. Version Information
     
-      configFileSetting.settingEl.addClass("notebook-automation-config-input");
-      
-      // Create custom description with proper HTML formatting
-      const descriptionDiv = configFileSetting.settingEl.createDiv({ cls: 'setting-item-description' });
-      const process = window.require ? window.require('process') : null;
-      const isWindows = process?.platform === 'win32';
-      
-      if (isWindows) {
-        descriptionDiv.innerHTML = `
-          If you want to use different configurations, you can override the plugin's default configuration file that used (default-config.json).
-          Enter a file path to your custom your configuration file "e.g. config.json" to be used for this plugin. Configuration settings have the 
-          following priority for loading:
-          <br><br>
-          • NOTEBOOKAUTOMATION_CONFIG environment variable (NOTEBOOKAUTOMATION_CONFIG="C:\\Users\\YourName\\notebook\\config.json")
-          <br><br>
-          • Custom file path to configuration file ("C:\\Users\\YourName\\school-work\\my_config.json")
-          <br><br>
-          • Plugin Directory defaults file "default-config.json"
-        `;
-      } else {
-        descriptionDiv.innerHTML = `
-          If you want to use different configurations, you can override the plugin's default configuration file that used (default-config.json).
-          Enter a file path to your custom your configuration file "e.g. config.json" to be used for this plugin. Configuration settings have the 
-          following priority for loading:
-          <br><br>
-          • NOTEBOOKAUTOMATION_CONFIG environment variable (NOTEBOOKAUTOMATION_CONFIG="~/notebook/config.json")
-          <br><br>
-          • Custom file path to configuration file ("~/school-work/my_config.json")
-          <br><br>
-          • Plugin Directory defaults file "default-config.json"
-        `;
-      }
-      
-      // Create container for input and button below the description
-      const configPathContainer = containerEl.createDiv({
-        cls: 'notebook-automation-config-path-container'
-      });
-      
-      const configPathInput = configPathContainer.createEl("input", {
-        type: "text",
-        placeholder: "Optional: Path to custom config.json...",
-        cls: 'notebook-automation-config-path-input'
-      });
-      configPathInput.value = this.plugin.settings.configPath || "";
-      configPathInput.onchange = async (e: any) => {
-        this.plugin.settings.configPath = e.target.value;
-        await this.plugin.saveSettings();
-      };
+    // Remove any existing instances of these sections to prevent duplicates
+    const existingConfigStatus = containerEl.querySelector('.notebook-automation-config-status-section');
+    if (existingConfigStatus) existingConfigStatus.remove();
+    
+    const existingSaveSection = containerEl.querySelector('.notebook-automation-save-section');
+    if (existingSaveSection) existingSaveSection.remove();
+    
+    const existingVersionSection = containerEl.querySelector('.notebook-automation-version-section');
+    if (existingVersionSection) existingVersionSection.remove();
+    
+    // Also remove any existing version divs that might be floating around
+    const existingVersionDiv = containerEl.querySelector('.notebook-automation-version');
+    if (existingVersionDiv) existingVersionDiv.remove();
+    
+    // 4. Custom Config File section 
+    containerEl.createEl('h3', { 
+      text: 'Custom Config File (Optional)',
+      cls: 'notebook-automation-section-header'
+    });
+    
+    // Create custom description with proper HTML formatting
+    const customConfigDescriptionDiv = containerEl.createDiv({ cls: 'notebook-automation-section-description' });
+    const nodeProcess = window.require ? window.require('process') : null;
+    const isWindows = nodeProcess?.platform === 'win32';
+    
+    if (isWindows) {
+      customConfigDescriptionDiv.innerHTML = `
+        If you want to use different configurations, you can override the plugin's default configuration file that used (default-config.json).
+        Enter a file path to your custom your configuration file "e.g. config.json" to be used for this plugin. Configuration settings have the 
+        following priority for loading:
+        <br><br>
+        • NOTEBOOKAUTOMATION_CONFIG environment variable (NOTEBOOKAUTOMATION_CONFIG="C:\\Users\\YourName\\notebook\\config.json")
+        <br><br>
+        • Custom file path to configuration file ("C:\\Users\\YourName\\school-work\\my_config.json")
+        <br><br>
+        • Plugin Directory defaults file "default-config.json"
+      `;
+    } else {
+      customConfigDescriptionDiv.innerHTML = `
+        If you want to use different configurations, you can override the plugin's default configuration file that used (default-config.json).
+        Enter a file path to your custom your configuration file "e.g. config.json" to be used for this plugin. Configuration settings have the 
+        following priority for loading:
+        <br><br>
+        • NOTEBOOKAUTOMATION_CONFIG environment variable (NOTEBOOKAUTOMATION_CONFIG="~/notebook/config.json")
+        <br><br>
+        • Custom file path to configuration file ("~/school-work/my_config.json")
+        <br><br>
+        • Plugin Directory defaults file "default-config.json"
+      `;
+    }
+    
+    // Create container for input and button below the description
+    const configPathContainer = containerEl.createDiv({
+      cls: 'notebook-automation-config-path-container notebook-automation-input-button-container'
+    });
+    
+    const configPathInput = configPathContainer.createEl("input", {
+      type: "text",
+      placeholder: "Optional: Path to custom config.json...",
+      cls: 'notebook-automation-config-path-input notebook-automation-path-with-button'
+    });
+    configPathInput.value = this.plugin.settings.configPath || "";
+    configPathInput.onchange = async (e: any) => {
+      this.plugin.settings.configPath = e.target.value;
+      await this.plugin.saveSettings();
+    };
 
-      // Validate & Load button
-      const validateBtn = configPathContainer.createEl("button", {
-        text: "🔍 Validate & Load Config",
-        cls: 'notebook-automation-validate-btn'
-      });
+    // Add browse button for custom config file
+    const browseConfigButton = configPathContainer.createEl("button", {
+      text: "Browse",
+      cls: 'notebook-automation-inline-button'
+    });
+    browseConfigButton.onclick = async () => {
+      const selectedPath = await browseForFile([
+        { name: 'JSON Files', extensions: ['json'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]);
+      
+      if (selectedPath) {
+        configPathInput.value = selectedPath;
+        this.plugin.settings.configPath = selectedPath;
+        await this.plugin.saveSettings();
+        
+        new Notice(`Selected custom config file: ${selectedPath}`);
+      }
+    };
+
+    // Validate & Load button
+    const validateBtn = configPathContainer.createEl("button", {
+      text: "Load",
+      cls: 'notebook-automation-validate-btn'
+    });
     validateBtn.onclick = async () => {
       const path = this.plugin.settings.configPath;
       if (!path) {
         new Notice("Please enter a config file path first.");
         return;
       }
+      
+      // Clear any previous error display
+      const prevError = containerEl.querySelector('.notebook-automation-config-fields');
+      if (prevError) prevError.remove();
+      
       try {
         // @ts-ignore
         const fs = window.require ? window.require('fs') : null;
@@ -589,24 +669,34 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           new Notice("File system access is not available in this environment.");
           return;
         }
+        
+        console.log('Checking config file:', path);
+        
         if (fs.existsSync(path) && fs.statSync(path).isFile()) {
           const content = fs.readFileSync(path, 'utf8');
+          console.log('File content length:', content.length);
+          
           try {
             const configJson = JSON.parse(content);
             new Notice("✅ Config loaded successfully.");
             this.displayLoadedConfig(configJson, path);
+            this.refreshConfigurationFileStatus(); // Refresh the config status section
           } catch (jsonErr) {
             const configError = "Invalid JSON: " + (jsonErr instanceof Error ? jsonErr.message : String(jsonErr));
+            console.error('JSON parsing error:', jsonErr);
             new Notice(configError);
             this.displayLoadedConfig(null, undefined, configError);
+            this.refreshConfigurationFileStatus(); // Refresh even on error
           }
         } else {
           const configError = "Config file does not exist or is not a file.";
+          console.error('File access error:', configError, 'Path:', path);
           new Notice(configError);
           this.displayLoadedConfig(null, undefined, configError);
         }
       } catch (err) {
         const configError = "Error checking file: " + (err instanceof Error ? err.message : String(err));
+        console.error('General error:', err);
         new Notice(configError);
         this.displayLoadedConfig(null, undefined, configError);
       }
@@ -639,26 +729,19 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Display loaded config fields
     const configPath = (window as any).notebookAutomationLoadedConfigPath;
     this.displayLoadedConfig(configToDisplay, configPath);
+    
+    // Show informational message if Advanced Configuration is not enabled but config is loaded
+    const loadedConfig = (window as any).notebookAutomationLoadedConfig;
+    if (loadedConfig && !this.plugin.settings.advancedConfiguration) {
+      const infoDiv = containerEl.createDiv({ cls: 'notebook-automation-config-info' });
+      infoDiv.createEl('h4', { text: 'Configuration Loaded Successfully', cls: 'notebook-automation-info-title' });
+      infoDiv.createEl('p', { 
+        text: 'Configuration file has been loaded, but no editable fields are currently displayed. Enable "Advanced Configuration" in the Flags section above to see and edit the configuration fields.',
+        cls: 'notebook-automation-info-message' 
+      });
     }
-
-    // Always show these three sections at the bottom in this order:
-    // 1. Configuration Status, 2. Save Configuration, 3. Version Information
     
-    // Remove any existing instances of these sections to prevent duplicates
-    const existingConfigStatus = containerEl.querySelector('.notebook-automation-config-status-section');
-    if (existingConfigStatus) existingConfigStatus.remove();
-    
-    const existingSaveSection = containerEl.querySelector('.notebook-automation-save-section');
-    if (existingSaveSection) existingSaveSection.remove();
-    
-    const existingVersionSection = containerEl.querySelector('.notebook-automation-version-section');
-    if (existingVersionSection) existingVersionSection.remove();
-    
-    // Also remove any existing version divs that might be floating around
-    const existingVersionDiv = containerEl.querySelector('.notebook-automation-version');
-    if (existingVersionDiv) existingVersionDiv.remove();
-    
-    // Configuration File Section (combined status and save)
+    // 12. Configuration File Section (combined status and save)
     containerEl.createEl("h3", { text: "Configuration File", cls: "notebook-automation-section-header" });
     const configFileContainer = containerEl.createDiv({ 
       cls: "notebook-automation-settings-group notebook-automation-config-status-section" 
@@ -720,7 +803,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       
       if (envFileExists) {
         currentConfigPath = envConfigPath;
-        configStatus = '✅ Environment Configuration';
+        configStatus = '✅ Environment Variable';
         configDescription = 'Using NOTEBOOKAUTOMATION_CONFIG environment variable';
       } else {
         configStatus = '⚠️ Environment Config Missing';
@@ -728,10 +811,26 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         currentConfigPath = envConfigPath; // Show the missing path
       }
     } else if (loadedConfigPath) {
-      configStatus = '✅ Custom Configuration';
-      configDescription = 'Using loaded configuration file';
+      // Check if the loaded config is the default plugin directory config
+      // @ts-ignore
+      const path = window.require ? window.require('path') : null;
+      if (path && defaultConfigPath) {
+        const normalizedLoadedPath = path.resolve(loadedConfigPath);
+        const normalizedDefaultPath = path.resolve(defaultConfigPath);
+        
+        if (normalizedLoadedPath === normalizedDefaultPath) {
+          configStatus = '✅ Plugin Directory';
+          configDescription = 'Using default-config.json from plugin directory';
+        } else {
+          configStatus = '✅ Custom Configuration';
+          configDescription = 'Using custom configuration file';
+        }
+      } else {
+        configStatus = '✅ Custom Configuration';
+        configDescription = 'Using loaded configuration file';
+      }
     } else {
-      configStatus = 'ℹ️ Default Configuration';
+      configStatus = 'ℹ️ Plugin Directory';
       configDescription = 'Using plugin default configuration';
       // Set the default config path
       // @ts-ignore
@@ -838,7 +937,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
             // Build complete configuration object
             const configToSave = {
               ConfigFilePath: this.plugin.settings.configPath || '',
-              DebugEnabled: this.plugin.settings.debug || false,
               paths: currentConfig.paths || {},
               microsoft_graph: currentConfig.microsoft_graph || {},
               aiservice: currentConfig.aiservice || {
@@ -859,11 +957,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
               },
               video_extensions: currentConfig.video_extensions || [],
               pdf_extensions: currentConfig.pdf_extensions || [],
-              pdf_extract_images: this.plugin.settings.pdfExtractImages || false,
-              banners: {
-                enabled: this.plugin.settings.bannersEnabled || false,
-                ...currentConfig.banners
-              }
+              banners: currentConfig.banners || {}
             };
 
             // Function to ensure directory exists and write config
@@ -1025,14 +1119,16 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const prev = containerEl.querySelector('.notebook-automation-config-fields');
     if (prev) prev.remove();
 
-    // Find the version div to insert content before it
-    const versionDiv = containerEl.querySelector('.notebook-automation-version');
+    // Find the version section container to insert content before it
+    const versionSection = containerEl.querySelector('.notebook-automation-version-section');
 
     if (error) {
       const errorDiv = containerEl.createDiv({ cls: 'notebook-automation-config-fields' });
-      errorDiv.createEl('p', { text: error, cls: 'mod-warning' });
-      if (versionDiv) {
-        containerEl.insertBefore(errorDiv, versionDiv);
+      const errorContainer = errorDiv.createDiv({ cls: 'notebook-automation-config-error' });
+      errorContainer.createEl('h4', { text: 'Configuration Load Error', cls: 'notebook-automation-error-title' });
+      errorContainer.createEl('p', { text: error, cls: 'notebook-automation-error-message' });
+      if (versionSection) {
+        containerEl.insertBefore(errorDiv, versionSection);
       }
       (window as any).notebookAutomationLoadedConfig = null;
       (window as any).notebookAutomationLoadedConfigPath = null;
@@ -1045,34 +1141,50 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     (window as any).notebookAutomationLoadedConfigPath = configPath || null;
     const fieldsDiv = containerEl.createDiv({ cls: 'notebook-automation-config-fields' });
     
-    // Insert before version div if it exists
-    if (versionDiv) {
-      containerEl.insertBefore(fieldsDiv, versionDiv);
+    // Insert before version section if it exists and is a direct child
+    if (versionSection && versionSection.parentElement === containerEl) {
+      try {
+        containerEl.insertBefore(fieldsDiv, versionSection);
+      } catch (err) {
+        console.warn('Could not insert before version section, appending instead:', err);
+        containerEl.appendChild(fieldsDiv);
+      }
+    } else {
+      // Fallback: just append to container
+      containerEl.appendChild(fieldsDiv);
     }
+
+    // Check if any sections will be displayed
+    let sectionsDisplayed = false;
 
     // Add paths section (show only if advanced configuration is enabled)
     if (this.plugin.settings.advancedConfiguration) {
       this.addPathsSection(fieldsDiv, configJson);
+      sectionsDisplayed = true;
     }
     
     // Add extensions section (show only if advanced configuration is enabled)
     if (this.plugin.settings.advancedConfiguration) {
       this.addExtensionsSection(fieldsDiv, configJson);
+      sectionsDisplayed = true;
     }
     
     // Add AI service section (show only if advanced configuration is enabled)
     if (this.plugin.settings.advancedConfiguration) {
       this.addAIServiceSection(fieldsDiv, configJson);
+      sectionsDisplayed = true;
     }
     
     // Add Microsoft Graph section (show only if OneDrive Shared Link is enabled and advanced configuration is enabled)
     if (this.plugin.settings.oneDriveSharedLink && this.plugin.settings.advancedConfiguration) {
       this.addMicrosoftGraphSection(fieldsDiv, configJson);
+      sectionsDisplayed = true;
     }
     
     // Add timeout section (show only if advanced configuration is enabled)
     if (this.plugin.settings.advancedConfiguration) {
       this.addTimeoutSection(fieldsDiv, configJson);
+      sectionsDisplayed = true;
     }
 
     // Add logging section (show only if advanced configuration is enabled)
@@ -1095,9 +1207,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Add section description
     const pathsDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
     pathsDescriptionDiv.innerHTML = `
-      <p>Configure file paths and directories used by the notebook automation system. These settings define where the plugin looks for templates, where it saves generated content, and how it organizes your automated workflows.</p>
-      
-      <p><strong>Key features:</strong> Template file locations for consistent formatting, output directory management for organized content structure, and working directory settings for processing operations.</p>
+      <p>Configure file paths and directories used by the notebook automation system. These settings define template locations, output directories, and processing workspaces for organized automated workflows.</p>
     `;
     
     const pathsSection = fieldsDiv.createDiv({ cls: 'notebook-automation-paths-section' });
@@ -1108,15 +1218,53 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const baseBlockNameDiv = baseBlockInfoDiv.createDiv({ cls: 'setting-item-name' });
     baseBlockNameDiv.setText('Base Block Template File Path');
     const baseBlockDescDiv = baseBlockInfoDiv.createDiv({ cls: 'setting-item-description' });
-    baseBlockDescDiv.setText('Filepath to the base block template used in markdown generation on class index pages. (e.g., c:\\notebook\\BaseBlockTemplate.yml)');
+    baseBlockDescDiv.setText('Path to the YAML template file for class index page generation. Supports absolute paths or relative paths (resolved from plugin directory).');
 
     const baseBlockControlDiv = baseBlockDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    const baseBlockInput = baseBlockControlDiv.createEl('input', {
+    
+    // Create container for input and browse button
+    const baseBlockInputContainer = baseBlockControlDiv.createDiv({ cls: 'notebook-automation-input-button-container' });
+    
+    const baseBlockInput = baseBlockInputContainer.createEl('input', {
       type: 'text',
-      cls: 'notebook-automation-path-input'
+      cls: 'notebook-automation-path-input notebook-automation-path-with-button'
     });
-    baseBlockInput.value = this.plugin.settings.baseBlockTemplateFilename || 'BaseBlockTemplate.yml';
+    // Use config JSON value if available, otherwise fall back to plugin settings
+    const configValue = configJson?.paths?.base_block_template_filename;
+    baseBlockInput.value = configValue || this.plugin.settings.baseBlockTemplateFilename || 'BaseBlockTemplate.yml';
     baseBlockInput.placeholder = 'Enter base block template file path...';
+
+    // Add browse button for base block template file
+    const browseBaseBlockButton = baseBlockInputContainer.createEl('button', {
+      cls: 'notebook-automation-inline-button',
+      text: 'Browse'
+    });
+    browseBaseBlockButton.onclick = async () => {
+      const selectedPath = await browseForFile([
+        { name: 'YAML Files', extensions: ['yml', 'yaml'] },
+        { name: 'All Files', extensions: ['*'] }
+      ]);
+      
+      if (selectedPath) {
+        baseBlockInput.value = selectedPath;
+        // Save to plugin settings
+        this.plugin.settings.baseBlockTemplateFilename = selectedPath;
+        await this.plugin.saveSettings();
+        
+        // Update the global config for JSON serialization
+        if ((window as any).notebookAutomationLoadedConfig) {
+          if (!(window as any).notebookAutomationLoadedConfig.paths) {
+            (window as any).notebookAutomationLoadedConfig.paths = {};
+          }
+          (window as any).notebookAutomationLoadedConfig.paths.base_block_template_filename = selectedPath;
+        }
+        
+        // Trigger validation
+        baseBlockInput.dispatchEvent(new Event('input'));
+        
+        new Notice(`Selected base block template: ${selectedPath}`);
+      }
+    };
 
     // Add validation message element for base block template
     const baseBlockValidation = baseBlockControlDiv.createDiv({ cls: 'notebook-automation-base-block-validation' });
@@ -1153,53 +1301,54 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         // Save to plugin settings
         this.plugin.settings.baseBlockTemplateFilename = inputValue;
         await this.plugin.saveSettings();
+        
+        // Update the global config for JSON serialization
+        if ((window as any).notebookAutomationLoadedConfig) {
+          if (!(window as any).notebookAutomationLoadedConfig.paths) {
+            (window as any).notebookAutomationLoadedConfig.paths = {};
+          }
+          (window as any).notebookAutomationLoadedConfig.paths.base_block_template_filename = inputValue;
+        }
       };    const keyMeta = [
       {
         key: 'onedrive_fullpath_root',
         label: 'OneDrive Root Path',
-        desc: 'The full path to the root of your OneDrive folder.',
+        desc: 'Absolute path to your local OneDrive folder (e.g., C:\\Users\\YourName\\OneDrive). Used for syncing content between OneDrive and your vault.',
         icon: '',
         validateDirectoryPath: true
       },
       {
         key: 'notebook_vault_fullpath_root',
         label: 'Notebook Vault Root Path',
-        desc: 'The full path to the root of your Obsidian notebook vault.',
+        desc: 'Absolute path to your Obsidian vault root directory. Use the "Current Vault" button to auto-populate with the active vault path.',
         icon: '',
         validateDirectoryPath: true
       },
       {
         key: 'notebook_vault_resources_basepath',
         label: 'Notebook Vault Resources Base Path',
-        desc: 'The base path within your vault for resources.',
+        desc: 'Relative path within your vault for storing resources and generated files. Leave empty to use vault root directly.',
         icon: '',
         validatePath: true
       },
       {
         key: 'metadata_schema_file',
         label: 'Metadata Schema File',
-        desc: 'The path to the metadata-schema.yml file used for notebook automation. This replaces the deprecated metadata_file.',
+        desc: 'Path to YAML schema file defining metadata structure for content generation. Supports absolute or relative paths (resolved from plugin directory).',
         icon: '',
         validateFilePath: true
       },
       {
         key: 'onedrive_resources_basepath',
         label: 'OneDrive Resources Base Path',
-        desc: 'The base path in OneDrive for education resources.',
+        desc: 'Path within OneDrive (relative to OneDrive root) where educational resources are located. Used to locate course materials for automation.',
         icon: '',
         validatePath: true
       },
       {
         key: 'prompts_path',
         label: 'Prompts Path',
-        desc: 'The path to the prompts directory for automation tasks.',
-        icon: '',
-        validateDirectoryPath: true
-      },
-      {
-        key: 'logging_dir',
-        label: 'Logging Directory',
-        desc: 'The directory where logs will be written.',
+        desc: 'Path to directory containing AI prompt templates for content generation. Supports absolute or relative paths (resolved from plugin directory).',
         icon: '',
         validateDirectoryPath: true
       },
@@ -1218,16 +1367,106 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       const nameDiv = infoDiv.createDiv({ cls: 'setting-item-name' });
       nameDiv.setText(meta.label);
       const descDiv = infoDiv.createDiv({ cls: 'setting-item-description' });
-      descDiv.setText(`${meta.desc} (JSON key: ${meta.key})`);
+      descDiv.innerHTML = `${meta.desc} (JSON key: <code>${meta.key}</code>)`;
 
       // Create control section (input)
       const controlDiv = settingDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-      const input = controlDiv.createEl('input', {
+      
+      // Check if this field needs special buttons
+      const isVaultPath = meta.key === 'notebook_vault_fullpath_root';
+      const needsBrowse = meta.validateDirectoryPath || meta.validateFilePath;
+      
+      // Create input container for fields that need buttons
+      const inputContainer = (isVaultPath || needsBrowse) 
+        ? controlDiv.createDiv({ cls: 'notebook-automation-input-button-container' })
+        : controlDiv;
+        
+      const input = inputContainer.createEl('input', {
         type: 'text',
-        cls: 'notebook-automation-path-input'
+        cls: needsBrowse || isVaultPath ? 'notebook-automation-path-input notebook-automation-path-with-button' : 'notebook-automation-path-input'
       });
       input.value = updatedPaths[meta.key] || '';
       input.placeholder = `Enter ${meta.label.toLowerCase()}...`;
+
+      // Add browse button for directory/file fields
+      if (needsBrowse) {
+        const browseButton = inputContainer.createEl('button', {
+          cls: 'notebook-automation-inline-button',
+          text: meta.validateDirectoryPath ? 'Browse' : 'Browse'
+        });
+        browseButton.onclick = async () => {
+          let selectedPath: string | null = null;
+          
+          if (meta.validateDirectoryPath) {
+            selectedPath = await browseForDirectory();
+          } else if (meta.validateFilePath) {
+            // Determine file filters based on the field
+            let filters = [{ name: 'All Files', extensions: ['*'] }];
+            if (meta.key === 'metadata_schema_file') {
+              filters = [
+                { name: 'YAML Files', extensions: ['yml', 'yaml'] },
+                { name: 'All Files', extensions: ['*'] }
+              ];
+            }
+            selectedPath = await browseForFile(filters);
+          }
+          
+          if (selectedPath) {
+            input.value = selectedPath;
+            updatedPaths[meta.key] = selectedPath;
+            
+            // Update the global config
+            if ((window as any).notebookAutomationLoadedConfig) {
+              if (!(window as any).notebookAutomationLoadedConfig.paths) {
+                (window as any).notebookAutomationLoadedConfig.paths = {};
+              }
+              (window as any).notebookAutomationLoadedConfig.paths[meta.key] = selectedPath;
+            }
+            
+            // Trigger input validation
+            input.dispatchEvent(new Event('input'));
+            
+            new Notice(`Selected ${meta.validateDirectoryPath ? 'directory' : 'file'}: ${selectedPath}`);
+          }
+        };
+      }
+
+      // Add the Current Vault button for vault path
+      if (isVaultPath) {
+        const currentVaultButton = inputContainer.createEl('button', {
+          cls: 'notebook-automation-inline-button',
+          text: 'Current Vault'
+        });
+        currentVaultButton.onclick = () => {
+          // Get the current vault root path
+          const adapter = this.app?.vault?.adapter;
+          if (adapter && typeof (adapter as any).getBasePath === 'function') {
+            try {
+              const vaultRoot = (adapter as any).getBasePath();
+              input.value = vaultRoot;
+              updatedPaths[meta.key] = vaultRoot;
+              
+              // Update the global config
+              if ((window as any).notebookAutomationLoadedConfig) {
+                if (!(window as any).notebookAutomationLoadedConfig.paths) {
+                  (window as any).notebookAutomationLoadedConfig.paths = {};
+                }
+                (window as any).notebookAutomationLoadedConfig.paths[meta.key] = vaultRoot;
+              }
+              
+              // Trigger input validation
+              input.dispatchEvent(new Event('input'));
+              
+              new Notice(`Current vault path populated: ${vaultRoot}`);
+            } catch (error) {
+              console.error('Failed to get vault root path:', error);
+              new Notice('Failed to get current vault path');
+            }
+          } else {
+            new Notice('Unable to get current vault path');
+          }
+        };
+      }
 
       // Create validation message element for path fields
       let validationMessage: HTMLElement | null = null;
@@ -1317,9 +1556,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Add section description
     const aiDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
     aiDescriptionDiv.innerHTML = `
-      <p>Configure AI services for automated content processing, summarization, and analysis. These settings connect the plugin to AI providers for generating summaries, extracting key insights, and creating structured content from your materials.</p>
-      
-      <p><strong>Supported providers:</strong> <a href="https://azure.microsoft.com/en-us/products/ai-services/openai-service" target="_blank">Azure OpenAI</a> for enterprise-grade AI, <a href="https://openai.com/api/" target="_blank">OpenAI</a> for direct API access, and <a href="https://www.ibm.com/products/watsonx-ai" target="_blank">IBM watsonx.ai</a> (Foundry) for comprehensive AI workflows.</p>
+      <p>Configure AI services for automated content processing, summarization, and analysis. Supported providers include Azure OpenAI for enterprise-grade AI, OpenAI for direct API access, and Microsoft Azure AI Foundry Local for comprehensive AI workflows.</p>
     `;
     
     const aiSection = fieldsDiv.createDiv({ cls: 'notebook-automation-ai-section' });
@@ -1361,17 +1598,17 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
       const providerConfigs = {
         azure: [
-          { key: 'endpoint', label: 'Azure OpenAI Endpoint', desc: 'The Azure OpenAI service endpoint URL', type: 'text', validateUrl: true },
-          { key: 'deployment', label: 'Deployment Name', desc: 'The deployment name for your Azure OpenAI model', type: 'text' },
-          { key: 'model', label: 'Model Name', desc: 'The name of the AI model to use', type: 'text' }
+          { key: 'endpoint', label: 'Azure OpenAI Endpoint', desc: 'Azure OpenAI service endpoint URL (format: https://your-resource-name.openai.azure.com/). Found in Azure portal under your OpenAI resource\'s Keys and Endpoint section.', type: 'text', validateUrl: true },
+          { key: 'deployment', label: 'Deployment Name', desc: 'Custom deployment name from Azure OpenAI Studio (e.g., gpt-4, my-gpt-35-turbo). This is your deployment name, not the base model name.', type: 'text' },
+          { key: 'model', label: 'Model Name', desc: 'Base model name for your Azure deployment (e.g., gpt-4, gpt-35-turbo, gpt-4o). Should match the model version in your deployment.', type: 'text' }
         ],
         openai: [
-          { key: 'endpoint', label: 'OpenAI Endpoint', desc: 'The OpenAI API endpoint URL', type: 'text', validateUrl: true },
-          { key: 'model', label: 'Model Name', desc: 'The OpenAI model to use (e.g., gpt-4o, gpt-3.5-turbo)', type: 'text' }
+          { key: 'endpoint', label: 'OpenAI Endpoint', desc: 'OpenAI API endpoint URL, typically https://api.openai.com/v1. Use default unless using a proxy or alternative service.', type: 'text', validateUrl: true },
+          { key: 'model', label: 'Model Name', desc: 'OpenAI model name for content generation (e.g., gpt-4o, gpt-4, gpt-3.5-turbo). Choose based on quality needs and cost considerations.', type: 'text' }
         ],
         foundry: [
-          { key: 'endpoint', label: 'Foundry Endpoint', desc: 'The Foundry LLM endpoint URL', type: 'text', validateUrl: true },
-          { key: 'model', label: 'Model Name', desc: 'The Foundry model name to use', type: 'text' }
+          { key: 'endpoint', label: 'Foundry Endpoint', desc: 'Microsoft Azure AI Foundry Local endpoint URL for your LLM service. See Azure AI Foundry Local documentation for setup details.', type: 'text', validateUrl: true },
+          { key: 'model', label: 'Model Name', desc: 'Model name available in your Azure AI Foundry Local instance. Contact your administrator for available models.', type: 'text' }
         ]
       };
 
@@ -1389,7 +1626,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         const fieldControlDiv = fieldDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
         const fieldInput = fieldControlDiv.createEl('input', {
           type: field.type,
-          cls: 'notebook-automation-path-input'
+          cls: field.validateUrl ? 'notebook-automation-path-input notebook-automation-path-with-button' : 'notebook-automation-path-input'
         });
 
         // Get value from nested provider config
@@ -1481,9 +1718,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Add section description
     const graphDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
     graphDescriptionDiv.innerHTML = `
-      <p>Configure Microsoft Graph API integration for accessing OneDrive, SharePoint, and other Microsoft 365 services. This enables the plugin to process shared files and documents directly from your organization's cloud storage.</p>
-      
-      <p><strong>Requirements:</strong> A registered <a href="https://docs.microsoft.com/en-us/graph/auth-register-app-v2" target="_blank">Azure AD application</a> with appropriate permissions for Microsoft Graph API access. Used primarily for OneDrive shared link processing and collaborative document workflows.</p>
+      <p>Configure Microsoft Graph API integration for accessing OneDrive, SharePoint, and other Microsoft 365 services. Requires a registered Azure AD application with appropriate permissions for shared file processing and collaborative workflows.</p>
     `;
     
     const graphSection = fieldsDiv.createDiv({ cls: 'notebook-automation-graph-section' });
@@ -1492,9 +1727,9 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const updatedGraphConfig: Record<string, any> = { ...graphConfig };
 
     const graphFields = [
-      { key: 'client_id', label: 'Client ID', desc: 'Microsoft Graph application client ID', type: 'text', validateGuid: true },
-      { key: 'api_endpoint', label: 'API Endpoint', desc: 'Microsoft Graph API endpoint URL', type: 'text', validateUrl: true },
-      { key: 'authority', label: 'Authority', desc: 'Microsoft authentication authority URL', type: 'text', validateUrl: true }
+      { key: 'client_id', label: 'Client ID', desc: 'Application (Client) ID from your Azure AD app registration (GUID format). Found in Azure portal under App registrations → Your App → Overview.', type: 'text', validateGuid: true },
+      { key: 'api_endpoint', label: 'API Endpoint', desc: 'Microsoft Graph API base URL, typically https://graph.microsoft.com/v1.0. Use beta endpoint only if requiring preview features.', type: 'text', validateUrl: true },
+      { key: 'authority', label: 'Authority', desc: 'Microsoft authentication authority URL (format: https://login.microsoftonline.com/your-tenant-id). Find tenant ID in Azure portal under Azure Active Directory → Overview.', type: 'text', validateUrl: true }
     ];
 
     graphFields.forEach(field => {
@@ -1509,7 +1744,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       const fieldControlDiv = fieldDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
       const fieldInput = fieldControlDiv.createEl('input', {
         type: field.type,
-        cls: 'notebook-automation-path-input'
+        cls: (field.validateUrl || field.validateGuid) ? 'notebook-automation-path-input notebook-automation-path-with-button' : 'notebook-automation-path-input'
       });
       fieldInput.value = updatedGraphConfig[field.key] || '';
       fieldInput.placeholder = `Enter ${field.label.toLowerCase()}...`;
@@ -1588,7 +1823,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const scopesNameDiv = scopesInfoDiv.createDiv({ cls: 'setting-item-name' });
     scopesNameDiv.setText('Scopes');
     const scopesDescDiv = scopesInfoDiv.createDiv({ cls: 'setting-item-description' });
-    scopesDescDiv.setText('Microsoft Graph API scopes (one per line)');
+    scopesDescDiv.setText('Microsoft Graph API permission scopes, one per line (e.g., Files.Read, Files.ReadWrite). Add only minimum required scopes for your use case.');
 
     const scopesControlDiv = scopesDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
     const scopesTextarea = scopesControlDiv.createEl('textarea', {
@@ -1616,9 +1851,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Add section description
     const timeoutDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
     timeoutDescriptionDiv.innerHTML = `
-      <p>Configure timeout settings and rate limiting for AI service requests and file processing operations. These settings help manage system performance, prevent API overload, and ensure reliable processing of large document collections.</p>
-      
-      <p><strong>Key controls:</strong> Request timeouts to prevent hanging operations, retry mechanisms for handling temporary failures, parallelism limits for optimal resource usage, and rate limiting to respect API quotas and prevent throttling.</p>
+      <p>Configure timeout settings and rate limiting for AI service requests and file processing operations. These settings manage performance, prevent API overload, and ensure reliable processing of large document collections.</p>
     `;
     
     const timeoutSection = fieldsDiv.createDiv({ cls: 'notebook-automation-timeout-section' });
@@ -1626,14 +1859,14 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const aiConfig = configJson.aiservice || {};
     const timeoutConfig = aiConfig.timeout || {};
     const timeoutFields = [
-      { key: 'request_timeout_seconds', label: 'Request Timeout (seconds)', desc: 'Request timeout in seconds', type: 'number', default: 300 },
-      { key: 'max_retry_attempts', label: 'Max Retry Attempts', desc: 'Maximum number of retry attempts for failed requests', type: 'number', default: 3 },
-      { key: 'base_retry_delay_seconds', label: 'Base Retry Delay (seconds)', desc: 'Base delay between retry attempts in seconds', type: 'number', default: 2 },
-      { key: 'max_retry_delay_seconds', label: 'Max Retry Delay (seconds)', desc: 'Maximum delay between retry attempts in seconds', type: 'number', default: 60 },
-      { key: 'max_chunk_parallelism', label: 'Max Chunk Parallelism', desc: 'Maximum number of chunks to process simultaneously', type: 'number', default: 3 },
-      { key: 'chunk_rate_limit_ms', label: 'Chunk Rate Limit (ms)', desc: 'Minimum delay between chunk requests in milliseconds', type: 'number', default: 100 },
-      { key: 'max_file_parallelism', label: 'Max File Parallelism', desc: 'Maximum number of files to process in parallel', type: 'number', default: 2 },
-      { key: 'file_rate_limit_ms', label: 'File Rate Limit (ms)', desc: 'Minimum delay between file processing in milliseconds', type: 'number', default: 200 }
+      { key: 'request_timeout_seconds', label: 'Request Timeout (seconds)', desc: 'Maximum seconds to wait for AI service responses (default: 300). Increase for complex tasks, decrease to fail faster.', type: 'number', default: 300 },
+      { key: 'max_retry_attempts', label: 'Max Retry Attempts', desc: 'Number of retry attempts for failed requests (default: 3). Higher values increase reliability but may delay error reporting.', type: 'number', default: 3 },
+      { key: 'base_retry_delay_seconds', label: 'Base Retry Delay (seconds)', desc: 'Initial delay in seconds before first retry (default: 2). System uses exponential backoff for subsequent retries.', type: 'number', default: 2 },
+      { key: 'max_retry_delay_seconds', label: 'Max Retry Delay (seconds)', desc: 'Maximum delay in seconds between retries, regardless of backoff (default: 60). Prevents extremely long waits between attempts.', type: 'number', default: 60 },
+      { key: 'max_chunk_parallelism', label: 'Max Chunk Parallelism', desc: 'Maximum content chunks to process in parallel (default: 3). Reduce if experiencing rate limit errors or memory issues.', type: 'number', default: 3 },
+      { key: 'chunk_rate_limit_ms', label: 'Chunk Rate Limit (ms)', desc: 'Minimum milliseconds between processing chunks (default: 100). Increase to avoid API rate limits.', type: 'number', default: 100 },
+      { key: 'max_file_parallelism', label: 'Max File Parallelism', desc: 'Maximum files to process simultaneously (default: 2). Balance between speed and resource usage.', type: 'number', default: 2 },
+      { key: 'file_rate_limit_ms', label: 'File Rate Limit (ms)', desc: 'Minimum milliseconds between processing files (default: 200). Helps manage system load and API limits.', type: 'number', default: 200 }
     ];
 
     timeoutFields.forEach(field => {
@@ -1723,9 +1956,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Add section description
     const loggingDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
     loggingDescriptionDiv.innerHTML = `
-      <p>Configure logging behavior for debugging, monitoring, and troubleshooting automation processes. These settings control what information is captured, where logs are stored, and how detailed the logging output should be.</p>
-      
-      <p><strong>Log management:</strong> Directory configuration for organized log storage, log level settings to control verbosity from basic info to detailed debugging, and retention policies for managing disk space usage.</p>
+      <p>Configure logging behavior for debugging, monitoring, and troubleshooting automation processes. Settings control what information is captured, where logs are stored, and how detailed the output should be.</p>
     `;
     
     const loggingSection = fieldsDiv.createDiv({ cls: 'notebook-automation-logging-section' });
@@ -1754,6 +1985,32 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     logDirInput.placeholder = 'Enter logging directory path...';
 
     // Add the Open Directory button inline
+    // Add browse button for logging directory
+    const browseLogDirButton = logDirInputContainer.createEl('button', {
+      cls: 'notebook-automation-inline-button',
+      text: 'Browse'
+    });
+    browseLogDirButton.onclick = async () => {
+      const selectedPath = await browseForDirectory();
+      
+      if (selectedPath) {
+        logDirInput.value = selectedPath;
+        
+        // Update the global config
+        if ((window as any).notebookAutomationLoadedConfig) {
+          if (!(window as any).notebookAutomationLoadedConfig.paths) {
+            (window as any).notebookAutomationLoadedConfig.paths = {};
+          }
+          (window as any).notebookAutomationLoadedConfig.paths.logging_dir = selectedPath;
+        }
+        
+        // Trigger validation
+        logDirInput.dispatchEvent(new Event('input'));
+        
+        new Notice(`Selected logging directory: ${selectedPath}`);
+      }
+    };
+
     const openDirButton = logDirInputContainer.createEl('button', {
       cls: 'notebook-automation-inline-button',
       text: 'Open Directory'
@@ -1813,8 +2070,8 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     };
 
     const loggingFields = [
-      { key: 'max_file_size_mb', label: 'Max File Size (MB)', desc: 'Maximum size for log files in megabytes', type: 'number', default: 50 },
-      { key: 'retained_file_count', label: 'Retained File Count', desc: 'Number of log files to retain', type: 'number', default: 7 }
+      { key: 'max_file_size_mb', label: 'Max File Size (MB)', desc: 'Maximum log file size in MB before rotation (default: 50). Larger files mean fewer files but slower to search.', type: 'number', default: 50 },
+      { key: 'retained_file_count', label: 'Retained File Count', desc: 'Number of log files to keep before deleting oldest (default: 7). Balance between history retention and disk space.', type: 'number', default: 7 }
     ];
 
     loggingFields.forEach(field => {
@@ -1911,7 +2168,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const videoExtNameDiv = videoExtInfoDiv.createDiv({ cls: 'setting-item-name' });
     videoExtNameDiv.setText('Video Extensions');
     const videoExtDescDiv = videoExtInfoDiv.createDiv({ cls: 'setting-item-description' });
-    videoExtDescDiv.setText('Supported video file extensions (comma-separated)');
+    videoExtDescDiv.setText('Video file extensions to process, comma-separated with dots (e.g., .mp4, .mov, .avi). System will generate transcripts and summaries for these formats.');
 
     const videoExtControlDiv = videoExtDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
     const videoExtInput = videoExtControlDiv.createEl('input', {
@@ -1935,7 +2192,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const pdfExtNameDiv = pdfExtInfoDiv.createDiv({ cls: 'setting-item-name' });
     pdfExtNameDiv.setText('PDF Extensions');
     const pdfExtDescDiv = pdfExtInfoDiv.createDiv({ cls: 'setting-item-description' });
-    pdfExtDescDiv.setText('Supported PDF file extensions (comma-separated)');
+    pdfExtDescDiv.setText('PDF file extensions to process, comma-separated (typically .pdf). System will extract text and optionally images for processing.');
 
     const pdfExtControlDiv = pdfExtDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
     const pdfExtInput = pdfExtControlDiv.createEl('input', {
@@ -1966,19 +2223,18 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       type: 'checkbox',
       cls: 'pdf-extract-toggle'
     });
-    pdfExtractToggle.checked = configJson.pdf_extract_images || false;
-    pdfExtractToggle.addEventListener('change', (e) => {
+    pdfExtractToggle.checked = this.plugin.settings.pdfExtractImages || false;
+    pdfExtractToggle.addEventListener('change', async (e) => {
       const value = (e.target as HTMLInputElement).checked;
-      // Update global config
-      if ((window as any).notebookAutomationLoadedConfig) {
-        (window as any).notebookAutomationLoadedConfig.pdf_extract_images = value;
-      }
+      // Save to plugin settings only (not config file)
+      this.plugin.settings.pdfExtractImages = value;
+      await this.plugin.saveSettings();
     });
     
     // Create description row
     const descRow = pdfExtractContainer.createDiv({ 
       cls: 'setting-item-description',
-      text: 'Extract images from PDF files during processing. When enabled, the automation will extract and save images found in PDF documents alongside the generated markdown notes. This is useful for preserving diagrams, charts, and other visual content from academic papers and documents.'
+      text: 'Extract and save images from PDF files alongside generated markdown notes. Preserves diagrams, charts, and visual content from documents.'
     });
   }
 
@@ -2214,7 +2470,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Template Banners setting
     const templateBannersSetting = new Setting(container)
       .setName('Template Banners')
-      .setDesc('JSON configuration for banners based on content templates. Define banners for different content types like "main", "program", "course", "assignment". Example: {"main": "main-header.png", "course": "course-header.png"}');
+      .setDesc('JSON configuration mapping content templates to banner images (e.g., {"main": "main-header.png", "course": "course-header.png"}). Define banners for different content types.');
     
     templateBannersSetting.settingEl.addClass('notebook-automation-custom-setting');
     const templateBannersTextarea = templateBannersSetting.controlEl.createEl('textarea', {
@@ -2253,7 +2509,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Filename Patterns setting
     const filenamePatternsetting = new Setting(container)
       .setName('Filename Patterns')
-      .setDesc('JSON configuration for banners based on filename patterns. Use wildcards (*) to match filenames. Example: {"*index*": "index-banner.png", "assignment-*": "assignment-banner.png", "*final*": "final-project-banner.png"}');
+      .setDesc('JSON configuration mapping filename patterns to banner images using wildcards (e.g., {"*index*": "index-banner.png", "assignment-*": "assignment-banner.png"}). Patterns match against file names.');
     
     filenamePatternsetting.settingEl.addClass('notebook-automation-custom-setting');
     const filenamePatternsTextarea = filenamePatternsetting.controlEl.createEl('textarea', {
@@ -2401,6 +2657,102 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       missingVar: isValid ? undefined : envInfo.varName,
       description: isValid ? undefined : envInfo.description
     };
+  }
+
+  /**
+   * Refreshes the Configuration File status section to show the current loaded config
+   */
+  refreshConfigurationFileStatus() {
+    const { containerEl } = this;
+    
+    // Find the existing config status section
+    const statusSection = containerEl.querySelector('.notebook-automation-config-status-section');
+    if (!statusSection) return;
+    
+    // Find the status div within the section
+    const statusDiv = statusSection.querySelector('.notebook-automation-config-status');
+    if (!statusDiv) return;
+    
+    // Environment variable detection and current config display
+    // @ts-ignore
+    const process = window.require ? window.require('process') : null;
+    const envConfigPath = process?.env?.NOTEBOOKAUTOMATION_CONFIG;
+
+    // Get the path of the currently loaded config file
+    const loadedConfigPath = (window as any).notebookAutomationLoadedConfigPath;
+
+    // Check if we're using a non-default config file and determine default config path
+    let defaultConfigPath = '';
+    
+    // Always determine the default config path
+    // @ts-ignore
+    const path = window.require ? window.require('path') : null;
+    if (path && this.plugin.manifest?.dir) {
+      const adapter = this.plugin.app?.vault?.adapter;
+      let resolvedPluginDir = this.plugin.manifest.dir;
+      // @ts-ignore
+      if (adapter && typeof adapter.getBasePath === 'function') {
+        try {
+          // @ts-ignore
+          const vaultRoot = adapter.getBasePath();
+          resolvedPluginDir = path.resolve(vaultRoot, this.plugin.manifest.dir);
+        } catch (err) {
+          // Fallback to original path
+        }
+      }
+      defaultConfigPath = path.join(resolvedPluginDir, 'default-config.json');
+    }
+
+    // Determine current config status and paths
+    let currentConfigPath = loadedConfigPath;
+    let configStatus = '';
+    
+    if (envConfigPath) {
+      // @ts-ignore
+      const fs = window.require ? window.require('fs') : null;
+      const envFileExists = fs ? fs.existsSync(envConfigPath) : false;
+      
+      if (!envFileExists) {
+        configStatus = '❌ Environment Variable';
+      } else if (loadedConfigPath) {
+        configStatus = '✅ Environment Variable';
+        currentConfigPath = loadedConfigPath;
+      } else {
+        configStatus = 'ℹ️ Environment Variable';
+        currentConfigPath = envConfigPath;
+      }
+    } else if (loadedConfigPath) {
+      // Check if this is a custom config (not the default)
+      if (path && defaultConfigPath) {
+        try {
+          const normalizedLoadedPath = path.resolve(loadedConfigPath);
+          const normalizedDefaultPath = path.resolve(defaultConfigPath);
+          if (normalizedLoadedPath === normalizedDefaultPath) {
+            configStatus = '✅ Plugin Directory';
+          } else {
+            configStatus = '✅ Custom Configuration';
+          }
+        } catch (err) {
+          configStatus = '✅ Custom Configuration';
+        }
+      } else {
+        configStatus = '✅ Custom Configuration';
+      }
+    } else {
+      configStatus = 'ℹ️ Plugin Directory';
+      // Set the default config path
+      if (path && defaultConfigPath) {
+        currentConfigPath = defaultConfigPath;
+      }
+    }
+
+    // Update the status display
+    statusDiv.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+        <strong>${configStatus}</strong>
+      </div>
+      <div class="notebook-automation-file-path">${currentConfigPath || 'No config file available'}</div>
+    `;
   }
 
 }
