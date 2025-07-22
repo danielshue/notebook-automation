@@ -31,7 +31,7 @@ export const DEFAULT_SETTINGS: NotebookAutomationSettings = {
   enablePdfSummary: true,
   enableIndexCreation: true,
   enableEnsureMetadata: true,
-  unidirectionalSync: false,
+  unidirectionalSync: true,
   recursiveDirectorySync: true,
   recursiveIndexBuild: false,
   advancedConfiguration: false,

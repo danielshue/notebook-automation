@@ -2,7 +2,7 @@
     "ConfigFilePath": "D:\\source\\notebook-automation\\config\\config.json",
     "paths": {
         "onedrive_fullpath_root": "C:\\Users\\danshue.REDMOND\\OneDrive\\",
-        "notebook_vault_fullpath_root": "C:\\Users\\danshue.REDMOND\\Vault\\",
+        "notebook_vault_fullpath_root": "D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test",
         "notebook_vault_resources_basepath": "01_Projects\\MBA",
         "metadata_schema_file": "D:\\source\\notebook-automation\\config\\metadata-schema.yml",
         "onedrive_resources_basepath": "\\Education\\MBA-Resources",

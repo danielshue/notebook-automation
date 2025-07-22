@@ -401,9 +401,9 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Unidirectional Sync flag
     new Setting(flagsGroup)
       .setName("Unidirectional Sync")
-      .setDesc("Enable unidirectional synchronization mode for directory sync operations. When enabled, synchronization will only flow from OneDrive to Vault (OneDrive → Vault), preventing any changes from being pushed back to OneDrive. This is useful when you want to import content from OneDrive but keep your vault as read-only relative to the OneDrive source. Disable this for bidirectional sync where changes can flow in both directions.")
+      .setDesc("Enable unidirectional synchronization mode for directory sync operations (default: ON for safety). When enabled, synchronization will only flow from OneDrive to Vault (OneDrive → Vault), preventing any changes from being pushed back to OneDrive. This is the recommended safe mode. Disable this for bidirectional sync where changes can flow in both directions.")
       .addToggle(toggle => {
-        toggle.setValue(this.plugin.settings.unidirectionalSync || false)
+        toggle.setValue(this.plugin.settings.unidirectionalSync ?? true)
           .onChange(async (value) => {
             this.plugin.settings.unidirectionalSync = value;
             await this.plugin.saveSettings();

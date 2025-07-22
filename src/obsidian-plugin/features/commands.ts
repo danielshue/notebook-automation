@@ -78,9 +78,20 @@ export async function handleNotebookAutomationCommand(plugin: NotebookAutomation
     console.log('[Notebook Automation] Error loading config for path processing:', err);
   }
   
-  const relPath = getRelativeVaultResourcePath(file.path, vaultRoot, vaultBase);
+  let relPath: string;
+  
+  // For sync operations, we want to preserve the full structure within the vault
+  if (action === "sync-dir") {
+    // Use the original logic for sync operations - pass the full path to CLI
+    relPath = getRelativeVaultResourcePath(file.path, vaultRoot, vaultBase);
+  } else {
+    // For other operations, use the original logic
+    relPath = getRelativeVaultResourcePath(file.path, vaultRoot, vaultBase);
+  }
+  
   console.log(`[Notebook Automation] Command '${action}' triggered for: ${file.path}`);
-  console.log(`[Notebook Automation] Relative path for OneDrive mapping: ${relPath}`);
+  console.log(`[Notebook Automation] Path calculation - vaultRoot: ${vaultRoot}, vaultBase: ${vaultBase}`);
+  console.log(`[Notebook Automation] Relative path for processing: ${relPath}`);
   
   // Check if any config is available (using same priority as executeNotebookAutomationCommand)
   let hasConfig = false;
@@ -148,22 +159,39 @@ export async function handleNotebookAutomationCommand(plugin: NotebookAutomation
     return;
   }
 
+  // Handle folder opening commands directly without external executable
+  if (action === "open-onedrive-folder") {
+    await openOneDriveFolder(plugin, file, relPath);
+    new Notice("✅ OneDrive folder opened");
+    return;
+  }
+
+  // Show immediate feedback that command has started
+  new Notice(`🔄 ${action} command initiated...`);
+  
   // Check AI provider environment variables before execution
   const aiProviderValidation = await validateAIProviderBeforeExecution(plugin);
   if (!aiProviderValidation.isValid) {
     return; // Validation function handles opening settings and showing error
   }
   
-  try {
-    await executeNotebookAutomationCommand(plugin, action, relPath);
-    new Notice(`✅ ${action} completed successfully`);
-  } catch (error) {
-    console.error(`[Notebook Automation] Error executing command '${action}':`, error);
-    new Notice(`❌ Error executing ${action}: ${error instanceof Error ? error.message : String(error)}`);
-  }
+  // Execute the command asynchronously without blocking the UI
+  executeNotebookAutomationCommand(plugin, action, relPath)
+    .then(() => {
+      new Notice(`✅ ${action} completed successfully`);
+    })
+    .catch((error) => {
+      console.error(`[Notebook Automation] Error executing command '${action}':`, error);
+      new Notice(`❌ Error executing ${action}: ${error instanceof Error ? error.message : String(error)}`);
+    });
 }
 
 export async function executeNotebookAutomationCommand(plugin: NotebookAutomationPlugin, action: string, relativePath: string, opts?: { force?: boolean }) {
+  // Skip external command execution for folder opening actions
+  if (action === "open-onedrive-folder" || action === "open-local-folder") {
+    return; // These are handled directly in handleNotebookAutomationCommand
+  }
+  
   // @ts-ignore
   const child_process = window.require ? window.require('child_process') : null;
   if (!child_process) {
@@ -172,7 +200,7 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
   
   const naPath = await ensureExecutableExists(plugin);
   
-  // Check for environment variable first, then default-config.json, then user setting
+  // Use same priority logic as startup: env variable, user settings, loaded config, then default-config.json
   let configPath = '';
   
   // First priority: Environment variable NOTEBOOKAUTOMATION_CONFIG
@@ -190,7 +218,41 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
     }
   }
   
-  // Second priority: Use default-config.json from plugin directory
+  // Second priority: User-configured path from plugin settings
+  if (!configPath && plugin.settings.configPath) {
+    const userConfigPath = plugin.settings.configPath;
+    try {
+      // @ts-ignore
+      const fs = window.require ? window.require('fs') : null;
+      if (fs && fs.existsSync(userConfigPath)) {
+        configPath = userConfigPath;
+        console.log('[Notebook Automation] Using config from user plugin settings:', configPath);
+      } else {
+        console.log('[Notebook Automation] User-configured config path does not exist:', userConfigPath);
+      }
+    } catch (err) {
+      console.log('[Notebook Automation] Error checking user-configured config path:', err);
+    }
+  }
+  
+  // Third priority: Use loaded config path from window (fallback for when settings aren't available)
+  if (!configPath) {
+    const loadedConfigPath = (window as any).notebookAutomationLoadedConfigPath;
+    if (loadedConfigPath) {
+      try {
+        // @ts-ignore
+        const fs = window.require ? window.require('fs') : null;
+        if (fs && fs.existsSync(loadedConfigPath)) {
+          configPath = loadedConfigPath;
+          console.log('[Notebook Automation] Using loaded config path from startup:', configPath);
+        }
+      } catch (err) {
+        console.log('[Notebook Automation] Error checking loaded config path:', err);
+      }
+    }
+  }
+  
+  // Fourth priority: Use default-config.json from plugin directory
   if (!configPath) {
     try {
       // @ts-ignore
@@ -225,12 +287,6 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
     } catch (err) {
       console.log('[Notebook Automation] Error constructing default config path:', err);
     }
-  }
-  
-  // Third priority: Fallback to user-configured path
-  if (!configPath && plugin.settings.configPath) {
-    configPath = plugin.settings.configPath || '';
-    console.log('[Notebook Automation] Fallback to user-configured path:', configPath);
   }
   
   if (!configPath) {
@@ -274,14 +330,6 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
       args = ["ensure-metadata", "--input", relativePath, "--config", configPath];
       commandDescription = "Ensure Metadata Consistency";
       break;
-    case "open-onedrive-folder":
-      args = ["vault", "open-onedrive", relativePath, "--config", configPath];
-      commandDescription = "Open OneDrive Folder";
-      break;
-    case "open-local-folder":
-      args = ["vault", "open-local", relativePath, "--config", configPath];
-      commandDescription = "Open Local Folder";
-      break;
     default:
       throw new Error(`Unknown action: ${action}`);
   }
@@ -323,41 +371,44 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
   }
   
   console.log(`[Notebook Automation] Executing: ${naPath} ${args.join(' ')}`);
-  new Notice(`🔄 Starting ${commandDescription}...`);
   
+  // Return immediately, allowing UI to continue
   return new Promise<void>((resolve, reject) => {
-    const process = child_process.spawn(naPath, args, {
-      stdio: ['pipe', 'pipe', 'pipe'],
-      shell: false
-    });
-    
-    let stdout = '';
-    let stderr = '';
-    
-    process.stdout.on('data', (data: any) => {
-      stdout += data.toString();
-    });
-    
-    process.stderr.on('data', (data: any) => {
-      stderr += data.toString();
-    });
-    
-    process.on('close', (code: number) => {
-      if (code === 0) {
-        console.log(`[Notebook Automation] ${commandDescription} completed successfully`);
-        if (stdout) console.log(`[Notebook Automation] Output: ${stdout}`);
-        resolve();
-      } else {
-        console.error(`[Notebook Automation] ${commandDescription} failed with code ${code}`);
-        if (stderr) console.error(`[Notebook Automation] Error: ${stderr}`);
-        reject(new Error(`${commandDescription} failed with code ${code}: ${stderr}`));
-      }
-    });
-    
-    process.on('error', (error: any) => {
-      console.error(`[Notebook Automation] Failed to start ${commandDescription}:`, error);
-      reject(new Error(`Failed to start ${commandDescription}: ${error.message}`));
-    });
+    // Use setTimeout to defer the heavy work to next tick, avoiding UI blocking
+    setTimeout(() => {
+      const process = child_process.spawn(naPath, args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        shell: false
+      });
+      
+      let stdout = '';
+      let stderr = '';
+      
+      process.stdout.on('data', (data: any) => {
+        stdout += data.toString();
+      });
+      
+      process.stderr.on('data', (data: any) => {
+        stderr += data.toString();
+      });
+      
+      process.on('close', (code: number) => {
+        if (code === 0) {
+          console.log(`[Notebook Automation] ${commandDescription} completed successfully`);
+          if (stdout) console.log(`[Notebook Automation] Output: ${stdout}`);
+          resolve();
+        } else {
+          console.error(`[Notebook Automation] ${commandDescription} failed with code ${code}`);
+          if (stderr) console.error(`[Notebook Automation] Error: ${stderr}`);
+          reject(new Error(`${commandDescription} failed with code ${code}: ${stderr}`));
+        }
+      });
+      
+      process.on('error', (error: any) => {
+        console.error(`[Notebook Automation] Failed to start ${commandDescription}:`, error);
+        reject(new Error(`Failed to start ${commandDescription}: ${error.message}`));
+      });
+    }, 0);
   });
 }
 
@@ -518,5 +569,65 @@ async function openSettingsAndScrollToAIProvider(plugin: NotebookAutomationPlugi
     }
   } catch (error) {
     console.error('[Notebook Automation] Error opening settings:', error);
+  }
+}
+
+/**
+ * Opens the OneDrive folder location in the system file manager.
+ */
+async function openOneDriveFolder(plugin: any, file: any, relativePath: string): Promise<void> {
+  try {
+    // Try to get the loaded config from settings tab first (same as main command logic)
+    let config = (window as any).notebookAutomationLoadedConfig;
+    
+    // If no config loaded in window, try the validation function
+    if (!config) {
+      config = await loadConfigForValidation(plugin);
+    }
+    
+    if (!config || !config.paths || !config.paths.onedrive_fullpath_root) {
+      new Notice("OneDrive root path not configured");
+      console.log('[Notebook Automation] Config check failed:', {
+        configExists: !!config,
+        pathsExists: !!(config && config.paths),
+        onedrivePathExists: !!(config && config.paths && config.paths.onedrive_fullpath_root)
+      });
+      return;
+    }
+
+    const { remote } = require('electron');
+    const path = require('path');
+    
+    console.log('[Notebook Automation] Using config for OneDrive:', {
+      onedrive_root: config.paths.onedrive_fullpath_root,
+      onedrive_base: config.paths.onedrive_resources_basepath,
+      relative_path: relativePath
+    });
+    
+    // Get the directory containing the file
+    const fileDir = path.dirname(relativePath);
+    
+    // Normalize and combine paths using proper separators
+    let oneDriveFolder = path.normalize(config.paths.onedrive_fullpath_root);
+    
+    if (config.paths.onedrive_resources_basepath) {
+      // Remove leading/trailing separators and normalize
+      const basePath = config.paths.onedrive_resources_basepath.replace(/^[\\\/]+|[\\\/]+$/g, '');
+      oneDriveFolder = path.join(oneDriveFolder, basePath);
+    }
+    
+    // Add the file directory if it's not just "."
+    if (fileDir && fileDir !== '.') {
+      oneDriveFolder = path.join(oneDriveFolder, fileDir);
+    }
+    
+    console.log('[Notebook Automation] Opening OneDrive folder:', oneDriveFolder);
+    
+    // Use Electron's shell to open the folder
+    await remote.shell.openPath(path.resolve(oneDriveFolder));
+    
+  } catch (error) {
+    console.error('Error opening OneDrive folder:', error);
+    new Notice(`Failed to open OneDrive folder: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

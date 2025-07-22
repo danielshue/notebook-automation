@@ -62,12 +62,6 @@ export function registerContextMenus(plugin: NotebookAutomationPlugin) {
             .setIcon("external-link")
             .onClick(() => handleNotebookAutomationCommand(plugin, file, "open-onedrive-folder"));
         });
-        // Open Local Folder
-        menu.addItem((item) => {
-          item.setTitle("Notebook Automation: Open Local Folder")
-            .setIcon("folder")
-            .onClick(() => handleNotebookAutomationCommand(plugin, file, "open-local-folder"));
-        });
       }
       // File context: only for .md files
       if (file instanceof TFile && file.extension === "md") {
