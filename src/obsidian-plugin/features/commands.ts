@@ -168,7 +168,11 @@ export async function handleNotebookAutomationCommand(plugin: NotebookAutomation
   }
 
   // Show immediate feedback that command has started
-  new Notice(`🔄 ${action} command initiated...`);
+  if (action === "sync-dir") {
+    new Notice("🔄 OneDrive Directory Sync started - processing in background...");
+  } else {
+    new Notice(`🔄 ${action} command initiated...`);
+  }
   
   // Check AI provider environment variables before execution
   const aiProviderValidation = await validateAIProviderBeforeExecution(plugin);
