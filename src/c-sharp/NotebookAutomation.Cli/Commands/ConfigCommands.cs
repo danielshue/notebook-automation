@@ -447,6 +447,7 @@ internal class ConfigCommands
                     {
                         case "onedrive_fullpath_root": paths.OnedriveFullpathRoot = value; return true;
                         case "notebook_vault_fullpath_root": paths.NotebookVaultFullpathRoot = value; return true;
+                        case "notebook_vault_resources_basepath": paths.NotebookVaultResourcesBasepath = value; return true;
                         case "metadata_file": paths.MetadataFile = value; return true;
                         case "onedrive_resources_basepath": paths.OnedriveResourcesBasepath = value; return true;
                         case "prompts_path": paths.PromptsPath = value; return true;
@@ -574,6 +575,7 @@ internal class ConfigCommands
         {
             PrintAligned("onedrive_fullpath_root", "[not set]");
             PrintAligned("notebook_vault_fullpath_root", "[not set]");
+            PrintAligned("notebook_vault_resources_basepath", "[not set]");
             PrintAligned("metadata_file", "[not set]");
             PrintAligned("onedrive_resources_basepath", "[not set]");
             PrintAligned("logging_dir", "[not set]");
@@ -583,6 +585,7 @@ internal class ConfigCommands
         {
             PrintAligned("onedrive_fullpath_root", paths.OnedriveFullpathRoot ?? "[not set]");
             PrintAligned("notebook_vault_fullpath_root", paths.NotebookVaultFullpathRoot ?? "[not set]");
+            PrintAligned("notebook_vault_resources_basepath", paths.NotebookVaultResourcesBasepath ?? "[not set]");
             PrintAligned("metadata_file", paths.MetadataFile ?? "[not set]");
             PrintAligned("onedrive_resources_basepath", paths.OnedriveResourcesBasepath ?? "[not set]");
             PrintAligned("logging_dir", paths.LoggingDir ?? "[not set]");

@@ -342,20 +342,48 @@ internal class VaultCommands
                 var syncProcessor = _serviceProvider.GetRequiredService<IVaultFolderSyncProcessor>();
                 var appConfig = _serviceProvider.GetRequiredService<AppConfig>();
 
+                // Get vault base path from configuration
+                _logger.LogDebug("[sync-dirs] Config paths object: {PathsObject}", appConfig.Paths);
+                _logger.LogDebug("[sync-dirs] Config paths vault root: '{VaultRoot}'", appConfig.Paths?.NotebookVaultFullpathRoot);
+
+                // Additional property debugging
+                _logger.LogDebug("[sync-dirs] OnedriveFullpathRoot: '{OnedriveFullpathRoot}'", appConfig.Paths?.OnedriveFullpathRoot);
+                _logger.LogDebug("[sync-dirs] OnedriveResourcesBasepath: '{OnedriveResourcesBasepath}'", appConfig.Paths?.OnedriveResourcesBasepath);
+
+                // Direct property access debugging  
+                _logger.LogDebug("[sync-dirs] Direct property access: '{DirectProperty}'", appConfig.Paths?.NotebookVaultResourcesBasepath);
+
+                var vaultBasePath = appConfig.Paths?.NotebookVaultResourcesBasepath;
+                _logger.LogDebug("[sync-dirs] RAW vaultBasePath from config: '{vaultBasePath}'", vaultBasePath ?? "(null)");
+                if (!string.IsNullOrWhiteSpace(vaultBasePath))
+                {
+                    vaultBasePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(vaultBasePath);
+                    // Ensure vaultBasePath is relative (no leading slash or backslash)
+                    vaultBasePath = vaultBasePath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    _logger.LogDebug("[sync-dirs] PROCESSED vaultBasePath: '{vaultBasePath}'", vaultBasePath);
+                }
+
                 // Determine effective vault path - use provided path or default to vault root
                 var effectiveVaultPath = vaultPath;
                 if (string.IsNullOrWhiteSpace(effectiveVaultPath))
                 {
+                    // Default to vault root + vault base path (if configured)
                     effectiveVaultPath = appConfig.Paths?.NotebookVaultFullpathRoot;
                     if (string.IsNullOrWhiteSpace(effectiveVaultPath))
                     {
                         AnsiConsoleHelper.WriteError("Vault path is required - either provide a path or configure vault root in config file");
                         return;
                     }
+
+                    // If vault base path is configured, add it to the effective path
+                    if (!string.IsNullOrWhiteSpace(vaultBasePath))
+                    {
+                        effectiveVaultPath = Path.Combine(effectiveVaultPath, vaultBasePath);
+                    }
                 }
                 else
                 {
-                    // Handle relative vault paths by resolving against vault root
+                    // Handle relative vault paths by resolving against vault root + vault base
                     if (!Path.IsPathRooted(effectiveVaultPath))
                     {
                         var vaultRoot = appConfig.Paths?.NotebookVaultFullpathRoot;
@@ -364,7 +392,19 @@ internal class VaultCommands
                             AnsiConsoleHelper.WriteError("Relative vault path provided but no vault root configured. Please configure vault root in config file.");
                             return;
                         }
-                        effectiveVaultPath = Path.Combine(vaultRoot, effectiveVaultPath);
+
+                        // Combine vault root + vault base + provided path
+                        if (!string.IsNullOrWhiteSpace(vaultBasePath))
+                        {
+                            _logger.LogDebug("[sync-dirs] Combining: vaultRoot='{vaultRoot}' + vaultBasePath='{vaultBasePath}' + effectiveVaultPath='{effectiveVaultPath}'", vaultRoot, vaultBasePath, effectiveVaultPath);
+                            effectiveVaultPath = Path.Combine(vaultRoot, vaultBasePath, effectiveVaultPath);
+                            _logger.LogDebug("[sync-dirs] Combined result: '{effectiveVaultPath}'", effectiveVaultPath);
+                        }
+                        else
+                        {
+                            _logger.LogDebug("[sync-dirs] vaultBasePath is null/empty, combining: vaultRoot='{vaultRoot}' + effectiveVaultPath='{effectiveVaultPath}'", vaultRoot, effectiveVaultPath);
+                            effectiveVaultPath = Path.Combine(vaultRoot, effectiveVaultPath);
+                        }
                     }
                 }
                 effectiveVaultPath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(effectiveVaultPath);
@@ -423,6 +463,7 @@ internal class VaultCommands
                 // Debug logging for all key path variables
                 _logger.LogDebug("[sync-dirs] onedriveRoot: {onedriveRoot}", onedriveRoot);
                 _logger.LogDebug("[sync-dirs] onedriveBase: {onedriveBase}", onedriveBase);
+                _logger.LogDebug("[sync-dirs] vaultBasePath: {vaultBasePath}", vaultBasePath ?? "(not configured)");
                 _logger.LogDebug("[sync-dirs] configuredVaultRoot: {configuredVaultRoot}", configuredVaultRoot);
                 _logger.LogDebug("[sync-dirs] effectiveVaultPath: {effectiveVaultPath}", effectiveVaultPath);
                 _logger.LogDebug("[sync-dirs] providedPath: {providedPath}", providedPath);

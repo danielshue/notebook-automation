@@ -78,18 +78,19 @@ export async function handleNotebookAutomationCommand(plugin: NotebookAutomation
     console.log('[Notebook Automation] Error loading config for path processing:', err);
   }
   
+  // Calculate the relative path based on action type
   let relPath: string;
   
-  // For sync operations, we want to preserve the full structure within the vault
-  if (action === "sync-dir") {
-    // Use the original logic for sync operations - pass the full path to CLI
-    relPath = getRelativeVaultResourcePath(file.path, vaultRoot, vaultBase);
+  if (action === 'sync' || action === 'sync-dirs') {
+    // For sync commands, use the full relative path from vault root
+    // The CLI will handle the path mapping based on its internal configuration
+    const fullRelativePath = getRelativeVaultResourcePath(file.path, vaultRoot, vaultBase);
+    relPath = fullRelativePath;
+    console.log(`[Notebook Automation] [DEBUG] Using full relative path for sync: "${relPath}"`);
   } else {
-    // For other operations, use the original logic
+    // For other commands, use the normal relative path calculation
     relPath = getRelativeVaultResourcePath(file.path, vaultRoot, vaultBase);
-  }
-  
-  console.log(`[Notebook Automation] Command '${action}' triggered for: ${file.path}`);
+  }  console.log(`[Notebook Automation] Command '${action}' triggered for: ${file.path}`);
   console.log(`[Notebook Automation] Path calculation - vaultRoot: ${vaultRoot}, vaultBase: ${vaultBase}`);
   console.log(`[Notebook Automation] Relative path for processing: ${relPath}`);
   
@@ -370,7 +371,7 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
     args.push("--force");
   }
   
-  console.log(`[Notebook Automation] Executing: ${naPath} ${args.join(' ')}`);
+  console.log(`[Notebook Automation] Executing: ${naPath} ${args.map(arg => arg.includes(' ') ? `"${arg}"` : arg).join(' ')}`);
   
   // Return immediately, allowing UI to continue
   return new Promise<void>((resolve, reject) => {

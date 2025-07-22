@@ -18,6 +18,9 @@ public class PathsConfig
     [JsonPropertyName("notebook_vault_fullpath_root")]
     public virtual string NotebookVaultFullpathRoot { get; set; } = string.Empty;
 
+    [JsonPropertyName("notebook_vault_resources_basepath")]
+    public virtual string NotebookVaultResourcesBasepath { get; set; } = string.Empty;
+
     [Obsolete("Use MetadataSchemaFile instead. This property will be removed in a future version.")]
     [JsonPropertyName("metadata_file")]
     public virtual string MetadataFile { get; set; } = string.Empty;
