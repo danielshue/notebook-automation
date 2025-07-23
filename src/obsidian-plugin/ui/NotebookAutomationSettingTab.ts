@@ -556,23 +556,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       updateFormatSettings(selectedFormat);
     };
 
-    // Always show these three sections at the bottom in this order:
-    // 1. Configuration Status, 2. Save Configuration, 3. Version Information
-    
-    // Remove any existing instances of these sections to prevent duplicates
-    const existingConfigStatus = containerEl.querySelector('.notebook-automation-config-status-section');
-    if (existingConfigStatus) existingConfigStatus.remove();
-    
-    const existingSaveSection = containerEl.querySelector('.notebook-automation-save-section');
-    if (existingSaveSection) existingSaveSection.remove();
-    
-    const existingVersionSection = containerEl.querySelector('.notebook-automation-version-section');
-    if (existingVersionSection) existingVersionSection.remove();
-    
-    // Also remove any existing version divs that might be floating around
-    const existingVersionDiv = containerEl.querySelector('.notebook-automation-version');
-    if (existingVersionDiv) existingVersionDiv.remove();
-    
     // 4. Custom Config File section 
     containerEl.createEl('h3', { 
       text: 'Custom Config File (Optional)',
@@ -726,6 +709,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       };
     }
 
+    
     // Display loaded config fields
     const configPath = (window as any).notebookAutomationLoadedConfigPath;
     this.displayLoadedConfig(configToDisplay, configPath);
@@ -741,7 +725,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       });
     }
     
-    // 12. Configuration File Section (combined status and save)
+    // Configuration File Section (combined status and save) - Always at bottom above version
     containerEl.createEl("h3", { text: "Configuration File", cls: "notebook-automation-section-header" });
     const configFileContainer = containerEl.createDiv({ 
       cls: "notebook-automation-settings-group notebook-automation-config-status-section" 
@@ -1002,9 +986,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
             new Notice('Failed to save config: ' + (err instanceof Error ? err.message : String(err)));
           }
         });
-    });
-
-    // Add version information at the very bottom
+    });    // Add version information at the very bottom
     const versionContainer = containerEl.createDiv({ 
       cls: "notebook-automation-settings-group notebook-automation-version-section" 
     });

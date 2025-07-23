@@ -388,9 +388,24 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             string outputDir = effectiveOutput;
             Directory.CreateDirectory(outputDir);
 
+            // For output path generation with vault resources base path support:
+            // 1. Use the original OneDrive resourcesRoot for relative path calculation
+            // 2. But modify the outputDir to include the vault resources base path
+            string? vaultResourcesRoot = processor.GetVaultResourcesRoot();
+            string effectiveOutputDir = outputDir;
+            string? effectiveResourcesRoot = resourcesRoot;
+
+            if (!string.IsNullOrEmpty(vaultResourcesRoot))
+            {
+                // If we have a vault resources root, use it as the output directory
+                // and use the OneDrive resources root for path calculation
+                effectiveOutputDir = vaultResourcesRoot;
+                effectiveResourcesRoot = resourcesRoot; // Keep original OneDrive resources root for calculation
+            }
+
             // Generate output path based on processor type and directory structure
-            logger.LogDebug($"ABOUT TO CALL GenerateOutputPath with filePath={filePath}, outputDir={outputDir}, resourcesRoot={resourcesRoot ?? "null"}");
-            string outputPath = GenerateOutputPath(filePath, outputDir, resourcesRoot);
+            logger.LogDebug($"ABOUT TO CALL GenerateOutputPath with filePath={filePath}, outputDir={effectiveOutputDir}, resourcesRoot={effectiveResourcesRoot ?? "null"}");
+            string outputPath = GenerateOutputPath(filePath, effectiveOutputDir, effectiveResourcesRoot);
             logger.LogDebug($"GenerateOutputPath RETURNED: {outputPath}");
 
             // If not forceOverwrite and file exists, skip

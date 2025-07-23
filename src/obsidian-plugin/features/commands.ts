@@ -361,13 +361,15 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
   if (plugin.settings.bannersEnabled) {
     args.push("--banners-enabled");
   }
-  if (plugin.settings.unidirectionalSync) {
-    args.push("--unidirectional");
-  }
   
-  // Add recursive flag for sync operations only
-  if (action === "sync-dir" && plugin.settings.recursiveDirectorySync) {
-    args.push("--recursive");
+  // Add flags specific to sync operations only
+  if (action === "sync-dir") {
+    if (plugin.settings.unidirectionalSync) {
+      args.push("--unidirectional");
+    }
+    if (plugin.settings.recursiveDirectorySync) {
+      args.push("--recursive");
+    }
   }
   
   // Only add --force if explicitly requested by the caller (in addition to settings)

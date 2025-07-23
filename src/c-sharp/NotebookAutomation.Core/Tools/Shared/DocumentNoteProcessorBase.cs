@@ -335,11 +335,13 @@ public abstract class DocumentNoteProcessorBase(
             string onedriveRoot = AppConfig?.Paths?.OnedriveFullpathRoot ?? "";
             string onedriveResourcesPath = AppConfig?.Paths?.OnedriveResourcesBasepath ?? "";
             string vaultRoot = AppConfig?.Paths?.NotebookVaultFullpathRoot ?? "";
+            string vaultResourcesPath = AppConfig?.Paths?.NotebookVaultResourcesBasepath ?? "";
 
             Logger.LogDebug($"ConvertOneDriveToVaultPath - Input: {oneDrivePath}");
             Logger.LogDebug($"ConvertOneDriveToVaultPath - OnedriveRoot: {onedriveRoot}");
             Logger.LogDebug($"ConvertOneDriveToVaultPath - OnedriveResourcesPath: {onedriveResourcesPath}");
             Logger.LogDebug($"ConvertOneDriveToVaultPath - VaultRoot: {vaultRoot}");
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - VaultResourcesPath: {vaultResourcesPath}");
 
             if (string.IsNullOrEmpty(onedriveRoot) || string.IsNullOrEmpty(vaultRoot))
             {
@@ -360,8 +362,14 @@ public abstract class DocumentNoteProcessorBase(
                 string relativePath = Path.GetRelativePath(fullOnedriveResourcesRoot, oneDrivePath);
                 Logger.LogDebug($"ConvertOneDriveToVaultPath - RelativePath: {relativePath}");
 
-                // Combine with vault root to get the equivalent vault path
-                string vaultPath = Path.Combine(vaultRoot, relativePath);
+                // Build the full vault resources path by combining vault root with vault resources base path
+                string fullVaultResourcesRoot = string.IsNullOrEmpty(vaultResourcesPath) ?
+                    vaultRoot :
+                    Path.Combine(vaultRoot, vaultResourcesPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                Logger.LogDebug($"ConvertOneDriveToVaultPath - FullVaultResourcesRoot: {fullVaultResourcesRoot}");
+
+                // Combine with vault resources root to get the equivalent vault path
+                string vaultPath = Path.Combine(fullVaultResourcesRoot, relativePath);
                 Logger.LogDebug($"ConvertOneDriveToVaultPath - Output VaultPath: {vaultPath}");
                 return vaultPath;
             }
@@ -375,6 +383,33 @@ public abstract class DocumentNoteProcessorBase(
             Logger.LogError(ex, $"Error converting OneDrive path to vault path: {oneDrivePath}");
             return oneDrivePath;
         }
+    }
+
+    /// <summary>
+    /// Public method to convert OneDrive file path to the equivalent vault path.
+    /// </summary>
+    /// <param name="oneDrivePath">The original OneDrive file path.</param>
+    /// <returns>The converted vault path, or the original path if conversion is not possible.</returns>
+    public string ConvertOneDriveToVaultPathForOutput(string oneDrivePath)
+    {
+        return ConvertOneDriveToVaultPath(oneDrivePath);
+    }
+
+    /// <summary>
+    /// Gets the full vault resources root path by combining vault root with vault resources base path.
+    /// </summary>
+    /// <returns>The full vault resources root path, or null if configuration is incomplete.</returns>
+    public string? GetVaultResourcesRoot()
+    {
+        if (string.IsNullOrEmpty(AppConfig?.Paths?.NotebookVaultFullpathRoot) ||
+            string.IsNullOrEmpty(AppConfig?.Paths?.NotebookVaultResourcesBasepath))
+        {
+            return null;
+        }
+
+        return Path.Combine(
+            AppConfig.Paths.NotebookVaultFullpathRoot,
+            AppConfig.Paths.NotebookVaultResourcesBasepath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
     }
 
     /// <summary>
