@@ -228,8 +228,11 @@ internal class VideoCommands
 
             // Set up vault root override in scoped context
             var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
-            vaultRootContext.VaultRootOverride = effectiveOutputDir;
-            logger.LogInformation($"Using vault root override for metadata hierarchy: {effectiveOutputDir}");
+
+            // Use base vault root (not combined with resources path) for metadata hierarchy calculation
+            string vaultRootForHierarchy = appConfig.Paths?.NotebookVaultFullpathRoot ?? effectiveOutputDir;
+            vaultRootContext.VaultRootOverride = vaultRootForHierarchy;
+            logger.LogInformation($"Using vault root override for metadata hierarchy: {vaultRootForHierarchy}");
 
             var batchProcessor = scopedServices.GetRequiredService<VideoNoteBatchProcessor>();
 

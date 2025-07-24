@@ -62,10 +62,29 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
     {
         Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         SchemaLoader = schemaLoader ?? throw new ArgumentNullException(nameof(schemaLoader));
-        VaultRoot = !string.IsNullOrEmpty(vaultRootOverride)
-            ? vaultRootOverride
-            : appConfig?.Paths?.NotebookVaultFullpathRoot
+
+        if (!string.IsNullOrEmpty(vaultRootOverride))
+        {
+            VaultRoot = vaultRootOverride;
+            Logger.LogDebug($"Using vault root override: {VaultRoot}");
+        }
+        else
+        {
+            string baseVaultRoot = appConfig?.Paths?.NotebookVaultFullpathRoot
                 ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
+
+            // Check if we should combine with resources base path for effective vault root
+            if (!string.IsNullOrEmpty(appConfig.Paths.NotebookVaultResourcesBasepath))
+            {
+                VaultRoot = Path.Combine(baseVaultRoot, appConfig.Paths.NotebookVaultResourcesBasepath);
+                Logger.LogDebug($"Using effective vault root: {baseVaultRoot} + {appConfig.Paths.NotebookVaultResourcesBasepath} = {VaultRoot}");
+            }
+            else
+            {
+                VaultRoot = baseVaultRoot;
+                Logger.LogDebug($"Using base vault root: {VaultRoot}");
+            }
+        }
     }
 
     /// <summary>
@@ -154,7 +173,7 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
             depthLevel = pathSegments.Length;
 
             Logger.LogDebug($"Path depth level: {depthLevel}");
-            // Hierarchy mapping based on semantic meaning:
+            // Hierarchy mapping based on depth:
             // Depth 0: Vault root/main index - NO hierarchy metadata
             // Depth 1 (e.g., Program): Program level - program only
             // Depth 2 (e.g., Finance): Course level - program + course
@@ -180,24 +199,47 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
             {
                 info["class"] = pathSegments[2];
                 Logger.LogDebug($"Setting class from third path segment: {info["class"]}");
-            }            // Only set module if we're at module level or deeper (depth >= 4)
+            }
+
+            // Only set module if we're at module level or deeper (depth >= 4)
             if (depthLevel >= 4)
             {
-                // For content files, extract just the numeric part (e.g., "05_operations-resilience" -> "05")
-                if (IsPathLikelyContentFile(filePath))
+                string moduleFolder = pathSegments[3];
+
+                // Always add the numeric module number if available
+                string numericPrefix = ExtractNumericModulePrefix(moduleFolder);
+                if (!string.IsNullOrEmpty(numericPrefix) && numericPrefix != moduleFolder)
                 {
-                    string numericModulePrefix = ExtractNumericModulePrefix(pathSegments[3]);
-                    info["module"] = numericModulePrefix;
-                    Logger.LogDebug($"Setting numeric-only module from fourth path segment: '{numericModulePrefix}' (original: '{pathSegments[3]}')");
+                    info["module_number"] = numericPrefix;
+                    Logger.LogDebug($"Setting module_number from fourth path segment: {info["module_number"]}");
+                }
+
+                // Check if this is a content file to determine module field behavior
+                bool isContentFile = IsPathLikelyContentFile(filePath);
+
+                if (isContentFile && !string.IsNullOrEmpty(numericPrefix) && numericPrefix != moduleFolder)
+                {
+                    // For content files: module field gets numeric prefix only
+                    info["module"] = numericPrefix;
+                    info["module_name"] = moduleFolder; // Preserve full semantic name in separate field
+                    Logger.LogDebug($"Content file detected: Setting module='{numericPrefix}', module_name='{moduleFolder}'");
                 }
                 else
                 {
-                    info["module"] = pathSegments[3];
-                    Logger.LogDebug($"Setting module from fourth path segment: {info["module"]}");
+                    // For non-content files: module field gets full semantic name
+                    info["module"] = moduleFolder;
+                    Logger.LogDebug($"Non-content file: Setting module from fourth path segment: {info["module"]}");
                 }
             }
 
-            Logger.LogDebug($"Path-based hierarchy detection results: program='{info["program"]}', course='{info["course"]}', class='{info["class"]}', module='{(info.ContainsKey("module") ? info["module"] : string.Empty)}'");
+            // Only set lesson if we're at lesson level or deeper (depth >= 5)
+            if (depthLevel >= 5)
+            {
+                info["lesson"] = pathSegments[4];
+                Logger.LogDebug($"Setting lesson from fifth path segment: {info["lesson"]}");
+            }
+
+            Logger.LogDebug($"Path-based hierarchy detection results: program='{info["program"]}', course='{info["course"]}', class='{info["class"]}', module='{(info.ContainsKey("module") ? info["module"] : string.Empty)}', lesson='{(info.ContainsKey("lesson") ? info["lesson"] : string.Empty)}'");
         }
         catch (Exception ex)
         {

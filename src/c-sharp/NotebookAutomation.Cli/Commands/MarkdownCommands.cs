@@ -178,8 +178,8 @@ internal class MarkdownCommands
             // Set up vault root override in scoped context
             var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
 
-            // Use explicit vault root override if provided, otherwise use effective output directory
-            string finalVaultRoot = vaultRootOverride ?? effectiveOutputDir;
+            // Use explicit vault root override if provided, otherwise use base vault root (not combined with resources path)
+            string finalVaultRoot = vaultRootOverride ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? effectiveOutputDir;
             vaultRootContext.VaultRootOverride = finalVaultRoot;
             logger.LogDebug($"Using vault root override for metadata hierarchy: {finalVaultRoot}");
 
