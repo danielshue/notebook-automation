@@ -1,4 +1,17 @@
+/**
+ * Version bump script for the Obsidian plugin.
+ * Updates manifest.json and versions.json with the target version and minAppVersion.
+ * Usage: node version-bump.mjs
+ */
+
 import { readFileSync, writeFileSync } from "fs";
+
+/**
+ * Main version bump process:
+ * - Reads target version from npm_package_version
+ * - Updates manifest.json version
+ * - Updates versions.json with minAppVersion
+ */
 
 const targetVersion = process.env.npm_package_version;
 

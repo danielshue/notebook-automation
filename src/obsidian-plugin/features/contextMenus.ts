@@ -3,6 +3,13 @@ import { TFolder, TFile, Menu } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
 import { handleNotebookAutomationCommand } from './commands';
 
+/**
+ * Registers context menu commands for files and folders in Obsidian.
+ *
+ * Adds Notebook Automation actions to the right-click menu based on file type and plugin settings.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ */
 export function registerContextMenus(plugin: NotebookAutomationPlugin) {
   // Register context menu commands for files and folders
   plugin.registerEvent(

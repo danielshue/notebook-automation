@@ -1,8 +1,17 @@
+
 import { TFolder, TFile, Notice } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
 import { getRelativeVaultResourcePath, ensureExecutableExists } from '../utils/na-executable';
 
-// Handles notebook automation commands for a given file/folder and action
+/**
+ * Handles notebook automation commands for a given file or folder and action.
+ *
+ * Determines configuration, calculates relative paths, validates environment, and executes the appropriate automation command.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @param file The target file or folder for the command.
+ * @param action The action to perform (e.g., 'sync-dir', 'import-summarize-videos').
+ */
 export async function handleNotebookAutomationCommand(plugin: NotebookAutomationPlugin, file: TFile | TFolder, action: string) {
   // Get config for vault root and base using same priority logic as executeNotebookAutomationCommand
   let vaultRoot = "";
@@ -191,6 +200,18 @@ export async function handleNotebookAutomationCommand(plugin: NotebookAutomation
     });
 }
 
+/**
+ * Executes a notebook automation command by spawning the external CLI with the correct arguments.
+ *
+ * Skips execution for folder opening actions (handled elsewhere).
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @param action The action to perform (e.g., 'sync-dir', 'import-summarize-videos').
+ * @param relativePath The relative path to the file or folder for the command.
+ * @param opts Optional flags (e.g., force execution).
+ * @returns A promise that resolves when the command completes.
+ * @throws If no configuration file is available or the action is unknown.
+ */
 export async function executeNotebookAutomationCommand(plugin: NotebookAutomationPlugin, action: string, relativePath: string, opts?: { force?: boolean }) {
   // Skip external command execution for folder opening actions
   if (action === "open-onedrive-folder" || action === "open-local-folder") {
@@ -419,6 +440,12 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
   });
 }
 
+/**
+ * Validates that the required environment variables for the selected AI provider are set before command execution.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @returns An object indicating if the environment is valid for execution.
+ */
 async function validateAIProviderBeforeExecution(plugin: NotebookAutomationPlugin): Promise<{ isValid: boolean }> {
   try {
     // Load the current configuration to determine the AI provider
@@ -462,6 +489,12 @@ async function validateAIProviderBeforeExecution(plugin: NotebookAutomationPlugi
   }
 }
 
+/**
+ * Loads the configuration for validation purposes, using the same priority as command execution.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @returns The loaded configuration object, or null if not found.
+ */
 async function loadConfigForValidation(plugin: NotebookAutomationPlugin): Promise<any> {
   try {
     // @ts-ignore
@@ -517,6 +550,13 @@ async function loadConfigForValidation(plugin: NotebookAutomationPlugin): Promis
   }
 }
 
+/**
+ * Opens the plugin settings tab and scrolls to the AI provider section, highlighting any missing environment variables.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @param provider The AI provider name.
+ * @param validation Validation result with missing variable info.
+ */
 async function openSettingsAndScrollToAIProvider(plugin: NotebookAutomationPlugin, provider: string, validation: { missingVar?: string, description?: string }): Promise<void> {
   try {
     // Open the plugin settings
@@ -581,6 +621,10 @@ async function openSettingsAndScrollToAIProvider(plugin: NotebookAutomationPlugi
 
 /**
  * Opens the OneDrive folder location in the system file manager.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @param file The file or folder reference.
+ * @param relativePath The relative path to open in OneDrive.
  */
 async function openOneDriveFolder(plugin: any, file: any, relativePath: string): Promise<void> {
   try {

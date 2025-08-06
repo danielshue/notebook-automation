@@ -4,8 +4,18 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFi
 import { resolve, join } from "path";
 
 /**
- * Deploy script for the Obsidian plugin to test vault
- * This script copies the built plugin files to the test vault plugins directory
+ * Deploy script for the Obsidian plugin to test vault.
+ * Copies built plugin files and executables to the test vault plugins directory.
+ * Also updates community-plugins.json to enable the plugin.
+ * Usage: node deploy-to-test.mjs
+ */
+
+/**
+ * Main deploy process:
+ * - Checks for dist and test vault directories
+ * - Copies plugin files and executables
+ * - Updates community-plugins.json
+ * - Shows final plugin directory contents
  */
 
 const distRoot = resolve('./dist');

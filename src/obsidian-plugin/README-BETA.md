@@ -57,6 +57,14 @@ BRAT will automatically notify you when new beta versions are available. You can
 
 ## For Developers
 
+### Codebase Documentation
+
+The plugin codebase is fully documented with TSDoc/JSDoc comments:
+
+- All TypeScript files include comprehensive function and class documentation
+- Build scripts (*.mjs) are documented with usage instructions
+- Settings UI components are thoroughly documented for easy maintenance
+
 ### Quick Beta Release
 
 ```bash

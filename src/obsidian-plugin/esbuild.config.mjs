@@ -1,8 +1,22 @@
+/**
+ * esbuild configuration for bundling the Obsidian plugin.
+ * Ensures dist directory exists, deletes old main.js, and builds/bundles main.ts.
+ * Usage: node esbuild.config.mjs [production]
+ */
+
 import esbuild from "esbuild";
 import process from "process";
 import builtins from "builtin-modules";
 import { mkdirSync, unlinkSync, existsSync } from "fs";
 import { resolve } from "path";
+
+/**
+ * Main esbuild process:
+ * - Creates dist directory
+ * - Deletes old main.js
+ * - Bundles main.ts with esbuild
+ * - Watches or rebuilds based on environment
+ */
 
 const banner =
 	`/*

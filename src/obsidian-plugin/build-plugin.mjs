@@ -4,11 +4,19 @@ import { readFileSync, writeFileSync, copyFileSync, existsSync, mkdirSync, readd
 import { resolve, join } from "path";
 
 /**
- * Build script for the Obsidian plugin
- * This script handles:
- * 1. Copying plugin files (manifest.json, styles.css, main.js) to the root dist directory
- * 2. Copying configuration files
- * 3. Ensuring executables from CI builds are preserved in the dist directory
+ * Build script for the Obsidian plugin.
+ * Handles copying plugin files, configuration, and executables to the dist directory.
+ * Also zips plugin files for release/BRAT uploads.
+ * Usage: node build-plugin.mjs
+ */
+
+/**
+ * Main build process:
+ * - Ensures dist directory exists
+ * - Copies required plugin/config/prompt files
+ * - Preserves executables from CI builds
+ * - Verifies build outputs
+ * - Zips plugin files for release
  */
 
 const distRoot = resolve('./dist');

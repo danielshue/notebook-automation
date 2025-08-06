@@ -1,3 +1,4 @@
+
 import { App, Notice, Plugin, TAbstractFile, TFile, TFolder } from 'obsidian';
 
 import { NotebookAutomationSettingTab } from './ui/NotebookAutomationSettingTab';
@@ -6,26 +7,46 @@ import { registerContextMenus } from './features/contextMenus';
 import { registerCommands } from './features/registerCommands';
 import { DEFAULT_SETTINGS, NotebookAutomationSettings } from './config/settings';
 
+/**
+ * Main plugin class for Notebook Automation in Obsidian.
+ *
+ * Handles plugin lifecycle, settings management, configuration loading, and registration of commands and context menus.
+ */
 export default class NotebookAutomationPlugin extends Plugin {
+  /**
+   * Current plugin settings, loaded from disk or defaults.
+   */
   settings: NotebookAutomationSettings = DEFAULT_SETTINGS;
 
+  /**
+   * Called when the plugin is loaded by Obsidian.
+   * Loads settings, configuration, and registers UI and commands.
+   */
   async onload() {
     await this.loadSettings();
-    
+
     // Load configuration into window for commands to use
     await this.loadConfigurationForCommands();
-    
+
+    // Add the settings tab to the Obsidian settings UI
     this.addSettingTab(new NotebookAutomationSettingTab(this.app, this));
-    
-    // Register context menus
+
+    // Register context menus for files and folders
     registerContextMenus(this);
-    
+
     // Register Command Palette commands
     registerCommands(this);
   }
 
   /**
-   * Load configuration into window global for use by commands
+   * Loads the configuration file into the window global for use by commands.
+   *
+   * Priority order:
+   * 1. NOTEBOOKAUTOMATION_CONFIG environment variable
+   * 2. User-configured path from plugin settings
+   * 3. default-config.json from plugin directory
+   *
+   * Sets `window.notebookAutomationLoadedConfig` and `window.notebookAutomationLoadedConfigPath`.
    */
   async loadConfigurationForCommands() {
     try {
@@ -105,10 +126,16 @@ export default class NotebookAutomationPlugin extends Plugin {
     }
   }
 
+  /**
+   * Loads plugin settings from disk, merging with defaults.
+   */
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
   }
 
+  /**
+   * Saves current plugin settings to disk.
+   */
   async saveSettings() {
     await this.saveData(this.settings);
   }

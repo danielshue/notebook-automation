@@ -1,8 +1,12 @@
-
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
 import { ensureExecutableExists } from '../utils/na-executable';
 
+/**
+ * Validates whether a string is a well-formed HTTP or HTTPS URL.
+ * @param string - The string to validate.
+ * @returns True if the string is a valid URL, false otherwise.
+ */
 // URL validation utility function
 function isValidUrl(string: string): boolean {
   try {
@@ -13,13 +17,21 @@ function isValidUrl(string: string): boolean {
   }
 }
 
+/**
+ * Validates whether a string is a valid GUID (UUID v4/v5).
+ * @param string - The string to validate.
+ * @returns True if the string is a valid GUID, false otherwise.
+ */
 // GUID validation utility function
 function isValidGuid(string: string): boolean {
   const guidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   return guidRegex.test(string);
 }
 
-// File/Directory browse utility functions
+/**
+ * Opens a system dialog for selecting a directory.
+ * @returns Promise resolving to the selected directory path or null if cancelled.
+ */
 function browseForDirectory(): Promise<string | null> {
   return new Promise((resolve) => {
     try {
@@ -44,6 +56,11 @@ function browseForDirectory(): Promise<string | null> {
   });
 }
 
+/**
+ * Opens a system dialog for selecting a file, optionally filtered by extension.
+ * @param filters - Array of file type filters.
+ * @returns Promise resolving to the selected file path or null if cancelled.
+ */
 function browseForFile(filters?: Array<{name: string, extensions: string[]}>): Promise<string | null> {
   return new Promise((resolve) => {
     try {
@@ -69,13 +86,21 @@ function browseForFile(filters?: Array<{name: string, extensions: string[]}>): P
   });
 }
 
-// File extension validation utility function
+/**
+ * Validates whether a string is a valid file extension (e.g., ".md").
+ * @param string - The string to validate.
+ * @returns True if the string is a valid file extension, false otherwise.
+ */
 function isValidFileExtension(string: string): boolean {
   const extensionRegex = /^\.[a-zA-Z0-9]+$/;
   return extensionRegex.test(string);
 }
 
-// Get platform-specific path validation error messages
+/**
+ * Returns a platform-specific error message for invalid file, directory, or path.
+ * @param validationType - Type of validation ('file', 'directory', 'path').
+ * @returns Error message string.
+ */
 function getPathValidationErrorMessage(validationType: 'file' | 'directory' | 'path'): string {
   const isWindows = process.platform === 'win32';
   
@@ -100,7 +125,11 @@ function getPathValidationErrorMessage(validationType: 'file' | 'directory' | 'p
   }
 }
 
-// File path validation utility function - cross-platform
+/**
+ * Validates a file path for the current platform (Windows/Unix).
+ * @param string - The file path to validate.
+ * @returns True if the path is valid, false otherwise.
+ */
 function isValidFilePath(string: string): boolean {
   if (!string || string.trim().length === 0) return false;
   
@@ -164,7 +193,11 @@ function isValidFilePath(string: string): boolean {
   return true;
 }
 
-// Directory path validation utility function - cross-platform
+/**
+ * Validates a directory path for the current platform (Windows/Unix).
+ * @param string - The directory path to validate.
+ * @returns True if the path is valid, false otherwise.
+ */
 function isValidDirectoryPath(string: string): boolean {
   if (!string || string.trim().length === 0) return false;
   
@@ -186,9 +219,18 @@ function isValidDirectoryPath(string: string): boolean {
   return true;
 }
 
+/**
+ * Settings tab UI for Notebook Automation plugin.
+ * Handles feature toggles, flags, banners, config file management, and advanced options.
+ */
 export class NotebookAutomationSettingTab extends PluginSettingTab {
   plugin: NotebookAutomationPlugin;
 
+  /**
+   * Creates a new settings tab for the plugin.
+   * @param app - The Obsidian app instance.
+   * @param plugin - The NotebookAutomationPlugin instance.
+   */
   constructor(app: App, plugin: NotebookAutomationPlugin) {
     super(app, plugin);
     this.plugin = plugin;
@@ -196,6 +238,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
   /**
    * Formats a validation error message with improved styling and icons.
+   * @param title - The error title.
+   * @param message - The error message.
+   * @param icon - Optional icon name (default: 'alert-triangle').
+   * @returns HTML string for the error message.
    */
   formatValidationError(title: string, message: string, icon: string = 'alert-triangle'): string {
     return `
@@ -217,6 +263,9 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
   /**
    * Formats a validation success message with improved styling and icons.
+   * @param title - The success title.
+   * @param message - The success message.
+   * @returns HTML string for the success message.
    */
   formatValidationSuccess(title: string, message: string): string {
     return `
@@ -236,6 +285,9 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     `;
   }
 
+  /**
+   * Renders the settings tab UI and all configuration sections.
+   */
   display(): void {
     this.injectCustomStyles();
     const { containerEl } = this;
@@ -1002,6 +1054,9 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     });
   }
 
+  /**
+   * Checks for and loads the default configuration file if present.
+   */
   checkAndLoadDefaultConfig() {
     try {
       // @ts-ignore
@@ -1093,6 +1148,12 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     }
   }
 
+  /**
+   * Displays loaded configuration fields in the settings tab.
+   * @param configJson - The loaded config JSON object.
+   * @param configPath - Path to the config file.
+   * @param error - Optional error message.
+   */
   displayLoadedConfig(configJson: any, configPath?: string, error?: string) {
     const { containerEl } = this;
     this.injectCustomStyles();
@@ -1182,6 +1243,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Save button is handled by the main display method, not here
   }
 
+  /**
+   * Adds the paths configuration section to the settings tab.
+   * @param fieldsDiv - The container div for fields.
+   * @param configJson - The config JSON object.
+   */
   addPathsSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
     fieldsDiv.createEl('h3', { text: 'Paths Configuration', cls: 'notebook-automation-section-header' });
@@ -1459,6 +1525,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     });
   }
 
+  /**
+   * Adds the AI service configuration section to the settings tab.
+   * @param fieldsDiv - The container div for fields.
+   * @param configJson - The config JSON object.
+   */
   addAIServiceSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
     fieldsDiv.createEl('h3', { text: 'AI Service Configuration', cls: 'notebook-automation-section-header' });
@@ -1621,6 +1692,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     };
   }
 
+  /**
+   * Adds the Microsoft Graph configuration section to the settings tab.
+   * @param fieldsDiv - The container div for fields.
+   * @param configJson - The config JSON object.
+   */
   addMicrosoftGraphSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
     fieldsDiv.createEl('h3', { text: 'Microsoft Graph Configuration', cls: 'notebook-automation-section-header' });
@@ -1754,6 +1830,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     };
   }
 
+  /**
+   * Adds the timeout configuration section to the settings tab.
+   * @param fieldsDiv - The container div for fields.
+   * @param configJson - The config JSON object.
+   */
   addTimeoutSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
     fieldsDiv.createEl('h3', { text: 'Timeout Configuration', cls: 'notebook-automation-section-header' });
@@ -1859,6 +1940,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     });
   }
 
+  /**
+   * Adds the logging configuration section to the settings tab.
+   * @param fieldsDiv - The container div for fields.
+   * @param configJson - The config JSON object.
+   */
   addLoggingSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
     fieldsDiv.createEl('h3', { text: 'Logging Configuration', cls: 'notebook-automation-section-header' });
@@ -2058,6 +2144,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     });
   }
 
+  /**
+   * Adds the file extensions configuration section to the settings tab.
+   * @param fieldsDiv - The container div for fields.
+   * @param configJson - The config JSON object.
+   */
   addExtensionsSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
     fieldsDiv.createEl('h3', { text: 'File Extensions', cls: 'notebook-automation-section-header' });
@@ -2148,6 +2239,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     });
   }
 
+  /**
+   * Adds the banners configuration section to the settings tab.
+   * @param fieldsDiv - The container div for fields.
+   * @param configJson - The config JSON object.
+   */
   addBannersSection(fieldsDiv: HTMLDivElement, configJson: any) {
     // Add section title above the container
     fieldsDiv.createEl('h3', { text: 'Banners Configuration', cls: 'notebook-automation-section-header' });
@@ -2485,6 +2581,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     document.head.appendChild(style);
   }
 
+  /**
+   * Gets the current version of the Notebook Automation plugin.
+   * @returns Promise resolving to the version string.
+   */
   async getNaVersion(): Promise<string> {
     try {
       // @ts-ignore
@@ -2509,6 +2609,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     }
   }
 
+  /**
+   * Adds validation messaging for the selected AI provider environment.
+   * @param validationContainer - The container for validation messages.
+   * @param provider - The selected AI provider.
+   */
   addAIProviderValidation(validationContainer: HTMLDivElement, provider: string) {
     // Clear previous validation content
     validationContainer.empty();
@@ -2547,6 +2652,11 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     }
   }
 
+  /**
+   * Validates the environment for the selected AI provider.
+   * @param provider - The AI provider to validate.
+   * @returns Object with isValid, missingVar, and description fields.
+   */
   static validateAIProviderEnvironment(provider: string): { isValid: boolean, missingVar?: string, description?: string } {
     const providerEnvVars: { [key: string]: { varName: string, description: string } } = {
       'openai': { varName: 'OPENAI_API_KEY', description: 'OpenAI API Key' },

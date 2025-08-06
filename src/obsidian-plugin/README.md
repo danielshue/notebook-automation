@@ -70,11 +70,24 @@ The unified build script will:
 - `default-config.json` — Default configuration for the plugin
 - `styles.css` — Plugin styles
 - `dist/` — Compiled JS and CLI executables
+- `features/` — Core plugin functionality (commands, context menus, registration)
+- `ui/` — User interface components (settings tab)
+- `utils/` — Utility functions (executable management, configuration)
+- `*.mjs` — Build, deploy, and version management scripts
 - Use `../../scripts/build-ci-local.ps1` for unified build and deployment
+
+### Code Documentation
+
+The codebase is fully documented with TSDoc/JSDoc comments for enhanced developer experience:
+
+- All exported functions and classes include comprehensive documentation
+- Utility functions are documented with parameter types and return values
+- Build scripts include usage instructions and process descriptions
 
 ## Contributing
 
 Contributions are welcome! Please see the main repository's guidelines for code style, testing, and pull requests. For plugin-specific changes, ensure you:
+
 - Follow the established build and deployment process
 - Test changes in a local Obsidian vault
 - Update documentation as needed

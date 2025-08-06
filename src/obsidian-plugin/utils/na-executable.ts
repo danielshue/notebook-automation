@@ -5,6 +5,11 @@ import { Plugin } from 'obsidian';
 
 /**
  * Given a full vault path, strip the notebook_vault_fullpath_root and vault_resources_basepath prefix and return the relative path for OneDrive mapping.
+ *
+ * @param fullPath The full path to the file or resource in the vault.
+ * @param vaultRoot The root path of the Obsidian vault.
+ * @param vaultBase The base path for resources within the vault (optional).
+ * @returns The relative path for OneDrive mapping.
  */
 export function getRelativeVaultResourcePath(fullPath: string, vaultRoot: string, vaultBase?: string): string {
   let normFull = fullPath.replace(/\\/g, '/');
@@ -22,7 +27,9 @@ export function getRelativeVaultResourcePath(fullPath: string, vaultRoot: string
 }
 
 /**
- * Utility to resolve the correct executable name for the current platform and architecture.
+ * Resolves the correct executable name for the current platform and architecture.
+ *
+ * @returns The platform-specific executable filename (e.g., na-win-x64.exe).
  */
 export function getNaExecutableName(): string {
   // Type guards for Node globals in Obsidian plugin context
@@ -56,7 +63,10 @@ export function getNaExecutableName(): string {
 }
 
 /**
- * Get the full path to the bundled na executable in the plugin directory.
+ * Gets the full path to the bundled notebook automation executable in the plugin directory.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @returns The full path to the executable, or just the executable name if not found.
  */
 export function getNaExecutablePath(plugin: Plugin): string {
   const execName = getNaExecutableName();
@@ -153,7 +163,10 @@ export function getNaExecutablePath(plugin: Plugin): string {
 }
 
 /**
- * Gets the path to the notebook automation executable, downloading it if necessary
+ * Gets the path to the notebook automation executable, downloading it if necessary.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @returns The path to the executable, downloading if not present.
  */
 export async function ensureExecutableExists(plugin: Plugin): Promise<string> {
   const existingPath = getNaExecutablePath(plugin);
@@ -171,7 +184,11 @@ export async function ensureExecutableExists(plugin: Plugin): Promise<string> {
 }
 
 /**
- * Downloads the appropriate executable for the current platform from GitHub releases
+ * Downloads the appropriate notebook automation executable for the current platform from GitHub releases.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @returns The path to the downloaded executable.
+ * @throws If required Node.js modules are not available or download fails.
  */
 export async function downloadExecutableFromGitHub(plugin: Plugin): Promise<string> {
   const execName = getNaExecutableName();
