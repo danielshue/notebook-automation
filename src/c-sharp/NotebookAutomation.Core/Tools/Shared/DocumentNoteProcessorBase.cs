@@ -391,6 +391,85 @@ public abstract class DocumentNoteProcessorBase(
     }
 
     /// <summary>
+    /// Gets the full OneDrive resources root path by combining the OneDrive root and its resources base path.
+    /// </summary>
+    /// <returns>The full OneDrive resources root path, or empty string if not configured.</returns>
+    protected string GetOnedriveResourcesRootFullPath()
+    {
+        try
+        {
+            string onedriveRoot = AppConfig?.Paths?.OnedriveFullpathRoot ?? string.Empty;
+            string onedriveResourcesPath = AppConfig?.Paths?.OnedriveResourcesBasepath ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(onedriveRoot))
+            {
+                return string.Empty;
+            }
+
+            // Normalize resources base path
+            string normalizedResources = (onedriveResourcesPath ?? string.Empty)
+                .Trim('/', '\\')
+                .Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
+
+            string full = string.IsNullOrEmpty(normalizedResources)
+                ? onedriveRoot
+                : Path.Combine(onedriveRoot, normalizedResources);
+
+            return Path.GetFullPath(full);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "Failed to compute OneDrive resources root full path");
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// If the provided path is under the OneDrive resources root, returns a relative path; otherwise returns the original path.
+    /// </summary>
+    /// <param name="path">An absolute path to a file.</param>
+    /// <returns>A path relative to the OneDrive resources root when possible; original path otherwise.</returns>
+    protected string MakeRelativeToOnedriveResourcesIfPossible(string path)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return path;
+            }
+
+            string resourcesRoot = GetOnedriveResourcesRootFullPath();
+            if (string.IsNullOrEmpty(resourcesRoot))
+            {
+                Logger.LogDebug("OneDrive resources root not configured; using original path");
+                return path;
+            }
+
+            string fullPath = Path.GetFullPath(path);
+
+            // Ensure trailing separator on root for StartsWith comparison accuracy
+            string normalizedRoot = resourcesRoot.EndsWith(Path.DirectorySeparatorChar)
+                ? resourcesRoot
+                : resourcesRoot + Path.DirectorySeparatorChar;
+
+            if (fullPath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                string relative = Path.GetRelativePath(resourcesRoot, fullPath);
+                Logger.LogDebug("Converted path to OneDrive resources-relative: {Relative}", relative);
+                return relative;
+            }
+
+            Logger.LogDebug("Path not under OneDrive resources root; keeping original path: {Path}", path);
+            return path;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "Failed to make path relative to OneDrive resources; using original");
+            return path;
+        }
+    }
+    /// <summary>
     /// Gets the effective vault root path by combining vault root with vault resources base path.
     /// </summary>
     /// <returns>The effective vault root path, or null if configuration is incomplete.</returns>

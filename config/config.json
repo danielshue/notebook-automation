@@ -26,9 +26,9 @@
             "model": "gpt-4o"
         },
         "azure": {
-            "endpoint": "https://notebookautomation-resource.cognitiveservices.azure.com/",
-            "deployment": "gpt-4o",
-            "model": "gpt-4o"
+            "endpoint": "https://dansh-mb18orea-eastus2.cognitiveservices.azure.com/",
+            "deployment": "gpt-5",
+            "model": "gpt-5-chat"
         },
         "foundry": {
             "endpoint": "http://localhost:8000/v1/chat/completions",

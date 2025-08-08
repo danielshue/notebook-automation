@@ -47,6 +47,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     private readonly ICourseStructureExtractor _courseStructureExtractor;
     private readonly bool _extractImages;
     private string _yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter    /// <summary>
+
     /// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class.
     /// </summary>
     /// <param name="logger">The logger instance for logging diagnostic and error information.</param>
@@ -188,7 +189,9 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                     {
                         metadata["keywords"] = info.Keywords;
                     }
-                }                // Extract module and lesson information
+                }
+
+                // Extract module and lesson information
                 Logger.LogDebug($"Extracting course structure information from file path {pdfPath}");
                 _courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);
 
@@ -217,7 +220,18 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                 metadata["status"] = "unread";
                 metadata["comprehension"] = 0;
                 metadata["auto-generated-state"] = "writable";                // Add the file path for later use
-                metadata["onedrive_fullpath_file_reference"] = pdfPath; return sb.ToString();
+                // Store a path relative to OneDrive resources root so it is portable across machines
+                string relativeRef = MakeRelativeToOnedriveResourcesIfPossible(pdfPath);
+                metadata["onedrive_relative_path"] = relativeRef;
+
+                // Also store the configured OneDrive fullpath root for consumers to reconstruct absolute path
+                string onedriveRoot = AppConfig?.Paths?.OnedriveFullpathRoot ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(onedriveRoot))
+                {
+                    metadata["onedrive_fullpath_root"] = onedriveRoot;
+                }
+
+                return sb.ToString();
             }).ConfigureAwait(false); int extractedCharCount = extractedText.Length;
             Logger.LogDebug($"Extracted {extractedCharCount:N0} characters of text from PDF: {pdfPath}");
 
@@ -427,9 +441,10 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
             yamlData["date-review"] = string.Empty;
 
             // Add file information
-            if (metadata.TryGetValue("onedrive_fullpath_file_reference", out var filePath) && filePath != null)
+            if (metadata.TryGetValue("onedrive_relative_path", out var filePath) && filePath != null)
             {
-                yamlData["onedrive_fullpath_file_reference"] = filePath?.ToString() ?? string.Empty;
+                // This should already be relative (set during extraction). Keep as-is.
+                yamlData["onedrive_relative_path"] = filePath?.ToString() ?? string.Empty;
             }
 
             if (metadata.TryGetValue("onedrive-shared-link", out var shareLink) && shareLink != null)
@@ -467,6 +482,15 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
             if (metadata.TryGetValue("onedrive_fullpath_root", out var resourcesRoot) && resourcesRoot != null)
             {
                 yamlData["onedrive_fullpath_root"] = resourcesRoot?.ToString() ?? string.Empty;
+            }
+            else
+            {
+                // Include root if known from config to aid reconstruction on other machines
+                var root = AppConfig?.Paths?.OnedriveFullpathRoot ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(root))
+                {
+                    yamlData["onedrive_fullpath_root"] = root;
+                }
             }
 
             // Explicitly remove unwanted fields if they exist

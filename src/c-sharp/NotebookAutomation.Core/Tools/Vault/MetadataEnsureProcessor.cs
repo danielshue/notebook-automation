@@ -551,7 +551,7 @@ public class MetadataEnsureProcessor(
     /// <item><description>comprehension: 0 - Initial comprehension rating</description></item>
     /// <item><description>status: "unread" - Reading status tracking</description></item>
     /// <item><description>completion-date, date-modified, date-review: Date tracking fields</description></item>
-    /// <item><description>onedrive-shared-link, onedrive_fullpath_file_reference: OneDrive integration</description></item>
+    /// <item><description>onedrive-shared-link, onedrive_relative_path, onedrive_fullpath_root: OneDrive integration</description></item>
     /// <item><description>pdf-size, pdf-uploaded, page-count, pages: PDF metadata</description></item>
     /// <item><description>authors, tags: Content classification fields</description></item>
     /// </list>
@@ -570,7 +570,8 @@ public class MetadataEnsureProcessor(
             ["date-modified"] = string.Empty,
             ["date-review"] = string.Empty,
             ["onedrive-shared-link"] = string.Empty,
-            ["onedrive_fullpath_file_reference"] = string.Empty,
+            ["onedrive_relative_path"] = string.Empty,
+            ["onedrive_fullpath_root"] = string.Empty,
             ["pdf-size"] = string.Empty,
             ["pdf-uploaded"] = string.Empty,
             ["page-count"] = string.Empty,
@@ -604,7 +605,7 @@ public class MetadataEnsureProcessor(
     /// <item><description>comprehension: 0 - Initial comprehension rating</description></item>
     /// <item><description>status: "unwatched" - Viewing status tracking</description></item>
     /// <item><description>completion-date, date-modified, date-review: Date tracking fields</description></item>
-    /// <item><description>onedrive-shared-link, onedrive_fullpath_file_reference: OneDrive integration</description></item>
+    /// <item><description>onedrive-shared-link, onedrive_relative_path, onedrive_fullpath_root: OneDrive integration</description></item>
     /// <item><description>video-duration: "00:00:00" - Video length in HH:MM:SS format</description></item>
     /// <item><description>video-codec, video-resolution, video-size: Technical video properties</description></item>
     /// <item><description>publication-year, video-uploaded: Publication metadata</description></item>
@@ -625,7 +626,8 @@ public class MetadataEnsureProcessor(
             ["date-modified"] = string.Empty,
             ["date-review"] = string.Empty,
             ["onedrive-shared-link"] = string.Empty,
-            ["onedrive_fullpath_file_reference"] = string.Empty,
+            ["onedrive_relative_path"] = string.Empty,
+            ["onedrive_fullpath_root"] = string.Empty,
             ["publication-year"] = string.Empty,
             ["video-codec"] = string.Empty,
             ["video-duration"] = "00:00:00",
@@ -661,7 +663,7 @@ public class MetadataEnsureProcessor(
     /// <item><description>comprehension: 0 - Initial comprehension rating</description></item>
     /// <item><description>status: "unread" - Reading status tracking</description></item>
     /// <item><description>completion-date, date-modified, date-review: Date tracking fields</description></item>
-    /// <item><description>onedrive-shared-link, onedrive_fullpath_file_reference: OneDrive integration</description></item>
+    /// <item><description>onedrive-shared-link, onedrive_relative_path, onedrive_fullpath_root: OneDrive integration</description></item>
     /// <item><description>page-count, pages: Document structure information</description></item>
     /// <item><description>authors, tags: Content classification fields</description></item>
     /// </list>
@@ -680,7 +682,8 @@ public class MetadataEnsureProcessor(
             ["date-modified"] = string.Empty,
             ["date-review"] = string.Empty,
             ["onedrive-shared-link"] = string.Empty,
-            ["onedrive_fullpath_file_reference"] = string.Empty,
+            ["onedrive_relative_path"] = string.Empty,
+            ["onedrive_fullpath_root"] = string.Empty,
             ["page-count"] = string.Empty,
             ["pages"] = string.Empty,
             ["authors"] = string.Empty,

@@ -99,7 +99,7 @@ public class VideoNoteProcessorNoSummaryTests
         Assert.IsTrue(markdown.Contains("## Note")); // Should contain the minimal Note section
         Assert.IsTrue(markdown.Contains("title: Test Video")); // Should have frontmatter
         Assert.IsTrue(markdown.StartsWith("---")); // Should start with frontmatter
-        Assert.IsTrue(markdown.Contains("onedrive_fullpath_file_reference:")); // Should have the full path reference
+        Assert.IsTrue(markdown.Contains("onedrive_relative_path:")); // Should have the relative path reference
         Assert.IsTrue(markdown.Contains("video-uploaded:")); // Should have video upload date
     }
 

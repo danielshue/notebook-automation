@@ -306,8 +306,10 @@ date-review:
 # onedrive-shared-link: path/to/shared-link (populated automatically)
 onedrive-shared-link:
 
-# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
-onedrive_fullpath_file_reference:
+# onedrive_relative_path: relative path under OneDrive resources root (populated automatically)
+onedrive_relative_path:
+# onedrive_fullpath_root: absolute OneDrive root used to reconstruct absolute paths
+onedrive_fullpath_root:
 
 # publication-year: 2023
 publication-year:
@@ -377,8 +379,10 @@ date-created:
 # onedrive-shared-link: path/to/shared-link (populated automatically)
 onedrive-shared-link:
 
-# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
-onedrive_fullpath_file_reference:
+# onedrive_relative_path: relative path under OneDrive resources root (populated automatically)
+onedrive_relative_path:
+# onedrive_fullpath_root: absolute OneDrive root used to reconstruct absolute paths
+onedrive_fullpath_root:
 
 # status: unwatched | watched | in-progress
 status: unwatched
@@ -431,8 +435,10 @@ date-created:
 # onedrive-shared-link: path/to/shared-link (populated automatically)
 onedrive-shared-link:
 
-# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.pdf (populated automatically)
-onedrive_fullpath_file_reference:
+# onedrive_relative_path: relative path under OneDrive resources root (populated automatically)
+onedrive_relative_path:
+# onedrive_fullpath_root: absolute OneDrive root used to reconstruct absolute paths
+onedrive_fullpath_root:
 
 # status: read | unread | in-progress
 status: unread
@@ -499,8 +505,10 @@ date-review:
 # onedrive-shared-link: path/to/shared-link (populated automatically)
 onedrive-shared-link:
 
-# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
-onedrive_fullpath_file_reference:
+# onedrive_relative_path: relative path under OneDrive resources root (populated automatically)
+onedrive_relative_path:
+# onedrive_fullpath_root: absolute OneDrive root used to reconstruct absolute paths
+onedrive_fullpath_root:
 
 # publisher: Publisher Name
 publisher: University of Illinois at Urbana-Champaign
@@ -724,8 +732,10 @@ date-review:
 # onedrive-shared-link: path/to/shared-link (populated automatically)
 onedrive-shared-link:
 
-# onedrive_fullpath_file_reference: path/to/to/file/in-onedrive/file.mp4 (populated automatically)
-onedrive_fullpath_file_reference:
+# onedrive_relative_path: relative path under OneDrive resources root (populated automatically)
+onedrive_relative_path:
+# onedrive_fullpath_root: absolute OneDrive root used to reconstruct absolute paths
+onedrive_fullpath_root:
 
 # publisher: Publisher Name
 publisher: University of Illinois at Urbana-Champaign

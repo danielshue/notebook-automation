@@ -87,7 +87,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 { "status", "unwatched" },
                 { "author", Array.Empty<string>() }, // Empty string array with correct field name
                 { "onedrive-shared-link", string.Empty }, // Will be populated by OneDrive service if available
-                { "onedrive_fullpath_file_reference", Path.GetFullPath(videoPath) }, // Full path to the video
+                // Use relative path under OneDrive resources root for portability
+                { "onedrive_relative_path", MakeRelativeToOnedriveResourcesIfPossible(Path.GetFullPath(videoPath)) },
+                { "onedrive_fullpath_root", AppConfig?.Paths?.OnedriveFullpathRoot ?? string.Empty },
                 { "transcript", string.Empty }, // Will be populated if transcript file is found
         };        // Extract module and lesson from directory structure
         _courseStructureExtractor.ExtractModuleAndLesson(videoPath, metadata);
@@ -131,7 +133,6 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             DateTime videoUploadDate = DateTime.UtcNow;
             try
             {
-                // Try to get creation date from video metadata first
                 if (mediaInfo.CreationTime.HasValue)
                 {
                     videoUploadDate = mediaInfo.CreationTime.Value;
@@ -321,9 +322,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
             yamlData["date-review"] = string.Empty;
 
             // Add video-specific information
-            if (metadata.TryGetValue("onedrive_fullpath_file_reference", out var filePath) && filePath != null)
+            if (metadata.TryGetValue("onedrive_relative_path", out var filePath) && filePath != null)
             {
-                yamlData["onedrive_fullpath_file_reference"] = filePath?.ToString() ?? string.Empty;
+                yamlData["onedrive_relative_path"] = filePath?.ToString() ?? string.Empty;
             }
 
             if (metadata.TryGetValue("onedrive-shared-link", out var shareLink) && shareLink != null)
@@ -888,8 +889,9 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         string? transcriptPath = FindTranscriptPath(videoPath);
         if (!string.IsNullOrEmpty(transcriptPath))
         {
-            metadata["transcript"] = transcriptPath;
-            Logger.LogDebug($"Found transcript file and added path to metadata: {transcriptPath}");
+            string relativeTranscript = MakeRelativeToOnedriveResourcesIfPossible(transcriptPath);
+            metadata["transcript"] = relativeTranscript;
+            Logger.LogDebug($"Found transcript file and added path to metadata: {relativeTranscript}");
         }
 
         string? shareLink = null;
