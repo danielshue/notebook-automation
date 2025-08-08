@@ -30,17 +30,30 @@ public class VideoNoteProcessorNoSummaryTests
         TestPromptTemplateService testPromptService = new();
         Microsoft.SemanticKernel.Kernel kernel = MockKernelFactory.CreateKernelWithMockService("Test summary");
         _aiSummarizer = new AISummarizer(mockAiLogger, testPromptService, kernel);
-        var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>()); var appConfig = new AppConfig
+        var yamlHelper = new YamlHelper(new LoggerFactory().CreateLogger<YamlHelper>());
+        var appConfig = new AppConfig
         {
             Paths = new PathsConfig
             {
-                MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml")
+                // Use packaged schema for tests (schema-first)
+                MetadataSchemaFile = Path.Combine(AppContext.BaseDirectory, "config", "metadata-schema.yml"),
             }
-        }; var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        };
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
-        _processor = new VideoNoteProcessor(_logger, _aiSummarizer, yamlHelper, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder);
+        _processor = new VideoNoteProcessor(
+            _logger,
+            _aiSummarizer,
+            yamlHelper,
+            hierarchyDetector,
+            templateManager,
+            mockCourseStructureExtractor,
+            markdownNoteBuilder,
+            null,
+            appConfig,
+            new FieldValueResolverRegistry());
 
         // Create temporary directory and mock video file
         _tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());

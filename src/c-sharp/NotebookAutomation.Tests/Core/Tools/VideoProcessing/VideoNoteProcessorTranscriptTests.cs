@@ -58,9 +58,10 @@ public class VideoNoteProcessorTranscriptTests
             Paths = new PathsConfig
             {
                 NotebookVaultFullpathRoot = Path.Combine(Path.GetTempPath(), "TestVault"),
-                MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml"),
+                MetadataSchemaFile = Path.Combine(AppContext.BaseDirectory, "config", "metadata-schema.yml"),
             },
-        }; var mockHierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
+        };
+        var mockHierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(mockYamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
@@ -71,7 +72,10 @@ public class VideoNoteProcessorTranscriptTests
             mockHierarchyDetector,
             templateManager,
             mockCourseStructureExtractor,
-            markdownNoteBuilder);
+            markdownNoteBuilder,
+            null,
+            appConfig,
+            new FieldValueResolverRegistry());
     }
 
     /// <summary>

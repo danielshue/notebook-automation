@@ -29,16 +29,11 @@ public class MetadataEnsureProcessorTests
         var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
         _logger = loggerFactory.CreateLogger<MetadataEnsureProcessor>();
 
-        var yamlLogger = loggerFactory.CreateLogger<YamlHelper>(); // Create logger for YamlHelper
-        _yamlHelper = new YamlHelper(yamlLogger);
+        _yamlHelper = new YamlHelper(loggerFactory.CreateLogger<YamlHelper>());
 
-        var detectorLogger = loggerFactory.CreateLogger<MetadataHierarchyDetector>();
-        var appConfig = new AppConfig(); // Create a mock or dummy AppConfig instance
-        string? optionalParameter = null; // Provide a default value for the optional parameter
         _metadataDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector();
 
-        var extractorLogger = loggerFactory.CreateLogger<CourseStructureExtractor>();
-        _structureExtractor = new CourseStructureExtractor(extractorLogger);
+        _structureExtractor = new CourseStructureExtractor(loggerFactory.CreateLogger<CourseStructureExtractor>());
 
         _processor = new MetadataEnsureProcessor(_logger, _yamlHelper, _metadataDetector, _structureExtractor);
     }

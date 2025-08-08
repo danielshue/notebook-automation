@@ -17,11 +17,13 @@ public class VideoNoteProcessorTests
     public async Task GenerateAiSummaryAsync_FallsBackToNewAISummarizer_WhenNotInjected()
     {
         // Arrange
-        Mock<ILogger<VideoNoteProcessor>> loggerMock = new(); var appConfig = new AppConfig
+        Mock<ILogger<VideoNoteProcessor>> loggerMock = new();
+        var appConfig = new AppConfig
         {
             Paths = new PathsConfig
             {
-                MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml")
+                // Use packaged schema for tests (schema-first)
+                MetadataSchemaFile = Path.Combine(AppContext.BaseDirectory, "config", "metadata-schema.yml"),
             }
         };
         PromptTemplateService promptService = new(
@@ -36,7 +38,17 @@ public class VideoNoteProcessorTests
         var hierarchyDetector = CreateMetadataHierarchyDetector(); var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelperMock.Object, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
-        VideoNoteProcessor processor = new(loggerMock.Object, aiSummarizer, yamlHelperMock.Object, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder);
+        VideoNoteProcessor processor = new(
+            loggerMock.Object,
+            aiSummarizer,
+            yamlHelperMock.Object,
+            hierarchyDetector,
+            templateManager,
+            mockCourseStructureExtractor,
+            markdownNoteBuilder,
+            oneDriveService: null,
+            appConfig,
+            new FieldValueResolverRegistry());
 
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);

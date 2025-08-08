@@ -70,21 +70,6 @@ public class PathsConfig
     public virtual string NotebookVaultResourcesBasepath { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the path to the metadata file for backward compatibility.
-    /// </summary>
-    /// <value>
-    /// The path to the legacy metadata file.
-    /// </value>
-    /// <remarks>
-    /// This property is obsolete and will be removed in a future version.
-    /// Use <see cref="MetadataSchemaFile"/> instead.
-    /// Mapped from the "metadata_file" JSON configuration key.
-    /// </remarks>
-    [Obsolete("Use MetadataSchemaFile instead. This property will be removed in a future version.")]
-    [JsonPropertyName("metadata_file")]
-    public virtual string MetadataFile { get; set; } = string.Empty;
-
-    /// <summary>
     /// Gets or sets the full path to the metadata schema file.
     /// </summary>
     /// <value>
@@ -176,11 +161,21 @@ public class PathsConfig
             return NotebookVaultFullpathRoot;
         }
 
-        // Normalize the resources base path by removing leading and trailing separators and converting to platform separators
+        // Normalize the resources base path by removing leading and trailing separators
+        // converting to platform separators, and collapsing any duplicate separators
         string normalizedResourcesPath = NotebookVaultResourcesBasepath
-            .Trim('/', '\\')
+            .Trim('/', '\\');
+
+        normalizedResourcesPath = normalizedResourcesPath
             .Replace('/', Path.DirectorySeparatorChar)
             .Replace('\\', Path.DirectorySeparatorChar);
+
+        // Collapse duplicate separators inside the path (e.g., "folder\\\\sub" -> "folder\\sub")
+        var sep = Path.DirectorySeparatorChar.ToString();
+        while (normalizedResourcesPath.Contains(sep + sep, StringComparison.Ordinal))
+        {
+            normalizedResourcesPath = normalizedResourcesPath.Replace(sep + sep, sep, StringComparison.Ordinal);
+        }
 
         return Path.Combine(NotebookVaultFullpathRoot, normalizedResourcesPath);
     }

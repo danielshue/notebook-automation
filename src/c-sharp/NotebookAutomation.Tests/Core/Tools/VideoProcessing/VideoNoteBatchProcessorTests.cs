@@ -66,9 +66,11 @@ public class VideoNoteBatchProcessorTests
             Paths = new PathsConfig
             {
                 NotebookVaultFullpathRoot = _outputDir,
-                MetadataFile = Path.Combine(Path.GetTempPath(), "test-metadata.yaml"),
+                // Switch to schema-first for tests
+                MetadataSchemaFile = Path.Combine(AppContext.BaseDirectory, "config", "metadata-schema.yml"),
             },
-        };        // Create a real MetadataHierarchyDetector instead of mocking it
+        };
+        // Create a real MetadataHierarchyDetector instead of mocking it
 
         var yamlHelper = new YamlHelper(Mock.Of<ILogger<YamlHelper>>());
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, _appConfig);
@@ -88,7 +90,8 @@ public class VideoNoteBatchProcessorTests
             courseStructureExtractor,
             markdownNoteBuilder,
             mockOneDriveService.Object,
-            _appConfig);
+            _appConfig,
+            new FieldValueResolverRegistry());
 
         // Create a real test file to be processed
         string testVideoPath = Path.Combine(_testDir, "test.mp4");

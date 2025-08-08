@@ -16,25 +16,12 @@ public class VideoNoteProcessorShareLinkContentTests
     private Mock<IOneDriveService> _oneDriveServiceMock = null!;
     private Mock<IYamlHelper> _yamlHelperMock = null!;
     private string _testDir = null!;
-    private string _testMetadataFile = null!;
     private AppConfig _testAppConfig = null!;
 
     [TestInitialize]
     public void Setup()
     {
         _loggerMock = new Mock<ILogger<VideoNoteProcessor>>();
-
-        // Create temp metadata file
-        _testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata_sharelink.yaml");
-        var testMetadata = @"
----
-template-type: ""video-note""
-tags:
-  - video
-metadata:
-  type: ""Video Note""
----";
-        File.WriteAllText(_testMetadataFile, testMetadata);
 
         // Create test directory
         _testDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -46,7 +33,7 @@ metadata:
             Paths = new PathsConfig
             {
                 NotebookVaultFullpathRoot = _testDir,
-                MetadataFile = _testMetadataFile,
+                MetadataSchemaFile = Path.Combine(AppContext.BaseDirectory, "config", "metadata-schema.yml"),
                 LoggingDir = Path.GetTempPath()
             }
         };
@@ -96,10 +83,7 @@ metadata:
             {
                 Directory.Delete(_testDir, true);
             }
-            if (File.Exists(_testMetadataFile))
-            {
-                File.Delete(_testMetadataFile);
-            }
+            // No temp metadata file to delete in schema-first tests
         }
         catch
         {
@@ -165,7 +149,8 @@ metadata:
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
-            null);
+            _testAppConfig,
+            new FieldValueResolverRegistry());
 
         string videoPath = Path.Combine(_testDir, "test-video.mp4");
         File.WriteAllText(videoPath, "fake video content");
@@ -207,7 +192,8 @@ metadata:
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
-            null);
+            _testAppConfig,
+            new FieldValueResolverRegistry());
 
         string videoPath = Path.Combine(_testDir, "test-video.mp4");
         File.WriteAllText(videoPath, "fake video content");
@@ -250,7 +236,8 @@ metadata:
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _testAppConfig),
             _oneDriveServiceMock.Object,
-            null);
+            _testAppConfig,
+            new FieldValueResolverRegistry());
 
         string videoPath = Path.Combine(_testDir, "test-video.mp4");
         File.WriteAllText(videoPath, "fake video content");
@@ -381,7 +368,8 @@ metadata:
             courseStructureExtractor,
             markdownNoteBuilder,
             _oneDriveServiceMock.Object,
-            _testAppConfig);
+            _testAppConfig,
+            new FieldValueResolverRegistry());
     }
 
     [TestMethod]

@@ -17,34 +17,16 @@ internal class MockAISummarizer
 [TestClass]
 public class VideoNoteProcessorDITests
 {
-    private string _testMetadataFile = string.Empty;
-
     [TestInitialize]
     public void Setup()
     {
-        // Create unique temporary file to prevent parallel test conflicts
-        string uniqueId = Guid.NewGuid().ToString("N")[..8]; // Short unique ID
-        _testMetadataFile = Path.Combine(Path.GetTempPath(), $"test_metadata_di_{uniqueId}.yaml");
-
-        var testMetadata = @"
----
-template-type: ""video-note""
-tags:
-  - video
-metadata:
-  type: ""Video Note""
----";
-
-        File.WriteAllText(_testMetadataFile, testMetadata);
+        // No setup required for schema-first tests
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        if (File.Exists(_testMetadataFile))
-        {
-            File.Delete(_testMetadataFile);
-        }
+        // No cleanup required
     }
 
     [TestMethod]
@@ -56,7 +38,7 @@ metadata:
         {
             Paths = new PathsConfig
             {
-                MetadataFile = _testMetadataFile,
+                MetadataSchemaFile = Path.Combine(AppContext.BaseDirectory, "config", "metadata-schema.yml"),
                 NotebookVaultFullpathRoot = Path.GetTempPath(),
                 LoggingDir = Path.GetTempPath()
             }
@@ -73,7 +55,17 @@ metadata:
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder, null, appConfig);
+        VideoNoteProcessor processor = new(
+            logger,
+            aiSummarizer,
+            yamlHelper,
+            hierarchyDetector,
+            templateManager,
+            mockCourseStructureExtractor,
+            markdownNoteBuilder,
+            oneDriveService: null,
+            appConfig,
+            new FieldValueResolverRegistry());
 
         // Act - Using null OpenAI key should return simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);
@@ -91,7 +83,7 @@ metadata:
         {
             Paths = new PathsConfig
             {
-                MetadataFile = _testMetadataFile,
+                MetadataSchemaFile = Path.Combine(AppContext.BaseDirectory, "config", "metadata-schema.yml"),
                 NotebookVaultFullpathRoot = Path.GetTempPath(),
                 LoggingDir = Path.GetTempPath()
             }
@@ -108,7 +100,17 @@ metadata:
         var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
         var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelper, appConfig);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
-        VideoNoteProcessor processor = new(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, mockCourseStructureExtractor, markdownNoteBuilder, null, appConfig);
+        VideoNoteProcessor processor = new(
+            logger,
+            aiSummarizer,
+            yamlHelper,
+            hierarchyDetector,
+            templateManager,
+            mockCourseStructureExtractor,
+            markdownNoteBuilder,
+            oneDriveService: null,
+            appConfig,
+            new FieldValueResolverRegistry());
 
         // Act - using a null OpenAI key should result in simulated summary
         string result = await processor.GenerateAiSummaryAsync("Test text").ConfigureAwait(false);

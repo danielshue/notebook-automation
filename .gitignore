@@ -2,6 +2,11 @@
 docs/_site/
 docs/api/
 docs/obj/
+# Also catch nested docfx outputs just in case
+docs/**/_site/
+docs/**/api/
+docs/**/obj/
+
 
 # Virtual environment
 venv/

@@ -13,7 +13,6 @@ public class VideoNoteProcessorMetadataTests
     private Mock<IOneDriveService> _oneDriveServiceMock = null!;
     private AppConfig _appConfig = null!;
     private Mock<IYamlHelper> _yamlHelperMock = null!;
-    private string _testMetadataFile = null!;
     private string _testVaultRoot = null!;
 
     [TestInitialize]
@@ -56,43 +55,14 @@ public class VideoNoteProcessorMetadataTests
             Path.Combine(programDir, "program-index.md"),
             "---\ntitle: MBA Program\nindex-type: program-index\n---\nProgram content");
 
-        // Create metadata.yaml for testing with unique filename
-        _testMetadataFile = Path.Combine(Path.GetTempPath(), $"test_metadata_{uniqueId}.yaml");
-        string testMetadata = @"---
-template-type: video-reference
-auto-generated-state: writable
-template-description: Template for video reference notes.
-title: Video Note
-type: note/video-note
-author:
-program:
-course:
-class:
-module:
-lesson:
-comprehension: 0
-completion-date:
-date-created:
-date-modified:
-status: unwatched
-tags:
-  - video
-  - reference
-video-codec:
-video-duration:
-video-resolution:
-video-size:
-video-uploaded:";
-
-        File.WriteAllText(_testMetadataFile, testMetadata);
-
         PathsConfig mockPaths = new()
         {
             NotebookVaultFullpathRoot = _testVaultRoot,
-            MetadataFile = _testMetadataFile,
+            // Use packaged schema for tests (schema-first)
+            MetadataSchemaFile = Path.Combine(AppContext.BaseDirectory, "config", "metadata-schema.yml"),
         };
 
-        _appConfig = new AppConfig(null!, null!)
+        _appConfig = new AppConfig
         {
             Paths = mockPaths,
         };
@@ -114,10 +84,7 @@ video-uploaded:";
             }
         }
 
-        if (File.Exists(_testMetadataFile))
-        {
-            File.Delete(_testMetadataFile);
-        }
+        // No temp metadata file to clean up in schema-first tests
     }
     [TestMethod]
     public void GenerateMarkdownNote_WithPathBasedMetadata_AppliesHierarchyDetection()
@@ -135,7 +102,9 @@ video-uploaded:";
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _appConfig),
             _oneDriveServiceMock.Object,
-            _appConfig); string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
+            _appConfig,
+            new FieldValueResolverRegistry());
+        string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
 
         // Create test video file
         string? directoryPath = Path.GetDirectoryName(videoPath);
@@ -177,7 +146,8 @@ video-uploaded:";
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _appConfig),
             _oneDriveServiceMock.Object,
-            _appConfig);
+            _appConfig,
+            new FieldValueResolverRegistry());
         Dictionary<string, object> metadata = new Dictionary<string, object>()
         {
             { "title", "Test Video" },
@@ -213,7 +183,8 @@ video-uploaded:";
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _appConfig),
             _oneDriveServiceMock.Object,
-            _appConfig);
+            _appConfig,
+            new FieldValueResolverRegistry());
 
         string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
 
@@ -260,7 +231,8 @@ video-uploaded:";
             mockCourseStructureExtractor,
             new MarkdownNoteBuilder(_yamlHelperMock.Object, _appConfig),
             _oneDriveServiceMock.Object,
-            _appConfig);
+            _appConfig,
+            new FieldValueResolverRegistry());
 
         string videoPath = Path.Combine(_testVaultRoot, "Value Chain Management", "Supply Chain", "Class 1", "lesson.mp4");
 

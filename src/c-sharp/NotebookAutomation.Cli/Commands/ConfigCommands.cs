@@ -115,7 +115,7 @@ internal class ConfigCommands
         context.Console.WriteLine("Available configuration keys:");
         context.Console.WriteLine("  paths.onedrive_fullpath_root      - Full path to OneDrive local resources directory");
         context.Console.WriteLine("  paths.notebook_vault_fullpath_root - Full path to the notebook vault root directory");
-        context.Console.WriteLine("  paths.metadata_file                - Path to the metadata file");
+        context.Console.WriteLine("  paths.metadata_schema_file         - Path to the YAML metadata schema file");
         context.Console.WriteLine("  paths.logging_dir                  - Directory for log files");
         context.Console.WriteLine("  paths.prompts_path                 - Directory containing prompt template files");
         context.Console.WriteLine("  paths.onedrive_resources_basepath  - Base path for OneDrive resources");
@@ -448,7 +448,10 @@ internal class ConfigCommands
                         case "onedrive_fullpath_root": paths.OnedriveFullpathRoot = value; return true;
                         case "notebook_vault_fullpath_root": paths.NotebookVaultFullpathRoot = value; return true;
                         case "notebook_vault_resources_basepath": paths.NotebookVaultResourcesBasepath = value; return true;
-                        case "metadata_file": paths.MetadataFile = value; return true;
+                        case "metadata_schema_file": paths.MetadataSchemaFile = value; return true;
+                        case "metadata_file":
+                            AnsiConsoleHelper.WriteError("'paths.metadata_file' has been removed. Use 'paths.metadata_schema_file'.");
+                            return false;
                         case "onedrive_resources_basepath": paths.OnedriveResourcesBasepath = value; return true;
                         case "prompts_path": paths.PromptsPath = value; return true;
                         case "logging_dir": paths.LoggingDir = value; return true;
@@ -576,7 +579,7 @@ internal class ConfigCommands
             PrintAligned("onedrive_fullpath_root", "[not set]");
             PrintAligned("notebook_vault_fullpath_root", "[not set]");
             PrintAligned("notebook_vault_resources_basepath", "[not set]");
-            PrintAligned("metadata_file", "[not set]");
+            PrintAligned("metadata_schema_file", "[not set]");
             PrintAligned("onedrive_resources_basepath", "[not set]");
             PrintAligned("logging_dir", "[not set]");
             PrintAligned("prompts_path", "[not set]");
@@ -586,7 +589,7 @@ internal class ConfigCommands
             PrintAligned("onedrive_fullpath_root", paths.OnedriveFullpathRoot ?? "[not set]");
             PrintAligned("notebook_vault_fullpath_root", paths.NotebookVaultFullpathRoot ?? "[not set]");
             PrintAligned("notebook_vault_resources_basepath", paths.NotebookVaultResourcesBasepath ?? "[not set]");
-            PrintAligned("metadata_file", paths.MetadataFile ?? "[not set]");
+            PrintAligned("metadata_schema_file", paths.MetadataSchemaFile ?? "[not set]");
             PrintAligned("onedrive_resources_basepath", paths.OnedriveResourcesBasepath ?? "[not set]");
             PrintAligned("logging_dir", paths.LoggingDir ?? "[not set]");
             PrintAligned("prompts_path", paths.PromptsPath ?? "[not set]");

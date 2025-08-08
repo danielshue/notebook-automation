@@ -17,14 +17,21 @@ public class VideoNoteBatchProcessorResourcesRootTests
     private Mock<VideoNoteProcessor> _videoNoteProcessorMock = null!;
     private DocumentNoteBatchProcessor<VideoNoteProcessor> _batchProcessor = null!;
     private VideoNoteBatchProcessor _processor = null!;
-    private string _tempMetadataFile = null!;
     private AppConfig _testAppConfig = null!;
 
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
+        // Use the packaged test schema file
+        var schemaPath = Path.Combine(AppContext.BaseDirectory ?? Environment.CurrentDirectory, "config", "metadata-schema.yml");
         return MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             NullLogger<MetadataHierarchyDetector>.Instance,
-            new AppConfig());
+            new AppConfig
+            {
+                Paths = new PathsConfig
+                {
+                    MetadataSchemaFile = schemaPath
+                }
+            });
     }
     private MetadataTemplateManager CreateTestMetadataTemplateManager()
     {
@@ -38,14 +45,17 @@ public class VideoNoteBatchProcessorResourcesRootTests
         _outputDir = Path.Combine(_testDir, "output");
         Directory.CreateDirectory(_outputDir);
 
-        // Create temp metadata file
-        _tempMetadataFile = Path.Combine(_testDir, "metadata.yaml");
-        File.WriteAllText(_tempMetadataFile, "template-name: test-template\nfields: []");        // Create test AppConfig
+        // Resolve schema file shipped with test outputs
+        var schemaPath = Path.Combine(AppContext.BaseDirectory ?? Environment.CurrentDirectory, "config", "metadata-schema.yml");
+
+        // Create test AppConfig
         _testAppConfig = new AppConfig
         {
             Paths = new PathsConfig
             {
-                MetadataFile = _tempMetadataFile
+                NotebookVaultFullpathRoot = _testDir,
+                MetadataSchemaFile = schemaPath,
+                LoggingDir = Path.GetTempPath()
             }
         };
 
@@ -70,7 +80,7 @@ public class VideoNoteBatchProcessorResourcesRootTests
             new MarkdownNoteBuilder(mockYamlHelper, _testAppConfig), // Required MarkdownNoteBuilder parameter
             mockOneDriveService, // Optional OneDriveService
             _testAppConfig, // Optional AppConfig
-            null); // Optional FieldValueResolverRegistry
+            new FieldValueResolverRegistry()); // Optional FieldValueResolverRegistry (non-null)
 
         // Create a custom batch processor that will directly create a file with the resourcesRoot
         // so we can test that the parameter is being passed correctly
@@ -130,11 +140,6 @@ public class VideoNoteBatchProcessorResourcesRootTests
             if (!string.IsNullOrEmpty(_testDir) && Directory.Exists(_testDir))
             {
                 Directory.Delete(_testDir, true);
-            }
-
-            if (!string.IsNullOrEmpty(_tempMetadataFile) && File.Exists(_tempMetadataFile))
-            {
-                File.Delete(_tempMetadataFile);
             }
         }
         catch (Exception)

@@ -104,10 +104,7 @@ internal class HelpDisplayService
                 string buildDate = version.BuildDateUtc.ToString("yyyy-MM-dd");
 
                 // Use fallback version information when GitVersion is disabled
-                string branch = "main";
                 string shortSha = version.Commit;
-                string commitDate = version.BuildDateUtc.ToString("yyyy-MM-dd");
-                string semVer = version.ToSemanticVersionString();
 
 
 

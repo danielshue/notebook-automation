@@ -125,12 +125,13 @@ public class AppConfig : IConfiguration
                         NotebookVaultResourcesBasepath = pathsSection["notebook_vault_resources_basepath"] ?? string.Empty,
                         OnedriveFullpathRoot = pathsSection["onedrive_fullpath_root"] ?? string.Empty,
                         OnedriveResourcesBasepath = pathsSection["onedrive_resources_basepath"] ?? string.Empty,
-                        MetadataFile = pathsSection["metadata_file"] ?? string.Empty,
                         MetadataSchemaFile = pathsSection["metadata_schema_file"] ?? string.Empty,
                         LoggingDir = pathsSection["logging_dir"] ?? string.Empty,
                         PromptsPath = pathsSection["prompts_path"] ?? string.Empty,
                         BaseBlockTemplateFilename = pathsSection["base_block_template_filename"] ?? "BaseBlockTemplate.yml"
                     };
+
+                    // Note: Legacy paths.metadata_file has been removed in Phase 2
                 } // Load Microsoft Graph configuration
 
                 var graphSection = underlyingConfiguration.GetSection("microsoft_graph");
@@ -218,6 +219,8 @@ public class AppConfig : IConfiguration
                         AiService = loaded.AiService;
                         VideoExtensions = loaded.VideoExtensions;
                         PdfExtensions = loaded.PdfExtensions;
+
+                        // Note: Legacy paths.metadata_file support removed; only metadata_schema_file is honored
                     }
                 }
                 else

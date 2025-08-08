@@ -29,7 +29,8 @@ internal static class ConfigValidation
     private static readonly string[] Collection = [
                 "paths.onedrive_fullpath_root",
                 "paths.notebook_vault_fullpath_root",
-                "paths.metadata_file",
+                // Prefer schema file going forward
+                "paths.metadata_schema_file",
                 "paths.onedrive_resources_basepath",
                 "paths.logging_dir"
             ];
@@ -46,7 +47,7 @@ internal static class ConfigValidation
     /// <list type="bullet">
     /// <item><description>paths.onedrive_fullpath_root</description></item>
     /// <item><description>paths.notebook_vault_fullpath_root</description></item>
-    /// <item><description>paths.metadata_file</description></item>
+    /// <item><description>paths.metadata_schema_file</description></item>
     /// <item><description>paths.onedrive_resources_basepath</description></item>
     /// <item><description>paths.logging_dir</description></item>
     /// </list>
@@ -77,9 +78,10 @@ internal static class ConfigValidation
             missingKeys.Add("paths.notebook_vault_fullpath_root");
         }
 
-        if (string.IsNullOrWhiteSpace(config.Paths.MetadataFile))
+        // Require schema file
+        if (string.IsNullOrWhiteSpace(config.Paths.MetadataSchemaFile))
         {
-            missingKeys.Add("paths.metadata_file");
+            missingKeys.Add("paths.metadata_schema_file");
         }
 
         if (string.IsNullOrWhiteSpace(config.Paths.OnedriveResourcesBasepath))

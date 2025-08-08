@@ -10,7 +10,6 @@ public class VideoNoteBatchProcessorOnedriveFullpathRootTests
 {
     private string _testDir = null!;
     private string _outputDir = null!;
-    private string _testMetadataFile = null!;
     private AppConfig _testAppConfig = null!;
     private Mock<ILogger<DocumentNoteBatchProcessor<VideoNoteProcessor>>> _loggerMock = null!;
 
@@ -26,13 +25,15 @@ public class VideoNoteBatchProcessorOnedriveFullpathRootTests
     }
     private static MetadataHierarchyDetector CreateMetadataHierarchyDetector()
     {
+        // Use the packaged test schema file
+        var schemaPath = Path.Combine(AppContext.BaseDirectory ?? Environment.CurrentDirectory, "config", "metadata-schema.yml");
         return MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
             NullLogger<MetadataHierarchyDetector>.Instance,
             new AppConfig
             {
                 Paths = new PathsConfig
                 {
-                    MetadataFile = Path.Combine(Path.GetTempPath(), "temp_metadata.yaml")
+                    MetadataSchemaFile = schemaPath
                 }
             });
     }
@@ -44,17 +45,8 @@ public class VideoNoteBatchProcessorOnedriveFullpathRootTests
         Directory.CreateDirectory(_testDir);
         Directory.CreateDirectory(_outputDir);
 
-        // Create temp metadata file
-        _testMetadataFile = Path.Combine(Path.GetTempPath(), "test_metadata_batchprocess.yaml");
-        var testMetadata = @"
----
-template-type: ""video-note""
-tags:
-  - video
-metadata:
-  type: ""Video Note""
----";
-        File.WriteAllText(_testMetadataFile, testMetadata);
+        // Resolve schema file shipped with test outputs
+        var schemaPath = Path.Combine(AppContext.BaseDirectory ?? Environment.CurrentDirectory, "config", "metadata-schema.yml");
 
         // Create test AppConfig
         _testAppConfig = new AppConfig
@@ -62,7 +54,7 @@ metadata:
             Paths = new PathsConfig
             {
                 NotebookVaultFullpathRoot = _testDir,
-                MetadataFile = _testMetadataFile,
+                MetadataSchemaFile = schemaPath,
                 LoggingDir = Path.GetTempPath()
             }
         };
@@ -88,7 +80,7 @@ metadata:
             new MarkdownNoteBuilder(mockYamlHelper, _testAppConfig),
             mockOneDriveService,
             _testAppConfig,  // AppConfig
-            null);  // FieldValueResolverRegistry
+            new FieldValueResolverRegistry());  // FieldValueResolverRegistry (non-null)
 
         // Create a custom batch processor that will directly create a file with the resourcesRoot
         // so we can test that the parameter is being passed correctly
@@ -146,11 +138,6 @@ metadata:
         if (Directory.Exists(_testDir))
         {
             Directory.Delete(_testDir, true);
-        }
-
-        if (File.Exists(_testMetadataFile))
-        {
-            File.Delete(_testMetadataFile);
         }
     }
 

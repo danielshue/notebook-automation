@@ -138,7 +138,7 @@ public class ResourceMetadataResolverTests
             var result = _resolver.Resolve("file-size", context);
 
             // Assert
-            Assert.IsTrue((long)result > 0);
+            Assert.IsTrue(result is long size && size > 0, "Expected a positive file size");
         }
         finally
         {
@@ -369,7 +369,9 @@ public class ResourceMetadataResolverTests
             Assert.AreEqual(".pdf", metadata["file-extension"]);
             Assert.AreEqual("document", metadata["resource-type"]);
             Assert.AreEqual("application/pdf", metadata["mime-type"]);
-            Assert.IsTrue((long)metadata["file-size"] > 0);
+            Assert.IsTrue(
+                metadata.TryGetValue("file-size", out var sizeObj) && sizeObj is long size && size > 0,
+                "Expected metadata to include a positive 'file-size' long value");
         }
         finally
         {

@@ -79,7 +79,7 @@ public class ConfigValidationTests
             {
                 OnedriveFullpathRoot = " ",
                 NotebookVaultFullpathRoot = null!,
-                MetadataFile = string.Empty,
+                MetadataSchemaFile = string.Empty,
                 OnedriveResourcesBasepath = null!,
                 LoggingDir = string.Empty,
             },
@@ -120,7 +120,7 @@ public class ConfigValidationTests
             {
                 OnedriveFullpathRoot = "C:/resources",
                 NotebookVaultFullpathRoot = "C:/vault",
-                MetadataFile = "C:/meta/metadata.json",
+                MetadataSchemaFile = "C:/meta/metadata-schema.yml",
                 OnedriveResourcesBasepath = "C:/onedrive",
                 LoggingDir = "C:/logs",
             },
@@ -139,7 +139,7 @@ public class ConfigValidationTests
             {
                 OnedriveFullpathRoot = string.Empty,
                 NotebookVaultFullpathRoot = null!,
-                MetadataFile = "meta.json",
+                MetadataSchemaFile = "schema.yml",
                 OnedriveResourcesBasepath = "basepath",
                 LoggingDir = null!,
             },
@@ -149,7 +149,7 @@ public class ConfigValidationTests
         CollectionAssert.Contains(missing, "paths.onedrive_fullpath_root");
         CollectionAssert.Contains(missing, "paths.notebook_vault_fullpath_root");
         CollectionAssert.Contains(missing, "paths.logging_dir");
-        CollectionAssert.DoesNotContain(missing, "paths.metadata_file");
+        CollectionAssert.DoesNotContain(missing, "paths.metadata_schema_file");
         CollectionAssert.DoesNotContain(missing, "paths.onedrive_resources_basepath");
     }
 
@@ -187,3 +187,4 @@ public class ConfigValidationTests
         Assert.IsTrue(result);
     }
 }
+

@@ -9,34 +9,23 @@ public class MetadataTemplateManagerTests
 {
     private Mock<ILogger> _loggerMock = null!;
     private IMetadataSchemaLoader _schemaLoader = null!;
-    private string _testMetadataFile = null!;
 
     [TestInitialize]
     public void Setup()
     {
         _loggerMock = new();
         _schemaLoader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
-
-        // Create a unique temporary metadata.yaml file for testing to prevent parallel test conflicts
-        string uniqueId = Guid.NewGuid().ToString("N")[..8]; // Short unique ID
-        _testMetadataFile = Path.Combine(Path.GetTempPath(), $"test_metadata_{uniqueId}.yaml");
-
-        // Note: The test now uses the schema loader, so we don't need to create metadata files
-        // The helper will create the necessary test schema
+        // Note: The tests use the schema loader; no temp metadata.yaml needed
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        // Delete temporary test file if it exists
-        if (File.Exists(_testMetadataFile))
-        {
-            File.Delete(_testMetadataFile);
-        }
+        // No cleanup required
     }
 
     [TestMethod]
-    public void LoadTemplates_ValidMetadataFile_LoadsAllTemplates()
+    public void LoadTemplates_ValidSchema_LoadsAllTemplates()
     {
         // Arrange
         MetadataTemplateManager templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
