@@ -3,6 +3,7 @@
 ## ✅ What We've Accomplished
 
 ### 1. Fixed Build Process
+
 - **Issue**: `npm run build` wasn't properly copying executables from the root `dist` directory
 - **Solution**: Created a dedicated `build-plugin.mjs` script that:
   - Properly handles file copying to the root `dist` directory
@@ -11,16 +12,19 @@
   - Verifies all BRAT-required files are present
 
 ### 2. Version Management
+
 - **Current version**: `0.1.0-beta.1` (properly synced across package.json and manifest.json)
 - **Version strategy**: Using semantic versioning with beta releases for BRAT testing
 - **Automation**: Created `manage-plugin-version.ps1` script for automated version management
 
 ### 3. BRAT Compatibility
+
 - **Required files**: ✅ `main.js`, `manifest.json`, `styles.css` (all present)
 - **Executables**: ✅ 6 cross-platform executables preserved in build
 - **Validation**: Created `test-brat-workflow.ps1` to verify complete compatibility
 
 ### 4. Documentation
+
 - **Setup guide**: Complete BRAT setup documentation (`obsidian-plugin-brat-setup.md`)
 - **Beta testing guide**: User-friendly instructions (`README-BETA.md`)
 - **Workflow scripts**: Automated tools for version management and testing
@@ -45,9 +49,10 @@ dist/
 
 ## 📋 Next Steps for Beta Testing
 
-### For You (Repository Owner):
+### For You (Repository Owner)
 
 1. **Commit and tag the current changes**:
+
    ```bash
    git add .
    git commit -m "feat: prepare v0.1.0-beta.1 for BRAT testing with improved build process"
@@ -59,7 +64,7 @@ dist/
 
 3. **Manually mark the release as pre-release** in the GitHub UI
 
-### For Beta Testers:
+### For Beta Testers
 
 1. **Install BRAT** in Obsidian (if not already installed)
 2. **Add the repository**: `danielshue/notebook-automation`

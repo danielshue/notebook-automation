@@ -275,5 +275,5 @@ This section provides detailed guidance on using all features of Notebook Automa
 If you need assistance:
 
 - Check the [FAQ](../getting-started/faq.md) for common questions
-- Review [Troubleshooting](../troubleshooting/) for solutions to common issues
+- Review [Troubleshooting](../troubleshooting/index.md) for solutions to common issues
 - Visit [GitHub Discussions](https://github.com/danielshue/notebook-automation/discussions) for community support

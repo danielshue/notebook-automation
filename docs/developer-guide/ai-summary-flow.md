@@ -5,6 +5,7 @@ This document provides a comprehensive overview of how the Notebook Automation s
 ## Overview
 
 The AI summary processing system handles two main document types:
+
 - **Video files** (MP4, AVI, etc.) using transcript files
 - **PDF files** with text extraction capabilities
 
@@ -153,12 +154,14 @@ For documents over 8,000 characters, the system uses a sophisticated two-stage p
    - Uses `ITextChunkingService` for intelligent splitting
 
 2. **Chunk Template Loading**:
+
    ```csharp
    // Load chunk_summary_prompt.md
    string? chunkPromptTemplate = await LoadChunkPromptAsync();
    ```
 
 3. **Parallel Chunk Processing** (if configured):
+
    ```csharp
    if (timeoutConfig.MaxChunkParallelism > 1 && chunks.Count > 1)
    {
@@ -185,6 +188,7 @@ string? finalPromptTemplate = await LoadFinalPromptAsync();
    - Prepare variables including complete YAML frontmatter
 
 2. **Template Processing**:
+
    ```csharp
    // Variable substitution order:
    prompt = promptService.SubstituteVariables(prompt, variables);      // {{variables}}

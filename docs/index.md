@@ -5,15 +5,17 @@ Welcome to the Notebook Automation documentation! This site provides comprehensi
 ## Quick Navigation
 
 ### For Users
+
 - **[Getting Started](getting-started/index.md)** - Installation and setup
 - **[User Guide](user-guide/index.md)** - File processing and workflows
 - **[Configuration](configuration/index.md)** - Settings and customization
 - **[Tutorials](tutorials/index.md)** - Step-by-step examples
 - **[Troubleshooting](troubleshooting/index.md)** - Common issues and solutions
 
-### For Developers
+### Developer Resources
+
 - **[Developer Guide](developer-guide/building.md)** - Development setup and contributing
-- **[API Reference](api/index.html)** - Complete API documentation
+- **[API Reference](api/index.md)** - Complete API documentation
 
 ## What is Notebook Automation?
 
@@ -33,12 +35,6 @@ Notebook Automation is a powerful C# toolkit that transforms educational content
 - Visit our [GitHub Issues](https://github.com/danielshue/notebook-automation/issues) for bug reports
 - Join the discussion at [GitHub Discussions](https://github.com/danielshue/notebook-automation/discussions)
 
-### For Developers
-
-- **[Developer Guide](developer-guide/)** - Building from source and contributing
-- **[API Reference](api/)** - Complete API documentation
-- **[Troubleshooting](troubleshooting/)** - Common issues and solutions
-
 ## 🌟 What is Notebook Automation?
 
 Notebook Automation transforms the way you manage course materials, whether for MBA programs, online courses, or any structured educational content. It automates the tedious tasks of organizing files, extracting metadata, generating summaries, and maintaining consistency across your knowledge base.
@@ -47,7 +43,7 @@ Notebook Automation transforms the way you manage course materials, whether for 
 
 - **🤖 Intelligent Content Processing** - Automatically converts PDFs, videos, HTML, and other formats to structured Markdown notes
 - **📊 Metadata Extraction** - Smart detection of course hierarchy, programs, modules, and lessons
-- **🏷️ Advanced Tag Management ** - Hierarchical tag generation and consolidation for enhanced content discovery
+- **🏷️ Advanced Tag Management** - Hierarchical tag generation and consolidation for enhanced content discovery
 - **☁️ OneDrive Integration** - Seamless file access, sharing, and synchronization via Microsoft Graph API
 - **🧠 AI-Powered Summaries** - OpenAI and Azure AI integration for generating content summaries and insights
 - **❓ AI Question Generation** - Automatically creates questions and answers for spaced repetition systems
@@ -116,15 +112,15 @@ This ensures your knowledge base remains fast and navigable while keeping all re
 
 | Section | Description |
 |---------|-------------|
-| [Getting Started](getting-started/) | Installation, initial setup, and first steps |
-| [User Guide](user-guide/) | Complete usage documentation and examples |
-| [Configuration](configuration/) | System configuration, AI services, and integrations |
+| [Getting Started](getting-started/index.md) | Installation, initial setup, and first steps |
+| [User Guide](user-guide/index.md) | Complete usage documentation and examples |
+| [Configuration](configuration/index.md) | System configuration, AI services, and integrations |
 | [Migration Guide](migration-guide.md) | **NEW**: Upgrade from legacy metadata.yaml to new schema |
 | [Metadata Schema](metadata-schema-configuration.md) | **NEW**: Complete metadata-schema.yml configuration reference |
 | [Plugin Development](plugin-development.md) | **NEW**: Extensible resolver development and registry usage |
-| [Developer Guide](developer-guide/) | Building from source, contributing, and architecture |
-| [API Reference](api/) | Complete C# API documentation |
-| [Troubleshooting](troubleshooting/) | Common issues, solutions, and debugging |
+| [Developer Guide](developer-guide/index.md) | Building from source, contributing, and architecture |
+| [API Reference](api/index.md) | Complete C# API documentation |
+| [Troubleshooting](troubleshooting/index.md) | Common issues, solutions, and debugging |
 
 ## 🤝 Community
 
@@ -134,4 +130,4 @@ This ensures your knowledge base remains fast and navigable while keeping all re
 
 ---
 
-*Made with ❤️ for the education and knowledge management community*
+Made with ❤️ for the education and knowledge management community

@@ -332,6 +332,6 @@ After completing these tutorials:
 
 For more help, see the [User Guide](../user-guide/index.md) and [Troubleshooting Guide](../troubleshooting/index.md).
 
-- [Getting Started](../getting-started/) for basic usage
-- [User Guide](../user-guide/) for detailed feature documentation
-- [Configuration](../configuration/) for setup instructions
+- [Getting Started](../getting-started/index.md) for basic usage
+- [User Guide](../user-guide/index.md) for detailed feature documentation
+- [Configuration](../configuration/index.md) for setup instructions

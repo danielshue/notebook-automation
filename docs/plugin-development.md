@@ -737,4 +737,4 @@ public class DebuggingResolver : IFieldValueResolver
 }
 ```
 
-For more information, see the [Metadata Schema Configuration Guide](metadata-schema-configuration.md) and [API Reference](../api/index.md).
+For more information, see the [Metadata Schema Configuration Guide](metadata-schema-configuration.md) and [API Reference](api/index.md).
