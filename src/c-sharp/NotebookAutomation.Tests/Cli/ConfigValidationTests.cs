@@ -7,12 +7,13 @@ namespace NotebookAutomation.Tests.Cli;
 [TestClass]
 public class ConfigValidationTests
 {
-    [ClassInitialize]
-    public static void ClassInit(TestContext context)
+    [TestInitialize]
+    public void TestInit()
     {
-        // Initialize DI for tests; pass null or a test config path as needed
+        // Ensure DI is initialized before each test
         NotebookAutomation.Cli.Program.SetupDependencyInjection(null, false);
     }
+
     [TestMethod]
     public async Task RequireOpenAi_ReturnsFalse_WhenApiKeyMissing()
     {

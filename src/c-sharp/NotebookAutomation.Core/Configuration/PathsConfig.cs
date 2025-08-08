@@ -139,4 +139,49 @@ public class PathsConfig
     /// </remarks>
     [JsonPropertyName("base_block_template_filename")]
     public virtual string BaseBlockTemplateFilename { get; set; } = "BaseBlockTemplate.yml";
+
+    /// <summary>
+    /// Gets the effective vault root path by combining the vault root with the resources base path.
+    /// </summary>
+    /// <returns>
+    /// The combined path of NotebookVaultFullpathRoot and NotebookVaultResourcesBasepath,
+    /// or just the vault root if no resources base path is configured.
+    /// Returns empty string if vault root is not configured.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method provides a single, consistent way to calculate the effective vault root
+    /// throughout the application. It handles path normalization and ensures consistent
+    /// directory separator usage across platforms.
+    /// </para>
+    /// <para>
+    /// Examples:
+    /// - NotebookVaultFullpathRoot: "C:\vault", NotebookVaultResourcesBasepath: "01_Projects\MBA"
+    ///   Result: "C:\vault\01_Projects\MBA"
+    /// - NotebookVaultFullpathRoot: "C:\vault", NotebookVaultResourcesBasepath: ""
+    ///   Result: "C:\vault"
+    /// - NotebookVaultFullpathRoot: "", NotebookVaultResourcesBasepath: "01_Projects\MBA"
+    ///   Result: ""
+    /// </para>
+    /// </remarks>
+    public virtual string GetEffectiveVaultRoot()
+    {
+        if (string.IsNullOrEmpty(NotebookVaultFullpathRoot))
+        {
+            return string.Empty;
+        }
+
+        if (string.IsNullOrEmpty(NotebookVaultResourcesBasepath))
+        {
+            return NotebookVaultFullpathRoot;
+        }
+
+        // Normalize the resources base path by removing leading and trailing separators and converting to platform separators
+        string normalizedResourcesPath = NotebookVaultResourcesBasepath
+            .Trim('/', '\\')
+            .Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar);
+
+        return Path.Combine(NotebookVaultFullpathRoot, normalizedResourcesPath);
+    }
 }

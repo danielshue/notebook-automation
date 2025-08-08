@@ -92,8 +92,12 @@ public class VaultIndexContentGenerator(
     private readonly ILogger<VaultIndexContentGenerator> _logger = logger;
     private readonly IMetadataHierarchyDetector _hierarchyDetector = hierarchyDetector;
     private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder;
-    private readonly string _defaultVaultRootPath = appConfig.Paths.NotebookVaultFullpathRoot;
-    private readonly string _baseBlockTemplateFilename = appConfig.Paths.BaseBlockTemplateFilename;
+    // Use effective vault root (merged resources path) falling back to raw root, then empty string
+    private readonly string _defaultVaultRootPath = appConfig.Paths?.GetEffectiveVaultRoot()
+        ?? appConfig.Paths?.NotebookVaultFullpathRoot
+        ?? string.Empty;
+    // Null-safe access with sensible fallback filename
+    private readonly string _baseBlockTemplateFilename = appConfig.Paths?.BaseBlockTemplateFilename ?? "BaseBlockTemplate.yaml";
 
     // Cache for discovered root index filenames to avoid expensive file system lookups
     private readonly Dictionary<string, string> _discoveredIndexFilenames = new();
@@ -444,7 +448,7 @@ public class VaultIndexContentGenerator(
     /// <item><description><strong>Level 1 (Program)</strong>: Courses listing only</description></item>
     /// <item><description><strong>Level 2 (Course)</strong>: Courses + course-specific content</description></item>
     /// <item><description><strong>Level 3 (Class Index)</strong>: Classes listing</description></item>
-    /// <item><description><strong>Level 4 (Class Level)</strong>: Obsidian Bases integration only</description></item>
+    /// <item><description><strong>Level 4 (Class Level)</strong> - Obsidian Bases integration only</description></item>
     /// <item><description><strong>Level 5 (Module)</strong>: Module organization with content categorization</description></item>
     /// <item><description><strong>Level 6+ (Lesson)</strong>: Lesson-focused content with videos and readings prioritized</description></item>
     /// </list>

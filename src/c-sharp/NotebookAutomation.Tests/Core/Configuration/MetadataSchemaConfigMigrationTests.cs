@@ -247,11 +247,14 @@ public class MetadataSchemaConfigMigrationTests
     public void PathsConfig_Should_Serialize_And_Deserialize_NotebookVaultResourcesBasepath()
     {
         // Arrange
+        string tempVaultRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "vault");
+        string tempOneDriveRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "onedrive") + Path.DirectorySeparatorChar;
+
         var originalConfig = new PathsConfig
         {
-            NotebookVaultFullpathRoot = "D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test",
+            NotebookVaultFullpathRoot = tempVaultRoot,
             NotebookVaultResourcesBasepath = "01_Projects\\MBA",
-            OnedriveFullpathRoot = "C:\\Users\\user\\OneDrive\\",
+            OnedriveFullpathRoot = tempOneDriveRoot,
             OnedriveResourcesBasepath = "Education\\MBA-Resources"
         };
 
@@ -274,21 +277,26 @@ public class MetadataSchemaConfigMigrationTests
     public void PathsConfig_Should_Map_Json_Property_Name_For_NotebookVaultResourcesBasepath()
     {
         // Arrange - Create JSON with the exact property name used in config files
-        var json = @"{
-            ""notebook_vault_fullpath_root"": ""D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test"",
-            ""notebook_vault_resources_basepath"": ""01_Projects\\MBA"",
-            ""onedrive_fullpath_root"": ""C:\\Users\\user\\OneDrive\\"",
-            ""onedrive_resources_basepath"": ""Education\\MBA-Resources""
-        }";
+        string tempVaultRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "vault");
+        string tempOneDriveRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "onedrive") + Path.DirectorySeparatorChar;
+
+        var jsonObject = new Dictionary<string, object?>
+        {
+            ["notebook_vault_fullpath_root"] = tempVaultRoot,
+            ["notebook_vault_resources_basepath"] = "01_Projects\\MBA",
+            ["onedrive_fullpath_root"] = tempOneDriveRoot,
+            ["onedrive_resources_basepath"] = "Education\\MBA-Resources",
+        };
+        var json = JsonSerializer.Serialize(jsonObject);
 
         // Act
         var deserializedConfig = JsonSerializer.Deserialize<PathsConfig>(json);
 
         // Assert
         Assert.IsNotNull(deserializedConfig);
-        Assert.AreEqual("D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test", deserializedConfig.NotebookVaultFullpathRoot);
+        Assert.AreEqual(tempVaultRoot, deserializedConfig.NotebookVaultFullpathRoot);
         Assert.AreEqual("01_Projects\\MBA", deserializedConfig.NotebookVaultResourcesBasepath);
-        Assert.AreEqual("C:\\Users\\user\\OneDrive\\", deserializedConfig.OnedriveFullpathRoot);
+        Assert.AreEqual(tempOneDriveRoot, deserializedConfig.OnedriveFullpathRoot);
         Assert.AreEqual("Education\\MBA-Resources", deserializedConfig.OnedriveResourcesBasepath);
     }
 
@@ -299,18 +307,27 @@ public class MetadataSchemaConfigMigrationTests
     public void AppConfig_Should_Load_NotebookVaultResourcesBasepath_From_JsonFile()
     {
         // Arrange - Create a config JSON that matches the real config file structure
-        var configJson = @"{
-            ""ConfigFilePath"": ""test-config.json"",
-            ""paths"": {
-                ""onedrive_fullpath_root"": ""C:\\Users\\user\\OneDrive\\"",
-                ""onedrive_resources_basepath"": ""Education\\MBA-Resources"",
-                ""notebook_vault_fullpath_root"": ""D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test"",
-                ""notebook_vault_resources_basepath"": ""01_Projects\\MBA"",
-                ""metadata_schema_file"": ""D:\\source\\notebook-automation\\config\\metadata-schema.yml"",
-                ""logging_dir"": ""D:\\source\\notebook-automation\\logs"",
-                ""prompts_path"": ""D:\\source\\notebook-automation\\prompts""
-            }
-        }";
+        string tempVaultRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "vault");
+        string tempOneDriveRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "onedrive") + Path.DirectorySeparatorChar;
+        string metadataSchema = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "config", "metadata-schema.yml");
+        string logsDir = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "logs");
+        string promptsDir = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "prompts");
+
+        var jsonObject = new
+        {
+            ConfigFilePath = "test-config.json",
+            paths = new Dictionary<string, string?>
+            {
+                ["onedrive_fullpath_root"] = tempOneDriveRoot,
+                ["onedrive_resources_basepath"] = "Education\\MBA-Resources",
+                ["notebook_vault_fullpath_root"] = tempVaultRoot,
+                ["notebook_vault_resources_basepath"] = "01_Projects\\MBA",
+                ["metadata_schema_file"] = metadataSchema,
+                ["logging_dir"] = logsDir,
+                ["prompts_path"] = promptsDir,
+            },
+        };
+        var configJson = JsonSerializer.Serialize(jsonObject);
 
         var tempFile = Path.GetTempFileName();
         File.WriteAllText(tempFile, configJson);
@@ -321,11 +338,11 @@ public class MetadataSchemaConfigMigrationTests
             var appConfig = AppConfig.LoadFromJsonFile(tempFile);
 
             // Assert
-            Assert.AreEqual("D:\\source\\notebook-automation\\tests\\obsidian-vault\\Obsidian Vault Test", appConfig.Paths.NotebookVaultFullpathRoot);
+            Assert.AreEqual(tempVaultRoot, appConfig.Paths.NotebookVaultFullpathRoot);
             Assert.AreEqual("01_Projects\\MBA", appConfig.Paths.NotebookVaultResourcesBasepath);
-            Assert.AreEqual("C:\\Users\\user\\OneDrive\\", appConfig.Paths.OnedriveFullpathRoot);
+            Assert.AreEqual(tempOneDriveRoot, appConfig.Paths.OnedriveFullpathRoot);
             Assert.AreEqual("Education\\MBA-Resources", appConfig.Paths.OnedriveResourcesBasepath);
-            Assert.AreEqual("D:\\source\\notebook-automation\\config\\metadata-schema.yml", appConfig.Paths.MetadataSchemaFile);
+            Assert.AreEqual(metadataSchema, appConfig.Paths.MetadataSchemaFile);
         }
         finally
         {
@@ -386,4 +403,178 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(string.Empty, appConfig.Paths.NotebookVaultResourcesBasepath);
         Assert.AreEqual("/test/vault", appConfig.Paths.NotebookVaultFullpathRoot);
     }
+
+    #region GetEffectiveVaultRoot Tests
+
+    /// <summary>
+    /// Tests that GetEffectiveVaultRoot returns the vault root when no resources base path is configured.
+    /// </summary>
+    [TestMethod]
+    public void GetEffectiveVaultRoot_Should_Return_VaultRoot_When_No_ResourcesBasePath()
+    {
+        // Arrange
+        string tempVaultRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "vault");
+        var pathsConfig = new PathsConfig
+        {
+            NotebookVaultFullpathRoot = tempVaultRoot,
+            NotebookVaultResourcesBasepath = ""
+        };
+
+        // Act
+        string result = pathsConfig.GetEffectiveVaultRoot();
+
+        // Assert
+        Assert.AreEqual(tempVaultRoot, result);
+    }
+
+    /// <summary>
+    /// Tests that GetEffectiveVaultRoot combines vault root and resources base path correctly.
+    /// </summary>
+    [TestMethod]
+    public void GetEffectiveVaultRoot_Should_Combine_VaultRoot_And_ResourcesBasePath()
+    {
+        // Arrange
+        string tempVaultRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "vault");
+        var pathsConfig = new PathsConfig
+        {
+            NotebookVaultFullpathRoot = tempVaultRoot,
+            NotebookVaultResourcesBasepath = @"01_Projects\MBA"
+        };
+
+        // Act
+        string result = pathsConfig.GetEffectiveVaultRoot();
+
+        // Assert
+        string expected = Path.Combine(tempVaultRoot, @"01_Projects\MBA");
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Tests that GetEffectiveVaultRoot returns empty string when vault root is not configured.
+    /// </summary>
+    [TestMethod]
+    public void GetEffectiveVaultRoot_Should_Return_Empty_When_VaultRoot_Empty()
+    {
+        // Arrange
+        var pathsConfig = new PathsConfig
+        {
+            NotebookVaultFullpathRoot = "",
+            NotebookVaultResourcesBasepath = @"01_Projects\MBA"
+        };
+
+        // Act
+        string result = pathsConfig.GetEffectiveVaultRoot();
+
+        // Assert
+        Assert.AreEqual(string.Empty, result);
+    }
+
+    /// <summary>
+    /// Tests that GetEffectiveVaultRoot returns empty string when vault root is null.
+    /// </summary>
+    [TestMethod]
+    public void GetEffectiveVaultRoot_Should_Return_Empty_When_VaultRoot_Null()
+    {
+        // Arrange
+        var pathsConfig = new PathsConfig
+        {
+            NotebookVaultFullpathRoot = null!,
+            NotebookVaultResourcesBasepath = @"01_Projects\MBA"
+        };
+
+        // Act
+        string result = pathsConfig.GetEffectiveVaultRoot();
+
+        // Assert
+        Assert.AreEqual(string.Empty, result);
+    }
+
+    /// <summary>
+    /// Tests that GetEffectiveVaultRoot handles leading separators in resources base path correctly.
+    /// </summary>
+    [TestMethod]
+    public void GetEffectiveVaultRoot_Should_Handle_Leading_Separators_In_ResourcesBasePath()
+    {
+        // Arrange
+        string tempVaultRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "vault");
+        var pathsConfig = new PathsConfig
+        {
+            NotebookVaultFullpathRoot = tempVaultRoot,
+            NotebookVaultResourcesBasepath = @"\01_Projects\MBA"
+        };
+
+        // Act
+        string result = pathsConfig.GetEffectiveVaultRoot();
+
+        // Assert
+        string expected = Path.Combine(tempVaultRoot, @"01_Projects\MBA");
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Tests that GetEffectiveVaultRoot handles forward slashes in resources base path correctly.
+    /// </summary>
+    [TestMethod]
+    public void GetEffectiveVaultRoot_Should_Handle_Forward_Slashes_In_ResourcesBasePath()
+    {
+        // Arrange
+        string tempVaultRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "vault");
+        var pathsConfig = new PathsConfig
+        {
+            NotebookVaultFullpathRoot = tempVaultRoot,
+            NotebookVaultResourcesBasepath = "01_Projects/MBA"
+        };
+
+        // Act
+        string result = pathsConfig.GetEffectiveVaultRoot();
+
+        // Assert
+        string expected = Path.Combine(tempVaultRoot, @"01_Projects\MBA");
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Tests that GetEffectiveVaultRoot handles mixed separators in resources base path correctly.
+    /// </summary>
+    [TestMethod]
+    public void GetEffectiveVaultRoot_Should_Handle_Mixed_Separators_In_ResourcesBasePath()
+    {
+        // Arrange
+        string tempVaultRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "vault");
+        var pathsConfig = new PathsConfig
+        {
+            NotebookVaultFullpathRoot = tempVaultRoot,
+            NotebookVaultResourcesBasepath = "/01_Projects\\MBA/"
+        };
+
+        // Act
+        string result = pathsConfig.GetEffectiveVaultRoot();
+
+        // Assert
+        string expected = Path.Combine(tempVaultRoot, @"01_Projects\MBA");
+        Assert.AreEqual(expected, result);
+    }
+
+    /// <summary>
+    /// Tests that GetEffectiveVaultRoot preserves vault root when resources base path is null.
+    /// </summary>
+    [TestMethod]
+    public void GetEffectiveVaultRoot_Should_Return_VaultRoot_When_ResourcesBasePath_Null()
+    {
+        // Arrange
+        string tempVaultRoot = Path.Combine(Path.GetTempPath(), "na-tests", Guid.NewGuid().ToString("N"), "vault");
+        var pathsConfig = new PathsConfig
+        {
+            NotebookVaultFullpathRoot = tempVaultRoot,
+            NotebookVaultResourcesBasepath = null!
+        };
+
+        // Act
+        string result = pathsConfig.GetEffectiveVaultRoot();
+
+        // Assert
+        Assert.AreEqual(tempVaultRoot, result);
+    }
+
+    #endregion
 }

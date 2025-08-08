@@ -871,11 +871,16 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         AppConfig? appConfig)
     {
         string effectiveInput = input;
-        string effectiveOutput = output ?? appConfig?.Paths?.NotebookVaultFullpathRoot ?? "Generated";
+        // Prefer explicit output, then effective vault root (root + resources basepath), then raw root, then Generated
+        var effectiveVaultRoot = appConfig?.Paths?.GetEffectiveVaultRoot();
+        string effectiveOutput = output
+                                 ?? effectiveVaultRoot
+                                 ?? appConfig?.Paths?.NotebookVaultFullpathRoot
+                                 ?? "Generated";
 
         if (string.IsNullOrWhiteSpace(effectiveInput))
         {
-            logger.LogError("Input path is required. Config: {Config}", appConfig?.Paths?.NotebookVaultFullpathRoot);
+            logger.LogError("Input path is required. Config (raw vault root): {Config}", appConfig?.Paths?.NotebookVaultFullpathRoot);
             return null;
         }
 

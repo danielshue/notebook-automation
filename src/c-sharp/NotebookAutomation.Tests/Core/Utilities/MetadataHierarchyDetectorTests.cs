@@ -2565,4 +2565,130 @@ public class MetadataHierarchyDetectorPathTests
                 $"Deep nesting test failed. Path: '{testCase.Path}', Expected: {testCase.Expected}, Got: {result}");
         }
     }
+
+    /// <summary>
+    /// Tests that MetadataHierarchyDetector correctly uses the unified GetEffectiveVaultRoot approach
+    /// when NotebookVaultResourcesBasepath is configured.
+    /// </summary>
+    [TestMethod]
+    public void FindHierarchyInfo_WithNotebookVaultResourcesBasepath_UsesEffectiveVaultRoot()
+    {
+        // Arrange - Create a temporary directory structure that simulates the real scenario
+        string baseVaultRoot = Path.Combine(Path.GetTempPath(), "TestVault", Guid.NewGuid().ToString());
+        string resourcesBasePath = Path.Combine("01_Projects", "MBA");
+        string effectiveVaultRoot = Path.Combine(baseVaultRoot, resourcesBasePath);
+
+        // Create the full directory structure
+        string programDir = Path.Combine(effectiveVaultRoot, "Value Chain Management");
+        string courseDir = Path.Combine(programDir, "Operations Management");
+        string classDir = Path.Combine(courseDir, "operations-management-organization-and-analysis");
+        string moduleDir = Path.Combine(classDir, "01_course-orientation-operations-strategy");
+        string lessonDir = Path.Combine(moduleDir, "01_about-the-course-and-your-classmates");
+
+        Directory.CreateDirectory(lessonDir);
+
+        try
+        {
+            // Configure AppConfig with separate vault root and resources base path
+            var config = new AppConfig
+            {
+                Paths = new PathsConfig
+                {
+                    NotebookVaultFullpathRoot = baseVaultRoot,
+                    NotebookVaultResourcesBasepath = resourcesBasePath
+                }
+            };
+
+            var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+                logger: null,
+                appConfig: config);            // Act - Test hierarchy detection on the lesson file path
+            var result = detector.FindHierarchyInfo(lessonDir);
+
+            // Assert - Verify correct hierarchy detection
+            Assert.AreEqual("Value Chain Management", result["program"],
+                "Program should be 'Value Chain Management' (first level under effective vault root)");
+            Assert.AreEqual("Operations Management", result["course"],
+                "Course should be 'Operations Management' (second level under effective vault root)");
+            Assert.AreEqual("operations-management-organization-and-analysis", result["class"],
+                "Class should be 'operations-management-organization-and-analysis' (third level under effective vault root)");
+            Assert.AreEqual("01_course-orientation-operations-strategy", result["module"],
+                "Module should be '01_course-orientation-operations-strategy' (fourth level under effective vault root)");
+
+            // Verify that the detector is using the effective vault root (not the base vault root)
+            Assert.AreEqual(effectiveVaultRoot, detector.VaultRoot,
+                "MetadataHierarchyDetector should use the effective vault root that combines base vault root with resources base path");
+
+            Console.WriteLine($"Base Vault Root: {baseVaultRoot}");
+            Console.WriteLine($"Resources Base Path: {resourcesBasePath}");
+            Console.WriteLine($"Effective Vault Root: {effectiveVaultRoot}");
+            Console.WriteLine($"Detector Vault Root: {detector.VaultRoot}");
+            Console.WriteLine();
+            Console.WriteLine("Hierarchy Detection Results:");
+            Console.WriteLine($"  Program: {result["program"]}");
+            Console.WriteLine($"  Course: {result["course"]}");
+            Console.WriteLine($"  Class: {result["class"]}");
+            Console.WriteLine($"  Module: {result["module"]}");
+        }
+        finally
+        {
+            // Cleanup
+            if (Directory.Exists(baseVaultRoot))
+            {
+                Directory.Delete(baseVaultRoot, true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Tests that MetadataHierarchyDetector correctly uses GetEffectiveVaultRoot when
+    /// NotebookVaultResourcesBasepath is empty or null.
+    /// </summary>
+    [TestMethod]
+    public void FindHierarchyInfo_WithEmptyNotebookVaultResourcesBasepath_UsesBaseVaultRoot()
+    {
+        // Arrange
+        string baseVaultRoot = Path.Combine(Path.GetTempPath(), "TestVault", Guid.NewGuid().ToString());
+
+        // Create directory structure directly under base vault root
+        string programDir = Path.Combine(baseVaultRoot, "Direct Program");
+        string courseDir = Path.Combine(programDir, "Direct Course");
+
+        Directory.CreateDirectory(courseDir);
+
+        try
+        {
+            // Configure AppConfig with empty resources base path
+            var config = new AppConfig
+            {
+                Paths = new PathsConfig
+                {
+                    NotebookVaultFullpathRoot = baseVaultRoot,
+                    NotebookVaultResourcesBasepath = "" // Empty resources base path
+                }
+            };
+
+            var detector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(
+                logger: null,
+                appConfig: config);            // Act
+            var result = detector.FindHierarchyInfo(courseDir);
+
+            // Assert
+            Assert.AreEqual("Direct Program", result["program"],
+                "Program should be 'Direct Program' when no resources base path is configured");
+            Assert.AreEqual("Direct Course", result["course"],
+                "Course should be 'Direct Course' when no resources base path is configured");
+
+            // Verify that the detector uses the base vault root (since no resources base path)
+            Assert.AreEqual(baseVaultRoot, detector.VaultRoot,
+                "MetadataHierarchyDetector should use the base vault root when resources base path is empty");
+        }
+        finally
+        {
+            // Cleanup
+            if (Directory.Exists(baseVaultRoot))
+            {
+                Directory.Delete(baseVaultRoot, true);
+            }
+        }
+    }
 }

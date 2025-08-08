@@ -171,17 +171,30 @@ internal class MarkdownCommands
                 return;
             }
 
+            // Determine effective vault root (combined root + resources basepath if configured)
+            var effectiveVaultRoot = appConfig.Paths?.GetEffectiveVaultRoot();
+            logger.LogDebug("Resolved effective vault root: {effectiveVaultRoot} (raw: {rawRoot}, basepath: {basepath})",
+                effectiveVaultRoot,
+                appConfig.Paths?.NotebookVaultFullpathRoot,
+                appConfig.Paths?.NotebookVaultResourcesBasepath);
+
             // Determine effective output directory for vault root context
-            string effectiveOutputDir = destDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated";
+            string effectiveOutputDir = destDir
+                                        ?? effectiveVaultRoot
+                                        ?? appConfig.Paths?.NotebookVaultFullpathRoot
+                                        ?? "Generated";
             effectiveOutputDir = Path.GetFullPath(effectiveOutputDir);
 
             // Set up vault root override in scoped context
             var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
 
-            // Use explicit vault root override if provided, otherwise use base vault root (not combined with resources path)
-            string finalVaultRoot = vaultRootOverride ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? effectiveOutputDir;
+            // Use explicit vault root override if provided, otherwise use effective vault root (fallback to output dir)
+            string finalVaultRoot = vaultRootOverride
+                                    ?? effectiveVaultRoot
+                                    ?? appConfig.Paths?.NotebookVaultFullpathRoot
+                                    ?? effectiveOutputDir;
             vaultRootContext.VaultRootOverride = finalVaultRoot;
-            logger.LogDebug($"Using vault root override for metadata hierarchy: {finalVaultRoot}");
+            logger.LogDebug("Using vault root override for metadata hierarchy: {finalVaultRoot}", finalVaultRoot);
 
             string? openAiApiKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
             if (string.IsNullOrWhiteSpace(openAiApiKey) && appConfig?.AiService != null)

@@ -331,19 +331,17 @@ public abstract class DocumentNoteProcessorBase(
     {
         try
         {
-            // Get the configured OneDrive resources root and vault root
+            // Get the configured OneDrive resources root and effective vault root
             string onedriveRoot = AppConfig?.Paths?.OnedriveFullpathRoot ?? "";
             string onedriveResourcesPath = AppConfig?.Paths?.OnedriveResourcesBasepath ?? "";
-            string vaultRoot = AppConfig?.Paths?.NotebookVaultFullpathRoot ?? "";
-            string vaultResourcesPath = AppConfig?.Paths?.NotebookVaultResourcesBasepath ?? "";
+            string effectiveVaultRoot = AppConfig?.Paths?.GetEffectiveVaultRoot() ?? "";
 
             Logger.LogDebug($"ConvertOneDriveToVaultPath - Input: {oneDrivePath}");
             Logger.LogDebug($"ConvertOneDriveToVaultPath - OnedriveRoot: {onedriveRoot}");
             Logger.LogDebug($"ConvertOneDriveToVaultPath - OnedriveResourcesPath: {onedriveResourcesPath}");
-            Logger.LogDebug($"ConvertOneDriveToVaultPath - VaultRoot: {vaultRoot}");
-            Logger.LogDebug($"ConvertOneDriveToVaultPath - VaultResourcesPath: {vaultResourcesPath}");
+            Logger.LogDebug($"ConvertOneDriveToVaultPath - EffectiveVaultRoot: {effectiveVaultRoot}");
 
-            if (string.IsNullOrEmpty(onedriveRoot) || string.IsNullOrEmpty(vaultRoot))
+            if (string.IsNullOrEmpty(onedriveRoot) || string.IsNullOrEmpty(effectiveVaultRoot))
             {
                 Logger.LogWarning("OneDrive or vault root not configured. Using original path for hierarchy detection.");
                 return oneDrivePath;
@@ -362,14 +360,11 @@ public abstract class DocumentNoteProcessorBase(
                 string relativePath = Path.GetRelativePath(fullOnedriveResourcesRoot, oneDrivePath);
                 Logger.LogDebug($"ConvertOneDriveToVaultPath - RelativePath: {relativePath}");
 
-                // Build the full vault resources path by combining vault root with vault resources base path
-                string fullVaultResourcesRoot = string.IsNullOrEmpty(vaultResourcesPath) ?
-                    vaultRoot :
-                    Path.Combine(vaultRoot, vaultResourcesPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
-                Logger.LogDebug($"ConvertOneDriveToVaultPath - FullVaultResourcesRoot: {fullVaultResourcesRoot}");
+                // Use the effective vault root (already includes the resources base path)
+                Logger.LogDebug($"ConvertOneDriveToVaultPath - EffectiveVaultRoot: {effectiveVaultRoot}");
 
-                // Combine with vault resources root to get the equivalent vault path
-                string vaultPath = Path.Combine(fullVaultResourcesRoot, relativePath);
+                // Combine with effective vault root to get the equivalent vault path
+                string vaultPath = Path.Combine(effectiveVaultRoot, relativePath);
                 Logger.LogDebug($"ConvertOneDriveToVaultPath - Output VaultPath: {vaultPath}");
                 return vaultPath;
             }
@@ -396,20 +391,22 @@ public abstract class DocumentNoteProcessorBase(
     }
 
     /// <summary>
-    /// Gets the full vault resources root path by combining vault root with vault resources base path.
+    /// Gets the effective vault root path by combining vault root with vault resources base path.
     /// </summary>
-    /// <returns>The full vault resources root path, or null if configuration is incomplete.</returns>
+    /// <returns>The effective vault root path, or null if configuration is incomplete.</returns>
+    /// <remarks>
+    /// This method now uses the unified approach from PathsConfig.GetEffectiveVaultRoot()
+    /// to ensure consistency across the application.
+    /// </remarks>
     public string? GetVaultResourcesRoot()
     {
-        if (string.IsNullOrEmpty(AppConfig?.Paths?.NotebookVaultFullpathRoot) ||
-            string.IsNullOrEmpty(AppConfig?.Paths?.NotebookVaultResourcesBasepath))
+        if (AppConfig?.Paths == null)
         {
             return null;
         }
 
-        return Path.Combine(
-            AppConfig.Paths.NotebookVaultFullpathRoot,
-            AppConfig.Paths.NotebookVaultResourcesBasepath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+        string effectiveRoot = AppConfig.Paths.GetEffectiveVaultRoot();
+        return string.IsNullOrEmpty(effectiveRoot) ? null : effectiveRoot;
     }
 
     /// <summary>

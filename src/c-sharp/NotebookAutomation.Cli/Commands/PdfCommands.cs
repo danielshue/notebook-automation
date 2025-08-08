@@ -176,18 +176,28 @@ internal class PdfCommands
             var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("PdfCommands");
             var loggingService = scopedServices.GetRequiredService<LoggingService>();
-            var appConfig = scopedServices.GetRequiredService<AppConfig>();            // Determine effective output directory for vault root context
-            string effectiveOutputDir = overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated";
+            var appConfig = scopedServices.GetRequiredService<AppConfig>();
+            // Determine effective combined vault root (root + resources basepath if configured)
+            var effectiveVaultRoot = appConfig.Paths?.GetEffectiveVaultRoot();
+            logger.LogDebug("Resolved effective vault root: {effectiveVaultRoot} (raw: {rawRoot}, basepath: {basepath})",
+                effectiveVaultRoot,
+                appConfig.Paths?.NotebookVaultFullpathRoot,
+                appConfig.Paths?.NotebookVaultResourcesBasepath);
+            // Determine effective output directory for vault root context
+            string effectiveOutputDir = overrideOutputDir
+                                        ?? effectiveVaultRoot
+                                        ?? appConfig.Paths?.NotebookVaultFullpathRoot
+                                        ?? "Generated";
             effectiveOutputDir = Path.GetFullPath(effectiveOutputDir);
-
             // Set up vault root override in scoped context
             var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
-
-            // Use explicit vault root override if provided, otherwise use base vault root (not combined with resources path)
-            string finalVaultRoot = vaultRootOverride ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? effectiveOutputDir;
+            // Use explicit vault root override if provided, otherwise use effective vault root (fallback to output dir)
+            string finalVaultRoot = vaultRootOverride
+                                    ?? effectiveVaultRoot
+                                    ?? appConfig.Paths?.NotebookVaultFullpathRoot
+                                    ?? effectiveOutputDir;
             vaultRootContext.VaultRootOverride = finalVaultRoot;
-            logger.LogDebug($"Using vault root override for metadata hierarchy: {finalVaultRoot}");
-
+            logger.LogDebug("Using vault root override for metadata hierarchy: {finalVaultRoot}", finalVaultRoot);
             var batchProcessor = scopedServices.GetRequiredService<PdfNoteBatchProcessor>();
 
             // Handle refresh auth flag - set force refresh on OneDriveService if requested
@@ -346,7 +356,7 @@ internal class PdfCommands
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
                 resolvedInput);
-            logger.LogDebug($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
+            logger.LogDebug($"Output will be written to: {overrideOutputDir ?? effectiveVaultRoot ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
 
             // Override image extraction setting from CLI if specified
             bool originalExtractImages = appConfig.PdfExtractImages;

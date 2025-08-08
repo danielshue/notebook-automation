@@ -44,9 +44,10 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     private static readonly Regex NumberPrefixRegex = NumberPrefixRegexPattern();
 
     /// <summary>
-    /// Gets the vault root path for hierarchical analysis, or null if not configured.
+    /// Gets the effective vault root path (combined vault root + resources basepath if configured).
+    /// Falls back to raw NotebookVaultFullpathRoot if combined path not available.
     /// </summary>
-    public string? VaultRoot => _appConfig?.Paths?.NotebookVaultFullpathRoot;
+    public string? VaultRoot => _appConfig?.Paths?.GetEffectiveVaultRoot() ?? _appConfig?.Paths?.NotebookVaultFullpathRoot;
 
     /// <summary>
     /// Extracts module and lesson information from a file path and adds it to the provided metadata dictionary.
@@ -859,25 +860,6 @@ public partial class CourseStructureExtractor(ILogger<CourseStructureExtractor> 
     [GeneratedRegex(@"(?i)module\s+(\d+)\s*-", RegexOptions.IgnoreCase)]
     internal static partial Regex ModuleSpaceNumberRegex();
 
-    /// <summary>
-    /// Determines if a file is content-related (video, reading, instruction, etc.) that should use number-only module extraction.
-    /// Content files get number-only module values in YAML frontmatter for consistency.
-    /// </summary>
-    /// <param name="filePath">The file path to check.</param>
-    /// <returns>True if the file is content-related, false otherwise.</returns>
-    /// <remarks>
-    /// <para>
-    /// This method distinguishes between two types of files for module metadata population:
-    /// </para>
-    /// <para>
-    /// <strong>Content Files (returns true):</strong> Videos, readings, instructions, assignments, quizzes, etc.
-    /// These get simple numeric module values like module: "01", module: "02" in YAML frontmatter.
-    /// </para>
-    /// <para>
-    /// <strong>Regular Files (returns false):</strong> Course structure files, documentation, etc.
-    /// These get friendly module titles like module: "Module 1 Introduction" via CleanModuleOrLessonName.
-    /// </para>
-    /// <para>
     /// <summary>
     /// Determines if a file is content-related (video, reading, instruction, etc.) that should use number-only module extraction.
     /// Content files get number-only module values in YAML frontmatter for consistency.

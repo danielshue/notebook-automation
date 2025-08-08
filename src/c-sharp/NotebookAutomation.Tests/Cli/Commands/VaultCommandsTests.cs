@@ -32,6 +32,10 @@ public class VaultCommandsTests
         mockPathsConfig.SetupGet(p => p.OnedriveFullpathRoot).Returns("C:/OneDriveRoot");
         mockPathsConfig.SetupGet(p => p.OnedriveResourcesBasepath).Returns("Education/MBA-Resources");
         mockAppConfig.SetupGet(a => a.Paths).Returns(mockPathsConfig.Object);
+
+        // Ensure GetEffectiveVaultRoot uses real implementation so tests exercising sync-dirs
+        // receive a non-empty effective vault root value (otherwise Moq returns default null).
+        mockPathsConfig.CallBase = true;
     }
 
     [TestCleanup]

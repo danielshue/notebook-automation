@@ -64,13 +64,28 @@ internal static class MetadataSchemaLoaderHelper
         logger ??= NullLogger<MetadataHierarchyDetector>.Instance;
         schemaLoader ??= CreateTestMetadataSchemaLoader();
 
-        appConfig ??= new AppConfig
+        // If no appConfig provided, create a default one
+        if (appConfig == null)
         {
-            Paths = new PathsConfig
+            appConfig = new AppConfig
             {
-                NotebookVaultFullpathRoot = vaultRootOverride ?? Path.GetTempPath()
+                Paths = new PathsConfig
+                {
+                    NotebookVaultFullpathRoot = vaultRootOverride ?? Path.GetTempPath()
+                }
+            };
+        }
+        else
+        {
+            // Ensure the provided appConfig has proper paths configured
+            appConfig.Paths ??= new PathsConfig();
+
+            // If NotebookVaultFullpathRoot is empty and no vaultRootOverride, set a default
+            if (string.IsNullOrEmpty(appConfig.Paths.NotebookVaultFullpathRoot) && string.IsNullOrEmpty(vaultRootOverride))
+            {
+                appConfig.Paths.NotebookVaultFullpathRoot = Path.GetTempPath();
             }
-        };
+        }
 
         return new MetadataHierarchyDetector(logger, appConfig, schemaLoader, vaultRootOverride);
     }

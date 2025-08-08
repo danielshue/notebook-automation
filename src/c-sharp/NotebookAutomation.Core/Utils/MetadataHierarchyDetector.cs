@@ -70,20 +70,20 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
         }
         else
         {
-            string baseVaultRoot = appConfig?.Paths?.NotebookVaultFullpathRoot
-                ?? throw new ArgumentNullException(nameof(appConfig), "Notebook vault path is required");
+            if (appConfig?.Paths == null)
+                throw new ArgumentNullException(nameof(appConfig), "AppConfig.Paths is required");
 
-            // Check if we should combine with resources base path for effective vault root
-            if (!string.IsNullOrEmpty(appConfig.Paths.NotebookVaultResourcesBasepath))
-            {
-                VaultRoot = Path.Combine(baseVaultRoot, appConfig.Paths.NotebookVaultResourcesBasepath);
-                Logger.LogDebug($"Using effective vault root: {baseVaultRoot} + {appConfig.Paths.NotebookVaultResourcesBasepath} = {VaultRoot}");
-            }
-            else
-            {
-                VaultRoot = baseVaultRoot;
-                Logger.LogDebug($"Using base vault root: {VaultRoot}");
-            }
+            // Use the unified method for consistent vault root calculation
+            VaultRoot = appConfig.Paths.GetEffectiveVaultRoot();
+
+            if (string.IsNullOrEmpty(VaultRoot))
+                throw new ArgumentException("Effective vault root path is empty. Please configure notebook_vault_fullpath_root.", nameof(appConfig));
+
+            Logger.LogDebug($"Using effective vault root from configuration: {VaultRoot}");
+
+            // Log the individual components for debugging
+            Logger.LogDebug($"  - NotebookVaultFullpathRoot: {appConfig.Paths.NotebookVaultFullpathRoot}");
+            Logger.LogDebug($"  - NotebookVaultResourcesBasepath: {appConfig.Paths.NotebookVaultResourcesBasepath ?? "(not configured)"}");
         }
     }
 

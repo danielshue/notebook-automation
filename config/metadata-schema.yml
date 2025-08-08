@@ -29,6 +29,8 @@ TemplateTypes:
         Default: [pdf, reference]
       page-count:
         Resolver: PdfPageCountResolver
+      auto-generated-state:
+        Default: writable
   video-reference:
     BaseTypes:
       - universal-fields
@@ -54,6 +56,8 @@ TemplateTypes:
         Default: [video, reference]
       video-duration:
         Default: "00:00:00"
+      auto-generated-state:
+        Default: writable
   resource-reading:
     BaseTypes:
       - universal-fields
@@ -79,6 +83,8 @@ TemplateTypes:
         Default: []
       page-count:
         Resolver: PdfPageCountResolver
+      auto-generated-state:
+        Default: writable
   note/instruction:
     BaseTypes:
       - universal-fields

@@ -220,20 +220,28 @@ internal class VideoCommands
             var loggerFactory = scopedServices.GetRequiredService<ILoggerFactory>();
             var logger = loggerFactory.CreateLogger("VideoCommands");
             var loggingService = scopedServices.GetRequiredService<LoggingService>();
-            var appConfig = scopedServices.GetRequiredService<AppConfig>();            // Determine effective output directory for vault root context
-            string effectiveOutputDir = overrideOutputDir ??
-                (!string.IsNullOrEmpty(appConfig.Paths?.NotebookVaultFullpathRoot) ? appConfig.Paths.NotebookVaultFullpathRoot : null) ??
-                "Generated";
+            var appConfig = scopedServices.GetRequiredService<AppConfig>();
+            // Determine effective combined vault root (root + resources basepath if configured)
+            var effectiveVaultRoot = appConfig.Paths?.GetEffectiveVaultRoot();
+            logger.LogDebug("Resolved effective vault root: {effectiveVaultRoot} (raw: {rawRoot}, basepath: {basepath})",
+                effectiveVaultRoot,
+                appConfig.Paths?.NotebookVaultFullpathRoot,
+                appConfig.Paths?.NotebookVaultResourcesBasepath);
+            // Determine effective output directory for vault root context
+            string effectiveOutputDir = overrideOutputDir
+                                        ?? effectiveVaultRoot
+                                        ?? appConfig.Paths?.NotebookVaultFullpathRoot
+                                        ?? "Generated";
             effectiveOutputDir = Path.GetFullPath(effectiveOutputDir);
-
             // Set up vault root override in scoped context
             var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
-
-            // Use base vault root (not combined with resources path) for metadata hierarchy calculation
-            string vaultRootForHierarchy = appConfig.Paths?.NotebookVaultFullpathRoot ?? effectiveOutputDir;
+            // Use explicit vault root override if provided, otherwise use effective vault root (fallback to output dir)
+            string vaultRootForHierarchy = vaultRootOverride
+                                           ?? effectiveVaultRoot
+                                           ?? appConfig.Paths?.NotebookVaultFullpathRoot
+                                           ?? effectiveOutputDir;
             vaultRootContext.VaultRootOverride = vaultRootForHierarchy;
-            logger.LogInformation($"Using vault root override for metadata hierarchy: {vaultRootForHierarchy}");
-
+            logger.LogInformation("Using vault root override for metadata hierarchy: {vaultRootForHierarchy}", vaultRootForHierarchy);
             var batchProcessor = scopedServices.GetRequiredService<VideoNoteBatchProcessor>();
 
             // Handle refresh auth flag - set force refresh on OneDriveService if requested
@@ -392,7 +400,7 @@ internal class VideoCommands
                 "Processing {Type}: {Path}",
                 isFile ? "file" : "directory",
                 resolvedInput);
-            logger.LogDebug($"Output will be written to: {overrideOutputDir ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
+            logger.LogDebug($"Output will be written to: {overrideOutputDir ?? effectiveVaultRoot ?? appConfig.Paths?.NotebookVaultFullpathRoot ?? "Generated"}");
 
             try
             {

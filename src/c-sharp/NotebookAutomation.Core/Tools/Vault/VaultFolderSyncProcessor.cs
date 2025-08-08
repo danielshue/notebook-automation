@@ -227,12 +227,13 @@ public class VaultFolderSyncProcessor(
             _logger.LogDebug($"OneDrive Path: {oneDrivePath}");
             _logger.LogDebug($"Vault Path: {vaultPath ?? "using default from config"}");
 
-            // Use default vault path from configuration if not provided
-            var targetVaultPath = vaultPath ?? _appConfig.Paths.NotebookVaultFullpathRoot;
+            // Use effective vault root (combined root + resources basepath) when vaultPath not provided
+            var defaultVaultRoot = _appConfig.Paths.GetEffectiveVaultRoot();
+            var targetVaultPath = vaultPath ?? defaultVaultRoot;
 
             if (string.IsNullOrEmpty(targetVaultPath))
             {
-                return CreateErrorResult("Cannot determine vault target path. Neither vaultPath parameter nor AppConfig.Paths.NotebookVaultFullpathRoot is provided.");
+                return CreateErrorResult("Cannot determine vault target path. Neither vaultPath parameter nor effective vault root is provided.");
             }
 
             // Construct the full OneDrive source path using configuration

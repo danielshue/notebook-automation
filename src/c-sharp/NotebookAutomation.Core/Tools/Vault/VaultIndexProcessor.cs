@@ -90,7 +90,7 @@ public class VaultIndexProcessor(
     private readonly MarkdownNoteBuilder _noteBuilder = noteBuilder;
     private readonly IVaultIndexContentGenerator _contentGenerator = contentGenerator; private readonly string _defaultVaultRootPath = !string.IsNullOrEmpty(vaultRootPath)
         ? vaultRootPath
-        : appConfig.Paths.NotebookVaultFullpathRoot;
+        : appConfig.Paths.GetEffectiveVaultRoot();
 
     /// <summary>
     /// Generates a comprehensive index file for the specified folder with intelligent hierarchy detection and content organization.
@@ -223,7 +223,7 @@ public class VaultIndexProcessor(
             {
                 if (string.IsNullOrEmpty(_defaultVaultRootPath))
                 {
-                    _logger.LogError("Cannot determine vault root path. Neither vaultPath parameter nor AppConfig.Paths.NotebookVaultFullpathRoot is provided.");
+                    _logger.LogError("Cannot determine vault root path. Neither vaultPath parameter nor effective vault root is provided.");
                     return false;
                 }
 

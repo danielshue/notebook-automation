@@ -351,7 +351,8 @@ internal class TagCommands
         // Validate that the path is within the configured vault root or that vault root override is provided
         if (string.IsNullOrEmpty(vaultRoot))
         {
-            string? configuredVaultRoot = appConfig.Paths?.NotebookVaultFullpathRoot;
+            // Use effective vault root (combined with resources basepath) for validation
+            string? configuredVaultRoot = appConfig.Paths?.GetEffectiveVaultRoot();
             if (!string.IsNullOrEmpty(configuredVaultRoot))
             {
                 string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
@@ -359,12 +360,12 @@ internal class TagCommands
 
                 if (!normalizedPath.StartsWith(normalizedConfigRoot, StringComparison.OrdinalIgnoreCase))
                 {
-                    string errorMessage = $"Error: The specified path '{path}' is not within the configured vault root '{configuredVaultRoot}'.\n" +
+                    string errorMessage = $"Error: The specified path '{path}' is not within the effective vault root '{configuredVaultRoot}'.\n" +
                                          $"To process files outside the configured vault root, use the --override-vault-root flag:\n" +
                                          $"  tag {command} \"{path}\" --override-vault-root \"{path}\"";
 
                     AnsiConsoleHelper.WriteError(errorMessage);
-                    logger.LogError($"Path validation failed: {path} is not within configured vault root {configuredVaultRoot}");
+                    logger.LogError("Path validation failed: {Path} is not within effective vault root {VaultRoot}", path, configuredVaultRoot);
                     return;
                 }
             }
@@ -492,7 +493,7 @@ internal class TagCommands
             // Validate that the path is within the configured vault root or that vault root override is provided
             if (string.IsNullOrEmpty(vaultRoot))
             {
-                string? configuredVaultRoot = appConfig.Paths?.NotebookVaultFullpathRoot;
+                string? configuredVaultRoot = appConfig.Paths?.GetEffectiveVaultRoot();
                 if (!string.IsNullOrEmpty(configuredVaultRoot))
                 {
                     string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
@@ -500,14 +501,12 @@ internal class TagCommands
 
                     if (!normalizedPath.StartsWith(normalizedConfigRoot, StringComparison.OrdinalIgnoreCase))
                     {
-                        string errorMessage = $"Error: The specified path '{path}' is not within the configured vault root '{configuredVaultRoot}'.\n" +
+                        string errorMessage = $"Error: The specified path '{path}' is not within the effective vault root '{configuredVaultRoot}'.\n" +
                                              $"To process files outside the configured vault root, use the --override-vault-root flag:\n" +
                                              $"  tag update-frontmatter \"{path}\" --override-vault-root \"{path}\"";
 
                         AnsiConsoleHelper.WriteError(errorMessage);
-                        logger.LogError(
-                            "Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
-                            path, configuredVaultRoot);
+                        logger.LogError("Path validation failed: {Path} is not within effective vault root {VaultRoot}", path, configuredVaultRoot);
                         return;
                     }
                 }
@@ -596,7 +595,7 @@ internal class TagCommands
             // Validate that the path is within the configured vault root or that vault root override is provided
             if (string.IsNullOrEmpty(vaultRoot))
             {
-                string? configuredVaultRoot = appConfig.Paths?.NotebookVaultFullpathRoot;
+                string? configuredVaultRoot = appConfig.Paths?.GetEffectiveVaultRoot();
                 if (!string.IsNullOrEmpty(configuredVaultRoot))
                 {
                     string normalizedPath = Path.GetFullPath(path).Replace('\\', '/');
@@ -604,14 +603,12 @@ internal class TagCommands
 
                     if (!normalizedPath.StartsWith(normalizedConfigRoot, StringComparison.OrdinalIgnoreCase))
                     {
-                        string errorMessage = $"Error: The specified path '{path}' is not within the configured vault root '{configuredVaultRoot}'.\n" +
+                        string errorMessage = $"Error: The specified path '{path}' is not within the effective vault root '{configuredVaultRoot}'.\n" +
                                              $"To process files outside the configured vault root, use the --override-vault-root flag:\n" +
                                              $"  tag diagnose-yaml \"{path}\" --override-vault-root \"{path}\"";
 
                         AnsiConsoleHelper.WriteError(errorMessage);
-                        logger.LogError(
-                            "Path validation failed: {FilePath} is not within configured vault root {VaultRoot}",
-                            path, configuredVaultRoot);
+                        logger.LogError("Path validation failed: {Path} is not within effective vault root {VaultRoot}", path, configuredVaultRoot);
                         return;
                     }
                 }
