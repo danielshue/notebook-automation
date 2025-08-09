@@ -126,6 +126,55 @@ public class PathsConfig
     public virtual string BaseBlockTemplateFilename { get; set; } = "BaseBlockTemplate.yml";
 
     /// <summary>
+    /// Gets the effective OneDrive resources root by combining the OneDrive root with the resources base path.
+    /// </summary>
+    /// <returns>
+    /// The combined path of OnedriveFullpathRoot and OnedriveResourcesBasepath,
+    /// or just the OneDrive root if no resources base path is configured.
+    /// Returns empty string if OneDrive root is not configured.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// This method mirrors <see cref="GetEffectiveVaultRoot"/> but for OneDrive-backed content.
+    /// It centralizes path normalization to ensure consistent directory separators.
+    /// </para>
+    /// <para>
+    /// Examples:
+    /// - OnedriveFullpathRoot: "C:\\Users\\me\\OneDrive", OnedriveResourcesBasepath: "Education\\MBA-Resources"
+    ///   Result: "C:\\Users\\me\\OneDrive\\Education\\MBA-Resources"
+    /// - OnedriveFullpathRoot: "C:\\Users\\me\\OneDrive", OnedriveResourcesBasepath: ""
+    ///   Result: "C:\\Users\\me\\OneDrive"
+    /// - OnedriveFullpathRoot: "", OnedriveResourcesBasepath: "Education\\MBA-Resources"
+    ///   Result: ""
+    /// </para>
+    /// </remarks>
+    public virtual string GetEffectiveOneDriveRoot()
+    {
+        if (string.IsNullOrEmpty(OnedriveFullpathRoot))
+        {
+            return string.Empty;
+        }
+
+        if (string.IsNullOrEmpty(OnedriveResourcesBasepath))
+        {
+            return OnedriveFullpathRoot;
+        }
+
+        string normalizedResourcesPath = OnedriveResourcesBasepath
+            .Trim('/', '\\')
+            .Replace('/', Path.DirectorySeparatorChar)
+            .Replace('\\', Path.DirectorySeparatorChar);
+
+        var sep = Path.DirectorySeparatorChar.ToString();
+        while (normalizedResourcesPath.Contains(sep + sep, StringComparison.Ordinal))
+        {
+            normalizedResourcesPath = normalizedResourcesPath.Replace(sep + sep, sep, StringComparison.Ordinal);
+        }
+
+        return Path.Combine(OnedriveFullpathRoot, normalizedResourcesPath);
+    }
+
+    /// <summary>
     /// Gets the effective vault root path by combining the vault root with the resources base path.
     /// </summary>
     /// <returns>

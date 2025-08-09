@@ -20,6 +20,75 @@ The metadata extraction system consists of several specialized components:
 - **`TagProcessor`** - Applies extracted metadata to files
 - **`MetadataEnsureProcessor`** - Orchestrates the entire metadata extraction process
 
+## Schema-driven Metadata Pipeline (New)
+
+To standardize how all processors (PDF, Video, etc.) build YAML frontmatter, we are consolidating metadata composition behind a schema-driven pipeline that uses the metadata schema and a registry of resolvers.
+
+### Goals
+
+- Single, consistent path for building frontmatter across all processors
+- Schema as the source of truth for required fields, defaults, and base types
+- Clean separation of concerns: detectors keep domain logic, TemplateManager stays schema-focused
+
+### Key Components
+
+- `IMetadataTemplateManager`: Applies schema templates (TemplateTypes, BaseTypes, Fields, RequiredFields) and TypeMapping
+- `FieldValueResolverRegistry`: Hosts pluggable resolvers for dynamic fields
+- File-type resolvers (e.g., PDF, Video)
+- General/context resolvers (adapters around detectors)
+- Adapter resolvers:
+  - `HierarchyResolver` → wraps `IMetadataHierarchyDetector` (program, course, class)
+  - `CourseStructureResolver` → wraps `ICourseStructureExtractor` (module, lesson)
+- Optional `IYamlHelper`: only for parsing/removing frontmatter present in AI-generated content or legacy notes
+
+### Pipeline Flow
+
+1. (Optional) Parse & remove AI-embedded frontmatter from body (IYamlHelper) and keep as existingMetadata
+2. Build context from file path and inputs; run general/context resolvers (Hierarchy, CourseStructure)
+3. Run file-type resolvers (e.g., PDF page-count, Video duration) and the OneDrive share link resolver (required)
+4. Apply `IMetadataTemplateManager` using a template key (e.g., `pdf-reference`, `video-reference`)
+5. Merge with precedence:
+   - CLI overrides > existing frontmatter (from AI/legacy) > extracted/resolver values > schema defaults
+6. Validate `RequiredFields`, log and fill sensible fallbacks when possible
+7. Serialize result to YAML and return metadata + cleaned body text
+
+### Processor Changes
+
+- Processors stop hand-building YAML
+- `PdfNoteProcessor` uses template key `pdf-reference`
+- `VideoNoteProcessor` uses template key `video-reference`
+- Both pass their extracted fields and context to the pipeline
+
+### Resolvers (Required)
+
+All of the following must be registered and active:
+
+- `DateCreatedResolver` (already referenced in schema)
+- `PdfPageCountResolver` (already referenced in schema)
+- `VideoDurationResolver` (new)
+- `OneDriveShareLinkResolver` (required) — generates a stable `share-link` for files under the OneDrive resources root
+
+### Design Notes
+
+- Keep TemplateManager pure (no filesystem scanning or markdown parsing)
+
+## Related Docs
+
+- Metadata Schema Configuration Guide: ./metadata-schema-configuration.md
+- Template, Type, and Tagging Guide: ./Template-Metadata-Guide.md
+- Encapsulate filesystem/path logic in detector services and adapter resolvers
+- IYamlHelper is optional and only used to strip/merge AI frontmatter during migration
+
+### Migration Plan (Incremental)
+
+1. Introduce `IMetadataPipeline` (a.k.a. MetadataComposer) orchestrating the steps above
+2. Add adapter resolvers for hierarchy and course structure; register them as general resolvers
+3. Refactor `DocumentNoteProcessorBase` to call the pipeline instead of detectors directly
+4. Refactor `PdfNoteProcessor` to remove its frontmatter builder and use the pipeline
+5. Add `VideoDurationResolver`; refactor `VideoNoteProcessor` accordingly
+6. Add unit tests for precedence, resolvers, and required field validation
+7. Update this document and README to reflect the schema-driven approach
+
 ## Metadata Field Extraction
 
 ### 1. Program Detection

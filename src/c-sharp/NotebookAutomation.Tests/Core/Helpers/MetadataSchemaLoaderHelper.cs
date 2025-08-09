@@ -1,5 +1,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using Microsoft.Extensions.Logging;
+
 using NotebookAutomation.Core.Tools;
+using NotebookAutomation.Core.Tools.Resolvers;
 
 namespace NotebookAutomation.Tests.Core.Helpers;
 
@@ -39,12 +42,48 @@ internal static class MetadataSchemaLoaderHelper
     /// <returns>A MetadataTemplateManager instance configured for testing.</returns>
     public static MetadataTemplateManager CreateTestMetadataTemplateManager(
         ILogger<MetadataTemplateManager>? logger = null,
-        IMetadataSchemaLoader? schemaLoader = null)
+    IMetadataSchemaLoader? schemaLoader = null,
+    IOneDriveService? oneDriveService = null,
+    IMetadataHierarchyDetector? hierarchyDetector = null)
     {
         logger ??= NullLogger<MetadataTemplateManager>.Instance;
         schemaLoader ??= CreateTestMetadataSchemaLoader();
+        // Wire up default resolvers similar to production registration so tests get realistic behavior
+        var loggingFactory = LoggerFactory.Create(builder => { });
+        var templateManager = new MetadataTemplateManager(logger, schemaLoader);
 
-        return new MetadataTemplateManager(logger, schemaLoader);
+        try
+        {
+            var registry = schemaLoader.ResolverRegistry;
+            registry.Register("DateCreatedResolver", new DateCreatedResolver(loggingFactory.CreateLogger<DateCreatedResolver>()));
+            registry.Register("VideoDurationResolver", new VideoDurationResolver(loggingFactory.CreateLogger<VideoDurationResolver>()));
+            registry.Register("PdfPageCountResolver", new PdfPageCountResolver(loggingFactory.CreateLogger<PdfPageCountResolver>()));
+            registry.Register("TitleResolver", new TitleResolver(loggingFactory.CreateLogger<TitleResolver>()));
+
+            if (hierarchyDetector != null)
+            {
+                registry.Register("ProgramResolver", new ProgramResolver(loggingFactory.CreateLogger<ProgramResolver>(), hierarchyDetector));
+                registry.Register("CourseResolver", new CourseResolver(loggingFactory.CreateLogger<CourseResolver>(), hierarchyDetector));
+                registry.Register("ClassResolver", new ClassResolver(loggingFactory.CreateLogger<ClassResolver>(), hierarchyDetector));
+                registry.Register("ModuleResolver", new ModuleResolver(loggingFactory.CreateLogger<ModuleResolver>(), hierarchyDetector));
+                registry.Register("LessonResolver", new LessonResolver(loggingFactory.CreateLogger<LessonResolver>(), hierarchyDetector));
+            }
+
+            if (oneDriveService != null)
+            {
+                registry.Register("OneDriveShareLinkResolver", new OneDriveShareLinkResolver(loggingFactory.CreateLogger<OneDriveShareLinkResolver>(), oneDriveService));
+            }
+            else
+            {
+                registry.Register("OneDriveShareLinkResolver", new OneDriveShareLinkResolverFallback(loggingFactory.CreateLogger<OneDriveShareLinkResolverFallback>()));
+            }
+        }
+        catch
+        {
+            // Tests should not fail if resolver wiring throws; template manager still functions.
+        }
+
+        return templateManager;
     }
 
     /// <summary>

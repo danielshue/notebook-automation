@@ -107,7 +107,8 @@ public class TagResolver : IFileTypeMetadataResolver
     /// <returns>True if this resolver can resolve the field; otherwise, false.</returns>
     /// <remarks>
     /// This resolver can handle tag-related fields including normalization, validation,
-    /// suggestion, and hierarchical organization. Requires tags in the context.
+    /// suggestion, and hierarchical organization. Requires tags in the context. Case normalization defaults to
+    /// lowercase and the default hierarchy separator is <c>"/"</c> unless overridden via <c>tagSeparator</c> in context.
     /// </remarks>
     public bool CanResolve(string fieldName, Dictionary<string, object>? context = null)
     {

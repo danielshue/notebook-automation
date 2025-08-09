@@ -16,6 +16,11 @@ namespace NotebookAutomation.Core.Utils;
 /// The manager supports dynamic field value resolution through registered resolvers, universal field 
 /// inheritance, reserved tag handling, and template validation based on the schema definition.
 /// </para>
+/// <para>
+/// <b>Compatibility note:</b> When a template includes the schema-facing field <c>share-link</c>, the manager maps it
+/// to the canonical field <c>onedrive-shared-link</c> after resolution to align with downstream consumers. The original
+/// <c>share-link</c> key is removed to avoid duplication.
+/// </para>
 /// <example>
 /// <code>
 /// var manager = new MetadataTemplateManager(logger, schemaLoader);
@@ -213,7 +218,19 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
         // Apply specific field logic for compatibility
         ApplyFieldSpecificLogic(enhancedMetadata, noteType, template);
 
-        // Remove deprecated fields
+        // Normalize and map share link fields for compatibility
+        if (enhancedMetadata.TryGetValue("share-link", out var shareLinkValue))
+        {
+            // Map to canonical field name used elsewhere
+            if (!enhancedMetadata.ContainsKey("onedrive-shared-link") || string.IsNullOrWhiteSpace(enhancedMetadata["onedrive-shared-link"]?.ToString()))
+            {
+                enhancedMetadata["onedrive-shared-link"] = shareLinkValue ?? string.Empty;
+            }
+            // Remove schema-facing key after mapping
+            enhancedMetadata.Remove("share-link");
+        }
+
+        // Remove deprecated underscore variant just in case
         enhancedMetadata.Remove("share_link");
 
         // Ensure 'type' field matches templateType for reference types

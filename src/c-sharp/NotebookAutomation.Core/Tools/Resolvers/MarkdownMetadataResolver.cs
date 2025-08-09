@@ -181,6 +181,7 @@ public class MarkdownMetadataResolver : IFileTypeMetadataResolver
     /// <para>
     /// The extraction process includes YAML frontmatter parsing, content analysis for word count
     /// and heading structure, and file system metadata for creation and modification dates.
+    /// When both pre-loaded content and filePath are present, pre-loaded content takes precedence to avoid duplicate I/O.
     /// </para>
     /// </remarks>
     public Dictionary<string, object> ExtractMetadata(Dictionary<string, object>? context = null)

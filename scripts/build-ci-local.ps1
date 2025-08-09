@@ -526,6 +526,73 @@ try {
     $tempPublishDir = Join-Path $ScriptDir "temp_publish_test"
 
     try {
+        # Helper: dotnet publish with guarded retries and targeted cleanup to avoid transient bundling issues (Windows flake)
+        function Invoke-DotNetPublishWithRetry {
+            param(
+                [Parameter(Mandatory = $true)][string]$Project,
+                [Parameter(Mandatory = $true)][string]$RuntimeId,
+                [Parameter(Mandatory = $true)][string]$Configuration,
+                [Parameter(Mandatory = $true)][string]$OutputDir,
+                [Parameter(Mandatory = $true)][string]$PackageVersion,
+                [Parameter(Mandatory = $true)][string]$FileVersion,
+                [Parameter(Mandatory = $true)][string]$AssemblyVersion,
+                [int]$MaxAttempts = 3
+            )
+
+            $attempt = 1
+            while ($attempt -le $MaxAttempts) {
+                try {
+                    # Ensure fresh output directory for each attempt
+                    if (Test-Path $OutputDir) { Remove-Item -Recurse -Force $OutputDir -ErrorAction SilentlyContinue }
+                    New-Item -ItemType Directory -Path $OutputDir -Force | Out-Null
+
+                    & dotnet publish $Project -c $Configuration -r $RuntimeId /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$PackageVersion /p:FileVersion=$FileVersion /p:AssemblyVersion=$AssemblyVersion --output $OutputDir
+                    if ($LASTEXITCODE -eq 0) { return }
+
+                    throw "dotnet publish returned exit code $LASTEXITCODE"
+                }
+                catch {
+                    $message = $_.Exception.Message
+                    if ($attempt -ge $MaxAttempts) {
+                        Write-Error "Publish failed for $RuntimeId after $MaxAttempts attempts: $message"
+                        throw
+                    }
+
+                    Write-Warning "Publish failed for $RuntimeId (attempt $attempt/$MaxAttempts): $message"
+                    Write-Host "  Applying targeted clean/restore and retrying..." -ForegroundColor $Yellow
+
+                    # Targeted clean on the CLI project (avoid nuking entire repo unless necessary)
+                    try { dotnet clean $Project -c $Configuration | Out-Null } catch { }
+
+                    # Remove bin/obj for CLI project to clear any stale RID-specific intermediates
+                    $projDir = Split-Path $Project -Parent
+                    foreach ($d in @('bin', 'obj')) {
+                        $p = Join-Path $projDir $d
+                        if (Test-Path $p) { Remove-Item -Recurse -Force $p -ErrorAction SilentlyContinue }
+                    }
+
+                    # Best-effort clean for Core library if present to avoid stale reference artifacts
+                    $coreProj = Join-Path $RepositoryRoot "src\c-sharp\NotebookAutomation.Core\NotebookAutomation.Core.csproj"
+                    if (Test-Path $coreProj) {
+                        try { dotnet clean $coreProj -c $Configuration | Out-Null } catch { }
+                        $coreDir = Split-Path $coreProj -Parent
+                        foreach ($d in @('bin', 'obj')) {
+                            $p = Join-Path $coreDir $d
+                            if (Test-Path $p) { Remove-Item -Recurse -Force $p -ErrorAction SilentlyContinue }
+                        }
+                    }
+
+                    # Restore (CLI project implicitly restores referenced projects)
+                    try { dotnet restore $Project | Out-Null } catch { }
+
+                    # Small backoff before retry (helps with file locks on Windows)
+                    $delay = [Math]::Min(3 + (($attempt - 1) * 2), 10)
+                    Start-Sleep -Seconds $delay
+                    $attempt++
+                }
+            }
+        }
+
         # Create executables directory (mirrors new CI structure)
         $executablesDir = Join-Path $tempPublishDir "executables"
         New-Item -ItemType Directory -Path $executablesDir -Force | Out-Null
@@ -569,10 +636,7 @@ try {
                 Write-Host "  Publishing $runtimeId..." -ForegroundColor $Yellow
                 
                 $tempPlatformDir = Join-Path $tempPublishDir "temp-$runtimeId"
-                dotnet publish $cliProjectPath -c $Configuration -r $runtimeId /p:PublishSingleFile=true /p:SelfContained=true /p:Version=$packageVersion /p:FileVersion=$fileVersion /p:AssemblyVersion=$assemblyVersion --output $tempPlatformDir
-                if ($LASTEXITCODE -ne 0) {
-                    throw "$runtimeId publish failed with exit code $LASTEXITCODE"
-                }
+                Invoke-DotNetPublishWithRetry -Project $cliProjectPath -RuntimeId $runtimeId -Configuration $Configuration -OutputDir $tempPlatformDir -PackageVersion $packageVersion -FileVersion $fileVersion -AssemblyVersion $assemblyVersion
 
                 # Copy and rename using new naming convention (mirrors CI exactly)
                 $sourceBinary = Join-Path $tempPlatformDir "na$($platform.ExecutableExt)"

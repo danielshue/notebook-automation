@@ -48,6 +48,7 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
 {
     public ILogger<MetadataHierarchyDetector> Logger { get; }
     public string? VaultRoot { get; }
+    private readonly string? _oneDriveRoot;
     public IMetadataSchemaLoader SchemaLoader { get; }
 
     /// <summary>
@@ -84,6 +85,25 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
             // Log the individual components for debugging
             Logger.LogDebug($"  - NotebookVaultFullpathRoot: {appConfig.Paths.NotebookVaultFullpathRoot}");
             Logger.LogDebug($"  - NotebookVaultResourcesBasepath: {appConfig.Paths.NotebookVaultResourcesBasepath ?? "(not configured)"}");
+        }
+
+        // Capture the effective OneDrive root for context-aware hierarchy resolution
+        try
+        {
+            _oneDriveRoot = appConfig?.Paths?.GetEffectiveOneDriveRoot();
+            if (!string.IsNullOrEmpty(_oneDriveRoot))
+            {
+                Logger.LogDebug($"Using effective OneDrive root from configuration: {_oneDriveRoot}");
+            }
+            else
+            {
+                Logger.LogDebug("Effective OneDrive root not configured or empty.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "Failed to compute effective OneDrive root; proceeding without it.");
+            _oneDriveRoot = null;
         }
     }
 
@@ -135,9 +155,25 @@ public class MetadataHierarchyDetector : IMetadataHierarchyDetector
 
         try
         {
-            // Get the path elements between vault root and the provided file/directory
-            Logger.LogDebug($"DEBUG: FindHierarchyInfo - vault root: '{VaultRoot}', filePath: '{filePath}'");
-            string relativePath = GetRelativePath(VaultRoot!, filePath);
+            // Determine appropriate base for relative path: prefer vault root, but if the
+            // incoming path is under the configured OneDrive resources root, use that instead.
+            string baseRoot = VaultRoot ?? string.Empty;
+            string fullPath = Path.GetFullPath(filePath);
+            string? oneDriveRoot = string.IsNullOrEmpty(_oneDriveRoot) ? null : Path.GetFullPath(_oneDriveRoot);
+
+            if (!string.IsNullOrEmpty(oneDriveRoot) && fullPath.StartsWith(oneDriveRoot, OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+            {
+                baseRoot = oneDriveRoot;
+                Logger.LogDebug($"FindHierarchyInfo - Using OneDrive root as base: '{baseRoot}' for path: '{fullPath}'");
+            }
+            else
+            {
+                Logger.LogDebug($"FindHierarchyInfo - Using Vault root as base: '{baseRoot}' for path: '{fullPath}'");
+            }
+
+            // Get the path elements between chosen base root and the provided file/directory
+            Logger.LogDebug($"DEBUG: FindHierarchyInfo - base root: '{baseRoot}', filePath: '{filePath}'");
+            string relativePath = GetRelativePath(baseRoot, filePath);
 
             Logger.LogDebug($"DEBUG: FindHierarchyInfo - relativePath: '{relativePath}'");
             string[] pathSegments = [.. relativePath.Split(Path.DirectorySeparatorChar).Where(p => !string.IsNullOrEmpty(p)

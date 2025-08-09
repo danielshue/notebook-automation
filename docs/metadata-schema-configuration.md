@@ -12,6 +12,8 @@ The `metadata-schema.yml` file defines the structure, validation rules, and beha
 - **Reserved Tag Logic**: Protected system tags with automatic validation
 - **Type Mapping**: Canonical type normalization and aliasing
 
+> Note: As of the schema-driven metadata pipeline, all processors (PDF, Video, etc.) build frontmatter via this schema and a registry of resolvers. See “Pipeline Integration” and “Required Resolvers” below.
+
 ## Schema Loader and Registry Pattern
 
 The **MetadataSchemaLoader** serves as the central component for schema-driven metadata automation, supporting:
@@ -33,6 +35,17 @@ var pdfSchema = schemaLoader.TemplateTypes["pdf-reference"];
 // Resolve field values dynamically
 var dateCreated = schemaLoader.ResolveFieldValue("pdf-reference", "date-created", context);
 ```
+
+## Pipeline Integration
+
+The schema powers a unified metadata pipeline that all note processors use:
+
+- `IMetadataPipeline` orchestrates: optional AI/legacy frontmatter parsing (via `IYamlHelper`), running context resolvers (hierarchy and course structure), file-type resolvers (PDF page-count, video duration), and the OneDrive share link resolver.
+- `IMetadataTemplateManager` applies template definitions from the schema using a template key (e.g., `pdf-reference`, `video-reference`).
+- Merge precedence is enforced: CLI overrides > existing frontmatter (AI/legacy) > resolver-derived values > schema defaults.
+- Required fields are validated after merge; violations are logged and should be surfaced to the caller.
+
+For a conceptual overview, see the Metadata Extraction System document.
 
 ## Reserved Tags and Universal Fields
 
@@ -59,6 +72,8 @@ TemplateTypes:
     Fields:
       date-created:
         Resolver: DateCreatedResolver
+      share-link:
+        Resolver: OneDriveShareLinkResolver
       status:
         Default: unread
 
@@ -93,6 +108,11 @@ ReservedTags:
 4. Test reserved tag inheritance and validation
 
 For detailed migration instructions, see the [Migration Guide](migration-guide.md).
+
+Related docs:
+
+- [Metadata Extraction System](./Metadata-Extraction-System.md)
+- [Template, Type, and Tagging Guide](./Template-Metadata-Guide.md)
 
 ## File Structure
 
@@ -157,8 +177,10 @@ TemplateTypes:
         Default: 0
       date-created:
         Resolver: DateCreatedResolver
+      share-link:
+        Resolver: OneDriveShareLinkResolver
       title:
-        Default: "PDF Note"
+        Resolver: TitleResolver
       tags:
         Default: [pdf, reference]
       page-count:
@@ -210,6 +232,8 @@ Fields:
     Resolver: DateCreatedResolver
   page-count:
     Resolver: PdfPageCountResolver
+  share-link:
+    Resolver: OneDriveShareLinkResolver
 ```
 
 #### Resolver Lookup
@@ -224,7 +248,7 @@ The system supports flexible resolver lookup:
 
 Defines fields that are automatically inherited by all template types.
 
-### Structure
+### Structure (UniversalFields)
 
 ```yaml
 UniversalFields:
@@ -233,7 +257,7 @@ UniversalFields:
   - publisher
 ```
 
-### Behavior
+### Behavior (UniversalFields)
 
 - **Automatic Inheritance**: All fields in this list are automatically added to every template type
 - **Reserved Tag Integration**: Reserved tags are automatically included as universal fields
@@ -252,7 +276,7 @@ UniversalFields:
 
 Provides mapping from template type names to canonical type names for normalization.
 
-### Structure
+### Structure (TypeMapping)
 
 ```yaml
 TypeMapping:
@@ -265,7 +289,7 @@ TypeMapping:
 - **Backwards Compatibility**: Supports legacy type names while migrating to new schema
 - **Flexibility**: Allows multiple template types to map to the same canonical type
 
-### Example
+### Example (TypeMapping)
 
 ```yaml
 TypeMapping:
@@ -279,7 +303,7 @@ TypeMapping:
 
 Defines protected system tags that cannot be overridden by custom metadata.
 
-### Structure
+### Structure (ReservedTags)
 
 ```yaml
 ReservedTags:
@@ -287,13 +311,13 @@ ReservedTags:
   - tag-name-2
 ```
 
-### Behavior
+### Behavior (ReservedTags)
 
 - **Protection**: Reserved tags cannot be overridden or used for custom metadata
 - **Automatic Injection**: Reserved tags are automatically injected as fields in all template types
 - **Validation**: System validates that reserved tags are not overridden in custom metadata
 
-### Example
+### Example (ReservedTags)
 
 ```yaml
 ReservedTags:
@@ -305,6 +329,20 @@ ReservedTags:
   - operations
   - video
   - pdf
+
+## Required Resolvers
+
+The following resolvers must be implemented and registered with the resolver registry used by the schema loader/pipeline:
+
+- `DateCreatedResolver` — Provides `date-created` where not present
+- `PdfPageCountResolver` — Populates `page-count` for PDFs
+- `VideoDurationResolver` — Populates `video-duration` for videos
+- `OneDriveShareLinkResolver` (required) — Populates `share-link` with a stable OneDrive sharing URL when files are under the OneDrive resources root
+- Hierarchy and course structure adapters:
+  - `ProgramResolver`, `CourseResolver`, `ClassResolver`
+  - `ModuleResolver`, `LessonResolver`
+
+If any required resolver is unavailable, validation should fail for templates that declare those fields.
 ```
 
 ## Complete Example
@@ -336,6 +374,8 @@ TemplateTypes:
         Default: 0
       date-created:
         Resolver: DateCreatedResolver
+      share-link:
+        Resolver: OneDriveShareLinkResolver
       title:
         Default: "PDF Note"
       tags:
@@ -362,12 +402,14 @@ TemplateTypes:
         Default: 0
       date-created:
         Resolver: DateCreatedResolver
+      share-link:
+        Resolver: OneDriveShareLinkResolver
       title:
-        Default: "Video Note"
+        Resolver: TitleResolver
       tags:
         Default: [video, reference]
       video-duration:
-        Default: "00:00:00"
+        Resolver: VideoDurationResolver
 
 UniversalFields:
   - auto-generated-state

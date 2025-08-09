@@ -1,7 +1,7 @@
 
 # Template, Type, and Tagging Metadata Guide
 
-This document defines the canonical rules for frontmatter metadata in the Notebook Automation system. It ensures consistent use of `template-type`, `type`, and `tags` fields for all content modalities.
+This document defines the canonical rules for frontmatter metadata in the Notebook Automation system. It ensures consistent use of `template-type`, `type`, and `tags` fields for all content modalities. It complements the schema-driven metadata pipeline.
 
 ## Processor Assignment of Template-Types
 
@@ -53,7 +53,7 @@ Only the `MetadataEnsureProcessor` assigns `template-type` values automatically.
   Each template-type enforces a set of required metadata fields.  
   - Universal: `auto-generated-state`, `date-created`, `publisher`
   - PDF: `type`, `comprehension`, `status`, `completion-date`, `authors`, `tags`, etc.
-  - Video: `type`, `comprehension`, `status`, `video-duration`, `author`, `tags`, etc.
+  - Video: `type`, `comprehension`, `status`, `video-duration` (resolved), `author`, `tags`, etc.
   - Reading: `type`, `comprehension`, `status`, `page-count`, `authors`, `tags`, etc.
 
 - **Tags:**  
@@ -84,6 +84,8 @@ authors: ""
 - The processor only overwrites missing or empty fields unless `forceOverwrite` is enabled.
 - Dry run mode previews changes without modifying files.
 - Index files (`index.md`) require manual review for correct template-type and type assignment.
+- The schema-driven pipeline resolves dynamic fields via resolvers (e.g., `PdfPageCountResolver`, `VideoDurationResolver`) and produces a stable `share-link` via the required `OneDriveShareLinkResolver` when applicable.
+- Title is populated by `TitleResolver` using the source file name when a path is available; frontmatter-provided `title` still takes precedence.
 
 ---
 
@@ -92,8 +94,13 @@ authors: ""
 - Use tags for modality (`case-study`, `live-class`, `reading`, etc.) and context (`finance`, `operations`, etc.).
 - Tags must be lowercase and hyphenated.
 
+### Pipeline and Schema References
+
+- See the schema-driven pipeline in [Metadata Extraction System](./Metadata-Extraction-System.md).
+- See template definitions and required resolvers in [Metadata Schema Configuration Guide](./metadata-schema-configuration.md).
+
 ---
 
 ### Updating This Guide
 
-- Update this guide whenever new template-types, types, or reserved tags are added in code or metadata.
+- Update this guide whenever new template-types, types, required resolvers (e.g., `OneDriveShareLinkResolver`), or reserved tags are added in code or schema.

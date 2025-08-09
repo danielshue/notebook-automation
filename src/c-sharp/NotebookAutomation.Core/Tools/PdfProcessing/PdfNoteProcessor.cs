@@ -25,8 +25,15 @@ namespace NotebookAutomation.Core.Tools.PdfProcessing;
 /// in the same directory as the PDF file for use by downstream AI processing.
 /// </para>
 /// </remarks>
-/// <example>
-/// <code>
+/// This processor focuses on extracting text and images and defers standard metadata fields (title, hierarchy,
+/// share-link, page-count, date-created, status, etc.) to the centralized metadata pipeline and its resolvers.
+/// It provides both <c>filePath</c> and <c>_internal_path</c> context keys for resolver robustness.
+/// </remarks>
+/// <remarks>
+/// <para>
+/// <b>Image extraction:</b> controlled via <c>_extractImages</c> flag; when enabled, extracted images are saved
+/// alongside the generated markdown and referenced using relative paths.
+/// </para>
 /// var processor = new PdfNoteProcessor(logger, aiSummarizer);
 /// var (text, metadata) = await processor.ExtractTextAndMetadataAsync("example.pdf");
 /// Console.WriteLine(text);
@@ -46,8 +53,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     private readonly AppConfig? _appConfig;
     private readonly ICourseStructureExtractor _courseStructureExtractor;
     private readonly bool _extractImages;
-    private string _yamlFrontmatter = string.Empty; // Temporarily store YAML frontmatter    /// <summary>
-
+    /// <summary>
     /// Initializes a new instance of the <see cref="PdfNoteProcessor"/> class.
     /// </summary>
     /// <param name="logger">The logger instance for logging diagnostic and error information.</param>
@@ -112,7 +118,8 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     /// </example>
     public override async Task<(string Text, Dictionary<string, object> Metadata)> ExtractTextAndMetadataAsync(string pdfPath)
     {
-        var metadata = new Dictionary<string, object?>(); if (!File.Exists(pdfPath))
+        var metadata = new Dictionary<string, object?>();
+        if (!File.Exists(pdfPath))
         {
             Logger.LogError($"PDF file not found: {pdfPath}");
             return (string.Empty, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
@@ -141,8 +148,9 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
 
                         // Extract text and images interleaved from page
                         ExtractPageContentWithImages(page, pageCount, pdfPath, sb);
-                    }                    // Collect metadata after reading pages
-                    metadata["page-count"] = document.NumberOfPages;// Count total valid images across all pages (only if image extraction is enabled)
+                    }
+
+                    // Count total valid images across all pages (only if image extraction is enabled)
                     int totalImages = 0;
                     if (_extractImages)
                     {
@@ -153,6 +161,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                                 var validImages = page.GetImages().Where(IsValidImage).Count();
                                 totalImages += validImages;
                             }
+                            // Image count can be useful for downstream prompts; include as an optional field
                             metadata["image_count"] = totalImages;
                             Logger.LogDebug($"PDF contains {totalImages} valid images across {document.NumberOfPages} pages");
                         }
@@ -169,100 +178,22 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                     }
 
                     // "generated" field removed as requested
-                    var info = document.Information;
-                    if (!string.IsNullOrWhiteSpace(info?.Title))
-                    {
-                        metadata["title"] = info.Title;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(info?.Author))
-                    {
-                        metadata["authors"] = new string[] { info.Author }; // Using authors (string array) as requested
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(info?.Subject))
-                    {
-                        metadata["subject"] = info.Subject;
-                    }
-
-                    if (!string.IsNullOrWhiteSpace(info?.Keywords))
-                    {
-                        metadata["keywords"] = info.Keywords;
-                    }
+                    // Title will be derived by TitleResolver based on file name; ignore PDF info title
+                    // Defer other PDF properties to resolvers/schema where applicable
                 }
 
                 // Extract module and lesson information
                 Logger.LogDebug($"Extracting course structure information from file path {pdfPath}");
                 _courseStructureExtractor.ExtractModuleAndLesson(pdfPath, metadata);
 
-                // Extract hierarchy information using injected MetadataHierarchyDetector
-                Logger.LogDebug($"Extracting hierarchy information from file path {pdfPath}");
-
-                // Convert OneDrive path to equivalent vault path for hierarchy detection
-                Logger.LogDebug($"BEFORE CONVERSION: OneDrive path = {pdfPath}");
-                string vaultPath = ConvertOneDriveToVaultPath(pdfPath);
-                Logger.LogDebug($"AFTER CONVERSION: Vault path = {vaultPath}");
-                Logger.LogDebug($"Detecting hierarchy information from vault path: {vaultPath} (converted from OneDrive path: {pdfPath})"); var hierarchyInfo = HierarchyDetector?.FindHierarchyInfo(vaultPath);
-                if (HierarchyDetector != null && hierarchyInfo != null)
-                {
-                    HierarchyDetector.UpdateMetadataWithHierarchy(metadata, hierarchyInfo, "pdf-reference");
-                }
-
-                // Add file information for PDF
-                var fileInfo = new FileInfo(pdfPath);
-                metadata["pdf-size"] = $"{fileInfo.Length / 1024.0 / 1024.0:F2} MB";
-                metadata["date-created"] = DateTime.Now.ToString("yyyy-MM-dd");
-                metadata["pdf-uploaded"] = fileInfo.CreationTime.ToString("yyyy-MM-dd");
-
-                // Add template-type for PDF
-                metadata["template-type"] = "pdf-reference";
-                metadata["type"] = "note/case-study";
-                metadata["status"] = "unread";
-                metadata["comprehension"] = 0;
-                metadata["auto-generated-state"] = "writable";                // Add the file path for later use
-                // Store a path relative to OneDrive resources root so it is portable across machines
-                string relativeRef = MakeRelativeToOnedriveResourcesIfPossible(pdfPath);
-                metadata["onedrive_relative_path"] = relativeRef;
-
-                // Also store the configured OneDrive fullpath root for consumers to reconstruct absolute path
-                string onedriveRoot = AppConfig?.Paths?.OnedriveFullpathRoot ?? string.Empty;
-                if (!string.IsNullOrWhiteSpace(onedriveRoot))
-                {
-                    metadata["onedrive_fullpath_root"] = onedriveRoot;
-                }
+                // Defer hierarchy and file property enrichment to the centralized pipeline and resolvers
 
                 return sb.ToString();
             }).ConfigureAwait(false); int extractedCharCount = extractedText.Length;
             Logger.LogDebug($"Extracted {extractedCharCount:N0} characters of text from PDF: {pdfPath}");
 
-            // Generate OneDrive shared link if service is available
-            if (_oneDriveService != null)
-            {
-                try
-                {
-                    string? sharedLink = await _oneDriveService.GetShareLinkAsync(pdfPath);
-                    if (!string.IsNullOrEmpty(sharedLink))
-                    {
-                        metadata["onedrive-shared-link"] = sharedLink;
-                        Logger.LogDebug($"Generated OneDrive shared link for PDF: {pdfPath}");
-                    }
-                    else
-                    {
-                        metadata["onedrive-shared-link"] = string.Empty;
-                        Logger.LogDebug($"No OneDrive shared link generated for PDF: {pdfPath}");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger.LogWarning(ex, $"Failed to generate OneDrive shared link for PDF: {pdfPath}");
-                    metadata["onedrive-shared-link"] = string.Empty;
-                }
-            }
-            else
-            {
-                metadata["onedrive-shared-link"] = string.Empty;
-                Logger.LogDebug("OneDrive service not available, setting empty shared link");
-            }
+            // Do not generate or set OneDrive shared link here; let the schema-driven resolver populate it
+            // to avoid precedence conflicts and duplicate network calls.
 
             // Save extracted text with image references next to the PDF file
             try
@@ -288,69 +219,14 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                 Logger.LogWarning(ex, $"Failed to save extracted text file for PDF: {pdfPath}");
             }
 
-            // Ensure all required fields are in the metadata dictionary
-            // These will be used both for frontmatter and for the AI summarizer
-            if (!metadata.ContainsKey("template-type"))
-            {
-                metadata["template-type"] = "pdf-reference";
-            }
-
-            if (!metadata.ContainsKey("auto-generated-state"))
-            {
-                metadata["auto-generated-state"] = "writable";
-            }
-
-            if (!metadata.ContainsKey("module"))
-            {
-                metadata["module"] = string.Empty;
-            }
-
-            if (!metadata.ContainsKey("lesson"))
-            {
-                metadata["lesson"] = string.Empty;
-            }
-
-            if (!metadata.ContainsKey("comprehension"))
-            {
-                metadata["comprehension"] = 0;
-            }
-
-            if (!metadata.ContainsKey("completion-date"))
-            {
-                metadata["completion-date"] = string.Empty;
-            }
-
-            if (!metadata.ContainsKey("date-review"))
-            {
-                metadata["date-review"] = string.Empty;
-            }
-
-            if (!metadata.ContainsKey("onedrive-shared-link"))
-            {
-                metadata["onedrive-shared-link"] = string.Empty;
-            }
-
-            if (!metadata.ContainsKey("publisher"))
-            {
-                metadata["publisher"] = "University of Illinois at Urbana-Champaign";
-            }
-
-            // Make sure we have the author field from authors if available
-            if (metadata.TryGetValue("authors", out var authors) && authors != null)
-            {
-                metadata["authors"] = authors; // For consistency in output
-            }
-
-            // Build YAML frontmatter without the --- separators
-            string yamlContent = BuildYamlFrontmatter(metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
-
-            // Store in a temporary field for use by GeneratePdfSummaryAsync
-            _yamlFrontmatter = yamlContent;
-
             // Remove any unwanted fields
             metadata.Remove("aliases"); metadata.Remove("pdf-link");
             metadata.Remove("permalink");
             metadata.Remove("yaml-frontmatter"); // Prevent duplication
+
+            // Provide internal path hint and absolute file path for pipeline/resolvers
+            metadata["_internal_path"] = pdfPath;
+            metadata["filePath"] = pdfPath;
 
             return (extractedText, metadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!));
         }
@@ -361,163 +237,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
         }
     }
 
-    /// <summary>
-    /// Builds a YAML frontmatter string using the PDF metadata and following the template from metadata.yaml.
-    /// </summary>
-    /// <param name="metadata">The PDF metadata dictionary.</param>
-    /// <returns>A YAML frontmatter string suitable for use in the prompt template.</returns>
-    private string BuildYamlFrontmatter(Dictionary<string, object> metadata)
-    {
-        try
-        {
-            // Create a dictionary with the expected YAML frontmatter structure
-            var yamlData = new Dictionary<string, object>
-            {
-                ["template-type"] = "pdf-reference",
-                ["auto-generated-state"] = "writable",
-                ["type"] = "note/case-study",  //TODO: Not every PDF is a case study
-            };
-
-            // Add title if available
-            if (metadata.TryGetValue("title", out var title) && title != null)
-            {
-                yamlData["title"] = title?.ToString() ?? "Untitled PDF";
-            }
-
-            // Add author if available - map from authors field
-            if (metadata.TryGetValue("authors", out var authors) && authors != null)
-            {
-                yamlData["authors"] = authors;
-            }
-
-            // Add page count if available
-            if (metadata.TryGetValue("page-count", out var pageCount) && pageCount != null)
-            {
-                yamlData["page-count"] = pageCount;
-            }
-
-            // Add program, course, class, module, lesson if available
-            if (metadata.TryGetValue("program", out var program) && program != null)
-            {
-                yamlData["program"] = program?.ToString() ?? string.Empty;
-            }
-
-            if (metadata.TryGetValue("course", out var course) && course != null)
-            {
-                yamlData["course"] = course?.ToString() ?? string.Empty;
-            }
-
-            if (metadata.TryGetValue("class", out var className) && className != null)
-            {
-                yamlData["class"] = className?.ToString() ?? string.Empty;
-            }
-
-            if (metadata.TryGetValue("module", out var module) && module != null)
-            {
-                yamlData["module"] = module?.ToString() ?? string.Empty;
-            }
-            else
-            {
-                yamlData["module"] = string.Empty;  // Ensure module is always included
-            }
-
-            if (metadata.TryGetValue("lesson", out var lesson) && lesson != null)
-            {
-                yamlData["lesson"] = lesson?.ToString() ?? string.Empty;
-            }
-            else
-            {
-                yamlData["lesson"] = string.Empty;  // Ensure lesson is always included
-            }
-
-            // Add fixed values
-            yamlData["comprehension"] = 0;
-
-            // Add date fields
-            yamlData["date-created"] = DateTime.Now.ToString("yyyy-MM-dd");
-
-            // Add empty date review/completion fields
-            yamlData["completion-date"] = string.Empty;
-            yamlData["date-review"] = string.Empty;
-
-            // Add file information
-            if (metadata.TryGetValue("onedrive_relative_path", out var filePath) && filePath != null)
-            {
-                // This should already be relative (set during extraction). Keep as-is.
-                yamlData["onedrive_relative_path"] = filePath?.ToString() ?? string.Empty;
-            }
-
-            if (metadata.TryGetValue("onedrive-shared-link", out var shareLink) && shareLink != null)
-            {
-                yamlData["onedrive-shared-link"] = shareLink?.ToString() ?? string.Empty;
-            }
-            else
-            {
-                yamlData["onedrive-shared-link"] = string.Empty;  // Ensure onedrive-shared-link is always included
-            }
-
-            if (metadata.TryGetValue("pdf-size", out var pdfSize) && pdfSize != null)
-            {
-                yamlData["pdf-size"] = pdfSize?.ToString() ?? string.Empty;
-            }
-
-            if (metadata.TryGetValue("pdf-uploaded", out var pdfUploaded) && pdfUploaded != null)
-            {
-                yamlData["pdf-uploaded"] = pdfUploaded?.ToString() ?? string.Empty;
-            }
-
-            // Set publisher if not already set
-            if (!yamlData.ContainsKey("publisher"))
-            {
-                yamlData["publisher"] = "University of Illinois at Urbana-Champaign"; //TODO: This should not be hardcoded but instad come from the metaedata.yaml file.
-            }
-
-            // Set status as unread by default
-            yamlData["status"] = "unread";
-
-            // Add empty tags field for AI to populate
-            yamlData["tags"] = new string[] { };
-
-            // Add resources_root if available
-            if (metadata.TryGetValue("onedrive_fullpath_root", out var resourcesRoot) && resourcesRoot != null)
-            {
-                yamlData["onedrive_fullpath_root"] = resourcesRoot?.ToString() ?? string.Empty;
-            }
-            else
-            {
-                // Include root if known from config to aid reconstruction on other machines
-                var root = AppConfig?.Paths?.OnedriveFullpathRoot ?? string.Empty;
-                if (!string.IsNullOrWhiteSpace(root))
-                {
-                    yamlData["onedrive_fullpath_root"] = root;
-                }
-            }
-
-            // Explicitly remove unwanted fields if they exist
-            // (These shouldn't be in our data, but just in case)
-            yamlData.Remove("aliases");
-            yamlData.Remove("pdf-link");
-            yamlData.Remove("permalink");
-
-            // Serialize to YAML - without the --- separators
-            var serializer = new SerializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                .Build();
-
-            string yamlString = serializer.Serialize(yamlData);
-
-            int yamlLength = yamlString.Length;
-            int fields = yamlData.Count;
-            Logger.LogDebug($"Generated YAML frontmatter for PDF: {yamlLength} chars, {fields} fields");
-            Logger.LogDebug("Generated YAML frontmatter for PDF without separators");
-            return yamlString;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to build YAML frontmatter for PDF");
-            return string.Empty;
-        }
-    }
+    // BuildYamlFrontmatter method removed; metadata composition is handled by the centralized pipeline
 
     /// <summary>
     /// Generates a markdown note from extracted PDF text and metadata.
@@ -560,21 +280,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
             Logger.LogDebug($"Added title to variables: {variables["title"]} effectivePrompt:{effectivePrompt}");
         }
 
-        // Add YAML frontmatter as a variable - but don't wrap it in --- separators
-        // as that will be handled by the template/prompt
-        if (!string.IsNullOrEmpty(_yamlFrontmatter))
-        {
-            // The _yamlFrontmatter should now contain just the YAML content without separators
-            variables["yamlfrontmatter"] = _yamlFrontmatter;
-            Logger.LogDebug($"Added yamlfrontmatter variable ({_yamlFrontmatter.Length:N0} chars) for AI summarizer effectivePrompt:{effectivePrompt}:");
-        }
-        else
-        {
-            // Build it now if not already built - again without wrapping in --- separators
-            string yamlContent = BuildYamlFrontmatter(metadata);
-            variables["yamlfrontmatter"] = yamlContent;
-            Logger.LogDebug($"Built and added yamlfrontmatter variable ({yamlContent.Length:N0} chars) for AI summarizer effectivePrompt:{effectivePrompt}:");
-        }
+        // Avoid passing yamlfrontmatter; rely on the metadata pipeline and template manager
 
         // Make a copy to avoid modifying the original metadata
         _ = new Dictionary<string, object>(metadata);
@@ -615,7 +321,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
         return result ?? string.Empty;
     }
 
-    /// <summary>    /// <summary>
+    /// <summary>
     /// Extracts text and images from a PDF page in the order they appear, creating an interleaved content flow with inline image display.
     /// </summary>
     /// <param name="page">The PDF page to extract content from.</param>
@@ -774,7 +480,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     /// </summary>
     /// <param name="totalLines">Total number of text lines on the page.</param>
     /// <param name="imageCount">Number of images to distribute.</param>
-    /// <returns>List of line indices where images should be inserted.</returns>
+    /// <returns>A list of line indices where images should be inserted.</returns>
     private static List<int> CalculateImagePositions(int totalLines, int imageCount)
     {
         var positions = new List<int>();
@@ -810,7 +516,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     /// Determines the appropriate file extension for an image based on its format.
     /// </summary>
     /// <param name="image">The PDF image object.</param>
-    /// <returns>The file extension (without dot) for the image.</returns>
+    /// <returns>The file extension (without dot) for the saved image content.</returns>
     private static string DetermineImageExtension(IPdfImage image)
     {
         // Try to determine format based on the image properties
@@ -819,11 +525,11 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     }
 
     /// <summary>
-    /// Saves image bytes to the specified file path using PdfPig's proper image extraction methods.
+    /// Saves image bytes to the specified file path using PdfPig's image extraction methods.
     /// </summary>
     /// <param name="image">The PDF image object.</param>
     /// <param name="imagePath">The file path to save the image to.</param>
-    /// <returns>True if the image was successfully saved, false otherwise.</returns>
+    /// <returns><see langword="true"/> if the image was successfully saved; otherwise, <see langword="false"/>.</returns>
     private bool SaveImageBytes(IPdfImage image, string imagePath)
     {
         try
@@ -875,7 +581,7 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
     /// Validates whether an image from a PDF page is extractable and valid.
     /// </summary>
     /// <param name="image">The PDF image to validate.</param>
-    /// <returns>True if the image is valid and extractable, false otherwise.</returns>
+    /// <returns><see langword="true"/> if the image is valid and extractable; otherwise, <see langword="false"/>.</returns>
     private bool IsValidImage(IPdfImage image)
     {
         try

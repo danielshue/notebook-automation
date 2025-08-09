@@ -23,12 +23,24 @@ TemplateTypes:
         Default: 0
       date-created:
         Resolver: DateCreatedResolver
+      program:
+        Resolver: ProgramResolver
+      course:
+        Resolver: CourseResolver
+      class:
+        Resolver: ClassResolver
+      module:
+        Resolver: ModuleResolver
+      lesson:
+        Resolver: LessonResolver
       title:
-        Default: "PDF Note"
+        Resolver: TitleResolver
       tags:
         Default: [pdf, reference]
       page-count:
         Resolver: PdfPageCountResolver
+      share-link:
+        Resolver: OneDriveShareLinkResolver
       auto-generated-state:
         Default: writable
   video-reference:
@@ -50,12 +62,24 @@ TemplateTypes:
         Default: 0
       date-created:
         Resolver: DateCreatedResolver
+      program:
+        Resolver: ProgramResolver
+      course:
+        Resolver: CourseResolver
+      class:
+        Resolver: ClassResolver
+      module:
+        Resolver: ModuleResolver
+      lesson:
+        Resolver: LessonResolver
       title:
-        Default: "Video Note"
+        Resolver: TitleResolver
       tags:
         Default: [video, reference]
       video-duration:
-        Default: "00:00:00"
+        Resolver: VideoDurationResolver
+      share-link:
+        Resolver: OneDriveShareLinkResolver
       auto-generated-state:
         Default: writable
   resource-reading:
@@ -77,12 +101,24 @@ TemplateTypes:
         Default: 0
       date-created:
         Resolver: DateCreatedResolver
+      program:
+        Resolver: ProgramResolver
+      course:
+        Resolver: CourseResolver
+      class:
+        Resolver: ClassResolver
+      module:
+        Resolver: ModuleResolver
+      lesson:
+        Resolver: LessonResolver
       title:
-        Default: ""
+        Resolver: TitleResolver
       tags:
         Default: []
       page-count:
         Resolver: PdfPageCountResolver
+      share-link:
+        Resolver: OneDriveShareLinkResolver
       auto-generated-state:
         Default: writable
   note/instruction:
@@ -101,10 +137,3 @@ TypeMapping:
   resource-reading: note/reading
   note/instruction: note/instruction
 ReservedTags:
-  - case-study
-  - live-class
-  - reading
-  - finance
-  - operations
-  - video
-  - pdf

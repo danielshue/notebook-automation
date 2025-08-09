@@ -91,7 +91,11 @@ public class VideoNoteProcessorMetadataTests
     {
         // Arrange
         var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
-        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(
+            null,
+            null,
+            _oneDriveServiceMock.Object,
+            hierarchyDetector);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
@@ -118,6 +122,7 @@ public class VideoNoteProcessorMetadataTests
         {
             { "title", "Test Video" },
             { "_internal_path", videoPath },
+            { "filePath", videoPath },
         };
 
         string bodyText = "This is a test summary.";
@@ -135,7 +140,11 @@ public class VideoNoteProcessorMetadataTests
     {
         // Arrange
         var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
-        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(
+            null,
+            null,
+            _oneDriveServiceMock.Object,
+            hierarchyDetector);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
@@ -152,6 +161,7 @@ public class VideoNoteProcessorMetadataTests
         {
             { "title", "Test Video" },
             { "_internal_path", "c:/path/to/video.mp4" },
+            { "filePath", "c:/path/to/video.mp4" },
         };
 
         string bodyText = "This is a test summary.";
@@ -172,7 +182,11 @@ public class VideoNoteProcessorMetadataTests
     {
         // Arrange
         var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
-        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(
+            null,
+            null,
+            _oneDriveServiceMock.Object,
+            hierarchyDetector);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
@@ -195,6 +209,7 @@ public class VideoNoteProcessorMetadataTests
         {
             { "title", "Test Video" },
             { "_internal_path", videoPath },
+            { "filePath", videoPath },
         };
 
         string bodyText = "This is a test summary.";
@@ -220,7 +235,11 @@ public class VideoNoteProcessorMetadataTests
     {
         // Arrange
         var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
-        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(
+            null,
+            null,
+            _oneDriveServiceMock.Object,
+            hierarchyDetector);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,
@@ -316,8 +335,14 @@ public class VideoNoteProcessorMetadataTests
         // Arrange
         string testShareLink = "https://onedrive.live.com/view.aspx?test=example";
         _oneDriveServiceMock
-                    .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).ReturnsAsync(testShareLink); var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
-        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager();
+                    .Setup(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(testShareLink);
+        var hierarchyDetector = MetadataSchemaLoaderHelper.CreateTestMetadataHierarchyDetector(vaultRootOverride: _testVaultRoot);
+        var templateManager = MetadataSchemaLoaderHelper.CreateTestMetadataTemplateManager(
+            null,
+            null,
+            _oneDriveServiceMock.Object,
+            hierarchyDetector);
         var mockCourseStructureExtractor = Mock.Of<ICourseStructureExtractor>();
         VideoNoteProcessor processor = new(
             _loggerMock.Object,

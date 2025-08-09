@@ -8,6 +8,11 @@ namespace NotebookAutomation.Core.Utils;
 /// <para>
 /// Provides functionality for parsing, modifying, and serializing YAML frontmatter found in markdown documents, with special consideration for preserving formatting and handling Obsidian-specific conventions.
 /// </para>
+/// <para>
+/// <b>Robustness:</b> Parsing helpers trim common leading indentation, handle nested code-block wrappers (```yaml/```yml/```),
+/// and retry with a fallback strategy when YamlDotNet raises a syntax exception. Diagnostic logging includes snippets of
+/// the problematic content to aid troubleshooting.
+/// </para>
 /// <example>
 /// <code>
 /// var helper = new YamlHelper(_logger);
@@ -140,7 +145,32 @@ public partial class YamlHelper : IYamlHelper
         try
         {
             // Trim the input to remove any leading/trailing whitespace that might cause issues
-            yaml = yaml.Trim();                // Handle markdown code blocks that the AI sometimes generates, with various patterns
+            yaml = yaml.Trim();
+            // Normalize common leading indentation across all lines to avoid YAML parser errors
+            var lines = yaml.Split('\n');
+            int commonIndent = int.MaxValue;
+            foreach (var rawLine in lines)
+            {
+                var line = rawLine.Replace("\r", string.Empty);
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                int i = 0;
+                while (i < line.Length && (line[i] == ' ' || line[i] == '\t')) i++;
+                commonIndent = Math.Min(commonIndent, i);
+            }
+            if (commonIndent > 0 && commonIndent < int.MaxValue)
+            {
+                for (int idx = 0; idx < lines.Length; idx++)
+                {
+                    var l = lines[idx].Replace("\r", string.Empty);
+                    if (l.Length >= commonIndent)
+                    {
+                        lines[idx] = l.Substring(commonIndent);
+                    }
+                }
+                yaml = string.Join("\n", lines).Trim();
+            }
+
+            // Handle markdown code blocks that the AI sometimes generates, with various patterns
             if (yaml.Contains("```yaml") || yaml.Contains("```yml"))
             {
                 _logger.LogWarning("Detected nested YAML code block in frontmatter - attempting to fix");
@@ -199,13 +229,22 @@ public partial class YamlHelper : IYamlHelper
             }
 
             var deserializer = new DeserializerBuilder()
-
                 // Use the default naming convention to preserve original key names
                 .IgnoreUnmatchedProperties() // More forgiving parsing
                 .Build();
 
-            var result = deserializer.Deserialize<Dictionary<string, object>>(yaml);
-            return result ?? [];
+            try
+            {
+                var result = deserializer.Deserialize<Dictionary<string, object>>(yaml);
+                return result ?? [];
+            }
+            catch (YamlDotNet.Core.YamlException)
+            {
+                // Fallback: aggressively trim leading indentation from all lines and retry once
+                var cleaned = System.Text.RegularExpressions.Regex.Replace(yaml, @"^[ \t]+", string.Empty, System.Text.RegularExpressions.RegexOptions.Multiline);
+                var result2 = deserializer.Deserialize<Dictionary<string, object>>(cleaned);
+                return result2 ?? [];
+            }
         }
         catch (YamlDotNet.Core.YamlException yamlEx)
         {

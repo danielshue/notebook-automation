@@ -40,6 +40,16 @@ public abstract class DocumentNoteProcessorBase(
     protected readonly IMetadataHierarchyDetector? HierarchyDetector = hierarchyDetector;
     protected readonly IMetadataTemplateManager? TemplateManager = templateManager;
     protected readonly FieldValueResolverRegistry? ResolverRegistry = resolverRegistry;
+    protected IMetadataPipeline? MetadataPipeline { get; private set; }
+
+    /// <summary>
+    /// Opt-in injection for the metadata pipeline orchestrator.
+    /// </summary>
+    /// <param name="pipeline">Pipeline instance from DI.</param>
+    public void UseMetadataPipeline(IMetadataPipeline pipeline)
+    {
+        MetadataPipeline = pipeline;
+    }
     /// <summary>
     /// Extracts the main text/content and metadata from the document.
     /// </summary>
@@ -147,108 +157,127 @@ public abstract class DocumentNoteProcessorBase(
         bool suppressBody = false,
         bool includeNoteTypeTitle = false)
     {
-        // Use default metadata if none provided
-        metadata ??= [];
-
-        // If YamlHelper is available, extract AI-generated tags and frontmatter
-        if (YamlHelper != null)
+        // If a pipeline has been provided via DI in a derived class, use it to compose metadata and clean body first
+        if (MetadataPipeline != null)
         {
-            // Debug: Log the original content
-            string truncatedBody = bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText;
-            Logger.LogDebug($"GenerateMarkdownNote called - Original AI content (first 200 chars): {truncatedBody}");
-
-            // Extract any existing frontmatter from the AI content
-            string? contentFrontmatter = YamlHelper.ExtractFrontmatter(bodyText);
-            Dictionary<string, object?> contentMetadata = [];
-
-            if (!string.IsNullOrWhiteSpace(contentFrontmatter))
+            var context = new Dictionary<string, object>();
+            if (metadata != null)
             {
-                contentMetadata = YamlHelper.ParseYamlToDictionary(contentFrontmatter)
-                    .ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
-                Logger.LogInformation($"Extracted frontmatter from AI content with {contentMetadata.Count} fields");
-            }
-            else
-            {
-                Logger.LogInformation("No frontmatter found in AI content");
-            }
-
-            // Remove frontmatter from the content body
-            bodyText = YamlHelper.RemoveFrontmatter(bodyText);
-
-            // Debug: Log the cleaned content
-            string truncatedCleanBody = bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText;
-            Logger.LogDebug($"Cleaned content (first 200 chars): {truncatedCleanBody}");
-
-            // Merge metadata: existing metadata takes precedence, but preserve AI tags if they exist
-            var mergedMetadata = new Dictionary<string, object>(metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!) ?? new Dictionary<string, object>());
-
-            // If AI content has tags and existing metadata doesn't, use AI tags
-            if (contentMetadata.TryGetValue("tags", out object? value) && !mergedMetadata.ContainsKey("tags"))
-            {
-                mergedMetadata["tags"] = value!;
-                Logger.LogDebug("Using AI-generated tags from content frontmatter");
-            }
-
-            // Merge other non-conflicting AI metadata
-            foreach (var kvp in contentMetadata)
-            {
-                if (kvp.Key != "tags" && !mergedMetadata.ContainsKey(kvp.Key))
+                foreach (var kv in metadata)
                 {
-                    mergedMetadata[kvp.Key] = kvp.Value!;
+                    context[kv.Key] = kv.Value;
+                }
+            }
+            var composed = MetadataPipeline.Compose(bodyText, metadata, noteType, context);
+            bodyText = composed.CleanBody;
+            metadata = composed.Metadata;
+        }
+        else
+        {
+            // Legacy processing path (only when pipeline is not available)
+            // Use default metadata if none provided
+            metadata ??= [];
+
+            // If YamlHelper is available, extract AI-generated tags and frontmatter
+            if (YamlHelper != null)
+            {
+                // Debug: Log the original content
+                string truncatedBody = bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText;
+                Logger.LogDebug($"GenerateMarkdownNote called - Original AI content (first 200 chars): {truncatedBody}");
+
+                // Extract any existing frontmatter from the AI content
+                string? contentFrontmatter = YamlHelper.ExtractFrontmatter(bodyText);
+                Dictionary<string, object?> contentMetadata = [];
+
+                if (!string.IsNullOrWhiteSpace(contentFrontmatter))
+                {
+                    contentMetadata = YamlHelper.ParseYamlToDictionary(contentFrontmatter)
+                        .ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
+                    Logger.LogInformation($"Extracted frontmatter from AI content with {contentMetadata.Count} fields");
+                }
+                else
+                {
+                    Logger.LogInformation("No frontmatter found in AI content");
+                }
+
+                // Remove frontmatter from the content body
+                bodyText = YamlHelper.RemoveFrontmatter(bodyText);
+
+                // Debug: Log the cleaned content
+                string truncatedCleanBody = bodyText.Length > 200 ? bodyText[..200] + "..." : bodyText;
+                Logger.LogDebug($"Cleaned content (first 200 chars): {truncatedCleanBody}");
+
+                // Merge metadata: existing metadata takes precedence, but preserve AI tags if they exist
+                var mergedMetadata = new Dictionary<string, object>(metadata?.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!) ?? new Dictionary<string, object>());
+
+                // If AI content has tags and existing metadata doesn't, use AI tags
+                if (contentMetadata.TryGetValue("tags", out object? value) && !mergedMetadata.ContainsKey("tags"))
+                {
+                    mergedMetadata["tags"] = value!;
+                    Logger.LogDebug("Using AI-generated tags from content frontmatter");
+                }
+
+                // Merge other non-conflicting AI metadata
+                foreach (var kvp in contentMetadata)
+                {
+                    if (kvp.Key != "tags" && !mergedMetadata.ContainsKey(kvp.Key))
+                    {
+                        mergedMetadata[kvp.Key] = kvp.Value!;
+                    }
+                }
+
+                metadata = mergedMetadata;
+            }
+
+            // Apply hierarchy detection if available and _internal_path is provided
+            if (HierarchyDetector != null && metadata.TryGetValue("_internal_path", out var internalPathObj) && internalPathObj is string internalPath)
+            {
+                try
+                {
+                    Logger.LogDebug($"Applying hierarchy detection for path: {internalPath}");
+                    var hierarchyInfo = HierarchyDetector.FindHierarchyInfo(internalPath);
+                    var nullableMetadata = metadata.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
+
+                    // Extract document type from noteType (e.g., "PDF Note" -> "pdf", "Video Note" -> "video")
+                    string documentType = noteType.Split(' ')[0].ToLowerInvariant();
+                    var updatedMetadata = HierarchyDetector.UpdateMetadataWithHierarchy(nullableMetadata, hierarchyInfo, documentType);
+                    metadata = updatedMetadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value ?? new());
+                    Logger.LogDebug($"Applied hierarchy detection - program: {hierarchyInfo.GetValueOrDefault("program", "")}, course: {hierarchyInfo.GetValueOrDefault("course", "")}, class: {hierarchyInfo.GetValueOrDefault("class", "")}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, $"Error applying hierarchy detection for path: {internalPath}");
                 }
             }
 
-            metadata = mergedMetadata;
-        }
+            // Remove internal path field as it's only used for hierarchy detection
+            metadata.Remove("_internal_path");
 
-        // Apply hierarchy detection if available and _internal_path is provided
-        if (HierarchyDetector != null && metadata.TryGetValue("_internal_path", out var internalPathObj) && internalPathObj is string internalPath)
-        {
-            try
+            // Apply template enhancements if available
+            if (TemplateManager != null)
             {
-                Logger.LogDebug($"Applying hierarchy detection for path: {internalPath}");
-                var hierarchyInfo = HierarchyDetector.FindHierarchyInfo(internalPath);
-                var nullableMetadata = metadata.ToDictionary(kvp => kvp.Key, kvp => (object?)kvp.Value);
-
-                // Extract document type from noteType (e.g., "PDF Note" -> "pdf", "Video Note" -> "video")
-                string documentType = noteType.Split(' ')[0].ToLowerInvariant();
-                var updatedMetadata = HierarchyDetector.UpdateMetadataWithHierarchy(nullableMetadata, hierarchyInfo, documentType);
-                metadata = updatedMetadata.ToDictionary(kvp => kvp.Key, kvp => kvp.Value ?? new());
-                Logger.LogDebug($"Applied hierarchy detection - program: {hierarchyInfo.GetValueOrDefault("program", "")}, course: {hierarchyInfo.GetValueOrDefault("course", "")}, class: {hierarchyInfo.GetValueOrDefault("class", "")}");
+                try
+                {
+                    // Add template metadata (template-type, etc.)
+                    metadata = TemplateManager.EnhanceMetadataWithTemplate(metadata, noteType);
+                    Logger.LogDebug($"Enhanced metadata with template fields for note type: {noteType}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning(ex, "Error applying template metadata");
+                }
             }
-            catch (Exception ex)
+
+            // Remove all date-related fields from metadata
+            var dateFieldsToRemove = metadata.Keys
+                .Where(k => k.StartsWith("date-") || k.EndsWith("-date"))
+                .ToList();
+
+            foreach (var dateField in dateFieldsToRemove)
             {
-                Logger.LogWarning(ex, $"Error applying hierarchy detection for path: {internalPath}");
+                metadata.Remove(dateField);
+                Logger.LogDebug($"Removed date field {dateField} from metadata");
             }
-        }
-
-        // Remove internal path field as it's only used for hierarchy detection
-        metadata.Remove("_internal_path");
-
-        // Apply template enhancements if available
-        if (TemplateManager != null)
-        {
-            try
-            {
-                // Add template metadata (template-type, etc.)
-                metadata = TemplateManager.EnhanceMetadataWithTemplate(metadata, noteType);
-                Logger.LogDebug($"Enhanced metadata with template fields for note type: {noteType}");
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning(ex, "Error applying template metadata");
-            }
-        }
-
-        // Remove all date-related fields from metadata
-        var dateFieldsToRemove = metadata.Keys
-            .Where(k => k.StartsWith("date-") || k.EndsWith("-date"))
-            .ToList();
-
-        foreach (var dateField in dateFieldsToRemove)
-        {
-            metadata.Remove(dateField);
-            Logger.LogDebug($"Removed date field {dateField} from metadata");
         }
 
         // Log final metadata for debugging

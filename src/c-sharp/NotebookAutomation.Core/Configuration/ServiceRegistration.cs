@@ -1,6 +1,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using NotebookAutomation.Core.Tools;
+using NotebookAutomation.Core.Tools.Resolvers;
 
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -26,6 +27,11 @@ namespace NotebookAutomation.Core.Configuration;
 ///   <item><description>Supports flexible, testable, and maintainable service lifetimes (singleton, scoped).</description></item>
 ///   <item><description>Centralizes all DI and logging setup to promote consistency and maintainability across the codebase.</description></item>
 /// </list>
+/// </para>
+/// <para>
+/// <b>Metadata pipeline wiring:</b> Registers the schema-driven <see cref="IMetadataPipeline"/>, the <see cref="IMetadataTemplateManager"/>,
+/// and all required resolvers (date/time, file-type, hierarchy, OneDrive share-link with fallback, Title). Processors are constructed
+/// with these services and explicitly call <c>UseMetadataPipeline</c> to opt in to centralized metadata composition.
 /// </para>
 /// <para>
 /// <b>Usage:</b>
@@ -308,7 +314,11 @@ public static class ServiceRegistration
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
             // Pass parameters in correct order: logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig
-            return new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
+            var processor = new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
+            // Attach schema-driven metadata pipeline
+            var pipeline = provider.GetRequiredService<IMetadataPipeline>();
+            processor.UseMetadataPipeline(pipeline);
+            return processor;
         });
 
         // Register VideoNoteBatchProcessor
@@ -326,6 +336,8 @@ public static class ServiceRegistration
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
             var videoProcessor = new VideoNoteProcessor(processorLogger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
+            var pipeline = provider.GetRequiredService<IMetadataPipeline>();
+            videoProcessor.UseMetadataPipeline(pipeline);
             var batchProcessor = new DocumentNoteBatchProcessor<VideoNoteProcessor>(batchLogger, videoProcessor, aiSummarizer);
             return new VideoNoteBatchProcessor(batchProcessor);
         });
@@ -343,7 +355,10 @@ public static class ServiceRegistration
             var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
-            return new PdfNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig, appConfig.PdfExtractImages);
+            var processor = new PdfNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig, appConfig.PdfExtractImages);
+            var pipeline = provider.GetRequiredService<IMetadataPipeline>();
+            processor.UseMetadataPipeline(pipeline);
+            return processor;
         });
 
         // Register PDF Batch Processor
@@ -361,6 +376,8 @@ public static class ServiceRegistration
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
             var pdfProcessor = new PdfNoteProcessor(processorLogger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig, appConfig.PdfExtractImages);
+            var pipeline = provider.GetRequiredService<IMetadataPipeline>();
+            pdfProcessor.UseMetadataPipeline(pipeline);
             var batchProcessor = new DocumentNoteBatchProcessor<PdfNoteProcessor>(batchLogger, pdfProcessor, aiSummarizer);
             return new PdfNoteBatchProcessor(batchProcessor);
         });
@@ -464,6 +481,7 @@ public static class ServiceRegistration
     /// Registers and configures logging services for the application.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
+    /// <param name="configuration">The application configuration, used to resolve logging paths and settings.</param>
     /// <param name="debug">Whether debug mode is enabled.</param>
     /// <returns>The configured service collection.</returns>
     private static IServiceCollection RegisterLoggingServices(IServiceCollection services, IConfiguration configuration, bool debug)
@@ -583,11 +601,48 @@ public static class ServiceRegistration
             return new MetadataSchemaLoader(schemaPath, logger);
         });
 
-        // Register metadata template manager using schema loader
+        // Register metadata template manager using schema loader and wire default resolvers
         services.AddScoped<IMetadataTemplateManager>(provider =>
         {
-            var logger = provider.GetRequiredService<ILoggingService>().GetLogger<MetadataTemplateManager>();
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var logger = loggingService.GetLogger<MetadataTemplateManager>();
             var schemaLoader = provider.GetRequiredService<IMetadataSchemaLoader>();
+            var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
+
+            // Register built-in resolvers (scoped)
+            try
+            {
+                var registry = schemaLoader.ResolverRegistry;
+                registry.Register("DateCreatedResolver", new DateCreatedResolver(loggingService.GetLogger<DateCreatedResolver>()));
+                registry.Register("VideoDurationResolver", new VideoDurationResolver(loggingService.GetLogger<VideoDurationResolver>()));
+                registry.Register("PdfPageCountResolver", new PdfPageCountResolver(loggingService.GetLogger<PdfPageCountResolver>()));
+
+                // Register hierarchy resolvers
+                registry.Register("ProgramResolver", new ProgramResolver(loggingService.GetLogger<ProgramResolver>(), hierarchyDetector));
+                registry.Register("CourseResolver", new CourseResolver(loggingService.GetLogger<CourseResolver>(), hierarchyDetector));
+                registry.Register("ClassResolver", new ClassResolver(loggingService.GetLogger<ClassResolver>(), hierarchyDetector));
+                registry.Register("ModuleResolver", new ModuleResolver(loggingService.GetLogger<ModuleResolver>(), hierarchyDetector));
+                registry.Register("LessonResolver", new LessonResolver(loggingService.GetLogger<LessonResolver>(), hierarchyDetector));
+
+                var oneDrive = provider.GetService<IOneDriveService>();
+                if (oneDrive != null)
+                {
+                    registry.Register("OneDriveShareLinkResolver", new OneDriveShareLinkResolver(loggingService.GetLogger<OneDriveShareLinkResolver>(), oneDrive));
+                }
+                else
+                {
+                    // Always register this resolver to satisfy schema requirements; fallback returns empty string
+                    registry.Register("OneDriveShareLinkResolver", new OneDriveShareLinkResolverFallback(loggingService.GetLogger<OneDriveShareLinkResolverFallback>()));
+                }
+
+                // Register TitleResolver for filename-based title derivation
+                registry.Register("TitleResolver", new TitleResolver(loggingService.GetLogger<TitleResolver>()));
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Failed to register one or more metadata resolvers");
+            }
+
             return new MetadataTemplateManager(logger, schemaLoader);
         });
 
@@ -638,6 +693,17 @@ public static class ServiceRegistration
         });
 
         services.AddScoped<TagProcessor>();
+
+        // Register metadata pipeline orchestrator
+        services.AddScoped<IMetadataPipeline>(provider =>
+        {
+            var logger = provider.GetRequiredService<ILoggingService>().GetLogger<MetadataPipeline>();
+            var yaml = provider.GetRequiredService<IYamlHelper>();
+            var templateMgr = provider.GetRequiredService<IMetadataTemplateManager>();
+            var hierarchy = provider.GetRequiredService<IMetadataHierarchyDetector>();
+            var config = provider.GetRequiredService<AppConfig>();
+            return new MetadataPipeline(logger, yaml, templateMgr, hierarchy, config);
+        });
 
         return services;
     }
