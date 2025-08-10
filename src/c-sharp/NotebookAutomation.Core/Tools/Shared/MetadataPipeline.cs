@@ -1,7 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-using NotebookAutomation.Core.Tools;
-using NotebookAutomation.Core.Utils;
-
 namespace NotebookAutomation.Core.Tools.Shared;
 
 /// <summary>
@@ -149,6 +146,12 @@ public class MetadataPipeline(
         merged.Remove("yamlfrontmatter");
         merged.Remove("aliases");
         merged.Remove("permalink");
+
+        // Remove processing-only fields that shouldn't appear in final frontmatter
+        merged.Remove("filePath");
+        //merged.Remove("transcript");
+        merged.Remove("share-link");
+        merged.Remove("share_link");
 
         // 7) Remove date-* fields as done historically in base
         var remove = merged.Keys.Where(k => k.StartsWith("date-") || k.EndsWith("-date")).ToList();

@@ -1,4 +1,5 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using NotebookAutomation.Core.Configuration;
 using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Tools.Resolvers;
@@ -43,10 +44,17 @@ namespace NotebookAutomation.Core.Tools.Resolvers;
 /// <seealso cref="CourseResolver"/>
 /// <seealso cref="ClassResolver"/>
 /// <seealso cref="ModuleResolver"/>
-public class ProgramResolver(ILogger<ProgramResolver> logger, IMetadataHierarchyDetector hierarchy) : IFieldValueResolver
+public class ProgramResolver(ILogger<ProgramResolver> logger, IMetadataHierarchyDetector hierarchy, AppConfig appConfig) : IFieldValueResolver
 {
     private readonly ILogger<ProgramResolver> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IMetadataHierarchyDetector _hierarchy = hierarchy ?? throw new ArgumentNullException(nameof(hierarchy));
+    private readonly AppConfig _config = appConfig ?? throw new ArgumentNullException(nameof(appConfig));
+
+    // Backward-compatible constructor for tests and existing code that didn't provide AppConfig
+    public ProgramResolver(ILogger<ProgramResolver> logger, IMetadataHierarchyDetector hierarchy)
+        : this(logger, hierarchy, new AppConfig())
+    {
+    }
 
     /// <summary>
     /// Resolves the program identifier or name based on the provided path context.
@@ -73,7 +81,11 @@ public class ProgramResolver(ILogger<ProgramResolver> logger, IMetadataHierarchy
         {
             var path = GetPath(context);
             if (string.IsNullOrWhiteSpace(path)) return string.Empty;
-            var info = _hierarchy.FindHierarchyInfo(path);
+
+            // Normalize OneDrive paths to vault-relative to ensure consistent hierarchy detection
+            var normalized = NormalizeForHierarchy(path);
+
+            var info = _hierarchy.FindHierarchyInfo(normalized);
             return info.TryGetValue("program", out var value) ? value : string.Empty;
         }
         catch (Exception ex)
@@ -89,5 +101,35 @@ public class ProgramResolver(ILogger<ProgramResolver> logger, IMetadataHierarchy
         if (ctx.TryGetValue("filePath", out var fp) && fp is string s1) return s1;
         if (ctx.TryGetValue("_internal_path", out var ip) && ip is string s2) return s2;
         return null;
+    }
+
+    private string NormalizeForHierarchy(string path)
+    {
+        try
+        {
+            var oneDriveRoot = _config.Paths?.GetEffectiveOneDriveRoot();
+            var vaultRoot = _config.Paths?.GetEffectiveVaultRoot();
+
+            if (!string.IsNullOrWhiteSpace(oneDriveRoot) && !string.IsNullOrWhiteSpace(vaultRoot))
+            {
+                var fullPath = Path.GetFullPath(path);
+                var odRootFull = Path.GetFullPath(oneDriveRoot!);
+
+                var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                if (fullPath.StartsWith(odRootFull, comparison))
+                {
+                    var relative = Path.GetRelativePath(odRootFull, fullPath);
+                    var remapped = Path.Combine(vaultRoot!, relative);
+                    _logger.LogDebug("ProgramResolver remapped OneDrive path to vault path: {Original} -> {Remapped}", path, remapped);
+                    return remapped;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "ProgramResolver path normalization skipped; using original path");
+        }
+
+        return path;
     }
 }

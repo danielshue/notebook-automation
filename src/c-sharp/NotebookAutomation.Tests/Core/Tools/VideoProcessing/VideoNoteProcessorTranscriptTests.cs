@@ -1,6 +1,8 @@
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 using NotebookAutomation.Core.Tools;
 using NotebookAutomation.Tests.Core.Helpers;
-// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+
 namespace NotebookAutomation.Tests.Core.Tools.VideoProcessing;
 
 /// <summary>
@@ -369,9 +371,9 @@ public class VideoNoteProcessorTranscriptTests
         Assert.IsTrue(metadata.ContainsKey("transcript"), "Metadata should contain 'transcript' key");
         Assert.AreEqual(transcriptPath, metadata["transcript"], "Transcript path in metadata should match the actual transcript path");
 
-        // Verify the transcript path is captured in the output markdown
-        Assert.IsTrue(
-            markdownNote.Contains($"transcript: {transcriptPath}"),
-            "Generated markdown should include transcript path in frontmatter");
+        // Verify the transcript path is NOT included in the output frontmatter per new requirement
+        Assert.IsFalse(
+            markdownNote.Contains("transcript:"),
+            "Generated markdown should not include transcript path in frontmatter");
     }
 }

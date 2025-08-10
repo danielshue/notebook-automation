@@ -1,19 +1,24 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-using Moq;
-
-using NotebookAutomation.Core.Tools.MarkdownGeneration;
-
 namespace NotebookAutomation.Tests.Core.Tools;
 
+/// <summary>
+/// Unit tests for <see cref="MarkdownParser"/>, covering frontmatter parsing, header extraction,
+/// file IO helpers, and filename sanitization behavior.
+/// </summary>
+/// <remarks>
+/// Tests focus on correctness for common and edge cases, including malformed input, empty content,
+/// and platform-invalid filename characters. Each test follows the Arrange-Act-Assert pattern.
+/// </remarks>
 [TestClass]
 public class MarkdownParserTests
 {
     private Mock<ILogger> _mockLogger = null!;
     private MarkdownParser _parser = null!;
 
+    /// <summary>
+    /// Initializes the test fixture by creating a mock logger and a parser instance.
+    /// </summary>
     [TestInitialize]
     public void Setup()
     {
@@ -21,6 +26,9 @@ public class MarkdownParserTests
         _parser = new MarkdownParser(_mockLogger.Object);
     }
 
+    /// <summary>
+    /// Verifies that parsing an empty string yields empty frontmatter and content.
+    /// </summary>
     [TestMethod]
     public void ParseMarkdown_EmptyString_ReturnsEmptyFrontmatterAndContent()
     {
@@ -29,6 +37,9 @@ public class MarkdownParserTests
         Assert.AreEqual(string.Empty, content);
     }
 
+    /// <summary>
+    /// Verifies that content without frontmatter is returned as-is and frontmatter is empty.
+    /// </summary>
     [TestMethod]
     public void ParseMarkdown_NoFrontmatter_ReturnsContentOnly()
     {
@@ -38,6 +49,9 @@ public class MarkdownParserTests
         Assert.AreEqual(md, content);
     }
 
+    /// <summary>
+    /// Verifies that YAML frontmatter is parsed into a dictionary and removed from returned content.
+    /// </summary>
     [TestMethod]
     public void ParseMarkdown_WithFrontmatter_ParsesFrontmatterAndContent()
     {
@@ -48,6 +62,9 @@ public class MarkdownParserTests
         Assert.IsTrue(content.StartsWith("# Heading"));
     }
 
+    /// <summary>
+    /// Verifies that combining frontmatter and content produces valid markdown with YAML header.
+    /// </summary>
     [TestMethod]
     public void CombineMarkdown_CombinesFrontmatterAndContent()
     {
@@ -58,6 +75,10 @@ public class MarkdownParserTests
         Assert.IsTrue(result.Contains("# Heading"));
     }
 
+    /// <summary>
+    /// Verifies that WriteFileAsync writes frontmatter and content to disk and returns true on success.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [TestMethod]
     public async Task WriteFileAsync_WritesFileAndReturnsTrue()
     {
@@ -78,6 +99,10 @@ public class MarkdownParserTests
         }
     }
 
+    /// <summary>
+    /// Verifies that WriteFileAsync gracefully handles IO errors and returns false.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [TestMethod]
     [Ignore("Temporarily disabled")]
     public async Task WriteFileAsync_Error_LogsAndReturnsFalse()
@@ -91,6 +116,10 @@ public class MarkdownParserTests
         Assert.IsFalse(result);
     }
 
+    /// <summary>
+    /// Verifies that parsing a missing file yields empty frontmatter/content without throwing.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [TestMethod]
     public async Task ParseFileAsync_FileNotFound_LogsAndReturnsEmpty()
     {
@@ -100,6 +129,10 @@ public class MarkdownParserTests
         Assert.AreEqual(string.Empty, content);
     }
 
+    /// <summary>
+    /// Verifies that a valid markdown file with frontmatter is parsed correctly.
+    /// </summary>
+    /// <returns>A task representing the asynchronous test operation.</returns>
     [TestMethod]
     public async Task ParseFileAsync_ValidFile_ParsesContent()
     {
@@ -119,6 +152,9 @@ public class MarkdownParserTests
         }
     }
 
+    /// <summary>
+    /// Verifies that a valid ATX header line is parsed into the correct level and title.
+    /// </summary>
     [TestMethod]
     public void ParseHeader_ValidHeader_ReturnsLevelAndTitle()
     {
@@ -127,6 +163,9 @@ public class MarkdownParserTests
         Assert.AreEqual("My Header", title);
     }
 
+    /// <summary>
+    /// Verifies that a non-header line returns level 0 and the original text.
+    /// </summary>
     [TestMethod]
     public void ParseHeader_InvalidHeader_ReturnsZeroAndTrimmed()
     {
@@ -135,6 +174,9 @@ public class MarkdownParserTests
         Assert.AreEqual("Not a header", title);
     }
 
+    /// <summary>
+    /// Verifies that all headers in content are detected with correct levels and line numbers.
+    /// </summary>
     [TestMethod]
     public void ExtractHeaders_FindsAllHeaders()
     {

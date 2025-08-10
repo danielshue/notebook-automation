@@ -24,9 +24,11 @@ public class AppConfig : IConfiguration
     /// <summary>
     /// Gets or sets the path to the configuration file used to load this AppConfig.
     /// </summary>
-    public virtual string? ConfigFilePath { get; set; }    /// <summary>
-                                                           /// Gets or sets a value indicating whether debug mode is enabled for this configuration.
-                                                           /// </summary>
+    public virtual string? ConfigFilePath { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether debug mode is enabled for this configuration.
+    /// </summary>
     public virtual bool DebugEnabled { get; set; }
 
     /// <summary>
@@ -201,7 +203,8 @@ public class AppConfig : IConfiguration
                 }
             }
             else
-            {                // Fall back to the original file-based configuration loading
+            {
+                // Fall back to the original file-based configuration loading
                 var configFilePath = ConfigurationSetup.DiscoverConfigurationFile();
                 loadedConfigPath = configFilePath;
                 if (!string.IsNullOrEmpty(configFilePath) && File.Exists(configFilePath))

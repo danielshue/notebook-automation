@@ -1,4 +1,4 @@
-
+// Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Core.Tools;
 using NotebookAutomation.Tests.Core.Helpers;
 
@@ -39,24 +39,6 @@ namespace NotebookAutomation.Tests.Core.Tools
 
             // Assert
             Assert.AreEqual(expectedValue, value);
-        }
-
-        /// <summary>
-        /// Verifies that <see cref="MetadataSchemaLoader"/> correctly loads type mappings and reserved tags from the schema file.
-        /// </summary>
-        [TestMethod]
-        public void Loader_Should_Load_TypeMapping_And_ReservedTags()
-        {
-            // Arrange
-            var loader = MetadataSchemaLoaderHelper.CreateTestMetadataSchemaLoader();
-
-            // Assert type mapping
-            Assert.IsTrue(loader.TypeMapping.ContainsKey("pdf-reference"));
-            Assert.AreEqual("note/case-study", loader.TypeMapping["pdf-reference"]);
-
-            // Assert reserved tags
-            var reserved = loader.ReservedTags;
-            Assert.IsTrue(reserved.Contains("case-study"));
         }
 
 

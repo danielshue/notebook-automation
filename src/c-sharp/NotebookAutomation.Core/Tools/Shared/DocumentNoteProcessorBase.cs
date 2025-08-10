@@ -280,9 +280,19 @@ public abstract class DocumentNoteProcessorBase(
             }
         }
 
+        // Strip processing-only fields regardless of path
+        if (metadata != null)
+        {
+            metadata.Remove("filePath");
+            metadata.Remove("transcript");
+            metadata.Remove("share-link");
+            metadata.Remove("share_link");
+        }
+
         // Log final metadata for debugging
         Logger.LogDebug("Final metadata before markdown generation:");
-        foreach (var kvp in metadata)
+        var metadataForLogging = metadata ?? new Dictionary<string, object>();
+        foreach (var kvp in metadataForLogging)
         {
             Logger.LogDebug($"  {kvp.Key}: {kvp.Value}");
         }

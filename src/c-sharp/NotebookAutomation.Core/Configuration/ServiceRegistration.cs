@@ -618,9 +618,10 @@ public static class ServiceRegistration
                 registry.Register("PdfPageCountResolver", new PdfPageCountResolver(loggingService.GetLogger<PdfPageCountResolver>()));
 
                 // Register hierarchy resolvers
-                registry.Register("ProgramResolver", new ProgramResolver(loggingService.GetLogger<ProgramResolver>(), hierarchyDetector));
-                registry.Register("CourseResolver", new CourseResolver(loggingService.GetLogger<CourseResolver>(), hierarchyDetector));
-                registry.Register("ClassResolver", new ClassResolver(loggingService.GetLogger<ClassResolver>(), hierarchyDetector));
+                var appConfig = provider.GetRequiredService<AppConfig>();
+                registry.Register("ProgramResolver", new ProgramResolver(loggingService.GetLogger<ProgramResolver>(), hierarchyDetector, appConfig));
+                registry.Register("CourseResolver", new CourseResolver(loggingService.GetLogger<CourseResolver>(), hierarchyDetector, appConfig));
+                registry.Register("ClassResolver", new ClassResolver(loggingService.GetLogger<ClassResolver>(), hierarchyDetector, appConfig));
                 registry.Register("ModuleResolver", new ModuleResolver(loggingService.GetLogger<ModuleResolver>(), hierarchyDetector));
                 registry.Register("LessonResolver", new LessonResolver(loggingService.GetLogger<LessonResolver>(), hierarchyDetector));
 

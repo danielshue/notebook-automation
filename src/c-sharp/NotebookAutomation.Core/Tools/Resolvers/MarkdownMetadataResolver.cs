@@ -1,9 +1,4 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
-using System.Text.RegularExpressions;
-
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
-
 namespace NotebookAutomation.Core.Tools.Resolvers;
 
 /// <summary>

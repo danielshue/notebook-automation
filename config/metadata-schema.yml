@@ -137,3 +137,8 @@ TypeMapping:
   resource-reading: note/reading
   note/instruction: note/instruction
 ReservedTags:
+  # Reserved tags cannot be used as custom tags and must be present as fields in all templates
+  - auto-generated-state
+  - date-created
+  - publisher
+  - tags
