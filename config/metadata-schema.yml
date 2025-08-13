@@ -76,6 +76,8 @@ TemplateTypes:
         Resolver: TitleResolver
       tags:
         Default: [video, reference]
+      transcript-onedrive-relative-path:
+        Resolver: OneDriveRelativePathResolver
       video-duration:
         Resolver: VideoDurationResolver
       share-link:

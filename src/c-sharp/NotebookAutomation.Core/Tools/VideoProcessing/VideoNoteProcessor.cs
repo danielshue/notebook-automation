@@ -603,9 +603,10 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         string? transcriptPath = FindTranscriptPath(videoPath);
         if (!string.IsNullOrWhiteSpace(transcriptPath))
         {
-            // Use absolute transcript path to satisfy tests that assert the exact path value
+            // Keep transcript path available in in-memory metadata for downstream consumers/tests,
+            // but do not persist it into YAML frontmatter.
             metadata["transcript"] = transcriptPath;
-            Logger.LogDebug($"Transcript path added to metadata: {transcriptPath}");
+            Logger.LogDebug($"Transcript path captured (not persisted to frontmatter): {transcriptPath}");
         }
 
         // Do not proactively call OneDrive here; the resolver in the pipeline will populate onedrive-shared-link
@@ -707,7 +708,8 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
 
                 bool updated = false;
                 // Preserve provided metadata values when missing in composed YAML
-                foreach (var key in new[] { "onedrive_relative_path", "video-uploaded", "transcript" })
+                // Note: Do NOT include "transcript" in frontmatter per current requirements/tests
+                foreach (var key in new[] { "onedrive_relative_path", "video-uploaded" })
                 {
                     if (!fmDict.ContainsKey(key) && metadata.TryGetValue(key, out var val) && val is not null)
                     {

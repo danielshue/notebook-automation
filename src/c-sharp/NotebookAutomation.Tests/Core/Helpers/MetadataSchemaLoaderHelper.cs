@@ -16,20 +16,101 @@ internal static class MetadataSchemaLoaderHelper
     /// <returns>A MetadataSchemaLoader instance configured for testing.</returns>
     public static MetadataSchemaLoader CreateTestMetadataSchemaLoader(ILogger<MetadataSchemaLoader>? logger = null)
     {
+        // Back-compat overload: no AppConfig provided; delegate to new overload with null
+        return CreateTestMetadataSchemaLoader(appConfig: null, logger);
+    }
+
+    /// <summary>
+    /// Creates a MetadataSchemaLoader instance for testing using the schema path from AppConfig when provided.
+    /// </summary>
+    /// <param name="appConfig">Optional AppConfig containing configured Paths.MetadataSchemaFile. In unit tests, pass a mocked AppConfig with this value set.</param>
+    /// <param name="logger">Optional logger instance. If null, a NullLogger will be used.</param>
+    /// <returns>A MetadataSchemaLoader instance configured for testing.</returns>
+    public static MetadataSchemaLoader CreateTestMetadataSchemaLoader(AppConfig? appConfig, ILogger<MetadataSchemaLoader>? logger = null)
+    {
         logger ??= NullLogger<MetadataSchemaLoader>.Instance;
 
-        // Use the test metadata-schema.yml file - use absolute path from repository root
-        // Assembly location is in bin/Debug/net8.0, so we need to go up 5 levels to get to repo root
-        var repositoryRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(MetadataSchemaLoaderHelper).Assembly.Location)!, "../../../../../.."));
-        var testSchemaPath = Path.Combine(repositoryRoot, "config", "metadata-schema.yml");
+        // Prefer schema path from AppConfig when available (tests can mock this)
+        string? configuredPath = appConfig?.Paths?.MetadataSchemaFile;
+        string schemaPathToUse;
 
-        // If the test schema file doesn't exist, fall back to a minimal schema
-        if (!File.Exists(testSchemaPath))
+        if (!string.IsNullOrWhiteSpace(configuredPath))
         {
-            testSchemaPath = CreateMinimalTestSchemaFile();
+            try
+            {
+                // Normalize to absolute path if necessary
+                schemaPathToUse = Path.IsPathRooted(configuredPath!)
+                  ? Path.GetFullPath(configuredPath!)
+                  : Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, configuredPath!));
+
+                if (!File.Exists(schemaPathToUse))
+                {
+                    // Try to locate repo-level schema before falling back to minimal
+                    schemaPathToUse = TryLocateRepositorySchema() ?? CreateMinimalTestSchemaFile();
+                }
+            }
+            catch
+            {
+                // Any issues resolving the configured path -> try repo schema, then minimal
+                schemaPathToUse = TryLocateRepositorySchema() ?? CreateMinimalTestSchemaFile();
+            }
+        }
+        else
+        {
+            // No configured path provided; attempt to locate repository schema first
+            schemaPathToUse = TryLocateRepositorySchema() ?? CreateMinimalTestSchemaFile();
         }
 
-        return new MetadataSchemaLoader(testSchemaPath, logger);
+        return new MetadataSchemaLoader(schemaPathToUse, logger);
+    }
+
+    /// <summary>
+    /// Attempts to locate the repository's metadata-schema.yml by searching common roots.
+    /// </summary>
+    /// <returns>Absolute file path if found; otherwise null.</returns>
+    private static string? TryLocateRepositorySchema()
+    {
+        // Common candidates relative to test binaries and working dir
+        var candidates = new List<string?>
+    {
+      // Running from test bin/Release/netX.Y - walk up to repo root then config/
+      Path.Combine(AppContext.BaseDirectory ?? string.Empty, "..", "..", "..", "..", "..", "config", "metadata-schema.yml"),
+      Path.Combine(AppContext.BaseDirectory ?? string.Empty, "..", "..", "..", "config", "metadata-schema.yml"),
+      // Current directory (when tests run from solution root)
+      Path.Combine(Directory.GetCurrentDirectory(), "config", "metadata-schema.yml"),
+    };
+
+        foreach (var path in candidates)
+        {
+            try
+            {
+                if (path == null) continue;
+                var full = Path.GetFullPath(path);
+                if (File.Exists(full))
+                {
+                    return full;
+                }
+            }
+            catch
+            {
+                // ignore and continue
+            }
+        }
+
+        // Last resort: traverse upwards from current dir to find a config/metadata-schema.yml
+        try
+        {
+            var dir = Directory.GetCurrentDirectory();
+            for (int i = 0; i < 6 && !string.IsNullOrEmpty(dir); i++)
+            {
+                var candidate = Path.Combine(dir, "config", "metadata-schema.yml");
+                if (File.Exists(candidate)) return Path.GetFullPath(candidate);
+                dir = Directory.GetParent(dir)?.FullName ?? string.Empty;
+            }
+        }
+        catch { }
+
+        return null;
     }
 
     /// <summary>
@@ -42,12 +123,14 @@ internal static class MetadataSchemaLoaderHelper
         ILogger<MetadataTemplateManager>? logger = null,
     IMetadataSchemaLoader? schemaLoader = null,
     IOneDriveService? oneDriveService = null,
-    IMetadataHierarchyDetector? hierarchyDetector = null)
+  IMetadataHierarchyDetector? hierarchyDetector = null,
+  AppConfig? appConfig = null)
     {
         logger ??= NullLogger<MetadataTemplateManager>.Instance;
-        schemaLoader ??= CreateTestMetadataSchemaLoader();
-        // Wire up default resolvers similar to production registration so tests get realistic behavior
+        // Use AppConfig-provided schema path when available; tests can mock this value
         var loggingFactory = LoggerFactory.Create(builder => { });
+        schemaLoader ??= CreateTestMetadataSchemaLoader(appConfig, loggingFactory.CreateLogger<MetadataSchemaLoader>());
+        // Wire up default resolvers similar to production registration so tests get realistic behavior
         var templateManager = new MetadataTemplateManager(logger, schemaLoader);
 
         try
@@ -60,8 +143,10 @@ internal static class MetadataSchemaLoaderHelper
 
             if (hierarchyDetector != null)
             {
-                registry.Register("ProgramResolver", new ProgramResolver(loggingFactory.CreateLogger<ProgramResolver>(), hierarchyDetector));
-                registry.Register("CourseResolver", new CourseResolver(loggingFactory.CreateLogger<CourseResolver>(), hierarchyDetector));
+                // Use overloads that accept AppConfig when provided to match production registration
+                if (appConfig == null) appConfig = new AppConfig();
+                registry.Register("ProgramResolver", new ProgramResolver(loggingFactory.CreateLogger<ProgramResolver>(), hierarchyDetector, appConfig));
+                registry.Register("CourseResolver", new CourseResolver(loggingFactory.CreateLogger<CourseResolver>(), hierarchyDetector, appConfig));
                 registry.Register("ClassResolver", new ClassResolver(loggingFactory.CreateLogger<ClassResolver>(), hierarchyDetector));
                 registry.Register("ModuleResolver", new ModuleResolver(loggingFactory.CreateLogger<ModuleResolver>(), hierarchyDetector));
                 registry.Register("LessonResolver", new LessonResolver(loggingFactory.CreateLogger<LessonResolver>(), hierarchyDetector));
@@ -75,6 +160,10 @@ internal static class MetadataSchemaLoaderHelper
             {
                 registry.Register("OneDriveShareLinkResolver", new OneDriveShareLinkResolverFallback(loggingFactory.CreateLogger<OneDriveShareLinkResolverFallback>()));
             }
+
+            // Register OneDriveRelativePathResolver for tests
+            if (appConfig == null) appConfig = new AppConfig();
+            registry.Register("OneDriveRelativePathResolver", new OneDriveRelativePathResolver(loggingFactory.CreateLogger<OneDriveRelativePathResolver>(), appConfig));
         }
         catch
         {

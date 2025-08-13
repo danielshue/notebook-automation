@@ -372,8 +372,27 @@ public class VideoNoteProcessorTranscriptTests
         Assert.AreEqual(transcriptPath, metadata["transcript"], "Transcript path in metadata should match the actual transcript path");
 
         // Verify the transcript path is NOT included in the output frontmatter per new requirement
-        Assert.IsFalse(
-            markdownNote.Contains("transcript:"),
-            "Generated markdown should not include transcript path in frontmatter");
+        // Be precise: only disallow a top-level 'transcript:' key, allow other transcript-* fields introduced by schema
+        bool HasTopLevelTranscriptKey(string md)
+        {
+            if (string.IsNullOrWhiteSpace(md)) return false;
+            int start = md.IndexOf("---", StringComparison.Ordinal);
+            if (start != 0) return false;
+            int afterFirstLine = md.IndexOf('\n', start);
+            if (afterFirstLine < 0) return false;
+            int endMarkerIdx = md.IndexOf("\n---", afterFirstLine, StringComparison.Ordinal);
+            if (endMarkerIdx < 0)
+            {
+                endMarkerIdx = md.IndexOf("\r\n---", afterFirstLine, StringComparison.Ordinal);
+                if (endMarkerIdx < 0) return false;
+            }
+            int contentStart = afterFirstLine + 1;
+            var yaml = md.Substring(contentStart, endMarkerIdx - contentStart);
+            var lines = yaml.Split(new[] { "\r\n", "\n" }, StringSplitOptions.None);
+            return lines.Any(line => line.TrimStart().StartsWith("transcript:", StringComparison.Ordinal));
+        }
+
+        Assert.IsFalse(HasTopLevelTranscriptKey(markdownNote),
+            "Generated markdown should not include transcript path in frontmatter as 'transcript:' key");
     }
 }

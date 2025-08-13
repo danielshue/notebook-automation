@@ -149,7 +149,8 @@ public class MetadataPipeline(
 
         // Remove processing-only fields that shouldn't appear in final frontmatter
         merged.Remove("filePath");
-        //merged.Remove("transcript");
+        // Ensure transcript path is never persisted in frontmatter
+        merged.Remove("transcript");
         merged.Remove("share-link");
         merged.Remove("share_link");
 
