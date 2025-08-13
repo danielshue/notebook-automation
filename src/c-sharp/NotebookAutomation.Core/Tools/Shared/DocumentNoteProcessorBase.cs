@@ -478,6 +478,10 @@ public abstract class DocumentNoteProcessorBase(
                 return path;
             }
 
+            // Normalize separators early for consistent comparisons
+            path = path.Replace('/', Path.DirectorySeparatorChar)
+                       .Replace('\\', Path.DirectorySeparatorChar);
+
             string resourcesRoot = GetOnedriveResourcesRootFullPath();
             if (string.IsNullOrEmpty(resourcesRoot))
             {
@@ -485,21 +489,55 @@ public abstract class DocumentNoteProcessorBase(
                 return path;
             }
 
-            string fullPath = Path.GetFullPath(path);
-
-            // Ensure trailing separator on root for StartsWith comparison accuracy
-            string normalizedRoot = resourcesRoot.EndsWith(Path.DirectorySeparatorChar)
-                ? resourcesRoot
-                : resourcesRoot + Path.DirectorySeparatorChar;
-
-            if (fullPath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+            // Case 1: Absolute path under resourcesRoot -> make relative
+            if (Path.IsPathRooted(path))
             {
-                string relative = Path.GetRelativePath(resourcesRoot, fullPath);
-                Logger.LogDebug("Converted path to OneDrive resources-relative: {Relative}", relative);
-                return relative;
+                string fullPath = Path.GetFullPath(path);
+
+                // Ensure trailing separator on root for StartsWith comparison accuracy
+                string normalizedRoot = resourcesRoot.EndsWith(Path.DirectorySeparatorChar)
+                    ? resourcesRoot
+                    : resourcesRoot + Path.DirectorySeparatorChar;
+
+                if (fullPath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    string relative = Path.GetRelativePath(resourcesRoot, fullPath);
+                    Logger.LogDebug("Converted absolute path to OneDrive resources-relative: {Relative}", relative);
+                    return relative;
+                }
+
+                Logger.LogDebug("Absolute path not under OneDrive resources root; keeping original path: {Path}", path);
+                return path;
             }
 
-            Logger.LogDebug("Path not under OneDrive resources root; keeping original path: {Path}", path);
+            // Case 2: Already a relative path; if it starts with the configured resources basepath, strip it
+            string resourcesBase = (AppConfig?.Paths?.OnedriveResourcesBasepath ?? string.Empty)
+                .Trim('/', '\\')
+                .Replace('/', Path.DirectorySeparatorChar)
+                .Replace('\\', Path.DirectorySeparatorChar);
+
+            if (!string.IsNullOrWhiteSpace(resourcesBase))
+            {
+                string prefix = resourcesBase.EndsWith(Path.DirectorySeparatorChar)
+                    ? resourcesBase
+                    : resourcesBase + Path.DirectorySeparatorChar;
+
+                if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    string stripped = path[prefix.Length..];
+                    Logger.LogDebug("Stripped resources basepath from relative path: {Stripped}", stripped);
+                    return stripped;
+                }
+
+                // Also handle exact match without trailing separator
+                if (path.Equals(resourcesBase, StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.LogDebug("Relative path equals resources basepath; returning empty");
+                    return string.Empty;
+                }
+            }
+
+            Logger.LogDebug("Relative path does not start with resources basepath; keeping original: {Path}", path);
             return path;
         }
         catch (Exception ex)

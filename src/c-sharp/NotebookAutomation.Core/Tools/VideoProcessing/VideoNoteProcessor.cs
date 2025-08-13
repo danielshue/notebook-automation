@@ -672,10 +672,10 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
         // Back-compat: include legacy metadata fields expected by some tests
         try
         {
-            // Attempt to map to OneDrive relative path when possible; fall back to original path
-            string mapped = _oneDriveService?.MapLocalToOneDrivePath(videoPath)
-                ?? MakeRelativeToOnedriveResourcesIfPossible(videoPath);
-            metadata["onedrive_relative_path"] = string.IsNullOrWhiteSpace(mapped) ? videoPath : mapped;
+            // Map to OneDrive path if service available, then always convert to resources-relative
+            string? mapped = _oneDriveService?.MapLocalToOneDrivePath(videoPath);
+            string relative = MakeRelativeToOnedriveResourcesIfPossible(mapped ?? videoPath);
+            metadata["onedrive_relative_path"] = string.IsNullOrWhiteSpace(relative) ? videoPath : relative;
         }
         catch (Exception ex)
         {

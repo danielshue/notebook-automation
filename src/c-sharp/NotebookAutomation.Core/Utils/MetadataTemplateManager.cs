@@ -1,5 +1,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 using NotebookAutomation.Core.Tools;
+using NotebookAutomation.Core.Utils;
 
 namespace NotebookAutomation.Core.Utils;
 
@@ -353,6 +354,24 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
                 .Where(tag => !string.IsNullOrWhiteSpace(tag))
                 .ToArray();
             enhancedMetadata["tags"] = tagArray;
+        }
+
+        // Normalize 'class' field to friendly display (remove dashes/underscores, proper casing)
+        try
+        {
+            if (enhancedMetadata.TryGetValue("class", out var classObj) && classObj is not null)
+            {
+                var raw = classObj.ToString() ?? string.Empty;
+                if (!string.IsNullOrWhiteSpace(raw))
+                {
+                    var friendly = FriendlyTitleHelper.GetFriendlyTitleFromFileName(raw);
+                    enhancedMetadata["class"] = friendly;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Class name normalization skipped; keeping original value");
         }
     }
 

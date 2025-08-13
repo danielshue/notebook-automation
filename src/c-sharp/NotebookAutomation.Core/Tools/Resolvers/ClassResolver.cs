@@ -1,6 +1,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Tools.Resolvers;
 
+using NotebookAutomation.Core.Utils;
+
 /// <summary>
 /// Resolves the <c>class</c> field from a file path using <see cref="IMetadataHierarchyDetector"/>.
 /// </summary>
@@ -76,7 +78,17 @@ public class ClassResolver(ILogger<ClassResolver> logger, IMetadataHierarchyDete
             // Normalize OneDrive paths to vault-relative to ensure consistent hierarchy detection
             var normalized = NormalizeForHierarchy(path);
             var info = _hierarchy.FindHierarchyInfo(normalized);
-            return info.TryGetValue("class", out var value) ? value : string.Empty;
+            if (!info.TryGetValue("class", out var value) || value is null)
+            {
+                return string.Empty;
+            }
+
+            // Apply friendly naming convention used for Titles: remove dashes/underscores and use proper casing
+            var raw = value.ToString() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+
+            // Reuse FriendlyTitleHelper to enforce no-dashes and title casing for display-friendly output
+            return FriendlyTitleHelper.GetFriendlyTitleFromFileName(raw);
         }
         catch (Exception ex)
         {
