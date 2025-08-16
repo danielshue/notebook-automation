@@ -20,7 +20,7 @@ namespace NotebookAutomation.Core.Utils;
 /// </code>
 /// </example>
 /// </remarks>
-public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig)
+public class MarkdownNoteBuilder(IYamlHelper yamlHelper, AppConfig appConfig) : IMarkdownNoteBuilder
 {
     private readonly IYamlHelper _yamlHelper = yamlHelper;
     private readonly AppConfig _appConfig = appConfig;

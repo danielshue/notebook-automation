@@ -313,7 +313,7 @@ public static class ServiceRegistration
             var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
             var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
 
-            // Pass parameters in correct order: logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig
+            // Correct parameter order: logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig
             var processor = new VideoNoteProcessor(logger, aiSummarizer, yamlHelper, hierarchyDetector, templateManager, courseStructureExtractor, markdownBuilder, oneDriveService, appConfig);
             // Attach schema-driven metadata pipeline
             var pipeline = provider.GetRequiredService<IMetadataPipeline>();
@@ -448,7 +448,9 @@ public static class ServiceRegistration
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<VaultFolderSyncProcessor>();
             var appConfig = provider.GetRequiredService<AppConfig>();
-            return new VaultFolderSyncProcessor(logger, appConfig);
+            var markdownNoteBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
+            var templateManager = provider.GetRequiredService<IMetadataTemplateManager>();
+            return new VaultFolderSyncProcessor(logger, appConfig, markdownNoteBuilder, templateManager);
         });
 
         return services;
@@ -695,6 +697,10 @@ public static class ServiceRegistration
 
             return new MarkdownNoteBuilder(yaml, appConfig);
         });
+
+        // Register IMarkdownNoteBuilder interface
+        services.AddScoped<IMarkdownNoteBuilder>(provider =>
+            provider.GetRequiredService<MarkdownNoteBuilder>());
 
         services.AddScoped<TagProcessor>();
 

@@ -302,14 +302,21 @@ internal class VaultCommands
         };
         var unidirectionalOption = new Option<bool>("--unidirectional", "Disable bidirectional sync (OneDrive → Vault only)");
         var syncRecursiveOption = new Option<bool>("--recursive", "Enable recursive directory scanning (default: false, immediate children only)");
+        var documentTypesOption = new Option<List<string>>(
+            ["--document-types", "-t"],
+            "Document types to create placeholder markdown files for (comma-separated: videos, pdf, html)")
+        {
+            AllowMultipleArgumentsPerToken = true
+        };
 
         syncDirsCommand.AddArgument(vaultPathArg);
         syncDirsCommand.AddOption(unidirectionalOption);
         syncDirsCommand.AddOption(syncRecursiveOption);
         syncDirsCommand.AddOption(dryRunOption);
         syncDirsCommand.AddOption(verboseOption);
+        syncDirsCommand.AddOption(documentTypesOption);
 
-        syncDirsCommand.SetHandler(async (string? vaultPath, bool unidirectional, bool recursive, bool dryRun, bool verbose) =>
+        syncDirsCommand.SetHandler(async (string? vaultPath, bool unidirectional, bool recursive, bool dryRun, bool verbose, List<string>? documentTypes) =>
         {
             try
             {
@@ -425,7 +432,8 @@ internal class VaultCommands
                         vaultPath: effectiveVaultPath,
                         dryRun: dryRun,
                         bidirectional: bidirectional,
-                        recursive: recursive),
+                        recursive: recursive,
+                        documentTypes: documentTypes?.Count > 0 ? documentTypes : null),
                     statusMessage).ConfigureAwait(false);
                 // Status complete – continue with result reporting
                 if (result.Success)
@@ -434,6 +442,7 @@ internal class VaultCommands
                     AnsiConsoleHelper.WriteInfo($"Synchronized {result.SynchronizedFolders} folders out of {result.TotalFolders} total.");
                     if (result.CreatedVaultFolders > 0) AnsiConsoleHelper.WriteInfo($"Created {result.CreatedVaultFolders} new vault directories.");
                     if (bidirectional && result.CreatedOneDriveFolders > 0) AnsiConsoleHelper.WriteInfo($"Created {result.CreatedOneDriveFolders} new OneDrive directories.");
+                    if (result.CreatedPlaceholderFiles > 0) AnsiConsoleHelper.WriteInfo($"Created {result.CreatedPlaceholderFiles} placeholder markdown files.");
                     if (result.SkippedFolders > 0) AnsiConsoleHelper.WriteWarning($"{result.SkippedFolders} folders were skipped (already exist).");
                     if (result.FailedFolders > 0) AnsiConsoleHelper.WriteWarning($"{result.FailedFolders} folders failed to synchronize.");
                 }
@@ -447,7 +456,7 @@ internal class VaultCommands
                 _logger.LogError(ex, "Error executing vault sync-dirs command");
                 AnsiConsoleHelper.WriteError($"An error occurred: {ex.Message}");
             }
-        }, vaultPathArg, unidirectionalOption, syncRecursiveOption, dryRunOption, verboseOption);
+        }, vaultPathArg, unidirectionalOption, syncRecursiveOption, dryRunOption, verboseOption, documentTypesOption);
 
         var vaultCommand = new Command("vault", "Vault management commands");
         vaultCommand.AddCommand(generateIndexCommand);

@@ -45,6 +45,12 @@ public interface IVaultFolderSyncProcessor
     /// When false, only synchronizes the immediate children of the specified directory.
     /// Default is false for non-recursive operation (immediate children only).
     /// </param>
+    /// <param name="documentTypes">
+    /// Optional list of document types to create placeholder markdown files for.
+    /// Supported types: "videos", "pdf", "html". When provided, the sync process
+    /// will scan for files with matching extensions and create placeholder markdown
+    /// files in the vault for each document found.
+    /// </param>
     /// <returns>
     /// A task that represents the asynchronous synchronization operation.
     /// The task result contains statistics about the synchronization process including
@@ -55,5 +61,6 @@ public interface IVaultFolderSyncProcessor
         string? vaultPath,
         bool dryRun = false,
         bool bidirectional = true,
-        bool recursive = false);
+        bool recursive = false,
+        List<string>? documentTypes = null);
 }

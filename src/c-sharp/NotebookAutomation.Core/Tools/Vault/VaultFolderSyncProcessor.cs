@@ -1,4 +1,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
+using NotebookAutomation.Core.Utils;
+
 namespace NotebookAutomation.Core.Tools.Vault;
 
 /// <summary>
@@ -81,10 +83,14 @@ namespace NotebookAutomation.Core.Tools.Vault;
 /// </example>
 public class VaultFolderSyncProcessor(
     ILogger<VaultFolderSyncProcessor> logger,
-    AppConfig appConfig) : IVaultFolderSyncProcessor
+    AppConfig appConfig,
+    IMarkdownNoteBuilder markdownNoteBuilder,
+    IMetadataTemplateManager templateManager) : IVaultFolderSyncProcessor
 {
     private readonly ILogger<VaultFolderSyncProcessor> _logger = logger;
     private readonly AppConfig _appConfig = appConfig;
+    private readonly IMarkdownNoteBuilder _markdownNoteBuilder = markdownNoteBuilder;
+    private readonly IMetadataTemplateManager _templateManager = templateManager;
 
     /// <summary>
     /// Event triggered when processing progress changes.
@@ -213,7 +219,8 @@ public class VaultFolderSyncProcessor(
         string? vaultPath,
         bool dryRun = false,
         bool bidirectional = true,
-        bool recursive = false)
+        bool recursive = false,
+        List<string>? documentTypes = null)
     {
         if (string.IsNullOrEmpty(oneDrivePath))
         {
@@ -293,7 +300,18 @@ public class VaultFolderSyncProcessor(
                 await SyncVaultToOneDriveAsync(targetVaultPath, fullOneDriveSource, result, failedFolders, dryRun, recursive, createdVaultDirectories).ConfigureAwait(false);
             }
 
+            // Phase 3: Create placeholder markdown files for document types (if requested)
+            if (documentTypes?.Count > 0)
+            {
+                _logger.LogDebug("Phase 3: Creating placeholder markdown files for document types");
+                await CreatePlaceholderMarkdownFilesAsync(fullOneDriveSource, targetVaultPath, result, documentTypes, dryRun, recursive).ConfigureAwait(false);
+            }
+
             _logger.LogInformation($"Directory synchronization completed: {result.SynchronizedFolders}/{result.TotalFolders} synchronized, {result.CreatedVaultFolders} vault folders created, {result.CreatedOneDriveFolders} OneDrive folders created, {result.SkippedFolders} skipped, {result.FailedFolders} failed");
+            if (documentTypes?.Count > 0)
+            {
+                _logger.LogInformation($"Created {result.CreatedPlaceholderFiles} placeholder markdown files");
+            }
 
             return result;
         }
@@ -520,6 +538,293 @@ public class VaultFolderSyncProcessor(
     protected virtual void OnProcessingProgressChanged(string directoryPath, string status, int currentDirectory, int totalDirectories)
     {
         ProcessingProgressChanged?.Invoke(this, new DocumentProcessingProgressEventArgs(directoryPath, status, currentDirectory, totalDirectories));
+    }
+
+
+    /// <summary>
+    /// Creates placeholder markdown files for document types found in the OneDrive source.
+    /// </summary>
+    /// <param name="oneDriveSource">The OneDrive source path to scan for documents.</param>
+    /// <param name="vaultTarget">The vault target path where placeholder files will be created.</param>
+    /// <param name="result">The result object to update with placeholder file counts.</param>
+    /// <param name="documentTypes">The list of document types to create placeholders for.</param>
+    /// <param name="dryRun">Whether this is a dry run (don't actually create files).</param>
+    /// <param name="recursive">Whether to scan subdirectories recursively.</param>
+    private async Task CreatePlaceholderMarkdownFilesAsync(
+        string oneDriveSource,
+        string vaultTarget,
+        VaultFolderSyncResult result,
+        List<string> documentTypes,
+        bool dryRun,
+        bool recursive)
+    {
+        try
+        {
+            _logger.LogDebug($"Scanning for document files in: {oneDriveSource}");
+            _logger.LogDebug($"Document types to process: {string.Join(", ", documentTypes)}");
+
+            // Map document types to file extensions
+            var extensionMap = GetExtensionsForDocumentTypes(documentTypes);
+            _logger.LogDebug($"Extensions to scan: {string.Join(", ", extensionMap)}");
+
+            if (extensionMap.Count == 0)
+            {
+                _logger.LogWarning("No valid document types specified or no extensions mapped");
+                return;
+            }
+
+            // Get search option for directory scanning
+            var searchOption = recursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+            int placeholderCount = 0;
+
+            // Scan for each extension
+            foreach (var extension in extensionMap)
+            {
+                var searchPattern = $"*{extension}";
+                _logger.LogDebug($"Searching for files with pattern: {searchPattern}");
+
+                if (!Directory.Exists(oneDriveSource))
+                {
+                    _logger.LogWarning($"OneDrive source directory does not exist: {oneDriveSource}");
+                    continue;
+                }
+
+                var documentFiles = Directory.GetFiles(oneDriveSource, searchPattern, searchOption);
+                _logger.LogDebug($"Found {documentFiles.Length} files with extension {extension}");
+
+                foreach (var documentFile in documentFiles)
+                {
+                    try
+                    {
+                        var placeholderCreated = await CreatePlaceholderForDocumentAsync(
+                            documentFile, oneDriveSource, vaultTarget, extension, dryRun);
+
+                        if (placeholderCreated)
+                        {
+                            placeholderCount++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Error creating placeholder for document: {documentFile}");
+                    }
+                }
+            }
+
+            result.CreatedPlaceholderFiles = placeholderCount;
+            _logger.LogInformation($"Created {placeholderCount} placeholder markdown files");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during placeholder markdown file creation");
+        }
+    }
+
+    /// <summary>
+    /// Creates a placeholder markdown file for a specific document.
+    /// </summary>
+    /// <param name="documentPath">Full path to the document file.</param>
+    /// <param name="oneDriveSource">The OneDrive source root path.</param>
+    /// <param name="vaultTarget">The vault target root path.</param>
+    /// <param name="extension">The file extension of the document.</param>
+    /// <param name="dryRun">Whether this is a dry run.</param>
+    /// <returns>True if placeholder was created, false otherwise.</returns>
+    private async Task<bool> CreatePlaceholderForDocumentAsync(
+        string documentPath,
+        string oneDriveSource,
+        string vaultTarget,
+        string extension,
+        bool dryRun)
+    {
+        try
+        {
+            // Calculate relative path from OneDrive source
+            var relativePath = Path.GetRelativePath(oneDriveSource, documentPath);
+            var relativeDir = Path.GetDirectoryName(relativePath) ?? "";
+            var fileName = Path.GetFileNameWithoutExtension(documentPath);
+
+            // Determine target directory in vault
+            var targetDir = string.IsNullOrEmpty(relativeDir)
+                ? vaultTarget
+                : Path.Combine(vaultTarget, relativeDir);
+
+            // Create markdown filename
+            var markdownFileName = $"{fileName}.md";
+            var markdownPath = Path.Combine(targetDir, markdownFileName);
+
+            // Check if markdown file already exists - if so, skip it
+            if (File.Exists(markdownPath))
+            {
+                _logger.LogDebug($"Markdown file already exists, skipping: {markdownPath}");
+                return false; // Not created, already exists
+            }
+
+            // Determine template type based on extension
+            var templateType = GetTemplateTypeForExtension(extension);
+            if (string.IsNullOrEmpty(templateType))
+            {
+                _logger.LogWarning($"No template type mapped for extension: {extension}");
+                return false;
+            }
+
+            _logger.LogDebug($"Creating placeholder for {documentPath} -> {markdownPath} (template: {templateType})");
+
+            if (dryRun)
+            {
+                _logger.LogInformation($"[DRY RUN] Would create placeholder: {markdownPath}");
+                return true;
+            }
+
+            // Ensure target directory exists
+            Directory.CreateDirectory(targetDir);
+
+            // Create context for template resolution
+            var context = new Dictionary<string, object>
+            {
+                ["title"] = fileName,
+                ["source_file"] = documentPath,
+                ["filePath"] = markdownPath,  // Use vault target path for hierarchy detection (camelCase for resolvers)
+                ["relative_path"] = relativePath,
+                ["target_directory"] = targetDir,
+                ["skip_onedrive_share_link"] = true  // Skip OneDriveShareLinkResolver for placeholder creation
+            };
+
+            // Get template metadata using the template system with resolvers
+            var templateMetadata = _templateManager.GetTemplate(templateType);
+            if (templateMetadata == null)
+            {
+                _logger.LogWarning($"No template found for type: {templateType}");
+                return false;
+            }
+
+            // Enhance template metadata with resolved field values using context
+            // Note: OneDriveShareLinkResolver should check for skip_onedrive_share_link flag
+            var metadata = _templateManager.ResolveTemplateFields(templateType, context);
+
+            // Overlay template defaults with resolved values
+            foreach (var kvp in templateMetadata)
+            {
+                if (!metadata.ContainsKey(kvp.Key))
+                {
+                    metadata[kvp.Key] = kvp.Value;
+                }
+            }
+
+            // Generate friendly title using FriendlyTitleHelper
+            var friendlyTitle = FriendlyTitleHelper.GetFriendlyTitleFromFileName(fileName);
+
+            // Override specific fields for placeholder creation
+            metadata["title"] = friendlyTitle;
+            metadata["template-type"] = templateType;
+            metadata["status"] = "placeholder";
+            metadata["created"] = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            metadata["type"] = GetTypeForTemplateType(templateType);
+
+            // Add OneDrive relative path (from resources root to document)
+            var resourcesRoot = string.IsNullOrEmpty(_appConfig.Paths.OnedriveResourcesBasepath)
+                ? _appConfig.Paths.OnedriveFullpathRoot
+                : Path.Combine(_appConfig.Paths.OnedriveFullpathRoot, _appConfig.Paths.OnedriveResourcesBasepath);
+            var oneDriveRelativePath = Path.GetRelativePath(resourcesRoot, documentPath).Replace('\\', '/');
+            metadata["onedrive_relative_path"] = oneDriveRelativePath;
+
+            // For videos, also add transcript OneDrive path
+            if (templateType == "video-reference")
+            {
+                var transcriptPath = Path.ChangeExtension(oneDriveRelativePath, ".txt");
+                metadata["transcript-onedrive-relative-path"] = transcriptPath;
+            }
+
+            // Remove source_file metadata since onedrive_relative_path provides this info
+            metadata.Remove("source_file");
+
+            // Remove share-link field if it was resolved, as we want to skip it for placeholders
+            metadata.Remove("share-link");
+            metadata.Remove("onedrive-shared-link");  // Remove canonical field name as well
+
+            // Create markdown content with frontmatter and body structure
+            var markdownWithFrontmatter = _markdownNoteBuilder.CreateMarkdownWithFrontmatter(metadata, markdownFileName);
+
+            // Add friendly title heading and Notes section (following DocumentNoteProcessorBase pattern)
+            var markdownContent = markdownWithFrontmatter + $"# {friendlyTitle}\n\n## Notes\n";
+
+            // Write the placeholder file
+            await File.WriteAllTextAsync(markdownPath, markdownContent);
+            _logger.LogDebug($"Created placeholder file: {markdownPath}");
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error creating placeholder for {documentPath}");
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Maps document type names to file extensions.
+    /// </summary>
+    /// <param name="documentTypes">List of document type names.</param>
+    /// <returns>List of file extensions to search for.</returns>
+    private static List<string> GetExtensionsForDocumentTypes(List<string> documentTypes)
+    {
+        var extensions = new List<string>();
+
+        foreach (var docType in documentTypes)
+        {
+            switch (docType.ToLowerInvariant())
+            {
+                case "videos":
+                case "video":
+                    extensions.AddRange([".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv"]);
+                    break;
+                case "pdf":
+                case "pdfs":
+                    extensions.Add(".pdf");
+                    break;
+                case "html":
+                case "htm":
+                    extensions.AddRange([".html", ".htm"]);
+                    break;
+                default:
+                    // Log unknown document type but continue processing
+                    break;
+            }
+        }
+
+        return extensions.Distinct().ToList();
+    }
+
+    /// <summary>
+    /// Gets the template type for a given file extension.
+    /// </summary>
+    /// <param name="extension">The file extension (with dot).</param>
+    /// <returns>The template type string or empty if not mapped.</returns>
+    private static string GetTemplateTypeForExtension(string extension)
+    {
+        return extension.ToLowerInvariant() switch
+        {
+            ".mp4" or ".mov" or ".avi" or ".mkv" or ".wmv" or ".flv" => "video-reference",
+            ".pdf" => "pdf-reference",
+            ".html" or ".htm" => "resource-reading", // HTML files are typically reading materials
+            _ => ""
+        };
+    }
+
+    /// <summary>
+    /// Gets the document type for a given template type.
+    /// </summary>
+    /// <param name="templateType">The template type string.</param>
+    /// <returns>The document type string.</returns>
+    private static string GetTypeForTemplateType(string templateType)
+    {
+        return templateType switch
+        {
+            "video-reference" => "note/video-note",
+            "pdf-reference" => "note/case-study",
+            "resource-reading" => "note/reading",
+            _ => "note/general"
+        };
     }
 
 

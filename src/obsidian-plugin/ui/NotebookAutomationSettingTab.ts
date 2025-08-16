@@ -347,6 +347,18 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           });
       });
 
+    // Document Placeholders
+    new Setting(featureGroup)
+      .setName("Document Placeholders")
+      .setDesc("Automatically create placeholder markdown files for documents (videos, PDFs, HTML) when synchronizing directories with OneDrive. Generates structured notes with metadata for easy organization and note-taking. This will allow you to later go back and run the AI Summary and OneDrive shared Link on the folders and files.")
+      .addToggle(toggle => {
+        toggle.setValue(this.plugin.settings.enableDocumentPlaceholders ?? true)
+          .onChange(async (value) => {
+            this.plugin.settings.enableDocumentPlaceholders = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
     // Command flags section
     containerEl.createEl("h3", { text: "Flags", cls: "notebook-automation-section-header" });
     const flagsGroup = containerEl.createDiv({ cls: "notebook-automation-settings-group" });
@@ -465,7 +477,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     // Recursive Directory Sync flag
     new Setting(flagsGroup)
       .setName("Recursive Directory Sync")
-      .setDesc("Enable recursive directory scanning for sync operations. When enabled, directory synchronization will process the entire directory tree including all subdirectories and nested folders. When disabled, only the immediate children (first level) of the target directory will be synchronized. This affects how deep the sync operation goes into the folder hierarchy when synchronizing between OneDrive and your vault.")
+      .setDesc("Enable recursive directory scanning for sync operations. When enabled, directory synchronization will process the entire directory tree including all subdirectories and nested folders. When disabled, only the immediate children (first level) of the target directory will be synchronized. This affects how deep the sync operation goes into the folder hierarchy when synchronizing between OneDrive and your vault. When Document Placeholders is also enabled, recursive mode will create placeholder markdown files for documents found in all subdirectories, not just the immediate level.")
       .addToggle(toggle => {
         toggle.setValue(this.plugin.settings.recursiveDirectorySync ?? true)
           .onChange(async (value) => {

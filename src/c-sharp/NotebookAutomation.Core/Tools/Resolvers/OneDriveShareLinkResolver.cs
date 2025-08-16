@@ -69,6 +69,13 @@ public class OneDriveShareLinkResolver(ILogger<OneDriveShareLinkResolver> logger
                 return null;
             }
 
+            // Check if OneDrive share link resolution should be skipped for performance
+            if (context.TryGetValue("skip_onedrive_share_link", out var skipValue) && skipValue is true)
+            {
+                _logger.LogDebug("{Resolver}: skipping OneDrive share link resolution due to context flag", nameof(OneDriveShareLinkResolver));
+                return string.Empty;
+            }
+
             // Synchronously wait for async call in resolver context; callers should avoid deadlocks by running off the UI thread.
             var task = _oneDrive.CreateShareLinkAsync(path);
             task.Wait();

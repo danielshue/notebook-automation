@@ -128,4 +128,16 @@ public class VaultFolderSyncResult
     /// Failed folders are logged for analysis and potential retry.
     /// </remarks>
     public int FailedFolders { get; set; }
+
+
+    /// <summary>
+    /// Gets or sets the number of placeholder markdown files that were created during synchronization.
+    /// </summary>
+    /// <remarks>
+    /// This count represents placeholder markdown files that were created for document files
+    /// (PDF, video, HTML) found during the synchronization process. Each placeholder file
+    /// contains appropriate metadata and frontmatter for the corresponding document type.
+    /// This feature is only active when document types are specified in the sync request.
+    /// </remarks>
+    public int CreatedPlaceholderFiles { get; set; }
 }

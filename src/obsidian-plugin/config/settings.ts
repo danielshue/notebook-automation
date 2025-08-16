@@ -11,6 +11,7 @@ export interface NotebookAutomationSettings {
   enablePdfSummary?: boolean;
   enableIndexCreation?: boolean;
   enableEnsureMetadata?: boolean;
+  enableDocumentPlaceholders?: boolean;
   unidirectionalSync?: boolean;
   recursiveDirectorySync?: boolean;
   recursiveIndexBuild?: boolean;
@@ -31,6 +32,7 @@ export const DEFAULT_SETTINGS: NotebookAutomationSettings = {
   enablePdfSummary: true,
   enableIndexCreation: true,
   enableEnsureMetadata: true,
+  enableDocumentPlaceholders: true,
   unidirectionalSync: true,
   recursiveDirectorySync: true,
   recursiveIndexBuild: false,

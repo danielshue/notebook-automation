@@ -9,6 +9,8 @@ public class VaultFolderSyncProcessorTests
 {
     private readonly Mock<ILogger<VaultFolderSyncProcessor>> _mockLogger = new();
     private readonly Mock<AppConfig> _mockAppConfig = new();
+    private readonly Mock<IMarkdownNoteBuilder> _mockMarkdownNoteBuilder = new();
+    private readonly Mock<IMetadataTemplateManager> _mockMetadataTemplateManager = new();
     private readonly PathsConfig _pathsConfig = new();
     private VaultFolderSyncProcessor _processor = null!;
     private readonly string _testOneDriveRoot = Path.Combine(Path.GetTempPath(), "TestOneDrive");
@@ -30,7 +32,7 @@ public class VaultFolderSyncProcessorTests
         _mockAppConfig.Setup(c => c.Paths).Returns(_pathsConfig);
 
         // Create processor
-        _processor = new VaultFolderSyncProcessor(_mockLogger.Object, _mockAppConfig.Object);
+        _processor = new VaultFolderSyncProcessor(_mockLogger.Object, _mockAppConfig.Object, _mockMarkdownNoteBuilder.Object, _mockMetadataTemplateManager.Object);
 
         // Clean up and create test directories
         CleanupTestDirectories();
@@ -499,5 +501,321 @@ public class VaultFolderSyncProcessorTests
         Assert.IsTrue(Directory.Exists(Path.Combine(oneDriveTestPath, "VaultCourse1")));
         Assert.IsFalse(Directory.Exists(Path.Combine(_testVaultRoot, "OneDriveCourse1", "Module1")), "Nested OneDrive module should NOT be created in non-recursive mode");
         Assert.IsFalse(Directory.Exists(Path.Combine(oneDriveTestPath, "VaultCourse1", "Module1")), "Nested vault module should NOT be created in non-recursive mode");
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirectoriesAsync creates placeholder markdown files for document types.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirectoriesAsync_CreatesPlaceholderFiles_WhenDocumentTypesSpecified()
+    {
+        // Arrange
+        var testPath = "MBA/Finance";
+        var oneDriveTestPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath, "Course1");
+        Directory.CreateDirectory(oneDriveTestPath);
+
+        // Create test document files
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "lecture.mp4"), "test video content");
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "slides.pdf"), "test pdf content");
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "reading.html"), "test html content");
+
+        // Setup template manager mock
+        var templateMetadata = new Dictionary<string, object>
+        {
+            ["template-type"] = "video-reference",
+            ["type"] = "note/video-note",
+            ["title"] = "test",
+            ["status"] = "unread"
+        };
+
+        _mockMetadataTemplateManager.Setup(m => m.GetTemplate("video-reference"))
+            .Returns(templateMetadata);
+        _mockMetadataTemplateManager.Setup(m => m.GetTemplate("pdf-reference"))
+            .Returns(templateMetadata);
+        _mockMetadataTemplateManager.Setup(m => m.GetTemplate("resource-reading"))
+            .Returns(templateMetadata);
+
+        _mockMetadataTemplateManager.Setup(m => m.ResolveTemplateFields(It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
+            .Returns(new Dictionary<string, object>());
+
+        _mockMarkdownNoteBuilder.Setup(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()))
+            .Returns("---\ntitle: test\ntemplate-type: video-reference\ntype: note/video-note\n---");
+
+        var documentTypes = new List<string> { "videos", "pdf", "html" };
+
+        // Act
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: false, recursive: true, documentTypes: documentTypes);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(3, result.CreatedPlaceholderFiles);
+
+        // Verify placeholder files were created
+        var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "slides.md")));
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "reading.md")));
+
+        // Verify template manager was called for each document type
+        _mockMarkdownNoteBuilder.Verify(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()), Times.Exactly(3));
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirectoriesAsync dry run mode reports placeholder files without creating them.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirectoriesAsync_DryRun_ReportsPlaceholderFilesWithoutCreating()
+    {
+        // Arrange
+        var testPath = "MBA/Finance";
+        var oneDriveTestPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath, "Course1");
+        Directory.CreateDirectory(oneDriveTestPath);
+
+        // Create test document files
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "lecture.mp4"), "test video content");
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "slides.pdf"), "test pdf content");
+
+        // Setup template manager mock
+        var templateMetadata = new Dictionary<string, object>
+        {
+            ["template-type"] = "video-reference",
+            ["type"] = "note/video-note",
+            ["title"] = "test",
+            ["status"] = "unread"
+        };
+
+        _mockMetadataTemplateManager.Setup(m => m.GetTemplate("video-reference"))
+            .Returns(templateMetadata);
+        _mockMetadataTemplateManager.Setup(m => m.GetTemplate("pdf-reference"))
+            .Returns(templateMetadata);
+        _mockMetadataTemplateManager.Setup(m => m.ResolveTemplateFields(It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
+            .Returns(new Dictionary<string, object>());
+
+        var documentTypes = new List<string> { "videos", "pdf" };
+
+        // Act
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: true, bidirectional: false, recursive: true, documentTypes: documentTypes);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(2, result.CreatedPlaceholderFiles); // Should report what would be created
+
+        // Verify placeholder files were NOT actually created
+        var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
+        Directory.CreateDirectory(vaultCoursePath); // Create directory to check files
+        Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
+        Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "slides.md")));
+
+        // Verify template manager was not called in dry run
+        _mockMarkdownNoteBuilder.Verify(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()), Times.Never);
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirectoriesAsync skips existing markdown files instead of creating conflicts.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirectoriesAsync_SkipsExistingMarkdownFiles()
+    {
+        // Arrange
+        var testPath = "MBA/Finance";
+        var oneDriveTestPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath, "Course1");
+        Directory.CreateDirectory(oneDriveTestPath);
+
+        var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
+        Directory.CreateDirectory(vaultCoursePath);
+
+        // Create a document file
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "lecture.mp4"), "test video content");
+
+        // Create an existing markdown file with the same name
+        File.WriteAllText(Path.Combine(vaultCoursePath, "lecture.md"), "existing content");
+
+        // Setup template manager mock
+        var templateMetadata = new Dictionary<string, object>
+        {
+            ["template-type"] = "video-reference",
+            ["type"] = "note/video-note",
+            ["title"] = "lecture",
+            ["status"] = "unread"
+        };
+
+        _mockMetadataTemplateManager.Setup(m => m.GetTemplate("video-reference"))
+            .Returns(templateMetadata);
+        _mockMetadataTemplateManager.Setup(m => m.ResolveTemplateFields(It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
+            .Returns(new Dictionary<string, object>());
+
+        _mockMarkdownNoteBuilder.Setup(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()))
+            .Returns("---\ntitle: lecture\ntemplate-type: video-reference\ntype: note/video-note\n---");
+
+        var documentTypes = new List<string> { "videos" };
+
+        // Act
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: false, recursive: true, documentTypes: documentTypes);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(0, result.CreatedPlaceholderFiles); // Should be 0 because file already exists
+
+        // Verify original file still exists and no new files were created
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
+        Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture-1.md")));
+
+        // Verify original content is preserved
+        var originalContent = File.ReadAllText(Path.Combine(vaultCoursePath, "lecture.md"));
+        Assert.AreEqual("existing content", originalContent);
+
+        // Verify template manager was not called since file was skipped
+        _mockMarkdownNoteBuilder.Verify(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()), Times.Never);
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirectoriesAsync skips placeholder creation when no document types specified.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirectoriesAsync_SkipsPlaceholderCreation_WhenNoDocumentTypesSpecified()
+    {
+        // Arrange
+        var testPath = "MBA/Finance";
+        var oneDriveTestPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath, "Course1");
+        Directory.CreateDirectory(oneDriveTestPath);
+
+        // Create test document files
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "lecture.mp4"), "test video content");
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "slides.pdf"), "test pdf content");
+
+        // Act - no document types specified
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: false, recursive: true);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(0, result.CreatedPlaceholderFiles);
+
+        // Verify no placeholder files were created
+        var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
+        if (Directory.Exists(vaultCoursePath))
+        {
+            Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
+            Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "slides.md")));
+        }
+
+        // Verify template manager was not called
+        _mockMarkdownNoteBuilder.Verify(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()), Times.Never);
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirectoriesAsync handles unknown document types gracefully.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirectoriesAsync_HandlesUnknownDocumentTypes_Gracefully()
+    {
+        // Arrange
+        var testPath = "MBA/Finance";
+        var oneDriveTestPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath, "Course1");
+        Directory.CreateDirectory(oneDriveTestPath);
+
+        // Create test document files
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "lecture.mp4"), "test video content");
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "unknown.xyz"), "unknown file type");
+
+        // Setup template manager mock for known type
+        var templateMetadata = new Dictionary<string, object>
+        {
+            ["template-type"] = "video-reference",
+            ["type"] = "note/video-note",
+            ["title"] = "lecture",
+            ["status"] = "unread"
+        };
+
+        _mockMetadataTemplateManager.Setup(m => m.GetTemplate("video-reference"))
+            .Returns(templateMetadata);
+        _mockMetadataTemplateManager.Setup(m => m.ResolveTemplateFields(It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
+            .Returns(new Dictionary<string, object>());
+
+        _mockMarkdownNoteBuilder.Setup(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()))
+            .Returns("---\ntitle: lecture\ntemplate-type: video-reference\ntype: note/video-note\n---");
+
+        var documentTypes = new List<string> { "videos", "unknown-type" };
+
+        // Act
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: false, recursive: true, documentTypes: documentTypes);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(1, result.CreatedPlaceholderFiles); // Only the video file should create a placeholder
+
+        // Verify only the known document type created a placeholder
+        var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
+        Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "unknown.md")));
+
+        // Verify template manager was called only for the known type
+        _mockMarkdownNoteBuilder.Verify(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()), Times.Once);
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirectoriesAsync creates placeholders only in recursive mode when files are in subdirectories.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirectoriesAsync_NonRecursive_DoesNotCreatePlaceholdersInSubdirectories()
+    {
+        // Arrange
+        var testPath = "MBA/Finance";
+        var oneDriveTestPath = Path.Combine(_testOneDriveRoot, _pathsConfig.OnedriveResourcesBasepath, testPath);
+        Directory.CreateDirectory(oneDriveTestPath);
+
+        // Create subdirectory with document file
+        var courseDir = Path.Combine(oneDriveTestPath, "Course1");
+        Directory.CreateDirectory(courseDir);
+        File.WriteAllText(Path.Combine(courseDir, "lecture.mp4"), "test video content");
+
+        // Create document file in root level
+        File.WriteAllText(Path.Combine(oneDriveTestPath, "overview.pdf"), "test pdf content");
+
+        // Setup template manager mock
+        var templateMetadata = new Dictionary<string, object>
+        {
+            ["template-type"] = "pdf-reference",
+            ["type"] = "note/case-study",
+            ["title"] = "overview",
+            ["status"] = "unread"
+        };
+
+        _mockMetadataTemplateManager.Setup(m => m.GetTemplate("pdf-reference"))
+            .Returns(templateMetadata);
+        _mockMetadataTemplateManager.Setup(m => m.GetTemplate("video-reference"))
+            .Returns(templateMetadata);
+        _mockMetadataTemplateManager.Setup(m => m.ResolveTemplateFields(It.IsAny<string>(), It.IsAny<Dictionary<string, object>>()))
+            .Returns(new Dictionary<string, object>());
+
+        _mockMarkdownNoteBuilder.Setup(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()))
+            .Returns("---\ntitle: overview\ntemplate-type: pdf-reference\ntype: note/case-study\n---");
+
+        var documentTypes = new List<string> { "videos", "pdf" };
+
+        // Act - non-recursive mode
+        var result = await _processor.SyncDirectoriesAsync(testPath, _testVaultRoot, dryRun: false, bidirectional: false, recursive: false, documentTypes: documentTypes);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(1, result.CreatedPlaceholderFiles); // Only the root-level PDF should create a placeholder
+
+        // Verify only root-level document created a placeholder
+        Assert.IsTrue(File.Exists(Path.Combine(_testVaultRoot, "overview.md")));
+
+        // Verify subdirectory document did not create a placeholder
+        var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
+        if (Directory.Exists(vaultCoursePath))
+        {
+            Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
+        }
+
+        // Verify template manager was called only for the root-level file
+        _mockMarkdownNoteBuilder.Verify(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()), Times.Once);
     }
 }

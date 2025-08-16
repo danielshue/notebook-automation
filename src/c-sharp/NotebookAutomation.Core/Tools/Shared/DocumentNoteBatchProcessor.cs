@@ -408,11 +408,22 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             string outputPath = GenerateOutputPath(filePath, effectiveOutputDir, effectiveResourcesRoot);
             logger.LogDebug($"GenerateOutputPath RETURNED: {outputPath}");
 
-            // If not forceOverwrite and file exists, skip
+            // Enhanced skip logic with AI summary detection
             if (!forceOverwrite && File.Exists(outputPath))
             {
-                logger.LogWarning($"Output file exists and --force not set, skipping: {outputPath}");
-                return (true, "Skipped - file exists");
+                // Check if existing file already has AI content
+                bool hasAiContent = await HasAiContentAsync(outputPath).ConfigureAwait(false);
+
+                if (hasAiContent)
+                {
+                    logger.LogInformation($"Output file exists with AI content, skipping: {outputPath}");
+                    return (true, "Skipped - file exists with AI content");
+                }
+                else
+                {
+                    logger.LogInformation($"Output file exists without AI content, processing will continue: {outputPath}");
+                    // Don't skip - allow processing to add AI content
+                }
             }
 
             // Extract content with progress tracking
@@ -451,6 +462,91 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             }
 
             return (false, errorMessage);
+        }
+    }
+
+    /// <summary>
+    /// Checks if an existing markdown file already contains AI-generated content.
+    /// </summary>
+    /// <param name="filePath">Path to the markdown file to check.</param>
+    /// <returns>True if the file contains AI content, false otherwise.</returns>
+    /// <remarks>
+    /// This method checks for AI content by examining frontmatter/metadata fields:
+    /// <list type="bullet">
+    /// <item><description>Frontmatter fields like "auto-generated-state: writable"</description></item>
+    /// <item><description>AI processing indicators like "ai-summary-date", "ai-processing-date"</description></item>
+    /// <item><description>Template types like "video-reference" or "pdf-reference"</description></item>
+    /// </list>
+    /// If an error occurs during detection, the method returns false to maintain safe processing behavior.
+    /// </remarks>
+    protected virtual async Task<bool> HasAiContentAsync(string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+            {
+                return false;
+            }
+
+            // Read the file content
+            string content = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                return false;
+            }
+
+            // Check frontmatter for AI processing indicators
+            var yamlHelper = processor.GetYamlHelper();
+            if (yamlHelper != null)
+            {
+                string? frontmatter = yamlHelper.ExtractFrontmatter(content);
+                if (!string.IsNullOrWhiteSpace(frontmatter))
+                {
+                    var metadata = yamlHelper.ParseYamlToDictionary(frontmatter);
+
+                    // Check for auto-generated-state indicating AI processing
+                    if (metadata.TryGetValue("auto-generated-state", out object? autoGenState))
+                    {
+                        string? stateValue = autoGenState?.ToString()?.ToLowerInvariant();
+                        if (stateValue == "writable" || stateValue == "ai-generated")
+                        {
+                            logger.LogDebug($"Found auto-generated-state indicating AI processing in: {filePath}");
+                            return true;
+                        }
+                    }
+
+                    // Check for other AI processing indicators
+                    if (metadata.ContainsKey("ai-summary-date") ||
+                        metadata.ContainsKey("ai-processing-date") ||
+                        metadata.ContainsKey("summary-generated"))
+                    {
+                        logger.LogDebug($"Found AI processing metadata fields in: {filePath}");
+                        return true;
+                    }
+
+                    // Check if template-type suggests AI processing
+                    if (metadata.TryGetValue("template-type", out object? templateType))
+                    {
+                        string? typeValue = templateType?.ToString()?.ToLowerInvariant();
+                        if (typeValue?.Contains("video-reference") == true ||
+                            typeValue?.Contains("pdf-reference") == true)
+                        {
+                            logger.LogDebug($"Found AI-processed template type in: {filePath}");
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            logger.LogDebug($"No AI content detected in: {filePath}");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, $"Error checking for AI content in file: {filePath}");
+            // On error, assume no AI content to be safe (allow reprocessing)
+            return false;
         }
     }
 

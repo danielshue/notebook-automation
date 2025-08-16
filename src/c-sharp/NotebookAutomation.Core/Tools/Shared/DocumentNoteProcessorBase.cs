@@ -43,6 +43,11 @@ public abstract class DocumentNoteProcessorBase(
     protected IMetadataPipeline? MetadataPipeline { get; private set; }
 
     /// <summary>
+    /// Gets the YAML helper instance for frontmatter processing.
+    /// </summary>
+    public IYamlHelper? GetYamlHelper() => YamlHelper;
+
+    /// <summary>
     /// Opt-in injection for the metadata pipeline orchestrator.
     /// </summary>
     /// <param name="pipeline">Pipeline instance from DI.</param>

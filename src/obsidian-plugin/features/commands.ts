@@ -391,6 +391,10 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
     if (plugin.settings.recursiveDirectorySync) {
       args.push("--recursive");
     }
+    // Add document types if the feature is enabled
+    if (plugin.settings.enableDocumentPlaceholders) {
+      args.push("--document-types", "videos", "pdf", "html");
+    }
   }
   
   // Only add --force if explicitly requested by the caller (in addition to settings)

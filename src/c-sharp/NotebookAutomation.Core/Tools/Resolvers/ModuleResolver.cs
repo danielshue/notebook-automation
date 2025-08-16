@@ -1,6 +1,8 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Core.Tools.Resolvers;
 
+using System.Text.RegularExpressions;
+
 /// <summary>
 /// Resolves the <c>module</c> field from a file path using <see cref="IMetadataHierarchyDetector"/>.
 /// </summary>
@@ -67,7 +69,23 @@ public class ModuleResolver(ILogger<ModuleResolver> logger, IMetadataHierarchyDe
             var path = GetPath(context);
             if (string.IsNullOrWhiteSpace(path)) return string.Empty;
             var info = _hierarchy.FindHierarchyInfo(path);
-            return info.TryGetValue("module", out var value) ? value : string.Empty;
+            if (!info.TryGetValue("module", out var value) || value is null)
+            {
+                return string.Empty;
+            }
+
+            var raw = value.ToString() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(raw)) return string.Empty;
+
+            // Extract a numeric identifier from the module value (e.g., "01_course-orientation-operations-strategy" => "01" => 1)
+            var match = Regex.Match(raw, "(?<!\\d)(\\d+)(?!\\d)");
+            if (match.Success && int.TryParse(match.Value, out int num))
+            {
+                return num.ToString();
+            }
+
+            // If no digits present, return empty to allow higher-precedence sources to supply one
+            return string.Empty;
         }
         catch (Exception ex)
         {

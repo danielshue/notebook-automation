@@ -231,7 +231,7 @@ public class VaultCommandsTests
             FailedFolders = 0
         };
 
-        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<List<string>?>()))
             .ReturnsAsync(mockResult);
 
         mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
@@ -261,7 +261,7 @@ public class VaultCommandsTests
 
             // Verify the processor was called with correct parameters (full normalized OneDrive path, vault root from config)
             var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources"));
-            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, _tempVaultRoot, true, true, false), Times.Once);
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, _tempVaultRoot, true, true, false, null), Times.Once);
         }
         finally
         {
@@ -291,7 +291,7 @@ public class VaultCommandsTests
             FailedFolders = 0
         };
 
-        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<List<string>?>()))
             .ReturnsAsync(mockResult);
 
         mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
@@ -325,7 +325,7 @@ public class VaultCommandsTests
 
             // Verify the processor was called with correct parameters (full normalized OneDrive path, full vault path)
             var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources", "MBA/Finance"));
-            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, true, false), Times.Once);
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, true, false, null), Times.Once);
         }
         finally
         {
@@ -356,7 +356,7 @@ public class VaultCommandsTests
             FailedFolders = 0
         };
 
-        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<List<string>?>()))
             .ReturnsAsync(mockResult);
 
         mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
@@ -392,7 +392,7 @@ public class VaultCommandsTests
 
             // Verify the processor was called with bidirectional = true (default)
             var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources", "MBA/Finance"));
-            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, true, false), Times.Once);
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, true, false, null), Times.Once);
         }
         finally
         {
@@ -423,7 +423,7 @@ public class VaultCommandsTests
             FailedFolders = 0
         };
 
-        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<List<string>?>()))
             .ReturnsAsync(mockResult);
 
         mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
@@ -457,11 +457,272 @@ public class VaultCommandsTests
 
             // Verify the processor was called with bidirectional = false due to --unidirectional flag
             var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources", "MBA/Finance"));
-            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, false, false), Times.Once);
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, false, false, null), Times.Once);
         }
         finally
         {
             Console.SetOut(originalOut);
         }
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirsCommand executes successfully with document types option.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirsCommand_ExecutesSuccessfully_WithDocumentTypesOption()
+    {
+        // Arrange
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+
+        // Setup mock services for sync-dirs command
+        var mockSyncProcessor = new Mock<IVaultFolderSyncProcessor>();
+        var mockResult = new VaultFolderSyncResult
+        {
+            Success = true,
+            TotalFolders = 2,
+            SynchronizedFolders = 2,
+            CreatedVaultFolders = 2,
+            CreatedOneDriveFolders = 0,
+            CreatedPlaceholderFiles = 3,
+            SkippedFolders = 0,
+            FailedFolders = 0
+        };
+
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<List<string>?>()))
+            .ReturnsAsync(mockResult);
+
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+            .Returns(mockAppConfig.Object);
+
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+        // Capture console output
+        var originalOut = Console.Out;
+        var stringWriter = new StringWriter();
+        Console.SetOut(stringWriter);
+        try
+        {
+            // Create the test vault path
+            var testVaultPath = Path.Combine(_tempVaultRoot, "MBA", "Finance");
+            Directory.CreateDirectory(testVaultPath);
+
+            // Act - Test with --document-types option
+            var parser = new Parser(rootCommand);
+            var result = await parser.InvokeAsync($"vault sync-dirs \"{testVaultPath}\" --document-types videos pdf html --dry-run").ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(0, result, "Command should execute successfully");
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("Executing vault bidirectional sync-dirs"), "Should show execution message");
+            Assert.IsTrue(output.Contains("completed successfully"), "Should show success message");
+            Assert.IsTrue(output.Contains("Created 3 placeholder markdown files"), "Should show placeholder files created");
+
+            // Verify the processor was called with the correct document types
+            var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources", "MBA/Finance"));
+            var expectedDocumentTypes = new List<string> { "videos", "pdf", "html" };
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, true, false, It.Is<List<string>?>(list =>
+                list != null && list.Count == 3 && list.Contains("videos") && list.Contains("pdf") && list.Contains("html"))), Times.Once);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirsCommand accepts space-separated document types.
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirsCommand_AcceptsSpaceSeparatedDocumentTypes()
+    {
+        // Arrange
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+
+        // Setup mock services for sync-dirs command
+        var mockSyncProcessor = new Mock<IVaultFolderSyncProcessor>();
+        var mockResult = new VaultFolderSyncResult
+        {
+            Success = true,
+            TotalFolders = 1,
+            SynchronizedFolders = 1,
+            CreatedVaultFolders = 1,
+            CreatedPlaceholderFiles = 2,
+            SkippedFolders = 0,
+            FailedFolders = 0
+        };
+
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<List<string>?>()))
+            .ReturnsAsync(mockResult);
+
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+            .Returns(mockAppConfig.Object);
+
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+        // Capture console output
+        var originalOut = Console.Out;
+        var stringWriter = new StringWriter();
+        Console.SetOut(stringWriter);
+        try
+        {
+            // Create the test vault path
+            var testVaultPath = Path.Combine(_tempVaultRoot, "MBA", "Finance");
+            Directory.CreateDirectory(testVaultPath);
+
+            // Act - Test with space-separated document types
+            var parser = new Parser(rootCommand);
+            var result = await parser.InvokeAsync($"vault sync-dirs \"{testVaultPath}\" --document-types videos pdf --recursive --dry-run").ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(0, result, "Command should execute successfully");
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("Executing vault bidirectional sync-dirs"), "Should show execution message");
+            Assert.IsTrue(output.Contains("Created 2 placeholder markdown files"), "Should show placeholder files created");
+
+            // Verify the processor was called with the correct document types and recursive flag
+            var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources", "MBA/Finance"));
+            var expectedDocumentTypes = new List<string> { "videos", "pdf" };
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, true, true, It.Is<List<string>?>(list =>
+                list != null && list.Count == 2 && list.Contains("videos") && list.Contains("pdf"))), Times.Once);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirsCommand works without document types (legacy behavior).
+    /// </summary>
+    [TestMethod]
+    public async Task SyncDirsCommand_WorksWithoutDocumentTypes_LegacyBehavior()
+    {
+        // Arrange
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+
+        // Setup mock services for sync-dirs command
+        var mockSyncProcessor = new Mock<IVaultFolderSyncProcessor>();
+        var mockResult = new VaultFolderSyncResult
+        {
+            Success = true,
+            TotalFolders = 1,
+            SynchronizedFolders = 1,
+            CreatedVaultFolders = 1,
+            CreatedPlaceholderFiles = 0, // No placeholder files when no document types specified
+            SkippedFolders = 0,
+            FailedFolders = 0
+        };
+
+        mockSyncProcessor.Setup(p => p.SyncDirectoriesAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<List<string>?>()))
+            .ReturnsAsync(mockResult);
+
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+            .Returns(mockAppConfig.Object);
+
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+        // Capture console output
+        var originalOut = Console.Out;
+        var stringWriter = new StringWriter();
+        Console.SetOut(stringWriter);
+        try
+        {
+            // Create the test vault path
+            var testVaultPath = Path.Combine(_tempVaultRoot, "MBA", "Finance");
+            Directory.CreateDirectory(testVaultPath);
+
+            // Act - Test without document types
+            var parser = new Parser(rootCommand);
+            var result = await parser.InvokeAsync($"vault sync-dirs \"{testVaultPath}\" --dry-run").ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(0, result, "Command should execute successfully");
+            string output = stringWriter.ToString();
+            Assert.IsTrue(output.Contains("Executing vault bidirectional sync-dirs"), "Should show execution message");
+            Assert.IsTrue(output.Contains("completed successfully"), "Should show success message");
+            // Should not mention placeholder files when none are created
+            Assert.IsFalse(output.Contains("placeholder markdown files"), "Should not mention placeholder files when none created");
+
+            // Verify the processor was called with null document types
+            var expectedOneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(System.IO.Path.Combine("C:/OneDriveRoot", "Education/MBA-Resources", "MBA/Finance"));
+            mockSyncProcessor.Verify(p => p.SyncDirectoriesAsync(expectedOneDrivePath, testVaultPath, true, true, false, null), Times.Once);
+        }
+        finally
+        {
+            Console.SetOut(originalOut);
+        }
+    }
+
+
+    /// <summary>
+    /// Tests that SyncDirsCommand help shows document types option.
+    /// </summary>
+    [TestMethod]
+    public void SyncDirsCommand_Help_ShowsDocumentTypesOption()
+    {
+        // Arrange
+        var rootCommand = new RootCommand();
+        var configOption = new Option<string>("--config");
+        var debugOption = new Option<bool>("--debug");
+        var verboseOption = new Option<bool>("--verbose");
+        var dryRunOption = new Option<bool>("--dry-run");
+
+        var vaultCommands = new VaultCommands(mockLogger.Object, mockServiceProvider.Object);
+
+        // Setup mock services for sync-dirs command (needed even for help)
+        var mockSyncProcessor = new Mock<IVaultFolderSyncProcessor>();
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(IVaultFolderSyncProcessor)))
+            .Returns(mockSyncProcessor.Object);
+        mockServiceProvider.Setup(sp => sp.GetService(typeof(AppConfig)))
+            .Returns(mockAppConfig.Object);
+
+        vaultCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
+
+        // Act & Assert - Check that the command was registered with the option
+        // Since console output capture can be tricky with System.CommandLine,
+        // we'll verify the command structure instead
+        var vaultCommand = rootCommand.Subcommands
+            .FirstOrDefault(sc => sc.Name == "vault");
+
+        Assert.IsNotNull(vaultCommand, "vault command should be registered");
+
+        var syncDirsCommand = vaultCommand!.Subcommands
+            .FirstOrDefault(sc => sc.Name == "sync-dirs");
+
+        Assert.IsNotNull(syncDirsCommand, "sync-dirs command should be registered");
+
+        var documentTypesOption = syncDirsCommand!.Options
+            .FirstOrDefault(opt => opt.Name == "document-types");
+
+        Assert.IsNotNull(documentTypesOption, "document-types option should be registered");
+        Assert.IsTrue(documentTypesOption!.HasAlias("-t"), "Option should have -t alias");
+        Assert.IsTrue(documentTypesOption!.Description.Contains("Document types"), "Option should have proper description");
+        Assert.IsTrue(documentTypesOption!.Description.Contains("videos"), "Description should mention videos");
+        Assert.IsTrue(documentTypesOption!.Description.Contains("pdf"), "Description should mention pdf");
+        Assert.IsTrue(documentTypesOption!.Description.Contains("html"), "Description should mention html");
     }
 }
