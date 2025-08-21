@@ -17,7 +17,7 @@ export function registerCommands(plugin: NotebookAutomationPlugin) {
   // Register Command Palette commands for selected files/folders
   plugin.addCommand({
     id: 'sync-directory',
-    name: 'Sync Directory with OneDrive',
+    name: 'Vault Sync with OneDrive',
     /**
      * Checks if a folder is selected and triggers the sync-dir command.
      * @param checking If true, only checks if the command should be enabled.

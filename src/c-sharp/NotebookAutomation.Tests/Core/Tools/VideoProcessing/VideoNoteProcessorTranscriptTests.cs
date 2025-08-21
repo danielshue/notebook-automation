@@ -395,4 +395,132 @@ public class VideoNoteProcessorTranscriptTests
         Assert.IsFalse(HasTopLevelTranscriptKey(markdownNote),
             "Generated markdown should not include transcript path in frontmatter as 'transcript:' key");
     }
+
+    /// <summary>
+    /// Tests that the processor respects preferred transcript language configuration when multiple language-specific transcripts are available.
+    /// </summary>
+    [TestMethod]
+    public void TryLoadTranscript_MultipleLanguages_ReturnsPreferredLanguage()
+    {
+        // Arrange
+        string videoPath = Path.Combine(_tempDirectory, "test-video.mp4");
+        string englishTranscriptPath = Path.Combine(_tempDirectory, "test-video.en.txt");
+        string arabicTranscriptPath = Path.Combine(_tempDirectory, "test-video.ar.txt");
+        string frenchTranscriptPath = Path.Combine(_tempDirectory, "test-video.fr.txt");
+
+        // Create test video file
+        File.WriteAllText(videoPath, "dummy video content");
+
+        // Create transcript files in different languages
+        File.WriteAllText(englishTranscriptPath, "English transcript content");
+        File.WriteAllText(arabicTranscriptPath, "Arabic transcript content");
+        File.WriteAllText(frenchTranscriptPath, "French transcript content");
+
+        // Create AppConfig with language preferences (English first, then French)
+        var appConfig = new AppConfig
+        {
+            PreferredTranscriptLanguages = ["en", "fr", "es"]
+        };
+
+        // Create processor with the configuration
+        PromptTemplateService promptService = new(
+            NullLogger<PromptTemplateService>.Instance,
+            new YamlHelper(NullLogger<YamlHelper>.Instance),
+            appConfig);
+        AISummarizer aiSummarizer = new(
+            NullLogger<AISummarizer>.Instance,
+            promptService,
+            null);
+
+        var yamlHelperMock = new Mock<IYamlHelper>();
+        yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
+            .Returns<string>(markdown => markdown.Contains("---") ? markdown.Substring(markdown.IndexOf("---", 3) + 3) : markdown);
+
+        var hierarchyDetectorMock = new Mock<IMetadataHierarchyDetector>();
+        var templateManagerMock = new Mock<IMetadataTemplateManager>();
+        var courseStructureExtractorMock = new Mock<ICourseStructureExtractor>();
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelperMock.Object, appConfig);
+
+        var processorWithConfig = new VideoNoteProcessor(
+            _logger,
+            aiSummarizer,
+            yamlHelperMock.Object,
+            hierarchyDetectorMock.Object,
+            templateManagerMock.Object,
+            courseStructureExtractorMock.Object,
+            markdownNoteBuilder,
+            null,
+            appConfig);
+
+        // Act
+        string? transcript = processorWithConfig.TryLoadTranscript(videoPath);
+
+        // Assert
+        Assert.IsNotNull(transcript, "Should find a transcript");
+        Assert.AreEqual("English transcript content", transcript, "Should return English transcript (preferred language)");
+    }
+
+    /// <summary>
+    /// Tests that when no preferred language is found, the processor returns the first available language-specific transcript.
+    /// </summary>
+    [TestMethod]
+    public void TryLoadTranscript_NoPreferredLanguageAvailable_ReturnsFirstAvailable()
+    {
+        // Arrange
+        string videoPath = Path.Combine(_tempDirectory, "test-video.mp4");
+        string arabicTranscriptPath = Path.Combine(_tempDirectory, "test-video.ar.txt");
+        string japaneseTranscriptPath = Path.Combine(_tempDirectory, "test-video.ja.txt");
+
+        // Create test video file
+        File.WriteAllText(videoPath, "dummy video content");
+
+        // Create transcript files (no English available)
+        File.WriteAllText(arabicTranscriptPath, "Arabic transcript content");
+        File.WriteAllText(japaneseTranscriptPath, "Japanese transcript content");
+
+        // Create AppConfig with language preferences (English first, but not available)
+        var appConfig = new AppConfig
+        {
+            PreferredTranscriptLanguages = ["en", "fr", "es"]
+        };
+
+        // Create processor with the configuration
+        PromptTemplateService promptService = new(
+            NullLogger<PromptTemplateService>.Instance,
+            new YamlHelper(NullLogger<YamlHelper>.Instance),
+            appConfig);
+        AISummarizer aiSummarizer = new(
+            NullLogger<AISummarizer>.Instance,
+            promptService,
+            null);
+
+        var yamlHelperMock = new Mock<IYamlHelper>();
+        yamlHelperMock.Setup(m => m.RemoveFrontmatter(It.IsAny<string>()))
+            .Returns<string>(markdown => markdown.Contains("---") ? markdown.Substring(markdown.IndexOf("---", 3) + 3) : markdown);
+
+        var hierarchyDetectorMock = new Mock<IMetadataHierarchyDetector>();
+        var templateManagerMock = new Mock<IMetadataTemplateManager>();
+        var courseStructureExtractorMock = new Mock<ICourseStructureExtractor>();
+        var markdownNoteBuilder = new MarkdownNoteBuilder(yamlHelperMock.Object, appConfig);
+
+        var processorWithConfig = new VideoNoteProcessor(
+            _logger,
+            aiSummarizer,
+            yamlHelperMock.Object,
+            hierarchyDetectorMock.Object,
+            templateManagerMock.Object,
+            courseStructureExtractorMock.Object,
+            markdownNoteBuilder,
+            null,
+            appConfig);
+
+        // Act
+        string? transcript = processorWithConfig.TryLoadTranscript(videoPath);
+
+        // Assert
+        Assert.IsNotNull(transcript, "Should find a transcript");
+        // Should return one of the available transcripts (either Arabic or Japanese)
+        Assert.IsTrue(transcript == "Arabic transcript content" || transcript == "Japanese transcript content",
+            "Should return one of the available language-specific transcripts");
+    }
 }

@@ -127,7 +127,13 @@ internal class Program
         var logger = loggerFactory.CreateLogger<Program>();
 
         // Initialize centralized exception handler
-        ExceptionHandler.Initialize(logger, isDebugMode); logger.LogDebug("Application started");
+        ExceptionHandler.Initialize(logger, isDebugMode);
+
+        // Log application version for all CLI commands
+        var appVersion = VersionHelper.GetVersion();
+        logger.LogInformation("CLI Version: {version}", appVersion.ToDisplayString());
+
+        logger.LogDebug("Application started");
 
         // Register commands with the command line builder
         commandLineBuilder.RegisterCommands(rootCommand, options, serviceProvider);        // Check for help display scenarios

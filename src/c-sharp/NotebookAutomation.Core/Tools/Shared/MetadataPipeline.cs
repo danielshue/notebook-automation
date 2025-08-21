@@ -82,12 +82,10 @@ public class MetadataPipeline(
         // Remove frontmatter from body regardless of parse success
         var cleanBody = _yaml.RemoveFrontmatter(bodyText);
 
-        // 2) Determine base template via template manager
-        var schemaDefaults = _templates.GetTemplate(DetermineTemplateType(noteType)) ?? new();
-
         // 3) Run schema-driven resolution by reusing EnhanceMetadataWithTemplate on the union context
         // Start context with knowns (filePath etc.) and merge content + overrides for richer resolution
         var resolutionContext = new Dictionary<string, object>(context);
+
         foreach (var kv in contentMetadataNullable)
         {
             if (!resolutionContext.ContainsKey(kv.Key) && kv.Value is not null)
@@ -97,6 +95,11 @@ public class MetadataPipeline(
         {
             resolutionContext[kv.Key] = kv.Value;
         }
+
+        // 2) Determine base template via template manager
+        // First check if metadata already contains explicit template-type
+        string templateType = DetermineTemplateType(noteType, resolutionContext);
+        var schemaDefaults = _templates.GetTemplate(templateType) ?? new();
 
         // Apply hierarchy first if _internal_path is present in any source
         var working = new Dictionary<string, object>(schemaDefaults);
@@ -129,7 +132,7 @@ public class MetadataPipeline(
         }
 
         // 4) Use TemplateManager to resolve fields and merge defaults
-        working = _templates.EnhanceMetadataWithTemplate(working, noteType);
+        working = _templates.EnhanceMetadataWithTemplate(working, templateType);
 
         // 5) Merge with precedence: schema defaults < resolver values (already in working via Enhance) < content frontmatter < input overrides
         var merged = new Dictionary<string, object>(schemaDefaults);
@@ -149,6 +152,7 @@ public class MetadataPipeline(
 
         // Remove processing-only fields that shouldn't appear in final frontmatter
         merged.Remove("filePath");
+        merged.Remove("resources_root");
         // Ensure transcript path is never persisted in frontmatter
         merged.Remove("transcript");
         merged.Remove("share-link");
@@ -167,12 +171,24 @@ public class MetadataPipeline(
     private static bool TryGetStringFromNullableDict(string key, IDictionary<string, object?> src)
         => src.TryGetValue(key, out var obj) && obj != null && obj is string;
 
-    private static string DetermineTemplateType(string noteType) => noteType switch
+    private static string DetermineTemplateType(string noteType, Dictionary<string, object> context)
     {
-        "Video Note" => "video-reference",
-        "PDF Note" => "pdf-reference",
-        "Live Session Note" => "live-session-note",
-        "Transcript" => "transcript",
-        _ => "video-reference"
-    };
+        // First check if metadata already contains explicit template-type
+        if (context.TryGetValue("template-type", out var templateTypeValue) &&
+            templateTypeValue is string explicitTemplateType &&
+            !string.IsNullOrWhiteSpace(explicitTemplateType))
+        {
+            return explicitTemplateType;
+        }
+
+        // Fall back to noteType-based determination
+        return noteType switch
+        {
+            "Video Note" => "video-reference",
+            "PDF Note" => "pdf-reference",
+            "Live Session Note" => "live-session-note",
+            "Transcript" => "transcript",
+            _ => "video-reference"
+        };
+    }
 }

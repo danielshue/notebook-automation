@@ -1,7 +1,7 @@
 # template-type: main (template for the top-level MBA program index)
 template-type: main
 
-# auto-generated-state: writable | read-only (indicates if the file is auto-generated and writable)
+# auto-generated-state: writable | read-only | pending (indicates if the file is auto-generated and its processing state)
 auto-generated-state: writable
 
 # banner: Banner image for the index page (Obsidian embed syntax)

@@ -6,7 +6,12 @@ import { getRelativeVaultResourcePath, ensureExecutableExists } from '../utils/n
 /**
  * Handles notebook automation commands for a given file or folder and action.
  *
- * Determines configuration, calculates relative paths, validates environment, and executes the appropriate automation command.
+ * Determines configuration, calculates relative paths, validates environment, and    case "extract-html-content":
+      // Use generate-markdown command with single path parameter
+      // CLI will resolve both OneDrive source and vault destination from relative path
+      args = ["generate-markdown", "--path", relativePath, "--config", configPath];
+      commandDescription = "Extract HTML Content";
+      break;opriate automation command.
  *
  * @param plugin The NotebookAutomationPlugin instance.
  * @param file The target file or folder for the command.
@@ -90,7 +95,7 @@ export async function handleNotebookAutomationCommand(plugin: NotebookAutomation
   // Calculate the relative path based on action type
   let relPath: string;
   
-  if (action === 'sync' || action === 'sync-dirs') {
+  if (action === 'sync' || action === 'sync-dir' || action === 'vault-sync') {
     // For sync commands, use the full relative path from vault root
     // The CLI will handle the path mapping based on its internal configuration
     const fullRelativePath = getRelativeVaultResourcePath(file.path, vaultRoot, vaultBase);
@@ -177,7 +182,7 @@ export async function handleNotebookAutomationCommand(plugin: NotebookAutomation
   }
 
   // Show immediate feedback that command has started
-  if (action === "sync-dir") {
+  if (action === "sync-dir" || action === "vault-sync") {
     new Notice("🔄 OneDrive Directory Sync started - processing in background...");
   } else {
     new Notice(`🔄 ${action} command initiated...`);
@@ -323,18 +328,26 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
   let args: string[] = [];
   let commandDescription = "";
   
+  // Extract directory path for commands that need it
+  const dirPath = relativePath.includes('/') ? relativePath.substring(0, relativePath.lastIndexOf('/')) : '.';
+  
   switch (action) {
     case "sync-dir":
-      args = ["vault", "sync-dirs", relativePath, "--config", configPath];
+    case "vault-sync":
+      args = ["vault", "vault-sync", relativePath, "--config", configPath];
       commandDescription = "Sync Directory with OneDrive";
       break;
     case "import-summarize-videos":
-      args = ["video-notes", "--input", relativePath, "--config", configPath];
+      args = ["video-notes", "--path", relativePath, "--config", configPath];
       commandDescription = "Import & AI Summarize Videos";
       break;
     case "import-summarize-pdfs":
-      args = ["pdf-notes", "--input", relativePath, "--config", configPath];
+      args = ["pdf-notes", "--path", relativePath, "--config", configPath];
       commandDescription = "Import & AI Summarize PDFs";
+      break;
+    case "import-summarize-html-epub-txt":
+      args = ["generate-markdown", "--path", relativePath, "--config", configPath];
+      commandDescription = "Import & AI Summarize HTML/EPUB/TXT";
       break;
     case "build-indexes":
       args = ["vault", "generate-index", relativePath, "--config", configPath];
@@ -345,16 +358,27 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
       commandDescription = "Build Indexes (Recursive)";
       break;
     case "reprocess-summary-video":
-      args = ["video-notes", "--input", relativePath, "--reprocess", "--config", configPath];
+      args = ["video-notes", "--path", relativePath, "--reprocess", "--config", configPath];
       commandDescription = "Reprocess Video Summary";
       break;
     case "reprocess-summary-pdf":
-      args = ["pdf-notes", "--input", relativePath, "--reprocess", "--config", configPath];
+      args = ["pdf-notes", "--path", relativePath, "--reprocess", "--config", configPath];
       commandDescription = "Reprocess PDF Summary";
       break;
+    case "reprocess-summary-html-epub-txt":
+      args = ["generate-markdown", "--path", relativePath, "--config", configPath];
+      commandDescription = "Reprocess HTML/EPUB/TXT Summary";
+      break;
     case "ensure-metadata":
-      args = ["ensure-metadata", "--input", relativePath, "--config", configPath];
+      args = ["vault", "ensure-metadata", relativePath, "--config", configPath];
       commandDescription = "Ensure Metadata Consistency";
+      break;
+    case "extract-html-content":
+      // Use generate-markdown command with --extract-from-markdown mode
+      // Pass the relative path to the markdown file itself
+      // CLI will read the frontmatter to find onedrive_relative_path and process accordingly
+      args = ["generate-markdown", "--path", relativePath, "--extract-from-markdown", "--config", configPath];
+      commandDescription = "Extract HTML Content";
       break;
     default:
       throw new Error(`Unknown action: ${action}`);
@@ -384,7 +408,7 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
   }
   
   // Add flags specific to sync operations only
-  if (action === "sync-dir") {
+  if (action === "sync-dir" || action === "vault-sync") {
     if (plugin.settings.unidirectionalSync) {
       args.push("--unidirectional");
     }
@@ -393,7 +417,7 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
     }
     // Add document types if the feature is enabled
     if (plugin.settings.enableDocumentPlaceholders) {
-      args.push("--document-types", "videos", "pdf", "html");
+      args.push("--create-placeholders", "videos", "pdf", "html");
     }
   }
   

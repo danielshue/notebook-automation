@@ -62,10 +62,27 @@ public class AppConfig : IConfiguration
     public virtual List<string> PdfExtensions { get; set; } = [".pdf"];
 
     /// <summary>
+    /// Gets or sets the list of HTML file extensions to process.
+    /// </summary>
+    [JsonPropertyName("html_extensions")]
+    public virtual List<string> HtmlExtensions { get; set; } = [".html", ".htm", ".epub"];
+
+    /// <summary>
     /// Gets or sets a value indicating whether images should be extracted from PDFs by default.
     /// </summary>
     [JsonPropertyName("pdf_extract_images")]
     public virtual bool PdfExtractImages { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets the preferred language codes for transcript selection, in priority order.
+    /// When multiple language-specific transcripts are found for a video, this list determines 
+    /// which language should be preferred. The first match in this list will be selected.
+    /// </summary>
+    /// <example>
+    /// ["en", "en-us", "fr", "es"] - Prefers English, then French, then Spanish
+    /// </example>
+    [JsonPropertyName("preferred_transcript_languages")]
+    public virtual List<string> PreferredTranscriptLanguages { get; set; } = ["en", "en-us"];
 
     /// <summary>
     /// Gets or sets the banner configuration for generated markdown files.
@@ -201,6 +218,17 @@ public class AppConfig : IConfiguration
                         .Where(x => !string.IsNullOrEmpty(x))
                         .Select(x => x!)];
                 }
+
+                // Load HTML extensions
+                var htmlExtensionsSection = underlyingConfiguration.GetSection("html_extensions");
+                if (htmlExtensionsSection.Exists())
+                {
+                    HtmlExtensions = [.. htmlExtensionsSection
+                        .GetChildren()
+                        .Select(x => x.Value)
+                        .Where(x => !string.IsNullOrEmpty(x))
+                        .Select(x => x!)];
+                }
             }
             else
             {
@@ -222,6 +250,7 @@ public class AppConfig : IConfiguration
                         AiService = loaded.AiService;
                         VideoExtensions = loaded.VideoExtensions;
                         PdfExtensions = loaded.PdfExtensions;
+                        HtmlExtensions = loaded.HtmlExtensions;
 
                         // Note: Legacy paths.metadata_file support removed; only metadata_schema_file is honored
                     }

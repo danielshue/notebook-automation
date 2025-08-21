@@ -4,6 +4,32 @@ import type NotebookAutomationPlugin from '../main';
 import { handleNotebookAutomationCommand } from './commands';
 
 /**
+ * Checks if a reading file needs HTML content extraction by examining its metadata
+ * for the auto-generated-state: pending marker.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @param file The markdown file to check.
+ * @returns True if the file needs HTML content extraction.
+ */
+async function shouldShowHtmlExtractionOption(plugin: NotebookAutomationPlugin, file: TFile): Promise<boolean> {
+  try {
+    // Read the file content to check for auto-generated-state: pending
+    const cache = plugin.app.metadataCache.getFileCache(file);
+    if (cache?.frontmatter && cache.frontmatter['auto-generated-state'] === 'pending') {
+      return true;
+    }
+    
+    // Also check the raw content in case metadata cache isn't updated
+    const fileContent = await plugin.app.vault.cachedRead(file);
+    return fileContent.includes('auto-generated-state: pending');
+  } catch (error) {
+    console.log('[Notebook Automation] Error checking if file needs HTML extraction:', error);
+    // If we can't check, err on the side of showing the option
+    return true;
+  }
+}
+
+/**
  * Registers context menu commands for files and folders in Obsidian.
  *
  * Adds Notebook Automation actions to the right-click menu based on file type and plugin settings.
@@ -20,8 +46,8 @@ export function registerContextMenus(plugin: NotebookAutomationPlugin) {
         // Sync Directory - always available at the top
         menu.addItem((item) => {
           const syncTitle = plugin.settings.recursiveDirectorySync
-            ? "Notebook Automation: Sync Directory with OneDrive (Recursive)"
-            : "Notebook Automation: Sync Directory with OneDrive";
+            ? "Notebook Automation: Vault Sync with OneDrive (Recursive)"
+            : "Notebook Automation: Vault Sync with OneDrive";
           item.setTitle(syncTitle)
             .setIcon("sync")
             .onClick(() => handleNotebookAutomationCommand(plugin, file, "sync-dir"));
@@ -40,6 +66,14 @@ export function registerContextMenus(plugin: NotebookAutomationPlugin) {
             item.setTitle("Notebook Automation: Import & AI Summarize All PDFs")
               .setIcon("document")
               .onClick(() => handleNotebookAutomationCommand(plugin, file, "import-summarize-pdfs"));
+          });
+        }
+        // AI HTML/EPUB/TXT Summary - only if enabled
+        if (plugin.settings.enableHtmlEpubTxtSummary) {
+          menu.addItem((item) => {
+            item.setTitle("Notebook Automation: Import & AI Summarize All HTML/EPUB/TXT")
+              .setIcon("file-text")
+              .onClick(() => handleNotebookAutomationCommand(plugin, file, "import-summarize-html-epub-txt"));
           });
         }
         // Index Creation - only if enabled
@@ -73,6 +107,26 @@ export function registerContextMenus(plugin: NotebookAutomationPlugin) {
       // File context: only for .md files
       if (file instanceof TFile && file.extension === "md") {
         menu.addSeparator();
+        
+        // Check if this is a reading file that needs HTML content extraction
+        const isReadingFile = file.basename.toLowerCase().includes("reading");
+        
+        // HTML Content Extraction - for reading files that might need content extraction
+        if (isReadingFile) {
+          menu.addItem((item) => {
+            item.setTitle("Notebook Automation: Extract HTML Content")
+              .setIcon("download")
+              .onClick(async () => {
+                const needsExtraction = await shouldShowHtmlExtractionOption(plugin, file);
+                if (needsExtraction) {
+                  handleNotebookAutomationCommand(plugin, file, "extract-html-content");
+                } else {
+                  console.log('[Notebook Automation] File does not need HTML extraction');
+                }
+              });
+          });
+        }
+        
         // AI Video Summary - only if enabled
         if (plugin.settings.enableVideoSummary) {
           menu.addItem((item) => {
@@ -87,6 +141,14 @@ export function registerContextMenus(plugin: NotebookAutomationPlugin) {
             item.setTitle("Notebook Automation: Reprocess AI Summary (PDF)")
               .setIcon("document")
               .onClick(() => handleNotebookAutomationCommand(plugin, file, "reprocess-summary-pdf"));
+          });
+        }
+        // AI HTML/EPUB/TXT Summary - only if enabled
+        if (plugin.settings.enableHtmlEpubTxtSummary) {
+          menu.addItem((item) => {
+            item.setTitle("Notebook Automation: Reprocess AI Summary (HTML/EPUB/TXT)")
+              .setIcon("file-text")
+              .onClick(() => handleNotebookAutomationCommand(plugin, file, "reprocess-summary-html-epub-txt"));
           });
         }
       }

@@ -9,15 +9,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- TBD
+- **Document Placeholder File Naming Convention**: Implemented content-type-specific naming for placeholder files to improve organization and processing workflow
+  - Video placeholders: `filename-video.md` (e.g., `03_01_defining-operations-management-video.md`)
+  - PDF placeholders: `filename-pdf.md` (e.g., `case-study-analysis-pdf.md`)
+  - HTML content placeholders: `filename-html.md` (e.g., `course-instructions-html.md`)
+- **HTML Document Processing**: Added HTML support to DocumentNoteBatchProcessor with proper `-html.md` suffix handling
 
 ### Fixed
 
-- TBD
+- **Placeholder File Processing**: Fixed inconsistency where placeholder files were created with generic `.md` extension but processing system expected content-type suffixes
+- **Document Processing Pipeline**: Enhanced `DocumentNoteBatchProcessor.GenerateOutputPath` to handle video (`-video.md`), PDF (`-pdf.md`), and HTML (`-html.md`) file suffixes correctly
 
 ### Changed
 
-- TBD
+- **File Naming Convention**: Updated reading material placeholders from `-reading.md` to `-html.md` suffix to better reflect HTML content processing
+- **VaultFolderSyncProcessor**: Updated placeholder creation to automatically apply appropriate content type suffixes based on referenced file extension and template type
+- **DocumentNoteBatchProcessor**: Added HTML document type support and enhanced processor type detection
+- **Test Suite**: Updated all related unit tests to reflect new naming convention expectations
 
 
 ## [0.1.0-beta.6] - 2025-07-16

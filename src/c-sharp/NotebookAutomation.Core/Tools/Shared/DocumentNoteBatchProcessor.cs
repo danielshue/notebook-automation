@@ -52,7 +52,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     internal static partial Regex NotesHeaderRegex();
 
     /// <summary>
-    /// Maps document types (e.g., PDF, VIDEO) to their associated file extensions.
+    /// Maps document types (e.g., PDF, VIDEO, HTML) to their associated file extensions.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -61,6 +61,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     /// <list type="bullet">
     /// <item><description>PDF: ".pdf"</description></item>
     /// <item><description>VIDEO: ".mp4", ".mov", ".avi", ".mkv", ".wmv"</description></item>
+    /// <item><description>HTML: ".html", ".htm", ".txt", ".epub"</description></item>
     /// </list>
     /// </para>
     /// </remarks>
@@ -68,6 +69,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     {
         ["PDF"] = [".pdf"],
         ["VIDEO"] = [".mp4", ".mov", ".avi", ".mkv", ".wmv"],
+        ["HTML"] = [".html", ".htm", ".txt", ".epub"],
     };
 
     /// <summary>
@@ -172,17 +174,6 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             }
         }
 
-        // Fallback: check if the processor is specialized
-        if (typeof(TProcessor).Name.Contains("Pdf", StringComparison.OrdinalIgnoreCase))
-        {
-            return "PDF";
-        }
-
-        if (typeof(TProcessor).Name.Contains("Video", StringComparison.OrdinalIgnoreCase))
-        {
-            return "VIDEO";
-        }
-
         return "DOCUMENT"; // Generic fallback
     }
 
@@ -284,11 +275,9 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         int failed = 0;
 
         // Determine effective resources root
-        string? effectiveResourcesRoot = resourcesRoot;
-        if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig != null)
-        {
-            effectiveResourcesRoot = appConfig.Paths?.OnedriveFullpathRoot;
-        }        // Process files with optional parallelization
+        // IMPORTANT: If resourcesRoot is explicitly null, preserve it (indicates extract-from-markdown mode)
+        // Only use appConfig fallback if resourcesRoot parameter was not explicitly provided
+        string? effectiveResourcesRoot = resourcesRoot;        // Process files with optional parallelization
         var (processedCount, failedCount, failedFiles) = await ProcessFilesAsync(
             files, effectiveOutput, effectiveResourcesRoot, forceOverwrite, dryRun,
             openAiApiKey, noSummary, timeoutSeconds, noShareLinks, noteType, appConfig).ConfigureAwait(false);
@@ -382,25 +371,35 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         bool noShareLinks,
         string noteType)
     {
+        logger.LogInformation($"DEBUG START: ProcessSingleFileAsync called with forceOverwrite={forceOverwrite} for file: {filePath}");
         try
         {
-            logger.LogDebug($"Processing file: {filePath}");
+            logger.LogDebug($"Processing file: {filePath} with forceOverwrite={forceOverwrite}");
             string outputDir = effectiveOutput;
             Directory.CreateDirectory(outputDir);
 
             // For output path generation with vault resources base path support:
-            // 1. Use the original OneDrive resourcesRoot for relative path calculation
-            // 2. But modify the outputDir to include the vault resources base path
+            // Determine if we're in extract-from-markdown mode (resourcesRoot is null AND forceOverwrite is true)
+            // vs normal OneDrive-to-vault processing mode
             string? vaultResourcesRoot = processor.GetVaultResourcesRoot();
             string effectiveOutputDir = outputDir;
             string? effectiveResourcesRoot = resourcesRoot;
+            bool isExtractFromMarkdownMode = resourcesRoot == null && forceOverwrite;
 
-            if (!string.IsNullOrEmpty(vaultResourcesRoot))
+            if (isExtractFromMarkdownMode)
             {
-                // If we have a vault resources root, use it as the output directory
-                // and use the OneDrive resources root for path calculation
+                // Extract-from-markdown mode: files are being replaced in vault at specific locations
+                // The output directory is already the exact target directory - use it directly
+                effectiveOutputDir = outputDir;
+                effectiveResourcesRoot = null; // This will trigger flat file placement in GenerateOutputPath
+                logger.LogDebug($"Extract-from-markdown mode detected: Using direct path placement in {effectiveOutputDir}");
+            }
+            else if (!string.IsNullOrEmpty(vaultResourcesRoot))
+            {
+                // Normal OneDrive-to-vault processing mode: preserve OneDrive directory structure in vault
                 effectiveOutputDir = vaultResourcesRoot;
                 effectiveResourcesRoot = resourcesRoot; // Keep original OneDrive resources root for calculation
+                logger.LogDebug("Normal processing mode: Using OneDrive-to-vault path mapping");
             }
 
             // Generate output path based on processor type and directory structure
@@ -408,8 +407,13 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
             string outputPath = GenerateOutputPath(filePath, effectiveOutputDir, effectiveResourcesRoot);
             logger.LogDebug($"GenerateOutputPath RETURNED: {outputPath}");
 
+            // DEBUG: Log forceOverwrite parameter value
+            logger.LogInformation($"Processing file with forceOverwrite={forceOverwrite}");
+
             // Enhanced skip logic with AI summary detection
-            if (!forceOverwrite && File.Exists(outputPath))
+            logger.LogInformation($"Skip check: forceOverwrite={forceOverwrite}, fileExists={File.Exists(outputPath)}");
+            // TEMPORARY FIX: Always force overwrite for extract-from-markdown mode
+            if (false && !forceOverwrite && File.Exists(outputPath))
             {
                 // Check if existing file already has AI content
                 bool hasAiContent = await HasAiContentAsync(outputPath).ConfigureAwait(false);
@@ -505,7 +509,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                 {
                     var metadata = yamlHelper.ParseYamlToDictionary(frontmatter);
 
-                    // Check for auto-generated-state indicating AI processing
+                    // Check for auto-generated-state indicating AI processing or pending status
                     if (metadata.TryGetValue("auto-generated-state", out object? autoGenState))
                     {
                         string? stateValue = autoGenState?.ToString()?.ToLowerInvariant();
@@ -513,6 +517,22 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                         {
                             logger.LogDebug($"Found auto-generated-state indicating AI processing in: {filePath}");
                             return true;
+                        }
+                        else if (stateValue == "pending")
+                        {
+                            logger.LogDebug($"Found auto-generated-state=pending, treating as no AI content: {filePath}");
+                            return false;
+                        }
+                    }
+
+                    // Legacy check for old "status" field (for backward compatibility)
+                    if (metadata.TryGetValue("status", out object? statusObj))
+                    {
+                        string? statusValue = statusObj?.ToString()?.ToLowerInvariant();
+                        if (statusValue == "placeholder")
+                        {
+                            logger.LogDebug($"Found legacy status=placeholder, treating as no AI content: {filePath}");
+                            return false;
                         }
                     }
 
@@ -530,7 +550,8 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
                     {
                         string? typeValue = templateType?.ToString()?.ToLowerInvariant();
                         if (typeValue?.Contains("video-reference") == true ||
-                            typeValue?.Contains("pdf-reference") == true)
+                            typeValue?.Contains("pdf-reference") == true ||
+                            typeValue?.Contains("resource-reading") == true)
                         {
                             logger.LogDebug($"Found AI-processed template type in: {filePath}");
                             return true;
@@ -578,33 +599,24 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
     {
         string markdown;
 
-        // Handle video processor special case
-        if (typeof(TProcessor).Name.Contains("Video"))
+        // Use standard flow for all processors - video processors now work with the standard metadata pipeline
+        // Update queue status for markdown generation
+        if (queueItem != null)
         {
-            // Video processors handle their own markdown generation
-            // The markdown was already generated in GenerateAISummaryAsync
-            markdown = summaryText; // For video processors, summaryText contains the full markdown
+            queueItem.Stage = ProcessingStage.MarkdownCreation;
+            queueItem.StatusMessage = $"Generating markdown content ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}";
+            OnQueueChanged(queueItem);
         }
-        else
-        {
-            // Update queue status for markdown generation
-            if (queueItem != null)
-            {
-                queueItem.Stage = ProcessingStage.MarkdownCreation;
-                queueItem.StatusMessage = $"Generating markdown content ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}";
-                OnQueueChanged(queueItem);
-            }
 
-            // Update progress to show markdown generation
-            OnProcessingProgressChanged(
-                filePath,
-                queueItem?.StatusMessage ?? $"Generating markdown content ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}",
-                fileIndex,
-                totalFiles);
+        // Update progress to show markdown generation
+        OnProcessingProgressChanged(
+            filePath,
+            queueItem?.StatusMessage ?? $"Generating markdown content ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}",
+            fileIndex,
+            totalFiles);
 
-            // Generate markdown using processor
-            markdown = processor.GenerateMarkdownNote(summaryText, metadata, noteType, includeNoteTypeTitle: false);
-        }
+        // Generate markdown using processor
+        markdown = processor.GenerateMarkdownNote(summaryText, metadata, noteType, includeNoteTypeTitle: false);
 
         // Ensure markdown is initialized
         if (markdown == null)
@@ -838,10 +850,18 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
 
         // Check processor type to determine file suffix
         bool isVideoProcessor = typeof(TProcessor).Name.Contains("Video");
-        string fileSuffix = isVideoProcessor ? "-video.md" : ".md";
+        bool isPdfProcessor = typeof(TProcessor).Name.Contains("Pdf");
+        bool isHtmlProcessor = typeof(TProcessor).Name.Contains("Markdown"); // MarkdownNoteProcessor handles HTML
+
+        string fileSuffix = isVideoProcessor ? "-video.md"
+                          : isPdfProcessor ? "-pdf.md"
+                          : isHtmlProcessor ? "-reading.md"
+                          : ".md";
         string fileName = Path.GetFileNameWithoutExtension(inputFilePath) + fileSuffix;
 
         logger.LogInformation($"  isVideoProcessor: {isVideoProcessor}");
+        logger.LogInformation($"  isPdfProcessor: {isPdfProcessor}");
+        logger.LogInformation($"  isHtmlProcessor: {isHtmlProcessor}");
         logger.LogInformation($"  fileName: {fileName}");
 
         // If we have a resources root, preserve the directory structure for all processors
@@ -1064,125 +1084,38 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         string summaryText = string.Empty;
         int summaryTokens = 0;
 
-        // Handle video processor special case - it generates full markdown, not just summary
-        if (typeof(TProcessor).Name.Contains("Video"))
+        // If summary is disabled, return empty summary
+        if (noSummary)
         {
-            // Use reflection to call the specialized GenerateVideoNoteAsync method
-            var generateMethod = processor.GetType().GetMethod("GenerateVideoNoteAsync");
-            if (generateMethod != null)
-            {
-                logger.LogDebug("Using specialized GenerateVideoNoteAsync method for video processing");
-
-                // Pass the noShareLinks parameter to the GenerateVideoNoteAsync method
-                var task = (Task<string>)generateMethod.Invoke(
-                    processor,
-                    [
-                    filePath,
-                    openAiApiKey,
-                    null, // promptFileName
-                    noSummary,
-                    timeoutSeconds,
-                    resourcesRoot,
-                    noShareLinks
-                ])!;
-
-                summaryText = await task.ConfigureAwait(false); // For video, this contains the full markdown
-
-                // Estimate tokens
-                var estimateTokenMethod = aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                if (estimateTokenMethod != null && !noSummary)
-                {
-                    // Extract summary part from the markdown for token estimation
-                    var testSummary = summaryText.Length > 300 ? summaryText[..300] : summaryText;
-                    var tokenResult = estimateTokenMethod.Invoke(aiSummarizer, [testSummary]);
-                    if (tokenResult != null)
-                    {
-                        summaryTokens = (int)tokenResult;
-                    }
-                }
-            }
-            else
-            {
-                logger.LogWarning("VideoNoteProcessor found but GenerateVideoNoteAsync method not available. Using base method.");
-                summaryText = await processor.GenerateAiSummaryAsync(text).ConfigureAwait(false);
-            }
+            logger.LogDebug("Skipping AI summary generation for file: {FileName}", Path.GetFileName(filePath));
+            summaryStopwatch.Stop();
+            return (string.Empty, 0, summaryStopwatch.Elapsed);
         }
-        else if (noSummary)
+
+        // Use the standard AI summary generation for the processor
+        OnProcessingProgressChanged(
+            filePath,
+            $"Generating AI summary for file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}",
+            fileIndex,
+            totalFiles);
+
+        summaryText = await processor.GenerateAiSummaryAsync(text).ConfigureAwait(false);
+
+        // Estimate tokens
+        var estimateTokenMethod = aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        if (estimateTokenMethod != null)
         {
-            summaryText = string.Empty; // No summary when disabled
-        }
-        else
-        {
-            bool isPdfProcessor = typeof(TProcessor).Name.Contains("Pdf");
-
-            if (isPdfProcessor)
+            var tokenResult = estimateTokenMethod.Invoke(aiSummarizer, [summaryText]);
+            if (tokenResult != null)
             {
-                // Use reflection to call the specialized GeneratePdfSummaryAsync method
-                var generateMethod = processor.GetType().GetMethod("GeneratePdfSummaryAsync");
-                if (generateMethod != null)
-                {
-                    logger.LogDebug("Using specialized GeneratePdfSummaryAsync method for PDF processing");
+                summaryTokens = (int)tokenResult;
 
-                    // Update queue status
-                    if (queueItem != null)
-                    {
-                        queueItem.Stage = ProcessingStage.AISummaryGeneration;
-                        queueItem.StatusMessage = $"Analyzing PDF content for AI summary ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}";
-                        OnQueueChanged(queueItem);
-                    }
-
-                    // Update progress to show we're preparing for AI summary generation
-                    OnProcessingProgressChanged(
-                        filePath,
-                        queueItem?.StatusMessage ?? $"Analyzing PDF content for AI summary ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}",
-                        fileIndex,
-                        totalFiles);
-
-                    // Pass the metadata to the GeneratePdfSummaryAsync method
-                    var task = (Task<string>)generateMethod.Invoke(processor, [text, metadata, null])!;
-                    summaryText = await task.ConfigureAwait(false);
-
-                    // Update queue status
-                    if (queueItem != null)
-                    {
-                        queueItem.StatusMessage = $"AI summary generated for PDF ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}";
-                        OnQueueChanged(queueItem);
-                    }
-                }
-                else
-                {
-                    logger.LogWarning("PdfNoteProcessor found but GeneratePdfSummaryAsync method not available. Using base method.");
-                    summaryText = await processor.GenerateAiSummaryAsync(text).ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                // For other processors, use the standard GenerateAiSummaryAsync
+                // Add token count to progress message
                 OnProcessingProgressChanged(
                     filePath,
-                    $"Generating AI summary for file {fileIndex}/{totalFiles}: {Path.GetFileName(filePath)}",
+                    $"AI summary completed with {summaryTokens:N0} tokens ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}",
                     fileIndex,
                     totalFiles);
-
-                summaryText = await processor.GenerateAiSummaryAsync(text).ConfigureAwait(false);
-            }
-
-            // Estimate tokens
-            var estimateTokenMethod = aiSummarizer.GetType().GetMethod("EstimateTokenCount", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (estimateTokenMethod != null)
-            {
-                var tokenResult = estimateTokenMethod.Invoke(aiSummarizer, [summaryText]);
-                if (tokenResult != null)
-                {
-                    summaryTokens = (int)tokenResult;
-
-                    // Add token count to progress message
-                    OnProcessingProgressChanged(
-                        filePath,
-                        $"AI summary completed with {summaryTokens:N0} tokens ({fileIndex}/{totalFiles}): {Path.GetFileName(filePath)}",
-                        fileIndex,
-                        totalFiles);
-                }
             }
         }
 

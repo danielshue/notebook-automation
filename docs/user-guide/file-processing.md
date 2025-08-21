@@ -240,6 +240,9 @@ Track processing progress:
 ### File Organization
 
 - **Use consistent naming conventions** for related documents
+  - **Video placeholders**: Use `-video.md` suffix (e.g., `lecture-intro-video.md`)
+  - **PDF placeholders**: Use `-pdf.md` suffix (e.g., `case-study-pdf.md`)
+  - **Reading materials**: Use `-html.md` suffix (e.g., `syllabus-html.md`)
 - **Organize files by topic, date, or project** in directory structures
 - **Keep source files and processed outputs separate**
 

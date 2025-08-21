@@ -59,6 +59,11 @@
     "pdf_extensions": [
         ".pdf"
     ],
+    "html_extensions": [
+        ".html",
+        ".htm",
+        ".epub"
+    ],
     "banners": {
         "enabled": true,
         "default": "gies-banner.png",

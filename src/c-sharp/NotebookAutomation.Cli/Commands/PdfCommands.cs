@@ -27,7 +27,7 @@ namespace NotebookAutomation.Cli.Commands;
 /// <para>
 /// <b>Usage Example:</b>
 /// <code language="shell">
-/// na.exe pdf-notes --input "C:\Users\me\OneDrive\Resources\MyFile.pdf" --overwrite-output-dir "C:\Notes"
+/// na.exe pdf-notes --path "C:\Users\me\OneDrive\Resources\MyFile.pdf" --overwrite-output-dir "C:\Notes"
 /// </code>
 /// </para>
 /// <para>
@@ -76,9 +76,9 @@ internal class PdfCommands
         ArgumentNullException.ThrowIfNull(verboseOption);
         ArgumentNullException.ThrowIfNull(dryRunOption);
 
-        var inputOption = new Option<string?>(
-            aliases: ["--input", "-i"],
-            description: "Path to the input PDF file or directory (will auto-detect if it's a file or folder)")
+        var pathOption = new Option<string?>(
+            aliases: ["--path", "-p"],
+            description: "Path to the PDF file or directory (will auto-detect if it's a file or folder)")
         {
             IsRequired = true,
         };
@@ -119,7 +119,7 @@ internal class PdfCommands
         var extractImagesOption = new Option<bool>(
             aliases: ["--extract-images"],
             description: "Extract images from PDFs and include them in generated text and markdown files"); var pdfCommand = new Command("pdf-notes", "PDF notes and metadata commands");
-        pdfCommand.AddOption(inputOption);
+        pdfCommand.AddOption(pathOption);
         pdfCommand.AddOption(outputOption);
         pdfCommand.AddOption(vaultRootOverrideOption);
         pdfCommand.AddOption(resourcesRootOption);
@@ -132,7 +132,7 @@ internal class PdfCommands
         pdfCommand.AddOption(extractImagesOption);
         pdfCommand.SetHandler(async context =>
         {
-            string? input = context.ParseResult.GetValueForOption(inputOption);
+            string? input = context.ParseResult.GetValueForOption(pathOption);
             string? overrideOutputDir = context.ParseResult.GetValueForOption(outputOption);
             string? vaultRootOverride = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
             string? config = context.ParseResult.GetValueForOption(configOption);
@@ -151,7 +151,7 @@ internal class PdfCommands
             if (string.IsNullOrEmpty(input))
             {
                 AnsiConsoleHelper.WriteUsage(
-                    "Usage: na.exe pdf-notes --input <file|dir> [options]",
+                    "Usage: na.exe pdf-notes --path <file|dir> [options]",
                     pdfCommand.Description ?? string.Empty,
                     string.Join("\n", pdfCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
@@ -228,13 +228,131 @@ internal class PdfCommands
                 effectiveResourcesRoot = appConfig.Paths.OnedriveFullpathRoot;
             }
 
-            // Resolve input path - if it's relative, prepend with OneDrive root
-            string resolvedInput = PathUtils.ResolveInputPath(
-                input,
-                effectiveResourcesRoot,
-                appConfig?.Paths?.OnedriveResourcesBasepath
-            );
-            logger.LogDebug($"Input path resolution: '{input}' -> '{resolvedInput}' (OneDrive root: {effectiveResourcesRoot ?? "(none)"})");
+            // Check if input is a markdown file - if so, extract onedrive_relative_path from frontmatter
+            string inputForProcessing = input;
+            string? actualMarkdownFilePath = null;
+
+            logger.LogDebug($"Checking if input is a markdown file: '{input}'");
+
+            if (input.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            {
+                logger.LogDebug($"Input is a markdown file, attempting to locate and extract frontmatter");
+
+                // First, try the input as an absolute path
+                if (File.Exists(input))
+                {
+                    actualMarkdownFilePath = input;
+                    logger.LogDebug($"Found markdown file as absolute path: '{input}'");
+                }
+                // If not found as absolute path, try to find it in the vault structure
+                else if (!string.IsNullOrWhiteSpace(effectiveVaultRoot))
+                {
+                    logger.LogDebug($"Searching for markdown file in vault structure using effective vault root: '{effectiveVaultRoot}'");
+
+                    // Try different possible locations in the vault
+                    var vaultRoot = appConfig?.Paths?.NotebookVaultFullpathRoot;
+                    var possiblePaths = new[]
+                    {
+                        Path.Combine(effectiveVaultRoot, input.Replace('/', '\\')),
+                        Path.Combine(effectiveVaultRoot, Path.GetFileName(input))
+                    };
+
+                    // Add vault root path if available and different from effective vault root
+                    if (!string.IsNullOrWhiteSpace(vaultRoot) && vaultRoot != effectiveVaultRoot)
+                    {
+                        possiblePaths = possiblePaths.Concat(new[]
+                        {
+                            Path.Combine(vaultRoot, input.Replace('/', '\\')),
+                            Path.Combine(vaultRoot, Path.GetFileName(input))
+                        }).ToArray();
+                    }
+
+                    logger.LogDebug($"Checking {possiblePaths.Length} possible paths for markdown file");
+                    foreach (var possiblePath in possiblePaths)
+                    {
+                        logger.LogDebug($"Checking path: '{possiblePath}'");
+                        if (File.Exists(possiblePath))
+                        {
+                            actualMarkdownFilePath = possiblePath;
+                            logger.LogDebug($"Found markdown file at: '{possiblePath}'");
+                            break;
+                        }
+                    }
+                }
+
+                // If we found the markdown file, try to extract onedrive_relative_path
+                if (!string.IsNullOrWhiteSpace(actualMarkdownFilePath))
+                {
+                    logger.LogDebug($"Attempting to extract frontmatter from: '{actualMarkdownFilePath}'");
+                    try
+                    {
+                        var metadataExtractor = scopedServices.GetRequiredService<MarkdownParser>();
+                        var (metadata, _) = await metadataExtractor.ParseFileAsync(actualMarkdownFilePath);
+
+                        if (metadata != null)
+                        {
+                            logger.LogDebug($"Extracted frontmatter with {metadata.Count} properties");
+                            // Extract onedrive_relative_path for processing
+                            if (metadata.TryGetValue("onedrive_relative_path", out var relativePathObj) &&
+                                relativePathObj is string relativePath &&
+                                !string.IsNullOrWhiteSpace(relativePath))
+                            {
+                                inputForProcessing = relativePath;
+                                logger.LogDebug($"Extracted onedrive_relative_path from markdown file: '{input}' -> '{inputForProcessing}'");
+                            }
+                            else
+                            {
+                                logger.LogDebug("No onedrive_relative_path found in frontmatter");
+                            }
+                        }
+                        else
+                        {
+                            logger.LogDebug("No frontmatter found in markdown file");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, $"Failed to extract onedrive_relative_path from markdown file '{actualMarkdownFilePath ?? input}', using original path");
+                    }
+                }
+                else
+                {
+                    logger.LogDebug($"Could not locate markdown file: '{input}'");
+                }
+            }
+
+            // Resolve input path - prioritize vault root for relative paths, fall back to OneDrive root
+            string resolvedInput;
+            if (!Path.IsPathRooted(inputForProcessing) && !string.IsNullOrWhiteSpace(effectiveVaultRoot))
+            {
+                // For relative paths when we have a vault root, try vault root first
+                var vaultBasedPath = Path.Combine(effectiveVaultRoot, inputForProcessing);
+                if (File.Exists(vaultBasedPath))
+                {
+                    resolvedInput = PathUtils.NormalizePath(vaultBasedPath);
+                    logger.LogDebug($"Input path resolution: '{inputForProcessing}' -> '{resolvedInput}' (vault root: {effectiveVaultRoot})");
+                }
+                else
+                {
+                    // Fall back to OneDrive root if file not found in vault
+                    resolvedInput = PathUtils.ResolveInputPath(
+                        inputForProcessing,
+                        effectiveResourcesRoot,
+                        appConfig?.Paths?.OnedriveResourcesBasepath
+                    );
+                    logger.LogDebug($"Input path resolution: '{inputForProcessing}' -> '{resolvedInput}' (OneDrive root fallback: {effectiveResourcesRoot ?? "(none)"})");
+                }
+            }
+            else
+            {
+                // For absolute paths or when no vault root, use OneDrive root resolution
+                resolvedInput = PathUtils.ResolveInputPath(
+                    inputForProcessing,
+                    effectiveResourcesRoot,
+                    appConfig?.Paths?.OnedriveResourcesBasepath
+                );
+                logger.LogDebug($"Input path resolution: '{inputForProcessing}' -> '{resolvedInput}' (OneDrive root: {effectiveResourcesRoot ?? "(none)"})");
+            }
 
             // Build the full local resources path for path calculations
             string? localResourcesPathForBatchProcessor = null;
@@ -338,7 +456,7 @@ internal class PdfCommands
             // Process PDFs            // Verify that we have an input source
             if (string.IsNullOrWhiteSpace(input))
             {
-                logger.LogError("Input source is required. Use --input/-i to specify a PDF file or folder.");
+                logger.LogError("Path is required. Use --path/-p to specify a PDF file or folder.");
                 return;
             }
 

@@ -177,7 +177,8 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
     public Dictionary<string, object> EnhanceMetadataWithTemplate(Dictionary<string, object> metadata, string noteType)
     {
         // Determine appropriate template type based on noteType
-        string templateType = DetermineTemplateType(noteType);
+        // If noteType is already a template type (like "resource-reading"), use it directly
+        string templateType = IsTemplateType(noteType) ? noteType : DetermineTemplateType(noteType);
 
         // Get the template using schema loader
         var template = GetTemplate(templateType);
@@ -198,6 +199,7 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
 
         // Apply schema-driven field resolution with context
         var context = new Dictionary<string, object>(enhancedMetadata);
+
         foreach (var fieldName in template.Keys)
         {
             // Skip fields that already have specific values
@@ -393,6 +395,19 @@ public partial class MetadataTemplateManager : IMetadataTemplateManager
             "Live Session Note" => "live-session-note",
             "Transcript" => "transcript",
             _ => "video-reference",  // Default to video-reference for unknown types
+        };
+    }
+
+    /// <summary>
+    /// Checks if the given string is already a template type (as opposed to a note type).
+    /// </summary>
+    private static bool IsTemplateType(string value)
+    {
+        // Known template types from schema
+        return value switch
+        {
+            "video-reference" or "pdf-reference" or "resource-reading" or "note/instruction" => true,
+            _ => false
         };
     }
 }

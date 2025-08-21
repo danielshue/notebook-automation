@@ -79,7 +79,7 @@ public class VideoCommandsTests
 
         // Check options
         var optionNames = videoNotesCommand.Options.SelectMany(o => o.Aliases).ToList();
-        CollectionAssert.Contains(optionNames, "--input", "video-notes should have '--input' option");
-        CollectionAssert.Contains(optionNames, "-i", "video-notes should have '-i' option");
+        CollectionAssert.Contains(optionNames, "--path", "video-notes should have '--path' option");
+        CollectionAssert.Contains(optionNames, "-p", "video-notes should have '-p' option");
     }
 }

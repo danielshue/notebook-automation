@@ -77,8 +77,8 @@ public class PdfCommandsTests
         var pdfNotesCommand = rootCommand.Subcommands.FirstOrDefault(c => c.Name == "pdf-notes");
         Assert.IsNotNull(pdfNotesCommand, "pdf-notes command should be registered on the root command.");            // Check options
         var optionNames = pdfNotesCommand.Options.SelectMany(o => o.Aliases).ToList();
-        CollectionAssert.Contains(optionNames, "--input", "pdf-notes should have '--input' option");
-        CollectionAssert.Contains(optionNames, "-i", "pdf-notes should have '-i' option");
+        CollectionAssert.Contains(optionNames, "--path", "pdf-notes should have '--path' option");
+        CollectionAssert.Contains(optionNames, "-p", "pdf-notes should have '-p' option");
         CollectionAssert.Contains(optionNames, "--overwrite-output-dir", "pdf-notes should have '--overwrite-output-dir' option");
         CollectionAssert.Contains(optionNames, "-o", "pdf-notes should have '-o' option");
     }

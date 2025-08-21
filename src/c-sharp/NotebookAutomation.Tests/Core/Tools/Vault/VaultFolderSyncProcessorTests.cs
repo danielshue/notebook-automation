@@ -553,9 +553,9 @@ public class VaultFolderSyncProcessorTests
 
         // Verify placeholder files were created
         var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
-        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
-        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "slides.md")));
-        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "reading.md")));
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "lecture-video.md")));
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "slides-pdf.md")));
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "reading-reading.md")));
 
         // Verify template manager was called for each document type
         _mockMarkdownNoteBuilder.Verify(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()), Times.Exactly(3));
@@ -605,8 +605,8 @@ public class VaultFolderSyncProcessorTests
         // Verify placeholder files were NOT actually created
         var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
         Directory.CreateDirectory(vaultCoursePath); // Create directory to check files
-        Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
-        Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "slides.md")));
+        Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture-video.md")));
+        Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "slides-pdf.md")));
 
         // Verify template manager was not called in dry run
         _mockMarkdownNoteBuilder.Verify(m => m.CreateMarkdownWithFrontmatter(It.IsAny<Dictionary<string, object>>(), It.IsAny<string>()), Times.Never);
@@ -631,7 +631,7 @@ public class VaultFolderSyncProcessorTests
         File.WriteAllText(Path.Combine(oneDriveTestPath, "lecture.mp4"), "test video content");
 
         // Create an existing markdown file with the same name
-        File.WriteAllText(Path.Combine(vaultCoursePath, "lecture.md"), "existing content");
+        File.WriteAllText(Path.Combine(vaultCoursePath, "lecture-video.md"), "existing content");
 
         // Setup template manager mock
         var templateMetadata = new Dictionary<string, object>
@@ -660,11 +660,11 @@ public class VaultFolderSyncProcessorTests
         Assert.AreEqual(0, result.CreatedPlaceholderFiles); // Should be 0 because file already exists
 
         // Verify original file still exists and no new files were created
-        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "lecture-video.md")));
         Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture-1.md")));
 
         // Verify original content is preserved
-        var originalContent = File.ReadAllText(Path.Combine(vaultCoursePath, "lecture.md"));
+        var originalContent = File.ReadAllText(Path.Combine(vaultCoursePath, "lecture-video.md"));
         Assert.AreEqual("existing content", originalContent);
 
         // Verify template manager was not called since file was skipped
@@ -698,8 +698,8 @@ public class VaultFolderSyncProcessorTests
         var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
         if (Directory.Exists(vaultCoursePath))
         {
-            Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
-            Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "slides.md")));
+            Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture-video.md")));
+            Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "slides-pdf.md")));
         }
 
         // Verify template manager was not called
@@ -750,7 +750,7 @@ public class VaultFolderSyncProcessorTests
 
         // Verify only the known document type created a placeholder
         var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
-        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
+        Assert.IsTrue(File.Exists(Path.Combine(vaultCoursePath, "lecture-video.md")));
         Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "unknown.md")));
 
         // Verify template manager was called only for the known type
@@ -806,13 +806,13 @@ public class VaultFolderSyncProcessorTests
         Assert.AreEqual(1, result.CreatedPlaceholderFiles); // Only the root-level PDF should create a placeholder
 
         // Verify only root-level document created a placeholder
-        Assert.IsTrue(File.Exists(Path.Combine(_testVaultRoot, "overview.md")));
+        Assert.IsTrue(File.Exists(Path.Combine(_testVaultRoot, "overview-pdf.md")));
 
         // Verify subdirectory document did not create a placeholder
         var vaultCoursePath = Path.Combine(_testVaultRoot, "Course1");
         if (Directory.Exists(vaultCoursePath))
         {
-            Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture.md")));
+            Assert.IsFalse(File.Exists(Path.Combine(vaultCoursePath, "lecture-video.md")));
         }
 
         // Verify template manager was called only for the root-level file

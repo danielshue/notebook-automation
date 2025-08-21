@@ -294,50 +294,50 @@ internal class VaultCommands
             AnsiConsoleHelper.WriteInfo($"Executing vault clean-index for path: {pathValue}");
         });
 
-        // Create sync-dirs subcommand
-        var syncDirsCommand = new Command("sync-dirs", "Synchronize directory structure between OneDrive and vault (bidirectional by default)");
+        // Create vault-sync subcommand
+        var vaultSyncCommand = new Command("vault-sync", "Synchronize directory structure between OneDrive and vault (bidirectional by default)");
         var vaultPathArg = new Argument<string?>("vault-path", "Vault path to start synchronization from (defaults to vault root from config)")
         {
             Arity = ArgumentArity.ZeroOrOne
         };
         var unidirectionalOption = new Option<bool>("--unidirectional", "Disable bidirectional sync (OneDrive → Vault only)");
         var syncRecursiveOption = new Option<bool>("--recursive", "Enable recursive directory scanning (default: false, immediate children only)");
-        var documentTypesOption = new Option<List<string>>(
-            ["--document-types", "-t"],
-            "Document types to create placeholder markdown files for (comma-separated: videos, pdf, html)")
+        var createPlaceholdersOption = new Option<List<string>>(
+            ["--create-placeholders", "-p"],
+            "Create placeholder markdown files for document types (comma-separated: videos, pdf, html)")
         {
             AllowMultipleArgumentsPerToken = true
         };
 
-        syncDirsCommand.AddArgument(vaultPathArg);
-        syncDirsCommand.AddOption(unidirectionalOption);
-        syncDirsCommand.AddOption(syncRecursiveOption);
-        syncDirsCommand.AddOption(dryRunOption);
-        syncDirsCommand.AddOption(verboseOption);
-        syncDirsCommand.AddOption(documentTypesOption);
+        vaultSyncCommand.AddArgument(vaultPathArg);
+        vaultSyncCommand.AddOption(unidirectionalOption);
+        vaultSyncCommand.AddOption(syncRecursiveOption);
+        vaultSyncCommand.AddOption(dryRunOption);
+        vaultSyncCommand.AddOption(verboseOption);
+        vaultSyncCommand.AddOption(createPlaceholdersOption);
 
-        syncDirsCommand.SetHandler(async (string? vaultPath, bool unidirectional, bool recursive, bool dryRun, bool verbose, List<string>? documentTypes) =>
+        vaultSyncCommand.SetHandler(async (string? vaultPath, bool unidirectional, bool recursive, bool dryRun, bool verbose, List<string>? createPlaceholders) =>
         {
             try
             {
                 var syncProcessor = _serviceProvider.GetRequiredService<IVaultFolderSyncProcessor>();
                 var appConfig = _serviceProvider.GetRequiredService<AppConfig>();
-                _logger.LogDebug($"[sync-dirs] Config paths object: {appConfig.Paths}");
-                _logger.LogDebug($"[sync-dirs] Config paths vault root: {appConfig.Paths?.NotebookVaultFullpathRoot}");
-                _logger.LogDebug($"[sync-dirs] OnedriveFullpathRoot: {appConfig.Paths?.OnedriveFullpathRoot}");
-                _logger.LogDebug($"[sync-dirs] OnedriveResourcesBasepath: {appConfig.Paths?.OnedriveResourcesBasepath}");
-                _logger.LogDebug($"[sync-dirs] NotebookVaultFullpathRoot: {appConfig.Paths?.NotebookVaultFullpathRoot}");
-                _logger.LogDebug($"[sync-dirs] NotebookVaultResourcesBasepath: {appConfig.Paths?.NotebookVaultResourcesBasepath}");
-                _logger.LogDebug($"[sync-dirs] Direct property access to NotebookVaultResourcesBasepath: {appConfig.Paths?.NotebookVaultResourcesBasepath}");
+                _logger.LogDebug($"[vault-sync] Config paths object: {appConfig.Paths}");
+                _logger.LogDebug($"[vault-sync] Config paths vault root: {appConfig.Paths?.NotebookVaultFullpathRoot}");
+                _logger.LogDebug($"[vault-sync] OnedriveFullpathRoot: {appConfig.Paths?.OnedriveFullpathRoot}");
+                _logger.LogDebug($"[vault-sync] OnedriveResourcesBasepath: {appConfig.Paths?.OnedriveResourcesBasepath}");
+                _logger.LogDebug($"[vault-sync] NotebookVaultFullpathRoot: {appConfig.Paths?.NotebookVaultFullpathRoot}");
+                _logger.LogDebug($"[vault-sync] NotebookVaultResourcesBasepath: {appConfig.Paths?.NotebookVaultResourcesBasepath}");
+                _logger.LogDebug($"[vault-sync] Direct property access to NotebookVaultResourcesBasepath: {appConfig.Paths?.NotebookVaultResourcesBasepath}");
                 var effectiveVaultRoot = appConfig.Paths?.GetEffectiveVaultRoot();
-                _logger.LogDebug($"[sync-dirs] EffectiveVaultRoot (GetEffectiveVaultRoot): {effectiveVaultRoot}");
+                _logger.LogDebug($"[vault-sync] EffectiveVaultRoot (GetEffectiveVaultRoot): {effectiveVaultRoot}");
                 var vaultBasePath = appConfig.Paths?.NotebookVaultResourcesBasepath;
-                _logger.LogDebug($"[sync-dirs] RAW vaultBasePath from config: {vaultBasePath ?? "(null)"}");
+                _logger.LogDebug($"[vault-sync] RAW vaultBasePath from config: {vaultBasePath ?? "(null)"}");
                 if (!string.IsNullOrWhiteSpace(vaultBasePath))
                 {
                     vaultBasePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(vaultBasePath);
                     vaultBasePath = vaultBasePath.TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                    _logger.LogDebug("[sync-dirs] PROCESSED vaultBasePath: '{vaultBasePath}'", vaultBasePath);
+                    _logger.LogDebug("[vault-sync] PROCESSED vaultBasePath: '{vaultBasePath}'", vaultBasePath);
                 }
                 var effectiveVaultPath = vaultPath;
                 if (string.IsNullOrWhiteSpace(effectiveVaultPath))
@@ -356,9 +356,9 @@ internal class VaultCommands
                         AnsiConsoleHelper.WriteError("Relative vault path provided but no vault root configured. Please configure vault root in config file.");
                         return;
                     }
-                    _logger.LogDebug("[sync-dirs] Resolving relative path against effectiveVaultRoot='{effectiveVaultRoot}'", effectiveVaultRoot);
+                    _logger.LogDebug("[vault-sync] Resolving relative path against effectiveVaultRoot='{effectiveVaultRoot}'", effectiveVaultRoot);
                     effectiveVaultPath = Path.GetFullPath(Path.Combine(effectiveVaultRoot, effectiveVaultPath));
-                    _logger.LogDebug("[sync-dirs] Resolved effectiveVaultPath: '{effectiveVaultPath}'", effectiveVaultPath);
+                    _logger.LogDebug("[vault-sync] Resolved effectiveVaultPath: '{effectiveVaultPath}'", effectiveVaultPath);
                 }
                 if (!Directory.Exists(effectiveVaultPath))
                 {
@@ -401,14 +401,14 @@ internal class VaultCommands
                 }
                 var oneDrivePath = Path.Combine(onedriveRoot, onedriveBase, providedPath);
                 oneDrivePath = NotebookAutomation.Core.Utils.PathUtils.NormalizePath(oneDrivePath);
-                _logger.LogDebug("[sync-dirs] onedriveRoot: {onedriveRoot}", onedriveRoot);
-                _logger.LogDebug("[sync-dirs] onedriveBase: {onedriveBase}", onedriveBase);
-                _logger.LogDebug("[sync-dirs] vaultBasePath: {vaultBasePath}", vaultBasePath ?? "(not configured)");
-                _logger.LogDebug("[sync-dirs] configuredVaultRoot: {configuredVaultRoot}", configuredVaultRoot);
-                _logger.LogDebug("[sync-dirs] calculationBasePath: {calculationBasePath}", calculationBasePath);
-                _logger.LogDebug("[sync-dirs] effectiveVaultPath: {effectiveVaultPath}", effectiveVaultPath);
-                _logger.LogDebug("[sync-dirs] providedPath: {providedPath}", providedPath);
-                _logger.LogDebug("[sync-dirs] oneDrivePath: {oneDrivePath}", oneDrivePath);
+                _logger.LogDebug("[vault-sync] onedriveRoot: {onedriveRoot}", onedriveRoot);
+                _logger.LogDebug("[vault-sync] onedriveBase: {onedriveBase}", onedriveBase);
+                _logger.LogDebug("[vault-sync] vaultBasePath: {vaultBasePath}", vaultBasePath ?? "(not configured)");
+                _logger.LogDebug("[vault-sync] configuredVaultRoot: {configuredVaultRoot}", configuredVaultRoot);
+                _logger.LogDebug("[vault-sync] calculationBasePath: {calculationBasePath}", calculationBasePath);
+                _logger.LogDebug("[vault-sync] effectiveVaultPath: {effectiveVaultPath}", effectiveVaultPath);
+                _logger.LogDebug("[vault-sync] providedPath: {providedPath}", providedPath);
+                _logger.LogDebug("[vault-sync] oneDrivePath: {oneDrivePath}", oneDrivePath);
                 bool bidirectional = !unidirectional;
                 if (verbose)
                 {
@@ -419,7 +419,7 @@ internal class VaultCommands
                     AnsiConsoleHelper.WriteInfo(recursive ? "Recursive mode: processing subdirectories" : "Non-recursive mode: processing only immediate children");
                     if (dryRun) AnsiConsoleHelper.WriteInfo("Dry run mode enabled - no directories will be created");
                 }
-                var syncMode = bidirectional ? "bidirectional sync-dirs" : "sync-dirs";
+                var syncMode = bidirectional ? "bidirectional vault-sync" : "vault-sync";
                 // Write execution message (tests assert this presence)
                 var executionMessage = $"Executing vault {syncMode} for vault path: {effectiveVaultPath}";
                 AnsiConsoleHelper.WriteInfo(executionMessage);
@@ -433,7 +433,7 @@ internal class VaultCommands
                         dryRun: dryRun,
                         bidirectional: bidirectional,
                         recursive: recursive,
-                        documentTypes: documentTypes?.Count > 0 ? documentTypes : null),
+                        documentTypes: createPlaceholders?.Count > 0 ? createPlaceholders : null),
                     statusMessage).ConfigureAwait(false);
                 // Status complete – continue with result reporting
                 if (result.Success)
@@ -453,16 +453,16 @@ internal class VaultCommands
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error executing vault sync-dirs command");
+                _logger.LogError(ex, "Error executing vault vault-sync command");
                 AnsiConsoleHelper.WriteError($"An error occurred: {ex.Message}");
             }
-        }, vaultPathArg, unidirectionalOption, syncRecursiveOption, dryRunOption, verboseOption, documentTypesOption);
+        }, vaultPathArg, unidirectionalOption, syncRecursiveOption, dryRunOption, verboseOption, createPlaceholdersOption);
 
         var vaultCommand = new Command("vault", "Vault management commands");
         vaultCommand.AddCommand(generateIndexCommand);
         vaultCommand.AddCommand(ensureMetadataCommand);
         vaultCommand.AddCommand(cleanIndexCommand);
-        vaultCommand.AddCommand(syncDirsCommand);
+        vaultCommand.AddCommand(vaultSyncCommand);
         vaultCommand.TreatUnmatchedTokensAsErrors = true;
         vaultCommand.SetHandler(context =>
         {

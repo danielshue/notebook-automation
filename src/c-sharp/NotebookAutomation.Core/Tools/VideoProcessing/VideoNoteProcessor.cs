@@ -281,28 +281,82 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 : fileNameWithoutExt.Replace('_', '-');
 
             // First priority: language-specific transcript with exact name (video.en.txt, video.zh-cn.txt)
-            foreach (var candidate in candidates)
-            {
-                string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
-                if (nameWithoutExt.StartsWith(fileNameWithoutExt + ".") &&
-                    IsLikelyLanguageCode(nameWithoutExt[(fileNameWithoutExt.Length + 1)..]))
+            // Use preferred language order if configured
+            var languageSpecificCandidates = candidates
+                .Where(candidate =>
                 {
-                    string langCode = nameWithoutExt[(fileNameWithoutExt.Length + 1)..];
-                    Logger.LogDebug($"Found language-specific transcript ({langCode}): {candidate.FullName}");
-                    return File.ReadAllText(candidate.FullName);
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
+                    return nameWithoutExt.StartsWith(fileNameWithoutExt + ".") &&
+                           IsLikelyLanguageCode(nameWithoutExt[(fileNameWithoutExt.Length + 1)..]);
+                })
+                .Select(candidate => new
+                {
+                    File = candidate,
+                    LanguageCode = Path.GetFileNameWithoutExtension(candidate.Name)[(fileNameWithoutExt.Length + 1)..]
+                })
+                .ToList();
+
+            if (languageSpecificCandidates.Count > 0)
+            {
+                // If we have preferred languages configured, use them to prioritize
+                var preferredLanguages = _appConfig?.PreferredTranscriptLanguages ?? [];
+                if (preferredLanguages.Count > 0)
+                {
+                    foreach (var preferredLang in preferredLanguages)
+                    {
+                        var preferredCandidate = languageSpecificCandidates
+                            .FirstOrDefault(c => string.Equals(c.LanguageCode, preferredLang, StringComparison.OrdinalIgnoreCase));
+                        if (preferredCandidate != null)
+                        {
+                            Logger.LogDebug($"Found preferred language-specific transcript ({preferredCandidate.LanguageCode}): {preferredCandidate.File.FullName}");
+                            return File.ReadAllText(preferredCandidate.File.FullName);
+                        }
+                    }
                 }
+
+                // If no preferred language found, use the first available language-specific transcript
+                var firstCandidate = languageSpecificCandidates.First();
+                Logger.LogDebug($"Found language-specific transcript ({firstCandidate.LanguageCode}): {firstCandidate.File.FullName}");
+                return File.ReadAllText(firstCandidate.File.FullName);
             }
 
             // Second priority: language-specific transcript with normalized name
-            foreach (var candidate in candidates)
-            {
-                string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
-                if (nameWithoutExt.StartsWith(altBaseName + ".") && IsLikelyLanguageCode(nameWithoutExt[(altBaseName.Length + 1)..]))
+            var normalizedLanguageSpecificCandidates = candidates
+                .Where(candidate =>
                 {
-                    string langCode = nameWithoutExt[(altBaseName.Length + 1)..];
-                    Logger.LogDebug($"Found language-specific transcript with normalized name ({langCode}): {candidate.FullName}");
-                    return File.ReadAllText(candidate.FullName);
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
+                    return nameWithoutExt.StartsWith(altBaseName + ".") &&
+                           IsLikelyLanguageCode(nameWithoutExt[(altBaseName.Length + 1)..]);
+                })
+                .Select(candidate => new
+                {
+                    File = candidate,
+                    LanguageCode = Path.GetFileNameWithoutExtension(candidate.Name)[(altBaseName.Length + 1)..]
+                })
+                .ToList();
+
+            if (normalizedLanguageSpecificCandidates.Count > 0)
+            {
+                // If we have preferred languages configured, use them to prioritize
+                var preferredLanguages = _appConfig?.PreferredTranscriptLanguages ?? [];
+                if (preferredLanguages.Count > 0)
+                {
+                    foreach (var preferredLang in preferredLanguages)
+                    {
+                        var preferredCandidate = normalizedLanguageSpecificCandidates
+                            .FirstOrDefault(c => string.Equals(c.LanguageCode, preferredLang, StringComparison.OrdinalIgnoreCase));
+                        if (preferredCandidate != null)
+                        {
+                            Logger.LogDebug($"Found preferred language-specific transcript with normalized name ({preferredCandidate.LanguageCode}): {preferredCandidate.File.FullName}");
+                            return File.ReadAllText(preferredCandidate.File.FullName);
+                        }
+                    }
                 }
+
+                // If no preferred language found, use the first available language-specific transcript
+                var firstCandidate = normalizedLanguageSpecificCandidates.First();
+                Logger.LogDebug($"Found language-specific transcript with normalized name ({firstCandidate.LanguageCode}): {firstCandidate.File.FullName}");
+                return File.ReadAllText(firstCandidate.File.FullName);
             }
 
             // Third priority: generic transcript with exact name (video.txt, video.md)
@@ -426,28 +480,82 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
                 : fileNameWithoutExt.Replace('_', '-');
 
             // First priority: language-specific transcript with exact name (video.en.txt, video.zh-cn.txt)
-            foreach (var candidate in candidates)
-            {
-                string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
-                if (nameWithoutExt.StartsWith(fileNameWithoutExt + ".") &&
-                    IsLikelyLanguageCode(nameWithoutExt[(fileNameWithoutExt.Length + 1)..]))
+            // Use preferred language order if configured
+            var languageSpecificCandidates = candidates
+                .Where(candidate =>
                 {
-                    string langCode = nameWithoutExt[(fileNameWithoutExt.Length + 1)..];
-                    Logger.LogDebug($"Found language-specific transcript ({langCode}): {candidate.FullName}");
-                    return candidate.FullName;
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
+                    return nameWithoutExt.StartsWith(fileNameWithoutExt + ".") &&
+                           IsLikelyLanguageCode(nameWithoutExt[(fileNameWithoutExt.Length + 1)..]);
+                })
+                .Select(candidate => new
+                {
+                    File = candidate,
+                    LanguageCode = Path.GetFileNameWithoutExtension(candidate.Name)[(fileNameWithoutExt.Length + 1)..]
+                })
+                .ToList();
+
+            if (languageSpecificCandidates.Count > 0)
+            {
+                // If we have preferred languages configured, use them to prioritize
+                var preferredLanguages = _appConfig?.PreferredTranscriptLanguages ?? [];
+                if (preferredLanguages.Count > 0)
+                {
+                    foreach (var preferredLang in preferredLanguages)
+                    {
+                        var preferredCandidate = languageSpecificCandidates
+                            .FirstOrDefault(c => string.Equals(c.LanguageCode, preferredLang, StringComparison.OrdinalIgnoreCase));
+                        if (preferredCandidate != null)
+                        {
+                            Logger.LogDebug($"Found preferred language-specific transcript ({preferredCandidate.LanguageCode}): {preferredCandidate.File.FullName}");
+                            return preferredCandidate.File.FullName;
+                        }
+                    }
                 }
+
+                // If no preferred language found, use the first available language-specific transcript
+                var firstCandidate = languageSpecificCandidates.First();
+                Logger.LogDebug($"Found language-specific transcript ({firstCandidate.LanguageCode}): {firstCandidate.File.FullName}");
+                return firstCandidate.File.FullName;
             }
 
             // Second priority: language-specific transcript with normalized name
-            foreach (var candidate in candidates)
-            {
-                string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
-                if (nameWithoutExt.StartsWith(altBaseName + ".") && IsLikelyLanguageCode(nameWithoutExt[(altBaseName.Length + 1)..]))
+            var normalizedLanguageSpecificCandidates = candidates
+                .Where(candidate =>
                 {
-                    string langCode = nameWithoutExt[(altBaseName.Length + 1)..];
-                    Logger.LogDebug($"Found language-specific transcript with normalized name ({langCode}): {candidate.FullName}");
-                    return candidate.FullName;
+                    string nameWithoutExt = Path.GetFileNameWithoutExtension(candidate.Name);
+                    return nameWithoutExt.StartsWith(altBaseName + ".") &&
+                           IsLikelyLanguageCode(nameWithoutExt[(altBaseName.Length + 1)..]);
+                })
+                .Select(candidate => new
+                {
+                    File = candidate,
+                    LanguageCode = Path.GetFileNameWithoutExtension(candidate.Name)[(altBaseName.Length + 1)..]
+                })
+                .ToList();
+
+            if (normalizedLanguageSpecificCandidates.Count > 0)
+            {
+                // If we have preferred languages configured, use them to prioritize
+                var preferredLanguages = _appConfig?.PreferredTranscriptLanguages ?? [];
+                if (preferredLanguages.Count > 0)
+                {
+                    foreach (var preferredLang in preferredLanguages)
+                    {
+                        var preferredCandidate = normalizedLanguageSpecificCandidates
+                            .FirstOrDefault(c => string.Equals(c.LanguageCode, preferredLang, StringComparison.OrdinalIgnoreCase));
+                        if (preferredCandidate != null)
+                        {
+                            Logger.LogDebug($"Found preferred language-specific transcript with normalized name ({preferredCandidate.LanguageCode}): {preferredCandidate.File.FullName}");
+                            return preferredCandidate.File.FullName;
+                        }
+                    }
                 }
+
+                // If no preferred language found, use the first available language-specific transcript
+                var firstCandidate = normalizedLanguageSpecificCandidates.First();
+                Logger.LogDebug($"Found language-specific transcript with normalized name ({firstCandidate.LanguageCode}): {firstCandidate.File.FullName}");
+                return firstCandidate.File.FullName;
             }
 
             // Third priority: generic transcript with exact name (video.txt, video.md)
@@ -833,7 +941,14 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     {
         var metadataNullable = await ExtractMetadataAsync(filePath).ConfigureAwait(false);
         var metadata = metadataNullable.ToDictionary(kvp => kvp.Key, kvp => kvp.Value!);
+
+        // Provide absolute file path for schema resolvers (e.g., OneDriveShareLinkResolver)
+        // This enables the centralized metadata pipeline/template manager to resolve share links.
+        metadata["filePath"] = filePath;
+
         string? transcript = TryLoadTranscript(filePath);
-        string text = transcript ?? string.Empty; return (text, metadata);
+        string text = transcript ?? string.Empty;
+
+        return (text, metadata);
     }
 }

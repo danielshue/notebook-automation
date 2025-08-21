@@ -323,6 +323,18 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           });
       });
 
+    // AI HTML/EPUB/TXT Summary
+    new Setting(featureGroup)
+      .setName("AI HTML/EPUB/TXT Summary")
+      .setDesc("Enables AI-powered HTML, EPUB, and TXT document summarization features in context menus. Right-click folders to import and summarize all HTML/EPUB/TXT files, or reprocess existing summaries with AI analysis.")
+      .addToggle(toggle => {
+        toggle.setValue(this.plugin.settings.enableHtmlEpubTxtSummary ?? true)
+          .onChange(async (value) => {
+            this.plugin.settings.enableHtmlEpubTxtSummary = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
     // Index Creation
     new Setting(featureGroup)
       .setName("Index Creation")
@@ -769,6 +781,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         },
         video_extensions: [],
         pdf_extensions: [],
+        html_extensions: [],
         banners: {}
       };
     }
@@ -1005,6 +1018,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
               },
               video_extensions: currentConfig.video_extensions || [],
               pdf_extensions: currentConfig.pdf_extensions || [],
+              html_extensions: currentConfig.html_extensions || [],
               banners: currentConfig.banners || {}
             };
 
@@ -1224,6 +1238,12 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       sectionsDisplayed = true;
     }
     
+    // Add language preferences section (show only if advanced configuration is enabled)
+    if (this.plugin.settings.advancedConfiguration) {
+      this.addLanguagePreferencesSection(fieldsDiv, configJson);
+      sectionsDisplayed = true;
+    }
+    
     // Add AI service section (show only if advanced configuration is enabled)
     if (this.plugin.settings.advancedConfiguration) {
       this.addAIServiceSection(fieldsDiv, configJson);
@@ -1247,10 +1267,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       this.addLoggingSection(fieldsDiv, configJson);
     }
     
-    // Add other configuration section (only if advanced configuration is enabled)
-    if (this.plugin.settings.advancedConfiguration) {
-      this.addOtherConfigSection(fieldsDiv, configJson);
-    }
+    // Note: Video and PDF extensions are now handled in the File Extensions section
     
     // Save button is handled by the main display method, not here
   }
@@ -2223,6 +2240,37 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       }
     };
 
+    // HTML extensions
+    const htmlExtDiv = extensionsSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
+    const htmlExtInfoDiv = htmlExtDiv.createDiv({ cls: 'setting-item-info' });
+    const htmlExtNameDiv = htmlExtInfoDiv.createDiv({ cls: 'setting-item-name' });
+    htmlExtNameDiv.setText('HTML Extensions');
+    const htmlExtDescDiv = htmlExtInfoDiv.createDiv({ cls: 'setting-item-description' });
+    htmlExtDescDiv.setText('HTML and eBook file extensions to process, comma-separated with dots (e.g., .html, .htm, .epub). System will extract content and generate markdown for these formats.');
+
+    const htmlExtControlDiv = htmlExtDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
+    const htmlExtInput = htmlExtControlDiv.createEl('input', {
+      type: 'text',
+      cls: 'notebook-automation-path-input'
+    });
+    // Use plugin settings as source with fallback to default
+    const htmlExtensions = this.plugin.settings.htmlExtensions || ".html,.htm,.epub";
+    htmlExtInput.value = htmlExtensions;
+    htmlExtInput.placeholder = 'Enter HTML/eBook extensions (.html, .htm, .epub)...';
+    htmlExtInput.oninput = async (e: any) => {
+      const extensions = (e.target as HTMLInputElement).value;
+      // Save to plugin settings
+      this.plugin.settings.htmlExtensions = extensions;
+      await this.plugin.saveSettings();
+      
+      // Also update global config for immediate use
+      if ((window as any).notebookAutomationLoadedConfig) {
+        // Parse extensions and update config
+        const extensionList = extensions.split(',').map((ext: string) => ext.trim()).filter((ext: string) => ext);
+        (window as any).notebookAutomationLoadedConfig.html_extensions = extensionList;
+      }
+    };
+
     // PDF Extract Images toggle - custom layout with inline toggle
     const pdfExtractContainer = extensionsSection.createDiv({ cls: 'notebook-automation-custom-setting pdf-extract-setting' });
     
@@ -2249,6 +2297,109 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       cls: 'setting-item-description',
       text: 'Extract and save images from PDF files alongside generated markdown notes. Preserves diagrams, charts, and visual content from documents.'
     });
+  }
+
+  /**
+   * Adds the language preferences configuration section to the settings tab.
+   * @param fieldsDiv - The container div for fields.
+   * @param configJson - The config JSON object.
+   */
+  addLanguagePreferencesSection(fieldsDiv: HTMLDivElement, configJson: any) {
+    // Add section title above the container
+    fieldsDiv.createEl('h3', { text: 'Language Preferences', cls: 'notebook-automation-section-header' });
+    
+    // Add section description
+    const languageDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
+    languageDescriptionDiv.innerHTML = `
+      <p>Configure preferred languages for transcript selection when multiple language-specific transcripts are available for video files. The system will select transcripts in the order specified below.</p>
+      
+      <p><strong>Language codes:</strong> Use standard language codes like "en" (English), "en-us" (US English), "fr" (French), "es" (Spanish), "de" (German), "zh-cn" (Chinese Simplified), etc.</p>
+    `;
+    
+    const languageSection = fieldsDiv.createDiv({ cls: 'notebook-automation-language-section' });
+
+    // Language preferences
+    const langPrefDiv = languageSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
+    const langPrefInfoDiv = langPrefDiv.createDiv({ cls: 'setting-item-info' });
+    const langPrefNameDiv = langPrefInfoDiv.createDiv({ cls: 'setting-item-name' });
+    langPrefNameDiv.setText('Preferred Transcript Languages');
+    const langPrefDescDiv = langPrefInfoDiv.createDiv({ cls: 'setting-item-description' });
+    langPrefDescDiv.setText('Language codes in priority order, comma-separated (e.g., en, en-us, fr, es). When multiple language-specific transcripts exist for a video file, the system will select the first available language from this list. If none of the preferred languages are available, the system will use the first language-specific transcript found.');
+
+    const langPrefControlDiv = langPrefDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
+    const langPrefInput = langPrefControlDiv.createEl('input', {
+      type: 'text',
+      cls: 'notebook-automation-path-input'
+    });
+    const preferredLanguages = configJson.preferred_transcript_languages || ['en'];
+    langPrefInput.value = preferredLanguages.join(', ');
+    langPrefInput.placeholder = 'Enter language codes (en, en-us, fr, es, etc.)...';
+
+    // Create validation message element for language codes
+    const langValidationMessage = langPrefControlDiv.createDiv({ cls: 'notebook-automation-field-validation' });
+    
+    // Validation function for language codes
+    const validateLanguageCodes = (input: string): { isValid: boolean; errorMessage?: string } => {
+      if (!input.trim()) {
+        return { isValid: false, errorMessage: 'At least one language code is required.' };
+      }
+      
+      const codes = input.split(',').map(code => code.trim()).filter(code => code);
+      const invalidCodes: string[] = [];
+      
+      for (const code of codes) {
+        // Validate language code format: 2-3 letters, or 2-3 letters followed by hyphen and 2-3 letters
+        const languageCodeRegex = /^[a-zA-Z]{2,3}(-[a-zA-Z]{2,3})?$/;
+        if (!languageCodeRegex.test(code)) {
+          invalidCodes.push(code);
+        }
+      }
+      
+      if (invalidCodes.length > 0) {
+        return { 
+          isValid: false, 
+          errorMessage: `Invalid language codes: ${invalidCodes.join(', ')}. Use standard codes like "en", "en-us", "fr", "es", "de", "zh-cn".` 
+        };
+      }
+      
+      return { isValid: true };
+    };
+
+    // Initial validation for existing value
+    const initialValidation = validateLanguageCodes(langPrefInput.value);
+    if (!initialValidation.isValid) {
+      langValidationMessage.classList.add('visible');
+      langValidationMessage.innerHTML = this.formatValidationError(
+        'Invalid Language Codes',
+        initialValidation.errorMessage || 'Please check the language code format.'
+      );
+      langPrefInput.classList.add('notebook-automation-input-invalid');
+    }
+
+    langPrefInput.oninput = (e: any) => {
+      const inputValue = e.target.value;
+      
+      // Validate language codes
+      const validation = validateLanguageCodes(inputValue);
+      if (!validation.isValid) {
+        langValidationMessage.classList.add('visible');
+        langValidationMessage.innerHTML = this.formatValidationError(
+          'Invalid Language Codes',
+          validation.errorMessage || 'Please check the language code format.'
+        );
+        langPrefInput.classList.add('notebook-automation-input-invalid');
+      } else {
+        langValidationMessage.classList.remove('visible');
+        langPrefInput.classList.remove('notebook-automation-input-invalid');
+      }
+
+      const languages = inputValue.split(',').map((lang: string) => lang.trim()).filter((lang: string) => lang);
+      
+      // Update global config
+      if ((window as any).notebookAutomationLoadedConfig) {
+        (window as any).notebookAutomationLoadedConfig.preferred_transcript_languages = languages;
+      }
+    };
   }
 
   /**
@@ -2356,127 +2507,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         }
       } catch (error) {
         // Invalid JSON, ignore for now
-      }
-    };
-  }
-
-  addOtherConfigSection(fieldsDiv: HTMLDivElement, configJson: any) {
-    // Add section title above the container
-    fieldsDiv.createEl('h3', { text: 'Other Configuration', cls: 'notebook-automation-section-header' });
-    
-    // Add section description
-    const otherDescriptionDiv = fieldsDiv.createDiv({ cls: 'notebook-automation-section-description' });
-    otherDescriptionDiv.innerHTML = `
-      <p>Additional configuration options for specialized features and advanced automation workflows. These settings provide fine-grained control over specific processing behaviors and experimental features.</p>
-      
-      <p><strong>Advanced options:</strong> Specialized file type handling, custom processing parameters, experimental feature toggles, and integration settings for third-party tools and services.</p>
-    `;
-    
-    const otherSection = fieldsDiv.createDiv({ cls: 'notebook-automation-other-section' });
-
-    // Video extensions
-    const videoExtDiv = otherSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-    const videoExtInfoDiv = videoExtDiv.createDiv({ cls: 'setting-item-info' });
-    const videoExtNameDiv = videoExtInfoDiv.createDiv({ cls: 'setting-item-name' });
-    videoExtNameDiv.setText('Video Extensions');
-    const videoExtDescDiv = videoExtInfoDiv.createDiv({ cls: 'setting-item-description' });
-    videoExtDescDiv.setText('Supported video file extensions (one per line)');
-
-    const videoExtControlDiv = videoExtDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    const videoExtTextarea = videoExtControlDiv.createEl('textarea', {
-      cls: 'notebook-automation-path-input',
-      attr: { 'data-video-ext': 'true' }
-    });
-    videoExtTextarea.value = (configJson.video_extensions || []).join('\n');
-    videoExtTextarea.placeholder = 'Enter video extensions (one per line)...';
-    
-    // Create validation message element
-    const videoExtValidationMessage = videoExtControlDiv.createDiv({ cls: 'notebook-automation-field-validation' });
-    
-    // Initial validation for existing values
-    const initialVideoExtensions = (configJson.video_extensions || []);
-    const invalidVideoExts = initialVideoExtensions.filter((ext: string) => ext && !isValidFileExtension(ext));
-    if (invalidVideoExts.length > 0) {
-      videoExtValidationMessage.classList.add('visible');
-      videoExtValidationMessage.innerHTML = this.formatValidationError(
-        'Invalid Video Extensions',
-        `The following extensions are invalid: <strong>${invalidVideoExts.join(', ')}</strong><br><br>File extensions must start with a dot (.) and contain only letters and numbers. Examples: .mp4, .mov, .avi, .mkv`
-      );
-      videoExtTextarea.classList.add('notebook-automation-input-invalid');
-    }
-    
-    videoExtTextarea.oninput = (e: any) => {
-      const extensions = e.target.value.split('\n').filter((ext: string) => ext.trim().length > 0).map((ext: string) => ext.trim());
-      const invalidExtensions = extensions.filter((ext: string) => !isValidFileExtension(ext));
-      
-      if (invalidExtensions.length > 0) {
-        videoExtValidationMessage.classList.add('visible');
-        videoExtValidationMessage.innerHTML = this.formatValidationError(
-          'Invalid Video Extensions',
-          `The following extensions are invalid: <strong>${invalidExtensions.join(', ')}</strong><br><br>File extensions must start with a dot (.) and contain only letters and numbers. Examples: .mp4, .mov, .avi, .mkv`
-        );
-        videoExtTextarea.classList.add('notebook-automation-input-invalid');
-      } else {
-        videoExtValidationMessage.classList.remove('visible');
-        videoExtTextarea.classList.remove('notebook-automation-input-invalid');
-      }
-      
-      // Update global config
-      if ((window as any).notebookAutomationLoadedConfig) {
-        (window as any).notebookAutomationLoadedConfig.video_extensions = extensions;
-      }
-    };
-
-    // PDF extensions
-    const pdfExtDiv = otherSection.createDiv({ cls: 'setting-item notebook-automation-custom-setting' });
-    const pdfExtInfoDiv = pdfExtDiv.createDiv({ cls: 'setting-item-info' });
-    const pdfExtNameDiv = pdfExtInfoDiv.createDiv({ cls: 'setting-item-name' });
-    pdfExtNameDiv.setText('PDF Extensions');
-    const pdfExtDescDiv = pdfExtInfoDiv.createDiv({ cls: 'setting-item-description' });
-    pdfExtDescDiv.setText('Supported PDF file extensions (one per line)');
-
-    const pdfExtControlDiv = pdfExtDiv.createDiv({ cls: 'setting-item-control notebook-automation-input-control' });
-    const pdfExtTextarea = pdfExtControlDiv.createEl('textarea', {
-      cls: 'notebook-automation-path-input',
-      attr: { 'data-pdf-ext': 'true' }
-    });
-    pdfExtTextarea.value = (configJson.pdf_extensions || []).join('\n');
-    pdfExtTextarea.placeholder = 'Enter PDF extensions (one per line)...';
-    
-    // Create validation message element
-    const pdfExtValidationMessage = pdfExtControlDiv.createDiv({ cls: 'notebook-automation-field-validation' });
-    
-    // Initial validation for existing values
-    const initialPdfExtensions = (configJson.pdf_extensions || []);
-    const invalidPdfExts = initialPdfExtensions.filter((ext: string) => ext && !isValidFileExtension(ext));
-    if (invalidPdfExts.length > 0) {
-      pdfExtValidationMessage.classList.add('visible');
-      pdfExtValidationMessage.innerHTML = this.formatValidationError(
-        'Invalid PDF Extensions',
-        `The following extensions are invalid: <strong>${invalidPdfExts.join(', ')}</strong><br><br>File extensions must start with a dot (.) and contain only letters and numbers. Typical PDF extension: .pdf`
-      );
-      pdfExtTextarea.classList.add('notebook-automation-input-invalid');
-    }
-    
-    pdfExtTextarea.oninput = (e: any) => {
-      const extensions = e.target.value.split('\n').filter((ext: string) => ext.trim().length > 0).map((ext: string) => ext.trim());
-      const invalidExtensions = extensions.filter((ext: string) => !isValidFileExtension(ext));
-      
-      if (invalidExtensions.length > 0) {
-        pdfExtValidationMessage.classList.add('visible');
-        pdfExtValidationMessage.innerHTML = this.formatValidationError(
-          'Invalid PDF Extensions',
-          `The following extensions are invalid: <strong>${invalidExtensions.join(', ')}</strong><br><br>File extensions must start with a dot (.) and contain only letters and numbers. Typical PDF extension: .pdf`
-        );
-        pdfExtTextarea.classList.add('notebook-automation-input-invalid');
-      } else {
-        pdfExtValidationMessage.classList.remove('visible');
-        pdfExtTextarea.classList.remove('notebook-automation-input-invalid');
-      }
-      
-      // Update global config
-      if ((window as any).notebookAutomationLoadedConfig) {
-        (window as any).notebookAutomationLoadedConfig.pdf_extensions = extensions;
       }
     };
   }

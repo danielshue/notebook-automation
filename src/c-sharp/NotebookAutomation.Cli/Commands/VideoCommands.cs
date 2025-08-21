@@ -29,7 +29,7 @@ namespace NotebookAutomation.Cli.Commands;
 /// <para>
 /// <b>Usage Example:</b>
 /// <code language="shell">
-/// na.exe video-notes --input "C:\Users\me\Videos" --overwrite-output-dir "C:\Notes"
+/// na.exe video-notes --path "C:\Users\me\Videos" --overwrite-output-dir "C:\Notes"
 /// </code>
 /// </para>
 /// <para>
@@ -49,7 +49,7 @@ namespace NotebookAutomation.Cli.Commands;
 /// var logger = new LoggerFactory().CreateLogger<VideoCommands>();
 /// var videoCommands = new VideoCommands(logger);
 /// videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-/// rootCommand.Invoke("video-notes --input videos --output notes");
+/// rootCommand.Invoke("video-notes --path videos --output notes");
 /// </code>
 /// </example>
 internal class VideoCommands
@@ -100,7 +100,7 @@ internal class VideoCommands
     /// <para>
     /// <b>Example CLI Usage:</b>
     /// <code language="shell">
-    /// na.exe video-notes --input "C:\Users\me\Videos" --overwrite-output-dir "C:\Notes" --no-summary
+    /// na.exe video-notes --path "C:\Users\me\Videos" --overwrite-output-dir "C:\Notes" --no-summary
     /// </code>
     /// </para>
     /// <para>
@@ -119,14 +119,14 @@ internal class VideoCommands
     /// var logger = new LoggerFactory().CreateLogger<VideoCommands>();
     /// var videoCommands = new VideoCommands(logger);
     /// videoCommands.Register(rootCommand, configOption, debugOption, verboseOption, dryRunOption);
-    /// rootCommand.Invoke("video-notes --input videos --output notes");
+    /// rootCommand.Invoke("video-notes --path videos --output notes");
     /// </code>
     /// </example>
     public void Register(RootCommand rootCommand, Option<string> configOption, Option<bool> debugOption, Option<bool> verboseOption, Option<bool> dryRunOption)
     {
-        var inputOption = new Option<string?>(
-            aliases: ["--input", "-i"],
-            description: "Path to the input video file or directory (will auto-detect if it's a file or folder)")
+        var pathOption = new Option<string?>(
+            aliases: ["--path", "-p"],
+            description: "Path to the video file or directory (will auto-detect if it's a file or folder)")
         {
             IsRequired = true,
         };
@@ -161,7 +161,7 @@ internal class VideoCommands
             description: "Skip OneDrive share link creation (links are created by default)");
         var videoCommand = new Command("video-notes", "Video notes and metadata commands");
 
-        videoCommand.AddOption(inputOption);
+        videoCommand.AddOption(pathOption);
         videoCommand.AddOption(outputOption);
         videoCommand.AddOption(vaultRootOverrideOption);
         videoCommand.AddOption(resourcesRootOption);
@@ -173,7 +173,7 @@ internal class VideoCommands
         videoCommand.AddOption(noShareLinksOption);
         videoCommand.SetHandler(async context =>
         {
-            string? input = context.ParseResult.GetValueForOption(inputOption);
+            string? input = context.ParseResult.GetValueForOption(pathOption);
             string? overrideOutputDir = context.ParseResult.GetValueForOption(outputOption);
             string? vaultRootOverride = context.ParseResult.GetValueForOption(vaultRootOverrideOption);
             string? config = context.ParseResult.GetValueForOption(configOption);
@@ -192,7 +192,7 @@ internal class VideoCommands
             if (string.IsNullOrEmpty(input))
             {
                 AnsiConsoleHelper.WriteUsage(
-                    "Usage: notebookautomation video-notes --input <file|dir> [options]",
+                    "Usage: notebookautomation video-notes --path <file|dir> [options]",
                     videoCommand.Description ?? string.Empty,
                     string.Join("\n", videoCommand.Options.Select(option => $"  {string.Join(", ", option.Aliases)}\t{option.Description}")));
                 return;
@@ -221,6 +221,7 @@ internal class VideoCommands
             var logger = loggerFactory.CreateLogger("VideoCommands");
             var loggingService = scopedServices.GetRequiredService<LoggingService>();
             var appConfig = scopedServices.GetRequiredService<AppConfig>();
+
             // Determine effective combined vault root (root + resources basepath if configured)
             var effectiveVaultRoot = appConfig.Paths?.GetEffectiveVaultRoot();
             logger.LogDebug("Resolved effective vault root: {effectiveVaultRoot} (raw: {rawRoot}, basepath: {basepath})",
@@ -231,7 +232,13 @@ internal class VideoCommands
             string effectiveOutputDir = overrideOutputDir
                                         ?? effectiveVaultRoot
                                         ?? appConfig.Paths?.NotebookVaultFullpathRoot
-                                        ?? "Generated";
+                                        ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Generated");
+
+            if (string.IsNullOrWhiteSpace(effectiveOutputDir))
+            {
+                effectiveOutputDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Generated");
+            }
+
             effectiveOutputDir = Path.GetFullPath(effectiveOutputDir);
             // Set up vault root override in scoped context
             var vaultRootContext = scopedServices.GetRequiredService<VaultRootContextService>();
@@ -269,17 +276,164 @@ internal class VideoCommands
             string? effectiveResourcesRoot = resourcesRoot;
             if (string.IsNullOrWhiteSpace(effectiveResourcesRoot) && appConfig?.Paths != null)
             {
-                effectiveResourcesRoot = appConfig.Paths.OnedriveFullpathRoot;
+                // Use the proper helper method to get the effective OneDrive root (fullpath + basepath)
+                effectiveResourcesRoot = appConfig.Paths.GetEffectiveOneDriveRoot();
             }
 
-            // Resolve input path - if it's relative, prepend with OneDrive root
-            string resolvedInput = PathUtils.ResolveInputPath(
-                input,
-                effectiveResourcesRoot,
-                appConfig?.Paths?.OnedriveResourcesBasepath
-            );
-            logger.LogDebug($"Input path resolution: '{input}' -> '{resolvedInput}' (OneDrive root: {effectiveResourcesRoot ?? "(none)"})");
+            // Check if input is a markdown file - if so, extract onedrive_relative_path from frontmatter
+            string inputForProcessing = input;
+            string? actualMarkdownFilePath = null;
 
+            if (input.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+            {
+                // First, try the input as an absolute path
+                if (File.Exists(input))
+                {
+                    actualMarkdownFilePath = input;
+                }
+                // If not found as absolute path, try to find it in the vault structure
+                else if (!string.IsNullOrWhiteSpace(effectiveVaultRoot))
+                {
+                    // Try different possible locations in the vault
+                    var vaultRoot = appConfig?.Paths?.NotebookVaultFullpathRoot;
+                    var possiblePaths = new[]
+                    {
+                        Path.Combine(effectiveVaultRoot, input.Replace('/', '\\')),
+                        Path.Combine(effectiveVaultRoot, Path.GetFileName(input))
+                    };
+
+                    // Add vault root path if available and different from effective vault root
+                    if (!string.IsNullOrWhiteSpace(vaultRoot) && vaultRoot != effectiveVaultRoot)
+                    {
+                        possiblePaths = possiblePaths.Concat(new[] { Path.Combine(vaultRoot, input.Replace('/', '\\')) }).ToArray();
+                    }
+
+                    foreach (var possiblePath in possiblePaths)
+                    {
+                        if (File.Exists(possiblePath))
+                        {
+                            actualMarkdownFilePath = possiblePath;
+                            logger.LogDebug($"Found Document Placeholder file: '{possiblePath}' (from input: '{input}')");
+                            break;
+                        }
+                    }
+                }
+
+                // If we found a markdown file, process its frontmatter
+                if (!string.IsNullOrWhiteSpace(actualMarkdownFilePath))
+                {
+                    try
+                    {
+                        var yamlHelper = new YamlHelper(logger);
+                        var markdownContent = await File.ReadAllTextAsync(actualMarkdownFilePath);
+                        var frontmatter = yamlHelper.ExtractFrontmatter(markdownContent);
+
+                        if (!string.IsNullOrWhiteSpace(frontmatter))
+                        {
+                            var metadata = yamlHelper.ParseYamlToDictionary(frontmatter);
+
+                            // Check if this is a video-related placeholder by examining template-type
+                            bool isVideoRelated = false;
+                            if (metadata.TryGetValue("template-type", out var templateTypeObj) &&
+                                templateTypeObj is string templateType)
+                            {
+                                // Check if this is a video-related template type
+                                isVideoRelated = templateType.Contains("video", StringComparison.OrdinalIgnoreCase) ||
+                                               templateType.Contains("Video", StringComparison.OrdinalIgnoreCase);
+
+                                if (!isVideoRelated)
+                                {
+                                    logger.LogError($"Document placeholder has template-type '{templateType}' which is not video-related. Use the appropriate processor for this template type.");
+                                    context.ExitCode = 1;
+                                    return;
+                                }
+
+                                logger.LogDebug($"Confirmed video-related template-type: '{templateType}'");
+                            }
+                            else
+                            {
+                                logger.LogWarning($"Document placeholder does not have a template-type field. Proceeding with video processing.");
+                            }
+
+                            // Check if this is a pending file and log it for user awareness
+                            if (metadata.TryGetValue("auto-generated-state", out var autoGenStateObj) &&
+                                autoGenStateObj is string autoGenState &&
+                                autoGenState.Equals("pending", StringComparison.OrdinalIgnoreCase))
+                            {
+                                logger.LogDebug($"Detected pending file: '{input}' - will auto-process without --force and preserve content after ## Notes");
+                            }
+                            // Legacy check for old "status" field (for backward compatibility)
+                            else if (metadata.TryGetValue("status", out var statusObj) &&
+                                statusObj is string status &&
+                                status.Equals("placeholder", StringComparison.OrdinalIgnoreCase))
+                            {
+                                logger.LogDebug($"Detected legacy placeholder file: '{input}' - will auto-process without --force and preserve content after ## Notes");
+                            }
+
+                            // Extract onedrive_relative_path for processing
+                            if (metadata.TryGetValue("onedrive_relative_path", out var relativePathObj) &&
+                                relativePathObj is string relativePath &&
+                                !string.IsNullOrWhiteSpace(relativePath))
+                            {
+                                inputForProcessing = relativePath;
+                                logger.LogDebug($"Extracted onedrive_relative_path from markdown file: '{input}' -> '{inputForProcessing}'");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, $"Failed to extract onedrive_relative_path from markdown file '{actualMarkdownFilePath ?? input}', using original path");
+                    }
+                }
+            }
+
+            // Resolve input path - prioritize vault root for relative paths, fall back to OneDrive root
+            string resolvedInput;
+            if (!Path.IsPathRooted(inputForProcessing) && !string.IsNullOrWhiteSpace(effectiveVaultRoot))
+            {
+                // For relative paths when we have a vault root, try vault root first
+                var vaultBasedPath = Path.Combine(effectiveVaultRoot, inputForProcessing);
+                if (File.Exists(vaultBasedPath))
+                {
+                    resolvedInput = PathUtils.NormalizePath(vaultBasedPath);
+                    logger.LogDebug($"Input path resolution: '{inputForProcessing}' -> '{resolvedInput}' (vault root: {effectiveVaultRoot})");
+                }
+                else
+                {
+                    // Fall back to OneDrive root if file not found in vault
+                    resolvedInput = PathUtils.ResolveInputPath(inputForProcessing, effectiveResourcesRoot);
+                    logger.LogDebug($"Input path resolution: '{inputForProcessing}' -> '{resolvedInput}' (OneDrive root fallback: {effectiveResourcesRoot ?? "(none)"})");
+                }
+            }
+            else
+            {
+                // For absolute paths or when no vault root, use OneDrive root resolution
+                resolvedInput = PathUtils.ResolveInputPath(inputForProcessing, effectiveResourcesRoot);
+                logger.LogDebug($"Input path resolution: '{inputForProcessing}' -> '{resolvedInput}' (OneDrive root: {effectiveResourcesRoot ?? "(none)"})");
+            }
+
+            // If input was a markdown file, validate that the resolved path points to a video file
+            if (input.EndsWith(".md", StringComparison.OrdinalIgnoreCase) && inputForProcessing != input)
+            {
+                if (!File.Exists(resolvedInput))
+                {
+                    logger.LogError($"Video file referenced in document placeholder does not exist: '{resolvedInput}' (from onedrive_relative_path: '{inputForProcessing}')");
+                    context.ExitCode = 1;
+                    return;
+                }
+
+                // Check if the resolved file is actually a video file
+                var supportedVideoExtensions = appConfig?.VideoExtensions ?? [".mp4", ".mov", ".avi", ".mkv", ".webm", ".wmv", ".mpg", ".mpeg", ".m4v"];
+                var fileExtension = Path.GetExtension(resolvedInput);
+                if (!supportedVideoExtensions.Contains(fileExtension, StringComparer.OrdinalIgnoreCase))
+                {
+                    logger.LogError($"Document placeholder references a non-video file: '{resolvedInput}' (extension: '{fileExtension}'). Expected video extensions: {string.Join(", ", supportedVideoExtensions)}");
+                    context.ExitCode = 1;
+                    return;
+                }
+
+                logger.LogInformation($"Processing video file '{resolvedInput}' referenced by document placeholder '{input}'");
+            }
             // Build the full local resources path for path calculations
             string? localResourcesPathForBatchProcessor = null;
 
@@ -291,11 +445,9 @@ internal class VideoCommands
                     var oneDriveService = scopedServices.GetService<IOneDriveService>();
                     if (oneDriveService != null && !string.IsNullOrWhiteSpace(appConfig.Paths.OnedriveResourcesBasepath))
                     {
-                        // Build the local resources path by combining OneDrive sync root with resources subpath
-                        var localResourcesPath = Path.Combine(
-                            effectiveResourcesRoot,
-                            appConfig.Paths.OnedriveResourcesBasepath.TrimStart('/', '\\'));
-                        localResourcesPath = Path.GetFullPath(localResourcesPath);
+                        // Since effectiveResourcesRoot already contains the complete path (fullpath + basepath),
+                        // use it directly as the local resources path
+                        var localResourcesPath = Path.GetFullPath(effectiveResourcesRoot);
 
                         // Store this for batch processor to use for path calculations
                         localResourcesPathForBatchProcessor = localResourcesPath;
@@ -382,7 +534,7 @@ internal class VideoCommands
             // Process videos            // Verify that we have an input source
             if (string.IsNullOrWhiteSpace(input))
             {
-                logger.LogError("Input source is required. Use --input/-i to specify a video file or folder.");
+                logger.LogError("Path is required. Use --path/-p to specify a video file or folder.");
                 return;
             }
 

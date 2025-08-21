@@ -563,7 +563,7 @@ public class VaultFolderSyncProcessor(
             _logger.LogDebug($"Scanning for document files in: {oneDriveSource}");
             _logger.LogDebug($"Document types to process: {string.Join(", ", documentTypes)}");
 
-            // Map document types to file extensions
+            // Map document types to file extensions using configuration
             var extensionMap = GetExtensionsForDocumentTypes(documentTypes);
             _logger.LogDebug($"Extensions to scan: {string.Join(", ", extensionMap)}");
 
@@ -649,8 +649,17 @@ public class VaultFolderSyncProcessor(
                 ? vaultTarget
                 : Path.Combine(vaultTarget, relativeDir);
 
-            // Create markdown filename
-            var markdownFileName = $"{fileName}.md";
+            // Determine template type based on extension
+            var templateType = GetTemplateTypeForExtension(extension);
+            if (string.IsNullOrEmpty(templateType))
+            {
+                _logger.LogWarning($"No template type mapped for extension: {extension}");
+                return false;
+            }
+
+            // Create markdown filename with appropriate suffix based on content type
+            var contentTypeSuffix = GetContentTypeSuffix(templateType);
+            var markdownFileName = $"{fileName}{contentTypeSuffix}.md";
             var markdownPath = Path.Combine(targetDir, markdownFileName);
 
             // Check if markdown file already exists - if so, skip it
@@ -659,9 +668,6 @@ public class VaultFolderSyncProcessor(
                 _logger.LogDebug($"Markdown file already exists, skipping: {markdownPath}");
                 return false; // Not created, already exists
             }
-
-            // Determine template type based on extension
-            var templateType = GetTemplateTypeForExtension(extension);
             if (string.IsNullOrEmpty(templateType))
             {
                 _logger.LogWarning($"No template type mapped for extension: {extension}");
@@ -717,7 +723,7 @@ public class VaultFolderSyncProcessor(
             // Override specific fields for placeholder creation
             metadata["title"] = friendlyTitle;
             metadata["template-type"] = templateType;
-            metadata["status"] = "placeholder";
+            metadata["auto-generated-state"] = "pending";
             metadata["created"] = DateTime.UtcNow.ToString("yyyy-MM-dd");
             metadata["type"] = GetTypeForTemplateType(templateType);
 
@@ -762,11 +768,11 @@ public class VaultFolderSyncProcessor(
     }
 
     /// <summary>
-    /// Maps document type names to file extensions.
+    /// Maps document type names to file extensions using configuration.
     /// </summary>
     /// <param name="documentTypes">List of document type names.</param>
     /// <returns>List of file extensions to search for.</returns>
-    private static List<string> GetExtensionsForDocumentTypes(List<string> documentTypes)
+    private List<string> GetExtensionsForDocumentTypes(List<string> documentTypes)
     {
         var extensions = new List<string>();
 
@@ -776,15 +782,45 @@ public class VaultFolderSyncProcessor(
             {
                 case "videos":
                 case "video":
-                    extensions.AddRange([".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv"]);
+                    if (_appConfig.VideoExtensions?.Count > 0)
+                    {
+                        _logger.LogDebug($"Using video extensions from config: {string.Join(", ", _appConfig.VideoExtensions)}");
+                        extensions.AddRange(_appConfig.VideoExtensions);
+                    }
+                    else
+                    {
+                        _logger.LogDebug($"Video extensions from config is null or empty (Count: {_appConfig.VideoExtensions?.Count ?? -1}), using fallback");
+                        // Fallback to default video extensions
+                        extensions.AddRange([".mp4", ".mov", ".avi", ".mkv", ".wmv", ".flv"]);
+                    }
                     break;
                 case "pdf":
                 case "pdfs":
-                    extensions.Add(".pdf");
+                    if (_appConfig.PdfExtensions?.Count > 0)
+                    {
+                        _logger.LogDebug($"Using PDF extensions from config: {string.Join(", ", _appConfig.PdfExtensions)}");
+                        extensions.AddRange(_appConfig.PdfExtensions);
+                    }
+                    else
+                    {
+                        _logger.LogDebug($"PDF extensions from config is null or empty (Count: {_appConfig.PdfExtensions?.Count ?? -1}), using fallback");
+                        // Fallback to default PDF extension
+                        extensions.Add(".pdf");
+                    }
                     break;
                 case "html":
                 case "htm":
-                    extensions.AddRange([".html", ".htm"]);
+                    if (_appConfig.HtmlExtensions?.Count > 0)
+                    {
+                        _logger.LogDebug($"Using HTML extensions from config: {string.Join(", ", _appConfig.HtmlExtensions)}");
+                        extensions.AddRange(_appConfig.HtmlExtensions);
+                    }
+                    else
+                    {
+                        _logger.LogDebug($"HTML extensions from config is null or empty (Count: {_appConfig.HtmlExtensions?.Count ?? -1}), using fallback");
+                        // Fallback to default HTML extensions
+                        extensions.AddRange([".html", ".htm", ".epub"]);
+                    }
                     break;
                 default:
                     // Log unknown document type but continue processing
@@ -824,6 +860,22 @@ public class VaultFolderSyncProcessor(
             "pdf-reference" => "note/case-study",
             "resource-reading" => "note/reading",
             _ => "note/general"
+        };
+    }
+
+    /// <summary>
+    /// Gets the content type suffix for placeholder file naming.
+    /// </summary>
+    /// <param name="templateType">The template type string.</param>
+    /// <returns>The suffix to add to the filename (e.g., "-video", "-pdf").</returns>
+    private static string GetContentTypeSuffix(string templateType)
+    {
+        return templateType switch
+        {
+            "video-reference" => "-video",
+            "pdf-reference" => "-pdf",
+            "resource-reading" => "-reading",
+            _ => ""
         };
     }
 

@@ -387,11 +387,47 @@ public static class ServiceRegistration
         {
             var loggingService = provider.GetRequiredService<ILoggingService>();
             var logger = loggingService.GetLogger<MarkdownNoteProcessor>();
-            var aiSummarizer = provider.GetRequiredService<AISummarizer>(); var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
-            var appConfig = provider.GetRequiredService<AppConfig>();
+            var aiSummarizer = provider.GetRequiredService<IAISummarizer>();
             var markdownNoteBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            var yamlHelper = provider.GetService<IYamlHelper>();
+            var hierarchyDetector = provider.GetService<IMetadataHierarchyDetector>();
+            var templateManager = provider.GetService<IMetadataTemplateManager>();
+            var resolverRegistry = provider.GetService<FieldValueResolverRegistry>();
+            var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
+            var oneDriveService = provider.GetService<IOneDriveService>();
 
-            return new MarkdownNoteProcessor(logger, aiSummarizer, (MetadataHierarchyDetector)hierarchyDetector, markdownNoteBuilder, appConfig);
+            return new MarkdownNoteProcessor(
+                logger,
+                aiSummarizer,
+                markdownNoteBuilder,
+                appConfig,
+                yamlHelper,
+                hierarchyDetector,
+                templateManager,
+                resolverRegistry);
+        });
+
+        // Register Markdown Batch Processor
+        services.AddScoped(provider =>
+        {
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var batchLogger = loggingService.GetLogger<DocumentNoteBatchProcessor<MarkdownNoteProcessor>>();
+            var processorLogger = loggingService.GetLogger<MarkdownNoteProcessor>();
+            var aiSummarizer = provider.GetRequiredService<IAISummarizer>();
+            var appConfig = provider.GetRequiredService<AppConfig>();
+            var oneDriveService = provider.GetService<IOneDriveService>();
+            var yamlHelper = provider.GetRequiredService<IYamlHelper>();
+            var hierarchyDetector = provider.GetRequiredService<IMetadataHierarchyDetector>();
+            var templateManager = provider.GetRequiredService<IMetadataTemplateManager>();
+            var courseStructureExtractor = provider.GetRequiredService<ICourseStructureExtractor>();
+            var markdownBuilder = provider.GetRequiredService<MarkdownNoteBuilder>();
+            var resolverRegistry = provider.GetService<FieldValueResolverRegistry>();
+
+            var markdownProcessor = new MarkdownNoteProcessor(processorLogger, aiSummarizer, markdownBuilder, appConfig, yamlHelper, hierarchyDetector, templateManager, resolverRegistry);
+            var pipeline = provider.GetRequiredService<IMetadataPipeline>();
+            markdownProcessor.UseMetadataPipeline(pipeline);
+            return new MarkdownNoteBatchProcessor(batchLogger, markdownProcessor, aiSummarizer);
         });
 
         // Register Vault Metadata processors
@@ -701,6 +737,14 @@ public static class ServiceRegistration
         // Register IMarkdownNoteBuilder interface
         services.AddScoped<IMarkdownNoteBuilder>(provider =>
             provider.GetRequiredService<MarkdownNoteBuilder>());
+
+        // Register MarkdownParser for frontmatter extraction
+        services.AddScoped<MarkdownParser>(provider =>
+        {
+            var loggingService = provider.GetRequiredService<ILoggingService>();
+            var logger = loggingService.GetLogger<MarkdownParser>();
+            return new MarkdownParser(logger);
+        });
 
         services.AddScoped<TagProcessor>();
 

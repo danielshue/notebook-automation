@@ -4,11 +4,13 @@ export interface NotebookAutomationSettings {
   debug?: boolean;
   dryRun?: boolean;
   force?: boolean;
+  htmlExtensions?: string;
   pdfExtractImages?: boolean;
   bannersEnabled?: boolean;
   oneDriveSharedLink?: boolean;
   enableVideoSummary?: boolean;
   enablePdfSummary?: boolean;
+  enableHtmlEpubTxtSummary?: boolean;
   enableIndexCreation?: boolean;
   enableEnsureMetadata?: boolean;
   enableDocumentPlaceholders?: boolean;
@@ -25,11 +27,13 @@ export const DEFAULT_SETTINGS: NotebookAutomationSettings = {
   debug: false,
   dryRun: false,
   force: false,
+  htmlExtensions: ".html,.htm,.epub",
   pdfExtractImages: false,
   bannersEnabled: false,
   oneDriveSharedLink: true,
   enableVideoSummary: true,
   enablePdfSummary: true,
+  enableHtmlEpubTxtSummary: true,
   enableIndexCreation: true,
   enableEnsureMetadata: true,
   enableDocumentPlaceholders: true,

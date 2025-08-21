@@ -84,10 +84,8 @@ public class MarkdownCommandsTests
 
         // Check options
         var optionNames = markdownCommand.Options.SelectMany(o => o.Aliases).ToList();
-        CollectionAssert.Contains(optionNames, "--src-dirs", "generate-markdown should have '--src-dirs' option");
-        CollectionAssert.Contains(optionNames, "-s", "generate-markdown should have '-s' option");
-        CollectionAssert.Contains(optionNames, "--dest-dir", "generate-markdown should have '--dest-dir' option");
-        CollectionAssert.Contains(optionNames, "-d", "generate-markdown should have '-d' option");
+        CollectionAssert.Contains(optionNames, "--path", "generate-markdown should have '--path' option");
+        CollectionAssert.Contains(optionNames, "-p", "generate-markdown should have '-p' option");
     }
 
     /// <summary>

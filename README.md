@@ -31,6 +31,79 @@ Inspired by these projects but needing broader functionality beyond just downloa
 - **🔗 OneDrive Shared Links Management** - Generate and manage shareable links for collaborative access to course materials and resources
 - **🔧 Extensible Architecture** - Plugin system for custom processors
 
+## 🏗️ Core Architecture: Location-Agnostic Design
+
+One of the fundamental architectural principles of Notebook Automation is **location-agnostic processing**, designed to seamlessly work across different computers, operating systems, and folder structures while maintaining consistency and portability.
+
+### 🌐 Cross-Platform Compatibility
+
+The system uses **relative paths** and **configuration-based resolution** to ensure your knowledge base works identically across different environments:
+
+**Document Placeholder Approach:**
+
+```yaml
+# Frontmatter in Document Placeholder
+title: "Operations Management Video"
+template-type: video-reference
+onedrive_relative_path: "Value Chain Management/Operations Management/course1/video1.mp4"
+```
+
+**Environment-Specific Configuration:**
+
+```json
+{
+  "onedrive_fullpath_root": "C:\\Users\\Alice\\OneDrive\\",
+  "onedrive_resources_basepath": "Education\\MBA-Resources",
+  "notebook_vault_fullpath_root": "D:\\MyVault\\",
+  "notebook_vault_resources_basepath": "01_Projects\\MBA"
+}
+```
+
+### 🔄 Smart Path Resolution
+
+The system intelligently resolves paths through multiple strategies:
+
+1. **Document Placeholders** store relative paths in frontmatter
+2. **Local configuration** provides environment-specific roots
+3. **Path resolution engine** combines relative + absolute paths
+4. **Multi-location search** finds files across vault structures
+5. **Graceful fallbacks** handle missing files or configurations
+
+### ✅ Benefits of This Architecture
+
+- **🤝 Team Collaboration**: Share Document Placeholders via Git without path conflicts
+- **💻 Device Independence**: Same vault works on laptop, desktop, any OS
+- **🔄 Backup/Restore**: Move vault to new computer, just update configuration
+- **🗂️ Flexible Organization**: Each team member can organize OneDrive differently
+- **🌍 Platform Agnostic**: Works seamlessly on Windows, macOS, and Linux
+
+### 🔧 Implementation Details
+
+The **Document Placeholder** acts as a contract between content and environment:
+
+- **Content Layer**: Relative paths, template types, metadata (portable)
+- **Configuration Layer**: Absolute paths, local preferences (environment-specific)
+- **Resolution Engine**: Intelligent path combining and file discovery
+
+### 📝 File Naming Conventions
+
+**Document Placeholders** follow a consistent naming pattern that indicates their content type:
+
+- **Video files**: `filename-video.md` (e.g., `03_01_defining-operations-management-video.md`)
+- **PDF files**: `filename-pdf.md` (e.g., `case-study-analysis-pdf.md`)
+- **Reading materials**: `filename-html.md` (e.g., `course-instructions-html.md`)
+
+This naming convention ensures:
+
+- **🔍 Easy Identification**: File type is immediately apparent
+- **🔧 Processing Compatibility**: System correctly routes files to appropriate processors
+- **📂 Consistent Organization**: Placeholders and processed files follow same naming pattern
+- **🚀 Seamless Workflow**: No naming conflicts during automated processing
+
+When you create Document Placeholders (either manually or via vault sync), they automatically use the correct suffix based on the referenced content type. The processing system then generates final notes with matching names, ensuring a smooth end-to-end workflow.
+
+This creates a **portable, shareable knowledge management system** that adapts to each user's setup while maintaining consistency in content and workflow.
+
 ## 📸 Screenshots & Features
 
 ### AI-Generated Page Summaries
