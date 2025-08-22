@@ -157,6 +157,7 @@ public class MetadataPipeline(
         merged.Remove("transcript");
         merged.Remove("share-link");
         merged.Remove("share_link");
+        merged.Remove("pdftext_file");
 
         // 7) Remove date-* fields as done historically in base
         var remove = merged.Keys.Where(k => k.StartsWith("date-") || k.EndsWith("-date")).ToList();

@@ -292,6 +292,7 @@ public abstract class DocumentNoteProcessorBase(
             metadata.Remove("transcript");
             metadata.Remove("share-link");
             metadata.Remove("share_link");
+            metadata.Remove("pdftext_file");
         }
 
         // Log final metadata for debugging
