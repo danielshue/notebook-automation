@@ -677,8 +677,14 @@ public static class ServiceRegistration
                 // Register TitleResolver for filename-based title derivation
                 registry.Register("TitleResolver", new TitleResolver(loggingService.GetLogger<TitleResolver>()));
 
-                // Register OneDrive resources-relative transcript path resolver
-                registry.Register("OneDriveRelativePathResolver", new OneDriveRelativePathResolver(loggingService.GetLogger<OneDriveRelativePathResolver>(), appConfig));
+                // Register OneDrive resources-relative path resolvers for different file types
+                var oneDrivePathResolver = new OneDriveRelativePathResolver(loggingService.GetLogger<OneDriveRelativePathResolver>(), appConfig);
+                registry.Register("OneDriveRelativePathResolver", oneDrivePathResolver);
+
+                // Register additional field names for the same resolver
+                registry.Register("PdfOneDriveRelativePathResolver", oneDrivePathResolver);
+                registry.Register("VideoOneDriveRelativePathResolver", oneDrivePathResolver);
+                registry.Register("PdfTextOneDriveRelativePathResolver", oneDrivePathResolver);
             }
             catch (Exception ex)
             {

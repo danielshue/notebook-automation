@@ -2,21 +2,32 @@
 namespace NotebookAutomation.Core.Tools.Resolvers;
 
 /// <summary>
-/// Resolves a OneDrive resources-relative path for an associated transcript file.
+/// Resolves OneDrive resources-relative paths for PDF files, video files, and transcript files.
 /// </summary>
 /// <remarks>
 /// <para>
 /// Computes a path relative to the configured OneDrive resources root
 /// (paths.onedrive_fullpath_root + paths.onedrive_resources_basepath) using
-/// the transcript path provided in resolver context. If the transcript is
-/// not under the resources root, the original path is returned. If no transcript
+/// the file path provided in resolver context. If the file is
+/// not under the resources root, the original path is returned. If no file
 /// path is available, returns an empty string.
+/// </para>
+/// <para>
+/// <b>Supported field names:</b>
+/// <list type="bullet">
+/// <item><description><c>transcript-onedrive-relative-path</c>: For transcript files</description></item>
+/// <item><description><c>pdf-onedrive-relative-path</c>: For PDF files</description></item>
+/// <item><description><c>video-onedrive-relative-path</c>: For video files</description></item>
+/// <item><description><c>pdftext-onedrive-relative-path</c>: For PDF extracted text files</description></item>
+/// <item><description><c>onedrive_relative_path</c>: Generic field (legacy support)</description></item>
+/// </list>
 /// </para>
 /// <para>
 /// <b>Expected context:</b>
 /// <list type="bullet">
-/// <item><description><c>transcript</c> (string, preferred): Absolute path captured by processors.</description></item>
-/// <item><description><c>transcript-path</c> (string, optional): Value produced by TranscriptResolver.</description></item>
+/// <item><description><c>transcript</c> (string): Absolute path for transcript files.</description></item>
+/// <item><description><c>filePath</c> (string): Absolute path for PDF/video files.</description></item>
+/// <item><description><c>extracted_text_file</c> (string): Absolute path for PDF text files.</description></item>
 /// </list>
 /// </para>
 /// </remarks>
@@ -32,20 +43,17 @@ public class OneDriveRelativePathResolver : IFieldValueResolver
     }
 
     /// <summary>
-    /// Resolve OneDrive resources-relative path for the transcript.
+    /// Resolve OneDrive resources-relative path for various file types.
     /// </summary>
-    /// <param name="fieldName">Schema field name (expected: "transcript-onedrive-relative-path").</param>
-    /// <param name="context">Resolver context containing transcript path info.</param>
+    /// <param name="fieldName">Schema field name (supports transcript-onedrive-relative-path, pdf-onedrive-relative-path, video-onedrive-relative-path, pdftext-onedrive-relative-path, onedrive_relative_path).</param>
+    /// <param name="context">Resolver context containing file path info.</param>
     /// <returns>Relative path if under OneDrive resources root, original path if not, or empty string when unavailable.</returns>
     public object? Resolve(string fieldName, Dictionary<string, object>? context = null)
     {
         try
         {
-            // Gate by field name for clarity, but still compute if called for other names.
-            if (!string.Equals(fieldName, "transcript-onedrive-relative-path", StringComparison.OrdinalIgnoreCase))
-            {
-                _logger.LogDebug("{Resolver} invoked for field '{Field}'", nameof(OneDriveRelativePathResolver), fieldName);
-            }
+            // Log field name for debugging, but don't gate functionality
+            _logger.LogDebug("{Resolver} invoked for field '{Field}'", nameof(OneDriveRelativePathResolver), fieldName);
 
             if (context == null)
             {
@@ -53,44 +61,67 @@ public class OneDriveRelativePathResolver : IFieldValueResolver
                 return string.Empty;
             }
 
-            // Prefer in-memory key set by processors; fall back to transcript-path (from TranscriptResolver)
-            var transcriptPath = TryGetString(context, "transcript")
-                                ?? TryGetString(context, "transcript-path");
+            // Determine the appropriate context key based on field name
+            string? filePath = GetFilePathFromContext(fieldName, context);
 
-            if (string.IsNullOrWhiteSpace(transcriptPath))
+            if (string.IsNullOrWhiteSpace(filePath))
             {
-                _logger.LogDebug("{Resolver}: transcript path not found in context; returning empty", nameof(OneDriveRelativePathResolver));
+                _logger.LogDebug("{Resolver}: file path not found in context for field '{Field}'; returning empty", nameof(OneDriveRelativePathResolver), fieldName);
                 return string.Empty;
             }
 
             var root = BuildResourcesRoot(_config?.Paths?.OnedriveFullpathRoot, _config?.Paths?.OnedriveResourcesBasepath);
             if (string.IsNullOrWhiteSpace(root))
             {
-                _logger.LogDebug("{Resolver}: OneDrive resources root not configured; returning original path");
-                return transcriptPath;
+                _logger.LogDebug("{Resolver}: OneDrive resources root not configured; returning original path for field '{Field}'", nameof(OneDriveRelativePathResolver), fieldName);
+                return filePath;
             }
 
             // Normalize
-            string fullTranscriptPath = Path.GetFullPath(transcriptPath);
+            string fullFilePath = Path.GetFullPath(filePath);
             string normalizedRoot = root.EndsWith(Path.DirectorySeparatorChar)
                 ? root
                 : root + Path.DirectorySeparatorChar;
 
-            if (fullTranscriptPath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
+            if (fullFilePath.StartsWith(normalizedRoot, StringComparison.OrdinalIgnoreCase))
             {
-                string relative = Path.GetRelativePath(root, fullTranscriptPath);
-                _logger.LogDebug("Computed OneDrive relative transcript path: {Relative}", relative);
+                string relative = Path.GetRelativePath(root, fullFilePath);
+                _logger.LogDebug("Computed OneDrive relative path for field '{Field}': {Relative}", fieldName, relative);
                 return relative;
             }
 
-            _logger.LogDebug("Transcript not under OneDrive resources root; returning original path: {Path}", transcriptPath);
-            return transcriptPath;
+            _logger.LogDebug("File not under OneDrive resources root for field '{Field}'; returning original path: {Path}", fieldName, filePath);
+            return filePath;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, $"{nameof(OneDriveRelativePathResolver)}: failed to compute relative path; returning empty");
+            _logger.LogWarning(ex, $"{nameof(OneDriveRelativePathResolver)}: failed to compute relative path for field '{fieldName}'; returning empty");
             return string.Empty;
         }
+    }
+
+    /// <summary>
+    /// Extract the appropriate file path from context based on the field name.
+    /// </summary>
+
+    private string? GetFilePathFromContext(string fieldName, Dictionary<string, object> context)
+    {
+        return fieldName.ToLowerInvariant() switch
+        {
+            "transcript-onedrive-relative-path" =>
+                TryGetString(context, "transcript") ?? TryGetString(context, "transcript-path"),
+
+            "pdf-onedrive-relative-path" or "video-onedrive-relative-path" or "onedrive_relative_path" =>
+                TryGetString(context, "filePath") ?? TryGetString(context, "_internal_path"),
+
+            "pdftext-onedrive-relative-path" =>
+                TryGetString(context, "pdftext_file") ?? TryGetString(context, "extracted_text_file"),
+            _ =>
+                // Fallback: try common context keys
+                TryGetString(context, "filePath") ??
+                TryGetString(context, "transcript") ??
+                TryGetString(context, "_internal_path")
+        };
     }
 
     private static string? TryGetString(IDictionary<string, object> dict, string key)

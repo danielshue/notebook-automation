@@ -39,6 +39,10 @@ TemplateTypes:
         Default: [pdf, reference]
       page-count:
         Resolver: PdfPageCountResolver
+      pdf-onedrive-relative-path:
+        Resolver: OneDriveRelativePathResolver
+      pdftext-onedrive-relative-path:
+        Resolver: OneDriveRelativePathResolver
       share-link:
         Resolver: OneDriveShareLinkResolver
       auto-generated-state:
@@ -76,6 +80,8 @@ TemplateTypes:
         Resolver: TitleResolver
       tags:
         Default: [video, reference]
+      video-onedrive-relative-path:
+        Resolver: OneDriveRelativePathResolver
       transcript-onedrive-relative-path:
         Resolver: OneDriveRelativePathResolver
       video-duration:

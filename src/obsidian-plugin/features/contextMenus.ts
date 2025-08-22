@@ -30,6 +30,40 @@ async function shouldShowHtmlExtractionOption(plugin: NotebookAutomationPlugin, 
 }
 
 /**
+ * Determines which context menu options should be shown based on the file name.
+ * Uses priority-based filtering to show the most specific/relevant options.
+ *
+ * @param fileName The name of the file (without path).
+ * @returns An object indicating which options should be shown.
+ */
+function getFileContextOptions(fileName: string) {
+  const normalizedFileName = (fileName || '').toLowerCase().trim();
+  
+  // Priority-based filtering: More specific patterns take precedence
+  let options = {
+    showHtmlExtraction: false,
+    showVideoSummary: false,
+    showPdfSummary: false,
+    showHtmlEpubTxtSummary: false
+  };
+  
+  // Highest priority: File type specific endings
+  if (normalizedFileName.endsWith("-video")) {
+    options.showVideoSummary = true;
+  } else if (normalizedFileName.endsWith("-pdf") || normalizedFileName.includes("pdf")) {
+    options.showPdfSummary = true;
+  } else if (normalizedFileName.includes("html") || normalizedFileName.includes("epub") || normalizedFileName.includes("txt")) {
+    options.showHtmlEpubTxtSummary = true;
+  } else if (normalizedFileName.includes("reading")) {
+    // Lower priority: Reading files get HTML extraction + HTML/EPUB/TXT processing
+    options.showHtmlExtraction = true;
+    options.showHtmlEpubTxtSummary = true;
+  }
+  
+  return options;
+}
+
+/**
  * Registers context menu commands for files and folders in Obsidian.
  *
  * Adds Notebook Automation actions to the right-click menu based on file type and plugin settings.
@@ -108,11 +142,11 @@ export function registerContextMenus(plugin: NotebookAutomationPlugin) {
       if (file instanceof TFile && file.extension === "md") {
         menu.addSeparator();
         
-        // Check if this is a reading file that needs HTML content extraction
-        const isReadingFile = file.basename.toLowerCase().includes("reading");
+        // Get file-specific context options based on filename
+        const contextOptions = getFileContextOptions(file.basename);
         
         // HTML Content Extraction - for reading files that might need content extraction
-        if (isReadingFile) {
+        if (contextOptions.showHtmlExtraction) {
           menu.addItem((item) => {
             item.setTitle("Notebook Automation: Extract HTML Content")
               .setIcon("download")
@@ -127,24 +161,26 @@ export function registerContextMenus(plugin: NotebookAutomationPlugin) {
           });
         }
         
-        // AI Video Summary - only if enabled
-        if (plugin.settings.enableVideoSummary) {
+        // AI Video Summary - only if enabled and file name suggests video content
+        if (plugin.settings.enableVideoSummary && contextOptions.showVideoSummary) {
           menu.addItem((item) => {
             item.setTitle("Notebook Automation: Reprocess AI Summary (Video)")
               .setIcon("play")
               .onClick(() => handleNotebookAutomationCommand(plugin, file, "reprocess-summary-video"));
           });
         }
-        // AI PDF Summary - only if enabled
-        if (plugin.settings.enablePdfSummary) {
+        
+        // AI PDF Summary - only if enabled and file name suggests PDF content
+        if (plugin.settings.enablePdfSummary && contextOptions.showPdfSummary) {
           menu.addItem((item) => {
             item.setTitle("Notebook Automation: Reprocess AI Summary (PDF)")
               .setIcon("document")
               .onClick(() => handleNotebookAutomationCommand(plugin, file, "reprocess-summary-pdf"));
           });
         }
-        // AI HTML/EPUB/TXT Summary - only if enabled
-        if (plugin.settings.enableHtmlEpubTxtSummary) {
+        
+        // AI HTML/EPUB/TXT Summary - only if enabled and file name suggests HTML/EPUB/TXT content
+        if (plugin.settings.enableHtmlEpubTxtSummary && contextOptions.showHtmlEpubTxtSummary) {
           menu.addItem((item) => {
             item.setTitle("Notebook Automation: Reprocess AI Summary (HTML/EPUB/TXT)")
               .setIcon("file-text")

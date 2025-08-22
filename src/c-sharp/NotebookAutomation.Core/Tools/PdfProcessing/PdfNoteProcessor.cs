@@ -211,8 +211,9 @@ public class PdfNoteProcessor : DocumentNoteProcessorBase
                 Logger.LogDebug($"Saved extracted text as markdown to: {markdownFilePath}");
 
                 // Add the text file path to metadata for reference
-                metadata["extracted_text_file"] = textFilePath;
-                metadata["extracted_markdown_file"] = markdownFilePath;
+                metadata["pdftext_file"] = textFilePath;
+                // Remove the markdown file reference as it's not needed
+                // metadata["extracted_markdown_file"] = markdownFilePath;
             }
             catch (Exception ex)
             {
