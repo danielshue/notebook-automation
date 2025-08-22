@@ -1,7 +1,7 @@
 
 import { TFolder, TFile, Notice } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
-import { getRelativeVaultResourcePath, ensureExecutableExists } from '../utils/na-executable';
+import { getRelativeVaultResourcePath, ensureExecutableExists, ensureConfigFilesExist } from '../utils/plugin-assets';
 
 /**
  * Handles notebook automation commands for a given file or folder and action.
@@ -170,7 +170,24 @@ export async function handleNotebookAutomationCommand(plugin: NotebookAutomation
   }
   
   if (!hasConfig) {
-    new Notice("❌ No configuration file found. Please set up configuration in plugin settings.");
+    // Try to download config files from GitHub release before giving up
+    try {
+      console.log('[Notebook Automation] No configuration found locally. Attempting to download from GitHub release...');
+      const configDownloadResult = await ensureConfigFilesExist(plugin);
+      if (configDownloadResult) {
+        console.log('[Notebook Automation] Successfully downloaded configuration files from GitHub release');
+        // Re-check config availability after download
+        hasConfig = true;
+      } else {
+        console.warn('[Notebook Automation] Failed to download configuration files from GitHub release');
+      }
+    } catch (error) {
+      console.warn('[Notebook Automation] Error downloading configuration files:', error);
+    }
+  }
+
+  if (!hasConfig) {
+    new Notice("❌ No configuration file found. Please set up configuration in plugin settings or check network connectivity for auto-download.");
     return;
   }
 

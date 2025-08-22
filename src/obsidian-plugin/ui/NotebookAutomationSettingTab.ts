@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
-import { ensureExecutableExists } from '../utils/na-executable';
+import { ensureExecutableExists } from '../utils/plugin-assets';
 
 /**
  * Validates whether a string is a well-formed HTTP or HTTPS URL.

@@ -174,6 +174,44 @@ if (allPresent) {
         console.log(`   Could not list dist contents: ${error.message}`);
     }
 
+    // --- Create asset manifest for dynamic file discovery ---
+    try {
+        console.log('📝 Creating asset manifest...');
+        
+        // List of files to include in the manifest
+        const filesToManifest = [
+            'BaseBlockTemplate.yml',
+            'chunk_summary_prompt.md',
+            'default-config.json',
+            'final_summary_prompt.md',
+            'main.js',
+            'manifest.json',
+            'metadata-schema.yml',
+            'styles.css',
+        ];
+        
+        // Add any executables that exist in dist
+        const distFiles = readdirSync(distRoot);
+        const executables = distFiles.filter(f => 
+            f.startsWith('na-') && 
+            (f.endsWith('.exe') || (!f.includes('.') && f.includes('-')))
+        );
+        filesToManifest.push(...executables);
+        
+        // Only include files that exist
+        const manifestFilesPresent = filesToManifest.filter(f => existsSync(join(distRoot, f)));
+        
+        const manifest = {
+            version: "1.0.0",
+            files: manifestFilesPresent
+        };
+        const manifestPath = join(distRoot, 'asset-manifest.json');
+        writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+        console.log(`   ✅ Created asset-manifest.json with ${manifestFilesPresent.length} files`);
+    } catch (err) {
+        console.warn('   ⚠️  Could not create asset manifest:', err.message);
+    }
+
     // --- Zip plugin files for BRAT and release uploads ---
     try {
         // Only require standard Node.js modules

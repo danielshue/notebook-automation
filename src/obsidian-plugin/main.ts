@@ -119,7 +119,22 @@ export default class NotebookAutomationPlugin extends Plugin {
           console.log('[Notebook Automation] Error parsing config file during startup:', jsonErr);
         }
       } else {
-        console.log('[Notebook Automation] No config file found during startup - please configure a config file path in plugin settings');
+        // Try to download default config file from GitHub release
+        try {
+          console.log('[Notebook Automation] No config file found during startup. Attempting to download from GitHub release...');
+          const { ensureConfigFilesExist } = await import('./utils/plugin-assets');
+          const configDownloadResult = await ensureConfigFilesExist(this);
+          if (configDownloadResult) {
+            console.log('[Notebook Automation] Successfully downloaded config files from GitHub release during startup');
+            // Try loading again after download
+            await this.loadConfigurationForCommands();
+          } else {
+            console.log('[Notebook Automation] No config file found during startup - please configure a config file path in plugin settings');
+          }
+        } catch (error) {
+          console.log('[Notebook Automation] Error downloading config files during startup:', error);
+          console.log('[Notebook Automation] No config file found during startup - please configure a config file path in plugin settings');
+        }
       }
     } catch (err) {
       console.log('[Notebook Automation] Error loading config during startup:', err);
