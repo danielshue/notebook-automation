@@ -88,33 +88,24 @@ try {
         );
     }
     
-    // If no executables found in dist, check the publish directory
+    // If no executables found in dist, check the root dist directory
     if (executables.length === 0) {
-        const publishRoot = resolve('../../publish');
-        if (existsSync(publishRoot)) {
-            console.log('   📂 Copying executables from publish directory...');
-            const publishDirs = readdirSync(publishRoot);
+        const rootDistDir = resolve('../../dist');
+        if (existsSync(rootDistDir)) {
+            console.log('   📂 Copying executables from root dist directory...');
+            const rootDistFiles = readdirSync(rootDistDir);
+            const rootExecutables = rootDistFiles.filter(f => 
+                f.startsWith('na-') && 
+                (f.endsWith('.exe') || (!f.includes('.') && f.includes('-')))
+            );
             
-            for (const platformDir of publishDirs) {
-                const platformPath = join(publishRoot, platformDir);
-                if (existsSync(platformPath)) {
-                    const platformFiles = readdirSync(platformPath);
-                    const platformExecutables = platformFiles.filter(f => 
-                        f === 'na.exe' || f === 'na' || f.startsWith('na-')
-                    );
-                    
-                    for (const exe of platformExecutables) {
-                        const srcPath = join(platformPath, exe);
-                        // Rename to include platform info for clarity
-                        const destName = exe === 'na.exe' ? `na-${platformDir}.exe` : 
-                                       exe === 'na' ? `na-${platformDir}` : exe;
-                        const destPath = join(distRoot, destName);
-                        
-                        copyFileSync(srcPath, destPath);
-                        console.log(`   ✅ ${exe} → ${destName} (from ${platformDir})`);
-                        executables.push(destName);
-                    }
-                }
+            for (const exe of rootExecutables) {
+                const srcPath = join(rootDistDir, exe);
+                const destPath = join(distRoot, exe);
+                
+                copyFileSync(srcPath, destPath);
+                console.log(`   ✅ ${exe} (from root dist)`);
+                executables.push(exe);
             }
         }
     }

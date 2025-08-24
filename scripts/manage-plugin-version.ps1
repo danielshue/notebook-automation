@@ -215,20 +215,30 @@ if ($CreateRelease) {
         throw "GitHub CLI (gh) not found. Install it to create releases automatically."
     }
     
-    # Prepare release assets - include ALL files from dist directory
-    $distDir = Join-Path $RepoRoot "dist"
+    # Prepare release assets - include only files listed in asset manifest
+    $pluginDistDir = Join-Path $RepoRoot "src\obsidian-plugin\dist"
     $releaseAssets = @()
     
-    # Get all files from dist directory
-    if (Test-Path $distDir) {
-        $distFiles = Get-ChildItem -Path $distDir -File
-        foreach ($file in $distFiles) {
-            $releaseAssets += $file.FullName
-            Write-Host "   📎 Adding to release: $($file.Name)"
+    # Read asset manifest to determine which files to include
+    $assetManifestPath = Join-Path $pluginDistDir "asset-manifest.json"
+    if (Test-Path $assetManifestPath) {
+        $assetManifest = Get-Content $assetManifestPath | ConvertFrom-Json
+        
+        Write-Host "   📋 Using asset manifest with $($assetManifest.files.Count) files"
+        
+        foreach ($fileName in $assetManifest.files) {
+            $filePath = Join-Path $pluginDistDir $fileName
+            if (Test-Path $filePath) {
+                $releaseAssets += $filePath
+                Write-Host "   📎 Adding to release: $fileName"
+            }
+            else {
+                Write-Warning "   ⚠️  File listed in manifest but not found: $fileName"
+            }
         }
     }
     else {
-        throw "Dist directory not found: $distDir"
+        throw "Asset manifest not found: $assetManifestPath. Run plugin build first."
     }
     
     Write-Host "✅ Prepared $($releaseAssets.Count) release assets from dist directory"
