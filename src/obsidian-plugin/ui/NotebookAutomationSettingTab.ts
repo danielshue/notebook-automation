@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
-import { ensureExecutableExists } from '../utils/plugin-assets';
+import { ensureExecutableExists, type DownloadProgressCallback } from '../utils/plugin-assets';
 
 /**
  * Validates whether a string is a well-formed HTTP or HTTPS URL.
@@ -761,8 +761,8 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       }
     };
 
-    // Check for default-config.json in plugin directory first
-    this.checkAndLoadDefaultConfig();
+    // Check for default-config.json in plugin directory first, but defer loading until after files are downloaded
+    // (This will be called after file downloads complete in getNaVersion)
 
     // Always show config fields (create default structure if no config loaded)
     let configToDisplay = (window as any).notebookAutomationLoadedConfig;
@@ -1071,12 +1071,15 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
     // Add version information at the very bottom
     const versionDiv = versionContainer.createDiv({ cls: "notebook-automation-version" });
-    versionDiv.setText("Notebook Automation version: Loading...");
+    versionDiv.setText("Notebook Automation version: Verifying plugin files...");
     
-    this.getNaVersion().then(ver => {
+    this.getNaVersion(versionDiv).then(ver => {
       // Convert line feeds to HTML breaks for proper display
       const formattedVersion = ver.replace(/\n/g, '<br>');
       versionDiv.innerHTML = formattedVersion;
+      
+      // Trigger a refresh of configuration status after version is loaded
+      this.refreshConfigurationFileStatus();
     });
   }
 
@@ -2624,17 +2627,69 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
   }
 
   /**
+   * Loads and applies configuration after plugin files have been downloaded.
+   * This ensures configuration is applied with all necessary files in place.
+   */
+  async loadAndApplyConfig(): Promise<void> {
+    try {
+      console.log('[Notebook Automation] Loading configuration after file download completion...');
+      
+      // Load the configuration using the existing method
+      this.checkAndLoadDefaultConfig();
+      
+      // Refresh the UI with the loaded configuration
+      const loadedConfig = (window as any).notebookAutomationLoadedConfig;
+      const loadedConfigPath = (window as any).notebookAutomationLoadedConfigPath;
+      
+      if (loadedConfig) {
+        console.log('[Notebook Automation] Configuration loaded and applied after file download:', loadedConfigPath);
+        this.displayLoadedConfig(loadedConfig, loadedConfigPath);
+        console.log('[Notebook Automation] UI updated with loaded configuration');
+      } else {
+        console.log('[Notebook Automation] No configuration found to apply after file download - using default settings');
+      }
+    } catch (error) {
+      console.warn('[Notebook Automation] Error loading and applying config after file download:', error);
+    }
+  }
+
+  /**
    * Gets the current version of the Notebook Automation plugin.
+   * @param versionElement Optional element to update with download progress.
    * @returns Promise resolving to the version string.
    */
-  async getNaVersion(): Promise<string> {
+  async getNaVersion(versionElement?: HTMLElement): Promise<string> {
     try {
       // @ts-ignore
       const child_process = window.require ? window.require('child_process') : null;
       if (!child_process) {
         return "Unknown (Node.js not available)";
       }
-      const naPath = await ensureExecutableExists(this.plugin);
+      
+      // Create progress callback if element provided
+      const progressCallback: DownloadProgressCallback | undefined = versionElement 
+        ? (current: number, total: number, fileName: string) => {
+            if (versionElement) {
+              versionElement.innerHTML = `📥 Downloading ${current} of ${total} plugin files: ${fileName}`;
+            }
+          }
+        : undefined;
+      
+      const naPath = await ensureExecutableExists(this.plugin, progressCallback);
+      
+      // Update to show config loading after download complete
+      if (versionElement) {
+        versionElement.innerHTML = "⚙️ Loading configuration...";
+      }
+      
+      // Load and apply configuration after files are downloaded
+      await this.loadAndApplyConfig();
+      
+      // Update to show version loading after config is applied
+      if (versionElement) {
+        versionElement.innerHTML = "🔍 Getting CLI version information...";
+      }
+      
       const { exec } = child_process;
       return new Promise((resolve) => {
         exec(`"${naPath}" --version`, (error: any, stdout: string, stderr: string) => {

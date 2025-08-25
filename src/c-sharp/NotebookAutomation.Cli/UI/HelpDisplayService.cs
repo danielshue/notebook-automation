@@ -110,7 +110,7 @@ internal class HelpDisplayService
 
                 // Display professional version information
                 Console.WriteLine();
-                Console.WriteLine($"Notebook Automation version {fullVersion} ({shortSha})");
+                Console.WriteLine($"Notebook Automation version {fullVersion}");
                 Console.WriteLine("Copyright (C) Dan Shue. All rights reserved.");
                 Console.WriteLine();
             }

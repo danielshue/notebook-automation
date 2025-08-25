@@ -163,12 +163,20 @@ export function getNaExecutablePath(plugin: Plugin): string {
 }
 
 /**
+ * Progress callback interface for file downloads.
+ */
+export interface DownloadProgressCallback {
+  (current: number, total: number, fileName: string): void;
+}
+
+/**
  * Gets the path to the notebook automation executable, downloading it and required files if necessary.
  *
  * @param plugin The NotebookAutomationPlugin instance.
+ * @param progressCallback Optional callback to track download progress.
  * @returns The path to the executable, downloading if not present.
  */
-export async function ensureExecutableExists(plugin: Plugin): Promise<string> {
+export async function ensureExecutableExists(plugin: Plugin, progressCallback?: DownloadProgressCallback): Promise<string> {
   const existingPath = getNaExecutablePath(plugin);
   const execName = getNaExecutableName();
   
@@ -184,7 +192,7 @@ export async function ensureExecutableExists(plugin: Plugin): Promise<string> {
 
     // Always ensure required files exist (config and prompt files)
     try {
-      await ensureRequiredFilesExist(plugin);
+      await ensureRequiredFilesExist(plugin, progressCallback);
     } catch (error) {
       console.warn('[Notebook Automation] Could not download some required files:', error);
       // Continue even if some config files fail to download
@@ -192,7 +200,7 @@ export async function ensureExecutableExists(plugin: Plugin): Promise<string> {
 
     // Download executable if needed
     if (needsDownload) {
-      return await downloadExecutableFromGitHub(plugin);
+      return await downloadExecutableFromGitHub(plugin, progressCallback);
     }
     
     return existingPath;
@@ -207,10 +215,11 @@ export async function ensureExecutableExists(plugin: Plugin): Promise<string> {
  * @param plugin The NotebookAutomationPlugin instance.
  * @param fileName The name of the file to download.
  * @param makeExecutable Whether to make the file executable (for executables).
+ * @param progressCallback Optional callback to track download progress.
  * @returns The path to the downloaded file.
  * @throws If required Node.js modules are not available or download fails.
  */
-async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExecutable: boolean = false): Promise<string> {
+async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExecutable: boolean = false, progressCallback?: DownloadProgressCallback): Promise<string> {
   // @ts-ignore
   const fs = window.require ? window.require('fs') : null;
   // @ts-ignore
@@ -317,13 +326,17 @@ async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExec
  * Downloads the appropriate notebook automation executable for the current platform from GitHub releases.
  *
  * @param plugin The NotebookAutomationPlugin instance.
+ * @param progressCallback Optional callback to track download progress.
  * @returns The path to the downloaded executable.
  * @throws If required Node.js modules are not available or download fails.
  */
-export async function downloadExecutableFromGitHub(plugin: Plugin): Promise<string> {
+export async function downloadExecutableFromGitHub(plugin: Plugin, progressCallback?: DownloadProgressCallback): Promise<string> {
   const execName = getNaExecutableName();
   try {
-    return await downloadFileFromGitHub(plugin, execName, true);
+    if (progressCallback) {
+      progressCallback(1, 1, execName);
+    }
+    return await downloadFileFromGitHub(plugin, execName, true, progressCallback);
   } catch (error) {
     throw error;
   }
@@ -402,9 +415,10 @@ async function downloadAssetManifest(plugin: Plugin): Promise<{ version: string;
  * Uses the same file list as the build system to ensure consistency.
  *
  * @param plugin The NotebookAutomationPlugin instance.
+ * @param progressCallback Optional callback to track download progress.
  * @returns Array of paths to the downloaded files.
  */
-export async function ensureRequiredFilesExist(plugin: Plugin): Promise<string[]> {
+export async function ensureRequiredFilesExist(plugin: Plugin, progressCallback?: DownloadProgressCallback): Promise<string[]> {
   // First try to get the file list from asset manifest
   const manifest = await downloadAssetManifest(plugin);
   let filesToDownload: string[] = [];
@@ -428,10 +442,15 @@ export async function ensureRequiredFilesExist(plugin: Plugin): Promise<string[]
   }
 
   const downloadedFiles: string[] = [];
+  const totalFiles = filesToDownload.length;
   
-  for (const fileName of filesToDownload) {
+  for (let i = 0; i < filesToDownload.length; i++) {
+    const fileName = filesToDownload[i];
     try {
-      const filePath = await downloadFileFromGitHub(plugin, fileName, false);
+      if (progressCallback) {
+        progressCallback(i + 1, totalFiles, fileName);
+      }
+      const filePath = await downloadFileFromGitHub(plugin, fileName, false, progressCallback);
       downloadedFiles.push(filePath);
     } catch (error) {
       console.warn(`[Notebook Automation] Could not download ${fileName}:`, error);

@@ -98,7 +98,7 @@ public record AppVersion
 
         // 1) Commit hash in parentheses
         var commitMatch = Regex.Match(
-            cleanInput, @"\((?<commit>[0-9a-f]{7,}|unknown)\)", RegexOptions.IgnoreCase);
+            cleanInput, @"\((?<commit>[0-9a-f]{7,}|unknown|[\w\.\-]+)\)", RegexOptions.IgnoreCase);
 
         string commit;
         if (!commitMatch.Success)
