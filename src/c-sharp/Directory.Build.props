@@ -40,18 +40,18 @@
     <InformationalVersion>$(GitVersion_InformationalVersion)</InformationalVersion>
 
     <!-- Set explicit versions when GitVersion is not available -->
-    <Version Condition="'$(GitVersion_SemVer)' == ''">0.1.0-beta.9</Version>
-    <AssemblyVersion Condition="'$(GitVersion_AssemblySemVer)' == ''">0.1.0.9</AssemblyVersion>
-    <FileVersion Condition="'$(GitVersion_AssemblySemFileVer)' == ''">0.1.0.9</FileVersion>
-    <InformationalVersion Condition="'$(GitVersion_InformationalVersion)' == ''">0.1.0-beta.9.$(VersionDateCode).$(VersionBuild)
-      (beta.9)</InformationalVersion>
+    <Version Condition="'$(GitVersion_SemVer)' == ''">0.1.0-beta.10</Version>
+    <AssemblyVersion Condition="'$(GitVersion_AssemblySemVer)' == ''">0.1.0.10</AssemblyVersion>
+    <FileVersion Condition="'$(GitVersion_AssemblySemFileVer)' == ''">0.1.0.10</FileVersion>
+    <InformationalVersion Condition="'$(GitVersion_InformationalVersion)' == ''">0.1.0-beta.10.$(VersionDateCode).$(VersionBuild)
+      (beta.10)</InformationalVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GitVersion_SemVer)' == ''">
-    <GitVersion_SemVer>0.1.0-beta.9</GitVersion_SemVer>
-    <GitVersion_AssemblySemVer>0.1.0.9</GitVersion_AssemblySemVer>
-    <GitVersion_AssemblySemFileVer>0.1.0.9</GitVersion_AssemblySemFileVer>
-    <GitVersion_InformationalVersion>0.1.0-beta.9.$(VersionDateCode).$(VersionBuild) (beta.9)</GitVersion_InformationalVersion>
+    <GitVersion_SemVer>0.1.0-beta.10</GitVersion_SemVer>
+    <GitVersion_AssemblySemVer>0.1.0.10</GitVersion_AssemblySemVer>
+    <GitVersion_AssemblySemFileVer>0.1.0.10</GitVersion_AssemblySemFileVer>
+    <GitVersion_InformationalVersion>0.1.0-beta.10.$(VersionDateCode).$(VersionBuild) (beta.10)</GitVersion_InformationalVersion>
   </PropertyGroup>
 
   <ItemGroup>
