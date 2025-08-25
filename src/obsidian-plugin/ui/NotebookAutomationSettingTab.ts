@@ -802,7 +802,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       });
     }
     
-    // Configuration File Section (combined status and save) - Always at bottom above version
+    // Configuration File Section (combined status and save) - Positioned at bottom above version for consistent UI layout
     containerEl.createEl("h3", { text: "Configuration File", cls: "notebook-automation-section-header" });
     const configFileContainer = containerEl.createDiv({ 
       cls: "notebook-automation-settings-group notebook-automation-config-status-section" 
