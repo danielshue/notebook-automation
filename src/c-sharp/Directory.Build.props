@@ -16,7 +16,7 @@
     <GitVersion_NoFetch>true</GitVersion_NoFetch>
 
     <!-- Enable default assembly version generation -->
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
 
     <!-- AppVersion-compatible components -->
     <VersionBranch Condition="'$(VersionBranch)' == ''">0</VersionBranch>
@@ -38,6 +38,13 @@
     <AssemblyVersion>$(GitVersion_AssemblySemVer)</AssemblyVersion>
     <FileVersion>$(GitVersion_AssemblySemFileVer)</FileVersion>
     <InformationalVersion>$(GitVersion_InformationalVersion)</InformationalVersion>
+
+    <!-- Set explicit versions when GitVersion is not available -->
+    <Version Condition="'$(GitVersion_SemVer)' == ''">0.1.0-beta.9</Version>
+    <AssemblyVersion Condition="'$(GitVersion_AssemblySemVer)' == ''">0.1.0.9</AssemblyVersion>
+    <FileVersion Condition="'$(GitVersion_AssemblySemFileVer)' == ''">0.1.0.9</FileVersion>
+    <InformationalVersion Condition="'$(GitVersion_InformationalVersion)' == ''">0.1.0-beta.9.$(VersionDateCode).$(VersionBuild)
+      (beta.9)</InformationalVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(GitVersion_SemVer)' == ''">
