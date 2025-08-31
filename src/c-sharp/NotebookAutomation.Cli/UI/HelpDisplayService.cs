@@ -109,8 +109,11 @@ internal class HelpDisplayService
 
 
                 // Display professional version information
+                // Use compile-time injected semantic release version constant
+                string displayed = $"{VersionConstants.PluginReleaseVersion} ({fullVersion})";
+
                 Console.WriteLine();
-                Console.WriteLine($"Notebook Automation version {fullVersion}");
+                Console.WriteLine($"Notebook Automation version {displayed}");
                 Console.WriteLine("Copyright (C) Dan Shue. All rights reserved.");
                 Console.WriteLine();
             }
