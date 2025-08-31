@@ -720,10 +720,10 @@ public class VaultCommandsTests
             .FirstOrDefault(opt => opt.Name == "create-placeholders");
 
         Assert.IsNotNull(createPlaceholdersOption, "create-placeholders option should be registered");
-        Assert.IsTrue(createPlaceholdersOption!.HasAlias("-p"), "Option should have -p alias");
-        Assert.IsTrue(createPlaceholdersOption!.Description.Contains("placeholder"), "Option should have proper description");
-        Assert.IsTrue(createPlaceholdersOption!.Description.Contains("videos"), "Description should mention videos");
-        Assert.IsTrue(createPlaceholdersOption!.Description.Contains("pdf"), "Description should mention pdf");
-        Assert.IsTrue(createPlaceholdersOption!.Description.Contains("html"), "Description should mention html");
+        Assert.IsTrue(createPlaceholdersOption?.HasAlias("-p") == true, "Option should have -p alias");
+        Assert.IsTrue(createPlaceholdersOption?.Description?.Contains("placeholder") == true, "Option should have proper description");
+        Assert.IsTrue(createPlaceholdersOption?.Description?.Contains("videos") == true, "Description should mention videos");
+        Assert.IsTrue(createPlaceholdersOption?.Description?.Contains("pdf") == true, "Description should mention pdf");
+        Assert.IsTrue(createPlaceholdersOption?.Description?.Contains("html") == true, "Description should mention html");
     }
 }

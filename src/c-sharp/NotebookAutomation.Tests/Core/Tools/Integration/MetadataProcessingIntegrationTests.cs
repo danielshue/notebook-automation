@@ -335,16 +335,21 @@ public class MetadataProcessingIntegrationTests
         var expectedVideoPath = Path.Combine("subfolder", "video.mp4");
         var expectedTranscriptPath = Path.Combine("subfolder", "video.txt");
 
+        Assert.IsNotNull(pdfResult);
+        Assert.IsNotNull(pdfTextResult);
+        Assert.IsNotNull(videoResult);
+        Assert.IsNotNull(transcriptResult);
+
         Assert.AreEqual(expectedPdfPath, pdfResult.ToString());
         Assert.AreEqual(expectedPdfTextPath, pdfTextResult.ToString());
         Assert.AreEqual(expectedVideoPath, videoResult.ToString());
         Assert.AreEqual(expectedTranscriptPath, transcriptResult.ToString());
 
         // All should contain the subfolder in their paths
-        Assert.IsTrue(pdfResult.ToString()!.Contains("subfolder"));
-        Assert.IsTrue(pdfTextResult.ToString()!.Contains("subfolder"));
-        Assert.IsTrue(videoResult.ToString()!.Contains("subfolder"));
-        Assert.IsTrue(transcriptResult.ToString()!.Contains("subfolder"));
+        Assert.IsTrue(pdfResult?.ToString()?.Contains("subfolder") == true);
+        Assert.IsTrue(pdfTextResult?.ToString()?.Contains("subfolder") == true);
+        Assert.IsTrue(videoResult?.ToString()?.Contains("subfolder") == true);
+        Assert.IsTrue(transcriptResult?.ToString()?.Contains("subfolder") == true);
     }
 
     #endregion

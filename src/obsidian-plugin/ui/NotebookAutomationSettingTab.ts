@@ -444,14 +444,12 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
                   format: "image"
                 }
               };
-              this.displayLoadedConfig(minimalConfig, undefined);
+              // Note: Configuration fields will be refreshed by the main display method
             } else if (!value) {
               // If banners are disabled, refresh the display to hide the banners section
               const currentConfig = (window as any).notebookAutomationLoadedConfig;
               const currentPath = (window as any).notebookAutomationLoadedConfigPath;
-              if (currentConfig) {
-                this.displayLoadedConfig(currentConfig, currentPath);
-              }
+              // Note: Configuration fields will be refreshed by the main display method
             }
           });
       });
@@ -468,9 +466,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
             // Refresh the config display to show/hide Microsoft Graph section
             const configToDisplay = (window as any).notebookAutomationLoadedConfig;
             const configPath = (window as any).notebookAutomationLoadedConfigPath;
-            if (configToDisplay) {
-              this.displayLoadedConfig(configToDisplay, configPath);
-            }
+            // Note: Configuration fields will be refreshed by the main display method
           });
       });
 
@@ -632,17 +628,74 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       updateFormatSettings(selectedFormat);
     };
 
-    // 4. Custom Config File section 
+    // Always show config fields (create default structure if no config loaded)
+    let configToDisplay = (window as any).notebookAutomationLoadedConfig;
+    if (!configToDisplay) {
+      // Create a default config structure to show empty fields
+      configToDisplay = {
+        paths: {},
+        microsoft_graph: {},
+        aiservice: {
+          provider: 'azure',
+          azure: {},
+          openai: {},
+          foundry: {},
+          timeout: {},
+          retry_policy: {}
+        },
+        video_extensions: [],
+        pdf_extensions: [],
+        html_extensions: [],
+        banners: {}
+      };
+    }
+
+    // Show informational message if Advanced Configuration is not enabled but config is loaded
+    const loadedConfig = (window as any).notebookAutomationLoadedConfig;
+    if (loadedConfig && !this.plugin.settings.advancedConfiguration) {
+      const infoDiv = containerEl.createDiv({ cls: 'notebook-automation-config-info' });
+      infoDiv.createEl('h4', { text: 'Configuration Loaded Successfully', cls: 'notebook-automation-info-title' });
+      infoDiv.createEl('p', { 
+        text: 'Configuration file has been loaded, but no editable fields are currently displayed. Enable "Advanced Configuration" in the Flags section above to see and edit the configuration fields.',
+        cls: 'notebook-automation-info-message' 
+      });
+    }
+
+    // Always show config fields (create default structure if no config loaded)
+    let bottomConfigToDisplay = (window as any).notebookAutomationLoadedConfig;
+    if (!bottomConfigToDisplay) {
+      // Create a default config structure to show empty fields
+      bottomConfigToDisplay = {
+        paths: {},
+        microsoft_graph: {},
+        aiservice: {
+          provider: 'azure',
+          azure: {},
+          openai: {},
+          foundry: {},
+          timeout: {},
+          retry_policy: {}
+        },
+        video_extensions: [],
+        pdf_extensions: [],
+        html_extensions: [],
+        banners: {}
+      };
+    }
+    
+  // Anchor for advanced configuration sections (they will be inserted BEFORE this anchor)
+  const advancedAnchor = containerEl.createDiv();
+  advancedAnchor.id = 'na-advanced-anchor';
+  advancedAnchor.style.display = 'none';
+
+    // --- Reinsert Custom Config File section here so it appears at bottom before status & save ---
     containerEl.createEl('h3', { 
       text: 'Custom Config File (Optional)',
       cls: 'notebook-automation-section-header'
     });
-    
-    // Create custom description with proper HTML formatting
     const customConfigDescriptionDiv = containerEl.createDiv({ cls: 'notebook-automation-section-description' });
     const nodeProcess = window.require ? window.require('process') : null;
     const isWindows = nodeProcess?.platform === 'win32';
-    
     if (isWindows) {
       customConfigDescriptionDiv.innerHTML = `
         If you want to use different configurations, you can override the plugin's default configuration file that used (default-config.json).
@@ -668,12 +721,9 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         • Plugin Directory defaults file "default-config.json"
       `;
     }
-    
-    // Create container for input and button below the description
     const configPathContainer = containerEl.createDiv({
       cls: 'notebook-automation-config-path-container notebook-automation-input-button-container'
     });
-    
     const configPathInput = configPathContainer.createEl("input", {
       type: "text",
       placeholder: "Optional: Path to custom config.json...",
@@ -684,8 +734,6 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       this.plugin.settings.configPath = e.target.value;
       await this.plugin.saveSettings();
     };
-
-    // Add browse button for custom config file
     const browseConfigButton = configPathContainer.createEl("button", {
       text: "Browse",
       cls: 'notebook-automation-inline-button'
@@ -695,17 +743,13 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         { name: 'JSON Files', extensions: ['json'] },
         { name: 'All Files', extensions: ['*'] }
       ]);
-      
       if (selectedPath) {
         configPathInput.value = selectedPath;
         this.plugin.settings.configPath = selectedPath;
         await this.plugin.saveSettings();
-        
         new Notice(`Selected custom config file: ${selectedPath}`);
       }
     };
-
-    // Validate & Load button
     const validateBtn = configPathContainer.createEl("button", {
       text: "Load",
       cls: 'notebook-automation-validate-btn'
@@ -716,11 +760,8 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         new Notice("Please enter a config file path first.");
         return;
       }
-      
-      // Clear any previous error display
       const prevError = containerEl.querySelector('.notebook-automation-config-fields');
       if (prevError) prevError.remove();
-      
       try {
         // @ts-ignore
         const fs = window.require ? window.require('fs') : null;
@@ -728,81 +769,32 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           new Notice("File system access is not available in this environment.");
           return;
         }
-        
-        console.log('Checking config file:', path);
-        
         if (fs.existsSync(path) && fs.statSync(path).isFile()) {
           const content = fs.readFileSync(path, 'utf8');
-          console.log('File content length:', content.length);
-          
           try {
             const configJson = JSON.parse(content);
             new Notice("✅ Config loaded successfully.");
             this.displayLoadedConfig(configJson, path);
-            this.refreshConfigurationFileStatus(); // Refresh the config status section
+            this.refreshConfigurationFileStatus();
           } catch (jsonErr) {
             const configError = "Invalid JSON: " + (jsonErr instanceof Error ? jsonErr.message : String(jsonErr));
-            console.error('JSON parsing error:', jsonErr);
             new Notice(configError);
             this.displayLoadedConfig(null, undefined, configError);
-            this.refreshConfigurationFileStatus(); // Refresh even on error
+            this.refreshConfigurationFileStatus();
           }
         } else {
           const configError = "Config file does not exist or is not a file.";
-          console.error('File access error:', configError, 'Path:', path);
           new Notice(configError);
           this.displayLoadedConfig(null, undefined, configError);
         }
       } catch (err) {
         const configError = "Error checking file: " + (err instanceof Error ? err.message : String(err));
-        console.error('General error:', err);
         new Notice(configError);
         this.displayLoadedConfig(null, undefined, configError);
       }
     };
 
-    // Check for default-config.json in plugin directory first, but defer loading until after files are downloaded
-    // (This will be called after file downloads complete in getNaVersion)
-
-    // Always show config fields (create default structure if no config loaded)
-    let configToDisplay = (window as any).notebookAutomationLoadedConfig;
-    if (!configToDisplay) {
-      // Create a default config structure to show empty fields
-      configToDisplay = {
-        paths: {},
-        microsoft_graph: {},
-        aiservice: {
-          provider: 'azure',
-          azure: {},
-          openai: {},
-          foundry: {},
-          timeout: {},
-          retry_policy: {}
-        },
-        video_extensions: [],
-        pdf_extensions: [],
-        html_extensions: [],
-        banners: {}
-      };
-    }
-
-    
-    // Display loaded config fields
-    const configPath = (window as any).notebookAutomationLoadedConfigPath;
-    this.displayLoadedConfig(configToDisplay, configPath);
-    
-    // Show informational message if Advanced Configuration is not enabled but config is loaded
-    const loadedConfig = (window as any).notebookAutomationLoadedConfig;
-    if (loadedConfig && !this.plugin.settings.advancedConfiguration) {
-      const infoDiv = containerEl.createDiv({ cls: 'notebook-automation-config-info' });
-      infoDiv.createEl('h4', { text: 'Configuration Loaded Successfully', cls: 'notebook-automation-info-title' });
-      infoDiv.createEl('p', { 
-        text: 'Configuration file has been loaded, but no editable fields are currently displayed. Enable "Advanced Configuration" in the Flags section above to see and edit the configuration fields.',
-        cls: 'notebook-automation-info-message' 
-      });
-    }
-    
-    // Configuration File Section (combined status and save) - Positioned at bottom above version for consistent UI layout
+  // Configuration File Section (status display only) - Positioned at bottom before Save section
     containerEl.createEl("h3", { text: "Configuration File", cls: "notebook-automation-section-header" });
     const configFileContainer = containerEl.createDiv({ 
       cls: "notebook-automation-settings-group notebook-automation-config-status-section" 
@@ -922,21 +914,68 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       <div class="notebook-automation-file-path">${currentConfigPath || 'No config file available'}</div>
     `;
 
-    // Add checkbox for updating default config (show when not using default config) and save button
-    let updateDefaultCheckbox: HTMLInputElement | null = null;
+    // Create standalone Save Configuration section - positioned for better visibility
+    containerEl.createEl('h3', { 
+      text: 'Save Configuration',
+      cls: 'notebook-automation-section-header'
+    });
+    const saveContainer = containerEl.createDiv({ 
+      cls: "notebook-automation-settings-group notebook-automation-save-section" 
+    });
+
+    // Environment variable detection for Save section
+    // @ts-ignore
+    const processForSave = window.require ? window.require('process') : null;
+    const envConfigPathForSave = processForSave?.env?.NOTEBOOKAUTOMATION_CONFIG;
+    const loadedConfigPathForSave = (window as any).notebookAutomationLoadedConfigPath;
     
-    // Save button (always enabled)
-    const saveSetting = new Setting(configFileContainer);
-    saveSetting.settingEl.classList.add('notebook-automation-save-setting');
+    // Check if we're using a non-default config file for Save section
+    let isNonDefaultConfigForSave = false;
+    let defaultConfigPathForSave = '';
+    
+    // @ts-ignore
+    const pathForSave = window.require ? window.require('path') : null;
+    if (pathForSave && this.plugin.manifest?.dir) {
+      const adapter = this.plugin.app?.vault?.adapter;
+      let resolvedPluginDir = this.plugin.manifest.dir;
+      // @ts-ignore
+      if (adapter && typeof adapter.getBasePath === 'function') {
+        try {
+          // @ts-ignore
+          const vaultRoot = adapter.getBasePath();
+          resolvedPluginDir = pathForSave.resolve(vaultRoot, this.plugin.manifest.dir);
+        } catch (err) {
+          // Fallback to original path
+        }
+      }
+      
+      defaultConfigPathForSave = pathForSave.join(resolvedPluginDir, 'default-config.json');
+      
+      // Check if we're using a non-default config
+      if (loadedConfigPathForSave) {
+        const normalizedLoadedPath = pathForSave.resolve(loadedConfigPathForSave);
+        const normalizedDefaultPath = pathForSave.resolve(defaultConfigPathForSave);
+        isNonDefaultConfigForSave = normalizedLoadedPath !== normalizedDefaultPath;
+      } else if (envConfigPathForSave) {
+        isNonDefaultConfigForSave = true;
+      }
+    }
+
+    // Add checkbox for updating default config and save button
+    let updateDefaultCheckboxStandalone: HTMLInputElement | null = null;
+    
+    // Save button setting
+    const saveSettingStandalone = new Setting(saveContainer);
+    saveSettingStandalone.settingEl.classList.add('notebook-automation-save-setting');
     
     // Add checkbox for default config update if needed
-    if (isNonDefaultConfig && defaultConfigPath) {
-      saveSetting
+    if (isNonDefaultConfigForSave && defaultConfigPathForSave) {
+      saveSettingStandalone
         .setName('Also update default configuration file')
         .addToggle(toggle => {
           const checkboxEl = toggle.toggleEl.querySelector('input[type="checkbox"]') as HTMLInputElement;
           if (checkboxEl) {
-            updateDefaultCheckbox = checkboxEl;
+            updateDefaultCheckboxStandalone = checkboxEl;
           }
           toggle.setValue(false)
             .onChange(async (value) => {
@@ -946,21 +985,19 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     }
     
     // Add save button
-    saveSetting.addButton(btn => {
+    saveSettingStandalone.addButton(btn => {
       btn.setButtonText('Save')
         .setCta()
         .onClick(async () => {
           // If no loaded config path, use default config
-          let targetPath = loadedConfigPath;
+          let targetPath = loadedConfigPathForSave;
           if (!targetPath) {
             // First check for NOTEBOOKAUTOMATION_CONFIG environment variable
-            if (envConfigPath) {
-              targetPath = envConfigPath;
+            if (envConfigPathForSave) {
+              targetPath = envConfigPathForSave;
             } else {
               // Fallback to plugin directory default config
-              // @ts-ignore
-              const path = window.require ? window.require('path') : null;
-              if (path && this.plugin.manifest?.dir) {
+              if (pathForSave && this.plugin.manifest?.dir) {
                 const adapter = this.plugin.app?.vault?.adapter;
                 let resolvedPluginDir = this.plugin.manifest.dir;
                 // @ts-ignore
@@ -968,12 +1005,12 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
                   try {
                     // @ts-ignore
                     const vaultRoot = adapter.getBasePath();
-                    resolvedPluginDir = path.resolve(vaultRoot, this.plugin.manifest.dir);
+                    resolvedPluginDir = pathForSave.resolve(vaultRoot, this.plugin.manifest.dir);
                   } catch (err) {
                     // Fallback to original path
                   }
                 }
-                targetPath = path.join(resolvedPluginDir, 'default-config.json');
+                targetPath = pathForSave.join(resolvedPluginDir, 'default-config.json');
               }
             }
           }
@@ -986,9 +1023,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           try {
             // @ts-ignore
             const fs = window.require ? window.require('fs') : null;
-            // @ts-ignore
-            const path = window.require ? window.require('path') : null;
-            if (!fs || !path) {
+            if (!fs || !pathForSave) {
               new Notice('File system access is not available in this environment.');
               return;
             }
@@ -1005,16 +1040,8 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
                 azure: {},
                 openai: {},
                 foundry: {},
-                timeout: {
-                  request_timeout_seconds: 300,
-                  max_retry_attempts: 3,
-                  base_retry_delay_seconds: 2,
-                  max_retry_delay_seconds: 60,
-                  max_chunk_parallelism: 3,
-                  chunk_rate_limit_ms: 100,
-                  max_file_parallelism: 2,
-                  file_rate_limit_ms: 200
-                }
+                timeout: {},
+                retry_policy: {}
               },
               video_extensions: currentConfig.video_extensions || [],
               pdf_extensions: currentConfig.pdf_extensions || [],
@@ -1022,49 +1049,46 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
               banners: currentConfig.banners || {}
             };
 
-            // Function to ensure directory exists and write config
-            const writeConfigFile = (filePath: string, config: any) => {
-              const configDir = path.dirname(filePath);
-              if (!fs.existsSync(configDir)) {
-                try {
-                  fs.mkdirSync(configDir, { recursive: true });
-                } catch (mkdirErr) {
-                  throw new Error('Failed to create config directory: ' + (mkdirErr instanceof Error ? mkdirErr.message : String(mkdirErr)));
-                }
-              }
-              fs.writeFileSync(filePath, JSON.stringify(config, null, 4), 'utf8');
-            };
+            // Create directory if it doesn't exist
+            const targetDir = pathForSave.dirname(targetPath);
+            if (!fs.existsSync(targetDir)) {
+              fs.mkdirSync(targetDir, { recursive: true });
+            }
 
-            // Write to the target config file
-            writeConfigFile(targetPath, configToSave);
-            
-            const fileName = path.basename(targetPath);
-            let successMessage = `✅ Config saved successfully to ${fileName}`;
+            // Write main config file
+            fs.writeFileSync(targetPath, JSON.stringify(configToSave, null, 2));
+            new Notice(`✅ Configuration saved to: ${targetPath}`);
 
-            // Also write to default config if checkbox is checked
-            if (updateDefaultCheckbox && updateDefaultCheckbox.checked && defaultConfigPath) {
+            // Update checkbox for also updating default
+            const shouldUpdateDefault = updateDefaultCheckboxStandalone?.checked ?? false;
+            if (shouldUpdateDefault && defaultConfigPathForSave && targetPath !== defaultConfigPathForSave) {
               try {
-                writeConfigFile(defaultConfigPath, configToSave);
-                const defaultFileName = path.basename(defaultConfigPath);
-                successMessage += ` and ${defaultFileName}`;
+                const defaultDir = pathForSave.dirname(defaultConfigPathForSave);
+                if (!fs.existsSync(defaultDir)) {
+                  fs.mkdirSync(defaultDir, { recursive: true });
+                }
+                fs.writeFileSync(defaultConfigPathForSave, JSON.stringify(configToSave, null, 2));
+                new Notice(`✅ Also updated default config: ${defaultConfigPathForSave}`);
               } catch (defaultErr) {
-                console.error('[Notebook Automation] Error saving to default config:', defaultErr);
-                new Notice(`⚠️ Saved to custom config but failed to save to default: ${defaultErr instanceof Error ? defaultErr.message : String(defaultErr)}`);
-                return;
+                new Notice(`⚠️ Failed to update default config: ${defaultErr instanceof Error ? defaultErr.message : String(defaultErr)}`);
               }
             }
 
-            new Notice(successMessage);
-
-            // Update global loaded config
+            // Update global state
             (window as any).notebookAutomationLoadedConfig = configToSave;
+            (window as any).notebookAutomationLoadedConfigPath = targetPath;
+            
+            // Refresh the configuration status display
+            this.refreshConfigurationFileStatus();
 
           } catch (err) {
             console.error('[Notebook Automation] Error saving config:', err);
             new Notice('Failed to save config: ' + (err instanceof Error ? err.message : String(err)));
           }
         });
-    });    // Add version information at the very bottom
+    });
+
+  // Add version information at the very bottom
     const versionContainer = containerEl.createDiv({ 
       cls: "notebook-automation-settings-group notebook-automation-version-section" 
     });
@@ -1081,6 +1105,10 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       // Trigger a refresh of configuration status after version is loaded
       this.refreshConfigurationFileStatus();
     });
+
+    // Finally render (or re-render) advanced configuration fields now that bottom sections exist.
+    const bottomConfigPath = (window as any).notebookAutomationLoadedConfigPath;
+    this.displayLoadedConfig(bottomConfigToDisplay, bottomConfigPath);
   }
 
   /**
@@ -1191,16 +1219,18 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     const prev = containerEl.querySelector('.notebook-automation-config-fields');
     if (prev) prev.remove();
 
-    // Find the version section container to insert content before it
-    const versionSection = containerEl.querySelector('.notebook-automation-version-section');
-
+    // Find the Configuration File section to insert content before it (config fields should appear before the save section)
+    const configFileSection = containerEl.querySelector('.notebook-automation-config-status-section');
+    
     if (error) {
       const errorDiv = containerEl.createDiv({ cls: 'notebook-automation-config-fields' });
       const errorContainer = errorDiv.createDiv({ cls: 'notebook-automation-config-error' });
       errorContainer.createEl('h4', { text: 'Configuration Load Error', cls: 'notebook-automation-error-title' });
       errorContainer.createEl('p', { text: error, cls: 'notebook-automation-error-message' });
-      if (versionSection) {
-        containerEl.insertBefore(errorDiv, versionSection);
+      if (configFileSection) {
+        containerEl.insertBefore(errorDiv, configFileSection);
+      } else {
+        containerEl.appendChild(errorDiv);
       }
       (window as any).notebookAutomationLoadedConfig = null;
       (window as any).notebookAutomationLoadedConfigPath = null;
@@ -1213,16 +1243,12 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
     (window as any).notebookAutomationLoadedConfigPath = configPath || null;
     const fieldsDiv = containerEl.createDiv({ cls: 'notebook-automation-config-fields' });
     
-    // Insert before version section if it exists and is a direct child
-    if (versionSection && versionSection.parentElement === containerEl) {
-      try {
-        containerEl.insertBefore(fieldsDiv, versionSection);
-      } catch (err) {
-        console.warn('Could not insert before version section, appending instead:', err);
-        containerEl.appendChild(fieldsDiv);
-      }
+    // Preferred insertion: before dedicated anchor if present
+    const anchor = containerEl.querySelector('#na-advanced-anchor');
+    if (anchor && anchor.parentElement === containerEl) {
+      containerEl.insertBefore(fieldsDiv, anchor);
     } else {
-      // Fallback: just append to container
+      // Fallback: append near top (will still precede bottom sections if anchor missing)
       containerEl.appendChild(fieldsDiv);
     }
 
