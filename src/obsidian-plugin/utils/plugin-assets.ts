@@ -179,32 +179,33 @@ export interface DownloadProgressCallback {
 export async function ensureExecutableExists(plugin: Plugin, progressCallback?: DownloadProgressCallback): Promise<string> {
   const existingPath = getNaExecutablePath(plugin);
   const execName = getNaExecutableName();
-  
+  const expectedVersion = plugin.manifest?.version || '0.0.0';
   try {
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
-    
-    // Check if executable exists
+
     let needsDownload = true;
+    let finalPath = existingPath;
+
     if (fs && existingPath !== execName && fs.existsSync(existingPath)) {
-      needsDownload = false;
+      // Validate existing executable
+      const currentOk = await isExecutableCurrent(plugin, existingPath, expectedVersion);
+      if (currentOk) {
+        needsDownload = false;
+      } else {
+        try { fs.unlinkSync(existingPath); } catch { /* ignore */ }
+        needsDownload = true;
+      }
     }
 
-    // Always ensure required files exist (config and prompt files)
-    try {
-      await ensureRequiredFilesExist(plugin, progressCallback);
-    } catch (error) {
-      console.warn('[Notebook Automation] Could not download some required files:', error);
-      // Continue even if some config files fail to download
-    }
+    // Always ensure required files exist regardless
+    try { await ensureRequiredFilesExist(plugin, progressCallback); } catch { /* ignore */ }
 
-    // Download executable if needed
     if (needsDownload) {
-      return await downloadExecutableFromGitHub(plugin, progressCallback);
+      finalPath = await downloadExecutableFromGitHub(plugin, progressCallback);
     }
-    
-    return existingPath;
-  } catch (error) {
+    return finalPath;
+  } catch {
     return existingPath;
   }
 }
@@ -522,6 +523,38 @@ export async function ensureConfigFilesExist(plugin: Plugin): Promise<boolean> {
     return true;
   } catch (error) {
     console.warn('[Notebook Automation] Error ensuring config files exist:', error);
+    return false;
+  }
+}
+
+/**
+ * Checks if the installed executable is the current version.
+ * This runs the executable with --version and compares the reported version.
+ *
+ * @param plugin The NotebookAutomationPlugin instance.
+ * @param execPath The path to the executable.
+ * @param expectedPluginVersion The expected plugin version (from manifest).
+ * @returns True if the executable is current, false if not or if check fails.
+ */
+export async function isExecutableCurrent(plugin: Plugin, execPath: string, expectedPluginVersion: string): Promise<boolean> {
+  try {
+    // @ts-ignore
+    const childProcess = window.require ? window.require('child_process') : null;
+    // @ts-ignore
+    const fs = window.require ? window.require('fs') : null;
+    if (!childProcess || !fs) return false;
+    if (!fs.existsSync(execPath)) return false;
+    // Run with --version (short timeout)
+    const output: string = childProcess.execSync(`"${execPath}" --version`, { timeout: 4000, windowsHide: true }).toString();
+    // Look for line starting with 'Notebook Automation version '
+    const line = output.split(/\r?\n/).find(l => l.toLowerCase().startsWith('notebook automation version')) || '';
+    if (!line) return false;
+    // Extract semantic plugin version inside 'Notebook Automation version X ('
+    const match = line.match(/Notebook Automation version\s+([^\s]+)\s+\(/i);
+    if (!match) return false;
+    const reported = match[1].trim();
+    return reported === expectedPluginVersion;
+  } catch {
     return false;
   }
 }
