@@ -549,11 +549,25 @@ export async function isExecutableCurrent(plugin: Plugin, execPath: string, expe
     // Look for line starting with 'Notebook Automation version '
     const line = output.split(/\r?\n/).find(l => l.toLowerCase().startsWith('notebook automation version')) || '';
     if (!line) return false;
-    // Extract semantic plugin version inside 'Notebook Automation version X ('
-    const match = line.match(/Notebook Automation version\s+([^\s]+)\s+\(/i);
-    if (!match) return false;
-    const reported = match[1].trim();
-    return reported === expectedPluginVersion;
+
+    // New format (current): Notebook Automation version <semantic> (<extended build ...>)
+    // Legacy format (older binaries): Notebook Automation version <extended build> (<semantic>)
+    // We just need to detect whether the expected semantic version appears ANYWHERE on the line.
+    const hasExpected = line.includes(expectedPluginVersion);
+    if (hasExpected) {
+      return true;
+    }
+
+    // If not present, try to extract the first token after 'version' (legacy logic) for logging/debug.
+    const firstTokenMatch = line.match(/Notebook Automation version\s+([^\s]+)(?:\s+|$)/i);
+    const firstToken = firstTokenMatch ? firstTokenMatch[1] : '';
+    // @ts-ignore
+    if (window?.console) {
+      // Provide lightweight diagnostic information to help understand refresh decisions.
+      // Intentionally not throwing; just guiding forced refresh.
+      console.log(`[Notebook Automation] Executable version mismatch. Expected semantic ${expectedPluginVersion} not found in line: "${line}". First token captured='${firstToken}'. Forcing re-download.`);
+    }
+    return false;
   } catch {
     return false;
   }
