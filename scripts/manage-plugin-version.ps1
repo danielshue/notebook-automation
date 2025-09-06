@@ -138,7 +138,7 @@ function Invoke-DotnetPublishMatrix {
         $tempOut = Join-Path $PublishRoot "_temp-$rid"
         if (Test-Path $tempOut) { Remove-Item -Recurse -Force $tempOut -ErrorAction SilentlyContinue }
         Write-Host "  • Publishing $rid → $outName" -ForegroundColor Yellow
-        $publishArgs = @('publish', $CliProject, '-c','Release','-r',$rid,'/p:PublishSingleFile=true','/p:SelfContained=true','--output',$tempOut)
+        $publishArgs = @('publish', $CliProject, '-c', 'Release', '-r', $rid, '/p:PublishSingleFile=true', '/p:SelfContained=true', '--output', $tempOut)
         $pub = & dotnet @publishArgs 2>&1
         if ($LASTEXITCODE -ne 0) { Write-Host $pub -ForegroundColor Red; throw "Publish failed for $rid" }
         $produced = Join-Path $tempOut ("na" + $t.Ext)
@@ -160,7 +160,8 @@ function Invoke-DotnetPublishMatrix {
             $verOutput = ($lines -join ' ')
             if ($verOutput -notmatch [Regex]::Escape($SemanticVersion)) { throw "Semantic version $SemanticVersion not detected in output of $($exe.Name)" }
             Write-Host "    ✓ $($exe.Name) version OK" -ForegroundColor Green
-        } catch { throw "Version validation failed for $($exe.Name): $($_.Exception.Message)" }
+        }
+        catch { throw "Version validation failed for $($exe.Name): $($_.Exception.Message)" }
     }
 }
 
