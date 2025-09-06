@@ -18,8 +18,8 @@ This guide covers different ways to install and set up Notebook Automation.
    - `notebook-automation-win-x64.zip` for Windows 64-bit
    - `notebook-automation-win-arm64.zip` for Windows ARM64
    - `notebook-automation-linux-x64.tar.gz` for Linux 64-bit
-   - `notebook-automation-osx-x64.tar.gz` for macOS Intel
-   - `notebook-automation-osx-arm64.tar.gz` for macOS Apple Silicon
+   - `notebook-automation-macos-x64.tar.gz` for macOS Intel
+   - `notebook-automation-macos-arm64.tar.gz` for macOS Apple Silicon
 
 3. Extract the archive to your preferred location
 4. Add the extraction directory to your system PATH (optional)

@@ -307,9 +307,14 @@ dotnet publish --runtime win-x64 --self-contained
 # Linux
 dotnet publish --runtime linux-x64 --self-contained
 
-# macOS
+# macOS (Intel)
 dotnet publish --runtime osx-x64 --self-contained
+
+# macOS (Apple Silicon)
+dotnet publish --runtime osx-arm64 --self-contained
 ```
+
+> Note: Distribution archives and executables use the `macos-` prefix (e.g., `notebook-automation-macos-x64.tar.gz`), while the .NET Runtime Identifiers (RIDs) remain `osx-x64` and `osx-arm64`. This is intentional—`osx-*` is the official RID naming, but end-user artifacts have been standardized to `macos-*` for clarity and consistency across platforms.
 
 ### Docker Builds
 

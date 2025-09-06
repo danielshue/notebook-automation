@@ -736,6 +736,79 @@ try {
             }
         }
 
+        # Guard: Validate executable naming & absence of legacy na-osx-* after copy
+        function Invoke-NaExecutableValidation {
+            param([string]$DistPath)
+            if (-not (Test-Path $DistPath)) { throw "Dist path not found: $DistPath" }
+            $executables = Get-ChildItem -Path $DistPath -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'na-*' }
+            if (-not $executables) { Write-Warning "No na-* executables present for validation"; return }
+            $expected = @('na-win-x64.exe', 'na-win-arm64.exe', 'na-linux-x64', 'na-linux-arm64', 'na-macos-x64', 'na-macos-arm64')
+            $legacy = $executables | Where-Object { $_.Name -like 'na-osx-*' }
+            if ($legacy) {
+                Write-Host "❌ Legacy executables detected:" -ForegroundColor $Red
+                $legacy | ForEach-Object { Write-Host "   $_" -ForegroundColor $Red }
+                throw "Legacy na-osx-* executables found."
+            }
+            $names = $executables.Name
+            $unexpected = $names | Where-Object { $_ -notin $expected }
+            if ($unexpected) {
+                Write-Host "❌ Unexpected executables detected:" -ForegroundColor $Red
+                $unexpected | ForEach-Object { Write-Host "   $_" -ForegroundColor $Red }
+                throw "Unexpected executables found in dist." 
+            }
+            $missing = $expected | Where-Object { $_ -notin $names }
+            if ($missing) {
+                Write-Host "❌ Missing expected executables:" -ForegroundColor $Red
+                $missing | ForEach-Object { Write-Host "   $_" -ForegroundColor $Red }
+                throw "Missing expected executables." 
+            }
+            Write-Host "✅ Executable naming validation passed" -ForegroundColor $Green
+        }
+        try { Invoke-NaExecutableValidation -DistPath $persistentExecutablesDir } catch { throw }
+
+        # Generate or validate checksums.json for local parity
+        function Invoke-GenerateOrValidateChecksumsJson {
+            param([string]$DistDir)
+            if (-not (Test-Path $DistDir)) { throw "Dist directory not found: $DistDir" }
+            $expected = @('na-win-x64.exe', 'na-win-arm64.exe', 'na-linux-x64', 'na-linux-arm64', 'na-macos-x64', 'na-macos-arm64')
+            $executables = Get-ChildItem -Path $DistDir -File | Where-Object { $_.Name -in $expected }
+            $missing = $expected | Where-Object { $_ -notin $executables.Name }
+            if ($missing) { throw "Cannot create checksums.json - missing executables: $($missing -join ', ')" }
+            $checksumsPath = Join-Path $DistDir 'checksums.json'
+            $hashMap = @{}
+            foreach ($exe in $executables) {
+                $hash = (Get-FileHash -Algorithm SHA256 -Path $exe.FullName).Hash.ToLowerInvariant()
+                $hashMap[$exe.Name] = $hash
+            }
+            if (Test-Path $checksumsPath) {
+                try {
+                    $existing = Get-Content $checksumsPath -Raw | ConvertFrom-Json
+                    $existingFiles = $existing.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
+                    foreach ($name in $expected) { if ($name -notin $existingFiles) { throw "checksums.json missing entry for $name" } }
+                    foreach ($name in $expected) {
+                        if ($hashMap[$name] -ne $existing.files.$name) { throw "Checksum mismatch for $name" }
+                    }
+                    Write-Host "✅ Existing checksums.json verified" -ForegroundColor $Green
+                    return $checksumsPath
+                }
+                catch {
+                    throw "checksums.json validation failed: $($_.Exception.Message)"
+                }
+            }
+            else {
+                $payload = [ordered]@{
+                    version      = 'local-dev'
+                    algorithm    = 'SHA256'
+                    generatedUtc = (Get-Date).ToUniversalTime().ToString('o')
+                    files        = $hashMap
+                }
+                ($payload | ConvertTo-Json -Depth 5) | Set-Content -Path $checksumsPath -Encoding UTF8
+                Write-Host "🧾 Generated checksums.json (local-dev)" -ForegroundColor $Green
+                return $checksumsPath
+            }
+        }
+        try { Invoke-GenerateOrValidateChecksumsJson -DistDir $persistentExecutablesDir | Out-Null } catch { throw }
+
         # Log successful copying of main.js and default-config.json
         $filesToEnsure = @("main.js", "default-config.json")
         foreach ($file in $filesToEnsure) {

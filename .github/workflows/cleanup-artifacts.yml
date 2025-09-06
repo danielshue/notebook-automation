@@ -3,7 +3,7 @@ name: Cleanup Artifacts and Workflow Runs
 on:
   # Run weekly on Sunday at midnight
   schedule:
-    - cron: '0 0 * * 0'  
+    - cron: "0 0 * * 0"
   # Allow manual triggering
   workflow_dispatch:
 
@@ -22,10 +22,24 @@ jobs:
           repository: ${{ github.repository }}
           retain_days: 14
           keep_minimum_runs: 10
-      
+
       - name: Delete old artifacts
         uses: c-hive/gha-remove-artifacts@v1
         with:
-          age: '7 days'  # Remove artifacts older than 7 days
-          skip-recent: 10  # Keep at least 10 recent artifacts
-          skip-tags: true  # Don't remove artifacts from tagged releases
+          age: "7 days" # Remove artifacts older than 7 days
+          skip-recent: 10 # Keep at least 10 recent artifacts
+          skip-tags: true # Don't remove artifacts from tagged releases
+
+      - name: Scan recent artifacts for legacy macOS naming
+        run: |
+          echo "Scanning artifact listing for legacy na-osx-* references (defense-in-depth)..."
+          # This step does not delete (server-side deletion handled above); provides visibility if any legacy names persist in retained artifacts metadata
+          # If the repository ever reintroduces legacy names, this will surface a warning log in weekly maintenance.
+          legacy_count=$(gh api repos/${{ github.repository }}/actions/artifacts --paginate -q '.artifacts[].name' | grep -c 'na-osx-' || true)
+          if [ "$legacy_count" -gt 0 ]; then
+            echo "::warning::Detected $legacy_count artifact name(s) containing legacy na-osx-* pattern. Future releases should only ship na-macos-* binaries."
+          else
+            echo "No legacy na-osx-* artifact names detected."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

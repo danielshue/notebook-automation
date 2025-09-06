@@ -411,6 +411,31 @@ jobs:
             exit 1
           fi
 
+      - name: Validate executable naming set
+        if: always()
+        shell: bash
+        run: |
+          echo "Validating executable naming (no legacy na-osx-*; exact expected set)..."
+          ls -1 publish/executables || { echo "Missing executables directory"; exit 1; }
+          # Collect names
+          mapfile -t files < <(ls -1 publish/executables)
+          # Fail fast if any legacy names found
+            if printf '%s\n' "${files[@]}" | grep -E '^na-osx-' >/dev/null 2>&1; then
+            echo "❌ Legacy na-osx-* executable detected"; printf '%s\n' "${files[@]}"; exit 1; fi
+          # Expected names depend on platform (matrix)
+          expected_common=("${{ matrix.x64-executable-name }}" "${{ matrix.arm64-executable-name }}")
+          # Verify both expected present
+          for need in "${expected_common[@]}"; do
+            if ! printf '%s\n' "${files[@]}" | grep -Fx "$need" >/dev/null; then
+              echo "❌ Missing expected executable: $need"; exit 1; fi
+          done
+          # Ensure no unexpected extra starting with na- for this platform set
+          for f in "${files[@]}"; do
+            if [[ "$f" == na-* ]] && [[ ! " ${expected_common[*]} " =~ " $f " ]]; then
+              echo "❌ Unexpected executable present: $f"; exit 1; fi
+          done
+          echo "✅ Executable naming validation passed"
+
       - name: Upload published executables
         if: always()
         uses: actions/upload-artifact@v4
@@ -450,6 +475,34 @@ jobs:
           # List what we have
           echo "Consolidated executables:"
           ls -la consolidated-executables/
+
+      - name: Generate checksums.json for consolidated executables
+        run: |
+          set -e
+          cd consolidated-executables
+          expected=(na-win-x64.exe na-win-arm64.exe na-linux-x64 na-linux-arm64 na-macos-x64 na-macos-arm64)
+          missing=0
+          for f in "${expected[@]}"; do
+            if [ ! -f "$f" ]; then echo "❌ Missing expected executable: $f"; missing=1; fi
+          done
+          if [ $missing -ne 0 ]; then echo "Aborting checksum generation due to missing executables"; exit 1; fi
+          echo '{"version":"${{ needs.build-and-test.outputs.informational-version }}","algorithm":"SHA256","generatedUtc":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'","files":{' > checksums.json
+          first=1
+          for f in "${expected[@]}"; do
+            hash=$(sha256sum "$f" | awk '{print $1}')
+            if [ $first -eq 0 ]; then echo "," >> checksums.json; fi
+            echo -n '"'$f'":"'$hash'"' >> checksums.json
+            first=0
+          done
+          echo '}}' >> checksums.json
+          echo "Generated checksums.json:"; cat checksums.json
+
+      - name: Upload consolidated checksums
+        uses: actions/upload-artifact@v4
+        with:
+          name: consolidated-checksums-${{ needs.build-and-test.outputs.informational-version }}
+          path: consolidated-executables/checksums.json
+          retention-days: 7
 
       - name: Upload consolidated executables
         uses: actions/upload-artifact@v4
@@ -513,6 +566,19 @@ jobs:
           # Copy all executables if present
           if [ -d consolidated-executables ]; then
             cp consolidated-executables/* "$PLUGIN_DIR/" 2>/dev/null || true
+          fi
+          # If checksums.json exists, validate hashes before proceeding
+          if [ -f "$PLUGIN_DIR/checksums.json" ]; then
+            echo "Validating executable hashes against checksums.json..."
+            jq -r '.files | to_entries[] | "\(.key) \(.value)"' "$PLUGIN_DIR/checksums.json" | while read name hash; do
+              if [ ! -f "$PLUGIN_DIR/$name" ]; then echo "❌ Missing file listed in checksums.json: $name"; exit 1; fi
+              calc=$(sha256sum "$PLUGIN_DIR/$name" | awk '{print $1}')
+              if [ "$calc" != "$hash" ]; then echo "❌ Hash mismatch for $name (expected $hash got $calc)"; exit 1; fi
+              echo "✓ $name hash OK"
+            done
+            echo "✅ All hashes validated"
+          else
+            echo "⚠️  checksums.json not found in plugin directory (will proceed but integrity layer missing)"
           fi
           # Copy the plugin zip for release asset
           if [ -f "src/obsidian-plugin/dist/notebook-automation-obsidian-plugin.zip" ]; then

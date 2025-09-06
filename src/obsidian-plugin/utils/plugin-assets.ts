@@ -177,9 +177,14 @@ export interface DownloadProgressCallback {
  * @returns The path to the executable, downloading if not present.
  */
 export async function ensureExecutableExists(plugin: Plugin, progressCallback?: DownloadProgressCallback): Promise<string> {
+  // Clean up any legacy osx-* executables before resolving path
+  purgeLegacyOsxExecutables(plugin);
   const existingPath = getNaExecutablePath(plugin);
   const execName = getNaExecutableName();
   const expectedVersion = plugin.manifest?.version || '0.0.0';
+  // Attempt to prime checksum metadata early (non-blocking)
+  let checksumMap: Record<string,string> | null = null;
+  try { checksumMap = await getOrDownloadChecksums(plugin); } catch { /* ignore */ }
   try {
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
@@ -203,11 +208,66 @@ export async function ensureExecutableExists(plugin: Plugin, progressCallback?: 
 
     if (needsDownload) {
       finalPath = await downloadExecutableFromGitHub(plugin, progressCallback);
+      // Refresh checksum map after download if previously null or missing entry
+      try { if (!checksumMap || (checksumMap && !checksumMap[execName])) { checksumMap = await getOrDownloadChecksums(plugin); } } catch { /* ignore */ }
     }
+    // Perform integrity verification if checksum data is available
+    try {
+      if (checksumMap && checksumMap[execName] && fs && fs.existsSync(finalPath)) {
+        const verified = await verifyFileChecksum(fs, finalPath, checksumMap[execName]);
+        if (!verified) {
+          // Corrupt or mismatch: remove and force re-download once
+          try { fs.unlinkSync(finalPath); } catch { /* ignore */ }
+          const redownloaded = await downloadExecutableFromGitHub(plugin, progressCallback);
+          if (checksumMap[execName]) {
+            const recheck = await verifyFileChecksum(fs, redownloaded, checksumMap[execName]);
+            if (!recheck) {
+              console.warn('[Notebook Automation] Executable checksum mismatch after re-download; proceeding without guarantee.');
+            }
+          }
+          finalPath = redownloaded;
+        }
+      }
+    } catch { /* non-fatal */ }
     return finalPath;
   } catch {
     return existingPath;
   }
+}
+
+/**
+ * Downloads (if necessary) and parses checksums.json, returning a map of filename->sha256.
+ */
+async function getOrDownloadChecksums(plugin: Plugin): Promise<Record<string,string> | null> {
+  try {
+    // @ts-ignore
+    const fs = window.require ? window.require('fs') : null;
+    // @ts-ignore
+    const path = window.require ? window.require('path') : null;
+    if (!fs || !path) return null;
+    const filePath = await downloadFileFromGitHub(plugin, 'checksums.json', false).catch(() => null);
+    if (!filePath || !fs.existsSync(filePath)) return null;
+    const raw = fs.readFileSync(filePath, 'utf8');
+    const json = JSON.parse(raw);
+    if (json && typeof json.files === 'object') {
+      return json.files as Record<string,string>;
+    }
+    return null;
+  } catch { return null; }
+}
+
+/**
+ * Verifies a file's SHA-256 hash against an expected lowercase hex string.
+ */
+async function verifyFileChecksum(fs: any, filePath: string, expectedHash: string): Promise<boolean> {
+  try {
+    // @ts-ignore
+    const crypto = window.require ? window.require('crypto') : null;
+    if (!crypto || !fs.existsSync(filePath)) return false;
+    const data = fs.readFileSync(filePath);
+    const actual = crypto.createHash('sha256').update(data).digest('hex');
+    return actual === expectedHash.toLowerCase();
+  } catch { return false; }
 }
 
 /**
@@ -380,8 +440,42 @@ export function getDistributedExecutablePatterns(): string[] {
     'na-win-arm64.exe', 
     'na-linux-x64',
     'na-linux-arm64',
-    'na-osx-arm64'  // Note: build uses 'macos' but release uses 'osx'
+    'na-macos-arm64',
+    'na-macos-x64'
   ];
+}
+
+/**
+ * Removes legacy-named macOS executables (na-osx-*) to prevent accidental selection of stale binaries.
+ */
+function purgeLegacyOsxExecutables(plugin: Plugin): void {
+  try {
+    // @ts-ignore
+    const fs = window.require ? window.require('fs') : null;
+    // @ts-ignore
+    const path = window.require ? window.require('path') : null;
+    if (!fs || !path) return;
+    // @ts-ignore
+    const adapter = plugin.app?.vault?.adapter;
+    let vaultRoot = '';
+    // @ts-ignore
+    if (adapter && typeof (adapter as any).getBasePath === 'function') {
+      try { 
+        // @ts-ignore - Obsidian desktop adapter provides getBasePath at runtime
+        vaultRoot = (adapter as any).getBasePath(); 
+      } catch { /* ignore */ }
+    }
+    if (!vaultRoot) return;
+    const configDir = plugin.app?.vault?.configDir || '.obsidian';
+    const pluginId = plugin.manifest?.id || 'notebook-automation';
+    const pluginDir = path.join(vaultRoot, configDir, 'plugins', pluginId);
+    if (!fs.existsSync(pluginDir)) return;
+    const files = fs.readdirSync(pluginDir);
+    const legacy = files.filter((f: string) => /^na-osx-(x64|arm64)$/.test(f));
+    for (const f of legacy) {
+      try { fs.unlinkSync(path.join(pluginDir, f)); } catch { /* ignore */ }
+    }
+  } catch { /* ignore */ }
 }
 
 /**

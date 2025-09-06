@@ -256,6 +256,122 @@ else {
 
 Invoke-DotnetPublishMatrix -CliProject (Join-Path $RepoRoot "src\c-sharp\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj") -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
 
+# Guard: Ensure only expected executable naming (post-publish)
+function Assert-NaExecutableSet {
+    param(
+        [string]$DistPath,
+        [string]$ExpectedVersion
+    )
+
+    if (-not (Test-Path $DistPath)) { throw "Dist path not found: $DistPath" }
+    $executables = Get-ChildItem -Path $DistPath -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'na-*' }
+
+    $expected = @(
+        'na-win-x64.exe', 'na-win-arm64.exe',
+        'na-linux-x64', 'na-linux-arm64',
+        'na-macos-x64', 'na-macos-arm64'
+    )
+
+    $legacy = $executables | Where-Object { $_.Name -like 'na-osx-*' }
+    if ($legacy) {
+        Write-Host "❌ Legacy osx-named executables detected:" -ForegroundColor Red
+        $legacy | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
+        throw "Legacy executable names (na-osx-*) present. Aborting."
+    }
+
+    # Check for unexpected extras
+    $names = $executables.Name
+    $unexpected = $names | Where-Object { $_ -notin $expected }
+    if ($unexpected) {
+        Write-Host "❌ Unexpected executables present:" -ForegroundColor Red
+        $unexpected | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
+        throw "Unexpected executables found in dist."
+    }
+
+    # Ensure all expected exist
+    $missing = $expected | Where-Object { $_ -notin $names }
+    if ($missing) {
+        Write-Host "❌ Missing expected executables:" -ForegroundColor Red
+        $missing | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
+        throw "One or more expected executables missing."
+    }
+
+    # Semantic version validation (best-effort)
+    foreach ($exe in $executables) {
+        try {
+            $output = & $exe.FullName --version 2>$null
+            if ($LASTEXITCODE -ne 0 -or ([string]::IsNullOrWhiteSpace($output))) { throw "No output" }
+            if ($output -notmatch [Regex]::Escape($ExpectedVersion)) {
+                throw "Version string '$ExpectedVersion' not found in output for $($exe.Name)"
+            }
+            Write-Host "   ✓ $($exe.Name) version OK" -ForegroundColor Green
+        }
+        catch {
+            throw "Version validation failed for $($exe.Name): $($_.Exception.Message)"
+        }
+    }
+
+    Write-Host "✅ Executable naming & version validation passed" -ForegroundColor Green
+}
+
+Assert-NaExecutableSet -DistPath (Join-Path $RepoRoot 'dist') -ExpectedVersion $Version
+
+# Step 3c: Generate or validate checksums.json for distributed executables
+function New-OrValidateChecksumsJson {
+    param(
+        [string]$DistDir,
+        [string]$SemanticVersion
+    )
+
+    if (-not (Test-Path $DistDir)) { throw "Dist directory not found: $DistDir" }
+    $expected = @('na-win-x64.exe', 'na-win-arm64.exe', 'na-linux-x64', 'na-linux-arm64', 'na-macos-x64', 'na-macos-arm64')
+    $executables = Get-ChildItem -Path $DistDir -File | Where-Object { $_.Name -in $expected }
+    $missing = $expected | Where-Object { $_ -notin $executables.Name }
+    if ($missing) { throw "Cannot create checksums.json - missing executables: $($missing -join ', ')" }
+
+    $checksumsPath = Join-Path $DistDir 'checksums.json'
+    $algorithm = 'SHA256'
+    $hashMap = @{}
+    foreach ($exe in $executables) {
+        $hash = (Get-FileHash -Algorithm SHA256 -Path $exe.FullName).Hash.ToLowerInvariant()
+        $hashMap[$exe.Name] = $hash
+    }
+
+    if (Test-Path $checksumsPath) {
+        try {
+            $existing = Get-Content $checksumsPath -Raw | ConvertFrom-Json
+            $existingFiles = $existing.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
+            # Validate presence
+            foreach ($name in $expected) { if ($name -notin $existingFiles) { throw "checksums.json missing entry for $name" } }
+            # Validate hash equality
+            foreach ($name in $expected) {
+                $currentHash = $hashMap[$name]
+                $recorded = $existing.files.$name
+                if ($currentHash -ne $recorded) { throw "Checksum mismatch for $name (recorded=$recorded actual=$currentHash)" }
+            }
+            Write-Host "✅ Existing checksums.json verified" -ForegroundColor Green
+            return $checksumsPath
+        }
+        catch {
+            throw "checksums.json validation failed: $($_.Exception.Message)"
+        }
+    }
+    else {
+        $payload = [ordered]@{
+            version      = $SemanticVersion
+            algorithm    = $algorithm
+            generatedUtc = (Get-Date).ToUniversalTime().ToString('o')
+            files        = $hashMap
+        }
+        ($payload | ConvertTo-Json -Depth 5) | Set-Content -Path $checksumsPath -Encoding UTF8
+        Write-Host "🧾 Generated checksums.json" -ForegroundColor Green
+        return $checksumsPath
+    }
+}
+
+$distDirRoot = Join-Path $RepoRoot 'dist'
+$checksumsFilePath = New-OrValidateChecksumsJson -DistDir $distDirRoot -SemanticVersion $Version
+
 # Step 4: Build the plugin
 Write-Host "🔨 Building plugin"
 Push-Location $PluginDir
@@ -271,6 +387,26 @@ try {
     $repoRootManifest = Join-Path $RepoRoot "manifest.json"
     Copy-Item -Path $ManifestJsonPath -Destination $repoRootManifest -Force
     Write-Host "✅ Copied manifest.json to repository root for BRAT compatibility"
+
+    # Copy checksums.json into plugin dist & ensure asset-manifest includes it
+    $pluginChecksumsTarget = Join-Path $PluginDir 'dist' 'checksums.json'
+    if (Test-Path $checksumsFilePath) {
+        Copy-Item $checksumsFilePath $pluginChecksumsTarget -Force
+        Write-Host "✅ Copied checksums.json into plugin dist" -ForegroundColor Green
+    }
+
+    $assetManifestPath = Join-Path $PluginDir 'dist' 'asset-manifest.json'
+    if (Test-Path $assetManifestPath) {
+        try {
+            $am = Get-Content $assetManifestPath -Raw | ConvertFrom-Json
+            if (-not ($am.files -contains 'checksums.json')) {
+                $am.files += 'checksums.json'
+                ($am | ConvertTo-Json -Depth 5) | Set-Content -Path $assetManifestPath -Encoding UTF8
+                Write-Host "🛠️  Updated asset-manifest.json to include checksums.json" -ForegroundColor Green
+            }
+        }
+        catch { Write-Warning "Failed to update asset-manifest.json: $($_.Exception.Message)" }
+    }
 }
 finally {
     Pop-Location
