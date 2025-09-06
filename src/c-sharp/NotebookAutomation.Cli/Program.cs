@@ -85,11 +85,22 @@ internal class Program
         // Parse config option early to use it in dependency injection setup
         var configPath = configDiscoveryService.ParseConfigPathFromArgs(args);
 
-        // Handle --version manually before building the CLI to avoid conflicts
-        if (args.Contains("--version"))
+        // Handle --version / -v manually before building the CLI to avoid conflicts
+        if (args.Contains("--version") || args.Contains("-v"))
         {
-            var helpDisplayService = new HelpDisplayService(new EnvironmentDisplayService(configDiscoveryService));
-            helpDisplayService.ShowVersionInfo();
+            // Prefer compile-time injected semantic version constant, fall back to existing show logic
+            try
+            {
+                var semantic = VersionConstants.PluginReleaseVersion;
+                var runtimeVersion = VersionHelper.GetVersion().ToDisplayString();
+                // Output a concise single-line plus semantic detail for validation tools
+                Console.WriteLine($"{AppDomain.CurrentDomain.FriendlyName} version {semantic} ({runtimeVersion})");
+            }
+            catch
+            {
+                var helpDisplayService = new HelpDisplayService(new EnvironmentDisplayService(configDiscoveryService));
+                helpDisplayService.ShowVersionInfo();
+            }
             return 0;
         }
         // Setup dependency injection with the parsed config path
@@ -140,7 +151,7 @@ internal class Program
         var isRootHelp = IsRootLevelHelp(args);
         var isNoArgs = args.Length == 0;
         var isConfigOnly = args.Length == 1 && (args[0] == "--config" || args[0] == "-c");
-        var isVersion = args.Any(a => a == "--version");
+        var isVersion = args.Any(a => a == "--version" || a == "-v");
         var isConfigView = args.Contains("config") && args.Contains("view") &&
                           Array.IndexOf(args, "view") == Array.IndexOf(args, "config") + 1;
 

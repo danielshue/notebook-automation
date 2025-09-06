@@ -453,7 +453,7 @@ $commitMessage = switch ($Type) {
     default { "chore: version bump to v$Version" }
 }
 
-git add $PackageJsonPath, $ManifestJsonPath
+git add -- $PackageJsonPath $ManifestJsonPath $versionConstantsPath $PSCommandPath
 git commit -m $commitMessage
 
 # Step 7: Create and push tag

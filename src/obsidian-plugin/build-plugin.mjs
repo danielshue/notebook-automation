@@ -79,6 +79,27 @@ for (const file of pluginFiles) {
 console.log('🔍 Processing executables...');
 try {
     let executables = [];
+    // Purge any legacy osx-named executables to enforce canonical naming (macos)
+    try {
+        if (existsSync(distRoot)) {
+            const prePurge = readdirSync(distRoot).filter(f => f.startsWith('na-osx-'));
+            if (prePurge.length > 0) {
+                console.log(`   🧹 Removing legacy executables: ${prePurge.join(', ')}`);
+                for (const legacy of prePurge) {
+                    try {
+                        const p = join(distRoot, legacy);
+                        // Use fs.rmSync via dynamic import to avoid adding at top
+                        const { rmSync } = await import('fs');
+                        rmSync(p, { force: true });
+                    } catch (err) {
+                        console.warn(`   ⚠️ Failed to remove legacy executable ${legacy}: ${err.message}`);
+                    }
+                }
+            }
+        }
+    } catch (purgeErr) {
+        console.warn(`   ⚠️ Legacy purge encountered an issue: ${purgeErr.message}`);
+    }
     
     if (existsSync(distRoot)) {
         const files = readdirSync(distRoot);
@@ -120,6 +141,12 @@ try {
                 console.log(`      ⚠️  ${exe} (missing from dist)`);
             }
         });
+        // Final guard: ensure no legacy osx names remain after processing
+        const lingeringLegacy = executables.filter(e => e.startsWith('na-osx-'));
+        if (lingeringLegacy.length > 0) {
+            console.error(`   ❌ Legacy executables still present after purge: ${lingeringLegacy.join(', ')}`);
+            process.exit(1);
+        }
     } else {
         console.log('   ℹ️  No executables found in dist or publish directories');
         console.log('   ℹ️  Run dotnet publish to generate executables');
