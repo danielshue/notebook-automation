@@ -33,16 +33,19 @@
 #>
 
 param(
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [string]$Version,
     
-    [Parameter(Mandatory = $true)]
+    [Parameter(Mandatory = $false)]
     [ValidateSet("beta", "stable", "patch")]
-    [string]$Type,
+    [string]$Type = 'beta',
     
     [switch]$CreateRelease,
     
-    [switch]$PreRelease
+    [switch]$PreRelease,
+
+    # If specified, only rebuild CLI executables & validate they embed current version (no version bump / tagging)
+    [switch]$RebuildOnly
 )
 
 # Set error handling
@@ -54,7 +57,21 @@ $PluginDir = Join-Path $RepoRoot "src\obsidian-plugin"
 $PackageJsonPath = Join-Path $PluginDir "package.json"
 $ManifestJsonPath = Join-Path $PluginDir "manifest.json"
 
-Write-Host "🔧 Managing Obsidian Plugin Version: $Version ($Type)" -ForegroundColor Green
+if ($RebuildOnly -and -not $Version) {
+    # Infer version from manifest if not provided
+    if (Test-Path $ManifestJsonPath) {
+        $manifestData = Get-Content $ManifestJsonPath | ConvertFrom-Json
+        $Version = $manifestData.version
+        Write-Host "ℹ️  Inferred current version from manifest: $Version" -ForegroundColor Cyan
+    }
+    else {
+        throw "Cannot infer version (manifest.json missing). Provide -Version explicitly when using -RebuildOnly."
+    }
+}
+
+if (-not $Version) { throw "-Version is required unless -RebuildOnly with inferable manifest version." }
+
+Write-Host ( $RebuildOnly ? "🔧 Rebuilding executables for existing version: $Version" : "🔧 Managing Obsidian Plugin Version: $Version ($Type)" ) -ForegroundColor Green
 
 # Validation
 if (-not (Test-Path $PluginDir)) {
@@ -93,6 +110,67 @@ Write-Host "[DEBUG] RepoRoot: $RepoRoot (Type: $($RepoRoot.GetType().Name))" -Fo
 Write-Host "[DEBUG] PluginDir: $PluginDir (Type: $($PluginDir.GetType().Name))" -ForegroundColor Yellow
 Write-Host "[DEBUG] PackageJsonPath: $PackageJsonPath (Type: $($PackageJsonPath.GetType().Name))" -ForegroundColor Yellow
 Write-Host "[DEBUG] ManifestJsonPath: $ManifestJsonPath (Type: $($ManifestJsonPath.GetType().Name))" -ForegroundColor Yellow
+
+function Invoke-DotnetPublishMatrix {
+    param(
+        [string]$CliProject,
+        [string]$PublishRoot,
+        [string]$SemanticVersion
+    )
+
+    Write-Host "🧪 Publishing fresh CLI executables for all platforms" -ForegroundColor Green
+    if (-not (Test-Path $CliProject)) { throw "CLI project not found at $CliProject" }
+    if (-not (Test-Path $PublishRoot)) { New-Item -ItemType Directory -Path $PublishRoot | Out-Null }
+
+    Get-ChildItem -Path $PublishRoot -File -Filter 'na-*' -ErrorAction SilentlyContinue | ForEach-Object { $_ | Remove-Item -Force }
+
+    $targets = @(
+        @{ Rid = 'win-x64'; Out = 'na-win-x64.exe'; Ext = '.exe' },
+        @{ Rid = 'win-arm64'; Out = 'na-win-arm64.exe'; Ext = '.exe' },
+        @{ Rid = 'linux-x64'; Out = 'na-linux-x64'; Ext = '' },
+        @{ Rid = 'linux-arm64'; Out = 'na-linux-arm64'; Ext = '' },
+        @{ Rid = 'osx-x64'; Out = 'na-macos-x64'; Ext = '' },
+        @{ Rid = 'osx-arm64'; Out = 'na-macos-arm64'; Ext = '' }
+    )
+
+    foreach ($t in $targets) {
+        $rid = $t.Rid; $outName = $t.Out
+        $tempOut = Join-Path $PublishRoot "_temp-$rid"
+        if (Test-Path $tempOut) { Remove-Item -Recurse -Force $tempOut -ErrorAction SilentlyContinue }
+        Write-Host "  • Publishing $rid → $outName" -ForegroundColor Yellow
+        $publishArgs = @('publish', $CliProject, '-c','Release','-r',$rid,'/p:PublishSingleFile=true','/p:SelfContained=true','--output',$tempOut)
+        $pub = & dotnet @publishArgs 2>&1
+        if ($LASTEXITCODE -ne 0) { Write-Host $pub -ForegroundColor Red; throw "Publish failed for $rid" }
+        $produced = Join-Path $tempOut ("na" + $t.Ext)
+        if (-not (Test-Path $produced)) { throw "Expected binary not found: $produced" }
+        $finalPath = Join-Path $PublishRoot $outName
+        Copy-Item $produced $finalPath -Force
+        if ($IsWindows -eq $false -and $t.Ext -eq '') { try { chmod +x $finalPath 2>$null } catch {} }
+        Write-Host "    ✓ $outName" -ForegroundColor Green
+        Remove-Item -Recurse -Force $tempOut -ErrorAction SilentlyContinue
+    }
+
+    Write-Host "🔍 Validating semantic version in host executables" -ForegroundColor Green
+    $hostExecutables = Get-ChildItem -Path $PublishRoot -File | Where-Object { $_.Name -like 'na-*' -and ( ($IsWindows -and $_.Extension -eq '.exe') -or ($IsLinux -and $_.Name -match 'linux') -or ($IsMacOS -and $_.Name -match 'macos') ) }
+    foreach ($exe in $hostExecutables) {
+        try {
+            $raw = & $exe.FullName --version 2>$null
+            if ($LASTEXITCODE -ne 0) { throw "Non-zero exit" }
+            $lines = $raw -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -and ($_ -notmatch '^-(version|v)$') }
+            $verOutput = ($lines -join ' ')
+            if ($verOutput -notmatch [Regex]::Escape($SemanticVersion)) { throw "Semantic version $SemanticVersion not detected in output of $($exe.Name)" }
+            Write-Host "    ✓ $($exe.Name) version OK" -ForegroundColor Green
+        } catch { throw "Version validation failed for $($exe.Name): $($_.Exception.Message)" }
+    }
+}
+
+if ($RebuildOnly) {
+    $cliProject = Join-Path $RepoRoot "src\c-sharp\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj"
+    $publishRoot = Join-Path $RepoRoot 'dist'
+    Invoke-DotnetPublishMatrix -CliProject $cliProject -PublishRoot $publishRoot -SemanticVersion $Version
+    Write-Host "✅ Rebuild-only complete." -ForegroundColor Green
+    return
+}
 
 # Step 1: Update package.json version
 # Check if the specified version is already set in package.json
@@ -174,6 +252,8 @@ if (Test-Path $versionConstantsPath) {
 else {
     Write-Warning "VersionConstants.cs not found at $versionConstantsPath (skipping compile-time constant update)"
 }
+
+Invoke-DotnetPublishMatrix -CliProject (Join-Path $RepoRoot "src\c-sharp\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj") -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
 
 # Step 4: Build the plugin
 Write-Host "🔨 Building plugin"
