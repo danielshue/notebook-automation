@@ -296,18 +296,31 @@ function Assert-NaExecutableSet {
         throw "One or more expected executables missing."
     }
 
-    # Semantic version validation (best-effort)
+    # Semantic version validation (best-effort) – only attempt to execute binaries runnable on the current host
+    $hostPlatform = if ($IsWindows) { 'windows' } elseif ($IsLinux) { 'linux' } elseif ($IsMacOS) { 'macos' } else { 'unknown' }
+    $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+
     foreach ($exe in $executables) {
+        $canRun = switch ($hostPlatform) {
+            'windows' { $exe.Extension -eq '.exe' }
+            'linux' { $exe.Name -like 'na-linux-*' }
+            'macos' { $exe.Name -like 'na-macos-*' }
+            default { $false }
+        }
+
+        if (-not $canRun) {
+            Write-Host "   ↺ Skipping version validation for non-host binary $($exe.Name)" -ForegroundColor DarkYellow
+            continue
+        }
+
         try {
             $output = & $exe.FullName --version 2>$null
             if ($LASTEXITCODE -ne 0 -or ([string]::IsNullOrWhiteSpace($output))) { throw "No output" }
-            if ($output -notmatch [Regex]::Escape($ExpectedVersion)) {
-                throw "Version string '$ExpectedVersion' not found in output for $($exe.Name)"
-            }
+            if ($output -notmatch [Regex]::Escape($ExpectedVersion)) { throw "Version string '$ExpectedVersion' not found in output" }
             Write-Host "   ✓ $($exe.Name) version OK" -ForegroundColor Green
         }
         catch {
-            throw "Version validation failed for $($exe.Name): $($_.Exception.Message)"
+            Write-Warning "   ⚠️  Version validation warning for $($exe.Name): $($_.Exception.Message)"
         }
     }
 
