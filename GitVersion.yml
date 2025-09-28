@@ -1,5 +1,5 @@
 mode: ContinuousDelivery
-next-version: 0.1.0-beta.8
+next-version: 0.1.0-beta.17
 branches:
   master:
     regex: ^master$
@@ -13,3 +13,4 @@ branches:
     regex: ^develop$
     mode: ContinuousDelivery
     label: 'beta'
+

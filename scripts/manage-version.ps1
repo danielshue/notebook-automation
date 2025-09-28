@@ -38,12 +38,41 @@
 .PARAMETER ReissueVersion
     The semantic version (without leading 'v') of the existing tag to reissue (e.g. 0.1.0-beta.16)
 
+.PARAMETER SyncOnly
+    Only synchronize versions between CLI and plugin components (no releases)
+
+.PARAMETER StatusOnly
+    Only show version status across all components
+
+.PARAMETER Detailed
+    Show detailed version information (used with -StatusOnly)
+
+.PARAMETER BuildAfterSync
+    Build components after synchronization (used with -SyncOnly)
 
 .EXAMPLE
-    .\scripts\manage-plugin-version.ps1 -Version "0.1.0-beta.1" -Type "beta" -CreateRelease -PreRelease
+    # Create a new beta release
+    .\scripts\manage-version.ps1 -Version "0.1.0-beta.1" -Type "beta" -CreateRelease -PreRelease
     
 .EXAMPLE
-    .\scripts\manage-plugin-version.ps1 -Version "0.1.0" -Type "stable" -CreateRelease
+    # Create a stable release
+    .\scripts\manage-version.ps1 -Version "0.1.0" -Type "stable" -CreateRelease
+
+.EXAMPLE
+    # Sync versions only (no release)
+    .\scripts\manage-version.ps1 -SyncOnly
+    
+.EXAMPLE
+    # Sync versions and build
+    .\scripts\manage-version.ps1 -SyncOnly -BuildAfterSync
+    
+.EXAMPLE
+    # Check version status
+    .\scripts\manage-version.ps1 -StatusOnly
+    
+.EXAMPLE
+    # Check detailed version status
+    .\scripts\manage-version.ps1 -StatusOnly -Detailed
 
 .NOTES
     - Requires gh CLI to be installed and authenticated
@@ -59,7 +88,6 @@ param(
     [ValidateSet("beta", "stable", "patch")]
     [string]$Type = 'beta',
     
-
     [switch]$CreateRelease,
     
     [switch]$PreRelease,
@@ -71,7 +99,21 @@ param(
     [switch]$Reissue,
 
     # Version to reissue (semantic part only, tag assumed to be v<version>)
-    [string]$ReissueVersion
+    [string]$ReissueVersion,
+
+    # UTILITY MODES - mutually exclusive with version management
+    
+    # Only synchronize versions between CLI and plugin (no releases)
+    [switch]$SyncOnly,
+    
+    # Only show version status across all components
+    [switch]$StatusOnly,
+    
+    # Show detailed version information (used with -StatusOnly)
+    [switch]$Detailed,
+    
+    # Build after synchronization (used with -SyncOnly)
+    [switch]$BuildAfterSync
 )
 
 # Set error handling
@@ -82,6 +124,183 @@ $RepoRoot = Get-Location
 $PluginDir = Join-Path $RepoRoot "src\obsidian-plugin"
 $PackageJsonPath = Join-Path $PluginDir "package.json"
 $ManifestJsonPath = Join-Path $PluginDir "manifest.json"
+
+#
+# UTILITY MODES - Handle sync and status operations
+#
+
+if ($StatusOnly) {
+    Write-Host "📊 Version Status Report" -ForegroundColor Green
+    Write-Host "========================" -ForegroundColor Green
+    Write-Host ""
+
+    # Plugin versions
+    Write-Host "🔌 Plugin Component:" -ForegroundColor Blue
+    if (Test-Path $ManifestJsonPath) {
+        $manifest = Get-Content $ManifestJsonPath | ConvertFrom-Json
+        Write-Host "  manifest.json: $($manifest.version)" -ForegroundColor White
+        
+        if ($Detailed) {
+            Write-Host "    minAppVersion: $($manifest.minAppVersion)" -ForegroundColor Gray
+            Write-Host "    id: $($manifest.id)" -ForegroundColor Gray
+        }
+    }
+    else {
+        Write-Host "  manifest.json: ❌ NOT FOUND" -ForegroundColor Red
+    }
+
+    if (Test-Path $PackageJsonPath) {
+        $packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
+        Write-Host "  package.json: $($packageJson.version)" -ForegroundColor White
+        
+        if ($Detailed) {
+            Write-Host "    name: $($packageJson.name)" -ForegroundColor Gray
+        }
+    }
+    else {
+        Write-Host "  package.json: ❌ NOT FOUND" -ForegroundColor Red
+    }
+
+    # CLI versions
+    Write-Host ""
+    Write-Host "🛠️  CLI Component:" -ForegroundColor Blue
+    $GitVersionPath = Join-Path $RepoRoot "GitVersion.yml"
+    if (Test-Path $GitVersionPath) {
+        $gitVersionContent = Get-Content $GitVersionPath -Raw
+        if ($gitVersionContent -match "next-version:\s*([^\r\n]+)") {
+            Write-Host "  GitVersion.yml: $($matches[1].Trim())" -ForegroundColor White
+        }
+    }
+    else {
+        Write-Host "  GitVersion.yml: ❌ NOT FOUND" -ForegroundColor Red
+    }
+
+    # Git tags
+    Write-Host ""
+    Write-Host "🏷️  Git Tags:" -ForegroundColor Blue
+    try {
+        $latestTag = git describe --tags --abbrev=0 2>$null
+        if ($latestTag) {
+            Write-Host "  Latest tag: $latestTag" -ForegroundColor White
+        }
+        else {
+            Write-Host "  Latest tag: ❌ NO TAGS FOUND" -ForegroundColor Red
+        }
+    }
+    catch {
+        Write-Host "  Latest tag: ❌ ERROR READING TAGS" -ForegroundColor Red
+    }
+
+    # Version alignment check
+    Write-Host ""
+    Write-Host "🔍 Alignment Check:" -ForegroundColor Blue
+    $versions = @()
+    if (Test-Path $ManifestJsonPath) {
+        $manifest = Get-Content $ManifestJsonPath | ConvertFrom-Json
+        $versions += $manifest.version
+    }
+    if (Test-Path $PackageJsonPath) {
+        $packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
+        $versions += $packageJson.version
+    }
+
+    $uniqueVersions = $versions | Sort-Object -Unique
+    if ($uniqueVersions.Count -eq 1) {
+        Write-Host "  ✅ All components aligned at version: $($uniqueVersions[0])" -ForegroundColor Green
+    }
+    else {
+        Write-Host "  ⚠️  Version mismatch detected!" -ForegroundColor Yellow
+        $versions | ForEach-Object { Write-Host "     - $_" -ForegroundColor Yellow }
+    }
+
+    exit 0
+}
+
+if ($SyncOnly) {
+    Write-Host "🔄 Synchronizing CLI and Plugin Versions" -ForegroundColor Green
+
+    # Get target version
+    $targetVersion = $Version
+    if (-not $targetVersion) {
+        if (Test-Path $ManifestJsonPath) {
+            $manifest = Get-Content $ManifestJsonPath | ConvertFrom-Json
+            $targetVersion = $manifest.version
+            Write-Host "📖 Using version from manifest.json: $targetVersion"
+        }
+        else {
+            throw "No version specified and manifest.json not found. Use -Version parameter."
+        }
+    }
+    else {
+        Write-Host "📝 Using specified version: $targetVersion"
+    }
+
+    # Update CLI version (GitVersion.yml)
+    $GitVersionPath = Join-Path $RepoRoot "GitVersion.yml"
+    if (Test-Path $GitVersionPath) {
+        $gitVersionContent = Get-Content $GitVersionPath -Raw
+        $newGitVersionContent = $gitVersionContent -replace "next-version:\s*[^\r\n]+", "next-version: $targetVersion"
+        Set-Content -Path $GitVersionPath -Value $newGitVersionContent -Encoding UTF8
+        Write-Host "✅ Updated GitVersion.yml to: $targetVersion"
+    }
+
+    # Update plugin versions if not already set
+    if (Test-Path $ManifestJsonPath) {
+        $manifest = Get-Content $ManifestJsonPath | ConvertFrom-Json
+        if ($manifest.version -ne $targetVersion) {
+            $manifest.version = $targetVersion
+            $manifest | ConvertTo-Json -Depth 5 | Set-Content $ManifestJsonPath -Encoding UTF8
+            Write-Host "✅ Updated manifest.json to: $targetVersion"
+        }
+        else {
+            Write-Host "ℹ️  manifest.json already at: $targetVersion"
+        }
+    }
+
+    if (Test-Path $PackageJsonPath) {
+        $packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
+        if ($packageJson.version -ne $targetVersion) {
+            $packageJson.version = $targetVersion
+            $packageJson | ConvertTo-Json -Depth 5 | Set-Content $PackageJsonPath -Encoding UTF8
+            Write-Host "✅ Updated package.json to: $targetVersion"
+        }
+        else {
+            Write-Host "ℹ️  package.json already at: $targetVersion"
+        }
+    }
+
+    Write-Host "✅ Version synchronization complete!" -ForegroundColor Green
+
+    if ($BuildAfterSync) {
+        Write-Host ""
+        Write-Host "🔨 Building components after sync..."
+        
+        # Build CLI
+        Write-Host "Building CLI..."
+        dotnet build "$RepoRoot\src\c-sharp\NotebookAutomation.sln" --configuration Release
+        if ($LASTEXITCODE -ne 0) {
+            throw "CLI build failed"
+        }
+
+        # Build Plugin
+        Write-Host "Building Plugin..."
+        Push-Location $PluginDir
+        try {
+            npm install
+            npm run build
+            if ($LASTEXITCODE -ne 0) {
+                throw "Plugin build failed"
+            }
+        }
+        finally {
+            Pop-Location
+        }
+
+        Write-Host "✅ Build complete!" -ForegroundColor Green
+    }
+
+    exit 0
+}
 
 if (-not $Reissue -and $RebuildOnly -and -not $Version) {
     # Infer version from manifest if not provided

@@ -141,9 +141,9 @@ C# test documentation coverage checker that scans test methods for missing XML d
 
 ### `manage-version.ps1`
 
-Comprehensive version management for both CLI and Obsidian plugin components with automated GitHub release creation.
+**Complete version management solution** for both CLI and Obsidian plugin components with integrated utilities and automated GitHub release creation.
 
-**Usage:**
+**Version Management:**
 
 ```powershell
 # Create beta version
@@ -157,57 +157,36 @@ Comprehensive version management for both CLI and Obsidian plugin components wit
 
 # Version sync only (no release)
 .\scripts\manage-version.ps1 -Version "0.2.0-beta.1" -Type "beta"
-**Features:**
-- **Version Synchronization**: Automatically syncs versions between `package.json` and `manifest.json`
-- **Git Integration**: Creates commits and tags with appropriate conventional commit messages
-- **GitHub Release Creation**: Automatically creates GitHub releases with proper release notes
-- **BRAT Compatibility**: Ensures proper versioning and file structure for BRAT beta testing
-- **Build Validation**: Runs full plugin build and verifies all required artifacts
-- **Executable Preservation**: Maintains cross-platform executables during version updates
-- **Pre-release Support**: Handles both stable and pre-release versions appropriately
+```
 
-**Process Steps:**
-1. **Version Update**: Updates `package.json` using `npm version`
-2. **Synchronization**: Runs version sync script to update `manifest.json`
-3. **Validation**: Verifies version consistency across files
-4. **Build**: Runs complete plugin build with executable preservation
-5. **Git Operations**: Commits changes and creates version tag
-6. **Release Creation**: Optionally creates GitHub release with assets
-7. **Documentation**: Provides next steps and release URL
+**Utility Operations:**
+
+```powershell
+# Synchronize versions between components
+.\scripts\manage-version.ps1 -SyncOnly
+
+# Sync versions and build components
+.\scripts\manage-version.ps1 -SyncOnly -BuildAfterSync
+
+# Check version status across all components
+.\scripts\manage-version.ps1 -StatusOnly
+
+# Check detailed version status
+.\scripts\manage-version.ps1 -StatusOnly -Detailed
+```
+
+**Features:**
+- **🎯 Complete Solution**: Single script for all version management needs
+- **🔄 Version Synchronization**: Syncs versions between CLI and plugin components  
+- **📊 Status Checking**: Shows version alignment across all components
+- **🚀 Release Automation**: Creates GitHub releases with proper asset uploads
+- **🔧 BRAT Compatibility**: Ensures proper versioning for Obsidian plugin testing
+- **✅ Build Integration**: Validates builds and preserves cross-platform executables
+- **📋 Detailed Reporting**: Comprehensive status and diagnostic information
 
 **Release Types:**
-- **Beta** (`-Type "beta"`): Creates pre-release for BRAT testing with beta-specific release notes
-- **Stable** (`-Type "stable"`): Creates stable release with full documentation
-- **Patch** (`-Type "patch"`): Creates patch release with bug fix documentation
-
-### `sync-versions.ps1`
-
-Synchronizes versions between CLI and Obsidian plugin components without creating releases.
-
-**Usage:**
-```powershell
-# Sync versions (reads from manifest.json)
-.\scripts\sync-versions.ps1
-
-# Sync and build both components
-.\scripts\sync-versions.ps1 -BuildAfterSync
-
-# Sync to specific version
-.\scripts\sync-versions.ps1 -PluginVersion "0.1.0-beta.5" -BuildAfterSync
-```
-
-### `check-version-status.ps1`
-
-Displays current version status across all components to identify alignment issues.
-
-**Usage:**
-```powershell
-# Show basic version status
-.\scripts\check-version-status.ps1
-
-# Show detailed version information
-.\scripts\check-version-status.ps1 -Detailed
-```
+- **Beta** (`-Type "beta"`): Creates pre-release for BRAT testing
+- **Stable** (`-Type "stable"`): Creates production release
 - **Patch** (`-Type "patch"`): Creates patch release for bug fixes
 
 **BRAT Integration:**
