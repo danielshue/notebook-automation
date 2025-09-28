@@ -665,7 +665,7 @@ if ($CreateRelease -and -not $Reissue) {
     }
     
     # Prepare release assets - include only files listed in asset manifest
-    $pluginDistDir = Join-Path $RepoRoot "src\obsidian-plugin\dist"
+    $pluginDistDir = Join-Path $RepoRoot "dist"
     $releaseAssets = @()
     
     # Read asset manifest to determine which files to include
