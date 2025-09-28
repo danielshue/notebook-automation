@@ -19,16 +19,17 @@ import { resolve, join } from "path";
  * - Zips plugin files for release
  */
 
-const distRoot = resolve('./dist');
+// Use single root-level dist directory (two levels up from plugin folder)
+const distRoot = resolve('../../dist');
 const currentDir = process.cwd();
 
 console.log('🔨 Building Obsidian plugin...');
 console.log(`   Plugin source: ${currentDir}`);
-console.log(`   Output directory: ${distRoot}`);
+console.log(`   Output directory (root dist): ${distRoot}`);
 
-// Ensure dist directory exists
+// Ensure root dist directory exists
 if (!existsSync(distRoot)) {
-    console.log('📁 Creating dist directory...');
+    console.log('📁 Creating root dist directory...');
     mkdirSync(distRoot, { recursive: true });
 }
 
@@ -110,26 +111,7 @@ try {
     }
     
     // If no executables found in dist, check the root dist directory
-    if (executables.length === 0) {
-        const rootDistDir = resolve('../../dist');
-        if (existsSync(rootDistDir)) {
-            console.log('   📂 Copying executables from root dist directory...');
-            const rootDistFiles = readdirSync(rootDistDir);
-            const rootExecutables = rootDistFiles.filter(f => 
-                f.startsWith('na-') && 
-                (f.endsWith('.exe') || (!f.includes('.') && f.includes('-')))
-            );
-            
-            for (const exe of rootExecutables) {
-                const srcPath = join(rootDistDir, exe);
-                const destPath = join(distRoot, exe);
-                
-                copyFileSync(srcPath, destPath);
-                console.log(`   ✅ ${exe} (from root dist)`);
-                executables.push(exe);
-            }
-        }
-    }
+    // Root dist is authoritative; no secondary copy step required now
 
     if (executables.length > 0) {
         console.log(`   ✅ Found ${executables.length} executables in dist:`);
@@ -206,6 +188,8 @@ if (allPresent) {
             'manifest.json',
             'metadata-schema.yml',
             'styles.css',
+            'checksums.json', // integrity file
+            'notebook-automation-obsidian-plugin.zip'
         ];
         
         // Add any executables that exist in dist
@@ -219,8 +203,16 @@ if (allPresent) {
         // Only include files that exist
         const manifestFilesPresent = filesToManifest.filter(f => existsSync(join(distRoot, f)));
         
+        // Determine version from plugin manifest if available
+        let manifestVersion = '0.0.0';
+        try {
+            const manifestJson = JSON.parse(readFileSync(join(distRoot, 'manifest.json'), 'utf8'));
+            if (manifestJson?.version) manifestVersion = manifestJson.version;
+        } catch { /* ignore */ }
+
         const manifest = {
-            version: "1.0.0",
+            version: manifestVersion,
+            generatedUtc: new Date().toISOString(),
             files: manifestFilesPresent
         };
         const manifestPath = join(distRoot, 'asset-manifest.json');

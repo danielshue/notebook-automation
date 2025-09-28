@@ -544,45 +544,60 @@ jobs:
 
       - name: Prepare plugin directory and zip for BRAT/Community Release
         run: |
+          set -e
           PLUGIN_ID="notebook-automation"
           PLUGIN_DIR="$PLUGIN_ID"
+          ROOT_DIST="dist"
           mkdir -p "$PLUGIN_DIR"
-          # Copy required plugin files (fail if missing)
-          for f in main.js manifest.json styles.css default-config.json metadata-schema.yml BaseBlockTemplate.yml chunk_summary_prompt.md final_summary_prompt.md; do
-            if [ ! -f "src/obsidian-plugin/dist/$f" ] && [ ! -f "src/obsidian-plugin/$f" ] && [ ! -f "config/$f" ] && [ ! -f "prompts/$f" ]; then
-              echo "❌ Required file missing: $f"; exit 1
+          if [ ! -d "$ROOT_DIST" ]; then echo "❌ Root dist directory not found: $ROOT_DIST"; ls -la || true; exit 1; fi
+          echo "Using root dist directory: $ROOT_DIST"
+          # Required core plugin files expected in root dist after build-plugin.mjs
+          required_files=(main.js manifest.json styles.css default-config.json metadata-schema.yml BaseBlockTemplate.yml chunk_summary_prompt.md final_summary_prompt.md asset-manifest.json)
+          for f in "${required_files[@]}"; do
+            if [ ! -f "$ROOT_DIST/$f" ] && [ ! -f "config/$f" ] && [ ! -f "prompts/$f" ]; then
+              echo "❌ Required file missing (not in dist/config/prompts): $f"; exit 1
             fi
-            # Prefer dist/ for built files, fallback to root for manifest/styles/config, fallback to config/prompts for others
-            if [ -f "src/obsidian-plugin/dist/$f" ]; then
-              cp "src/obsidian-plugin/dist/$f" "$PLUGIN_DIR/"
-            elif [ -f "src/obsidian-plugin/$f" ]; then
-              cp "src/obsidian-plugin/$f" "$PLUGIN_DIR/"
+            if [ -f "$ROOT_DIST/$f" ]; then
+              cp "$ROOT_DIST/$f" "$PLUGIN_DIR/"
             elif [ -f "config/$f" ]; then
               cp "config/$f" "$PLUGIN_DIR/"
             elif [ -f "prompts/$f" ]; then
               cp "prompts/$f" "$PLUGIN_DIR/"
             fi
           done
-          # Copy all executables if present
+          # Copy executables from consolidated directory
           if [ -d consolidated-executables ]; then
+            echo "Copying executables into plugin directory..."
             cp consolidated-executables/* "$PLUGIN_DIR/" 2>/dev/null || true
           fi
-          # If checksums.json exists, validate hashes before proceeding
+          # If checksums.json produced by consolidation exists in dist include it, otherwise warn
+          if [ -f "$ROOT_DIST/checksums.json" ]; then
+            cp "$ROOT_DIST/checksums.json" "$PLUGIN_DIR/"
+          elif [ -f "consolidated-executables/checksums.json" ]; then
+            cp "consolidated-executables/checksums.json" "$PLUGIN_DIR/"
+          else
+            echo "⚠️ No checksums.json located (continuing)."
+          fi
+          # Validate hashes if checksums.json present
           if [ -f "$PLUGIN_DIR/checksums.json" ]; then
             echo "Validating executable hashes against checksums.json..."
             jq -r '.files | to_entries[] | "\(.key) \(.value)"' "$PLUGIN_DIR/checksums.json" | while read name hash; do
               if [ ! -f "$PLUGIN_DIR/$name" ]; then echo "❌ Missing file listed in checksums.json: $name"; exit 1; fi
-              calc=$(sha256sum "$PLUGIN_DIR/$name" | awk '{print $1}')
+              if command -v sha256sum >/dev/null 2>&1; then
+                calc=$(sha256sum "$PLUGIN_DIR/$name" | awk '{print $1}')
+              else
+                calc=$(shasum -a 256 "$PLUGIN_DIR/$name" | awk '{print $1}')
+              fi
               if [ "$calc" != "$hash" ]; then echo "❌ Hash mismatch for $name (expected $hash got $calc)"; exit 1; fi
               echo "✓ $name hash OK"
             done
             echo "✅ All hashes validated"
           else
-            echo "⚠️  checksums.json not found in plugin directory (will proceed but integrity layer missing)"
+            echo "⚠️  checksums.json not found in plugin directory (integrity validation skipped)"
           fi
-          # Copy the plugin zip for release asset
-          if [ -f "src/obsidian-plugin/dist/notebook-automation-obsidian-plugin.zip" ]; then
-            cp "src/obsidian-plugin/dist/notebook-automation-obsidian-plugin.zip" "$PLUGIN_DIR/"
+          # Copy plugin zip if created by build script in root dist
+          if [ -f "$ROOT_DIST/notebook-automation-obsidian-plugin.zip" ]; then
+            cp "$ROOT_DIST/notebook-automation-obsidian-plugin.zip" "$PLUGIN_DIR/"
           fi
           ls -la "$PLUGIN_DIR"
 

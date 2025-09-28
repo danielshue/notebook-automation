@@ -2,9 +2,12 @@
 <#
 .SYNOPSIS
     Manages versioning for the Obsidian plugin, preparing it for BRAT beta testing.
+    [switch]$Reissue,
+    [string]$ReissueVersion
 
 .DESCRIPTION
     This script automates the version management process for the Notebook Automation
+
     Obsidian plugin, ensuring version consistency across package.json, manifest.json,
     and Git tags for proper BRAT (Beta Reviewer's Auto-update Tool) functionality.
 
@@ -40,6 +43,7 @@ param(
     [ValidateSet("beta", "stable", "patch")]
     [string]$Type = 'beta',
     
+
     [switch]$CreateRelease,
     
     [switch]$PreRelease,

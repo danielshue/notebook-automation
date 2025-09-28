@@ -27,8 +27,8 @@ if you want to view the source, please visit the github repository of this plugi
 
 const prod = (process.argv[2] === "production");
 
-// Point to plugin dist directory
-const pluginDistDir = resolve("./dist");
+// Point to single root-level dist directory (two levels up from plugin folder)
+const pluginDistDir = resolve("../../dist");
 const outputFile = resolve(pluginDistDir, "main.js");
 
 // Ensure plugin dist directory exists
