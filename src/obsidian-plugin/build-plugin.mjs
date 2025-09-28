@@ -188,8 +188,7 @@ if (allPresent) {
             'manifest.json',
             'metadata-schema.yml',
             'styles.css',
-            'checksums.json', // integrity file
-            'notebook-automation-obsidian-plugin.zip'
+            'checksums.json' // integrity file
         ];
         
         // Add any executables that exist in dist
