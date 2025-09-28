@@ -418,22 +418,44 @@ jobs:
           echo "Validating executable naming (no legacy na-osx-*; exact expected set)..."
           ls -1 publish/executables || { echo "Missing executables directory"; exit 1; }
           # Collect names
-          mapfile -t files < <(ls -1 publish/executables)
-          # Fail fast if any legacy names found
-            if printf '%s\n' "${files[@]}" | grep -E '^na-osx-' >/dev/null 2>&1; then
-            echo "❌ Legacy na-osx-* executable detected"; printf '%s\n' "${files[@]}"; exit 1; fi
+          # Check for legacy na-osx-* names (should not exist)
+          if ls -1 publish/executables | grep -E '^na-osx-' >/dev/null 2>&1; then
+            echo "❌ Legacy na-osx-* executable detected:"
+            ls -1 publish/executables | grep -E '^na-osx-' || true
+            exit 1
+          fi
+
           # Expected names depend on platform (matrix)
-          expected_common=("${{ matrix.x64-executable-name }}" "${{ matrix.arm64-executable-name }}")
-          # Verify both expected present
-          for need in "${expected_common[@]}"; do
-            if ! printf '%s\n' "${files[@]}" | grep -Fx "$need" >/dev/null; then
-              echo "❌ Missing expected executable: $need"; exit 1; fi
+          expected_x64="${{ matrix.x64-executable-name }}"
+          expected_arm64="${{ matrix.arm64-executable-name }}"
+
+          # Verify both expected executables are present
+          if [ ! -f "publish/executables/$expected_x64" ]; then
+            echo "❌ Missing expected executable: $expected_x64"
+            exit 1
+          fi
+
+          if [ ! -f "publish/executables/$expected_arm64" ]; then
+            echo "❌ Missing expected executable: $expected_arm64"
+            exit 1
+          fi
+
+          # Count executables starting with na- and ensure only expected ones exist
+          unexpected_count=0
+          for exe in publish/executables/na-*; do
+            if [ -f "$exe" ]; then
+              basename_exe=$(basename "$exe")
+              if [ "$basename_exe" != "$expected_x64" ] && [ "$basename_exe" != "$expected_arm64" ]; then
+                echo "❌ Unexpected executable present: $basename_exe"
+                unexpected_count=
+              fi
+            fi
           done
-          # Ensure no unexpected extra starting with na- for this platform set
-          for f in "${files[@]}"; do
-            if [[ "$f" == na-* ]] && [[ ! " ${expected_common[*]} " =~ " $f " ]]; then
-              echo "❌ Unexpected executable present: $f"; exit 1; fi
-          done
+
+          if [  -gt 0 ]; then
+            exit 1
+          fi
+
           echo "✅ Executable naming validation passed"
 
       - name: Upload published executables
@@ -620,5 +642,3 @@ jobs:
             --draft \
             notebook-automation/* \
             notebook-automation/notebook-automation-obsidian-plugin.zip
-
-# Fixed mapfile command compatibility issue for macOS runners
