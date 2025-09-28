@@ -620,3 +620,5 @@ jobs:
             --draft \
             notebook-automation/* \
             notebook-automation/notebook-automation-obsidian-plugin.zip
+
+# Fixed mapfile command compatibility issue for macOS runners
