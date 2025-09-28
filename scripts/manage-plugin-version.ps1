@@ -745,7 +745,7 @@ This is a patch release with bug fixes and minor improvements.
     # Build gh release command
     $ghArgs = @(
         "release", "create", $tagName,
-        "--title", "v$Version"
+        "--title", "v$Version",
         "--notes", $releaseNotes
     )
     
