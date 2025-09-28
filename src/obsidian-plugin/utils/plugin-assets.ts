@@ -188,17 +188,41 @@ export async function ensureExecutableExists(plugin: Plugin, progressCallback?: 
   try {
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
+    // @ts-ignore
+    const path = window.require ? window.require('path') : null;
 
     let needsDownload = true;
     let finalPath = existingPath;
 
-    if (fs && existingPath !== execName && fs.existsSync(existingPath)) {
+    // Determine the actual file path to check
+    let actualFilePath = existingPath;
+    if (fs && path && existingPath === execName) {
+      // If getNaExecutablePath only returned a filename, construct the full path to plugin directory
+      let pluginDir = '';
+      const adapter = plugin.app?.vault?.adapter;
+      // @ts-ignore
+      if (adapter && typeof adapter.getBasePath === 'function') {
+        try {
+          // @ts-ignore
+          const vaultRoot = adapter.getBasePath();
+          if (plugin.manifest?.dir) {
+            pluginDir = path.resolve(vaultRoot, plugin.manifest.dir);
+          }
+        } catch {}
+      }
+      if (pluginDir) {
+        actualFilePath = path.join(pluginDir, execName);
+      }
+    }
+
+    if (fs && fs.existsSync(actualFilePath)) {
       // Validate existing executable
-      const currentOk = await isExecutableCurrent(plugin, existingPath, expectedVersion);
+      const currentOk = await isExecutableCurrent(plugin, actualFilePath, expectedVersion);
       if (currentOk) {
         needsDownload = false;
+        finalPath = actualFilePath;
       } else {
-        try { fs.unlinkSync(existingPath); } catch { /* ignore */ }
+        try { fs.unlinkSync(actualFilePath); } catch { /* ignore */ }
         needsDownload = true;
       }
     }
