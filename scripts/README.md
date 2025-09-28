@@ -139,26 +139,24 @@ C# test documentation coverage checker that scans test methods for missing XML d
 - During code reviews to validate test documentation
 - As part of automated quality checks in CI/CD pipelines
 
-### `manage-plugin-version.ps1`
+### `manage-version.ps1`
 
-Comprehensive version management script for the Obsidian plugin, specifically designed for BRAT (Beta Reviewer's Auto-update Tool) compatibility. Automates the entire release process from version updates to GitHub release creation.
+Comprehensive version management for both CLI and Obsidian plugin components with automated GitHub release creation.
 
 **Usage:**
 
 ```powershell
-# Create a beta release for BRAT testing
-.\scripts\manage-plugin-version.ps1 -Version "0.1.0-beta.1" -Type "beta" -CreateRelease -PreRelease
+# Create beta version
+.\scripts\manage-version.ps1 -Version "0.1.0-beta.1" -Type "beta" -CreateRelease -PreRelease
 
-# Create a stable release
-.\scripts\manage-plugin-version.ps1 -Version "0.1.0" -Type "stable" -CreateRelease
+# Create stable version
+.\scripts\manage-version.ps1 -Version "0.1.0" -Type "stable" -CreateRelease
 
-# Create a patch release
-.\scripts\manage-plugin-version.ps1 -Version "0.1.1" -Type "patch" -CreateRelease
+# Create patch version
+.\scripts\manage-version.ps1 -Version "0.1.1" -Type "patch" -CreateRelease
 
-# Update version only (no release)
-.\scripts\manage-plugin-version.ps1 -Version "0.2.0-beta.1" -Type "beta"
-```
-
+# Version sync only (no release)
+.\scripts\manage-version.ps1 -Version "0.2.0-beta.1" -Type "beta"
 **Features:**
 - **Version Synchronization**: Automatically syncs versions between `package.json` and `manifest.json`
 - **Git Integration**: Creates commits and tags with appropriate conventional commit messages
@@ -180,6 +178,36 @@ Comprehensive version management script for the Obsidian plugin, specifically de
 **Release Types:**
 - **Beta** (`-Type "beta"`): Creates pre-release for BRAT testing with beta-specific release notes
 - **Stable** (`-Type "stable"`): Creates stable release with full documentation
+- **Patch** (`-Type "patch"`): Creates patch release with bug fix documentation
+
+### `sync-versions.ps1`
+
+Synchronizes versions between CLI and Obsidian plugin components without creating releases.
+
+**Usage:**
+```powershell
+# Sync versions (reads from manifest.json)
+.\scripts\sync-versions.ps1
+
+# Sync and build both components
+.\scripts\sync-versions.ps1 -BuildAfterSync
+
+# Sync to specific version
+.\scripts\sync-versions.ps1 -PluginVersion "0.1.0-beta.5" -BuildAfterSync
+```
+
+### `check-version-status.ps1`
+
+Displays current version status across all components to identify alignment issues.
+
+**Usage:**
+```powershell
+# Show basic version status
+.\scripts\check-version-status.ps1
+
+# Show detailed version information
+.\scripts\check-version-status.ps1 -Detailed
+```
 - **Patch** (`-Type "patch"`): Creates patch release for bug fixes
 
 **BRAT Integration:**

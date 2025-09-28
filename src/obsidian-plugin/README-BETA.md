@@ -93,10 +93,10 @@ For a more automated approach:
 
 ```bash
 # Create beta release
-.\scripts\manage-plugin-version.ps1 -Version "0.1.0-beta.2" -Type "beta" -CreateRelease -PreRelease
+.\scripts\manage-version.ps1 -Version "0.1.0-beta.2" -Type "beta" -CreateRelease -PreRelease
 
-# Create stable release
-.\scripts\manage-plugin-version.ps1 -Version "0.1.0" -Type "stable" -CreateRelease
+# For stable release:
+.\scripts\manage-version.ps1 -Version "0.1.0" -Type "stable" -CreateRelease
 ```
 
 ## Current Status

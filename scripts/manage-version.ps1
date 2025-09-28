@@ -1,20 +1,24 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Manages versioning for the Obsidian plugin, preparing it for BRAT beta testing.
-    [switch]$Reissue,
-    [string]$ReissueVersion
+    Comprehensive version management for the Notebook Automation project.
 
 .DESCRIPTION
-    This script automates the version management process for the Notebook Automation
-
-    Obsidian plugin, ensuring version consistency across package.json, manifest.json,
-    and Git tags for proper BRAT (Beta Reviewer's Auto-update Tool) functionality.
-        In reissue mode (-Reissue), after recreating the release the script now performs
-        an automatic post-release verification step that:
-            - Compares expected vs. remote release asset names
-            - Validates checksums.json entries against freshly computed local hashes
-            - Emits a concise summary (warnings only; does not fail the run)
+    This script automates the complete version management process for both CLI and
+    Obsidian plugin components, ensuring version consistency across package.json, 
+    manifest.json, and Git tags for proper BRAT (Beta Reviewer's Auto-update Tool) 
+    functionality and release automation.
+    
+    Features:
+    - Unified CLI and plugin version management
+    - Automatic executable building for all platforms
+    - GitHub release creation with asset uploads
+    - BRAT compatibility with proper manifest handling
+    - Checksum validation and integrity verification
+    - Support for beta, stable, and patch releases
+    
+    In reissue mode (-Reissue), the script performs automatic post-release 
+    verification including asset comparison and checksum validation.
 
 .PARAMETER Version
     The version to set (e.g., "0.1.0-beta.1", "0.1.0")

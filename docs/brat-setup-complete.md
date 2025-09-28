@@ -15,7 +15,7 @@
 
 - **Current version**: `0.1.0-beta.1` (properly synced across package.json and manifest.json)
 - **Version strategy**: Using semantic versioning with beta releases for BRAT testing
-- **Automation**: Created `manage-plugin-version.ps1` script for automated version management
+- **Automation**: Created `manage-version.ps1` script for automated version management
 
 ### 3. BRAT Compatibility
 
@@ -76,7 +76,7 @@ dist/
 | ------------------------------------- | --------------------------------------------- |
 | `npm run build`                       | Build the plugin with executable preservation |
 | `.\scripts\test-brat-workflow.ps1`    | Test complete BRAT compatibility              |
-| `.\scripts\manage-plugin-version.ps1` | Automated version management                  |
+| `.\scripts\manage-version.ps1` | Automated version management                  |
 
 ## 🔍 Testing Commands
 
@@ -90,7 +90,7 @@ cd d:\source\notebook-automation
 .\scripts\test-brat-workflow.ps1
 
 # Create a new beta version (example)
-.\scripts\manage-plugin-version.ps1 -Version "0.1.0-beta.2" -Type "beta" -CreateRelease -PreRelease
+.\scripts\manage-version.ps1 -Version "0.1.0-beta.2" -Type "beta" -CreateRelease -PreRelease
 ```
 
 ## 📚 Key Documentation
