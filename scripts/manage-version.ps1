@@ -11,6 +11,7 @@
     
     Features:
     - Unified CLI and plugin version management
+    - Cross-platform compatibility (Windows, Linux, macOS)
     - Automatic executable building for all platforms
     - GitHub release creation with asset uploads
     - BRAT compatibility with proper manifest handling
@@ -50,6 +51,22 @@
 .PARAMETER BuildAfterSync
     Build components after synchronization (used with -SyncOnly)
 
+.PARAMETER Help
+    Show detailed help and usage examples
+
+.PARAMETER Diagnostic
+    Enable extra diagnostic output for troubleshooting
+
+.PARAMETER Quiet
+    Minimize output for automation scenarios
+
+.PARAMETER UseArtifacts
+    Download and use CI-built executables from GitHub Actions instead of building locally.
+    This ensures proper cross-platform compatibility and native performance.
+
+.PARAMETER ForceLocalBuild
+    Force local executable building even when -UseArtifacts is specified
+
 .EXAMPLE
     # Create a new beta release
     .\scripts\manage-version.ps1 -Version "0.1.0-beta.1" -Type "beta" -CreateRelease -PreRelease
@@ -74,10 +91,29 @@
     # Check detailed version status
     .\scripts\manage-version.ps1 -StatusOnly -Detailed
 
+.EXAMPLE
+    # Show help and usage examples
+    .\scripts\manage-version.ps1 -Help
+
 .NOTES
-    - Requires gh CLI to be installed and authenticated
-    - Must be run from the repository root
+    DEPENDENCIES:
+    - Git (required): Version control operations
+    - .NET SDK (required): Building C# CLI components  
+    - Node.js (required): Building Obsidian plugin
+    - npm (required): Node.js package management
+    - GitHub CLI (conditional): Required only for release operations (-CreateRelease or -Reissue)
+    
+    DIRECTORY:
+    - Must be run from the repository root directory
+    - Script validates presence of required project files
+    
+    FEATURES:
+    - Cross-platform compatibility (Windows, Linux, macOS)
+    - Automatic dependency validation with helpful install prompts
+    - Repository directory validation 
+    - GitHub CLI authentication checking for release operations
     - Automatically syncs versions between package.json and manifest.json
+    - Intelligent path handling for all supported platforms
 #>
 
 param(
@@ -113,48 +149,438 @@ param(
     [switch]$Detailed,
     
     # Build after synchronization (used with -SyncOnly)
-    [switch]$BuildAfterSync
+    [switch]$BuildAfterSync,
+    
+    # Show help information
+    [switch]$Help,
+    
+    # Enable extra diagnostic output for troubleshooting  
+    [switch]$Diagnostic,
+    
+    # Minimize output for automation scenarios
+    [switch]$Quiet,
+    
+    # Use CI-built executables from GitHub Actions instead of building locally
+    [switch]$UseArtifacts,
+    
+    # Force local build even when UseArtifacts is specified
+    [switch]$ForceLocalBuild
 )
+
+#
+# HELP AND USAGE - Show help when no meaningful arguments provided
+#
+
+function Show-Help {
+    Write-Host ""
+    Write-Host "📚 Notebook Automation Version Management" -ForegroundColor Green
+    Write-Host "==========================================" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "This script manages versions for both CLI and Obsidian plugin components," -ForegroundColor White
+    Write-Host "ensuring consistency across package.json, manifest.json, and Git tags." -ForegroundColor White
+    Write-Host "✨ Cross-platform compatible: Windows, Linux, and macOS" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "🔧 DEPENDENCIES REQUIRED:" -ForegroundColor Blue
+    Write-Host "   • Git - Version control operations" -ForegroundColor Gray
+    Write-Host "   • .NET SDK - Building C# CLI components" -ForegroundColor Gray  
+    Write-Host "   • Node.js & npm - Building Obsidian plugin" -ForegroundColor Gray
+    Write-Host "   • GitHub CLI - Required only for release operations" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "📖 COMMON USAGE EXAMPLES:" -ForegroundColor Blue
+    Write-Host ""
+    Write-Host "   # Check current version status" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -StatusOnly" -ForegroundColor White
+    Write-Host ""
+    Write-Host "   # Check detailed version status" -ForegroundColor Yellow  
+    Write-Host "   .\scripts\manage-version.ps1 -StatusOnly -Detailed" -ForegroundColor White
+    Write-Host ""
+    Write-Host "   # Synchronize versions between components" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -SyncOnly -Version `"0.1.0-beta.18`"" -ForegroundColor White
+    Write-Host ""
+    Write-Host "   # Create a new beta version with GitHub release" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -Version `"0.1.0-beta.18`" -Type beta -CreateRelease -PreRelease" -ForegroundColor White
+    Write-Host ""
+    Write-Host "   # Create a stable release" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -Version `"0.1.0`" -Type stable -CreateRelease" -ForegroundColor White
+    Write-Host ""
+    Write-Host "   # Rebuild CLI executables for current version (no version bump)" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -RebuildOnly" -ForegroundColor White
+    Write-Host ""
+    Write-Host "   # Create a release using CI-built executables (recommended)" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -Version `"0.1.0`" -Type stable -CreateRelease -UseArtifacts" -ForegroundColor White
+    Write-Host ""
+    Write-Host "   # Reissue an existing GitHub release with current assets" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -Reissue -ReissueVersion `"0.1.0-beta.17`"" -ForegroundColor White
+    Write-Host ""
+    Write-Host "🏷️  VERSION TYPES:" -ForegroundColor Blue
+    Write-Host "   • beta    - Development releases (e.g., 0.1.0-beta.1)" -ForegroundColor Gray
+    Write-Host "   • stable  - Production releases (e.g., 0.1.0)" -ForegroundColor Gray
+    Write-Host "   • patch   - Bug fix releases (e.g., 0.1.1)" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "⚙️  UTILITY MODES:" -ForegroundColor Blue
+    Write-Host "   • -StatusOnly    - Show version status across all components" -ForegroundColor Gray
+    Write-Host "   • -SyncOnly      - Synchronize versions without creating releases" -ForegroundColor Gray  
+    Write-Host "   • -RebuildOnly   - Rebuild executables without version changes" -ForegroundColor Gray
+    Write-Host "   • -Reissue       - Recreate an existing GitHub release" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "� OUTPUT CONTROL:" -ForegroundColor Blue
+    Write-Host "   • -Quiet         - Minimize output for automation scenarios" -ForegroundColor Gray
+    Write-Host "   • -Diagnostic    - Show extra diagnostic information" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "🏗️ BUILD OPTIONS:" -ForegroundColor Blue
+    Write-Host "   • -UseArtifacts    - Use CI-built executables (commits changes, waits for CI, downloads)" -ForegroundColor Gray
+    Write-Host "   • -ForceLocalBuild - Force local build even with -UseArtifacts" -ForegroundColor Gray
+    Write-Host ""
+    Write-Host "�� TIP: Use -StatusOnly to check current state before making changes!" -ForegroundColor Cyan
+    Write-Host ""
+    Write-Host "For detailed parameter information, use: Get-Help .\scripts\manage-version.ps1 -Full" -ForegroundColor DarkYellow
+    Write-Host ""
+}
+
+# Check if no meaningful arguments were provided or help requested - show help
+$noArgumentsProvided = (-not $Version -and -not $StatusOnly -and -not $SyncOnly -and -not $RebuildOnly -and -not $Reissue)
+if ($noArgumentsProvided -or $Help) {
+    Show-Help
+    exit 0
+}
 
 # Set error handling
 $ErrorActionPreference = "Stop"
 
+#
+# CROSS-PLATFORM COMPATIBILITY - Ensure platform detection works across PowerShell versions
+#
+
+# Define platform detection variables for compatibility with older PowerShell versions
+if (-not (Test-Path variable:IsWindows)) {
+    try {
+        $script:IsWindows = ([System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
+    }
+    catch {
+        # Fallback for very old PowerShell versions
+        $script:IsWindows = ($env:OS -eq "Windows_NT")
+    }
+}
+if (-not (Test-Path variable:IsLinux)) {
+    try {
+        $script:IsLinux = ([System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Unix) -and 
+        (-not [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX))
+    }
+    catch {
+        # Fallback detection
+        $script:IsLinux = (-not $IsWindows -and -not $IsMacOS -and (Test-Path "/proc/version"))
+    }
+}
+if (-not (Test-Path variable:IsMacOS)) {
+    try {
+        $script:IsMacOS = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)
+    }
+    catch {
+        # Fallback detection  
+        $script:IsMacOS = (-not $IsWindows -and (Test-Path "/System/Library/CoreServices/SystemVersion.plist"))
+    }
+}# Helper function for cross-platform path construction
+function Join-CrossPlatformPath {
+    param([string[]]$PathParts)
+    
+    $result = $PathParts[0]
+    for ($i = 1; $i -lt $PathParts.Length; $i++) {
+        $result = Join-Path $result $PathParts[$i]
+    }
+    return $result
+}
+
+# Helper function for making files executable on Unix systems
+function Set-ExecutablePermission {
+    param([string]$FilePath)
+    
+    if (-not $IsWindows) {
+        try {
+            Write-VerboseHost "Setting executable permission for $FilePath"
+            if (Get-Command "chmod" -ErrorAction SilentlyContinue) {
+                chmod +x $FilePath 2>$null
+            }
+        }
+        catch {
+            Write-VerboseHost "Warning: Could not set executable permission for $FilePath"
+        }
+    }
+}
+
+# Function to wait for GitHub Actions workflows to complete
+function Wait-GitHubActionsComplete {
+    param(
+        [string]$CommitSha,
+        [string]$ExpectedVersion,
+        [int]$TimeoutMinutes = 20,
+        [int]$PollIntervalSeconds = 30
+    )
+    
+    $shortSha = $CommitSha.Substring(0, 8)
+    Write-ConditionalHost "⏳ Waiting for GitHub Actions to complete for version $ExpectedVersion (commit $shortSha)..." -ForegroundColor Yellow
+    Write-ConditionalHost "   This ensures CI builds executables with the correct version before download" -ForegroundColor Gray
+    Write-ConditionalHost "   Timeout: $TimeoutMinutes minutes, checking every $([Math]::Round($PollIntervalSeconds/60.0, 1)) minutes" -ForegroundColor Gray
+    
+    $timeoutTime = (Get-Date).AddMinutes($TimeoutMinutes)
+    $workflowsCompleted = $false
+    
+    while ((Get-Date) -lt $timeoutTime -and -not $workflowsCompleted) {
+        try {
+            # Get workflow runs for the commit
+            $workflowOutput = gh run list --commit $CommitSha --json status, conclusion, name 2>$null
+            if ($LASTEXITCODE -eq 0) {
+                $workflows = $workflowOutput | ConvertFrom-Json
+                
+                if ($workflows.Count -eq 0) {
+                    Write-VerboseHost "No workflows found for commit, waiting..."
+                }
+                else {
+                    $inProgress = $workflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
+                    $failed = $workflows | Where-Object { $_.conclusion -eq "failure" -or $_.conclusion -eq "cancelled" }
+                    $completed = $workflows | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "success" }
+                    
+                    Write-VerboseHost "Workflows - Completed: $($completed.Count), In Progress: $($inProgress.Count), Failed: $($failed.Count)"
+                    
+                    if ($failed.Count -gt 0) {
+                        $failedNames = ($failed | ForEach-Object { $_.name }) -join ", "
+                        throw "GitHub Actions workflows failed: $failedNames"
+                    }
+                    
+                    if ($inProgress.Count -eq 0 -and $completed.Count -gt 0) {
+                        Write-ConditionalHost "✅ All GitHub Actions workflows completed successfully" -ForegroundColor Green
+                        $workflowsCompleted = $true
+                        break
+                    }
+                    
+                    if ($inProgress.Count -gt 0) {
+                        $inProgressNames = ($inProgress | ForEach-Object { $_.name }) -join ", "
+                        Write-ConditionalHost "⏳ Waiting for workflows: $inProgressNames" -ForegroundColor Yellow
+                    }
+                }
+            }
+            else {
+                Write-VerboseHost "GitHub CLI command failed, retrying..."
+            }
+        }
+        catch {
+            Write-VerboseHost "Error checking workflow status: $($_.Exception.Message)"
+        }
+        
+        if (-not $workflowsCompleted) {
+            Start-Sleep -Seconds $PollIntervalSeconds
+        }
+    }
+    
+    if (-not $workflowsCompleted) {
+        throw "Timeout waiting for GitHub Actions to complete after $TimeoutMinutes minutes"
+    }
+    
+    return $true
+}
+
+# Function to commit and push version changes, then wait for CI
+function Invoke-CommitAndWaitForCI {
+    param(
+        [string]$Version,
+        [string]$Type,
+        [string]$PackageJsonPath,
+        [string]$ManifestJsonPath, 
+        [string]$VersionConstantsPath,
+        [string]$ScriptPath
+    )
+    
+    Write-ConditionalHost "📝 Committing version changes and waiting for CI..." -ForegroundColor Cyan
+    
+    # Create commit message
+    $commitMessage = switch ($Type) {
+        "beta" { "feat: prepare v$Version for BRAT beta testing" }
+        "stable" { "release: v$Version stable release" }
+        "patch" { "fix: patch release v$Version" }
+        default { "chore: version bump to v$Version" }
+    }
+    
+    # Add and commit files
+    git add -- $PackageJsonPath $ManifestJsonPath $VersionConstantsPath $ScriptPath
+    git commit -m $commitMessage
+    
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to commit version changes"
+    }
+    
+    # Get the commit SHA
+    $commitSha = git rev-parse HEAD
+    Write-VerboseHost "Committed with SHA: $commitSha"
+    
+    # Push to trigger CI
+    Write-ConditionalHost "📤 Pushing to origin to trigger CI build..." -ForegroundColor Yellow
+    git push origin HEAD
+    
+    if ($LASTEXITCODE -ne 0) {
+        throw "Failed to push changes to origin"
+    }
+    
+    # Wait for CI to complete with correct version
+    Wait-GitHubActionsComplete -CommitSha $commitSha -ExpectedVersion $Version
+    
+    return $commitSha
+}
+
+# Function to download CI-built executables from GitHub Actions
+function Invoke-ArtifactDownload {
+    param(
+        [string]$RepoRoot,
+        [string]$TargetPath
+    )
+    
+    Write-ConditionalHost "📦 Downloading CI-built executables from GitHub Actions..." -ForegroundColor Cyan
+    
+    $downloadScript = Join-Path $RepoRoot "scripts" "download-latest-artifact.ps1"
+    if (-not (Test-Path $downloadScript)) {
+        throw "Artifact download script not found: $downloadScript"
+    }
+    
+    # Ensure target directory exists
+    if (-not (Test-Path $TargetPath)) {
+        New-Item -ItemType Directory -Path $TargetPath -Force | Out-Null
+    }
+    
+    # Run the download script
+    try {
+        Write-VerboseHost "Running artifact download script: $downloadScript"
+        $originalLocation = Get-Location
+        Set-Location $RepoRoot
+        
+        & pwsh -ExecutionPolicy Bypass -File $downloadScript
+        if ($LASTEXITCODE -ne 0) {
+            throw "Artifact download script failed with exit code $LASTEXITCODE"
+        }
+        
+        # The download script places files in ../dist/, we need to copy executables to our target
+        $artifactDistPath = Join-Path (Split-Path $RepoRoot -Parent) "dist"
+        $pluginArtifactPath = Join-Path $artifactDistPath "notebook-automation"
+        
+        # Check both possible locations for executables
+        $sourceExecutablePath = $null
+        if (Test-Path $pluginArtifactPath) {
+            $executables = Get-ChildItem -Path $pluginArtifactPath -File | Where-Object { $_.Name -like "na-*" }
+            if ($executables.Count -gt 0) {
+                $sourceExecutablePath = $pluginArtifactPath
+            }
+        }
+        
+        if (-not $sourceExecutablePath -and (Test-Path $artifactDistPath)) {
+            $executables = Get-ChildItem -Path $artifactDistPath -File | Where-Object { $_.Name -like "na-*" }
+            if ($executables.Count -gt 0) {
+                $sourceExecutablePath = $artifactDistPath
+            }
+        }
+        
+        if (-not $sourceExecutablePath) {
+            throw "No executables found in downloaded artifacts. Expected location: $pluginArtifactPath or $artifactDistPath"
+        }
+        
+        # Copy executables to target location
+        $executables = Get-ChildItem -Path $sourceExecutablePath -File | Where-Object { $_.Name -like "na-*" }
+        Write-ConditionalHost "✅ Found $($executables.Count) executables in CI artifacts" -ForegroundColor Green
+        
+        foreach ($exe in $executables) {
+            $targetFile = Join-Path $TargetPath $exe.Name
+            Copy-Item $exe.FullName $targetFile -Force
+            
+            # Set executable permissions for Unix systems
+            Set-ExecutablePermission -FilePath $targetFile
+            
+            Write-VerboseHost "Copied $($exe.Name) to $targetFile"
+        }
+        
+        Write-ConditionalHost "✅ Successfully downloaded and installed CI-built executables" -ForegroundColor Green
+        return $true
+    }
+    catch {
+        Write-ConditionalHost "❌ Failed to download CI artifacts: $($_.Exception.Message)" -ForegroundColor Red -Force
+        return $false
+    }
+    finally {
+        if ($originalLocation) {
+            Set-Location $originalLocation
+        }
+    }
+}
+
 # Define paths
 $RepoRoot = Get-Location
-$PluginDir = Join-Path $RepoRoot "src\obsidian-plugin"
+$PluginDir = Join-CrossPlatformPath @($RepoRoot, "src", "obsidian-plugin")
 $PackageJsonPath = Join-Path $PluginDir "package.json"
 $ManifestJsonPath = Join-Path $PluginDir "manifest.json"
 
 #
-# UTILITY MODES - Handle sync and status operations
+# HELPER FUNCTIONS - Eliminate redundancy
 #
 
-if ($StatusOnly) {
+function Get-VersionData {
+    param([string]$Type = "all")
+    
+    $data = @{
+        ManifestExists  = Test-Path $ManifestJsonPath
+        PackageExists   = Test-Path $PackageJsonPath
+        ManifestData    = $null
+        PackageData     = $null
+        ManifestVersion = $null
+        PackageVersion  = $null
+        GitVersion      = $null
+    }
+    
+    if ($data.ManifestExists) {
+        $data.ManifestData = Get-Content $ManifestJsonPath | ConvertFrom-Json
+        $data.ManifestVersion = $data.ManifestData.version
+    }
+    
+    if ($data.PackageExists) {
+        $data.PackageData = Get-Content $PackageJsonPath | ConvertFrom-Json  
+        $data.PackageVersion = $data.PackageData.version
+    }
+    
+    # Get Git version if needed
+    if ($Type -eq "all" -or $Type -eq "git") {
+        $GitVersionPath = Join-Path $RepoRoot "GitVersion.yml"
+        if (Test-Path $GitVersionPath) {
+            $gitVersionContent = Get-Content $GitVersionPath -Raw
+            if ($gitVersionContent -match "next-version:\s*([^\r\n]+)") {
+                $data.GitVersion = $matches[1].Trim()
+            }
+        }
+    }
+    
+    return $data
+}
+
+function Write-VersionStatus {
+    param(
+        [hashtable]$VersionData,
+        [switch]$Detailed
+    )
+    
     Write-Host "📊 Version Status Report" -ForegroundColor Green
     Write-Host "========================" -ForegroundColor Green
     Write-Host ""
 
     # Plugin versions
     Write-Host "🔌 Plugin Component:" -ForegroundColor Blue
-    if (Test-Path $ManifestJsonPath) {
-        $manifest = Get-Content $ManifestJsonPath | ConvertFrom-Json
-        Write-Host "  manifest.json: $($manifest.version)" -ForegroundColor White
-        
+    if ($VersionData.ManifestExists) {
+        Write-Host "  manifest.json: $($VersionData.ManifestVersion)" -ForegroundColor White
         if ($Detailed) {
-            Write-Host "    minAppVersion: $($manifest.minAppVersion)" -ForegroundColor Gray
-            Write-Host "    id: $($manifest.id)" -ForegroundColor Gray
+            Write-Host "    minAppVersion: $($VersionData.ManifestData.minAppVersion)" -ForegroundColor Gray
+            Write-Host "    id: $($VersionData.ManifestData.id)" -ForegroundColor Gray
         }
     }
     else {
         Write-Host "  manifest.json: ❌ NOT FOUND" -ForegroundColor Red
     }
 
-    if (Test-Path $PackageJsonPath) {
-        $packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
-        Write-Host "  package.json: $($packageJson.version)" -ForegroundColor White
-        
+    if ($VersionData.PackageExists) {
+        Write-Host "  package.json: $($VersionData.PackageVersion)" -ForegroundColor White
         if ($Detailed) {
-            Write-Host "    name: $($packageJson.name)" -ForegroundColor Gray
+            Write-Host "    name: $($VersionData.PackageData.name)" -ForegroundColor Gray
         }
     }
     else {
@@ -164,12 +590,8 @@ if ($StatusOnly) {
     # CLI versions
     Write-Host ""
     Write-Host "🛠️  CLI Component:" -ForegroundColor Blue
-    $GitVersionPath = Join-Path $RepoRoot "GitVersion.yml"
-    if (Test-Path $GitVersionPath) {
-        $gitVersionContent = Get-Content $GitVersionPath -Raw
-        if ($gitVersionContent -match "next-version:\s*([^\r\n]+)") {
-            Write-Host "  GitVersion.yml: $($matches[1].Trim())" -ForegroundColor White
-        }
+    if ($VersionData.GitVersion) {
+        Write-Host "  GitVersion.yml: $($VersionData.GitVersion)" -ForegroundColor White
     }
     else {
         Write-Host "  GitVersion.yml: ❌ NOT FOUND" -ForegroundColor Red
@@ -195,14 +617,8 @@ if ($StatusOnly) {
     Write-Host ""
     Write-Host "🔍 Alignment Check:" -ForegroundColor Blue
     $versions = @()
-    if (Test-Path $ManifestJsonPath) {
-        $manifest = Get-Content $ManifestJsonPath | ConvertFrom-Json
-        $versions += $manifest.version
-    }
-    if (Test-Path $PackageJsonPath) {
-        $packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
-        $versions += $packageJson.version
-    }
+    if ($VersionData.ManifestVersion) { $versions += $VersionData.ManifestVersion }
+    if ($VersionData.PackageVersion) { $versions += $VersionData.PackageVersion }
 
     $uniqueVersions = $versions | Sort-Object -Unique
     if ($uniqueVersions.Count -eq 1) {
@@ -212,7 +628,248 @@ if ($StatusOnly) {
         Write-Host "  ⚠️  Version mismatch detected!" -ForegroundColor Yellow
         $versions | ForEach-Object { Write-Host "     - $_" -ForegroundColor Yellow }
     }
+}
 
+# Helper function for conditional output
+function Write-ConditionalHost {
+    param(
+        [string]$Message,
+        [string]$ForegroundColor = "White",
+        [switch]$Force
+    )
+    
+    if (-not $Quiet -or $Force) {
+        Write-Host $Message -ForegroundColor $ForegroundColor
+    }
+}
+
+function Write-VerboseHost {
+    param(
+        [string]$Message,
+        [string]$ForegroundColor = "DarkGray"
+    )
+    
+    if ($Diagnostic -and -not $Quiet) {
+        Write-Host "[DIAG] $Message" -ForegroundColor $ForegroundColor
+    }
+}
+
+#
+# DEPENDENCY VALIDATION - Check required tools and directory
+#
+
+function Test-Dependency {
+    param(
+        [string]$CommandName,
+        [string]$DisplayName,
+        [string]$InstallPrompt,
+        [bool]$Required = $true
+    )
+    
+    try {
+        $command = Get-Command $CommandName -ErrorAction Stop
+        Write-ConditionalHost "✅ $DisplayName found: $($command.Source)" -ForegroundColor Green
+        Write-VerboseHost "Dependency $DisplayName validated at $($command.Source)"
+        return $true
+    }
+    catch {
+        if ($Required) {
+            Write-ConditionalHost "❌ $DisplayName not found in PATH" -ForegroundColor Red
+            Write-ConditionalHost "   $InstallPrompt" -ForegroundColor Yellow
+            Write-ConditionalHost ""
+            
+            if (-not $Quiet) {
+                $response = Read-Host "Would you like to continue anyway? This may cause the script to fail later (y/N)"
+                if ($response -notmatch '^[yY]') {
+                    throw "$DisplayName is required but not installed. Install it and try again."
+                }
+            }
+            Write-ConditionalHost "⚠️  Continuing without $DisplayName - expect failures if this tool is needed" -ForegroundColor Yellow
+            return $false
+        }
+        else {
+            Write-ConditionalHost "⚠️  $DisplayName not found (optional)" -ForegroundColor Yellow
+            return $false
+        }
+    }
+}
+
+function Test-RepositoryDirectory {
+    Write-ConditionalHost "📁 Validating repository directory..." -ForegroundColor Cyan
+    
+    # Check if we're in a git repository
+    try {
+        git rev-parse --git-dir | Out-Null
+        Write-VerboseHost "Git repository validation passed"
+    }
+    catch {
+        throw "❌ Not running in a git repository. Please run this script from the repository root."
+    }
+    
+    # Check for key project files that should exist in the repo root
+    $requiredFiles = @(
+        "GitVersion.yml",
+        (Join-CrossPlatformPath @("src", "obsidian-plugin", "package.json")),
+        (Join-CrossPlatformPath @("src", "obsidian-plugin", "manifest.json")),
+        (Join-CrossPlatformPath @("src", "c-sharp", "NotebookAutomation.sln"))
+    )
+    
+    $missingFiles = @()
+    foreach ($file in $requiredFiles) {
+        $fullPath = Join-Path $RepoRoot $file
+        if (-not (Test-Path $fullPath)) {
+            $missingFiles += $file
+            Write-VerboseHost "Missing required file: $file"
+        }
+        else {
+            Write-VerboseHost "Found required file: $file"
+        }
+    }
+    
+    if ($missingFiles.Count -gt 0) {
+        Write-ConditionalHost "❌ Missing required project files:" -ForegroundColor Red -Force
+        $missingFiles | ForEach-Object { Write-ConditionalHost "   - $_" -ForegroundColor Red -Force }
+        throw "Please run this script from the repository root directory."
+    }
+    
+    Write-ConditionalHost "✅ Repository directory validation passed" -ForegroundColor Green
+}
+
+function Test-AllDependencies {
+    Write-Host "🔍 Checking dependencies..." -ForegroundColor Cyan
+    Write-Host ""
+    
+    # Test repository directory first
+    Test-RepositoryDirectory
+    Write-Host ""
+    
+    # Core dependencies (always required)
+    $gitAvailable = Test-Dependency -CommandName "git" -DisplayName "Git" -InstallPrompt "Install Git from: https://git-scm.com/downloads"
+    $dotnetAvailable = Test-Dependency -CommandName "dotnet" -DisplayName ".NET SDK" -InstallPrompt "Install .NET SDK from: https://dotnet.microsoft.com/download"
+    $nodeAvailable = Test-Dependency -CommandName "node" -DisplayName "Node.js" -InstallPrompt "Install Node.js from: https://nodejs.org/"
+    $npmAvailable = Test-Dependency -CommandName "npm" -DisplayName "npm" -InstallPrompt "npm should be included with Node.js installation"
+    
+    # Conditional dependencies (only required for certain operations)
+    $needsGitHub = $CreateRelease -or $Reissue -or ($UseArtifacts -and -not $ForceLocalBuild)
+    $ghAvailable = $true
+    if ($needsGitHub) {
+        Write-Host ""
+        if ($UseArtifacts -and -not $ForceLocalBuild) {
+            Write-Host "🤖 CI artifact integration requested - checking GitHub CLI..." -ForegroundColor Cyan
+        }
+        else {
+            Write-Host "🔗 GitHub operations requested - checking GitHub CLI..." -ForegroundColor Cyan
+        }
+        $ghAvailable = Test-Dependency -CommandName "gh" -DisplayName "GitHub CLI" -InstallPrompt "Install GitHub CLI from: https://cli.github.com/ or run: winget install GitHub.cli"
+        
+        if ($ghAvailable) {
+            # Test GitHub CLI authentication
+            try {
+                gh auth status 2>&1 | Out-Null
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "✅ GitHub CLI authenticated" -ForegroundColor Green
+                }
+                else {
+                    Write-Host "⚠️  GitHub CLI not authenticated" -ForegroundColor Yellow
+                    Write-Host "   Run: gh auth login" -ForegroundColor Yellow
+                    
+                    $response = Read-Host "Continue without authentication? Release creation will fail (y/N)"
+                    if ($response -notmatch '^[yY]') {
+                        throw "GitHub CLI authentication required for release operations"
+                    }
+                }
+            }
+            catch {
+                Write-Host "⚠️  Could not verify GitHub CLI authentication" -ForegroundColor Yellow
+            }
+        }
+    }
+    
+    Write-Host ""
+    Write-Host "📋 Dependency Summary:" -ForegroundColor Blue
+    Write-Host "   Git: $(if($gitAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($gitAvailable) { 'Green' }else { 'Red' })
+    Write-Host "   .NET SDK: $(if($dotnetAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($dotnetAvailable) { 'Green' }else { 'Red' })
+    Write-Host "   Node.js: $(if($nodeAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($nodeAvailable) { 'Green' }else { 'Red' })
+    Write-Host "   npm: $(if($npmAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($npmAvailable) { 'Green' }else { 'Red' })
+    if ($needsGitHub) {
+        Write-Host "   GitHub CLI: $(if($ghAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($ghAvailable) { 'Green' }else { 'Red' })
+    }
+    
+    Write-Host ""
+    if ($gitAvailable -and $dotnetAvailable -and $nodeAvailable -and $npmAvailable -and ($ghAvailable -or -not $needsGitHub)) {
+        Write-Host "✅ All dependencies satisfied" -ForegroundColor Green
+    }
+    else {
+        Write-Host "⚠️  Some dependencies missing - script may fail during execution" -ForegroundColor Yellow
+    }
+    Write-Host ""
+}
+
+# Run dependency validation before any operations
+Test-AllDependencies
+
+#
+# VERSION VALIDATION - Validate version format early
+#
+
+function Test-VersionFormat {
+    param([string]$Version)
+    
+    if ([string]::IsNullOrEmpty($Version)) { return $true } # Allow empty for certain modes
+    
+    # Semantic version pattern: major.minor.patch[-prerelease][+build]
+    $semverPattern = '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+    
+    if ($Version -notmatch $semverPattern) {
+        Write-Host "❌ Invalid version format: $Version" -ForegroundColor Red
+        Write-Host "   Expected semantic version format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]" -ForegroundColor Yellow
+        Write-Host "   Examples:" -ForegroundColor Yellow  
+        Write-Host "     • 1.0.0" -ForegroundColor Gray
+        Write-Host "     • 1.2.3-beta.1" -ForegroundColor Gray
+        Write-Host "     • 2.0.0-alpha.1+build.123" -ForegroundColor Gray
+        throw "Invalid version format: $Version"
+    }
+    
+    if (-not $Quiet) {
+        Write-Host "✅ Version format validation passed: $Version" -ForegroundColor Green
+    }
+}
+
+# Validate version format if provided
+if ($Version) {
+    Test-VersionFormat -Version $Version
+}
+
+#
+# OUTPUT CONTROL - Set verbosity levels
+#
+
+# Override PowerShell preference variables based on our parameters
+if ($Diagnostic) {
+    $VerbosePreference = "Continue"
+    $DebugPreference = "Continue"
+    if (-not $Quiet) {
+        Write-Host "🔍 Diagnostic mode enabled" -ForegroundColor Cyan
+    }
+}
+
+if ($Quiet) {
+    $VerbosePreference = "SilentlyContinue"
+    $DebugPreference = "SilentlyContinue" 
+    $WarningPreference = "SilentlyContinue"
+    # Suppress most output except errors and final results
+}
+
+# Run dependency validation before any operations
+# Test-AllDependencies  # Remove duplicate call
+
+#
+# UTILITY MODES - Handle sync and status operations
+#
+
+if ($StatusOnly) {
+    $versionData = Get-VersionData
+    Write-VersionStatus -VersionData $versionData -Detailed:$Detailed
     exit 0
 }
 
@@ -222,9 +879,9 @@ if ($SyncOnly) {
     # Get target version
     $targetVersion = $Version
     if (-not $targetVersion) {
-        if (Test-Path $ManifestJsonPath) {
-            $manifest = Get-Content $ManifestJsonPath | ConvertFrom-Json
-            $targetVersion = $manifest.version
+        $versionData = Get-VersionData
+        if ($versionData.ManifestExists) {
+            $targetVersion = $versionData.ManifestVersion
             Write-Host "📖 Using version from manifest.json: $targetVersion"
         }
         else {
@@ -277,7 +934,8 @@ if ($SyncOnly) {
         
         # Build CLI
         Write-Host "Building CLI..."
-        dotnet build "$RepoRoot\src\c-sharp\NotebookAutomation.sln" --configuration Release
+        $solutionPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.sln")
+        dotnet build $solutionPath --configuration Release
         if ($LASTEXITCODE -ne 0) {
             throw "CLI build failed"
         }
@@ -304,9 +962,9 @@ if ($SyncOnly) {
 
 if (-not $Reissue -and $RebuildOnly -and -not $Version) {
     # Infer version from manifest if not provided
-    if (Test-Path $ManifestJsonPath) {
-        $manifestData = Get-Content $ManifestJsonPath | ConvertFrom-Json
-        $Version = $manifestData.version
+    $versionData = Get-VersionData
+    if ($versionData.ManifestExists) {
+        $Version = $versionData.ManifestVersion
         Write-Host "ℹ️  Inferred current version from manifest: $Version" -ForegroundColor Cyan
     }
     else {
@@ -339,13 +997,7 @@ if (-not (Test-Path $ManifestJsonPath)) {
     throw "manifest.json not found: $ManifestJsonPath"
 }
 
-# Check if we're in a git repository
-try {
-    git rev-parse --git-dir | Out-Null
-}
-catch {
-    throw "Not in a git repository"
-}
+# Repository validation already performed in Test-AllDependencies
 
 # Check for uncommitted changes (skip prompt for non-interactive reissue to ensure deterministic automation)
 $gitStatus = git status --porcelain
@@ -374,7 +1026,27 @@ function Invoke-DotnetPublishMatrix {
         [string]$SemanticVersion
     )
 
-    Write-Host "🧪 Publishing fresh CLI executables for all platforms" -ForegroundColor Green
+    # Check if we should use CI artifacts instead of local build
+    if ($UseArtifacts -and -not $ForceLocalBuild) {
+        Write-ConditionalHost "🎯 Using CI-built executables from GitHub Actions (recommended for releases)" -ForegroundColor Green
+        
+        $success = Invoke-ArtifactDownload -RepoRoot $RepoRoot -TargetPath $PublishRoot
+        if ($success) {
+            Write-ConditionalHost "✅ CI artifacts successfully integrated" -ForegroundColor Green
+            return
+        }
+        else {
+            Write-ConditionalHost "⚠️  CI artifact download failed, falling back to local build" -ForegroundColor Yellow
+        }
+    }
+
+    # Fall back to local build or if ForceLocalBuild is specified
+    Write-ConditionalHost "🧪 Publishing fresh CLI executables for all platforms (local build)" -ForegroundColor $(if ($UseArtifacts) { 'Yellow' }else { 'Green' })
+    
+    if ($UseArtifacts -and -not $ForceLocalBuild) {
+        Write-ConditionalHost "⚠️  WARNING: Using local build instead of CI artifacts may result in platform compatibility issues" -ForegroundColor Yellow
+        Write-ConditionalHost "   Consider using -UseArtifacts for production releases to ensure proper cross-platform support" -ForegroundColor Yellow
+    }
     if (-not (Test-Path $CliProject)) { throw "CLI project not found at $CliProject" }
     if (-not (Test-Path $PublishRoot)) { New-Item -ItemType Directory -Path $PublishRoot | Out-Null }
 
@@ -401,7 +1073,8 @@ function Invoke-DotnetPublishMatrix {
         if (-not (Test-Path $produced)) { throw "Expected binary not found: $produced" }
         $finalPath = Join-Path $PublishRoot $outName
         Copy-Item $produced $finalPath -Force
-        if ($IsWindows -eq $false -and $t.Ext -eq '') { try { chmod +x $finalPath 2>$null } catch {} }
+        # Set executable permissions on Unix systems
+        Set-ExecutablePermission -FilePath $finalPath
         Write-Host "    ✓ $outName" -ForegroundColor Green
         Remove-Item -Recurse -Force $tempOut -ErrorAction SilentlyContinue
     }
@@ -422,7 +1095,7 @@ function Invoke-DotnetPublishMatrix {
 }
 
 if ($RebuildOnly) {
-    $cliProject = Join-Path $RepoRoot "src\c-sharp\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj"
+    $cliProject = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
     $publishRoot = Join-Path $RepoRoot 'dist'
     Invoke-DotnetPublishMatrix -CliProject $cliProject -PublishRoot $publishRoot -SemanticVersion $Version
     Write-Host "✅ Rebuild-only complete." -ForegroundColor Green
@@ -432,8 +1105,8 @@ if ($RebuildOnly) {
 if (-not $Reissue) {
     # Step 1: Update package.json version
     # Check if the specified version is already set in package.json
-    $packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
-    if ($packageJson.version -eq $Version) {
+    $versionData = Get-VersionData
+    if ($versionData.PackageVersion -eq $Version) {
         Write-Host "⚠️  Specified version ($Version) is already set in package.json. Skipping version update." -ForegroundColor Yellow
     }
     else {
@@ -457,17 +1130,16 @@ if (-not $Reissue) {
 
     # Step 3: Verify versions are synchronized
     Write-Host "✅ Verifying version synchronization"
-    $packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
-    $manifestJson = Get-Content $ManifestJsonPath | ConvertFrom-Json
-    $packageVersion = $packageJson.version
-    $manifestVersion = $manifestJson.version
+    $versionData = Get-VersionData
+    $packageVersion = $versionData.PackageVersion
+    $manifestVersion = $versionData.ManifestVersion
     Write-Host "   package.json: $packageVersion"
     Write-Host "   manifest.json: $manifestVersion"
     if ($packageVersion -ne $manifestVersion) { throw "Version mismatch: package.json ($packageVersion) != manifest.json ($manifestVersion)" }
     if ($packageVersion -ne $Version) { throw "Version mismatch: Expected $Version, got $packageVersion" }
 
     # Step 3b: Update CLI compile-time version constant
-    $versionConstantsPath = Join-Path $RepoRoot "src\c-sharp\NotebookAutomation.Cli\VersionConstants.cs"
+    $versionConstantsPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "VersionConstants.cs")
     if (Test-Path $versionConstantsPath) {
         Write-Host "🧩 Updating VersionConstants.cs (compile-time injection)" -ForegroundColor Green
         $versionConstantsContent = @(
@@ -492,7 +1164,7 @@ if (-not $Reissue) {
     }
     else { Write-Warning "VersionConstants.cs not found at $versionConstantsPath (skipping compile-time constant update)" }
 
-    Invoke-DotnetPublishMatrix -CliProject (Join-Path $RepoRoot "src\c-sharp\NotebookAutomation.Cli\NotebookAutomation.Cli.csproj") -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
+    # Note: CLI executable building happens after commit (Step 6) to ensure CI has correct version
 }
 
 # Guard: Ensure only expected executable naming (post-publish)
@@ -537,7 +1209,6 @@ function Assert-NaExecutableSet {
 
     # Semantic version validation (best-effort) – only attempt to execute binaries runnable on the current host
     $hostPlatform = if ($IsWindows) { 'windows' } elseif ($IsLinux) { 'linux' } elseif ($IsMacOS) { 'macos' } else { 'unknown' }
-    $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
 
     foreach ($exe in $executables) {
         $canRun = switch ($hostPlatform) {
@@ -566,7 +1237,7 @@ function Assert-NaExecutableSet {
     Write-Host "✅ Executable naming & version validation passed" -ForegroundColor Green
 }
 
-if (-not $Reissue) { Assert-NaExecutableSet -DistPath (Join-Path $RepoRoot 'dist') -ExpectedVersion $Version }
+# Note: Executable validation happens after build/download process
 
 # Step 3c: Generate or validate checksums.json for distributed executables
 function New-OrValidateChecksumsJson {
@@ -622,8 +1293,7 @@ function New-OrValidateChecksumsJson {
 }
 
 if (-not $Reissue) {
-    $distDirRoot = Join-Path $RepoRoot 'dist'
-    $checksumsFilePath = New-OrValidateChecksumsJson -DistDir $distDirRoot -SemanticVersion $Version
+    # Checksums and validation happen after executable building
 }
 
 <#
@@ -691,21 +1361,49 @@ foreach ($artifact in $buildArtifacts) {
 
 if (-not $Reissue) { Write-Host "✅ Build artifacts verified" }
 
-# Step 6: Commit changes
+# Step 6: Commit changes and handle CI workflow
 if (-not $Reissue) {
-    Write-Host "📝 Committing version changes"
-    $commitMessage = switch ($Type) {
-        "beta" { "feat: prepare v$Version for BRAT beta testing" }
-        "stable" { "release: v$Version stable release" }
-        "patch" { "fix: patch release v$Version" }
-        default { "chore: version bump to v$Version" }
+    if ($UseArtifacts -and -not $ForceLocalBuild) {
+        # Commit changes and wait for CI to build with correct version
+        Write-Host "🔄 Using CI artifact workflow: commit → build → download" -ForegroundColor Green
+        $commitSha = Invoke-CommitAndWaitForCI -Version $Version -Type $Type -PackageJsonPath $PackageJsonPath -ManifestJsonPath $ManifestJsonPath -VersionConstantsPath $versionConstantsPath -ScriptPath $PSCommandPath
+        
+        # Now build executables using CI artifacts (they have the correct version)
+        Write-Host "� Building executables with CI artifacts now that version is committed..." -ForegroundColor Yellow
+        $cliProjectPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
+        Invoke-DotnetPublishMatrix -CliProject $cliProjectPath -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
     }
-    git add -- $PackageJsonPath $ManifestJsonPath $versionConstantsPath $PSCommandPath
-    git commit -m $commitMessage
+    else {
+        # Traditional workflow: build locally then commit
+        Write-Host "🔨 Building CLI executables locally first..." -ForegroundColor Green
+        $cliProjectPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
+        Invoke-DotnetPublishMatrix -CliProject $cliProjectPath -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
+        
+        Write-Host "📝 Committing version changes"
+        $commitMessage = switch ($Type) {
+            "beta" { "feat: prepare v$Version for BRAT beta testing" }
+            "stable" { "release: v$Version stable release" }
+            "patch" { "fix: patch release v$Version" }
+            default { "chore: version bump to v$Version" }
+        }
+        git add -- $PackageJsonPath $ManifestJsonPath $versionConstantsPath $PSCommandPath
+        git commit -m $commitMessage
+    }
+    
+    # Create and push tag
     $tagName = "v$Version"
     Write-Host "🏷️  Creating tag: $tagName"
     git tag $tagName
     git push origin $tagName
+    
+    # Validate executables are now present and correctly built
+    Write-Host "✅ Validating built executables..." -ForegroundColor Green
+    Assert-NaExecutableSet -DistPath (Join-Path $RepoRoot 'dist') -ExpectedVersion $Version
+    
+    # Generate checksums now that executables are built
+    Write-Host "🧦 Generating checksums for built executables..." -ForegroundColor Green
+    $distDirRoot = Join-Path $RepoRoot 'dist'
+    $checksumsFilePath = New-OrValidateChecksumsJson -DistDir $distDirRoot -SemanticVersion $Version
 }
 
 # -------------------- Reissue Mode --------------------
@@ -715,7 +1413,7 @@ if ($Reissue) {
     $tagExists = git show-ref --tags | Select-String -SimpleMatch "$reTag"
     if (-not $tagExists) { throw "Tag $reTag does not exist; cannot reissue." }
 
-    try { gh --version | Out-Null } catch { throw "GitHub CLI (gh) is required for reissue." }
+    # GitHub CLI dependency already validated in Test-AllDependencies
 
     $rootDist = Join-Path $RepoRoot 'dist'
     $pluginDist = Join-Path $RepoRoot 'src/obsidian-plugin/dist'
@@ -737,7 +1435,8 @@ if ($Reissue) {
         Write-Host "[RC2] Missing executables detected: $($missingExec -join ', ') -> publishing" -ForegroundColor Yellow
         $cliProject = Join-Path $RepoRoot "src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj"
         if (-not (Test-Path $cliProject)) { throw "CLI project not found for completeness publish: $cliProject" }
-        $semanticVersion = try { (Get-Content $ManifestJsonPath | ConvertFrom-Json).version } catch { $ReissueVersion }
+        $versionData = Get-VersionData
+        $semanticVersion = if ($versionData.ManifestExists) { $versionData.ManifestVersion } else { $ReissueVersion }
         Invoke-DotnetPublishMatrix -CliProject $cliProject -PublishRoot $rootDist -SemanticVersion $semanticVersion
     }
     else { Write-Host "[RC2] All expected executables already present." -ForegroundColor Green }
@@ -879,13 +1578,7 @@ if ($Reissue) {
 if ($CreateRelease -and -not $Reissue) {
     Write-Host "🚀 Creating GitHub release"
     
-    # Check if gh CLI is available
-    try {
-        gh --version | Out-Null
-    }
-    catch {
-        throw "GitHub CLI (gh) not found. Install it to create releases automatically."
-    }
+    # GitHub CLI dependency already validated in Test-AllDependencies
     
     # Prepare release assets - include only files listed in asset manifest
     $pluginDistDir = Join-Path $RepoRoot "dist"
