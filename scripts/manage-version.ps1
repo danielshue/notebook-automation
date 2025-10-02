@@ -695,14 +695,6 @@ function Wait-GitHubActionsComplete {
     
     Write-ConditionalHost "✅ GitHub Actions monitoring completed successfully" -ForegroundColor Green
 }
-    }
-    
-    if (-not $workflowsCompleted) {
-        throw "Timeout waiting for GitHub Actions to complete after $TimeoutMinutes minutes"
-    }
-    
-    return $true
-}
 
 
 # Function to commit and push version changes, then wait for CI
