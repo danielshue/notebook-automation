@@ -167,6 +167,300 @@ param(
     [switch]$ForceLocalBuild
 )
 
+# GLOBAL ERROR HANDLING AND ROLLBACK SYSTEM
+# ============================================
+
+# Rollback state tracking
+$script:rollbackState = @{
+    InitialCommitHash = $null
+    Phase             = "Initialization"  # Initialization, PreCommit, PostCommit, Completed
+    ModifiedFiles     = @()
+    CommitCreated     = $false
+    CommitHash        = $null
+    TagCreated        = $false
+    TagName           = $null
+    ReleaseCreated    = $false
+    NeedsRollback     = $false
+}
+
+function Initialize-RollbackSystem {
+    """Initialize rollback tracking system"""
+    
+    Write-ConditionalHost "🔍 Initializing rollback tracking system..." -ForegroundColor Cyan
+    
+    # Capture current commit hash
+    try {
+        $script:rollbackState.InitialCommitHash = & git rev-parse HEAD 2>$null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to get current commit hash"
+        }
+    }
+    catch {
+        Write-Host "⚠️  Warning: Could not capture initial commit hash - rollback may be limited" -ForegroundColor Yellow
+    }
+    
+    # Check if workspace is clean
+    $currentStatus = & git status --porcelain 2>$null
+    if ($currentStatus) {
+        Write-Host "⚠️  WARNING: Workspace has uncommitted changes:" -ForegroundColor Yellow
+        $currentStatus | ForEach-Object { Write-Host "   $_" -ForegroundColor Gray }
+        Write-Host ""
+        
+        $response = Read-Host "Continue anyway? These changes may interfere with rollback [y/N]"
+        if ($response -ne 'y' -and $response -ne 'Y') {
+            Write-Host "❌ Aborted by user" -ForegroundColor Red
+            exit 1
+        }
+    }
+    
+    $script:rollbackState.Phase = "PreCommit"
+    Write-ConditionalHost "✅ Rollback system initialized - Phase: PreCommit" -ForegroundColor DarkGreen
+}
+
+function Set-RollbackPhase {
+    param(
+        [ValidateSet("Initialization", "PreCommit", "PostCommit", "Completed")]
+        [string]$Phase
+    )
+    
+    $script:rollbackState.Phase = $Phase
+    Write-ConditionalHost "📍 Rollback phase: $Phase" -ForegroundColor DarkCyan
+}
+
+function Register-ModifiedFile {
+    param([string]$FilePath)
+    
+    if ($FilePath -and $FilePath -notin $script:rollbackState.ModifiedFiles) {
+        $script:rollbackState.ModifiedFiles += $FilePath
+        $script:rollbackState.NeedsRollback = $true
+        Write-ConditionalHost "📝 Registered for rollback: $FilePath" -ForegroundColor DarkGray
+    }
+}
+
+function Register-CommitCreated {
+    param([string]$CommitHash, [string]$TagName = $null)
+    
+    $script:rollbackState.CommitCreated = $true
+    $script:rollbackState.CommitHash = $CommitHash
+    $script:rollbackState.NeedsRollback = $true
+    
+    if ($TagName) {
+        $script:rollbackState.TagCreated = $true
+        $script:rollbackState.TagName = $TagName
+    }
+    
+    Set-RollbackPhase -Phase "PostCommit"
+    Write-ConditionalHost "📍 Commit created: $CommitHash $(if($TagName){"(Tag: $TagName)"})" -ForegroundColor DarkCyan
+}
+
+function Register-ReleaseCreated {
+    $script:rollbackState.ReleaseCreated = $true
+    Write-ConditionalHost "📍 GitHub release created" -ForegroundColor DarkCyan
+}
+
+function Clear-RollbackRequirement {
+    """Mark that rollback is no longer needed (successful completion)"""
+    $script:rollbackState.NeedsRollback = $false
+    Set-RollbackPhase -Phase "Completed"
+    Write-ConditionalHost "✅ Script completed successfully - rollback not needed" -ForegroundColor DarkGreen
+}
+
+function Invoke-PreCommitRollback {
+    """Rollback Strategy 1: Uncommitted local changes"""
+    
+    Write-Host "🔄 STRATEGY 1: Rolling back uncommitted changes..." -ForegroundColor Yellow
+    
+    try {
+        # Check what files are currently modified
+        $modifiedFiles = & git status --porcelain 2>$null
+        
+        if ($modifiedFiles) {
+            Write-Host "📋 Uncommitted changes to rollback:" -ForegroundColor Cyan
+            $modifiedFiles | ForEach-Object { Write-Host "   $_" -ForegroundColor Gray }
+            
+            # Reset all modified tracked files
+            Write-Host "🔄 Resetting modified files..." -ForegroundColor Cyan
+            & git checkout -- . 2>&1 | Out-Null
+            
+            # Remove untracked files that were created during script execution
+            $untrackedFiles = & git status --porcelain 2>$null | Where-Object { $_.StartsWith("??") }
+            if ($untrackedFiles) {
+                Write-Host "🗑️  Removing untracked files..." -ForegroundColor Cyan
+                $untrackedFiles | ForEach-Object {
+                    $file = $_.Substring(3).Trim()
+                    if (Test-Path $file) {
+                        Remove-Item $file -Force -ErrorAction SilentlyContinue
+                        Write-Host "   Removed: $file" -ForegroundColor Gray
+                    }
+                }
+            }
+            
+            # Verify rollback success
+            $remainingChanges = & git status --porcelain 2>$null
+            if (-not $remainingChanges) {
+                Write-Host "✅ Pre-commit rollback successful - workspace is clean" -ForegroundColor Green
+                return $true
+            }
+            else {
+                Write-Host "⚠️  Some changes remain after rollback:" -ForegroundColor Yellow
+                $remainingChanges | ForEach-Object { Write-Host "   $_" -ForegroundColor Gray }
+                return $false
+            }
+        }
+        else {
+            Write-Host "ℹ️  No uncommitted changes found" -ForegroundColor Gray
+            return $true
+        }
+    }
+    catch {
+        Write-Host "❌ Error during pre-commit rollback: $($_.Exception.Message)" -ForegroundColor Red
+        return $false
+    }
+}
+
+function Invoke-PostCommitRollback {
+    """Rollback Strategy 2: Committed changes and releases"""
+    
+    Write-Host "🔄 STRATEGY 2: Rolling back committed changes..." -ForegroundColor Yellow
+    
+    $rollbackSuccess = $true
+    
+    try {
+        # Step 1: Delete GitHub release if created
+        if ($script:rollbackState.ReleaseCreated -and $script:rollbackState.TagName) {
+            Write-Host "🗑️  Deleting GitHub release..." -ForegroundColor Cyan
+            try {
+                & gh release delete $script:rollbackState.TagName --yes 2>&1 | Out-Null
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "   ✅ GitHub release deleted" -ForegroundColor Green
+                }
+                else {
+                    Write-Host "   ⚠️  Could not delete GitHub release (may not exist)" -ForegroundColor Yellow
+                }
+            }
+            catch {
+                Write-Host "   ⚠️  Error deleting GitHub release: $($_.Exception.Message)" -ForegroundColor Yellow
+                $rollbackSuccess = $false
+            }
+        }
+        
+        # Step 2: Delete Git tag if created
+        if ($script:rollbackState.TagCreated -and $script:rollbackState.TagName) {
+            Write-Host "🗑️  Deleting Git tag..." -ForegroundColor Cyan
+            try {
+                # Delete local tag
+                & git tag -d $script:rollbackState.TagName 2>&1 | Out-Null
+                # Delete remote tag
+                & git push origin --delete $script:rollbackState.TagName 2>&1 | Out-Null
+                Write-Host "   ✅ Git tag deleted (local and remote)" -ForegroundColor Green
+            }
+            catch {
+                Write-Host "   ⚠️  Error deleting Git tag: $($_.Exception.Message)" -ForegroundColor Yellow
+                $rollbackSuccess = $false
+            }
+        }
+        
+        # Step 3: Reset to previous commit if we created a version bump commit
+        if ($script:rollbackState.CommitCreated -and $script:rollbackState.InitialCommitHash) {
+            Write-Host "🔄 Resetting to previous commit..." -ForegroundColor Cyan
+            try {
+                # Reset to the initial commit (hard reset)
+                & git reset --hard $script:rollbackState.InitialCommitHash 2>&1 | Out-Null
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "   ✅ Reset to commit: $($script:rollbackState.InitialCommitHash.Substring(0,8))" -ForegroundColor Green
+                    
+                    # Force push to update remote (if we had pushed)
+                    $response = Read-Host "   Force push to remote to update origin? [y/N]"
+                    if ($response -eq 'y' -or $response -eq 'Y') {
+                        & git push --force-with-lease 2>&1 | Out-Null
+                        if ($LASTEXITCODE -eq 0) {
+                            Write-Host "   ✅ Remote updated" -ForegroundColor Green
+                        }
+                        else {
+                            Write-Host "   ⚠️  Could not update remote - manual push may be needed" -ForegroundColor Yellow
+                            $rollbackSuccess = $false
+                        }
+                    }
+                }
+                else {
+                    Write-Host "   ❌ Failed to reset commit" -ForegroundColor Red
+                    $rollbackSuccess = $false
+                }
+            }
+            catch {
+                Write-Host "   ❌ Error resetting commit: $($_.Exception.Message)" -ForegroundColor Red
+                $rollbackSuccess = $false
+            }
+        }
+        
+        return $rollbackSuccess
+    }
+    catch {
+        Write-Host "❌ Error during post-commit rollback: $($_.Exception.Message)" -ForegroundColor Red
+        return $false
+    }
+}
+
+function Invoke-RollbackStrategy {
+    param([string]$Reason = "Script failure")
+    
+    if (-not $script:rollbackState.NeedsRollback) {
+        Write-ConditionalHost "ℹ️  No rollback needed" -ForegroundColor Gray
+        return
+    }
+    
+    Write-Host ""
+    Write-Host "🚨 EXECUTING ROLLBACK: $Reason" -ForegroundColor Red
+    Write-Host "================================================" -ForegroundColor Red
+    Write-Host "Phase: $($script:rollbackState.Phase)" -ForegroundColor Yellow
+    Write-Host ""
+    
+    $success = $false
+    
+    switch ($script:rollbackState.Phase) {
+        "PreCommit" {
+            $success = Invoke-PreCommitRollback
+        }
+        "PostCommit" {
+            # Try both strategies - first post-commit, then pre-commit for any remaining changes
+            $postCommitSuccess = Invoke-PostCommitRollback
+            $preCommitSuccess = Invoke-PreCommitRollback
+            $success = $postCommitSuccess -and $preCommitSuccess
+        }
+        default {
+            Write-Host "⚠️  Unknown phase: $($script:rollbackState.Phase) - attempting pre-commit rollback" -ForegroundColor Yellow
+            $success = Invoke-PreCommitRollback
+        }
+    }
+    
+    Write-Host ""
+    if ($success) {
+        Write-Host "✅ ROLLBACK COMPLETED SUCCESSFULLY" -ForegroundColor Green
+        Write-Host "   Workspace has been restored to its previous state" -ForegroundColor Green
+    }
+    else {
+        Write-Host "⚠️  ROLLBACK PARTIALLY FAILED" -ForegroundColor Yellow
+        Write-Host "   Some manual cleanup may be required" -ForegroundColor Yellow
+        Write-Host "   Check git status and remote repository state" -ForegroundColor Yellow
+    }
+    Write-Host ""
+}
+
+# SCRIPT-LEVEL ERROR HANDLER
+trap {
+    Write-Host ""
+    Write-Host "💥 UNHANDLED ERROR OCCURRED" -ForegroundColor Red
+    Write-Host "=============================" -ForegroundColor Red
+    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Location: Line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
+    Write-Host ""
+    
+    Invoke-RollbackStrategy -Reason "Unhandled script error"
+    
+    Write-Host "❌ Script execution failed and rollback attempted" -ForegroundColor Red
+    exit 1
+}
+
 #
 # HELP AND USAGE - Show help when no meaningful arguments provided
 #
@@ -407,9 +701,10 @@ function Invoke-CommitAndWaitForCI {
         throw "Failed to commit version changes"
     }
     
-    # Get the commit SHA
+    # Get the commit SHA and register for rollback tracking
     $commitSha = git rev-parse HEAD
     Write-VerboseHost "Committed with SHA: $commitSha"
+    Register-CommitCreated -CommitHash $commitSha
     
     # Push to trigger CI
     Write-ConditionalHost "📤 Pushing to origin to trigger CI build..." -ForegroundColor Yellow
@@ -805,813 +1100,847 @@ function Test-AllDependencies {
     Write-Host ""
 }
 
-# Run dependency validation before any operations
-Test-AllDependencies
+# MAIN SCRIPT EXECUTION WITH ROLLBACK PROTECTION
+# ===============================================
 
-#
-# VERSION VALIDATION - Validate version format early
-#
+try {
+    # Initialize rollback system
+    Initialize-RollbackSystem
 
-function Test-VersionFormat {
-    param([string]$Version)
+    # Run dependency validation before any operations
+    Test-AllDependencies
+
+    #
+    # VERSION VALIDATION - Validate version format early
+    #
+
+    function Test-VersionFormat {
+        param([string]$Version)
     
-    if ([string]::IsNullOrEmpty($Version)) { return $true } # Allow empty for certain modes
+        if ([string]::IsNullOrEmpty($Version)) { return $true } # Allow empty for certain modes
     
-    # Semantic version pattern: major.minor.patch[-prerelease][+build]
-    $semverPattern = '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
+        # Semantic version pattern: major.minor.patch[-prerelease][+build]
+        $semverPattern = '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$'
     
-    if ($Version -notmatch $semverPattern) {
-        Write-Host "❌ Invalid version format: $Version" -ForegroundColor Red
-        Write-Host "   Expected semantic version format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]" -ForegroundColor Yellow
-        Write-Host "   Examples:" -ForegroundColor Yellow  
-        Write-Host "     • 1.0.0" -ForegroundColor Gray
-        Write-Host "     • 1.2.3-beta.1" -ForegroundColor Gray
-        Write-Host "     • 2.0.0-alpha.1+build.123" -ForegroundColor Gray
-        throw "Invalid version format: $Version"
+        if ($Version -notmatch $semverPattern) {
+            Write-Host "❌ Invalid version format: $Version" -ForegroundColor Red
+            Write-Host "   Expected semantic version format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]" -ForegroundColor Yellow
+            Write-Host "   Examples:" -ForegroundColor Yellow  
+            Write-Host "     • 1.0.0" -ForegroundColor Gray
+            Write-Host "     • 1.2.3-beta.1" -ForegroundColor Gray
+            Write-Host "     • 2.0.0-alpha.1+build.123" -ForegroundColor Gray
+            throw "Invalid version format: $Version"
+        }
+    
+        if (-not $Quiet) {
+            Write-Host "✅ Version format validation passed: $Version" -ForegroundColor Green
+        }
     }
-    
-    if (-not $Quiet) {
-        Write-Host "✅ Version format validation passed: $Version" -ForegroundColor Green
+
+    # Validate version format if provided
+    if ($Version) {
+        Test-VersionFormat -Version $Version
     }
-}
 
-# Validate version format if provided
-if ($Version) {
-    Test-VersionFormat -Version $Version
-}
+    #
+    # OUTPUT CONTROL - Set verbosity levels
+    #
 
-#
-# OUTPUT CONTROL - Set verbosity levels
-#
-
-# Override PowerShell preference variables based on our parameters
-if ($Diagnostic) {
-    $VerbosePreference = "Continue"
-    $DebugPreference = "Continue"
-    if (-not $Quiet) {
-        Write-Host "🔍 Diagnostic mode enabled" -ForegroundColor Cyan
+    # Override PowerShell preference variables based on our parameters
+    if ($Diagnostic) {
+        $VerbosePreference = "Continue"
+        $DebugPreference = "Continue"
+        if (-not $Quiet) {
+            Write-Host "🔍 Diagnostic mode enabled" -ForegroundColor Cyan
+        }
     }
-}
 
-if ($Quiet) {
-    $VerbosePreference = "SilentlyContinue"
-    $DebugPreference = "SilentlyContinue" 
-    $WarningPreference = "SilentlyContinue"
-    # Suppress most output except errors and final results
-}
+    if ($Quiet) {
+        $VerbosePreference = "SilentlyContinue"
+        $DebugPreference = "SilentlyContinue" 
+        $WarningPreference = "SilentlyContinue"
+        # Suppress most output except errors and final results
+    }
 
-# Run dependency validation before any operations
-# Test-AllDependencies  # Remove duplicate call
+    # Run dependency validation before any operations
+    # Test-AllDependencies  # Remove duplicate call
 
-#
-# UTILITY MODES - Handle sync and status operations
-#
+    #
+    # UTILITY MODES - Handle sync and status operations
+    #
 
-if ($StatusOnly) {
-    $versionData = Get-VersionData
-    Write-VersionStatus -VersionData $versionData -Detailed:$Detailed
-    exit 0
-}
+    if ($StatusOnly) {
+        $versionData = Get-VersionData
+        Write-VersionStatus -VersionData $versionData -Detailed:$Detailed
+        exit 0
+    }
 
-if ($SyncOnly) {
-    Write-Host "🔄 Synchronizing CLI and Plugin Versions" -ForegroundColor Green
+    if ($SyncOnly) {
+        Write-Host "🔄 Synchronizing CLI and Plugin Versions" -ForegroundColor Green
 
-    # Get target version
-    $targetVersion = $Version
-    if (-not $targetVersion) {
+        # Get target version
+        $targetVersion = $Version
+        if (-not $targetVersion) {
+            $versionData = Get-VersionData
+            if ($versionData.ManifestExists) {
+                $targetVersion = $versionData.ManifestVersion
+                Write-Host "📖 Using version from manifest.json: $targetVersion"
+            }
+            else {
+                throw "No version specified and manifest.json not found. Use -Version parameter."
+            }
+        }
+        else {
+            Write-Host "📝 Using specified version: $targetVersion"
+        }
+
+        # Update CLI version (GitVersion.yml)
+        $GitVersionPath = Join-Path $RepoRoot "GitVersion.yml"
+        if (Test-Path $GitVersionPath) {
+            $gitVersionContent = Get-Content $GitVersionPath -Raw
+            $newGitVersionContent = $gitVersionContent -replace "next-version:\s*[^\r\n]+", "next-version: $targetVersion"
+            Set-Content -Path $GitVersionPath -Value $newGitVersionContent -Encoding UTF8
+            Write-Host "✅ Updated GitVersion.yml to: $targetVersion"
+        }
+
+        # Update plugin versions if not already set
+        if (Test-Path $ManifestJsonPath) {
+            $manifest = Get-Content $ManifestJsonPath | ConvertFrom-Json
+            if ($manifest.version -ne $targetVersion) {
+                $manifest.version = $targetVersion
+                $manifest | ConvertTo-Json -Depth 5 | Set-Content $ManifestJsonPath -Encoding UTF8
+                Write-Host "✅ Updated manifest.json to: $targetVersion"
+            }
+            else {
+                Write-Host "ℹ️  manifest.json already at: $targetVersion"
+            }
+        }
+
+        if (Test-Path $PackageJsonPath) {
+            $packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
+            if ($packageJson.version -ne $targetVersion) {
+                $packageJson.version = $targetVersion
+                $packageJson | ConvertTo-Json -Depth 5 | Set-Content $PackageJsonPath -Encoding UTF8
+                Write-Host "✅ Updated package.json to: $targetVersion"
+            }
+            else {
+                Write-Host "ℹ️  package.json already at: $targetVersion"
+            }
+        }
+
+        Write-Host "✅ Version synchronization complete!" -ForegroundColor Green
+
+        if ($BuildAfterSync) {
+            Write-Host ""
+            Write-Host "🔨 Building components after sync..."
+        
+            # Build CLI
+            Write-Host "Building CLI..."
+            $solutionPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.sln")
+            dotnet build $solutionPath --configuration Release
+            if ($LASTEXITCODE -ne 0) {
+                throw "CLI build failed"
+            }
+
+            # Build Plugin
+            Write-Host "Building Plugin..."
+            Push-Location $PluginDir
+            try {
+                npm install
+                npm run build
+                if ($LASTEXITCODE -ne 0) {
+                    throw "Plugin build failed"
+                }
+            }
+            finally {
+                Pop-Location
+            }
+
+            Write-Host "✅ Build complete!" -ForegroundColor Green
+        }
+
+        exit 0
+    }
+
+    if (-not $Reissue -and $RebuildOnly -and -not $Version) {
+        # Infer version from manifest if not provided
         $versionData = Get-VersionData
         if ($versionData.ManifestExists) {
-            $targetVersion = $versionData.ManifestVersion
-            Write-Host "📖 Using version from manifest.json: $targetVersion"
+            $Version = $versionData.ManifestVersion
+            Write-Host "ℹ️  Inferred current version from manifest: $Version" -ForegroundColor Cyan
         }
         else {
-            throw "No version specified and manifest.json not found. Use -Version parameter."
+            throw "Cannot infer version (manifest.json missing). Provide -Version explicitly when using -RebuildOnly."
         }
     }
-    else {
-        Write-Host "📝 Using specified version: $targetVersion"
+
+    if (-not $Reissue -and -not $Version) { throw "-Version is required unless -RebuildOnly (inferable) or -Reissue is used." }
+
+    if ($Reissue) {
+        if (-not $ReissueVersion) { throw "-ReissueVersion is required when using -Reissue (omit leading 'v')." }
+        Write-Host "♻️  Reissuing existing release v$ReissueVersion" -ForegroundColor Green
+        Write-Host "🧩 Ensuring completeness (executables, checksums, manifest)" -ForegroundColor Cyan
     }
 
-    # Update CLI version (GitVersion.yml)
-    $GitVersionPath = Join-Path $RepoRoot "GitVersion.yml"
-    if (Test-Path $GitVersionPath) {
-        $gitVersionContent = Get-Content $GitVersionPath -Raw
-        $newGitVersionContent = $gitVersionContent -replace "next-version:\s*[^\r\n]+", "next-version: $targetVersion"
-        Set-Content -Path $GitVersionPath -Value $newGitVersionContent -Encoding UTF8
-        Write-Host "✅ Updated GitVersion.yml to: $targetVersion"
+    if (-not $Reissue) {
+        Write-Host ( $RebuildOnly ? "🔧 Rebuilding executables for existing version: $Version" : "🔧 Managing Obsidian Plugin Version: $Version ($Type)" ) -ForegroundColor Green
     }
 
-    # Update plugin versions if not already set
-    if (Test-Path $ManifestJsonPath) {
-        $manifest = Get-Content $ManifestJsonPath | ConvertFrom-Json
-        if ($manifest.version -ne $targetVersion) {
-            $manifest.version = $targetVersion
-            $manifest | ConvertTo-Json -Depth 5 | Set-Content $ManifestJsonPath -Encoding UTF8
-            Write-Host "✅ Updated manifest.json to: $targetVersion"
+    # Validation
+    if (-not (Test-Path $PluginDir)) {
+        throw "Plugin directory not found: $PluginDir"
+    }
+
+    if (-not (Test-Path $PackageJsonPath)) {
+        throw "package.json not found: $PackageJsonPath"
+    }
+
+    if (-not (Test-Path $ManifestJsonPath)) {
+        throw "manifest.json not found: $ManifestJsonPath"
+    }
+
+    # Repository validation already performed in Test-AllDependencies
+
+    # Check for uncommitted changes (skip prompt for non-interactive reissue to ensure deterministic automation)
+    $gitStatus = git status --porcelain
+    if ($gitStatus) {
+        if ($Reissue) {
+            Write-Warning "⚠️  Uncommitted changes present; proceeding with reissue (no version mutation)."
         }
         else {
-            Write-Host "ℹ️  manifest.json already at: $targetVersion"
+            Write-Warning "⚠️  Uncommitted changes detected:"
+            $gitStatus | ForEach-Object { Write-Warning "   $_" }
+            $continue = Read-Host "Continue anyway? (y/N)"
+            if ($continue -ne 'y' -and $continue -ne 'Y') { throw "Aborted due to uncommitted changes" }
         }
     }
 
-    if (Test-Path $PackageJsonPath) {
-        $packageJson = Get-Content $PackageJsonPath | ConvertFrom-Json
-        if ($packageJson.version -ne $targetVersion) {
-            $packageJson.version = $targetVersion
-            $packageJson | ConvertTo-Json -Depth 5 | Set-Content $PackageJsonPath -Encoding UTF8
-            Write-Host "✅ Updated package.json to: $targetVersion"
-        }
-        else {
-            Write-Host "ℹ️  package.json already at: $targetVersion"
-        }
-    }
+    # Debugging: Check variable types and values before Join-Path calls
+    Write-Host "[DEBUG] RepoRoot: $RepoRoot (Type: $($RepoRoot.GetType().Name))" -ForegroundColor Yellow
+    Write-Host "[DEBUG] PluginDir: $PluginDir (Type: $($PluginDir.GetType().Name))" -ForegroundColor Yellow
+    Write-Host "[DEBUG] PackageJsonPath: $PackageJsonPath (Type: $($PackageJsonPath.GetType().Name))" -ForegroundColor Yellow
+    Write-Host "[DEBUG] ManifestJsonPath: $ManifestJsonPath (Type: $($ManifestJsonPath.GetType().Name))" -ForegroundColor Yellow
 
-    Write-Host "✅ Version synchronization complete!" -ForegroundColor Green
+    function Invoke-DotnetPublishMatrix {
+        param(
+            [string]$CliProject,
+            [string]$PublishRoot,
+            [string]$SemanticVersion
+        )
 
-    if ($BuildAfterSync) {
-        Write-Host ""
-        Write-Host "🔨 Building components after sync..."
+        # Check if we should use CI artifacts instead of local build
+        if ($UseArtifacts -and -not $ForceLocalBuild) {
+            Write-ConditionalHost "🎯 Using CI-built executables from GitHub Actions (recommended for releases)" -ForegroundColor Green
         
-        # Build CLI
-        Write-Host "Building CLI..."
-        $solutionPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.sln")
-        dotnet build $solutionPath --configuration Release
-        if ($LASTEXITCODE -ne 0) {
-            throw "CLI build failed"
-        }
-
-        # Build Plugin
-        Write-Host "Building Plugin..."
-        Push-Location $PluginDir
-        try {
-            npm install
-            npm run build
-            if ($LASTEXITCODE -ne 0) {
-                throw "Plugin build failed"
+            $success = Invoke-ArtifactDownload -RepoRoot $RepoRoot -TargetPath $PublishRoot
+            if ($success) {
+                Write-ConditionalHost "✅ CI artifacts successfully integrated" -ForegroundColor Green
+                return
+            }
+            else {
+                Write-ConditionalHost "⚠️  CI artifact download failed, falling back to local build" -ForegroundColor Yellow
             }
         }
-        finally {
-            Pop-Location
+
+        # Fall back to local build or if ForceLocalBuild is specified
+        Write-ConditionalHost "🧪 Publishing fresh CLI executables for all platforms (local build)" -ForegroundColor $(if ($UseArtifacts) { 'Yellow' } else { 'Green' })
+    
+        if ($UseArtifacts -and -not $ForceLocalBuild) {
+            Write-ConditionalHost "⚠️  WARNING: Using local build instead of CI artifacts may result in platform compatibility issues" -ForegroundColor Yellow
+            Write-ConditionalHost "   Consider using -UseArtifacts for production releases to ensure proper cross-platform support" -ForegroundColor Yellow
+        }
+        if (-not (Test-Path $CliProject)) { throw "CLI project not found at $CliProject" }
+        if (-not (Test-Path $PublishRoot)) { New-Item -ItemType Directory -Path $PublishRoot | Out-Null }
+
+        Get-ChildItem -Path $PublishRoot -File -Filter 'na-*' -ErrorAction SilentlyContinue | ForEach-Object { $_ | Remove-Item -Force }
+
+        $targets = @(
+            @{ Rid = 'win-x64'; Out = 'na-win-x64.exe'; Ext = '.exe' },
+            @{ Rid = 'win-arm64'; Out = 'na-win-arm64.exe'; Ext = '.exe' },
+            @{ Rid = 'linux-x64'; Out = 'na-linux-x64'; Ext = '' },
+            @{ Rid = 'linux-arm64'; Out = 'na-linux-arm64'; Ext = '' },
+            @{ Rid = 'osx-x64'; Out = 'na-macos-x64'; Ext = '' },
+            @{ Rid = 'osx-arm64'; Out = 'na-macos-arm64'; Ext = '' }
+        )
+
+        foreach ($t in $targets) {
+            $rid = $t.Rid; $outName = $t.Out
+            $tempOut = Join-Path $PublishRoot "_temp-$rid"
+            if (Test-Path $tempOut) { Remove-Item -Recurse -Force $tempOut -ErrorAction SilentlyContinue }
+            Write-Host "  • Publishing $rid → $outName" -ForegroundColor Yellow
+            $publishArgs = @('publish', $CliProject, '-c', 'Release', '-r', $rid, '/p:PublishSingleFile=true', '/p:SelfContained=true', '--output', $tempOut)
+            $pub = & dotnet @publishArgs 2>&1
+            if ($LASTEXITCODE -ne 0) { Write-Host $pub -ForegroundColor Red; throw "Publish failed for $rid" }
+            $produced = Join-Path $tempOut ("na" + $t.Ext)
+            if (-not (Test-Path $produced)) { throw "Expected binary not found: $produced" }
+            $finalPath = Join-Path $PublishRoot $outName
+            Copy-Item $produced $finalPath -Force
+            # Set executable permissions on Unix systems
+            Set-ExecutablePermission -FilePath $finalPath
+            Write-Host "    ✓ $outName" -ForegroundColor Green
+            Remove-Item -Recurse -Force $tempOut -ErrorAction SilentlyContinue
         }
 
-        Write-Host "✅ Build complete!" -ForegroundColor Green
+        Write-Host "🔍 Validating semantic version in host executables" -ForegroundColor Green
+        $hostExecutables = Get-ChildItem -Path $PublishRoot -File | Where-Object { $_.Name -like 'na-*' -and ( ($IsWindows -and $_.Extension -eq '.exe') -or ($IsLinux -and $_.Name -match 'linux') -or ($IsMacOS -and $_.Name -match 'macos') ) }
+        foreach ($exe in $hostExecutables) {
+            try {
+                $raw = & $exe.FullName --version 2>$null
+                if ($LASTEXITCODE -ne 0) { throw "Non-zero exit" }
+                $lines = $raw -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -and ($_ -notmatch '^-(version|v)$') }
+                $verOutput = ($lines -join ' ')
+                if ($verOutput -notmatch [Regex]::Escape($SemanticVersion)) { throw "Semantic version $SemanticVersion not detected in output of $($exe.Name)" }
+                Write-Host "    ✓ $($exe.Name) version OK" -ForegroundColor Green
+            }
+            catch { throw "Version validation failed for $($exe.Name): $($_.Exception.Message)" }
+        }
     }
 
-    exit 0
-}
-
-if (-not $Reissue -and $RebuildOnly -and -not $Version) {
-    # Infer version from manifest if not provided
-    $versionData = Get-VersionData
-    if ($versionData.ManifestExists) {
-        $Version = $versionData.ManifestVersion
-        Write-Host "ℹ️  Inferred current version from manifest: $Version" -ForegroundColor Cyan
+    if ($RebuildOnly) {
+        $cliProject = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
+        $publishRoot = Join-Path $RepoRoot 'dist'
+        Invoke-DotnetPublishMatrix -CliProject $cliProject -PublishRoot $publishRoot -SemanticVersion $Version
+        Write-Host "✅ Rebuild-only complete." -ForegroundColor Green
+        return
     }
-    else {
-        throw "Cannot infer version (manifest.json missing). Provide -Version explicitly when using -RebuildOnly."
-    }
-}
 
-if (-not $Reissue -and -not $Version) { throw "-Version is required unless -RebuildOnly (inferable) or -Reissue is used." }
-
-if ($Reissue) {
-    if (-not $ReissueVersion) { throw "-ReissueVersion is required when using -Reissue (omit leading 'v')." }
-    Write-Host "♻️  Reissuing existing release v$ReissueVersion" -ForegroundColor Green
-    Write-Host "🧩 Ensuring completeness (executables, checksums, manifest)" -ForegroundColor Cyan
-}
-
-if (-not $Reissue) {
-    Write-Host ( $RebuildOnly ? "🔧 Rebuilding executables for existing version: $Version" : "🔧 Managing Obsidian Plugin Version: $Version ($Type)" ) -ForegroundColor Green
-}
-
-# Validation
-if (-not (Test-Path $PluginDir)) {
-    throw "Plugin directory not found: $PluginDir"
-}
-
-if (-not (Test-Path $PackageJsonPath)) {
-    throw "package.json not found: $PackageJsonPath"
-}
-
-if (-not (Test-Path $ManifestJsonPath)) {
-    throw "manifest.json not found: $ManifestJsonPath"
-}
-
-# Repository validation already performed in Test-AllDependencies
-
-# Check for uncommitted changes (skip prompt for non-interactive reissue to ensure deterministic automation)
-$gitStatus = git status --porcelain
-if ($gitStatus) {
-    if ($Reissue) {
-        Write-Warning "⚠️  Uncommitted changes present; proceeding with reissue (no version mutation)."
-    }
-    else {
-        Write-Warning "⚠️  Uncommitted changes detected:"
-        $gitStatus | ForEach-Object { Write-Warning "   $_" }
-        $continue = Read-Host "Continue anyway? (y/N)"
-        if ($continue -ne 'y' -and $continue -ne 'Y') { throw "Aborted due to uncommitted changes" }
-    }
-}
-
-# Debugging: Check variable types and values before Join-Path calls
-Write-Host "[DEBUG] RepoRoot: $RepoRoot (Type: $($RepoRoot.GetType().Name))" -ForegroundColor Yellow
-Write-Host "[DEBUG] PluginDir: $PluginDir (Type: $($PluginDir.GetType().Name))" -ForegroundColor Yellow
-Write-Host "[DEBUG] PackageJsonPath: $PackageJsonPath (Type: $($PackageJsonPath.GetType().Name))" -ForegroundColor Yellow
-Write-Host "[DEBUG] ManifestJsonPath: $ManifestJsonPath (Type: $($ManifestJsonPath.GetType().Name))" -ForegroundColor Yellow
-
-function Invoke-DotnetPublishMatrix {
-    param(
-        [string]$CliProject,
-        [string]$PublishRoot,
-        [string]$SemanticVersion
-    )
-
-    # Check if we should use CI artifacts instead of local build
-    if ($UseArtifacts -and -not $ForceLocalBuild) {
-        Write-ConditionalHost "🎯 Using CI-built executables from GitHub Actions (recommended for releases)" -ForegroundColor Green
-        
-        $success = Invoke-ArtifactDownload -RepoRoot $RepoRoot -TargetPath $PublishRoot
-        if ($success) {
-            Write-ConditionalHost "✅ CI artifacts successfully integrated" -ForegroundColor Green
-            return
+    if (-not $Reissue) {
+        # Step 1: Update package.json version
+        # Check if the specified version is already set in package.json
+        $versionData = Get-VersionData
+        if ($versionData.PackageVersion -eq $Version) {
+            Write-Host "⚠️  Specified version ($Version) is already set in package.json. Skipping version update." -ForegroundColor Yellow
         }
         else {
-            Write-ConditionalHost "⚠️  CI artifact download failed, falling back to local build" -ForegroundColor Yellow
+            Write-Host "📝 Updating package.json version to $Version"
+            Push-Location $PluginDir
+            try {
+                npm version $Version --no-git-tag-version
+                if ($LASTEXITCODE -ne 0) { throw "Failed to update package.json version" }
+                Register-ModifiedFile -FilePath $PackageJsonPath
+            }
+            finally { Pop-Location }
         }
-    }
 
-    # Fall back to local build or if ForceLocalBuild is specified
-    Write-ConditionalHost "🧪 Publishing fresh CLI executables for all platforms (local build)" -ForegroundColor $(if ($UseArtifacts) { 'Yellow' }else { 'Green' })
-    
-    if ($UseArtifacts -and -not $ForceLocalBuild) {
-        Write-ConditionalHost "⚠️  WARNING: Using local build instead of CI artifacts may result in platform compatibility issues" -ForegroundColor Yellow
-        Write-ConditionalHost "   Consider using -UseArtifacts for production releases to ensure proper cross-platform support" -ForegroundColor Yellow
-    }
-    if (-not (Test-Path $CliProject)) { throw "CLI project not found at $CliProject" }
-    if (-not (Test-Path $PublishRoot)) { New-Item -ItemType Directory -Path $PublishRoot | Out-Null }
-
-    Get-ChildItem -Path $PublishRoot -File -Filter 'na-*' -ErrorAction SilentlyContinue | ForEach-Object { $_ | Remove-Item -Force }
-
-    $targets = @(
-        @{ Rid = 'win-x64'; Out = 'na-win-x64.exe'; Ext = '.exe' },
-        @{ Rid = 'win-arm64'; Out = 'na-win-arm64.exe'; Ext = '.exe' },
-        @{ Rid = 'linux-x64'; Out = 'na-linux-x64'; Ext = '' },
-        @{ Rid = 'linux-arm64'; Out = 'na-linux-arm64'; Ext = '' },
-        @{ Rid = 'osx-x64'; Out = 'na-macos-x64'; Ext = '' },
-        @{ Rid = 'osx-arm64'; Out = 'na-macos-arm64'; Ext = '' }
-    )
-
-    foreach ($t in $targets) {
-        $rid = $t.Rid; $outName = $t.Out
-        $tempOut = Join-Path $PublishRoot "_temp-$rid"
-        if (Test-Path $tempOut) { Remove-Item -Recurse -Force $tempOut -ErrorAction SilentlyContinue }
-        Write-Host "  • Publishing $rid → $outName" -ForegroundColor Yellow
-        $publishArgs = @('publish', $CliProject, '-c', 'Release', '-r', $rid, '/p:PublishSingleFile=true', '/p:SelfContained=true', '--output', $tempOut)
-        $pub = & dotnet @publishArgs 2>&1
-        if ($LASTEXITCODE -ne 0) { Write-Host $pub -ForegroundColor Red; throw "Publish failed for $rid" }
-        $produced = Join-Path $tempOut ("na" + $t.Ext)
-        if (-not (Test-Path $produced)) { throw "Expected binary not found: $produced" }
-        $finalPath = Join-Path $PublishRoot $outName
-        Copy-Item $produced $finalPath -Force
-        # Set executable permissions on Unix systems
-        Set-ExecutablePermission -FilePath $finalPath
-        Write-Host "    ✓ $outName" -ForegroundColor Green
-        Remove-Item -Recurse -Force $tempOut -ErrorAction SilentlyContinue
-    }
-
-    Write-Host "🔍 Validating semantic version in host executables" -ForegroundColor Green
-    $hostExecutables = Get-ChildItem -Path $PublishRoot -File | Where-Object { $_.Name -like 'na-*' -and ( ($IsWindows -and $_.Extension -eq '.exe') -or ($IsLinux -and $_.Name -match 'linux') -or ($IsMacOS -and $_.Name -match 'macos') ) }
-    foreach ($exe in $hostExecutables) {
-        try {
-            $raw = & $exe.FullName --version 2>$null
-            if ($LASTEXITCODE -ne 0) { throw "Non-zero exit" }
-            $lines = $raw -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ -and ($_ -notmatch '^-(version|v)$') }
-            $verOutput = ($lines -join ' ')
-            if ($verOutput -notmatch [Regex]::Escape($SemanticVersion)) { throw "Semantic version $SemanticVersion not detected in output of $($exe.Name)" }
-            Write-Host "    ✓ $($exe.Name) version OK" -ForegroundColor Green
-        }
-        catch { throw "Version validation failed for $($exe.Name): $($_.Exception.Message)" }
-    }
-}
-
-if ($RebuildOnly) {
-    $cliProject = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
-    $publishRoot = Join-Path $RepoRoot 'dist'
-    Invoke-DotnetPublishMatrix -CliProject $cliProject -PublishRoot $publishRoot -SemanticVersion $Version
-    Write-Host "✅ Rebuild-only complete." -ForegroundColor Green
-    return
-}
-
-if (-not $Reissue) {
-    # Step 1: Update package.json version
-    # Check if the specified version is already set in package.json
-    $versionData = Get-VersionData
-    if ($versionData.PackageVersion -eq $Version) {
-        Write-Host "⚠️  Specified version ($Version) is already set in package.json. Skipping version update." -ForegroundColor Yellow
-    }
-    else {
-        Write-Host "📝 Updating package.json version to $Version"
+        # Step 2: Run version bump script to sync manifest.json
+        Write-Host "🔄 Syncing manifest.json with package.json"
         Push-Location $PluginDir
         try {
-            npm version $Version --no-git-tag-version
-            if ($LASTEXITCODE -ne 0) { throw "Failed to update package.json version" }
+            npm run version
+            if ($LASTEXITCODE -ne 0) { throw "Failed to run version bump script" }
+            Register-ModifiedFile -FilePath $ManifestJsonPath
         }
         finally { Pop-Location }
+
+        # Step 3: Verify versions are synchronized
+        Write-Host "✅ Verifying version synchronization"
+        $versionData = Get-VersionData
+        $packageVersion = $versionData.PackageVersion
+        $manifestVersion = $versionData.ManifestVersion
+        Write-Host "   package.json: $packageVersion"
+        Write-Host "   manifest.json: $manifestVersion"
+        if ($packageVersion -ne $manifestVersion) { throw "Version mismatch: package.json ($packageVersion) != manifest.json ($manifestVersion)" }
+        if ($packageVersion -ne $Version) { throw "Version mismatch: Expected $Version, got $packageVersion" }
+
+        # Step 3b: Update CLI compile-time version constant
+        $versionConstantsPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "VersionConstants.cs")
+        if (Test-Path $versionConstantsPath) {
+            Write-Host "🧩 Updating VersionConstants.cs (compile-time injection)" -ForegroundColor Green
+            $versionConstantsContent = @(
+                "// <auto-generated>",
+                "//  This file is generated during version bump operations.",
+                "//  Do not edit manually; update via version management scripts.",
+                "// </auto-generated>",
+                "",
+                "namespace NotebookAutomation.Cli;",
+                "",
+                "internal static class VersionConstants",
+                "{",
+                "    /// <summary>",
+                "    /// The current plugin release (semantic) version synchronized with manifest.json.",
+                "    /// </summary>",
+                "    public const string PluginReleaseVersion = `"$Version`";",
+                "}"
+            ) -join "`n"
+            Set-Content -Path $versionConstantsPath -Value $versionConstantsContent -Encoding UTF8
+            git add $versionConstantsPath
+            Write-Host "✅ VersionConstants.cs updated" -ForegroundColor Green
+        }
+        else { Write-Warning "VersionConstants.cs not found at $versionConstantsPath (skipping compile-time constant update)" }
+
+        # Note: CLI executable building happens after commit (Step 6) to ensure CI has correct version
     }
 
-    # Step 2: Run version bump script to sync manifest.json
-    Write-Host "🔄 Syncing manifest.json with package.json"
-    Push-Location $PluginDir
-    try {
-        npm run version
-        if ($LASTEXITCODE -ne 0) { throw "Failed to run version bump script" }
-    }
-    finally { Pop-Location }
+    # Guard: Ensure only expected executable naming (post-publish)
+    function Assert-NaExecutableSet {
+        param(
+            [string]$DistPath,
+            [string]$ExpectedVersion
+        )
 
-    # Step 3: Verify versions are synchronized
-    Write-Host "✅ Verifying version synchronization"
-    $versionData = Get-VersionData
-    $packageVersion = $versionData.PackageVersion
-    $manifestVersion = $versionData.ManifestVersion
-    Write-Host "   package.json: $packageVersion"
-    Write-Host "   manifest.json: $manifestVersion"
-    if ($packageVersion -ne $manifestVersion) { throw "Version mismatch: package.json ($packageVersion) != manifest.json ($manifestVersion)" }
-    if ($packageVersion -ne $Version) { throw "Version mismatch: Expected $Version, got $packageVersion" }
+        if (-not (Test-Path $DistPath)) { throw "Dist path not found: $DistPath" }
+        $executables = Get-ChildItem -Path $DistPath -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'na-*' }
 
-    # Step 3b: Update CLI compile-time version constant
-    $versionConstantsPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "VersionConstants.cs")
-    if (Test-Path $versionConstantsPath) {
-        Write-Host "🧩 Updating VersionConstants.cs (compile-time injection)" -ForegroundColor Green
-        $versionConstantsContent = @(
-            "// <auto-generated>",
-            "//  This file is generated during version bump operations.",
-            "//  Do not edit manually; update via version management scripts.",
-            "// </auto-generated>",
-            "",
-            "namespace NotebookAutomation.Cli;",
-            "",
-            "internal static class VersionConstants",
-            "{",
-            "    /// <summary>",
-            "    /// The current plugin release (semantic) version synchronized with manifest.json.",
-            "    /// </summary>",
-            "    public const string PluginReleaseVersion = `"$Version`";",
-            "}"
-        ) -join "`n"
-        Set-Content -Path $versionConstantsPath -Value $versionConstantsContent -Encoding UTF8
-        git add $versionConstantsPath
-        Write-Host "✅ VersionConstants.cs updated" -ForegroundColor Green
-    }
-    else { Write-Warning "VersionConstants.cs not found at $versionConstantsPath (skipping compile-time constant update)" }
+        $expected = @(
+            'na-win-x64.exe', 'na-win-arm64.exe',
+            'na-linux-x64', 'na-linux-arm64',
+            'na-macos-x64', 'na-macos-arm64'
+        )
 
-    # Note: CLI executable building happens after commit (Step 6) to ensure CI has correct version
-}
-
-# Guard: Ensure only expected executable naming (post-publish)
-function Assert-NaExecutableSet {
-    param(
-        [string]$DistPath,
-        [string]$ExpectedVersion
-    )
-
-    if (-not (Test-Path $DistPath)) { throw "Dist path not found: $DistPath" }
-    $executables = Get-ChildItem -Path $DistPath -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'na-*' }
-
-    $expected = @(
-        'na-win-x64.exe', 'na-win-arm64.exe',
-        'na-linux-x64', 'na-linux-arm64',
-        'na-macos-x64', 'na-macos-arm64'
-    )
-
-    $legacy = $executables | Where-Object { $_.Name -like 'na-osx-*' }
-    if ($legacy) {
-        Write-Host "❌ Legacy osx-named executables detected:" -ForegroundColor Red
-        $legacy | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
-        throw "Legacy executable names (na-osx-*) present. Aborting."
-    }
-
-    # Check for unexpected extras
-    $names = $executables.Name
-    $unexpected = $names | Where-Object { $_ -notin $expected }
-    if ($unexpected) {
-        Write-Host "❌ Unexpected executables present:" -ForegroundColor Red
-        $unexpected | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
-        throw "Unexpected executables found in dist."
-    }
-
-    # Ensure all expected exist
-    $missing = $expected | Where-Object { $_ -notin $names }
-    if ($missing) {
-        Write-Host "❌ Missing expected executables:" -ForegroundColor Red
-        $missing | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
-        throw "One or more expected executables missing."
-    }
-
-    # Semantic version validation (best-effort) – only attempt to execute binaries runnable on the current host
-    $hostPlatform = if ($IsWindows) { 'windows' } elseif ($IsLinux) { 'linux' } elseif ($IsMacOS) { 'macos' } else { 'unknown' }
-
-    foreach ($exe in $executables) {
-        $canRun = switch ($hostPlatform) {
-            'windows' { $exe.Extension -eq '.exe' }
-            'linux' { $exe.Name -like 'na-linux-*' }
-            'macos' { $exe.Name -like 'na-macos-*' }
-            default { $false }
+        $legacy = $executables | Where-Object { $_.Name -like 'na-osx-*' }
+        if ($legacy) {
+            Write-Host "❌ Legacy osx-named executables detected:" -ForegroundColor Red
+            $legacy | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
+            throw "Legacy executable names (na-osx-*) present. Aborting."
         }
 
-        if (-not $canRun) {
-            Write-Host "   ↺ Skipping version validation for non-host binary $($exe.Name)" -ForegroundColor DarkYellow
-            continue
+        # Check for unexpected extras
+        $names = $executables.Name
+        $unexpected = $names | Where-Object { $_ -notin $expected }
+        if ($unexpected) {
+            Write-Host "❌ Unexpected executables present:" -ForegroundColor Red
+            $unexpected | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
+            throw "Unexpected executables found in dist."
         }
 
-        try {
-            $output = & $exe.FullName --version 2>$null
-            if ($LASTEXITCODE -ne 0 -or ([string]::IsNullOrWhiteSpace($output))) { throw "No output" }
-            if ($output -notmatch [Regex]::Escape($ExpectedVersion)) { throw "Version string '$ExpectedVersion' not found in output" }
-            Write-Host "   ✓ $($exe.Name) version OK" -ForegroundColor Green
+        # Ensure all expected exist
+        $missing = $expected | Where-Object { $_ -notin $names }
+        if ($missing) {
+            Write-Host "❌ Missing expected executables:" -ForegroundColor Red
+            $missing | ForEach-Object { Write-Host "   $_" -ForegroundColor Red }
+            throw "One or more expected executables missing."
         }
-        catch {
-            Write-Warning "   ⚠️  Version validation warning for $($exe.Name): $($_.Exception.Message)"
-        }
-    }
 
-    Write-Host "✅ Executable naming & version validation passed" -ForegroundColor Green
-}
+        # Semantic version validation (best-effort) – only attempt to execute binaries runnable on the current host
+        $hostPlatform = if ($IsWindows) { 'windows' } elseif ($IsLinux) { 'linux' } elseif ($IsMacOS) { 'macos' } else { 'unknown' }
 
-# Note: Executable validation happens after build/download process
-
-# Step 3c: Generate or validate checksums.json for distributed executables
-function New-OrValidateChecksumsJson {
-    param(
-        [string]$DistDir,
-        [string]$SemanticVersion
-    )
-
-    if (-not (Test-Path $DistDir)) { throw "Dist directory not found: $DistDir" }
-    $expected = @('na-win-x64.exe', 'na-win-arm64.exe', 'na-linux-x64', 'na-linux-arm64', 'na-macos-x64', 'na-macos-arm64')
-    $executables = Get-ChildItem -Path $DistDir -File | Where-Object { $_.Name -in $expected }
-    $missing = $expected | Where-Object { $_ -notin $executables.Name }
-    if ($missing) { throw "Cannot create checksums.json - missing executables: $($missing -join ', ')" }
-
-    $checksumsPath = Join-Path $DistDir 'checksums.json'
-    $algorithm = 'SHA256'
-    $hashMap = @{}
-    foreach ($exe in $executables) {
-        $hash = (Get-FileHash -Algorithm SHA256 -Path $exe.FullName).Hash.ToLowerInvariant()
-        $hashMap[$exe.Name] = $hash
-    }
-
-    if (Test-Path $checksumsPath) {
-        try {
-            $existing = Get-Content $checksumsPath -Raw | ConvertFrom-Json
-            $existingFiles = $existing.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
-            # Validate presence
-            foreach ($name in $expected) { if ($name -notin $existingFiles) { throw "checksums.json missing entry for $name" } }
-            # Validate hash equality
-            foreach ($name in $expected) {
-                $currentHash = $hashMap[$name]
-                $recorded = $existing.files.$name
-                if ($currentHash -ne $recorded) { throw "Checksum mismatch for $name (recorded=$recorded actual=$currentHash)" }
+        foreach ($exe in $executables) {
+            $canRun = switch ($hostPlatform) {
+                'windows' { $exe.Extension -eq '.exe' }
+                'linux' { $exe.Name -like 'na-linux-*' }
+                'macos' { $exe.Name -like 'na-macos-*' }
+                default { $false }
             }
-            Write-Host "✅ Existing checksums.json verified" -ForegroundColor Green
+
+            if (-not $canRun) {
+                Write-Host "   ↺ Skipping version validation for non-host binary $($exe.Name)" -ForegroundColor DarkYellow
+                continue
+            }
+
+            try {
+                $output = & $exe.FullName --version 2>$null
+                if ($LASTEXITCODE -ne 0 -or ([string]::IsNullOrWhiteSpace($output))) { throw "No output" }
+                if ($output -notmatch [Regex]::Escape($ExpectedVersion)) { throw "Version string '$ExpectedVersion' not found in output" }
+                Write-Host "   ✓ $($exe.Name) version OK" -ForegroundColor Green
+            }
+            catch {
+                Write-Warning "   ⚠️  Version validation warning for $($exe.Name): $($_.Exception.Message)"
+            }
+        }
+
+        Write-Host "✅ Executable naming & version validation passed" -ForegroundColor Green
+    }
+
+    # Note: Executable validation happens after build/download process
+
+    # Step 3c: Generate or validate checksums.json for distributed executables
+    function New-OrValidateChecksumsJson {
+        param(
+            [string]$DistDir,
+            [string]$SemanticVersion
+        )
+
+        if (-not (Test-Path $DistDir)) { throw "Dist directory not found: $DistDir" }
+        $expected = @('na-win-x64.exe', 'na-win-arm64.exe', 'na-linux-x64', 'na-linux-arm64', 'na-macos-x64', 'na-macos-arm64')
+        $executables = Get-ChildItem -Path $DistDir -File | Where-Object { $_.Name -in $expected }
+        $missing = $expected | Where-Object { $_ -notin $executables.Name }
+        if ($missing) { throw "Cannot create checksums.json - missing executables: $($missing -join ', ')" }
+
+        $checksumsPath = Join-Path $DistDir 'checksums.json'
+        $algorithm = 'SHA256'
+        $hashMap = @{}
+        foreach ($exe in $executables) {
+            $hash = (Get-FileHash -Algorithm SHA256 -Path $exe.FullName).Hash.ToLowerInvariant()
+            $hashMap[$exe.Name] = $hash
+        }
+
+        if (Test-Path $checksumsPath) {
+            try {
+                $existing = Get-Content $checksumsPath -Raw | ConvertFrom-Json
+                $existingFiles = $existing.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
+                # Validate presence
+                foreach ($name in $expected) { if ($name -notin $existingFiles) { throw "checksums.json missing entry for $name" } }
+                # Validate hash equality
+                foreach ($name in $expected) {
+                    $currentHash = $hashMap[$name]
+                    $recorded = $existing.files.$name
+                    if ($currentHash -ne $recorded) { throw "Checksum mismatch for $name (recorded=$recorded actual=$currentHash)" }
+                }
+                Write-Host "✅ Existing checksums.json verified" -ForegroundColor Green
+                return $checksumsPath
+            }
+            catch {
+                throw "checksums.json validation failed: $($_.Exception.Message)"
+            }
+        }
+        else {
+            $payload = [ordered]@{
+                version      = $SemanticVersion
+                algorithm    = $algorithm
+                generatedUtc = (Get-Date).ToUniversalTime().ToString('o')
+                files        = $hashMap
+            }
+            ($payload | ConvertTo-Json -Depth 5) | Set-Content -Path $checksumsPath -Encoding UTF8
+            Write-Host "🧾 Generated checksums.json" -ForegroundColor Green
             return $checksumsPath
         }
-        catch {
-            throw "checksums.json validation failed: $($_.Exception.Message)"
-        }
     }
-    else {
-        $payload = [ordered]@{
-            version      = $SemanticVersion
-            algorithm    = $algorithm
-            generatedUtc = (Get-Date).ToUniversalTime().ToString('o')
-            files        = $hashMap
-        }
-        ($payload | ConvertTo-Json -Depth 5) | Set-Content -Path $checksumsPath -Encoding UTF8
-        Write-Host "🧾 Generated checksums.json" -ForegroundColor Green
-        return $checksumsPath
+
+    if (-not $Reissue) {
+        # Checksums and validation happen after executable building
     }
-}
 
-if (-not $Reissue) {
-    # Checksums and validation happen after executable building
-}
-
-<#
+    <#
  Step 4: Build the plugin
  In reissue mode we should NOT rebuild or modify artifacts; we rely on existing dist contents.
  This also avoids referencing $checksumsFilePath which is only set in non-reissue flows.
 #>
-if (-not $Reissue) {
-    Write-Host "🔨 Building plugin"
-    Push-Location $PluginDir
-    try {
-        npm run build
-        if ($LASTEXITCODE -ne 0) { throw "Failed to build plugin" }
+    if (-not $Reissue) {
+        Write-Host "🔨 Building plugin"
+        Push-Location $PluginDir
+        try {
+            npm run build
+            if ($LASTEXITCODE -ne 0) { throw "Failed to build plugin" }
 
-        Write-Host "✅ Build completed with executable preservation"
-        # Copy manifest.json to repository root for BRAT compatibility
-        $repoRootManifest = Join-Path $RepoRoot "manifest.json"
-        Copy-Item -Path $ManifestJsonPath -Destination $repoRootManifest -Force
-        Write-Host "✅ Copied manifest.json to repository root for BRAT compatibility"
+            Write-Host "✅ Build completed with executable preservation"
+            # Copy manifest.json to repository root for BRAT compatibility
+            $repoRootManifest = Join-Path $RepoRoot "manifest.json"
+            Copy-Item -Path $ManifestJsonPath -Destination $repoRootManifest -Force
+            Write-Host "✅ Copied manifest.json to repository root for BRAT compatibility"
 
-        # Copy checksums.json into plugin dist & ensure asset-manifest includes it
-        if ($checksumsFilePath) {
-            $pluginChecksumsTarget = Join-Path $PluginDir 'dist' 'checksums.json'
-            if (Test-Path $checksumsFilePath) {
-                Copy-Item $checksumsFilePath $pluginChecksumsTarget -Force
-                Write-Host "✅ Copied checksums.json into plugin dist" -ForegroundColor Green
-            }
-        }
-
-        $assetManifestPath = Join-Path $PluginDir 'dist' 'asset-manifest.json'
-        if (Test-Path $assetManifestPath -and $checksumsFilePath) {
-            try {
-                $am = Get-Content $assetManifestPath -Raw | ConvertFrom-Json
-                if (-not ($am.files -contains 'checksums.json')) {
-                    $am.files += 'checksums.json'
-                    ($am | ConvertTo-Json -Depth 5) | Set-Content -Path $assetManifestPath -Encoding UTF8
-                    Write-Host "🛠️  Updated asset-manifest.json to include checksums.json" -ForegroundColor Green
+            # Copy checksums.json into plugin dist & ensure asset-manifest includes it
+            if ($checksumsFilePath) {
+                $pluginChecksumsTarget = Join-Path $PluginDir 'dist' 'checksums.json'
+                if (Test-Path $checksumsFilePath) {
+                    Copy-Item $checksumsFilePath $pluginChecksumsTarget -Force
+                    Write-Host "✅ Copied checksums.json into plugin dist" -ForegroundColor Green
                 }
             }
-            catch { Write-Warning "Failed to update asset-manifest.json: $($_.Exception.Message)" }
+
+            $assetManifestPath = Join-Path $PluginDir 'dist' 'asset-manifest.json'
+            if ((Test-Path $assetManifestPath) -and $checksumsFilePath) {
+                try {
+                    $am = Get-Content $assetManifestPath -Raw | ConvertFrom-Json
+                    if (-not ($am.files -contains 'checksums.json')) {
+                        $am.files += 'checksums.json'
+                        ($am | ConvertTo-Json -Depth 5) | Set-Content -Path $assetManifestPath -Encoding UTF8
+                        Write-Host "🛠️  Updated asset-manifest.json to include checksums.json" -ForegroundColor Green
+                    }
+                }
+                catch { Write-Warning "Failed to update asset-manifest.json: $($_.Exception.Message)" }
+            }
         }
-    }
-    finally { Pop-Location }
-}
-else {
-    Write-Host "↺ Skipping plugin rebuild in reissue mode (using existing dist assets)" -ForegroundColor Yellow
-}
-
-# Step 5: Verify build artifacts
-$distDir = Join-Path $RepoRoot "dist"
-$distFiles = Get-ChildItem -Path $distDir | Select-Object -ExpandProperty Name
-Write-Host "[DEBUG] Files in dist directory:" -ForegroundColor Yellow
-$distFiles | ForEach-Object { Write-Host "   $_" -ForegroundColor Yellow }
-$buildArtifacts = @(
-    Join-Path $distDir "main.js"
-    Join-Path $distDir "manifest.json"
-    Join-Path $distDir "styles.css"
-)
-
-foreach ($artifact in $buildArtifacts) {
-    if (-not (Test-Path $artifact)) {
-        throw "Build artifact missing: $artifact"
-    }
-}
-
-if (-not $Reissue) { Write-Host "✅ Build artifacts verified" }
-
-# Step 6: Commit changes and handle CI workflow
-if (-not $Reissue) {
-    if ($UseArtifacts -and -not $ForceLocalBuild) {
-        # Commit changes and wait for CI to build with correct version
-        Write-Host "🔄 Using CI artifact workflow: commit → build → download" -ForegroundColor Green
-        $commitSha = Invoke-CommitAndWaitForCI -Version $Version -Type $Type -PackageJsonPath $PackageJsonPath -ManifestJsonPath $ManifestJsonPath -VersionConstantsPath $versionConstantsPath -ScriptPath $PSCommandPath
-        
-        # Now build executables using CI artifacts (they have the correct version)
-        Write-Host "� Building executables with CI artifacts now that version is committed..." -ForegroundColor Yellow
-        $cliProjectPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
-        Invoke-DotnetPublishMatrix -CliProject $cliProjectPath -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
+        finally { Pop-Location }
     }
     else {
-        # Traditional workflow: build locally then commit
-        Write-Host "🔨 Building CLI executables locally first..." -ForegroundColor Green
-        $cliProjectPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
-        Invoke-DotnetPublishMatrix -CliProject $cliProjectPath -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
-        
-        Write-Host "📝 Committing version changes"
-        $commitMessage = switch ($Type) {
-            "beta" { "feat: prepare v$Version for BRAT beta testing" }
-            "stable" { "release: v$Version stable release" }
-            "patch" { "fix: patch release v$Version" }
-            default { "chore: version bump to v$Version" }
+        Write-Host "↺ Skipping plugin rebuild in reissue mode (using existing dist assets)" -ForegroundColor Yellow
+    }
+
+    # Step 5: Verify build artifacts
+    $distDir = Join-Path $RepoRoot "dist"
+    $distFiles = Get-ChildItem -Path $distDir | Select-Object -ExpandProperty Name
+    Write-Host "[DEBUG] Files in dist directory:" -ForegroundColor Yellow
+    $distFiles | ForEach-Object { Write-Host "   $_" -ForegroundColor Yellow }
+    $buildArtifacts = @(
+        Join-Path $distDir "main.js"
+        Join-Path $distDir "manifest.json"
+        Join-Path $distDir "styles.css"
+    )
+
+    foreach ($artifact in $buildArtifacts) {
+        if (-not (Test-Path $artifact)) {
+            throw "Build artifact missing: $artifact"
         }
-        git add -- $PackageJsonPath $ManifestJsonPath $versionConstantsPath $PSCommandPath
-        git commit -m $commitMessage
     }
-    
-    # Create and push tag
-    $tagName = "v$Version"
-    Write-Host "🏷️  Creating tag: $tagName"
-    git tag $tagName
-    git push origin $tagName
-    
-    # Validate executables are now present and correctly built
-    Write-Host "✅ Validating built executables..." -ForegroundColor Green
-    Assert-NaExecutableSet -DistPath (Join-Path $RepoRoot 'dist') -ExpectedVersion $Version
-    
-    # Generate checksums now that executables are built
-    Write-Host "🧦 Generating checksums for built executables..." -ForegroundColor Green
-    $distDirRoot = Join-Path $RepoRoot 'dist'
-    $checksumsFilePath = New-OrValidateChecksumsJson -DistDir $distDirRoot -SemanticVersion $Version
-}
 
-# -------------------- Reissue Mode --------------------
-if ($Reissue) {
-    $reTag = "v$ReissueVersion"
-    # Validate tag exists
-    $tagExists = git show-ref --tags | Select-String -SimpleMatch "$reTag"
-    if (-not $tagExists) { throw "Tag $reTag does not exist; cannot reissue." }
+    if (-not $Reissue) { Write-Host "✅ Build artifacts verified" }
 
-    # GitHub CLI dependency already validated in Test-AllDependencies
-
-    $rootDist = Join-Path $RepoRoot 'dist'
-    $pluginDist = Join-Path $RepoRoot 'src/obsidian-plugin/dist'
-    $manifestCandidates = @(
-        Join-Path $rootDist 'asset-manifest.json';
-        Join-Path $pluginDist 'asset-manifest.json'
-    ) | Where-Object { Test-Path $_ }
-    if (-not $manifestCandidates) { throw "No asset-manifest.json found in root or plugin dist." }
-    $manifestPath = $manifestCandidates[0]
-    $manifestDir = Split-Path $manifestPath -Parent
-    Write-Host "📄 Using asset manifest: $manifestPath" -ForegroundColor Green
-
-    # Ensure expected executables & checksums exist before collecting asset list (always on in reissue mode)
-    Write-Host "[RC1] Ensuring full executable matrix present" -ForegroundColor Cyan
-    $expectedExec = @('na-win-x64.exe', 'na-win-arm64.exe', 'na-linux-x64', 'na-linux-arm64', 'na-macos-x64', 'na-macos-arm64')
-    $currentExec = @(Get-ChildItem -Path $rootDist -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'na-*' } | Select-Object -ExpandProperty Name)
-    $missingExec = $expectedExec | Where-Object { $_ -notin $currentExec }
-    if ($missingExec) {
-        Write-Host "[RC2] Missing executables detected: $($missingExec -join ', ') -> publishing" -ForegroundColor Yellow
-        $cliProject = Join-Path $RepoRoot "src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj"
-        if (-not (Test-Path $cliProject)) { throw "CLI project not found for completeness publish: $cliProject" }
-        $versionData = Get-VersionData
-        $semanticVersion = if ($versionData.ManifestExists) { $versionData.ManifestVersion } else { $ReissueVersion }
-        Invoke-DotnetPublishMatrix -CliProject $cliProject -PublishRoot $rootDist -SemanticVersion $semanticVersion
-    }
-    else { Write-Host "[RC2] All expected executables already present." -ForegroundColor Green }
-
-    Write-Host "[RC3] Ensuring checksums.json present & valid" -ForegroundColor Cyan
-    try {
-        $null = New-OrValidateChecksumsJson -DistDir $rootDist -SemanticVersion $ReissueVersion
-        Write-Host "[RC3] checksums.json verified/generated" -ForegroundColor Green
-    }
-    catch { throw "Completeness checksum step failed: $($_.Exception.Message)" }
-
-    if ($manifestPath -eq (Join-Path $rootDist 'asset-manifest.json')) {
-        Write-Host "[RC4] Normalizing root asset-manifest.json" -ForegroundColor Cyan
-        try {
-            $raw = Get-Content $manifestPath -Raw | ConvertFrom-Json
-            if (-not $raw.files) { $raw | Add-Member -NotePropertyName files -NotePropertyValue @() -Force }
-            $needAdd = @()
-            foreach ($ex in $expectedExec) { if ($raw.files -notcontains $ex) { $needAdd += $ex } }
-            if ($raw.files -notcontains 'checksums.json') { $needAdd += 'checksums.json' }
-            if ($raw.files -notcontains 'asset-manifest.json') { $needAdd += 'asset-manifest.json' }
-            if ($needAdd) {
-                $raw.files += $needAdd
-                ($raw | ConvertTo-Json -Depth 6) | Set-Content -Path $manifestPath -Encoding UTF8
-                Write-Host "[RC4] Added to manifest: $($needAdd -join ', ')" -ForegroundColor Green
+    # Step 6: Commit changes and handle CI workflow
+    if (-not $Reissue) {
+        if ($UseArtifacts -and -not $ForceLocalBuild) {
+            # Commit changes and wait for CI to build with correct version
+            Write-Host "🔄 Using CI artifact workflow: commit → build → download" -ForegroundColor Green
+            $commitSha = Invoke-CommitAndWaitForCI -Version $Version -Type $Type -PackageJsonPath $PackageJsonPath -ManifestJsonPath $ManifestJsonPath -VersionConstantsPath $versionConstantsPath -ScriptPath $PSCommandPath
+        
+            # Now build executables using CI artifacts (they have the correct version)
+            Write-Host "� Building executables with CI artifacts now that version is committed..." -ForegroundColor Yellow
+            $cliProjectPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
+            Invoke-DotnetPublishMatrix -CliProject $cliProjectPath -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
+        }
+        else {
+            # Traditional workflow: build locally then commit
+            Write-Host "🔨 Building CLI executables locally first..." -ForegroundColor Green
+            $cliProjectPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
+            Invoke-DotnetPublishMatrix -CliProject $cliProjectPath -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
+        
+            Write-Host "📝 Committing version changes"
+            $commitMessage = switch ($Type) {
+                "beta" { "feat: prepare v$Version for BRAT beta testing" }
+                "stable" { "release: v$Version stable release" }
+                "patch" { "fix: patch release v$Version" }
+                default { "chore: version bump to v$Version" }
             }
-            else { Write-Host "[RC4] Manifest already contains required entries" -ForegroundColor Green }
-        }
-        catch { Write-Warning "[RC4] Failed to normalize asset-manifest.json: $($_.Exception.Message)" }
-    }
-    Write-Host "[R1] Reading manifest JSON" -ForegroundColor Cyan
-    $am = Get-Content $manifestPath -Raw | ConvertFrom-Json
-    $assetList = @()
-    Write-Host "[R2] Collecting manifest-declared files" -ForegroundColor Cyan
-    foreach ($f in $am.files) {
-        $fp = Join-Path $manifestDir $f
-        if (Test-Path $fp) { $assetList += $fp } else { Write-Warning "Missing file listed in manifest (skipped): $f" }
-    }
-    Write-Host "[R3] Adding executables from root dist (if not already)" -ForegroundColor Cyan
-    $executables = @(Get-ChildItem -Path $rootDist -Filter 'na-*' -File -ErrorAction SilentlyContinue)
-    foreach ($exe in $executables) {
-        if ($assetList -notcontains $exe.FullName) { $assetList += $exe.FullName }
-    }
-    Write-Host "[R4] Adding checksums.json & manifest itself if present" -ForegroundColor Cyan
-    $checksums = Join-Path $rootDist 'checksums.json'
-    if (Test-Path $checksums) { if ($assetList -notcontains $checksums) { $assetList += $checksums } }
-    # Always include the asset-manifest.json file itself (for traceability) if we are using the root one or plugin one
-    if ($assetList -notcontains $manifestPath) { $assetList += $manifestPath }
-    Write-Host "[R5] Final asset list (paths):" -ForegroundColor Cyan
-    $assetList | ForEach-Object { Write-Host "   • $_" -ForegroundColor DarkGray }
-    Write-Host "🧾 Prepared asset set (${($assetList.Count)}) for reissue" -ForegroundColor Green
-    $preFlag = ($ReissueVersion -match '-')
-    $ghExe = (Get-Command gh -ErrorAction Stop).Source
-    Write-Host "[R6] gh resolved to: $ghExe" -ForegroundColor Cyan
-    Write-Host "🗑️  Deleting existing release $reTag" -ForegroundColor Yellow
-    try {
-        $delOutput = & $ghExe release delete $reTag -y 2>&1
-        if ($LASTEXITCODE -ne 0) { Write-Warning "Release delete reported non-zero exit ($LASTEXITCODE). Output: $delOutput" }
-    }
-    catch { Write-Warning "Exception during delete: $($_.Exception.Message)" }
-
-    Write-Host "🚀 Creating replacement release $reTag" -ForegroundColor Green
-    $notes = "Reissued assets for $reTag on $(Get-Date -Format o)"
-    $createArgs = @('release', 'create', $reTag, '--title', $reTag, '--notes', $notes)
-    if ($preFlag) { $createArgs += '--prerelease' }
-    $createArgs += $assetList
-    Write-Host "[R7] gh create arguments:" -ForegroundColor Yellow
-    $createArgs | ForEach-Object { Write-Host "   $_" -ForegroundColor Yellow }
-    try {
-        $createOutput = & $ghExe @createArgs 2>&1
-        if ($LASTEXITCODE -ne 0) { throw "gh release create failed ($LASTEXITCODE): $createOutput" }
-    }
-    catch {
-        Write-Error "Reissue failed: $($_.Exception.Message)"
-        Write-Host "TIP: If error mentions a parameter like 'and', run 'Get-Command gh' to ensure no alias, and try invoking with explicit path: & \"$ghExe\" release create ..."
-        return
-    }
-    Write-Host "✅ Reissue complete: https://github.com/danielshue/notebook-automation/releases/tag/$reTag" -ForegroundColor Green
-    # Post-release verification (asset presence + checksum integrity)
-    Write-Host "[V1] Starting post-release verification" -ForegroundColor Cyan
-    $expectedNames = $assetList | ForEach-Object { Split-Path $_ -Leaf } | Sort-Object -Unique
-    try {
-        $remoteListRaw = & $ghExe release view $reTag --json assets --jq '.assets[].name' 2>$null
-        $remoteNames = @()
-        if ($remoteListRaw) {
-            $remoteNames = ($remoteListRaw -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }) | Sort-Object -Unique
-        }
-        else { $remoteNames = @() }
-    }
-    catch { Write-Warning "[V1] Unable to query remote release assets: $($_.Exception.Message)"; $remoteNames = @() }
-
-    $missingRemote = $expectedNames | Where-Object { $_ -notin $remoteNames }
-    $unexpectedRemote = $remoteNames | Where-Object { $_ -notin $expectedNames }
-    if ($missingRemote) {
-        Write-Warning "[V2] Missing assets on remote release: $($missingRemote -join ', ')"
-    }
-    else { Write-Host "[V2] All expected assets present on remote release" -ForegroundColor Green }
-    if ($unexpectedRemote) {
-        Write-Warning "[V2] Unexpected extra assets on remote release: $($unexpectedRemote -join ', ')" 
-    }
-
-    # Checksum validation
-    $checksumsPath = Join-Path $rootDist 'checksums.json'
-    $checksumIssues = @()
-    if (Test-Path $checksumsPath) {
-        Write-Host "[V3] Validating checksums.json integrity" -ForegroundColor Cyan
-        try {
-            $checksumsJson = Get-Content $checksumsPath -Raw | ConvertFrom-Json
-            $fileProps = $checksumsJson.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
-            foreach ($fname in $fileProps) {
-                $localPath = Join-Path $rootDist $fname
-                if (-not (Test-Path $localPath)) { $checksumIssues += "Entry $fname listed but file missing locally"; continue }
-                $actual = (Get-FileHash -Algorithm SHA256 -Path $localPath).Hash.ToLowerInvariant()
-                $recorded = $checksumsJson.files.$fname
-                if ($actual -ne $recorded) { $checksumIssues += "Checksum mismatch for $fname (recorded=$recorded actual=$actual)" }
-            }
-        }
-        catch { $checksumIssues += "Failed to parse/validate checksums.json: $($_.Exception.Message)" }
-    }
-    else { Write-Warning "[V3] checksums.json not found for verification (expected at $checksumsPath)" }
-
-    if ($checksumIssues.Count -eq 0) { Write-Host "[V4] Checksum validation passed" -ForegroundColor Green } else {
-        Write-Warning "[V4] Checksum validation issues:"; $checksumIssues | ForEach-Object { Write-Warning "   - $_" }
-    }
-
-    Write-Host "[V5] Post-release verification summary:" -ForegroundColor Cyan
-    Write-Host "       Expected assets: $($expectedNames.Count)" -ForegroundColor DarkGray
-    Write-Host "       Remote assets:   $($remoteNames.Count)" -ForegroundColor DarkGray
-    Write-Host "       Missing:         $($missingRemote.Count)" -ForegroundColor DarkGray
-    Write-Host "       Unexpected:      $($unexpectedRemote.Count)" -ForegroundColor DarkGray
-    Write-Host "       Checksum issues: $($checksumIssues.Count)" -ForegroundColor DarkGray
-    if ($missingRemote -or $checksumIssues) {
-        Write-Warning "[V6] Verification completed with warnings (see details above)."
-    }
-    else { Write-Host "[V6] Verification completed successfully (no issues)" -ForegroundColor Green }
-    return
-}
-
-# Step 8: Create GitHub release if requested
-if ($CreateRelease -and -not $Reissue) {
-    Write-Host "🚀 Creating GitHub release"
-    
-    # GitHub CLI dependency already validated in Test-AllDependencies
-    
-    # Prepare release assets - include only files listed in asset manifest
-    $pluginDistDir = Join-Path $RepoRoot "dist"
-    $releaseAssets = @()
-    
-    # Read asset manifest to determine which files to include
-    $assetManifestPath = Join-Path $pluginDistDir "asset-manifest.json"
-    if (Test-Path $assetManifestPath) {
-        $assetManifest = Get-Content $assetManifestPath | ConvertFrom-Json
+            git add -- $PackageJsonPath $ManifestJsonPath $versionConstantsPath scripts/manage-version.ps1
+            git commit -m $commitMessage
         
-        Write-Host "   📋 Using asset manifest with $($assetManifest.files.Count) files"
-        
-        foreach ($fileName in $assetManifest.files) {
-            $filePath = Join-Path $pluginDistDir $fileName
-            if (Test-Path $filePath) {
-                $releaseAssets += $filePath
-                Write-Host "   📎 Adding to release: $fileName"
+            if ($LASTEXITCODE -eq 0) {
+                $commitHash = git rev-parse HEAD
+                Register-CommitCreated -CommitHash $commitHash
             }
             else {
-                Write-Warning "   ⚠️  File listed in manifest but not found: $fileName"
+                throw "Failed to commit version changes"
             }
         }
-    }
-    else {
-        throw "Asset manifest not found: $assetManifestPath. Run plugin build first."
-    }
     
-    Write-Host "✅ Prepared $($releaseAssets.Count) release assets from dist directory"
+        # Create and push tag
+        $tagName = "v$Version"
+        Write-Host "🏷️  Creating tag: $tagName"
+        git tag $tagName
     
-    # Create release notes
-    $releaseNotes = switch ($Type) {
-        "beta" { 
-            @"
+        if ($LASTEXITCODE -eq 0) {
+            Register-CommitCreated -CommitHash (git rev-parse HEAD) -TagName $tagName
+            git push origin $tagName
+        }
+        else {
+            throw "Failed to create tag"
+        }
+    
+        # Validate executables are now present and correctly built
+        Write-Host "✅ Validating built executables..." -ForegroundColor Green
+        Assert-NaExecutableSet -DistPath (Join-Path $RepoRoot 'dist') -ExpectedVersion $Version
+    
+        # Generate checksums now that executables are built
+        Write-Host "🧦 Generating checksums for built executables..." -ForegroundColor Green
+        $distDirRoot = Join-Path $RepoRoot 'dist'
+        $checksumsFilePath = New-OrValidateChecksumsJson -DistDir $distDirRoot -SemanticVersion $Version
+    }
+
+    # -------------------- Reissue Mode --------------------
+    if ($Reissue) {
+        $reTag = "v$ReissueVersion"
+        # Validate tag exists
+        $tagExists = git show-ref --tags | Select-String -SimpleMatch "$reTag"
+        if (-not $tagExists) { throw "Tag $reTag does not exist; cannot reissue." }
+
+        # GitHub CLI dependency already validated in Test-AllDependencies
+
+        $rootDist = Join-Path $RepoRoot 'dist'
+        $pluginDist = Join-Path $RepoRoot 'src/obsidian-plugin/dist'
+        $manifestCandidates = @(
+            Join-Path $rootDist 'asset-manifest.json';
+            Join-Path $pluginDist 'asset-manifest.json'
+        ) | Where-Object { Test-Path $_ }
+        if (-not $manifestCandidates) { throw "No asset-manifest.json found in root or plugin dist." }
+        $manifestPath = $manifestCandidates[0]
+        $manifestDir = Split-Path $manifestPath -Parent
+        Write-Host "📄 Using asset manifest: $manifestPath" -ForegroundColor Green
+
+        # Ensure expected executables & checksums exist before collecting asset list (always on in reissue mode)
+        Write-Host "[RC1] Ensuring full executable matrix present" -ForegroundColor Cyan
+        $expectedExec = @('na-win-x64.exe', 'na-win-arm64.exe', 'na-linux-x64', 'na-linux-arm64', 'na-macos-x64', 'na-macos-arm64')
+        $currentExec = @(Get-ChildItem -Path $rootDist -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -like 'na-*' } | Select-Object -ExpandProperty Name)
+        $missingExec = $expectedExec | Where-Object { $_ -notin $currentExec }
+        if ($missingExec) {
+            Write-Host "[RC2] Missing executables detected: $($missingExec -join ', ') -> publishing" -ForegroundColor Yellow
+            $cliProject = Join-Path $RepoRoot "src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj"
+            if (-not (Test-Path $cliProject)) { throw "CLI project not found for completeness publish: $cliProject" }
+            $versionData = Get-VersionData
+            $semanticVersion = if ($versionData.ManifestExists) { $versionData.ManifestVersion } else { $ReissueVersion }
+            Invoke-DotnetPublishMatrix -CliProject $cliProject -PublishRoot $rootDist -SemanticVersion $semanticVersion
+        }
+        else { Write-Host "[RC2] All expected executables already present." -ForegroundColor Green }
+
+        Write-Host "[RC3] Ensuring checksums.json present & valid" -ForegroundColor Cyan
+        try {
+            $null = New-OrValidateChecksumsJson -DistDir $rootDist -SemanticVersion $ReissueVersion
+            Write-Host "[RC3] checksums.json verified/generated" -ForegroundColor Green
+        }
+        catch { throw "Completeness checksum step failed: $($_.Exception.Message)" }
+
+        if ($manifestPath -eq (Join-Path $rootDist 'asset-manifest.json')) {
+            Write-Host "[RC4] Normalizing root asset-manifest.json" -ForegroundColor Cyan
+            try {
+                $raw = Get-Content $manifestPath -Raw | ConvertFrom-Json
+                if (-not $raw.files) { $raw | Add-Member -NotePropertyName files -NotePropertyValue @() -Force }
+                $needAdd = @()
+                foreach ($ex in $expectedExec) { if ($raw.files -notcontains $ex) { $needAdd += $ex } }
+                if ($raw.files -notcontains 'checksums.json') { $needAdd += 'checksums.json' }
+                if ($raw.files -notcontains 'asset-manifest.json') { $needAdd += 'asset-manifest.json' }
+                if ($needAdd) {
+                    $raw.files += $needAdd
+                    ($raw | ConvertTo-Json -Depth 6) | Set-Content -Path $manifestPath -Encoding UTF8
+                    Write-Host "[RC4] Added to manifest: $($needAdd -join ', ')" -ForegroundColor Green
+                }
+                else { Write-Host "[RC4] Manifest already contains required entries" -ForegroundColor Green }
+            }
+            catch { Write-Warning "[RC4] Failed to normalize asset-manifest.json: $($_.Exception.Message)" }
+        }
+        Write-Host "[R1] Reading manifest JSON" -ForegroundColor Cyan
+        $am = Get-Content $manifestPath -Raw | ConvertFrom-Json
+        $assetList = @()
+        Write-Host "[R2] Collecting manifest-declared files" -ForegroundColor Cyan
+        foreach ($f in $am.files) {
+            $fp = Join-Path $manifestDir $f
+            if (Test-Path $fp) { $assetList += $fp } else { Write-Warning "Missing file listed in manifest (skipped): $f" }
+        }
+        Write-Host "[R3] Adding executables from root dist (if not already)" -ForegroundColor Cyan
+        $executables = @(Get-ChildItem -Path $rootDist -Filter 'na-*' -File -ErrorAction SilentlyContinue)
+        foreach ($exe in $executables) {
+            if ($assetList -notcontains $exe.FullName) { $assetList += $exe.FullName }
+        }
+        Write-Host "[R4] Adding checksums.json & manifest itself if present" -ForegroundColor Cyan
+        $checksums = Join-Path $rootDist 'checksums.json'
+        if (Test-Path $checksums) { if ($assetList -notcontains $checksums) { $assetList += $checksums } }
+        # Always include the asset-manifest.json file itself (for traceability) if we are using the root one or plugin one
+        if ($assetList -notcontains $manifestPath) { $assetList += $manifestPath }
+        Write-Host "[R5] Final asset list (paths):" -ForegroundColor Cyan
+        $assetList | ForEach-Object { Write-Host "   • $_" -ForegroundColor DarkGray }
+        Write-Host "🧾 Prepared asset set (${($assetList.Count)}) for reissue" -ForegroundColor Green
+        $preFlag = ($ReissueVersion -match '-')
+        $ghExe = (Get-Command gh -ErrorAction Stop).Source
+        Write-Host "[R6] gh resolved to: $ghExe" -ForegroundColor Cyan
+        Write-Host "🗑️  Deleting existing release $reTag" -ForegroundColor Yellow
+        try {
+            $delOutput = & $ghExe release delete $reTag -y 2>&1
+            if ($LASTEXITCODE -ne 0) { Write-Warning "Release delete reported non-zero exit ($LASTEXITCODE). Output: $delOutput" }
+        }
+        catch { Write-Warning "Exception during delete: $($_.Exception.Message)" }
+
+        Write-Host "🚀 Creating replacement release $reTag" -ForegroundColor Green
+        $notes = "Reissued assets for $reTag on $(Get-Date -Format o)"
+        # Write notes to temporary file to avoid parameter parsing issues
+        $tempNotesFile = Join-Path $env:TEMP "reissue-notes-$(Get-Random).txt"
+        $notes | Out-File -FilePath $tempNotesFile -Encoding UTF8
+    
+        $createArgs = @('release', 'create', $reTag, '--title', $reTag, '--notes-file', $tempNotesFile)
+        if ($preFlag) { $createArgs += '--prerelease' }
+        $createArgs += $assetList
+        Write-Host "[R7] gh create arguments:" -ForegroundColor Yellow
+        $createArgs | ForEach-Object { Write-Host "   $_" -ForegroundColor Yellow }
+        try {
+            $createOutput = & $ghExe @createArgs 2>&1
+            if ($LASTEXITCODE -ne 0) { throw "gh release create failed ($LASTEXITCODE): $createOutput" }
+        }
+        catch {
+            Write-Error "Reissue failed: $($_.Exception.Message)"
+            Write-Host "TIP: If error mentions a parameter like 'and', run 'Get-Command gh' to ensure no alias, and try invoking with explicit path: & \"$ghExe\" release create ..."
+            return
+        }
+        finally {
+            # Clean up temporary file
+            if (Test-Path $tempNotesFile) {
+                Remove-Item $tempNotesFile -Force
+            }
+        }
+        Write-Host "✅ Reissue complete: https://github.com/danielshue/notebook-automation/releases/tag/$reTag" -ForegroundColor Green
+        # Post-release verification (asset presence + checksum integrity)
+        Write-Host "[V1] Starting post-release verification" -ForegroundColor Cyan
+        $expectedNames = $assetList | ForEach-Object { Split-Path $_ -Leaf } | Sort-Object -Unique
+        try {
+            $remoteListRaw = & $ghExe release view $reTag --json assets --jq '.assets[].name' 2>$null
+            $remoteNames = @()
+            if ($remoteListRaw) {
+                $remoteNames = ($remoteListRaw -split "`n" | ForEach-Object { $_.Trim() } | Where-Object { $_ }) | Sort-Object -Unique
+            }
+            else { $remoteNames = @() }
+        }
+        catch { Write-Warning "[V1] Unable to query remote release assets: $($_.Exception.Message)"; $remoteNames = @() }
+
+        $missingRemote = $expectedNames | Where-Object { $_ -notin $remoteNames }
+        $unexpectedRemote = $remoteNames | Where-Object { $_ -notin $expectedNames }
+        if ($missingRemote) {
+            Write-Warning "[V2] Missing assets on remote release: $($missingRemote -join ', ')"
+        }
+        else { Write-Host "[V2] All expected assets present on remote release" -ForegroundColor Green }
+        if ($unexpectedRemote) {
+            Write-Warning "[V2] Unexpected extra assets on remote release: $($unexpectedRemote -join ', ')" 
+        }
+
+        # Checksum validation
+        $checksumsPath = Join-Path $rootDist 'checksums.json'
+        $checksumIssues = @()
+        if (Test-Path $checksumsPath) {
+            Write-Host "[V3] Validating checksums.json integrity" -ForegroundColor Cyan
+            try {
+                $checksumsJson = Get-Content $checksumsPath -Raw | ConvertFrom-Json
+                $fileProps = $checksumsJson.files | Get-Member -MemberType NoteProperty | Select-Object -ExpandProperty Name
+                foreach ($fname in $fileProps) {
+                    $localPath = Join-Path $rootDist $fname
+                    if (-not (Test-Path $localPath)) { $checksumIssues += "Entry $fname listed but file missing locally"; continue }
+                    $actual = (Get-FileHash -Algorithm SHA256 -Path $localPath).Hash.ToLowerInvariant()
+                    $recorded = $checksumsJson.files.$fname
+                    if ($actual -ne $recorded) { $checksumIssues += "Checksum mismatch for $fname (recorded=$recorded actual=$actual)" }
+                }
+            }
+            catch { $checksumIssues += "Failed to parse/validate checksums.json: $($_.Exception.Message)" }
+        }
+        else { Write-Warning "[V3] checksums.json not found for verification (expected at $checksumsPath)" }
+
+        if ($checksumIssues.Count -eq 0) { Write-Host "[V4] Checksum validation passed" -ForegroundColor Green } else {
+            Write-Warning "[V4] Checksum validation issues:"; $checksumIssues | ForEach-Object { Write-Warning "   - $_" }
+        }
+
+        Write-Host "[V5] Post-release verification summary:" -ForegroundColor Cyan
+        Write-Host "       Expected assets: $($expectedNames.Count)" -ForegroundColor DarkGray
+        Write-Host "       Remote assets:   $($remoteNames.Count)" -ForegroundColor DarkGray
+        Write-Host "       Missing:         $($missingRemote.Count)" -ForegroundColor DarkGray
+        Write-Host "       Unexpected:      $($unexpectedRemote.Count)" -ForegroundColor DarkGray
+        Write-Host "       Checksum issues: $($checksumIssues.Count)" -ForegroundColor DarkGray
+        if ($missingRemote -or $checksumIssues) {
+            Write-Warning "[V6] Verification completed with warnings (see details above)."
+        }
+        else { Write-Host "[V6] Verification completed successfully (no issues)" -ForegroundColor Green }
+        return
+    }
+
+    # Step 8: Create GitHub release if requested
+    if ($CreateRelease -and -not $Reissue) {
+        Write-Host "🚀 Creating GitHub release"
+    
+        # GitHub CLI dependency already validated in Test-AllDependencies
+    
+        # Prepare release assets - include only files listed in asset manifest
+        $pluginDistDir = Join-Path $RepoRoot "dist"
+        $releaseAssets = @()
+    
+        # Read asset manifest to determine which files to include
+        $assetManifestPath = Join-Path $pluginDistDir "asset-manifest.json"
+        if (Test-Path $assetManifestPath) {
+            $assetManifest = Get-Content $assetManifestPath | ConvertFrom-Json
+        
+            Write-Host "   📋 Using asset manifest with $($assetManifest.files.Count) files"
+        
+            foreach ($fileName in $assetManifest.files) {
+                $filePath = Join-Path $pluginDistDir $fileName
+                if (Test-Path $filePath) {
+                    $releaseAssets += $filePath
+                    Write-Host "   📎 Adding to release: $fileName"
+                }
+                else {
+                    Write-Warning "   ⚠️  File listed in manifest but not found: $fileName"
+                }
+            }
+        }
+        else {
+            throw "Asset manifest not found: $assetManifestPath. Run plugin build first."
+        }
+    
+        Write-Host "✅ Prepared $($releaseAssets.Count) release assets from dist directory"
+    
+        # Create release notes
+        $releaseNotes = switch ($Type) {
+            "beta" { 
+                @"
 ## Beta Release v$Version
 
 This is a beta release for testing with BRAT (Beta Reviewer's Auto-update Tool).
@@ -1628,9 +1957,9 @@ This is a beta release for testing with BRAT (Beta Reviewer's Auto-update Tool).
 
 **Note:** This is a pre-release version. Please report any issues on GitHub.
 "@
-        }
-        "stable" { 
-            @"
+            }
+            "stable" { 
+                @"
 ## Stable Release v$Version
 
 This is a stable release of the Notebook Automation plugin.
@@ -1644,9 +1973,9 @@ This is a stable release of the Notebook Automation plugin.
 - Cross-platform executables for all supported systems
 - Ready-to-install package
 "@
-        }
-        "patch" { 
-            @"
+            }
+            "patch" { 
+                @"
 ## Patch Release v$Version
 
 This is a patch release with bug fixes and minor improvements.
@@ -1655,58 +1984,91 @@ This is a patch release with bug fixes and minor improvements.
 - Via BRAT: Will auto-update if you're using BRAT
 - Manual: Download and replace your existing installation
 "@
+            }
+        }
+    
+        # Write release notes to temporary file to avoid parameter parsing issues
+        $tempNotesFile = Join-Path $env:TEMP "release-notes-$(Get-Random).md"
+        $releaseNotes | Out-File -FilePath $tempNotesFile -Encoding UTF8
+    
+        # Build gh release command
+        $ghArgs = @(
+            "release", "create", $tagName,
+            "--title", "v$Version",
+            "--notes-file", $tempNotesFile
+        )
+    
+        if ($PreRelease) {
+            $ghArgs += "--prerelease"
+        }
+    
+        $ghArgs += $releaseAssets
+    
+        # Execute gh release create
+        try {
+            & gh @ghArgs
+        
+            if ($LASTEXITCODE -ne 0) {
+                throw "Failed to create GitHub release"
+            }
+        
+            Write-Host "✅ GitHub release created successfully"
+            Register-ReleaseCreated
+        }
+        finally {
+            # Clean up temporary file
+            if (Test-Path $tempNotesFile) {
+                Remove-Item $tempNotesFile -Force
+            }
         }
     }
-    
-    # Build gh release command
-    $ghArgs = @(
-        "release", "create", $tagName,
-        "--title", "v$Version",
-        "--notes", $releaseNotes
-    )
-    
-    if ($PreRelease) {
-        $ghArgs += "--prerelease"
+
+    # Step 9: Summary
+    Write-Host ""
+    Write-Host "🎉 Version management completed successfully!" -ForegroundColor Green
+    Write-Host ""
+    Write-Host "Summary:" -ForegroundColor Yellow
+    Write-Host "  Version: $Version" -ForegroundColor White
+    Write-Host "  Type: $Type" -ForegroundColor White
+    Write-Host "  Tag: $tagName" -ForegroundColor White
+    Write-Host "  Release Created: $CreateRelease" -ForegroundColor White
+    Write-Host "  Pre-release: $PreRelease" -ForegroundColor White
+    Write-Host ""
+
+    if ($Type -eq "beta") {
+        Write-Host "Next steps for beta testing:" -ForegroundColor Yellow
+        Write-Host "  1. Wait for CI to complete the build process"
+        Write-Host "  2. Share the repository URL with beta testers"
+        Write-Host "  3. Testers can install via BRAT using: danielshue/notebook-automation"
+        Write-Host "  4. Monitor for feedback and issues"
     }
-    
-    $ghArgs += $releaseAssets
-    
-    # Execute gh release create
-    & gh @ghArgs
-    
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to create GitHub release"
+    elseif ($Type -eq "stable") {
+        Write-Host "Next steps for stable release:" -ForegroundColor Yellow
+        Write-Host "  1. Wait for CI to complete the build process"
+        Write-Host "  2. Update documentation with new version"
+        Write-Host "  3. Announce the release to users"
+        Write-Host "  4. Monitor for any issues"
     }
+
+    Write-Host ""
+    Write-Host "GitHub Release: https://github.com/danielshue/notebook-automation/releases/tag/$tagName" -ForegroundColor Cyan
+
+    # Mark successful completion
+    Clear-RollbackRequirement
+
+}
+catch {
+    Write-Host ""
+    Write-Host "💥 SCRIPT EXECUTION FAILED" -ForegroundColor Red
+    Write-Host "============================" -ForegroundColor Red
+    Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Location: Line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
+    Write-Host ""
     
-    Write-Host "✅ GitHub release created successfully"
+    # Execute appropriate rollback strategy
+    Invoke-RollbackStrategy -Reason $_.Exception.Message
+    
+    Write-Host ""
+    Write-Host "❌ Script failed - rollback completed" -ForegroundColor Red
+    exit 1
 }
-
-# Step 9: Summary
-Write-Host ""
-Write-Host "🎉 Version management completed successfully!" -ForegroundColor Green
-Write-Host ""
-Write-Host "Summary:" -ForegroundColor Yellow
-Write-Host "  Version: $Version" -ForegroundColor White
-Write-Host "  Type: $Type" -ForegroundColor White
-Write-Host "  Tag: $tagName" -ForegroundColor White
-Write-Host "  Release Created: $CreateRelease" -ForegroundColor White
-Write-Host "  Pre-release: $PreRelease" -ForegroundColor White
-Write-Host ""
-
-if ($Type -eq "beta") {
-    Write-Host "Next steps for beta testing:" -ForegroundColor Yellow
-    Write-Host "  1. Wait for CI to complete the build process"
-    Write-Host "  2. Share the repository URL with beta testers"
-    Write-Host "  3. Testers can install via BRAT using: danielshue/notebook-automation"
-    Write-Host "  4. Monitor for feedback and issues"
-}
-elseif ($Type -eq "stable") {
-    Write-Host "Next steps for stable release:" -ForegroundColor Yellow
-    Write-Host "  1. Wait for CI to complete the build process"
-    Write-Host "  2. Update documentation with new version"
-    Write-Host "  3. Announce the release to users"
-    Write-Host "  4. Monitor for any issues"
-}
-
-Write-Host ""
-Write-Host "GitHub Release: https://github.com/danielshue/notebook-automation/releases/tag/$tagName" -ForegroundColor Cyan
