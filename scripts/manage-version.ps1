@@ -617,43 +617,66 @@ function Wait-GitHubActionsComplete {
     
     $timeoutTime = (Get-Date).AddMinutes($TimeoutMinutes)
     $workflowsCompleted = $false
+    $initialWaitTime = 60  # Wait 1 minute before first check to allow workflows to start
+    
+    Write-ConditionalHost "⏸️  Initial wait of $initialWaitTime seconds for workflows to start..." -ForegroundColor Gray
+    Start-Sleep -Seconds $initialWaitTime
     
     while ((Get-Date) -lt $timeoutTime -and -not $workflowsCompleted) {
         try {
             # Get workflow runs for the commit
-            $workflowOutput = gh run list --commit $CommitSha --json status, conclusion, name 2>$null
+            Write-VerboseHost "Checking workflows for commit $shortSha..."
+            $workflowOutput = gh run list --commit $CommitSha --json status,conclusion,name,url --limit 20 2>$null
             if ($LASTEXITCODE -eq 0) {
                 $workflows = $workflowOutput | ConvertFrom-Json
                 
                 if ($workflows.Count -eq 0) {
-                    Write-VerboseHost "No workflows found for commit, waiting..."
+                    Write-ConditionalHost "⏳ No workflows found yet for commit $shortSha, waiting..." -ForegroundColor Yellow
                 }
                 else {
                     $inProgress = $workflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
                     $failed = $workflows | Where-Object { $_.conclusion -eq "failure" -or $_.conclusion -eq "cancelled" }
                     $completed = $workflows | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "success" }
+                    $allCompleted = $workflows | Where-Object { $_.status -eq "completed" }
                     
-                    Write-VerboseHost "Workflows - Completed: $($completed.Count), In Progress: $($inProgress.Count), Failed: $($failed.Count)"
+                    Write-ConditionalHost "📊 Workflow Status - Total: $($workflows.Count), Completed: $($allCompleted.Count), Success: $($completed.Count), In Progress: $($inProgress.Count), Failed: $($failed.Count)" -ForegroundColor Cyan
+                    
+                    # Show workflow details
+                    $workflows | ForEach-Object {
+                        $status = if ($_.status -eq "completed") { "✅ $($_.conclusion)" } else { "⏳ $($_.status)" }
+                        Write-VerboseHost "   $($_.name): $status"
+                    }
                     
                     if ($failed.Count -gt 0) {
                         $failedNames = ($failed | ForEach-Object { $_.name }) -join ", "
+                        Write-Host "❌ Failed workflows:" -ForegroundColor Red
+                        $failed | ForEach-Object {
+                            Write-Host "   $($_.name): $($_.url)" -ForegroundColor Red
+                        }
                         throw "GitHub Actions workflows failed: $failedNames"
                     }
                     
-                    if ($inProgress.Count -eq 0 -and $completed.Count -gt 0) {
-                        Write-ConditionalHost "✅ All GitHub Actions workflows completed successfully" -ForegroundColor Green
-                        $workflowsCompleted = $true
-                        break
+                    # Check if all workflows are completed (regardless of count)
+                    if ($workflows.Count -gt 0 -and $inProgress.Count -eq 0) {
+                        if ($completed.Count -eq $allCompleted.Count) {
+                            Write-ConditionalHost "✅ All GitHub Actions workflows completed successfully!" -ForegroundColor Green
+                            Write-ConditionalHost "   Successful workflows: $($completed.Count)" -ForegroundColor Green
+                            $workflowsCompleted = $true
+                            break
+                        } else {
+                            Write-Host "⚠️  Some workflows completed but not all were successful" -ForegroundColor Yellow
+                            Write-Host "   Total completed: $($allCompleted.Count), Successful: $($completed.Count)" -ForegroundColor Yellow
+                        }
                     }
                     
                     if ($inProgress.Count -gt 0) {
                         $inProgressNames = ($inProgress | ForEach-Object { $_.name }) -join ", "
-                        Write-ConditionalHost "⏳ Waiting for workflows: $inProgressNames" -ForegroundColor Yellow
+                        Write-ConditionalHost "⏳ Still waiting for: $inProgressNames" -ForegroundColor Yellow
                     }
                 }
             }
             else {
-                Write-VerboseHost "GitHub CLI command failed, retrying..."
+                Write-VerboseHost "GitHub CLI command failed (exit code: $LASTEXITCODE), retrying..."
             }
         }
         catch {
@@ -661,8 +684,17 @@ function Wait-GitHubActionsComplete {
         }
         
         if (-not $workflowsCompleted) {
+            Write-VerboseHost "Sleeping $PollIntervalSeconds seconds before next check..."
             Start-Sleep -Seconds $PollIntervalSeconds
         }
+    }
+    
+    if (-not $workflowsCompleted) {
+        throw "Timeout: GitHub Actions workflows did not complete within $TimeoutMinutes minutes"
+    }
+    
+    Write-ConditionalHost "✅ GitHub Actions monitoring completed successfully" -ForegroundColor Green
+}
     }
     
     if (-not $workflowsCompleted) {
@@ -694,7 +726,9 @@ function Invoke-CommitAndWaitForCI {
     }
     
     # Add and commit files
-    git add -- $PackageJsonPath $ManifestJsonPath $VersionConstantsPath $ScriptPath
+    $packageLockPath = Join-Path $PluginDir "package-lock.json"
+    $rootManifestPath = Join-Path $RepoRoot "manifest.json"
+    git add -- $PackageJsonPath $ManifestJsonPath $VersionConstantsPath $ScriptPath $packageLockPath $rootManifestPath
     git commit -m $commitMessage
     
     if ($LASTEXITCODE -ne 0) {
@@ -1616,6 +1650,7 @@ try {
             # Copy manifest.json to repository root for BRAT compatibility
             $repoRootManifest = Join-Path $RepoRoot "manifest.json"
             Copy-Item -Path $ManifestJsonPath -Destination $repoRootManifest -Force
+            Register-ModifiedFile -FilePath $repoRootManifest
             Write-Host "✅ Copied manifest.json to repository root for BRAT compatibility"
 
             # Copy checksums.json into plugin dist & ensure asset-manifest includes it
@@ -1690,10 +1725,10 @@ try {
                 "patch" { "fix: patch release v$Version" }
                 default { "chore: version bump to v$Version" }
             }
-            git add -- $PackageJsonPath $ManifestJsonPath $versionConstantsPath scripts/manage-version.ps1
-            git commit -m $commitMessage
-        
-            if ($LASTEXITCODE -eq 0) {
+            $packageLockPath = Join-Path $PluginDir "package-lock.json"
+            $rootManifestPath = Join-Path $RepoRoot "manifest.json"
+            git add -- $PackageJsonPath $ManifestJsonPath $versionConstantsPath scripts/manage-version.ps1 $packageLockPath $rootManifestPath
+            git commit -m $commitMessage            if ($LASTEXITCODE -eq 0) {
                 $commitHash = git rev-parse HEAD
                 Register-CommitCreated -CommitHash $commitHash
             }
