@@ -778,7 +778,7 @@ function Invoke-ArtifactDownload {
         }
         
         # The download script places files in ../dist/, we need to copy executables to our target
-        $artifactDistPath = Join-Path (Split-Path $RepoRoot -Parent) "dist"
+        $artifactDistPath = Join-Path $RepoRoot "dist"
         $pluginArtifactPath = Join-Path $artifactDistPath "notebook-automation"
         
         # Check both possible locations for executables
