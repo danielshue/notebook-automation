@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting, Notice } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
-import { ensureExecutableExists, type DownloadProgressCallback } from '../utils/plugin-assets';
+import { ensureExecutableExists, getNaExecutablePath, type DownloadProgressCallback } from '../utils/plugin-assets';
 
 /**
  * Validates whether a string is a well-formed HTTP or HTTPS URL.
@@ -2686,48 +2686,82 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
    */
   async getNaVersion(versionElement?: HTMLElement): Promise<string> {
     try {
-      // @ts-ignore
-      const child_process = window.require ? window.require('child_process') : null;
-      if (!child_process) {
-        return "Unknown (Node.js not available)";
-      }
-      
-      // Create progress callback if element provided
-      const progressCallback: DownloadProgressCallback | undefined = versionElement 
-        ? (current: number, total: number, fileName: string) => {
-            if (versionElement) {
-              versionElement.innerHTML = `📥 Downloading ${current} of ${total} plugin files: ${fileName}`;
+      // First, try to get version from plugin manifest (always available via BRAT)
+      const manifestVersion = this.plugin.manifest?.version;
+      if (manifestVersion) {
+        // Update status if element provided
+        if (versionElement) {
+          versionElement.innerHTML = "📥 Ensuring plugin assets are available...";
+        }
+        
+        // Try to ensure assets are downloaded (non-blocking)
+        try {
+          const progressCallback: DownloadProgressCallback | undefined = versionElement 
+            ? (current: number, total: number, fileName: string) => {
+                if (versionElement) {
+                  versionElement.innerHTML = `📥 Downloading ${current} of ${total} plugin files: ${fileName}`;
+                }
+              }
+            : undefined;
+          
+          await ensureExecutableExists(this.plugin, progressCallback);
+          
+          if (versionElement) {
+            versionElement.innerHTML = "⚙️ Loading configuration...";
+          }
+          
+          // Load and apply configuration after files are downloaded
+          await this.loadAndApplyConfig();
+          
+        } catch (downloadError) {
+          console.warn('[Notebook Automation] Asset download failed, continuing with manifest version:', downloadError);
+        }
+        
+        // Try to get detailed CLI version if executable is available
+        try {
+          // @ts-ignore
+          const child_process = window.require ? window.require('child_process') : null;
+          if (child_process) {
+            const naPath = getNaExecutablePath(this.plugin);
+            // @ts-ignore
+            const fs = window.require ? window.require('fs') : null;
+            
+            // Only try CLI version if executable exists
+            if (fs && fs.existsSync && fs.existsSync(naPath)) {
+              if (versionElement) {
+                versionElement.innerHTML = "🔍 Getting detailed CLI version information...";
+              }
+              
+              const { exec } = child_process;
+              return new Promise((resolve) => {
+                exec(`"${naPath}" --version`, { timeout: 5000 }, (error: any, stdout: string, stderr: string) => {
+                  if (error) {
+                    // Fallback to manifest version if CLI fails
+                    resolve(`${manifestVersion} (Plugin)`);
+                    return;
+                  }
+                  const cliVersion = stdout.trim() || stderr.trim();
+                  if (cliVersion && cliVersion !== 'Unknown') {
+                    resolve(`${cliVersion} (CLI)`);
+                  } else {
+                    resolve(`${manifestVersion} (Plugin)`);
+                  }
+                });
+              });
             }
           }
-        : undefined;
-      
-      const naPath = await ensureExecutableExists(this.plugin, progressCallback);
-      
-      // Update to show config loading after download complete
-      if (versionElement) {
-        versionElement.innerHTML = "⚙️ Loading configuration...";
+        } catch (cliError) {
+          console.warn('[Notebook Automation] CLI version check failed, using manifest version:', cliError);
+        }
+        
+        // Return manifest version as fallback
+        return `${manifestVersion} (Plugin)`;
       }
       
-      // Load and apply configuration after files are downloaded
-      await this.loadAndApplyConfig();
-      
-      // Update to show version loading after config is applied
-      if (versionElement) {
-        versionElement.innerHTML = "🔍 Getting CLI version information...";
-      }
-      
-      const { exec } = child_process;
-      return new Promise((resolve) => {
-        exec(`"${naPath}" --version`, (error: any, stdout: string, stderr: string) => {
-          if (error) {
-            resolve("Unknown (Error getting version)");
-            return;
-          }
-          const version = stdout.trim() || stderr.trim() || "Unknown";
-          resolve(version);
-        });
-      });
+      // Fallback if no manifest version available
+      return "Unknown (No manifest version)";
     } catch (error) {
+      console.error('[Notebook Automation] Error in getNaVersion:', error);
       return "Unknown (Exception)";
     }
   }
