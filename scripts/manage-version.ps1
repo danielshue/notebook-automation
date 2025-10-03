@@ -761,10 +761,17 @@ function Invoke-ArtifactDownload {
         throw "Artifact download script not found: $downloadScript"
     }
     
-    # Ensure target directory exists
-    if (-not (Test-Path $TargetPath)) {
-        New-Item -ItemType Directory -Path $TargetPath -Force | Out-Null
+    # Target directory for CI artifacts should be RepoRoot/dist (cross-platform)
+    $artifactDistPath = Join-Path $RepoRoot "dist"
+    
+    # Clear the dist directory before downloading (ensures clean state)
+    if (Test-Path $artifactDistPath) {
+        Write-ConditionalHost "🗑️  Clearing existing dist directory for clean CI artifact download..." -ForegroundColor Yellow
+        Remove-Item -Path $artifactDistPath -Recurse -Force
     }
+    
+    # Ensure target directory exists
+    New-Item -ItemType Directory -Path $artifactDistPath -Force | Out-Null
     
     # Run the download script
     try {
@@ -777,16 +784,16 @@ function Invoke-ArtifactDownload {
             throw "Artifact download script failed with exit code $LASTEXITCODE"
         }
         
-        # The download script places files in ../dist/, we need to copy executables to our target
-        $artifactDistPath = Join-Path $RepoRoot "dist"
+        # Check for downloaded executables in the dist directory
         $pluginArtifactPath = Join-Path $artifactDistPath "notebook-automation"
         
-        # Check both possible locations for executables
+        # Check both possible locations for executables (cross-platform compatible)
         $sourceExecutablePath = $null
         if (Test-Path $pluginArtifactPath) {
             $executables = Get-ChildItem -Path $pluginArtifactPath -File | Where-Object { $_.Name -like "na-*" }
             if ($executables.Count -gt 0) {
                 $sourceExecutablePath = $pluginArtifactPath
+                Write-VerboseHost "Found executables in plugin artifact path: $pluginArtifactPath"
             }
         }
         
@@ -794,11 +801,15 @@ function Invoke-ArtifactDownload {
             $executables = Get-ChildItem -Path $artifactDistPath -File | Where-Object { $_.Name -like "na-*" }
             if ($executables.Count -gt 0) {
                 $sourceExecutablePath = $artifactDistPath
+                Write-VerboseHost "Found executables in dist path: $artifactDistPath"
             }
         }
         
         if (-not $sourceExecutablePath) {
-            throw "No executables found in downloaded artifacts. Expected location: $pluginArtifactPath or $artifactDistPath"
+            # Use cross-platform compatible path display
+            $expectedPath1 = $pluginArtifactPath -replace '\\', '/'
+            $expectedPath2 = $artifactDistPath -replace '\\', '/'
+            throw "No executables found in downloaded artifacts. Expected location: $expectedPath1 or $expectedPath2"
         }
         
         # Copy executables to target location
@@ -1700,10 +1711,13 @@ try {
             Write-Host "🔄 Using CI artifact workflow: commit → build → download" -ForegroundColor Green
             $commitSha = Invoke-CommitAndWaitForCI -Version $Version -Type $Type -PackageJsonPath $PackageJsonPath -ManifestJsonPath $ManifestJsonPath -VersionConstantsPath $versionConstantsPath -ScriptPath $PSCommandPath
         
-            # Now build executables using CI artifacts (they have the correct version)
-            Write-Host "� Building executables with CI artifacts now that version is committed..." -ForegroundColor Yellow
-            $cliProjectPath = Join-CrossPlatformPath @($RepoRoot, "src", "c-sharp", "NotebookAutomation.Cli", "NotebookAutomation.Cli.csproj")
-            Invoke-DotnetPublishMatrix -CliProject $cliProjectPath -PublishRoot (Join-Path $RepoRoot 'dist') -SemanticVersion $Version
+            # Download CI-built executables (skip local build entirely)
+            Write-Host "📦 Downloading CI-built executables now that build is complete..." -ForegroundColor Yellow
+            $distPath = Join-Path $RepoRoot 'dist'
+            $success = Invoke-ArtifactDownload -RepoRoot $RepoRoot -TargetPath $distPath
+            if (-not $success) {
+                throw "Failed to download CI artifacts after waiting for build completion"
+            }
         }
         else {
             # Traditional workflow: build locally then commit
