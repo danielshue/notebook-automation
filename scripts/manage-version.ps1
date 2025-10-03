@@ -812,18 +812,31 @@ function Invoke-ArtifactDownload {
             throw "No executables found in downloaded artifacts. Expected location: $expectedPath1 or $expectedPath2"
         }
         
-        # Copy executables to target location
+        # Copy executables to target location (only if different from source)
         $executables = Get-ChildItem -Path $sourceExecutablePath -File | Where-Object { $_.Name -like "na-*" }
         Write-ConditionalHost "✅ Found $($executables.Count) executables in CI artifacts" -ForegroundColor Green
         
-        foreach ($exe in $executables) {
-            $targetFile = Join-Path $TargetPath $exe.Name
-            Copy-Item $exe.FullName $targetFile -Force
-            
-            # Set executable permissions for Unix systems
-            Set-ExecutablePermission -FilePath $targetFile
-            
-            Write-VerboseHost "Copied $($exe.Name) to $targetFile"
+        # Check if source and target are the same directory
+        $normalizedSource = [System.IO.Path]::GetFullPath($sourceExecutablePath)
+        $normalizedTarget = [System.IO.Path]::GetFullPath($TargetPath)
+        
+        if ($normalizedSource -eq $normalizedTarget) {
+            Write-ConditionalHost "✅ Executables already in target location - no copy needed" -ForegroundColor Green
+            # Still need to set executable permissions for Unix systems
+            foreach ($exe in $executables) {
+                Set-ExecutablePermission -FilePath $exe.FullName
+            }
+        } else {
+            Write-ConditionalHost "📋 Copying executables from $sourceExecutablePath to $TargetPath" -ForegroundColor Cyan
+            foreach ($exe in $executables) {
+                $targetFile = Join-Path $TargetPath $exe.Name
+                Copy-Item $exe.FullName $targetFile -Force
+                
+                # Set executable permissions for Unix systems
+                Set-ExecutablePermission -FilePath $targetFile
+                
+                Write-VerboseHost "Copied $($exe.Name) to $targetFile"
+            }
         }
         
         Write-ConditionalHost "✅ Successfully downloaded and installed CI-built executables" -ForegroundColor Green

@@ -183,7 +183,24 @@ foreach ($artifact in $filteredArtifacts) {
         gh api repos/:owner/:repo/actions/artifacts/$($artifact.id)/zip --method GET > "$DistPath/$($artifact.name).zip"
         
         # Extract the complete plugin package directly - the artifact contains the plugin directory structure
-        Expand-Archive -Path "$DistPath/$($artifact.name).zip" -DestinationPath $DistPath -Force
+        # Use a temporary extraction directory to avoid overwrite warnings, then move files
+        $tempExtractPath = Join-Path $DistPath "temp-extract"
+        if (Test-Path $tempExtractPath) {
+            Remove-Item $tempExtractPath -Recurse -Force
+        }
+        
+        Expand-Archive -Path "$DistPath/$($artifact.name).zip" -DestinationPath $tempExtractPath -Force
+        
+        # Move extracted files to the target directory
+        Get-ChildItem -Path $tempExtractPath -Recurse | ForEach-Object {
+            if (-not $_.PSIsContainer) {
+                $targetPath = Join-Path $DistPath $_.Name
+                Move-Item $_.FullName $targetPath -Force
+            }
+        }
+        
+        # Clean up temp directory
+        Remove-Item $tempExtractPath -Recurse -Force
         
         Write-Host "✓ Downloaded complete plugin package: $($artifact.name)"
         Write-Host "  Plugin files and executables available in: $DistPath"
