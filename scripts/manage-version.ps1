@@ -626,7 +626,7 @@ function Wait-GitHubActionsComplete {
         try {
             # Get workflow runs for the commit
             Write-VerboseHost "Checking workflows for commit $shortSha..."
-            $workflowOutput = gh run list --commit $CommitSha --json status,conclusion,name,url --limit 20 2>$null
+            $workflowOutput = gh run list --commit $CommitSha --json status, conclusion, name, url --limit 20 2>$null
             if ($LASTEXITCODE -eq 0) {
                 $workflows = $workflowOutput | ConvertFrom-Json
                 
@@ -663,7 +663,8 @@ function Wait-GitHubActionsComplete {
                             Write-ConditionalHost "   Successful workflows: $($completed.Count)" -ForegroundColor Green
                             $workflowsCompleted = $true
                             break
-                        } else {
+                        }
+                        else {
                             Write-Host "⚠️  Some workflows completed but not all were successful" -ForegroundColor Yellow
                             Write-Host "   Total completed: $($allCompleted.Count), Successful: $($completed.Count)" -ForegroundColor Yellow
                         }
@@ -826,7 +827,8 @@ function Invoke-ArtifactDownload {
             foreach ($exe in $executables) {
                 Set-ExecutablePermission -FilePath $exe.FullName
             }
-        } else {
+        }
+        else {
             Write-ConditionalHost "📋 Copying executables from $sourceExecutablePath to $TargetPath" -ForegroundColor Cyan
             foreach ($exe in $executables) {
                 $targetFile = Join-Path $TargetPath $exe.Name
@@ -1748,7 +1750,8 @@ try {
             $packageLockPath = Join-Path $PluginDir "package-lock.json"
             $rootManifestPath = Join-Path $RepoRoot "manifest.json"
             git add -- $PackageJsonPath $ManifestJsonPath $versionConstantsPath scripts/manage-version.ps1 $packageLockPath $rootManifestPath
-            git commit -m $commitMessage            if ($LASTEXITCODE -eq 0) {
+            git commit -m $commitMessage
+            if ($LASTEXITCODE -eq 0) {
                 $commitHash = git rev-parse HEAD
                 Register-CommitCreated -CommitHash $commitHash
             }
