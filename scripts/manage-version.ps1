@@ -790,7 +790,28 @@ function Invoke-CommitAndWaitForCI {
     $packageLockPath = Join-Path $PluginDir "package-lock.json"
     $rootManifestPath = Join-Path $RepoRoot "manifest.json"
     git add -- $PackageJsonPath $ManifestJsonPath $VersionConstantsPath $ScriptPath $packageLockPath $rootManifestPath
-    git commit -m $commitMessage
+    
+    # Check if there are changes to commit
+    $changes = git diff --cached --name-only
+    $needsPush = $true
+    
+    if (-not $changes) {
+        Write-ConditionalHost "ℹ️  No changes to commit - version may already be set. Checking if CI build is needed..." -ForegroundColor Yellow
+        
+        # Check if there's already a tag for this version
+        $tagExists = git tag -l "v$Version"
+        if ($tagExists) {
+            Write-ConditionalHost "⚠️  Tag v$Version already exists. Skipping CI build." -ForegroundColor Yellow
+            $needsPush = $false
+        }
+        else {
+            Write-ConditionalHost "✅ Tag v$Version doesn't exist yet. Creating empty commit to trigger CI..." -ForegroundColor Green
+            git commit --allow-empty -m "$commitMessage (trigger CI build)"
+        }
+    }
+    else {
+        git commit -m $commitMessage
+    }
     
     if ($LASTEXITCODE -ne 0) {
         throw "Failed to commit version changes"
@@ -801,16 +822,21 @@ function Invoke-CommitAndWaitForCI {
     Write-VerboseHost "Committed with SHA: $commitSha"
     Register-CommitCreated -CommitHash $commitSha
     
-    # Push to trigger CI
-    Write-ConditionalHost "📤 Pushing to origin to trigger CI build..." -ForegroundColor Yellow
-    git push origin HEAD
-    
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to push changes to origin"
+    # Push to trigger CI (only if needed)
+    if ($needsPush) {
+        Write-ConditionalHost "📤 Pushing to origin to trigger CI build..." -ForegroundColor Yellow
+        git push origin HEAD
+        
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to push changes to origin"
+        }
+        
+        # Wait for CI to complete with correct version
+        Wait-GitHubActionsComplete -CommitSha $commitSha -ExpectedVersion $Version -TimeoutMinutes $CITimeoutMinutes
     }
-    
-    # Wait for CI to complete with correct version
-    Wait-GitHubActionsComplete -CommitSha $commitSha -ExpectedVersion $Version -TimeoutMinutes $CITimeoutMinutes
+    else {
+        Write-ConditionalHost "ℹ️  Skipping CI build - no changes and tag already exists" -ForegroundColor Yellow
+    }
     
     return $commitSha
 }
@@ -1723,9 +1749,10 @@ try {
     <#
  Step 4: Build the plugin
  In reissue mode we should NOT rebuild or modify artifacts; we rely on existing dist contents.
+ When using UseArtifacts, we skip local plugin build and let CI handle everything.
  This also avoids referencing $checksumsFilePath which is only set in non-reissue flows.
 #>
-    if (-not $Reissue) {
+    if (-not $Reissue -and -not ($UseArtifacts -and -not $ForceLocalBuild)) {
         Write-Host "🔨 Building plugin"
         Push-Location $PluginDir
         try {
@@ -1767,24 +1794,26 @@ try {
         Write-Host "↺ Skipping plugin rebuild in reissue mode (using existing dist assets)" -ForegroundColor Yellow
     }
 
-    # Step 5: Verify build artifacts
-    $distDir = Join-Path $RepoRoot "dist"
-    $distFiles = Get-ChildItem -Path $distDir | Select-Object -ExpandProperty Name
-    Write-Host "[DEBUG] Files in dist directory:" -ForegroundColor Yellow
-    $distFiles | ForEach-Object { Write-Host "   $_" -ForegroundColor Yellow }
-    $buildArtifacts = @(
-        Join-Path $distDir "main.js"
-        Join-Path $distDir "manifest.json"
-        Join-Path $distDir "styles.css"
-    )
+    # Step 5: Verify build artifacts (only for local builds)
+    if (-not $Reissue -and -not ($UseArtifacts -and -not $ForceLocalBuild)) {
+        $distDir = Join-Path $RepoRoot "dist"
+        $distFiles = Get-ChildItem -Path $distDir | Select-Object -ExpandProperty Name
+        Write-Host "[DEBUG] Files in dist directory:" -ForegroundColor Yellow
+        $distFiles | ForEach-Object { Write-Host "   $_" -ForegroundColor Yellow }
+        $buildArtifacts = @(
+            Join-Path $distDir "main.js"
+            Join-Path $distDir "manifest.json"
+            Join-Path $distDir "styles.css"
+        )
 
-    foreach ($artifact in $buildArtifacts) {
-        if (-not (Test-Path $artifact)) {
-            throw "Build artifact missing: $artifact"
+        foreach ($artifact in $buildArtifacts) {
+            if (-not (Test-Path $artifact)) {
+                throw "Build artifact missing: $artifact"
+            }
         }
-    }
 
-    if (-not $Reissue) { Write-Host "✅ Build artifacts verified" }
+        Write-Host "✅ Build artifacts verified"
+    }
 
     # Step 6: Commit changes and handle CI workflow
     if (-not $Reissue) {
