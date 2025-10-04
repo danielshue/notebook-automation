@@ -737,6 +737,13 @@ function Wait-GitHubActionsComplete {
                         Write-ConditionalHost "   $($_.name): $status" -ForegroundColor Gray
                     }
                     
+                    # Debug: Show detailed workflow categorization
+                    Write-ConditionalHost "   📋 Workflow breakdown:" -ForegroundColor DarkGray
+                    Write-ConditionalHost "      • In Progress/Queued: $($inProgress.Count)" -ForegroundColor DarkGray
+                    Write-ConditionalHost "      • Completed+Success: $($completed.Count)" -ForegroundColor DarkGray  
+                    Write-ConditionalHost "      • Completed+Skipped: $($skipped.Count)" -ForegroundColor DarkGray
+                    Write-ConditionalHost "      • Failed/Cancelled: $($failed.Count)" -ForegroundColor DarkGray
+                    
                     # Additional debug info when not quiet
                     if (-not $Quiet) {
                         Write-VerboseHost "Debug: Total workflows found for commit: $($workflows.Count)"
@@ -754,15 +761,22 @@ function Wait-GitHubActionsComplete {
                     
                     # Check if all workflows are completed (regardless of count)
                     if ($workflows.Count -gt 0 -and $inProgress.Count -eq 0) {
-                        # Success if we have successful workflows and no failures (skipped workflows are OK)
-                        if ($completed.Count -gt 0 -and $failed.Count -eq 0) {
-                            Write-ConditionalHost "✅ All GitHub Actions workflows completed successfully!" -ForegroundColor Green
-                            Write-ConditionalHost "   Successful workflows: $($completed.Count), Skipped: $($skipped.Count)" -ForegroundColor Green
-                            $workflowsCompleted = $true
-                            break
+                        # All workflows finished - check if they're successful
+                        if ($failed.Count -eq 0) {
+                            # Success if we have successful or skipped workflows (no failures)
+                            if ($completed.Count -gt 0 -or $skipped.Count -gt 0) {
+                                Write-ConditionalHost "✅ All GitHub Actions workflows completed successfully!" -ForegroundColor Green
+                                Write-ConditionalHost "   Successful workflows: $($completed.Count), Skipped: $($skipped.Count)" -ForegroundColor Green
+                                $workflowsCompleted = $true
+                                break
+                            }
+                            else {
+                                Write-Host "⚠️  All workflows completed but none were successful or skipped" -ForegroundColor Yellow
+                                Write-Host "   This is unusual - check workflow status manually" -ForegroundColor Yellow
+                            }
                         }
                         else {
-                            Write-Host "⚠️  Workflows completed but some issues detected" -ForegroundColor Yellow
+                            Write-Host "⚠️  Workflows completed but some failed" -ForegroundColor Yellow
                             Write-Host "   Total completed: $($allCompleted.Count), Successful: $($completed.Count), Failed: $($failed.Count)" -ForegroundColor Yellow
                         }
                     }
