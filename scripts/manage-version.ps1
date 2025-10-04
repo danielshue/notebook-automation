@@ -685,9 +685,11 @@ function Wait-GitHubActionsComplete {
     
     # Quick check to see if workflows are already running or completed
     try {
+        Write-ConditionalHost "   Running: gh run list --commit $CommitSha --json status,conclusion,name --limit 5" -ForegroundColor DarkGray
         $quickCheck = gh run list --commit $CommitSha --json status, conclusion, name --limit 5 2>$null
         if ($LASTEXITCODE -eq 0) {
             $quickWorkflows = $quickCheck | ConvertFrom-Json
+            Write-ConditionalHost "   ✅ GitHub CLI call successful, parsing results..." -ForegroundColor DarkGray
             if ($quickWorkflows.Count -gt 0) {
                 $quickCompleted = $quickWorkflows | Where-Object { $_.status -eq "completed" }
                 $quickInProgress = $quickWorkflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
@@ -697,15 +699,21 @@ function Wait-GitHubActionsComplete {
                 Write-ConditionalHost "📋 Quick check: No workflows found yet, will start polling..." -ForegroundColor Yellow
             }
         }
+        else {
+            Write-ConditionalHost "❌ GitHub CLI failed with exit code: $LASTEXITCODE" -ForegroundColor Red
+        }
     }
     catch {
-        Write-VerboseHost "Quick check failed, proceeding with normal polling..."
+        Write-ConditionalHost "⚠️  Quick check failed, proceeding with normal polling..." -ForegroundColor Yellow
+        Write-ConditionalHost "   Error: $($_.Exception.Message)" -ForegroundColor Gray
     }
     
     while ((Get-Date) -lt $timeoutTime -and -not $workflowsCompleted) {
+        $currentTime = Get-Date -Format "HH:mm:ss"
+        Write-ConditionalHost "🔍 [$currentTime] Checking workflows for commit $shortSha..." -ForegroundColor Gray
+        
         try {
             # Get workflow runs for the commit
-            Write-VerboseHost "Checking workflows for commit $shortSha..."
             $workflowOutput = gh run list --commit $CommitSha --json status, conclusion, name, url --limit 20 2>$null
             if ($LASTEXITCODE -eq 0) {
                 $workflows = $workflowOutput | ConvertFrom-Json
@@ -766,15 +774,18 @@ function Wait-GitHubActionsComplete {
                 }
             }
             else {
-                Write-VerboseHost "GitHub CLI command failed (exit code: $LASTEXITCODE), retrying..."
+                Write-ConditionalHost "⚠️  GitHub CLI command failed (exit code: $LASTEXITCODE), retrying..." -ForegroundColor Yellow
+                Write-ConditionalHost "   Command: gh run list --commit $CommitSha --json status,conclusion,name,url --limit 20" -ForegroundColor Gray
             }
         }
         catch {
-            Write-VerboseHost "Error checking workflow status: $($_.Exception.Message)"
+            Write-ConditionalHost "❌ Error checking workflow status: $($_.Exception.Message)" -ForegroundColor Red
         }
         
         if (-not $workflowsCompleted) {
-            Write-VerboseHost "Sleeping $PollIntervalSeconds seconds before next check..."
+            $elapsed = [Math]::Round(((Get-Date) - (Get-Date).AddMinutes(-$TimeoutMinutes + (($timeoutTime - (Get-Date)).TotalMinutes))).TotalMinutes, 1)
+            $remaining = [Math]::Round(($timeoutTime - (Get-Date)).TotalMinutes, 1)
+            Write-ConditionalHost "⏳ Sleeping $PollIntervalSeconds seconds before next check... (Elapsed: ${elapsed}m, Remaining: ${remaining}m)" -ForegroundColor Gray
             
             # Interruptible sleep - break into smaller chunks to allow Ctrl-C detection
             $sleepChunks = [Math]::Max(1, [Math]::Floor($PollIntervalSeconds / 3))
