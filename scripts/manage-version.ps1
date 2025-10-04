@@ -467,6 +467,26 @@ trap {
     exit 1
 }
 
+# CTRL-C INTERRUPT HANDLER
+Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
+    Write-Host ""
+    Write-Host "⚠️  SCRIPT INTERRUPTED (Ctrl-C)" -ForegroundColor Yellow
+    Write-Host "=============================" -ForegroundColor Yellow
+    Write-Host "User cancelled script execution" -ForegroundColor Yellow
+    Write-Host ""
+    
+    # Only attempt rollback if the rollback system was initialized
+    if ($script:rollbackState -and $script:rollbackState.NeedsRollback) {
+        Invoke-RollbackStrategy -Reason "User cancellation (Ctrl-C)"
+        Write-Host "🔄 Rollback completed due to user cancellation" -ForegroundColor Yellow
+    }
+    else {
+        Write-Host "ℹ️  No rollback needed - script was cancelled early" -ForegroundColor Gray
+    }
+    
+    exit 130  # Standard exit code for SIGINT
+} | Out-Null
+
 #
 # HELP AND USAGE - Show help when no meaningful arguments provided
 #
@@ -614,7 +634,7 @@ function Wait-GitHubActionsComplete {
         [string]$CommitSha,
         [string]$ExpectedVersion,
         [int]$TimeoutMinutes = 45,  # Increased from 20 to 45 minutes for cross-platform builds
-        [int]$PollIntervalSeconds = 30
+        [int]$PollIntervalSeconds = 15  # Poll every 15 seconds for fast build completion detection
     )
     
     $shortSha = $CommitSha.Substring(0, 8)
@@ -624,10 +644,32 @@ function Wait-GitHubActionsComplete {
     
     $timeoutTime = (Get-Date).AddMinutes($TimeoutMinutes)
     $workflowsCompleted = $false
-    $initialWaitTime = 60  # Wait 1 minute before first check to allow workflows to start
+    $initialWaitTime = 15  # Reduced from 60 to 15 seconds - workflows often start quickly
     
     Write-ConditionalHost "⏸️  Initial wait of $initialWaitTime seconds for workflows to start..." -ForegroundColor Gray
     Start-Sleep -Seconds $initialWaitTime
+    
+    # Do an immediate check first - workflows might already be running or completed
+    Write-ConditionalHost "🔍 Performing initial workflow check..." -ForegroundColor Gray
+    
+    # Quick check to see if workflows are already running or completed
+    try {
+        $quickCheck = gh run list --commit $CommitSha --json status, conclusion, name --limit 5 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            $quickWorkflows = $quickCheck | ConvertFrom-Json
+            if ($quickWorkflows.Count -gt 0) {
+                $quickCompleted = $quickWorkflows | Where-Object { $_.status -eq "completed" }
+                $quickInProgress = $quickWorkflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
+                Write-ConditionalHost "📋 Quick check: Found $($quickWorkflows.Count) workflow(s) - $($quickCompleted.Count) completed, $($quickInProgress.Count) in progress" -ForegroundColor Cyan
+            }
+            else {
+                Write-ConditionalHost "📋 Quick check: No workflows found yet, will start polling..." -ForegroundColor Yellow
+            }
+        }
+    }
+    catch {
+        Write-VerboseHost "Quick check failed, proceeding with normal polling..."
+    }
     
     while ((Get-Date) -lt $timeoutTime -and -not $workflowsCompleted) {
         try {
@@ -701,7 +743,17 @@ function Wait-GitHubActionsComplete {
         
         if (-not $workflowsCompleted) {
             Write-VerboseHost "Sleeping $PollIntervalSeconds seconds before next check..."
-            Start-Sleep -Seconds $PollIntervalSeconds
+            
+            # Interruptible sleep - break into smaller chunks to allow Ctrl-C detection
+            $sleepChunks = [Math]::Max(1, [Math]::Floor($PollIntervalSeconds / 3))
+            for ($i = 0; $i -lt 3; $i++) {
+                Start-Sleep -Seconds $sleepChunks
+            }
+            # Sleep any remainder
+            $remainder = $PollIntervalSeconds - ($sleepChunks * 3)
+            if ($remainder -gt 0) {
+                Start-Sleep -Seconds $remainder
+            }
         }
     }
     
