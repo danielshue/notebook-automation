@@ -685,18 +685,19 @@ function Wait-GitHubActionsComplete {
     
     # Quick check to see if workflows are already running or completed
     try {
-        Write-ConditionalHost "   Running: gh run list --commit $CommitSha --json status,conclusion,name --limit 5" -ForegroundColor DarkGray
-        $quickCheck = gh run list --commit $CommitSha --json status, conclusion, name --limit 5 2>$null
+        Write-ConditionalHost "   Running: gh run list --json status,conclusion,name,headSha --limit 20" -ForegroundColor DarkGray
+        $quickCheck = gh run list --json status, conclusion, name, headSha --limit 20 2>$null
         if ($LASTEXITCODE -eq 0) {
-            $quickWorkflows = $quickCheck | ConvertFrom-Json
-            Write-ConditionalHost "   ✅ GitHub CLI call successful, parsing results..." -ForegroundColor DarkGray
+            $allQuickWorkflows = $quickCheck | ConvertFrom-Json
+            $quickWorkflows = $allQuickWorkflows | Where-Object { $_.headSha -eq $CommitSha }
+            Write-ConditionalHost "   ✅ GitHub CLI call successful, found $($quickWorkflows.Count) workflows for commit" -ForegroundColor DarkGray
             if ($quickWorkflows.Count -gt 0) {
                 $quickCompleted = $quickWorkflows | Where-Object { $_.status -eq "completed" }
                 $quickInProgress = $quickWorkflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
                 Write-ConditionalHost "📋 Quick check: Found $($quickWorkflows.Count) workflow(s) - $($quickCompleted.Count) completed, $($quickInProgress.Count) in progress" -ForegroundColor Cyan
             }
             else {
-                Write-ConditionalHost "📋 Quick check: No workflows found yet, will start polling..." -ForegroundColor Yellow
+                Write-ConditionalHost "📋 Quick check: No workflows found yet for commit $shortSha, will start polling..." -ForegroundColor Yellow
             }
         }
         else {
@@ -713,10 +714,14 @@ function Wait-GitHubActionsComplete {
         Write-ConditionalHost "🔍 [$currentTime] Checking workflows for commit $shortSha..." -ForegroundColor Gray
         
         try {
-            # Get workflow runs for the commit
-            $workflowOutput = gh run list --commit $CommitSha --json status, conclusion, name, url --limit 20 2>$null
+            # Get workflow runs for the commit (use general list and filter, as --commit can be unreliable)
+            Write-ConditionalHost "   Running: gh run list --json status,conclusion,name,url,headSha --limit 50" -ForegroundColor DarkGray
+            $workflowOutput = gh run list --json status, conclusion, name, url, headSha --limit 50 2>$null
             if ($LASTEXITCODE -eq 0) {
-                $workflows = $workflowOutput | ConvertFrom-Json
+                $allWorkflows = $workflowOutput | ConvertFrom-Json
+                # Filter to workflows for our specific commit
+                $workflows = $allWorkflows | Where-Object { $_.headSha -eq $CommitSha }
+                Write-ConditionalHost "   ✅ Found $($allWorkflows.Count) total workflows, $($workflows.Count) for commit $shortSha" -ForegroundColor DarkGray
                 
                 if ($workflows.Count -eq 0) {
                     Write-ConditionalHost "⏳ No workflows found yet for commit $shortSha, waiting..." -ForegroundColor Yellow
@@ -789,7 +794,7 @@ function Wait-GitHubActionsComplete {
             }
             else {
                 Write-ConditionalHost "⚠️  GitHub CLI command failed (exit code: $LASTEXITCODE), retrying..." -ForegroundColor Yellow
-                Write-ConditionalHost "   Command: gh run list --commit $CommitSha --json status,conclusion,name,url --limit 20" -ForegroundColor Gray
+                Write-ConditionalHost "   Command: gh run list --json status,conclusion,name,url,headSha --limit 50" -ForegroundColor Gray
             }
         }
         catch {
