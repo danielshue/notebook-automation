@@ -189,6 +189,9 @@ $script:rollbackState = @{
     NeedsRollback     = $false
 }
 
+# Also initialize global state for Ctrl-C handler access
+$global:ManageVersionRollbackState = $script:rollbackState
+
 function Initialize-RollbackSystem {
     """Initialize rollback tracking system"""
     
@@ -220,6 +223,10 @@ function Initialize-RollbackSystem {
     }
     
     $script:rollbackState.Phase = "PreCommit"
+    
+    # Also set in global scope for Ctrl-C handler access
+    $global:ManageVersionRollbackState = $script:rollbackState
+    
     Write-ConditionalHost "✅ Rollback system initialized - Phase: PreCommit" -ForegroundColor DarkGreen
 }
 
@@ -468,6 +475,9 @@ trap {
 }
 
 # CTRL-C INTERRUPT HANDLER
+# Store rollback state in global scope for event handler access
+$global:ManageVersionRollbackState = $null
+
 Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
     Write-Host ""
     Write-Host "⚠️  SCRIPT INTERRUPTED (Ctrl-C)" -ForegroundColor Yellow
@@ -475,10 +485,31 @@ Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
     Write-Host "User cancelled script execution" -ForegroundColor Yellow
     Write-Host ""
     
-    # Only attempt rollback if the rollback system was initialized
-    if ($script:rollbackState -and $script:rollbackState.NeedsRollback) {
-        Invoke-RollbackStrategy -Reason "User cancellation (Ctrl-C)"
-        Write-Host "🔄 Rollback completed due to user cancellation" -ForegroundColor Yellow
+    # Check both script and global scope for rollback state
+    $rollbackNeeded = $false
+    if ($global:ManageVersionRollbackState -and $global:ManageVersionRollbackState.NeedsRollback) {
+        $rollbackNeeded = $true
+    }
+    elseif ($script:rollbackState -and $script:rollbackState.NeedsRollback) {
+        $rollbackNeeded = $true
+    }
+    
+    if ($rollbackNeeded) {
+        Write-Host "🔄 Performing rollback due to user cancellation..." -ForegroundColor Yellow
+        try {
+            # Try to call rollback function if available
+            if (Get-Command Invoke-RollbackStrategy -ErrorAction SilentlyContinue) {
+                Invoke-RollbackStrategy -Reason "User cancellation (Ctrl-C)"
+                Write-Host "✅ Rollback completed successfully" -ForegroundColor Green
+            }
+            else {
+                Write-Host "⚠️  Rollback function not available - manual cleanup may be required" -ForegroundColor Yellow
+            }
+        }
+        catch {
+            Write-Host "❌ Rollback failed: $($_.Exception.Message)" -ForegroundColor Red
+            Write-Host "⚠️  Manual cleanup may be required" -ForegroundColor Yellow
+        }
     }
     else {
         Write-Host "ℹ️  No rollback needed - script was cancelled early" -ForegroundColor Gray
@@ -689,12 +720,13 @@ function Wait-GitHubActionsComplete {
                     $skipped = $workflows | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "skipped" }
                     $allCompleted = $workflows | Where-Object { $_.status -eq "completed" }
                     
-                    Write-ConditionalHost "📊 Workflow Status - Total: $($workflows.Count), Completed: $($allCompleted.Count), Success: $($completed.Count), Skipped: $($skipped.Count), In Progress: $($inProgress.Count), Failed: $($failed.Count)" -ForegroundColor Cyan
+                    $timestamp = Get-Date -Format "HH:mm:ss"
+                    Write-ConditionalHost "📊 [$timestamp] Workflow Status - Total: $($workflows.Count), Completed: $($allCompleted.Count), Success: $($completed.Count), Skipped: $($skipped.Count), In Progress: $($inProgress.Count), Failed: $($failed.Count)" -ForegroundColor Cyan
                     
-                    # Show workflow details
+                    # Show workflow details (always show during polling)
                     $workflows | ForEach-Object {
                         $status = if ($_.status -eq "completed") { "✅ $($_.conclusion)" } else { "⏳ $($_.status)" }
-                        Write-VerboseHost "   $($_.name): $status"
+                        Write-ConditionalHost "   $($_.name): $status" -ForegroundColor Gray
                     }
                     
                     # Additional debug info when not quiet
