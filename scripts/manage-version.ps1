@@ -60,6 +60,9 @@
 .PARAMETER Quiet
     Minimize output for automation scenarios
 
+.PARAMETER CITimeoutMinutes
+    Timeout in minutes when waiting for GitHub Actions CI to complete (default: 45 minutes)
+
 .PARAMETER UseArtifacts
     Download and use CI-built executables from GitHub Actions instead of building locally.
     This ensures proper cross-platform compatibility and native performance.
@@ -159,6 +162,9 @@ param(
     
     # Minimize output for automation scenarios
     [switch]$Quiet,
+    
+    # Timeout for waiting for CI completion (minutes)
+    [int]$CITimeoutMinutes = 45,
     
     # Use CI-built executables from GitHub Actions instead of building locally
     [switch]$UseArtifacts,
@@ -522,8 +528,9 @@ function Show-Help {
     Write-Host "   • -Diagnostic    - Show extra diagnostic information" -ForegroundColor Gray
     Write-Host ""
     Write-Host "🏗️ BUILD OPTIONS:" -ForegroundColor Blue
-    Write-Host "   • -UseArtifacts    - Use CI-built executables (commits changes, waits for CI, downloads)" -ForegroundColor Gray
-    Write-Host "   • -ForceLocalBuild - Force local build even with -UseArtifacts" -ForegroundColor Gray
+    Write-Host "   • -UseArtifacts      - Use CI-built executables (commits changes, waits for CI, downloads)" -ForegroundColor Gray
+    Write-Host "   • -ForceLocalBuild   - Force local build even with -UseArtifacts" -ForegroundColor Gray
+    Write-Host "   • -CITimeoutMinutes  - CI wait timeout in minutes (default: 45 for cross-platform builds)" -ForegroundColor Gray
     Write-Host ""
     Write-Host "�� TIP: Use -StatusOnly to check current state before making changes!" -ForegroundColor Cyan
     Write-Host ""
@@ -606,7 +613,7 @@ function Wait-GitHubActionsComplete {
     param(
         [string]$CommitSha,
         [string]$ExpectedVersion,
-        [int]$TimeoutMinutes = 20,
+        [int]$TimeoutMinutes = 45,  # Increased from 20 to 45 minutes for cross-platform builds
         [int]$PollIntervalSeconds = 30
     )
     
@@ -637,14 +644,21 @@ function Wait-GitHubActionsComplete {
                     $inProgress = $workflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
                     $failed = $workflows | Where-Object { $_.conclusion -eq "failure" -or $_.conclusion -eq "cancelled" }
                     $completed = $workflows | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "success" }
+                    $skipped = $workflows | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "skipped" }
                     $allCompleted = $workflows | Where-Object { $_.status -eq "completed" }
                     
-                    Write-ConditionalHost "📊 Workflow Status - Total: $($workflows.Count), Completed: $($allCompleted.Count), Success: $($completed.Count), In Progress: $($inProgress.Count), Failed: $($failed.Count)" -ForegroundColor Cyan
+                    Write-ConditionalHost "📊 Workflow Status - Total: $($workflows.Count), Completed: $($allCompleted.Count), Success: $($completed.Count), Skipped: $($skipped.Count), In Progress: $($inProgress.Count), Failed: $($failed.Count)" -ForegroundColor Cyan
                     
                     # Show workflow details
                     $workflows | ForEach-Object {
                         $status = if ($_.status -eq "completed") { "✅ $($_.conclusion)" } else { "⏳ $($_.status)" }
                         Write-VerboseHost "   $($_.name): $status"
+                    }
+                    
+                    # Additional debug info when not quiet
+                    if (-not $Quiet) {
+                        Write-VerboseHost "Debug: Total workflows found for commit: $($workflows.Count)"
+                        Write-VerboseHost "Debug: Workflows by conclusion: Success=$($completed.Count), Skipped=$($skipped.Count), Failed=$($failed.Count), InProgress=$($inProgress.Count)"
                     }
                     
                     if ($failed.Count -gt 0) {
@@ -658,15 +672,16 @@ function Wait-GitHubActionsComplete {
                     
                     # Check if all workflows are completed (regardless of count)
                     if ($workflows.Count -gt 0 -and $inProgress.Count -eq 0) {
-                        if ($completed.Count -eq $allCompleted.Count) {
+                        # Success if we have successful workflows and no failures (skipped workflows are OK)
+                        if ($completed.Count -gt 0 -and $failed.Count -eq 0) {
                             Write-ConditionalHost "✅ All GitHub Actions workflows completed successfully!" -ForegroundColor Green
-                            Write-ConditionalHost "   Successful workflows: $($completed.Count)" -ForegroundColor Green
+                            Write-ConditionalHost "   Successful workflows: $($completed.Count), Skipped: $($skipped.Count)" -ForegroundColor Green
                             $workflowsCompleted = $true
                             break
                         }
                         else {
-                            Write-Host "⚠️  Some workflows completed but not all were successful" -ForegroundColor Yellow
-                            Write-Host "   Total completed: $($allCompleted.Count), Successful: $($completed.Count)" -ForegroundColor Yellow
+                            Write-Host "⚠️  Workflows completed but some issues detected" -ForegroundColor Yellow
+                            Write-Host "   Total completed: $($allCompleted.Count), Successful: $($completed.Count), Failed: $($failed.Count)" -ForegroundColor Yellow
                         }
                     }
                     
@@ -691,7 +706,7 @@ function Wait-GitHubActionsComplete {
     }
     
     if (-not $workflowsCompleted) {
-        throw "Timeout: GitHub Actions workflows did not complete within $TimeoutMinutes minutes"
+        throw "Timeout: GitHub Actions workflows did not complete within $TimeoutMinutes minutes. The builds may still be running - check GitHub Actions manually. Consider using -CITimeoutMinutes to increase the timeout for complex cross-platform builds."
     }
     
     Write-ConditionalHost "✅ GitHub Actions monitoring completed successfully" -ForegroundColor Green
@@ -743,7 +758,7 @@ function Invoke-CommitAndWaitForCI {
     }
     
     # Wait for CI to complete with correct version
-    Wait-GitHubActionsComplete -CommitSha $commitSha -ExpectedVersion $Version
+    Wait-GitHubActionsComplete -CommitSha $commitSha -ExpectedVersion $Version -TimeoutMinutes $CITimeoutMinutes
     
     return $commitSha
 }
