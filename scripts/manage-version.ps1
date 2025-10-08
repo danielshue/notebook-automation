@@ -2158,22 +2158,25 @@ try {
     
         # GitHub CLI dependency already validated in Test-AllDependencies
     
-        # Prepare release assets - include only files listed in asset manifest
+        # Prepare release assets - plugin files from manifest + executables separately
         $pluginDistDir = Join-Path $RepoRoot "dist"
         $releaseAssets = @()
     
-        # Read asset manifest to determine which files to include
+        # Read asset manifest to determine which plugin files to include
+        # Note: asset-manifest.json should ONLY contain plugin files (main.js, manifest.json, etc.)
+        # Executables are added separately and NOT in the manifest (Obsidian downloads manifest files,
+        # but users download executables manually for their platform)
         $assetManifestPath = Join-Path $pluginDistDir "asset-manifest.json"
         if (Test-Path $assetManifestPath) {
             $assetManifest = Get-Content $assetManifestPath | ConvertFrom-Json
         
-            Write-Host "   📋 Using asset manifest with $($assetManifest.files.Count) files"
+            Write-Host "   📋 Plugin files from asset-manifest.json: $($assetManifest.files.Count) files"
         
             foreach ($fileName in $assetManifest.files) {
                 $filePath = Join-Path $pluginDistDir $fileName
                 if (Test-Path $filePath) {
                     $releaseAssets += $filePath
-                    Write-Host "   📎 Adding to release: $fileName"
+                    Write-Host "   📎 Plugin: $fileName"
                 }
                 else {
                     Write-Warning "   ⚠️  File listed in manifest but not found: $fileName"
@@ -2184,7 +2187,45 @@ try {
             throw "Asset manifest not found: $assetManifestPath. Run plugin build first."
         }
     
-        Write-Host "✅ Prepared $($releaseAssets.Count) release assets from dist directory"
+        # Add executables separately (NOT in asset-manifest.json - these are for manual platform-specific download)
+        Write-Host "   📦 Adding platform executables (separate from plugin files)..."
+        $expectedExecutables = @(
+            'na-win-x64.exe', 'na-win-arm64.exe',
+            'na-linux-x64', 'na-linux-arm64',
+            'na-macos-x64', 'na-macos-arm64'
+        )
+        
+        $foundExecutables = 0
+        foreach ($exeName in $expectedExecutables) {
+            $exePath = Join-Path $pluginDistDir $exeName
+            if (Test-Path $exePath) {
+                $releaseAssets += $exePath
+                Write-Host "   📎 Executable: $exeName"
+                $foundExecutables++
+            }
+            else {
+                Write-Warning "   ⚠️  Expected executable not found: $exeName"
+            }
+        }
+        
+        if ($foundExecutables -eq $expectedExecutables.Count) {
+            Write-Host "   ✅ All $foundExecutables executables found"
+        }
+        else {
+            Write-Warning "   ⚠️  Found $foundExecutables of $($expectedExecutables.Count) expected executables"
+        }
+        
+        # Add checksums.json separately (for executable verification)
+        $checksumsPath = Join-Path $pluginDistDir "checksums.json"
+        if (Test-Path $checksumsPath) {
+            $releaseAssets += $checksumsPath
+            Write-Host "   📎 Checksums: checksums.json"
+        }
+        else {
+            Write-Warning "   ⚠️  checksums.json not found"
+        }
+    
+        Write-Host "✅ Prepared $($releaseAssets.Count) total release assets ($($assetManifest.files.Count) plugin + $foundExecutables executables + checksums)"
     
         # Create release notes
         $releaseNotes = switch ($Type) {
