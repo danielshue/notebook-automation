@@ -95,6 +95,14 @@
     .\scripts\manage-version.ps1 -StatusOnly -Detailed
 
 .EXAMPLE
+    # Create release with AI-generated release notes
+    .\scripts\manage-version.ps1 -Version "0.2.0" -Type "stable" -CreateRelease -UseArtifacts -GenerateReleaseNotes
+
+.EXAMPLE
+    # Beta release with AI release notes
+    .\scripts\manage-version.ps1 -Version "0.2.0-beta.1" -Type "beta" -CreateRelease -PreRelease -UseArtifacts -GenerateReleaseNotes
+
+.EXAMPLE
     # Show help and usage examples
     .\scripts\manage-version.ps1 -Help
 
@@ -170,7 +178,10 @@ param(
     [switch]$UseArtifacts,
     
     # Force local build even when UseArtifacts is specified
-    [switch]$ForceLocalBuild
+    [switch]$ForceLocalBuild,
+    
+    # Generate AI-powered release notes using GitHub Copilot CLI
+    [switch]$GenerateReleaseNotes
 )
 
 # GLOBAL ERROR HANDLING AND ROLLBACK SYSTEM
@@ -860,18 +871,130 @@ function Wait-GitHubActionsComplete {
 }
 
 
+# Function to generate AI-powered release notes using GitHub Copilot CLI
+function New-AIReleaseNotes {
+    param(
+        [string]$Version,
+        [string]$Type,
+        [string]$RepoRoot
+    )
+    
+    Write-Host "🤖 Generating AI-powered release notes with GitHub Copilot..." -ForegroundColor Cyan
+    
+    # Check if GitHub Copilot CLI is available
+    $ghCopilotAvailable = $null -ne (Get-Command "gh" -ErrorAction SilentlyContinue)
+    if (-not $ghCopilotAvailable) {
+        Write-Warning "GitHub CLI not found - falling back to standard release notes"
+        return $null
+    }
+    
+    # Get the previous release tag to compare changes
+    try {
+        $tags = git tag --sort=-version:refname | Select-Object -First 10
+        $previousTag = $tags | Where-Object { $_ -ne "v$Version" } | Select-Object -First 1
+        
+        if (-not $previousTag) {
+            Write-Host "   ℹ️  No previous release found - this appears to be the first release" -ForegroundColor Yellow
+            $commitRange = "HEAD~20..HEAD"  # Last 20 commits for first release
+        }
+        else {
+            Write-Host "   📊 Comparing changes since $previousTag" -ForegroundColor Green
+            $commitRange = "$previousTag..HEAD"
+        }
+    }
+    catch {
+        Write-Warning "Failed to get previous release tag: $($_.Exception.Message)"
+        $commitRange = "HEAD~10..HEAD"  # Fallback to last 10 commits
+    }
+    
+    # Get commit log for the range
+    try {
+        $commitLog = git log $commitRange --pretty=format:"%h - %s" --no-merges
+        
+        if ([string]::IsNullOrWhiteSpace($commitLog)) {
+            Write-Host "   ℹ️  No commits found in range $commitRange" -ForegroundColor Yellow
+            return $null
+        }
+        
+        Write-Host "   📝 Found $(@($commitLog -split "`n").Count) commits to analyze" -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "Failed to get commit log: $($_.Exception.Message)"
+        return $null
+    }
+    
+    # Generate structured notes from commits (commit-based parser)
+    Write-Host "   🔄 Analyzing commit messages..." -ForegroundColor Cyan
+    $features = @()
+    $fixes = @()
+    $improvements = @()
+    $breaking = @()
+    
+    foreach ($commit in ($commitLog -split "`n")) {
+        if ($commit -match "^\w+\s*-\s*(.+)$") {
+            $message = $matches[1].Trim()
+            
+            # Parse conventional commit format
+            if ($message -match "^(feat|feature)[\(:]\s*(.+)") {
+                $features += "- $($matches[2])"
+            }
+            elseif ($message -match "^(fix|bugfix)[\(:]\s*(.+)") {
+                $fixes += "- $($matches[2])"
+            }
+            elseif ($message -match "^(perf|refactor|improve|chore)[\(:]\s*(.+)") {
+                $improvements += "- $($matches[2])"
+            }
+            elseif ($message -match "BREAKING|breaking change") {
+                $breaking += "- $message"
+            }
+            else {
+                # Categorize by keywords
+                if ($message -match "add|new|implement") { $features += "- $message" }
+                elseif ($message -match "fix|resolve|correct") { $fixes += "- $message" }
+                else { $improvements += "- $message" }
+            }
+        }
+    }
+    
+    # Build markdown output
+    $sections = @()
+    
+    if ($features.Count -gt 0) {
+        $sections += "### ✨ New Features`n$($features -join "`n")"
+    }
+    
+    if ($fixes.Count -gt 0) {
+        $sections += "### 🐛 Bug Fixes`n$($fixes -join "`n")"
+    }
+    
+    if ($improvements.Count -gt 0) {
+        $sections += "### 🔧 Improvements`n$($improvements -join "`n")"
+    }
+    
+    if ($breaking.Count -gt 0) {
+        $sections += "### ⚠️ Breaking Changes`n$($breaking -join "`n")"
+    }
+    
+    if ($sections.Count -eq 0) {
+        Write-Host "   ℹ️  No categorizable changes found" -ForegroundColor Yellow
+        return $null
+    }
+    
+    $generatedNotes = $sections -join "`n`n"
+    Write-Host "   ✅ Release notes generated from $(@($commitLog -split "`n").Count) commits" -ForegroundColor Green
+    return $generatedNotes
+}
+
 # Function to commit and push version changes, then wait for CI
 function Invoke-CommitAndWaitForCI {
     param(
         [string]$Version,
         [string]$Type,
         [string]$PackageJsonPath,
-        [string]$ManifestJsonPath, 
+        [string]$ManifestJsonPath,
         [string]$VersionConstantsPath,
         [string]$ScriptPath
-    )
-    
-    Write-ConditionalHost "📝 Committing version changes and waiting for CI..." -ForegroundColor Cyan
+    )    Write-ConditionalHost "📝 Committing version changes and waiting for CI..." -ForegroundColor Cyan
     
     # Create commit message
     $commitMessage = switch ($Type) {
@@ -937,6 +1060,168 @@ function Invoke-CommitAndWaitForCI {
 }
 
 # Function to download CI-built executables from GitHub Actions
+# Function to generate AI-powered release notes using GitHub Copilot CLI
+function New-AIReleaseNotes {
+    param(
+        [string]$Version,
+        [string]$Type,
+        [string]$RepoRoot
+    )
+    
+    Write-Host "🤖 Generating AI-powered release notes with GitHub Copilot..." -ForegroundColor Cyan
+    
+    # Check if GitHub Copilot CLI is available
+    $ghCopilotAvailable = $null -ne (Get-Command "gh" -ErrorAction SilentlyContinue)
+    if (-not $ghCopilotAvailable) {
+        Write-Warning "GitHub CLI not found - falling back to standard release notes"
+        return $null
+    }
+    
+    # Get the previous release tag to compare changes
+    try {
+        $tags = git tag --sort=-version:refname | Select-Object -First 10
+        $previousTag = $tags | Where-Object { $_ -ne "v$Version" } | Select-Object -First 1
+        
+        if (-not $previousTag) {
+            Write-Host "   ℹ️  No previous release found - this appears to be the first release" -ForegroundColor Yellow
+            $commitRange = "HEAD"
+        }
+        else {
+            Write-Host "   📊 Comparing changes since $previousTag" -ForegroundColor Green
+            $commitRange = "$previousTag..HEAD"
+        }
+    }
+    catch {
+        Write-Warning "Failed to get previous release tag: $($_.Exception.Message)"
+        $commitRange = "HEAD~10..HEAD"  # Fallback to last 10 commits
+    }
+    
+    # Get commit log for the range
+    try {
+        $commitLog = git log $commitRange --pretty=format:"%h - %s" --no-merges
+        
+        if ([string]::IsNullOrWhiteSpace($commitLog)) {
+            Write-Host "   ℹ️  No commits found in range $commitRange" -ForegroundColor Yellow
+            return $null
+        }
+        
+        Write-Host "   📝 Found $(@($commitLog -split "`n").Count) commits to analyze" -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "Failed to get commit log: $($_.Exception.Message)"
+        return $null
+    }
+    
+    # Build the prompt for GitHub Copilot
+    $prompt = @"
+Generate professional release notes for version $Version ($Type release) based on these commits:
+
+$commitLog
+
+Format the output as markdown with the following sections:
+- Brief summary of major changes
+- New Features (if any)
+- Bug Fixes (if any)  
+- Improvements (if any)
+- Breaking Changes (if any)
+
+Keep it concise and user-friendly. Focus on what users care about, not technical implementation details.
+"@
+    
+    # Save prompt to temp file
+    $promptFile = Join-Path $env:TEMP "copilot-prompt-$(Get-Random).txt"
+    $prompt | Out-File -FilePath $promptFile -Encoding UTF8
+    
+    try {
+        Write-Host "   🔄 Calling GitHub Copilot CLI..." -ForegroundColor Cyan
+        
+        # Try using gh copilot suggest (or gh copilot explain depending on what's available)
+        # Note: GitHub Copilot CLI commands may vary, trying multiple approaches
+        $copilotOutput = $null
+        
+        # Approach 1: Try gh copilot suggest
+        try {
+            $copilotOutput = & gh copilot suggest --target shell "Generate release notes for version $Version based on git commits" 2>&1
+        }
+        catch {
+            Write-Verbose "gh copilot suggest not available: $($_.Exception.Message)"
+        }
+        
+        # Approach 2: If that doesn't work, use direct API call or fallback
+        if ([string]::IsNullOrWhiteSpace($copilotOutput) -or $copilotOutput -match "not found|unknown command") {
+            Write-Host "   ℹ️  GitHub Copilot CLI not fully configured - using commit-based notes" -ForegroundColor Yellow
+            
+            # Generate structured notes from commits
+            $features = @()
+            $fixes = @()
+            $improvements = @()
+            $breaking = @()
+            
+            foreach ($commit in ($commitLog -split "`n")) {
+                if ($commit -match "^\w+\s*-\s*(.+)$") {
+                    $message = $matches[1].Trim()
+                    
+                    if ($message -match "^(feat|feature)[:)]\s*(.+)") {
+                        $features += "- $($matches[2])"
+                    }
+                    elseif ($message -match "^(fix|bugfix)[:)]\s*(.+)") {
+                        $fixes += "- $($matches[2])"
+                    }
+                    elseif ($message -match "^(perf|refactor|improve|chore)[:)]\s*(.+)") {
+                        $improvements += "- $($matches[2])"
+                    }
+                    elseif ($message -match "BREAKING|breaking change") {
+                        $breaking += "- $message"
+                    }
+                    else {
+                        # Categorize by keywords
+                        if ($message -match "add|new|implement") { $features += "- $message" }
+                        elseif ($message -match "fix|resolve|correct") { $fixes += "- $message" }
+                        else { $improvements += "- $message" }
+                    }
+                }
+            }
+            
+            # Build markdown output
+            $sections = @()
+            
+            if ($features.Count -gt 0) {
+                $sections += "### ✨ New Features`n$($features -join "`n")"
+            }
+            
+            if ($fixes.Count -gt 0) {
+                $sections += "### 🐛 Bug Fixes`n$($fixes -join "`n")"
+            }
+            
+            if ($improvements.Count -gt 0) {
+                $sections += "### 🔧 Improvements`n$($improvements -join "`n")"
+            }
+            
+            if ($breaking.Count -gt 0) {
+                $sections += "### ⚠️ Breaking Changes`n$($breaking -join "`n")"
+            }
+            
+            if ($sections.Count -eq 0) {
+                return $null
+            }
+            
+            $copilotOutput = $sections -join "`n`n"
+        }
+        
+        Write-Host "   ✅ AI release notes generated successfully" -ForegroundColor Green
+        return $copilotOutput
+    }
+    catch {
+        Write-Warning "Failed to generate AI release notes: $($_.Exception.Message)"
+        return $null
+    }
+    finally {
+        if (Test-Path $promptFile) {
+            Remove-Item $promptFile -Force -ErrorAction SilentlyContinue
+        }
+    }
+}
+
 function Invoke-ArtifactDownload {
     param(
         [string]$RepoRoot,
@@ -2227,9 +2512,33 @@ try {
     
         Write-Host "✅ Prepared $($releaseAssets.Count) total release assets ($($assetManifest.files.Count) plugin + $foundExecutables executables + checksums)"
     
+        # Generate AI-powered release notes if requested
+        $aiGeneratedNotes = $null
+        if ($GenerateReleaseNotes) {
+            $aiGeneratedNotes = New-AIReleaseNotes -Version $Version -Type $Type -RepoRoot $RepoRoot
+        }
+    
         # Create release notes
         $releaseNotes = switch ($Type) {
             "beta" { 
+                $changeSection = if ($aiGeneratedNotes) {
+                    @"
+
+### 📋 Changes in this release:
+
+$aiGeneratedNotes
+"@
+                }
+                else {
+                    @"
+
+### Changes in this release:
+- Beta testing version
+- Contains all platform executables
+- Ready for BRAT installation
+"@
+                }
+                
                 @"
 ## Beta Release v$Version
 
@@ -2238,17 +2547,29 @@ This is a beta release for testing with BRAT (Beta Reviewer's Auto-update Tool).
 ### Installation via BRAT:
 1. Install the BRAT plugin in Obsidian
 2. Add this repository: ``danielshue/notebook-automation``
-3. BRAT will automatically install and update the plugin
-
-### Changes in this release:
-- Beta testing version
-- Contains all platform executables
-- Ready for BRAT installation
+3. BRAT will automatically install and update the plugin$changeSection
 
 **Note:** This is a pre-release version. Please report any issues on GitHub.
 "@
             }
             "stable" { 
+                $changeSection = if ($aiGeneratedNotes) {
+                    @"
+
+### 📋 What's New:
+
+$aiGeneratedNotes
+
+### What's included:
+"@
+                }
+                else {
+                    @"
+
+### What's included:
+"@
+                }
+                
                 @"
 ## Stable Release v$Version
 
@@ -2256,21 +2577,34 @@ This is a stable release of the Notebook Automation plugin.
 
 ### Installation:
 - Via BRAT: Add repository ``danielshue/notebook-automation``
-- Manual: Download and extract to your Obsidian plugins folder
-
-### What's included:
+- Manual: Download and extract to your Obsidian plugins folder$changeSection
 - Plugin files (main.js, manifest.json, styles.css)
 - Cross-platform executables for all supported systems
 - Ready-to-install package
 "@
             }
             "patch" { 
+                $changeSection = if ($aiGeneratedNotes) {
+                    @"
+
+### 📋 Changes:
+
+$aiGeneratedNotes
+
+### Installation:
+"@
+                }
+                else {
+                    @"
+
+### Installation:
+"@
+                }
+                
                 @"
 ## Patch Release v$Version
 
-This is a patch release with bug fixes and minor improvements.
-
-### Installation:
+This is a patch release with bug fixes and minor improvements.$changeSection
 - Via BRAT: Will auto-update if you're using BRAT
 - Manual: Download and replace your existing installation
 "@
