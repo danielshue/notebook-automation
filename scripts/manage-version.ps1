@@ -1077,17 +1077,34 @@ function New-AIReleaseNotes {
         return $null
     }
     
-    # Get the previous release tag to compare changes
+    # Get the previous release tag of the same type (beta vs stable)
     try {
-        $tags = git tag --sort=-version:refname | Select-Object -First 10
-        $previousTag = $tags | Where-Object { $_ -ne "v$Version" } | Select-Object -First 1
+        $tags = git tag --sort=-version:refname
+        $currentTag = "v$Version"
+        
+        # Determine if we're looking for beta or stable releases
+        $isBeta = $Version -match "-beta\."
+        
+        # Filter tags by type and find the most recent one before current
+        $previousTag = $null
+        foreach ($tag in $tags) {
+            if ($tag -eq $currentTag) { continue }  # Skip current tag if it exists
+            
+            $tagIsBeta = $tag -match "-beta\."
+            
+            # Match release types (beta with beta, stable with stable)
+            if ($isBeta -eq $tagIsBeta) {
+                $previousTag = $tag
+                break
+            }
+        }
         
         if (-not $previousTag) {
-            Write-Host "   ℹ️  No previous release found - this appears to be the first release" -ForegroundColor Yellow
-            $commitRange = "HEAD"
+            Write-Host "   ℹ️  No previous $Type release found - comparing last 10 commits" -ForegroundColor Yellow
+            $commitRange = "HEAD~10..HEAD"
         }
         else {
-            Write-Host "   📊 Comparing changes since $previousTag" -ForegroundColor Green
+            Write-Host "   📊 Comparing changes since $previousTag (last $Type release)" -ForegroundColor Green
             $commitRange = "$previousTag..HEAD"
         }
     }
@@ -1105,121 +1122,81 @@ function New-AIReleaseNotes {
             return $null
         }
         
-        Write-Host "   📝 Found $(@($commitLog -split "`n").Count) commits to analyze" -ForegroundColor Green
+        $commitCount = @($commitLog -split "`n").Count
+        Write-Host "   📝 Found $commitCount commits to analyze" -ForegroundColor Green
+        
+        # If too many commits, limit to recent ones to avoid hanging
+        if ($commitCount -gt 50) {
+            Write-Host "   ⚠️  Too many commits ($commitCount), limiting to last 50 for performance" -ForegroundColor Yellow
+            $commitLog = git log $commitRange --pretty=format:"%h - %s" --no-merges -50
+        }
     }
     catch {
         Write-Warning "Failed to get commit log: $($_.Exception.Message)"
         return $null
     }
     
-    # Build the prompt for GitHub Copilot
-    $prompt = @"
-Generate professional release notes for version $Version ($Type release) based on these commits:
-
-$commitLog
-
-Format the output as markdown with the following sections:
-- Brief summary of major changes
-- New Features (if any)
-- Bug Fixes (if any)  
-- Improvements (if any)
-- Breaking Changes (if any)
-
-Keep it concise and user-friendly. Focus on what users care about, not technical implementation details.
-"@
+    # Skip AI generation - it's unreliable and slow, just use commit-based categorization
+    Write-Host "   � Categorizing commits into release notes..." -ForegroundColor Cyan
     
-    # Save prompt to temp file
-    $promptFile = Join-Path $env:TEMP "copilot-prompt-$(Get-Random).txt"
-    $prompt | Out-File -FilePath $promptFile -Encoding UTF8
+    # Generate structured notes from commits
+    $features = @()
+    $fixes = @()
+    $improvements = @()
+    $breaking = @()
     
-    try {
-        Write-Host "   🔄 Calling GitHub Copilot CLI..." -ForegroundColor Cyan
-        
-        # Try using gh copilot suggest (or gh copilot explain depending on what's available)
-        # Note: GitHub Copilot CLI commands may vary, trying multiple approaches
-        $copilotOutput = $null
-        
-        # Approach 1: Try gh copilot suggest
-        try {
-            $copilotOutput = & gh copilot suggest --target shell "Generate release notes for version $Version based on git commits" 2>&1
+    foreach ($commit in ($commitLog -split "`n")) {
+        if ($commit -match "^\w+\s*-\s*(.+)$") {
+            $message = $matches[1].Trim()
+            
+            if ($message -match "^(feat|feature)[:)]\s*(.+)") {
+                $features += "- $($matches[2])"
+            }
+            elseif ($message -match "^(fix|bugfix)[:)]\s*(.+)") {
+                $fixes += "- $($matches[2])"
+            }
+            elseif ($message -match "^(perf|refactor|improve|chore)[:)]\s*(.+)") {
+                $improvements += "- $($matches[2])"
+            }
+            elseif ($message -match "BREAKING|breaking change") {
+                $breaking += "- $message"
+            }
+            else {
+                # Categorize by keywords
+                if ($message -match "add|new|implement") { $features += "- $message" }
+                elseif ($message -match "fix|resolve|correct") { $fixes += "- $message" }
+                else { $improvements += "- $message" }
+            }
         }
-        catch {
-            Write-Verbose "gh copilot suggest not available: $($_.Exception.Message)"
-        }
-        
-        # Approach 2: If that doesn't work, use direct API call or fallback
-        if ([string]::IsNullOrWhiteSpace($copilotOutput) -or $copilotOutput -match "not found|unknown command") {
-            Write-Host "   ℹ️  GitHub Copilot CLI not fully configured - using commit-based notes" -ForegroundColor Yellow
-            
-            # Generate structured notes from commits
-            $features = @()
-            $fixes = @()
-            $improvements = @()
-            $breaking = @()
-            
-            foreach ($commit in ($commitLog -split "`n")) {
-                if ($commit -match "^\w+\s*-\s*(.+)$") {
-                    $message = $matches[1].Trim()
-                    
-                    if ($message -match "^(feat|feature)[:)]\s*(.+)") {
-                        $features += "- $($matches[2])"
-                    }
-                    elseif ($message -match "^(fix|bugfix)[:)]\s*(.+)") {
-                        $fixes += "- $($matches[2])"
-                    }
-                    elseif ($message -match "^(perf|refactor|improve|chore)[:)]\s*(.+)") {
-                        $improvements += "- $($matches[2])"
-                    }
-                    elseif ($message -match "BREAKING|breaking change") {
-                        $breaking += "- $message"
-                    }
-                    else {
-                        # Categorize by keywords
-                        if ($message -match "add|new|implement") { $features += "- $message" }
-                        elseif ($message -match "fix|resolve|correct") { $fixes += "- $message" }
-                        else { $improvements += "- $message" }
-                    }
-                }
-            }
-            
-            # Build markdown output
-            $sections = @()
-            
-            if ($features.Count -gt 0) {
-                $sections += "### ✨ New Features`n$($features -join "`n")"
-            }
-            
-            if ($fixes.Count -gt 0) {
-                $sections += "### 🐛 Bug Fixes`n$($fixes -join "`n")"
-            }
-            
-            if ($improvements.Count -gt 0) {
-                $sections += "### 🔧 Improvements`n$($improvements -join "`n")"
-            }
-            
-            if ($breaking.Count -gt 0) {
-                $sections += "### ⚠️ Breaking Changes`n$($breaking -join "`n")"
-            }
-            
-            if ($sections.Count -eq 0) {
-                return $null
-            }
-            
-            $copilotOutput = $sections -join "`n`n"
-        }
-        
-        Write-Host "   ✅ AI release notes generated successfully" -ForegroundColor Green
-        return $copilotOutput
     }
-    catch {
-        Write-Warning "Failed to generate AI release notes: $($_.Exception.Message)"
+    
+    # Build markdown output
+    $sections = @()
+    
+    if ($features.Count -gt 0) {
+        $sections += "### ✨ New Features`n$($features -join "`n")"
+    }
+    
+    if ($fixes.Count -gt 0) {
+        $sections += "### 🐛 Bug Fixes`n$($fixes -join "`n")"
+    }
+    
+    if ($improvements.Count -gt 0) {
+        $sections += "### 🔧 Improvements`n$($improvements -join "`n")"
+    }
+    
+    if ($breaking.Count -gt 0) {
+        $sections += "### ⚠️ Breaking Changes`n$($breaking -join "`n")"
+    }
+    
+    if ($sections.Count -eq 0) {
+        Write-Host "   ℹ️  No categorizable changes found" -ForegroundColor Yellow
         return $null
     }
-    finally {
-        if (Test-Path $promptFile) {
-            Remove-Item $promptFile -Force -ErrorAction SilentlyContinue
-        }
-    }
+    
+    $generatedNotes = $sections -join "`n`n"
+    Write-Host "   ✅ Release notes generated from commits" -ForegroundColor Green
+    return $generatedNotes
 }
 
 function Invoke-ArtifactDownload {
