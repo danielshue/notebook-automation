@@ -682,26 +682,58 @@ function Wait-GitHubActionsComplete {
     
     # Do an immediate check first - workflows might already be running or completed
     Write-ConditionalHost "🔍 Performing initial workflow check..." -ForegroundColor Gray
+
+    # Helper to run gh run list and return parsed JSON or throw with stderr
+    function Invoke-GhRunListJson {
+        param(
+            [int]$Limit = 20,
+            [string[]]$Fields = @('status', 'conclusion', 'name', 'headSha')
+        )
+
+        $fieldsArg = ($Fields -join ',')
+        $cmd = @('run', 'list', '--json', $fieldsArg, '--limit', $Limit)
+        $psi = New-Object System.Diagnostics.ProcessStartInfo
+        $psi.FileName = (Get-Command gh).Source
+        $psi.Arguments = $cmd -join ' '
+        $psi.RedirectStandardOutput = $true
+        $psi.RedirectStandardError = $true
+        $psi.UseShellExecute = $false
+        $psi.CreateNoWindow = $true
+
+        $proc = New-Object System.Diagnostics.Process
+        $proc.StartInfo = $psi
+        $proc.Start() | Out-Null
+        $stdout = $proc.StandardOutput.ReadToEnd()
+        $stderr = $proc.StandardError.ReadToEnd()
+        $proc.WaitForExit()
+
+        if ($proc.ExitCode -ne 0) {
+            # Pass along stderr for debugging
+            throw "gh run list failed (exit $($proc.ExitCode)): $stderr"
+        }
+
+        if ($stdout.Trim() -eq '') { return @() }
+        try {
+            return $stdout | ConvertFrom-Json
+        }
+        catch {
+            throw "Failed to parse gh output: $($_.Exception.Message). Raw output: $stdout`nStdErr: $stderr"
+        }
+    }
     
     # Quick check to see if workflows are already running or completed
     try {
         Write-ConditionalHost "   Running: gh run list --json status,conclusion,name,headSha --limit 20" -ForegroundColor DarkGray
-        $quickCheck = gh run list --json status, conclusion, name, headSha --limit 20 2>$null
-        if ($LASTEXITCODE -eq 0) {
-            $allQuickWorkflows = $quickCheck | ConvertFrom-Json
-            $quickWorkflows = $allQuickWorkflows | Where-Object { $_.headSha -eq $CommitSha }
-            Write-ConditionalHost "   ✅ GitHub CLI call successful, found $($quickWorkflows.Count) workflows for commit" -ForegroundColor DarkGray
-            if ($quickWorkflows.Count -gt 0) {
-                $quickCompleted = $quickWorkflows | Where-Object { $_.status -eq "completed" }
-                $quickInProgress = $quickWorkflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
-                Write-ConditionalHost "📋 Quick check: Found $($quickWorkflows.Count) workflow(s) - $($quickCompleted.Count) completed, $($quickInProgress.Count) in progress" -ForegroundColor Cyan
-            }
-            else {
-                Write-ConditionalHost "📋 Quick check: No workflows found yet for commit $shortSha, will start polling..." -ForegroundColor Yellow
-            }
+        $allQuickWorkflows = Invoke-GhRunListJson -Limit 20 -Fields @('status', 'conclusion', 'name', 'headSha')
+        $quickWorkflows = $allQuickWorkflows | Where-Object { $_.headSha -eq $CommitSha }
+        Write-ConditionalHost "   ✅ GitHub CLI call successful, found $($quickWorkflows.Count) workflows for commit" -ForegroundColor DarkGray
+        if ($quickWorkflows.Count -gt 0) {
+            $quickCompleted = $quickWorkflows | Where-Object { $_.status -eq "completed" }
+            $quickInProgress = $quickWorkflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
+            Write-ConditionalHost "📋 Quick check: Found $($quickWorkflows.Count) workflow(s) - $($quickCompleted.Count) completed, $($quickInProgress.Count) in progress" -ForegroundColor Cyan
         }
         else {
-            Write-ConditionalHost "❌ GitHub CLI failed with exit code: $LASTEXITCODE" -ForegroundColor Red
+            Write-ConditionalHost "📋 Quick check: No workflows found yet for commit $shortSha, will start polling..." -ForegroundColor Yellow
         }
     }
     catch {
@@ -716,9 +748,10 @@ function Wait-GitHubActionsComplete {
         try {
             # Get workflow runs for the commit (use general list and filter, as --commit can be unreliable)
             Write-ConditionalHost "   Running: gh run list --json status,conclusion,name,url,headSha --limit 50" -ForegroundColor DarkGray
-            $workflowOutput = gh run list --json status, conclusion, name, url, headSha --limit 50 2>$null
-            if ($LASTEXITCODE -eq 0) {
-                $allWorkflows = $workflowOutput | ConvertFrom-Json
+            $allWorkflows = Invoke-GhRunListJson -Limit 50 -Fields @('status', 'conclusion', 'name', 'url', 'headSha')
+            if ($null -ne $allWorkflows) {
+                # ensure $allWorkflows is an array
+                if ($allWorkflows -isnot [System.Array]) { $allWorkflows = @($allWorkflows) }
                 # Filter to workflows for our specific commit
                 $workflows = $allWorkflows | Where-Object { $_.headSha -eq $CommitSha }
                 Write-ConditionalHost "   ✅ Found $($allWorkflows.Count) total workflows, $($workflows.Count) for commit $shortSha" -ForegroundColor DarkGray
