@@ -1050,6 +1050,10 @@ function New-AIReleaseNotes {
         
         $copilotJob = Start-Job -ScriptBlock {
             param($PromptFile)
+            # Set output encoding to UTF-8 for proper emoji handling
+            [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+            $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+            
             $content = Get-Content $PromptFile -Raw
             # Use programmatic mode - no tool approval needed for text generation
             & copilot -p $content 2>&1
@@ -1069,13 +1073,41 @@ function New-AIReleaseNotes {
             # Parse output - filter out non-markdown content
             $outputText = ($copilotOutput | Out-String).Trim()
             
-            # Remove common CLI noise/warnings
-            $outputText = $outputText -replace "(?m)^.*?authenticat.*$", ""
-            $outputText = $outputText -replace "(?m)^.*?premium request.*$", ""
-            $outputText = $outputText -replace "(?m)^.*?quota.*$", ""
-            $outputText = $outputText -replace "(?m)^.*?Total usage.*$", ""
-            $outputText = $outputText -replace "(?m)^.*?Total duration.*$", ""
-            $outputText = $outputText -replace "(?m)^.*?Usage by model.*$", ""
+            # Remove Copilot CLI statistics and metadata (always added by CLI)
+            # Pattern 1: Remove bullet prefix (●) that CLI adds
+            $outputText = $outputText -replace "(?m)^●\s*", ""
+            
+            # Pattern 2: Remove CLI command output markers
+            $outputText = $outputText -replace "(?m)^✓.*$", ""
+            $outputText = $outputText -replace "(?m)^↪.*$", ""
+            $outputText = $outputText -replace "(?m)^\$.*$", ""
+            
+            # Pattern 3: Remove all statistics lines at the end
+            $outputText = $outputText -replace "(?m)^Total usage.*$", ""
+            $outputText = $outputText -replace "(?m)^Total duration.*$", ""
+            $outputText = $outputText -replace "(?m)^Total code changes.*$", ""
+            $outputText = $outputText -replace "(?m)^Usage by model.*$", ""
+            
+            # Pattern 4: Remove lines with cache statistics
+            $outputText = $outputText -replace "(?m)^.*cache read.*$", ""
+            $outputText = $outputText -replace "(?m)^.*cache write.*$", ""
+            
+            # Pattern 5: Remove authentication/premium warnings
+            $outputText = $outputText -replace "(?m)^.*authenticat.*$", ""
+            $outputText = $outputText -replace "(?m)^.*premium request.*$", ""
+            $outputText = $outputText -replace "(?m)^.*quota.*$", ""
+            
+            # Pattern 6: Remove preamble text that sometimes appears before title (# header)
+            $outputText = $outputText -replace "(?s)^.*?(?=#\s)", ""
+            
+            # Pattern 7: Remove leading whitespace before section headers and bullet points
+            $outputText = $outputText -replace "(?m)^\s+(###)", '$1'
+            $outputText = $outputText -replace "(?m)^\s+(-)", '$1'
+            
+            # Pattern 8: Clean up multiple blank lines
+            $outputText = $outputText -replace "(?m)^\s*$\n", "`n"
+            $outputText = $outputText -replace "\n{3,}", "`n`n"
+            
             $outputText = $outputText.Trim()
             
             if (-not [string]::IsNullOrWhiteSpace($outputText) -and $outputText.Length -gt 50) {
