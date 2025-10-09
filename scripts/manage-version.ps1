@@ -95,12 +95,12 @@
     .\scripts\manage-version.ps1 -StatusOnly -Detailed
 
 .EXAMPLE
-    # Create release with AI-generated release notes
-    .\scripts\manage-version.ps1 -Version "0.2.0" -Type "stable" -CreateRelease -UseArtifacts -GenerateReleaseNotes
+    # Create stable release with AI-generated release notes
+    .\scripts\manage-version.ps1 -Version "0.2.0" -Type "stable" -CreateRelease -UseArtifacts
 
 .EXAMPLE
-    # Beta release with AI release notes
-    .\scripts\manage-version.ps1 -Version "0.2.0-beta.1" -Type "beta" -CreateRelease -PreRelease -UseArtifacts -GenerateReleaseNotes
+    # Beta release with AI-generated release notes
+    .\scripts\manage-version.ps1 -Version "0.2.0-beta.1" -Type "beta" -CreateRelease -PreRelease -UseArtifacts
 
 .EXAMPLE
     # Show help and usage examples
@@ -178,10 +178,7 @@ param(
     [switch]$UseArtifacts,
     
     # Force local build even when UseArtifacts is specified
-    [switch]$ForceLocalBuild,
-    
-    # Generate AI-powered release notes from commit history (enabled by default)
-    [switch]$GenerateReleaseNotes = $true
+    [switch]$ForceLocalBuild
 )
 
 # GLOBAL ERROR HANDLING AND ROLLBACK SYSTEM
@@ -2393,107 +2390,22 @@ try {
         }
     
         Write-Host "✅ Prepared $($releaseAssets.Count) total release assets ($($assetManifest.files.Count) plugin + $foundExecutables executables + checksums)"
-    
-        # Generate AI-powered release notes if requested
-        $aiGeneratedNotes = $null
-        if ($GenerateReleaseNotes) {
-            $aiGeneratedNotes = New-AIReleaseNotes -Version $Version -Type $Type -RepoRoot $RepoRoot
-        }
-    
-        # Create release notes
+
+        # Generate AI-powered release notes using GitHub Copilot CLI
+        $aiGeneratedNotes = New-AIReleaseNotes -Version $Version -Type $Type -RepoRoot $RepoRoot
+
+        # Create release notes based on type
         $releaseNotes = switch ($Type) {
             "beta" { 
-                $changeSection = if ($aiGeneratedNotes) {
-                    @"
-
-### 📋 Changes in this release:
-
-$aiGeneratedNotes
-"@
-                }
-                else {
-                    @"
-
-### Changes in this release:
-- Beta testing version
-- Contains all platform executables
-- Ready for BRAT installation
-"@
-                }
-                
-                @"
-## Beta Release v$Version
-
-This is a beta release for testing with BRAT (Beta Reviewer's Auto-update Tool).
-
-### Installation via BRAT:
-1. Install the BRAT plugin in Obsidian
-2. Add this repository: ``danielshue/notebook-automation``
-3. BRAT will automatically install and update the plugin$changeSection
-
-**Note:** This is a pre-release version. Please report any issues on GitHub.
-"@
+                $aiGeneratedNotes
             }
             "stable" { 
-                $changeSection = if ($aiGeneratedNotes) {
-                    @"
-
-### 📋 What's New:
-
-$aiGeneratedNotes
-
-### What's included:
-"@
-                }
-                else {
-                    @"
-
-### What's included:
-"@
-                }
-                
-                @"
-## Stable Release v$Version
-
-This is a stable release of the Notebook Automation plugin.
-
-### Installation:
-- Via BRAT: Add repository ``danielshue/notebook-automation``
-- Manual: Download and extract to your Obsidian plugins folder$changeSection
-- Plugin files (main.js, manifest.json, styles.css)
-- Cross-platform executables for all supported systems
-- Ready-to-install package
-"@
+                $aiGeneratedNotes
             }
             "patch" { 
-                $changeSection = if ($aiGeneratedNotes) {
-                    @"
-
-### 📋 Changes:
-
-$aiGeneratedNotes
-
-### Installation:
-"@
-                }
-                else {
-                    @"
-
-### Installation:
-"@
-                }
-                
-                @"
-## Patch Release v$Version
-
-This is a patch release with bug fixes and minor improvements.$changeSection
-- Via BRAT: Will auto-update if you're using BRAT
-- Manual: Download and replace your existing installation
-"@
+                $aiGeneratedNotes
             }
-        }
-    
-        # Write release notes to temporary file to avoid parameter parsing issues
+        }        # Write release notes to temporary file to avoid parameter parsing issues
         $tempNotesFile = Join-Path $env:TEMP "release-notes-$(Get-Random).md"
         $releaseNotes | Out-File -FilePath $tempNotesFile -Encoding UTF8
     
