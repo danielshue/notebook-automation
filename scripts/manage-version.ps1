@@ -952,8 +952,7 @@ function New-AIReleaseNotes {
     param(
         [string]$Version,
         [string]$Type,
-        [string]$RepoRoot,
-        [switch]$UsePatternMatching
+        [string]$RepoRoot
     )
     
     Write-Host "🤖 Generating AI-powered release notes with GitHub Copilot..." -ForegroundColor Cyan
@@ -1024,146 +1023,85 @@ function New-AIReleaseNotes {
         return $null
     }
     
-    # Try GitHub Copilot CLI first (unless forced to use pattern matching)
-    if (-not $UsePatternMatching) {
-        $copilotAvailable = $null -ne (Get-Command "copilot" -ErrorAction SilentlyContinue)
+    # Use GitHub Copilot CLI to generate release notes
+    $copilotAvailable = $null -ne (Get-Command "copilot" -ErrorAction SilentlyContinue)
+    
+    if (-not $copilotAvailable) {
+        Write-Error "GitHub Copilot CLI is not installed. Install with: npm install -g @github/copilot"
+        throw "GitHub Copilot CLI is required for release notes generation"
+    }
+    
+    Write-Host "   🚀 Using GitHub Copilot CLI to generate release notes..." -ForegroundColor Cyan
+    
+    try {
+        # Load prompt template from scripts folder
+        $promptTemplatePath = Join-Path $RepoRoot "scripts" "release-notes-prompt.md"
+        if (-not (Test-Path $promptTemplatePath)) {
+            Write-Error "Prompt template not found at $promptTemplatePath"
+            throw "Release notes prompt template is required: scripts/release-notes-prompt.md"
+        }
         
-        if ($copilotAvailable) {
-            Write-Host "   🚀 Using GitHub Copilot CLI to generate release notes..." -ForegroundColor Cyan
+        $promptTemplate = Get-Content $promptTemplatePath -Raw
+        $prompt = $promptTemplate -replace '\{\{COMMITS\}\}', $commitLog
+        
+        # Create temporary file for prompt (avoid command-line length limits)
+        $tempPrompt = Join-Path $env:TEMP "copilot-prompt-$(Get-Random).txt"
+        $prompt | Out-File -FilePath $tempPrompt -Encoding UTF8
+        
+        # Execute Copilot CLI with timeout
+        Write-Host "   ⏱️  Calling Copilot CLI (60 second timeout)..." -ForegroundColor Gray
+        
+        $copilotJob = Start-Job -ScriptBlock {
+            param($PromptFile)
+            $content = Get-Content $PromptFile -Raw
+            # Use programmatic mode - no tool approval needed for text generation
+            & copilot -p $content 2>&1
+        } -ArgumentList $tempPrompt
+        
+        # Wait for job with timeout
+        $completed = Wait-Job $copilotJob -Timeout 60
+        
+        if ($completed) {
+            $copilotOutput = Receive-Job $copilotJob
+            Stop-Job $copilotJob -ErrorAction SilentlyContinue
+            Remove-Job $copilotJob -ErrorAction SilentlyContinue
             
-            try {
-                # Load prompt template from config
-                $promptTemplatePath = Join-Path $RepoRoot "config" "release-notes-prompt.md"
-                if (-not (Test-Path $promptTemplatePath)) {
-                    Write-Warning "Prompt template not found at $promptTemplatePath - falling back to pattern matching"
-                }
-                else {
-                    $promptTemplate = Get-Content $promptTemplatePath -Raw
-                    $prompt = $promptTemplate -replace '\{\{COMMITS\}\}', $commitLog
-                    
-                    # Create temporary file for prompt (avoid command-line length limits)
-                    $tempPrompt = Join-Path $env:TEMP "copilot-prompt-$(Get-Random).txt"
-                    $prompt | Out-File -FilePath $tempPrompt -Encoding UTF8
-                    
-                    # Execute Copilot CLI with timeout
-                    Write-Host "   ⏱️  Calling Copilot CLI (60 second timeout)..." -ForegroundColor Gray
-                    
-                    $copilotJob = Start-Job -ScriptBlock {
-                        param($PromptFile)
-                        $content = Get-Content $PromptFile -Raw
-                        # Use programmatic mode - no tool approval needed for text generation
-                        & copilot -p $content 2>&1
-                    } -ArgumentList $tempPrompt
-                    
-                    # Wait for job with timeout
-                    $completed = Wait-Job $copilotJob -Timeout 60
-                    
-                    if ($completed) {
-                        $copilotOutput = Receive-Job $copilotJob
-                        Stop-Job $copilotJob -ErrorAction SilentlyContinue
-                        Remove-Job $copilotJob -ErrorAction SilentlyContinue
-                        
-                        # Clean up temp file
-                        Remove-Item $tempPrompt -ErrorAction SilentlyContinue
-                        
-                        # Parse output - filter out non-markdown content
-                        $outputText = ($copilotOutput | Out-String).Trim()
-                        
-                        # Remove common CLI noise/warnings
-                        $outputText = $outputText -replace "(?m)^.*?authenticat.*$", ""
-                        $outputText = $outputText -replace "(?m)^.*?premium request.*$", ""
-                        $outputText = $outputText -replace "(?m)^.*?quota.*$", ""
-                        $outputText = $outputText -replace "(?m)^.*?Total usage.*$", ""
-                        $outputText = $outputText -replace "(?m)^.*?Total duration.*$", ""
-                        $outputText = $outputText -replace "(?m)^.*?Usage by model.*$", ""
-                        $outputText = $outputText.Trim()
-                        
-                        if (-not [string]::IsNullOrWhiteSpace($outputText) -and $outputText.Length -gt 50) {
-                            Write-Host "   ✅ Release notes generated by GitHub Copilot CLI" -ForegroundColor Green
-                            return $outputText
-                        }
-                        else {
-                            Write-Warning "Copilot output was too short or empty - falling back to pattern matching"
-                        }
-                    }
-                    else {
-                        Write-Warning "Copilot CLI timed out after 60 seconds - falling back to pattern matching"
-                        Stop-Job $copilotJob -ErrorAction SilentlyContinue
-                        Remove-Job $copilotJob -ErrorAction SilentlyContinue
-                        Remove-Item $tempPrompt -ErrorAction SilentlyContinue
-                    }
-                }
+            # Clean up temp file
+            Remove-Item $tempPrompt -ErrorAction SilentlyContinue
+            
+            # Parse output - filter out non-markdown content
+            $outputText = ($copilotOutput | Out-String).Trim()
+            
+            # Remove common CLI noise/warnings
+            $outputText = $outputText -replace "(?m)^.*?authenticat.*$", ""
+            $outputText = $outputText -replace "(?m)^.*?premium request.*$", ""
+            $outputText = $outputText -replace "(?m)^.*?quota.*$", ""
+            $outputText = $outputText -replace "(?m)^.*?Total usage.*$", ""
+            $outputText = $outputText -replace "(?m)^.*?Total duration.*$", ""
+            $outputText = $outputText -replace "(?m)^.*?Usage by model.*$", ""
+            $outputText = $outputText.Trim()
+            
+            if (-not [string]::IsNullOrWhiteSpace($outputText) -and $outputText.Length -gt 50) {
+                Write-Host "   ✅ Release notes generated by GitHub Copilot CLI" -ForegroundColor Green
+                return $outputText
             }
-            catch {
-                Write-Warning "Copilot CLI failed: $($_.Exception.Message) - falling back to pattern matching"
+            else {
+                Write-Error "Copilot CLI returned empty or invalid output"
+                throw "Failed to generate release notes - output was too short or empty"
             }
         }
         else {
-            Write-Host "   ℹ️  GitHub Copilot CLI not found - using pattern matching" -ForegroundColor Yellow
+            Stop-Job $copilotJob -ErrorAction SilentlyContinue
+            Remove-Job $copilotJob -ErrorAction SilentlyContinue
+            Remove-Item $tempPrompt -ErrorAction SilentlyContinue
+            Write-Error "Copilot CLI timed out after 60 seconds"
+            throw "Failed to generate release notes - Copilot CLI timeout"
         }
     }
-    
-    # Fallback: Pattern-based categorization
-    Write-Host "   🏷️  Categorizing commits with pattern matching..." -ForegroundColor Cyan
-    
-    # Generate structured notes from commits
-    $features = @()
-    $fixes = @()
-    $improvements = @()
-    $breaking = @()
-    
-    foreach ($commit in ($commitLog -split "`n")) {
-        if ($commit -match "^\w+\s*-\s*(.+)$") {
-            $message = $matches[1].Trim()
-            
-            if ($message -match "^(feat|feature)[:)]\s*(.+)") {
-                $features += "- $($matches[2])"
-            }
-            elseif ($message -match "^(fix|bugfix)[:)]\s*(.+)") {
-                $fixes += "- $($matches[2])"
-            }
-            elseif ($message -match "^(perf|refactor|improve|chore)[:)]\s*(.+)") {
-                $improvements += "- $($matches[2])"
-            }
-            elseif ($message -match "BREAKING|breaking change") {
-                $breaking += "- $message"
-            }
-            else {
-                # Categorize by keywords
-                if ($message -match "add|new|implement") { $features += "- $message" }
-                elseif ($message -match "fix|resolve|correct") { $fixes += "- $message" }
-                else { $improvements += "- $message" }
-            }
-        }
+    catch {
+        Write-Error "Failed to generate release notes: $($_.Exception.Message)"
+        throw
     }
-    
-    # Build markdown output
-    $sections = @()
-    
-    if ($features.Count -gt 0) {
-        $sections += "### ✨ New Features`n$($features -join "`n")"
-    }
-    
-    if ($fixes.Count -gt 0) {
-        $sections += "### 🐛 Bug Fixes`n$($fixes -join "`n")"
-    }
-    
-    if ($improvements.Count -gt 0) {
-        $sections += "### 🔧 Improvements`n$($improvements -join "`n")"
-    }
-    
-    if ($breaking.Count -gt 0) {
-        $sections += "### ⚠️ Breaking Changes`n$($breaking -join "`n")"
-    }
-    
-    if ($sections.Count -eq 0) {
-        Write-Host "   ℹ️  No categorizable changes found" -ForegroundColor Yellow
-        return $null
-    }
-    
-    $generatedNotes = $sections -join "`n`n"
-    Write-Host "   ✅ Release notes generated from commits" -ForegroundColor Green
-    return $generatedNotes
 }
 
 function Invoke-ArtifactDownload {
