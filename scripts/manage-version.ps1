@@ -180,8 +180,8 @@ param(
     # Force local build even when UseArtifacts is specified
     [switch]$ForceLocalBuild,
     
-    # Generate AI-powered release notes using GitHub Copilot CLI
-    [switch]$GenerateReleaseNotes
+    # Generate AI-powered release notes from commit history (enabled by default)
+    [switch]$GenerateReleaseNotes = $true
 )
 
 # GLOBAL ERROR HANDLING AND ROLLBACK SYSTEM
