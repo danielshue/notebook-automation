@@ -2044,6 +2044,13 @@ try {
  This also avoids referencing $checksumsFilePath which is only set in non-reissue flows.
 #>
     if (-not $Reissue -and -not ($UseArtifacts -and -not $ForceLocalBuild)) {
+        # Delete old checksums.json to force regeneration with new executable hashes
+        $oldChecksumsPath = Join-Path $RepoRoot "dist" "checksums.json"
+        if (Test-Path $oldChecksumsPath) {
+            Remove-Item -Path $oldChecksumsPath -Force
+            Write-Host "🗑️  Deleted old checksums.json to force regeneration" -ForegroundColor Yellow
+        }
+        
         Write-Host "🔨 Building plugin"
         Push-Location $PluginDir
         try {
