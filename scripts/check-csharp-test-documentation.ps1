@@ -17,16 +17,16 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Import required modules
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ModulesDir = Join-Path $ScriptDir "modules"
+Import-Module (Join-Path $ModulesDir "Core\Logging.psm1") -Force
+
 # Colors for output
 $Red = [System.ConsoleColor]::Red
 $Green = [System.ConsoleColor]::Green
 $Yellow = [System.ConsoleColor]::Yellow
 $Cyan = [System.ConsoleColor]::Cyan
-
-function Write-ColoredOutput {
-    param([string]$Message, [System.ConsoleColor]$Color = [System.ConsoleColor]::White)
-    Write-Host $Message -ForegroundColor $Color
-}
 
 function Find-TestMethodsMissingDocumentation {
     param([string]$TestDirectory)

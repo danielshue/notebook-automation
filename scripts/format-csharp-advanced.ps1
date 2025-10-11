@@ -32,16 +32,10 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Colors for output
-function Write-ColoredOutput {
-    param([string]$Message, [System.ConsoleColor]$Color = "White")
-    if ($Color) {
-        Write-Host $Message -ForegroundColor $Color
-    }
-    else {
-        Write-Host $Message
-    }
-}
+# Import required modules
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ModulesDir = Join-Path $ScriptDir "modules"
+Import-Module (Join-Path $ModulesDir "Core\Logging.psm1") -Force
 
 function Test-XMLDocumentationSpacing {
     param([string]$FilePath)

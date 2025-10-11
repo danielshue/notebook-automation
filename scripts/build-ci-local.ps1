@@ -53,8 +53,12 @@ param(
 # Set error action preference
 $ErrorActionPreference = "Stop"
 
-# Get script directory and solution path
+# Import required modules
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ModulesDir = Join-Path $ScriptDir "modules"
+Import-Module (Join-Path $ModulesDir "Core\Logging.psm1") -Force
+
+# Get repository root and solution path
 $RepositoryRoot = Split-Path -Parent $ScriptDir
 $SolutionPath = Join-Path $RepositoryRoot "src\c-sharp\NotebookAutomation.sln"
 $TestProjectPath = Join-Path $RepositoryRoot "src\c-sharp\NotebookAutomation.Core.Tests"
@@ -68,26 +72,6 @@ $Red = [System.ConsoleColor]::Red
 $Yellow = [System.ConsoleColor]::Yellow
 $Cyan = [System.ConsoleColor]::Cyan
 $Magenta = [System.ConsoleColor]::Magenta
-
-function Write-Step {
-    param([string]$Message)
-    Write-Host "`n=== $Message ===" -ForegroundColor $Cyan
-}
-
-function Write-Success {
-    param([string]$Message)
-    Write-Host "✅ $Message" -ForegroundColor $Green
-}
-
-function Write-Warning {
-    param([string]$Message)
-    Write-Host "⚠️  $Message" -ForegroundColor $Yellow
-}
-
-function Write-Error {
-    param([string]$Message)
-    Write-Host "❌ $Message" -ForegroundColor $Red
-}
 
 # Update pluginDistPath to point to the obsidian plugin's dist directory
 $pluginDistPath = Join-Path $RepositoryRoot "src\obsidian-plugin\dist"

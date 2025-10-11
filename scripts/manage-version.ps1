@@ -607,65 +607,16 @@ if ($noArgumentsProvided -or $Help) {
 # Set error handling
 $ErrorActionPreference = "Stop"
 
-#
-# CROSS-PLATFORM COMPATIBILITY - Ensure platform detection works across PowerShell versions
-#
+# Import required modules
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ModulesDir = Join-Path $ScriptDir "modules"
+Import-Module (Join-Path $ModulesDir "Core\Logging.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Core\Platform.psm1") -Force
 
-# Define platform detection variables for compatibility with older PowerShell versions
-if (-not (Test-Path variable:IsWindows)) {
-    try {
-        $script:IsWindows = ([System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Win32NT)
-    }
-    catch {
-        # Fallback for very old PowerShell versions
-        $script:IsWindows = ($env:OS -eq "Windows_NT")
-    }
-}
-if (-not (Test-Path variable:IsLinux)) {
-    try {
-        $script:IsLinux = ([System.Environment]::OSVersion.Platform -eq [System.PlatformID]::Unix) -and 
-        (-not [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX))
-    }
-    catch {
-        # Fallback detection
-        $script:IsLinux = (-not $IsWindows -and -not $IsMacOS -and (Test-Path "/proc/version"))
-    }
-}
-if (-not (Test-Path variable:IsMacOS)) {
-    try {
-        $script:IsMacOS = [System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform([System.Runtime.InteropServices.OSPlatform]::OSX)
-    }
-    catch {
-        # Fallback detection  
-        $script:IsMacOS = (-not $IsWindows -and (Test-Path "/System/Library/CoreServices/SystemVersion.plist"))
-    }
-}# Helper function for cross-platform path construction
-function Join-CrossPlatformPath {
-    param([string[]]$PathParts)
-    
-    $result = $PathParts[0]
-    for ($i = 1; $i -lt $PathParts.Length; $i++) {
-        $result = Join-Path $result $PathParts[$i]
-    }
-    return $result
-}
-
-# Helper function for making files executable on Unix systems
-function Set-ExecutablePermission {
-    param([string]$FilePath)
-    
-    if (-not $IsWindows) {
-        try {
-            Write-VerboseHost "Setting executable permission for $FilePath"
-            if (Get-Command "chmod" -ErrorAction SilentlyContinue) {
-                chmod +x $FilePath 2>$null
-            }
-        }
-        catch {
-            Write-VerboseHost "Warning: Could not set executable permission for $FilePath"
-        }
-    }
-}
+#
+# CROSS-PLATFORM COMPATIBILITY - Platform detection now handled by Core.Platform module
+# Variables $IsWindows, $IsLinux, and $IsMacOS are automatically available
+#
 
 # Function to wait for GitHub Actions workflows to complete
 function Wait-GitHubActionsComplete {
