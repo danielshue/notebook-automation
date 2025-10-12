@@ -216,12 +216,6 @@ trap {
 $global:ManageVersionRollbackState = $null
 
 Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
-    Write-Host ""
-    Write-Host "⚠️  SCRIPT INTERRUPTED (Ctrl-C)" -ForegroundColor Yellow
-    Write-Host "=============================" -ForegroundColor Yellow
-    Write-Host "User cancelled script execution" -ForegroundColor Yellow
-    Write-Host ""
-    
     # Check both script and global scope for rollback state
     $rollbackNeeded = $false
     if ($global:ManageVersionRollbackState -and $global:ManageVersionRollbackState.NeedsRollback) {
@@ -231,7 +225,13 @@ Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
         $rollbackNeeded = $true
     }
     
+    # Only show interruption message if rollback is actually needed
     if ($rollbackNeeded) {
+        Write-Host ""
+        Write-Host "⚠️  SCRIPT INTERRUPTED (Ctrl-C)" -ForegroundColor Yellow
+        Write-Host "=============================" -ForegroundColor Yellow
+        Write-Host "User cancelled script execution" -ForegroundColor Yellow
+        Write-Host ""
         Write-Host "🔄 Performing rollback due to user cancellation..." -ForegroundColor Yellow
         try {
             # Try to call rollback function if available
@@ -247,9 +247,6 @@ Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
             Write-Host "❌ Rollback failed: $($_.Exception.Message)" -ForegroundColor Red
             Write-Host "⚠️  Manual cleanup may be required" -ForegroundColor Yellow
         }
-    }
-    else {
-        Write-Host "ℹ️  No rollback needed - script was cancelled early" -ForegroundColor Gray
     }
     
     exit 130  # Standard exit code for SIGINT
