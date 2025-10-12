@@ -4,11 +4,159 @@ This directory contains reusable PowerShell modules used across the Notebook Aut
 
 ## Overview
 
-The modules provide common functionality that was previously duplicated across multiple scripts:
+The modules provide common functionality that was previously duplicated across multiple scripts. The refactoring achieved:
 
-- **Core/Logging.psm1** - Unified logging and colored console output
-- **Core/Platform.psm1** - Cross-platform detection and utilities
-- **Core/Prerequisites.psm1** - External dependency validation
+### Code Reduction
+- **Scripts reduced by 969 lines (-22%)** - Duplicate code eliminated
+- **3,861 lines of reusable module code** - Now available to all scripts
+- **Net result**: Added 2,892 lines total, but these are now reusable across all current and future scripts
+
+### Scripts Before & After
+| Script | Before | After | Reduction |
+|--------|--------|-------|-----------|
+| manage-version.ps1 | 2,531 lines | 1,603 lines | -928 lines (-37%) |
+| build-ci-local.ps1 | 1,066 lines | ~900 lines | ~166 lines (-16%) |
+| download-latest-artifact.ps1 | 420 lines | 401 lines | -19 lines (-5%) |
+| format-csharp-advanced.ps1 | 256 lines | 250 lines | -6 lines (-2%) |
+| check-csharp-test-documentation.ps1 | 125 lines | 125 lines | 0 lines |
+| **TOTAL** | **4,398 lines** | **~3,279 lines** | **~1,119 lines (-25%)** |
+
+### Value Proposition
+**Did the refactoring save lines of code?**
+- **From a script maintenance perspective: YES** - 969+ lines removed from scripts (-22%)
+- **From a total codebase perspective**: Net +2,892 lines, BUT those 3,861 module lines are:
+  - **Reusable** across all scripts (not duplicated anymore)
+  - **Testable** independently
+  - **Documented** comprehensively  
+  - **Maintainable** in one location (bug fixes only needed once)
+  - **Consistent** - same error handling, logging, and patterns everywhere
+
+**The modules made the codebase more modular, not necessarily smaller**, which was the primary goal.
+
+## Complete Module Catalog
+
+### Core Modules (629 lines, 16.3%)
+
+#### Core/Logging.psm1 (176 lines)
+Unified logging and colored console output:
+- `Write-Success` - Green success messages with ✅
+- `Write-Error` - Red error messages with ❌
+- `Write-Warning` - Yellow warning messages with ⚠️
+- `Write-Step` - Cyan section headers with === borders
+- `Write-ColoredOutput` - Generic colored output
+- `Write-ConditionalHost` - Output respecting script-level `-Quiet` flag
+- `Write-VerboseHost` - Diagnostic output respecting `-Diagnostic` flag
+
+#### Core/Platform.psm1 (183 lines)
+Cross-platform detection and utilities:
+- Platform detection variables: `$IsWindows`, `$IsLinux`, `$IsMacOS`
+- `Join-CrossPlatformPath` - Platform-agnostic path joining
+- `Set-ExecutablePermission` - Unix chmod +x wrapper (no-op on Windows)
+- `Get-PlatformName` - Returns platform as string ("windows", "linux", "macos")
+
+#### Core/Prerequisites.psm1 (270 lines)
+External dependency validation:
+- `Test-GitRepository` - Git validation with branch detection
+- `Test-GitHubCLI` - GitHub CLI installation and authentication check
+- `Test-DotNetSDK` - .NET SDK validation with optional minimum version
+- `Test-NodeJS` - Node.js validation with optional minimum version
+
+### Build Modules (810 lines, 21.0%)
+
+#### Build/DotNetBuild.psm1 (432 lines)
+.NET build, restore, clean, and publish operations:
+- `Invoke-DotNetRestore` - Restores NuGet packages
+- `Invoke-DotNetClean` - Cleans build outputs
+- `Invoke-DotNetBuild` - Builds solutions/projects with configuration and verbosity control
+- `Invoke-DotNetPublishWithRetry` - Publishes with automatic retry logic (up to 3 attempts, exponential backoff)
+- `Invoke-DotNetFormat` - Formats code using dotnet format
+
+**Key Feature**: Resilient publishing with automatic cleanup, exponential backoff, and support for single-file/self-contained builds.
+
+#### Build/PluginBuild.psm1 (378 lines)
+Obsidian plugin npm operations and vault deployment:
+- `Invoke-PluginNpmInstall` - Installs npm dependencies
+- `Invoke-PluginBuild` - Builds plugin using npm scripts
+- `Invoke-PluginInstallAndBuild` - Combined install and build operation
+- `Update-PluginVersion` - Updates version in package.json and manifest.json
+- `Deploy-PluginToVault` - Deploys built plugin to Obsidian vault for testing
+
+**Key Feature**: Automated vault deployment for rapid development iteration.
+
+### GitHub Modules (712 lines, 18.4%)
+
+#### GitHub/CLI.psm1 (400 lines)
+GitHub CLI wrapper functions for release and workflow management:
+- `Invoke-GhRunList` - Lists workflow runs with robust JSON parsing
+- `Get-WorkflowRunsForCommit` - Filters workflows for specific commit SHA
+- `Wait-GitHubActionsComplete` - Monitors workflows with configurable timeout and polling
+- `Invoke-GhReleaseCreate` - Creates releases with asset uploads
+- `Invoke-GhReleaseDelete` - Deletes releases programmatically
+
+**Key Feature**: Intelligent workflow monitoring with detailed status reporting and early failure detection.
+
+#### GitHub/Artifacts.psm1 (312 lines)
+GitHub Actions artifact download and management:
+- `Invoke-CIArtifactDownload` - Downloads CI-built executables from GitHub Actions
+- `Find-DownloadedExecutables` - Locates executables in artifact directories
+- `Copy-DownloadedExecutables` - Copies executables with permission setting
+- `Set-ExecutableFilePermission` - Sets executable permissions on Unix systems
+
+**Key Feature**: Cross-platform artifact handling with automatic permission management.
+
+### Version Modules (378 lines, 9.8%)
+
+#### Version/Management.psm1 (378 lines)
+Version synchronization and Git tag management:
+- `Get-VersionData` - Retrieves versions from package.json, manifest.json, and Git tags
+- `Sync-PluginVersion` - Synchronizes version across multiple files
+- `New-GitVersionTag` - Creates Git tags (lightweight or annotated)
+- `Push-GitVersionTag` - Pushes tags to remote repository
+- `Test-VersionFormat` - Validates semantic versioning format
+- `Get-GitCommitSha` - Gets current commit SHA (full or short)
+
+**Key Feature**: Ensures version consistency across npm, Obsidian, and Git with support for stable and pre-release versions.
+
+### Safety Modules (444 lines, 11.5%)
+
+#### Safety/Rollback.psm1 (444 lines)
+Rollback tracking and error recovery for version management operations:
+- `Initialize-RollbackTracking` - Sets up rollback state with workspace validation
+- `Register-FileModification` - Tracks file modifications for rollback
+- `Register-CommitCreation` - Tracks commit and tag creation
+- `Register-ReleaseCreation` - Tracks GitHub release creation
+- `Clear-RollbackRequirement` - Marks operation as successful
+- `Invoke-PreCommitRollback` - Reverts uncommitted file changes
+- `Invoke-PostCommitRollback` - Reverts commits, tags, and releases
+- `Invoke-RollbackStrategy` - Executes appropriate rollback based on phase
+
+**Key Feature**: Phase-based rollback system (PreCommit vs PostCommit) with automatic workspace state tracking and commit/tag/release reversal.
+
+### Quality Modules (888 lines, 23.0%)
+
+#### Quality/ReleaseNotes.psm1 (293 lines)
+AI-powered release notes generation using GitHub Copilot CLI:
+- `New-AIGeneratedReleaseNotes` - Generates release notes with commit analysis
+- `Get-CommitRangeSinceLastRelease` - Determines commit range (beta vs stable)
+- `Clean-CopilotOutput` - Removes ANSI codes and CLI artifacts
+
+**Key Feature**: Smart commit range detection matching release types with configurable timeout and automatic output cleaning.
+
+#### Quality/Checksums.psm1 (285 lines)
+Checksum generation and validation for executables:
+- `New-OrValidateChecksumsFile` - Generates or validates checksums.json
+- `Test-ChecksumsFile` - Validates files against recorded checksums
+- `Get-FileChecksum` - Generates SHA256 checksum for single file
+
+**Key Feature**: Intelligent validation that creates checksums.json if missing or validates existing checksums with mismatch detection.
+
+#### Quality/Dependencies.psm1 (310 lines)
+Dependency validation and repository structure verification:
+- `Test-CommandDependency` - Tests command availability with user prompts
+- `Test-RepositoryStructure` - Validates repository directory structure
+- `Test-AllDependencies` - Tests all required dependencies (Git, GitHub CLI, .NET, Node)
+
+**Key Feature**: User-friendly dependency checking with installation instructions and optional vs required handling.
 
 ## Module Structure
 
@@ -303,6 +451,49 @@ $branch = Test-GitRepository -GetBranch
 - `Test-DotNetSDK` - Checks for .NET SDK with optional version validation
 - `Test-NodeJS` - Checks for Node.js with optional version validation
 
+## Scripts Using Modules
+
+### build-ci-local.ps1
+**Modules Used:**
+- `Core/Logging` - Unified console output
+- `Core/Prerequisites` - Node.js/npm validation
+- `Build/DotNetBuild` - Clean, restore, build, format operations
+- `Build/PluginBuild` - Plugin install, build, deployment
+
+**Refactoring Impact**: ~166 lines removed (-16%), now uses module functions for all build operations.
+
+### manage-version.ps1
+**Modules Used:**
+- `Core/Logging` - Console output
+- `Core/Platform` - Cross-platform utilities
+- `GitHub/CLI` - Workflow monitoring, release management
+- `GitHub/Artifacts` - CI artifact downloads
+- `Version/Management` - Version synchronization, Git tags
+- `Safety/Rollback` - Complete rollback system
+- `Quality/ReleaseNotes` - AI release notes generation
+- `Quality/Checksums` - Checksum validation
+- `Quality/Dependencies` - Dependency validation
+
+**Refactoring Impact**: 928 lines removed (-37%), transformed from 2,531 to 1,603 lines.
+
+### download-latest-artifact.ps1
+**Modules Used:**
+- `Core/Prerequisites` - Git and GitHub CLI validation
+
+**Refactoring Impact**: 19 lines removed (-5%).
+
+### format-csharp-advanced.ps1
+**Modules Used:**
+- `Core/Logging` - Colored output functions
+
+**Refactoring Impact**: 6 lines removed (-2%).
+
+### check-csharp-test-documentation.ps1
+**Modules Used:**
+- `Core/Logging` - Colored output functions
+
+**Refactoring Impact**: Minimal (already lean).
+
 ## Design Principles
 
 ### 1. Minimal Changes
@@ -416,71 +607,23 @@ When adding new modules or functions:
 5. **Minimize dependencies** - Keep modules as independent as possible
 6. **Handle errors gracefully** - Provide both throwing and non-throwing modes
 
-## Module Statistics
+## Module Statistics Summary
 
-### Core Modules (629 lines)
-- **Logging.psm1** - 176 lines
-- **Platform.psm1** - 183 lines
-- **Prerequisites.psm1** - 270 lines
+**Total: 3,861 lines of reusable functionality across 12 modules**
 
-### Build Modules (810 lines)
-- **DotNetBuild.psm1** - 432 lines
-- **PluginBuild.psm1** - 378 lines
+| Category | Modules | Lines | % of Total |
+|----------|---------|-------|------------|
+| Core | 3 | 629 | 16.3% |
+| Build | 2 | 810 | 21.0% |
+| GitHub | 2 | 712 | 18.4% |
+| Version | 1 | 378 | 9.8% |
+| Safety | 1 | 444 | 11.5% |
+| Quality | 3 | 888 | 23.0% |
 
-### GitHub Modules (712 lines)
-- **CLI.psm1** - 400 lines
-- **Artifacts.psm1** - 312 lines
-
-### Version Modules (378 lines)
-- **Management.psm1** - 378 lines
-
-### Safety Modules (444 lines)
-- **Rollback.psm1** - 444 lines
-
-### Quality Modules (888 lines)
-- **ReleaseNotes.psm1** - 293 lines
-- **Checksums.psm1** - 285 lines
-- **Dependencies.psm1** - 310 lines
-
-**Total Module Code: 3,861 lines of reusable functionality across 12 modules**
-
-All modules include comprehensive PowerShell help documentation, error handling with both throwing and non-throwing modes, and cross-platform compatibility.
-
-## New Modules (Phase 3)
-
-### Safety/Rollback Module
-
-Provides rollback tracking and error recovery:
-- `Initialize-RollbackTracking` - Sets up rollback state
-- `Register-FileModification` - Tracks file changes
-- `Register-CommitCreation` - Tracks commits and tags
-- `Invoke-RollbackStrategy` - Executes appropriate rollback
-
-### Quality/ReleaseNotes Module
-
-AI-powered release notes generation:
-- `New-AIGeneratedReleaseNotes` - Generates release notes using GitHub Copilot CLI
-- `Get-CommitRangeSinceLastRelease` - Determines commit range
-- `Clean-CopilotOutput` - Cleans Copilot output
-
-### GitHub/Artifacts Module
-
-Artifact download and management:
-- `Invoke-CIArtifactDownload` - Downloads CI-built executables
-- `Find-DownloadedExecutables` - Locates executables
-- `Copy-DownloadedExecutables` - Copies with permission setting
-
-### Quality/Checksums Module
-
-Checksum generation and validation:
-- `New-OrValidateChecksumsFile` - Generates/validates checksums.json
-- `Test-ChecksumsFile` - Validates files against checksums
-- `Get-FileChecksum` - Generates SHA256 checksums
-
-### Quality/Dependencies Module
-
-Dependency validation and repository verification:
-- `Test-CommandDependency` - Tests command availability
-- `Test-RepositoryStructure` - Validates repository structure
-- `Test-AllDependencies` - Tests all required dependencies
+All modules include:
+- ✅ Comprehensive PowerShell help documentation (.SYNOPSIS, .DESCRIPTION, .PARAMETER, .EXAMPLE)
+- ✅ Error handling with both throwing (-ThrowOnFailure) and non-throwing modes
+- ✅ Cross-platform compatibility (Windows, Linux, macOS)
+- ✅ Consistent parameter naming and structure
+- ✅ Proper error messages and status output
 
