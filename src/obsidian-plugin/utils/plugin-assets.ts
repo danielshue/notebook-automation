@@ -82,7 +82,7 @@ export function getNaExecutablePath(plugin: Plugin): string {
       try {
         // @ts-ignore
         vaultRoot = adapter.getBasePath();
-      } catch {}
+      } catch { }
     }
     const tryFindExecutable = (dir: string): string | null => {
       if (!fs || !path) return null;
@@ -105,7 +105,7 @@ export function getNaExecutablePath(plugin: Plugin): string {
           if (platformMatch) return path.join(dir, platformMatch);
           return path.join(dir, naExecutables[0]);
         }
-      } catch {}
+      } catch { }
       return null;
     };
     const isValidPluginDir = (dir: string | undefined, pluginId: string | undefined) => {
@@ -135,7 +135,7 @@ export function getNaExecutablePath(plugin: Plugin): string {
           try {
             // @ts-ignore
             vaultRoot = adapter.getBasePath();
-          } catch {}
+          } catch { }
         }
       }
       if (vaultRoot) {
@@ -146,7 +146,7 @@ export function getNaExecutablePath(plugin: Plugin): string {
         if (foundExecutable) return foundExecutable;
       }
     }
-  // __dirname is not always available in Obsidian plugin context; skip this check for browser/Obsidian
+    // __dirname is not always available in Obsidian plugin context; skip this check for browser/Obsidian
     if (vaultRoot && plugin.manifest?.id) {
       const configDir = plugin.app?.vault?.configDir || '.obsidian';
       const pluginId = plugin.manifest.id;
@@ -183,7 +183,7 @@ export async function ensureExecutableExists(plugin: Plugin, progressCallback?: 
   const execName = getNaExecutableName();
   const expectedVersion = plugin.manifest?.version || '0.0.0';
   // Attempt to prime checksum metadata early (non-blocking)
-  let checksumMap: Record<string,string> | null = null;
+  let checksumMap: Record<string, string> | null = null;
   try { checksumMap = await getOrDownloadChecksums(plugin); } catch { /* ignore */ }
   try {
     // @ts-ignore
@@ -208,7 +208,7 @@ export async function ensureExecutableExists(plugin: Plugin, progressCallback?: 
           if (plugin.manifest?.dir) {
             pluginDir = path.resolve(vaultRoot, plugin.manifest.dir);
           }
-        } catch {}
+        } catch { }
       }
       if (pluginDir) {
         actualFilePath = path.join(pluginDir, execName);
@@ -262,7 +262,7 @@ export async function ensureExecutableExists(plugin: Plugin, progressCallback?: 
 /**
  * Downloads (if necessary) and parses checksums.json, returning a map of filename->sha256.
  */
-async function getOrDownloadChecksums(plugin: Plugin): Promise<Record<string,string> | null> {
+async function getOrDownloadChecksums(plugin: Plugin): Promise<Record<string, string> | null> {
   try {
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
@@ -274,7 +274,7 @@ async function getOrDownloadChecksums(plugin: Plugin): Promise<Record<string,str
     const raw = fs.readFileSync(filePath, 'utf8');
     const json = JSON.parse(raw);
     if (json && typeof json.files === 'object') {
-      return json.files as Record<string,string>;
+      return json.files as Record<string, string>;
     }
     return null;
   } catch { return null; }
@@ -311,7 +311,7 @@ async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExec
   const path = window.require ? window.require('path') : null;
   // @ts-ignore
   const https = window.require ? window.require('https') : null;
-  
+
   if (!fs || !path || !https) {
     throw new Error('Required Node.js modules not available');
   }
@@ -327,15 +327,15 @@ async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExec
       if (plugin.manifest?.dir) {
         pluginDir = path.resolve(vaultRoot, plugin.manifest.dir);
       }
-    } catch {}
+    } catch { }
   }
-  
+
   if (!pluginDir) {
     throw new Error('Could not determine plugin directory');
   }
 
   const filePath = path.join(pluginDir, fileName);
-  
+
   // Check if file already exists
   if (fs.existsSync(filePath)) {
     return filePath;
@@ -343,7 +343,7 @@ async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExec
 
   const version = plugin.manifest?.version || '0.1.0-beta.2';
   const downloadUrl = `https://github.com/danielshue/notebook-automation/releases/download/v${version}/${fileName}`;
-  
+
   return new Promise((resolve, reject) => {
     const request = https.get(downloadUrl, (response: any) => {
       if (response.statusCode === 302 || response.statusCode === 301) {
@@ -365,13 +365,13 @@ async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExec
                 isWin = (window as any).process.platform === 'win32';
               }
               if (!isWin) {
-                try { fs.chmodSync(filePath, 0o755); } catch {}
+                try { fs.chmodSync(filePath, 0o755); } catch { }
               }
             }
             resolve(filePath);
           });
           writeStream.on('error', (err: any) => {
-            try { fs.unlinkSync(filePath); } catch {}
+            try { fs.unlinkSync(filePath); } catch { }
             reject(err);
           });
         });
@@ -392,13 +392,13 @@ async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExec
               isWin = (window as any).process.platform === 'win32';
             }
             if (!isWin) {
-              try { fs.chmodSync(filePath, 0o755); } catch {}
+              try { fs.chmodSync(filePath, 0o755); } catch { }
             }
           }
           resolve(filePath);
         });
         writeStream.on('error', (err: any) => {
-          try { fs.unlinkSync(filePath); } catch {}
+          try { fs.unlinkSync(filePath); } catch { }
           reject(err);
         });
       }
@@ -437,7 +437,7 @@ export function getDistributedPluginFiles(): string[] {
   // Core plugin files
   const coreFiles = [
     'main.js',
-    'manifest.json', 
+    'manifest.json',
     'styles.css'
   ];
 
@@ -445,7 +445,7 @@ export function getDistributedPluginFiles(): string[] {
   const assetFiles = [
     'default-config.json',
     'metadata-schema.yml',
-    'BaseBlockTemplate.yml', 
+    'BaseBlockTemplate.yml',
     'chunk_summary_prompt.md',
     'final_summary_prompt.md'
   ];
@@ -461,7 +461,7 @@ export function getDistributedPluginFiles(): string[] {
 export function getDistributedExecutablePatterns(): string[] {
   return [
     'na-win-x64.exe',
-    'na-win-arm64.exe', 
+    'na-win-arm64.exe',
     'na-linux-x64',
     'na-linux-arm64',
     'na-macos-arm64',
@@ -484,9 +484,9 @@ function purgeLegacyOsxExecutables(plugin: Plugin): void {
     let vaultRoot = '';
     // @ts-ignore
     if (adapter && typeof (adapter as any).getBasePath === 'function') {
-      try { 
+      try {
         // @ts-ignore - Obsidian desktop adapter provides getBasePath at runtime
-        vaultRoot = (adapter as any).getBasePath(); 
+        vaultRoot = (adapter as any).getBasePath();
       } catch { /* ignore */ }
     }
     if (!vaultRoot) return;
@@ -510,8 +510,12 @@ function purgeLegacyOsxExecutables(plugin: Plugin): void {
  */
 async function downloadAssetManifest(plugin: Plugin): Promise<{ version: string; files: string[] } | null> {
   try {
+    const version = plugin.manifest?.version || '0.1.0-beta.2';
+    const expectedUrl = `https://github.com/danielshue/notebook-automation/releases/download/v${version}/asset-manifest.json`;
+    console.log(`[Notebook Automation] Attempting to download asset manifest for version ${version} from: ${expectedUrl}`);
+
     const manifestPath = await downloadFileFromGitHub(plugin, 'asset-manifest.json', false);
-    
+
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
     if (!fs || !manifestPath) {
@@ -520,11 +524,14 @@ async function downloadAssetManifest(plugin: Plugin): Promise<{ version: string;
 
     const manifestContent = fs.readFileSync(manifestPath, 'utf8');
     const manifest = JSON.parse(manifestContent);
-    
+
     console.log(`[Notebook Automation] Downloaded asset manifest for version ${manifest.version} with ${manifest.files?.length || 0} files`);
     return manifest;
   } catch (error) {
-    console.warn('[Notebook Automation] Could not download or parse asset manifest:', error);
+    const version = plugin.manifest?.version || '0.1.0-beta.2';
+    const expectedUrl = `https://github.com/danielshue/notebook-automation/releases/download/v${version}/asset-manifest.json`;
+    // This is expected if the release doesn't have an asset manifest yet
+    console.log(`[Notebook Automation] Asset manifest not available for version ${version} at ${expectedUrl}, using fallback file list. This is normal for some releases.`);
     return null;
   }
 }
@@ -545,8 +552,8 @@ export async function ensureRequiredFilesExist(plugin: Plugin, progressCallback?
   if (manifest && manifest.files) {
     // Filter out core files that BRAT handles, and executables (handled separately)
     const coreFiles = ['main.js', 'manifest.json', 'styles.css'];
-    filesToDownload = manifest.files.filter(file => 
-      !coreFiles.includes(file) && 
+    filesToDownload = manifest.files.filter(file =>
+      !coreFiles.includes(file) &&
       !file.startsWith('na-') && // Skip executables (handled by ensureExecutableExists)
       file !== 'asset-manifest.json' // Skip the manifest itself
     );
@@ -554,7 +561,7 @@ export async function ensureRequiredFilesExist(plugin: Plugin, progressCallback?
   } else {
     // Fallback to hardcoded list if manifest unavailable
     const allFiles = getDistributedPluginFiles();
-    filesToDownload = allFiles.filter(file => 
+    filesToDownload = allFiles.filter(file =>
       !['main.js', 'manifest.json', 'styles.css'].includes(file)
     );
     console.log('[Notebook Automation] Using fallback file list for download');
@@ -562,7 +569,7 @@ export async function ensureRequiredFilesExist(plugin: Plugin, progressCallback?
 
   const downloadedFiles: string[] = [];
   const totalFiles = filesToDownload.length;
-  
+
   for (let i = 0; i < filesToDownload.length; i++) {
     const fileName = filesToDownload[i];
     try {
@@ -593,7 +600,7 @@ export async function ensureConfigFilesExist(plugin: Plugin): Promise<boolean> {
     const fs = window.require ? window.require('fs') : null;
     // @ts-ignore
     const path = window.require ? window.require('path') : null;
-    
+
     if (!fs || !path) {
       console.warn('[Notebook Automation] File system modules not available for config check');
       return false;
@@ -610,9 +617,9 @@ export async function ensureConfigFilesExist(plugin: Plugin): Promise<boolean> {
         if (plugin.manifest?.dir) {
           pluginDir = path.resolve(vaultRoot, plugin.manifest.dir);
         }
-      } catch {}
+      } catch { }
     }
-    
+
     if (!pluginDir) {
       console.warn('[Notebook Automation] Could not determine plugin directory for config check');
       return false;
@@ -620,16 +627,16 @@ export async function ensureConfigFilesExist(plugin: Plugin): Promise<boolean> {
 
     // Get configuration files from the distributed files list
     const allFiles = getDistributedPluginFiles();
-    const configFiles = allFiles.filter(file => 
+    const configFiles = allFiles.filter(file =>
       file.endsWith('.json') || file.endsWith('.yml') || file.endsWith('.yaml')
     );
-    
+
     const missingFiles = configFiles.filter(file => !fs.existsSync(path.join(pluginDir, file)));
 
     if (missingFiles.length > 0) {
       console.log(`[Notebook Automation] Missing config files: ${missingFiles.join(', ')}. Downloading...`);
       await ensureRequiredFilesExist(plugin);
-      
+
       // Verify download success
       const stillMissing = configFiles.filter(file => !fs.existsSync(path.join(pluginDir, file)));
       if (stillMissing.length > 0) {
