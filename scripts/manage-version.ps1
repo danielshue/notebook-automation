@@ -545,7 +545,7 @@ function Invoke-ReleaseNotesGeneration {
             
             if ($SaveToFile) {
                 $outputFile = Join-Path $RepoRoot "RELEASE_NOTES_$Version.md"
-                $releaseNotes | Out-File -FilePath $outputFile -Encoding UTF8
+                $releaseNotes | Out-File -FilePath $outputFile -Encoding utf8NoBOM
                 Write-Host "✅ Release notes saved to: $outputFile" -ForegroundColor Green
             }
             
