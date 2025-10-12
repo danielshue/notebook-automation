@@ -1486,7 +1486,7 @@ try {
         $notes = "Reissued assets for $reTag on $(Get-Date -Format o)"
         # Write notes to temporary file to avoid parameter parsing issues
         $tempNotesFile = Join-Path $env:TEMP "reissue-notes-$(Get-Random).txt"
-        $notes | Out-File -FilePath $tempNotesFile -Encoding UTF8
+        $notes | Out-File -FilePath $tempNotesFile -Encoding utf8NoBOM
     
         $createArgs = @('release', 'create', $reTag, '--title', $reTag, '--notes-file', $tempNotesFile)
         if ($preFlag) { $createArgs += '--prerelease' }
@@ -1653,7 +1653,7 @@ try {
             $releaseNotes = "Release notes for v$Version`n`nThis is an automated release. See the commit history for detailed changes."
         }        # Write release notes to temporary file to avoid parameter parsing issues
         $tempNotesFile = Join-Path $env:TEMP "release-notes-$(Get-Random).md"
-        $releaseNotes | Out-File -FilePath $tempNotesFile -Encoding UTF8
+        $releaseNotes | Out-File -FilePath $tempNotesFile -Encoding utf8NoBOM
     
         # Build gh release command
         $ghArgs = @(
