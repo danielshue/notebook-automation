@@ -37,6 +37,9 @@ public class TokenProviderTests
         Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentNullException));
     }
 
+    /// <summary>
+    /// Verifies that TokenProvider constructor throws ArgumentNullException when scopes parameter is null.
+    /// </summary>
     [TestMethod]
     public void Constructor_NullScopes_ThrowsArgumentNullException()
     {
@@ -46,6 +49,9 @@ public class TokenProviderTests
         Assert.IsInstanceOfType(ex.InnerException, typeof(ArgumentNullException));
     }
 
+    /// <summary>
+    /// Verifies that TokenProvider constructor throws ArgumentNullException when logger parameter is null.
+    /// </summary>
     [TestMethod]
     public void Constructor_NullLogger_ThrowsArgumentNullException()
     {

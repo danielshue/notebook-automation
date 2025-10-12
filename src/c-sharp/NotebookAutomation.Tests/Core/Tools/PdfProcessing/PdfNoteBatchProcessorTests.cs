@@ -139,6 +139,9 @@ public class PdfNoteBatchProcessorTests
         Assert.AreEqual(0, result.Failed);
     }
 
+    /// <summary>
+    /// Verifies that ProcessPdfsAsync returns failure result when provided with a non-existent file path.
+    /// </summary>
     [TestMethod]
     public async Task ProcessPdfsAsync_WithNonExistentFile_ReturnsFailure()
     {
@@ -159,6 +162,9 @@ public class PdfNoteBatchProcessorTests
         Assert.AreEqual(1, result.Failed);
     }
 
+    /// <summary>
+    /// Verifies that ProcessPdfsAsync processes all PDF files when provided with a directory path.
+    /// </summary>
     [TestMethod]
     public async Task ProcessPdfsAsync_WithDirectory_ProcessesAllPdfFiles()
     {
@@ -184,6 +190,9 @@ public class PdfNoteBatchProcessorTests
         Assert.AreEqual(0, result.Failed);
     }
 
+    /// <summary>
+    /// Verifies that ProcessPdfsAsync correctly uses all extended parameters when provided.
+    /// </summary>
     [TestMethod]
     public async Task ProcessPdfsAsync_WithExtendedOptions_UsesCorrectParameters()
     {
@@ -211,6 +220,9 @@ public class PdfNoteBatchProcessorTests
         Assert.AreEqual(0, result.Failed);
     }
 
+    /// <summary>
+    /// Verifies that ProcessPdfsAsync returns failure result when provided with an empty input string.
+    /// </summary>
     [TestMethod]
     public async Task ProcessPdfsAsync_WithEmptyInput_ReturnsFailure()
     {

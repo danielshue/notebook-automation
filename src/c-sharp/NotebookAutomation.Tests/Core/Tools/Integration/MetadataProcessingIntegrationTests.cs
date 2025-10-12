@@ -99,6 +99,9 @@ public class MetadataProcessingIntegrationTests
         Assert.AreEqual("test-document.txt", pdfTextResult.ToString());
     }
 
+    /// <summary>
+    /// Verifies that OneDrive resolver correctly resolves relative paths for video files and their transcripts.
+    /// </summary>
     [TestMethod]
     public void OneDriveResolver_VideoFields_ResolveCorrectRelativePaths()
     {
@@ -130,6 +133,9 @@ public class MetadataProcessingIntegrationTests
         Assert.AreEqual("test-video.txt", transcriptResult.ToString());
     }
 
+    /// <summary>
+    /// Verifies that OneDrive resolver returns absolute paths when files are located outside OneDrive root directory.
+    /// </summary>
     [TestMethod]
     public void OneDriveResolver_FilesOutsideOneDriveRoot_ReturnsAbsolutePaths()
     {
@@ -171,6 +177,9 @@ public class MetadataProcessingIntegrationTests
 
     #region Resolver Registration Tests
 
+    /// <summary>
+    /// Verifies that resolver registry can register and retrieve OneDrive resolver using all configured aliases.
+    /// </summary>
     [TestMethod]
     public void ResolverRegistry_CanRegisterAndRetrieveOneDriveResolver()
     {
@@ -197,6 +206,9 @@ public class MetadataProcessingIntegrationTests
         Assert.AreSame(_oneDriveResolver, textResolver);
     }
 
+    /// <summary>
+    /// Verifies that multiple resolver aliases share the same resolver instance.
+    /// </summary>
     [TestMethod]
     public void ResolverRegistry_MultipleAliases_ShareSameInstance()
     {
@@ -220,6 +232,9 @@ public class MetadataProcessingIntegrationTests
 
     #region Template Integration Tests
 
+    /// <summary>
+    /// Verifies that template manager can successfully load templates with OneDrive resolver integration.
+    /// </summary>
     [TestMethod]
     public void TemplateManager_CanLoadTemplatesWithOneDriveResolver()
     {
@@ -245,6 +260,9 @@ public class MetadataProcessingIntegrationTests
         Assert.IsTrue(videoTemplate.ContainsKey("title"));
     }
 
+    /// <summary>
+    /// Verifies that template manager correctly resolves template fields using provided context and OneDrive resolver.
+    /// </summary>
     [TestMethod]
     public void TemplateManager_ResolveTemplateFields_WorksWithContext()
     {
@@ -293,6 +311,9 @@ public class MetadataProcessingIntegrationTests
 
     #region Cross-Type Consistency Tests
 
+    /// <summary>
+    /// Verifies that OneDrive resolver produces consistent relative path format across different file types.
+    /// </summary>
     [TestMethod]
     public void OneDriveResolver_DifferentFileTypes_ProduceConsistentPaths()
     {
@@ -356,6 +377,9 @@ public class MetadataProcessingIntegrationTests
 
     #region Error Handling Tests
 
+    /// <summary>
+    /// Verifies that OneDrive resolver handles invalid configuration gracefully by falling back to absolute paths.
+    /// </summary>
     [TestMethod]
     public void OneDriveResolver_WithInvalidConfig_HandlesGracefully()
     {
@@ -387,6 +411,9 @@ public class MetadataProcessingIntegrationTests
         Assert.AreEqual(testFilePath, result.ToString());
     }
 
+    /// <summary>
+    /// Verifies that OneDrive resolver returns empty values when required context keys are missing.
+    /// </summary>
     [TestMethod]
     public void OneDriveResolver_WithMissingContextKeys_ReturnsEmptyValues()
     {

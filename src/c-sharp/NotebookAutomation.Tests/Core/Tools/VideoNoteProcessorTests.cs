@@ -3,6 +3,9 @@ using NotebookAutomation.Tests.Core.Helpers;
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Tools;
 
+/// <summary>
+/// Unit tests for VideoNoteProcessor AI summary generation and fallback behavior.
+/// </summary>
 [TestClass]
 public class VideoNoteProcessorTests
 {
@@ -13,6 +16,9 @@ public class VideoNoteProcessorTests
             new AppConfig());
     }
 
+    /// <summary>
+    /// Verifies that VideoNoteProcessor falls back to creating a new AISummarizer when one is not injected.
+    /// </summary>
     [TestMethod]
     public async Task GenerateAiSummaryAsync_FallsBackToNewAISummarizer_WhenNotInjected()
     {

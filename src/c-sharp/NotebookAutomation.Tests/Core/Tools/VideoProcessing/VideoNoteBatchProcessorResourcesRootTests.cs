@@ -5,6 +5,9 @@ using NotebookAutomation.Tests.Core.TestDoubles;
 
 namespace NotebookAutomation.Tests.Core.Tools.VideoProcessing;
 
+/// <summary>
+/// Tests for VideoNoteBatchProcessor resources root parameter override functionality.
+/// </summary>
 [TestClass]
 public class VideoNoteBatchProcessorResourcesRootTests
 {
@@ -148,6 +151,9 @@ public class VideoNoteBatchProcessorResourcesRootTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ProcessVideosAsync resourcesRoot parameter overrides the configuration value.
+    /// </summary>
     [TestMethod]
     public async Task ProcessVideosAsync_ResourcesRoot_OverridesConfigValue()
     {

@@ -66,6 +66,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.IsFalse(frontmatter.ContainsKey("banner"));
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter uses filename pattern banner when filename matches configured pattern.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithFilenamePattern_UsesPatternBanner()
     {
@@ -83,6 +86,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.AreEqual("index-banner.png", frontmatter["banner"]);
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter uses template-specific banner when template-type is specified.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithTemplateType_UsesTemplateBanner()
     {
@@ -100,6 +106,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.AreEqual("course-banner.png", frontmatter["banner"]);
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter preserves existing banner value when already set.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithExistingBanner_PreservesExisting()
     {
@@ -117,6 +126,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.AreEqual("existing-banner.png", frontmatter["banner"]);
     }
 
+    /// <summary>
+    /// Verifies that filename pattern banner takes precedence over template-type banner when both match.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_FilenamePatternTakesPrecedence_OverTemplateType()
     {
@@ -134,6 +146,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.AreEqual("test-banner.png", frontmatter["banner"]);
     }
 
+    /// <summary>
+    /// Verifies that BuildNote correctly applies banner when both filename and template-type are provided.
+    /// </summary>
     [TestMethod]
     public void BuildNote_WithFilenameAndTemplateType_AppliesBannerCorrectly()
     {
@@ -152,6 +167,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.AreEqual("index-banner.png", frontmatter["banner"]); // filename pattern wins
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter falls back to template-type banner when filename pattern does not match.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithNonMatchingPattern_FallsBackToTemplateType()
     {
@@ -169,6 +187,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.AreEqual("main-banner.png", frontmatter["banner"]);
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter does not add banner when template-type is not configured in banner settings.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithUnsupportedTemplateType_DoesNotAddBanner()
     {
@@ -185,6 +206,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.IsFalse(frontmatter.ContainsKey("banner"));
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter correctly injects universal fields into frontmatter.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithUniversalFields_InjectsUniversalFields()
     {
@@ -204,6 +228,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.IsTrue(frontmatter.ContainsKey("banner"), "Banner should be added for template type");
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter preserves reserved fields in frontmatter.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithReservedFields_PreservesReservedFields()
     {
@@ -228,6 +255,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.AreEqual("required", frontmatter["reading"], "Reserved field value should be correct");
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter correctly handles frontmatter with mixed field types (universal, reserved, and custom).
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithMixedFieldTypes_HandlesAllCorrectly()
     {
@@ -254,6 +284,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.IsTrue(frontmatter.ContainsKey("tags"), "Tags array should be preserved");
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter integrates correctly with schema-based field definitions.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithSchemaBasedFields_IntegratesWithSchema()
     {
@@ -276,6 +309,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.IsTrue(frontmatter.ContainsKey("comprehension"), "Comprehension field should be preserved");
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter applies default values for universal fields when not provided.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithUniversalFieldDefaults_AppliesDefaults()
     {
@@ -294,6 +330,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.IsTrue(frontmatter.ContainsKey("title"), "Title should be preserved");
     }
 
+    /// <summary>
+    /// Verifies that CreateMarkdownWithFrontmatter correctly inherits reserved field values.
+    /// </summary>
     [TestMethod]
     public void CreateMarkdownWithFrontmatter_WithReservedFieldInheritance_InheritsCorrectly()
     {
@@ -312,6 +351,9 @@ public class MarkdownNoteBuilderBannerTests
         Assert.IsTrue(frontmatter.ContainsKey("title"), "Title should be preserved");
     }
 
+    /// <summary>
+    /// Verifies that BuildNote correctly integrates both universal and reserved fields into the final note.
+    /// </summary>
     [TestMethod]
     public void BuildNote_WithUniversalAndReservedFields_IntegratesAllFields()
     {

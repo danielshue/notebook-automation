@@ -135,6 +135,9 @@ public class VideoNoteProcessorShareLinkContentTests
             Assert.IsFalse(frontmatter.Contains("share_link"), "Should not contain share_link field in metadata");
         }
     }
+    /// <summary>
+    /// Verifies that GenerateVideoNoteAsync does not include a References section when share links are disabled.
+    /// </summary>
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithNoShareLinks_DoesNotContainReferencesSection()
     {
@@ -179,6 +182,9 @@ public class VideoNoteProcessorShareLinkContentTests
         Assert.IsFalse(markdown.Contains("## References"), "Should not contain References section when noShareLinks=true");
         Assert.IsFalse(markdown.Contains("[Video Recording]"), "Should not contain video recording link when noShareLinks=true");
     }
+    /// <summary>
+    /// Verifies that GenerateVideoNoteAsync does not include a References section when share link generation fails.
+    /// </summary>
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithFailedShareLink_DoesNotContainReferencesSection()
     {
@@ -228,6 +234,9 @@ public class VideoNoteProcessorShareLinkContentTests
         Assert.IsFalse(markdown.Contains("[Video Recording]"), "Should not contain video recording link when share link generation fails");            // Verify OneDriveService was called but failed
         _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
     }
+    /// <summary>
+    /// Verifies that GetShareLink returns a valid share link when OneDrive service is enabled.
+    /// </summary>
     [TestMethod]
     public async Task GetShareLink_OneDriveEnabled_ReturnsShareLink()
     {
@@ -275,6 +284,9 @@ public class VideoNoteProcessorShareLinkContentTests
         Assert.IsTrue(markdown.Contains("## References"), "Should contain References section");
         Assert.IsTrue(markdown.Contains($"[Video Recording]({expectedShareLink})"), "Should contain share link in References section");
     }
+    /// <summary>
+    /// Verifies that GetShareLink returns null when OneDrive service is disabled.
+    /// </summary>
     [TestMethod]
     public async Task GetShareLink_OneDriveDisabled_ReturnsNull()
     {
@@ -311,6 +323,9 @@ public class VideoNoteProcessorShareLinkContentTests
         Assert.IsFalse(markdown.Contains("## References"), "Should not contain References section when OneDrive is disabled");
     }
 
+    /// <summary>
+    /// Verifies that GenerateShareLinkMarkdown includes share link in note markdown when link is available.
+    /// </summary>
     [TestMethod]
     public async Task GenerateShareLinkMarkdown_HasLink_IncludesLinkInNote()
     {

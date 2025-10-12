@@ -39,6 +39,9 @@ public class OneDriveShareLinkResolverTests
         _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns null when the context does not contain a filePath.
+    /// </summary>
     [TestMethod]
     public void Resolve_WithMissingFilePath_ReturnsNull()
     {
@@ -56,6 +59,9 @@ public class OneDriveShareLinkResolverTests
         _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns empty string when skip_onedrive_share_link flag is set to true.
+    /// </summary>
     [TestMethod]
     public void Resolve_WithSkipFlag_ReturnsEmpty()
     {
@@ -74,6 +80,9 @@ public class OneDriveShareLinkResolverTests
         _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    /// <summary>
+    /// Verifies that Resolve calls OneDrive service when skip_onedrive_share_link flag is explicitly set to false.
+    /// </summary>
     [TestMethod]
     public void Resolve_WithSkipFlagFalse_CallsOneDriveService()
     {
@@ -101,6 +110,9 @@ public class OneDriveShareLinkResolverTests
         _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(filePath, "view", "anonymous", It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that Resolve calls OneDrive service when skip_onedrive_share_link flag is not present in context.
+    /// </summary>
     [TestMethod]
     public void Resolve_WithoutSkipFlag_CallsOneDriveService()
     {
@@ -127,6 +139,9 @@ public class OneDriveShareLinkResolverTests
         _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(filePath, "view", "anonymous", It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns empty string when OneDrive service throws an exception.
+    /// </summary>
     [TestMethod]
     public void Resolve_WithOneDriveServiceFailure_ReturnsEmpty()
     {
@@ -152,6 +167,9 @@ public class OneDriveShareLinkResolverTests
         _oneDriveServiceMock.Verify(x => x.CreateShareLinkAsync(filePath, "view", "anonymous", It.IsAny<CancellationToken>()), Times.Once);
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns empty string when OneDrive service returns null.
+    /// </summary>
     [TestMethod]
     public void Resolve_WithOneDriveServiceReturningNull_ReturnsEmpty()
     {

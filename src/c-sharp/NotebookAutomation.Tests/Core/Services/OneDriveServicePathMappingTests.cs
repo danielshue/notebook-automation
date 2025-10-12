@@ -1,9 +1,15 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.Services;
 
+/// <summary>
+/// Unit tests for OneDriveService path mapping functionality.
+/// </summary>
 [TestClass]
 public class OneDriveServicePathMappingTests
 {
+    /// <summary>
+    /// Verifies that MapLocalToOneDrivePath correctly maps local file paths to OneDrive relative paths.
+    /// </summary>
     [TestMethod]
     public void MapLocalToOneDrivePath_MapsCorrectly()
     {
@@ -17,6 +23,9 @@ public class OneDriveServicePathMappingTests
         Assert.AreEqual(expected, result);
     }
 
+    /// <summary>
+    /// Verifies that MapOneDriveToLocalPath correctly maps OneDrive relative paths to local file system paths.
+    /// </summary>
     [TestMethod]
     public void MapOneDriveToLocalPath_MapsCorrectly()
     {
@@ -30,6 +39,9 @@ public class OneDriveServicePathMappingTests
         Assert.AreEqual(expected, result);
     }
 
+    /// <summary>
+    /// Verifies that MapLocalToOneDrivePath throws ArgumentException when the local path is not under the configured vault root.
+    /// </summary>
     [TestMethod]
     public void MapLocalToOneDrivePath_ThrowsIfNotUnderRoot()
     {
@@ -41,6 +53,9 @@ public class OneDriveServicePathMappingTests
         Assert.Throws<ArgumentException>(() => service.MapLocalToOneDrivePath(localPath));
     }
 
+    /// <summary>
+    /// Verifies that MapOneDriveToLocalPath throws ArgumentException when the OneDrive path is not under the configured vault root.
+    /// </summary>
     [TestMethod]
     public void MapOneDriveToLocalPath_ThrowsIfNotUnderRoot()
     {

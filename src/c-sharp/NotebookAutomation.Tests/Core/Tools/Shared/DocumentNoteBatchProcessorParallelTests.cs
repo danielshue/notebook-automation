@@ -54,6 +54,9 @@ public class DocumentNoteBatchProcessorParallelTests
     }
 
 
+    /// <summary>
+    /// Verifies that TimeoutConfig correctly respects custom parallelism settings.
+    /// </summary>
     [TestMethod]
     public void Configuration_CustomParallelism_ShouldRespectSettings()
     {
@@ -70,6 +73,9 @@ public class DocumentNoteBatchProcessorParallelTests
     }
 
 
+    /// <summary>
+    /// Verifies that ProcessFilesAsync uses default parallelism settings when AppConfig is null.
+    /// </summary>
     [TestMethod]
     public async Task ProcessFilesAsync_WithNullAppConfig_ShouldUseDefaults()
     {
@@ -107,6 +113,9 @@ public class DocumentNoteBatchProcessorParallelTests
     }
 
 
+    /// <summary>
+    /// Verifies that ProcessFilesAsync uses configured parallelism settings from AppConfig.
+    /// </summary>
     [TestMethod]
     public async Task ProcessFilesAsync_WithAppConfig_ShouldUseConfiguredParallelism()
     {
@@ -156,6 +165,9 @@ public class DocumentNoteBatchProcessorParallelTests
     }
 
 
+    /// <summary>
+    /// Verifies that TimeoutConfig can be correctly serialized and deserialized to/from JSON.
+    /// </summary>
     [TestMethod]
     public void TimeoutConfig_JsonSerialization_ShouldWork()
     {

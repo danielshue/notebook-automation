@@ -47,6 +47,10 @@ public class CourseStructureExtractorTests
             }
         }
     }
+
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson extracts friendly module titles when processing non-content files with various path formats.
+    /// </summary>
     [TestMethod]
     [DataRow("01_module-introduction", "02_lesson-overview", "document.md", "Module Introduction", "Lesson Overview")]
     [DataRow("module-1-intro", "lesson-2-details", "notes.md", "Module 1 Intro", "Lesson 2 Details")]
@@ -83,6 +87,9 @@ public class CourseStructureExtractorTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson extracts number-only module values when processing content files with various path formats.
+    /// </summary>
     [TestMethod]
     [DataRow("01_module-introduction", "02_lesson-overview", "video.mp4", "01", "Lesson Overview")]
     [DataRow("module-1-intro", "lesson-2-details", "video.mp4", "1", "Lesson 2 Details")]
@@ -119,6 +126,9 @@ public class CourseStructureExtractorTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson extracts friendly module title for non-content files in single-level course structures.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_SingleLevelCourse_NonContentFile_ExtractsAsModuleFriendlyTitle()
     {
@@ -145,6 +155,9 @@ public class CourseStructureExtractorTests
         Assert.IsFalse(metadata.ContainsKey("lesson"), "Lesson key should not exist when only module is found");
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson extracts number-only module value for content files in single-level course structures.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_SingleLevelCourse_ContentFile_ExtractsAsModuleNumber()
     {
@@ -171,6 +184,9 @@ public class CourseStructureExtractorTests
         Assert.IsFalse(metadata.ContainsKey("lesson"), "Lesson key should not exist when only module is found");
     }
 
+    /// <summary>
+    /// Verifies that CleanModuleOrLessonName formats friendly module and lesson names correctly for non-content files with various naming formats.
+    /// </summary>
     [TestMethod]
     [DataRow("01_module-intro", "01_lesson-basics", "notes.md", "Module Intro", "Lesson Basics")]
     [DataRow("02-advanced-module", "03-detailed-lesson", "overview.md", "Advanced Module", "Detailed Lesson")]
@@ -201,6 +217,9 @@ public class CourseStructureExtractorTests
         Assert.AreEqual(expectedLesson, metadata["lesson"]);
     }
 
+    /// <summary>
+    /// Verifies that CleanModuleOrLessonName formats number-only modules and friendly lesson names correctly for content files with various naming formats.
+    /// </summary>
     [TestMethod]
     [DataRow("01_module-intro", "01_lesson-basics", "video.mp4", "01", "Lesson Basics")]
     [DataRow("02-advanced-module", "03-detailed-lesson", "video.mp4", "02", "Detailed Lesson")]
@@ -231,6 +250,9 @@ public class CourseStructureExtractorTests
         Assert.AreEqual(expectedLesson, metadata["lesson"]);
     }
 
+    /// <summary>
+    /// Verifies that CleanModuleOrLessonName properly cleans and formats module and lesson names by removing prefixes and formatting separators.
+    /// </summary>
     [TestMethod]
     [DataRow("01_module-name", "Module Name")]
     [DataRow("02-lesson-intro", "Lesson Intro")]
@@ -244,6 +266,9 @@ public class CourseStructureExtractorTests
         Assert.AreEqual(expected, result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson can extract module and lesson information from filenames for non-content files when directory structure doesn't provide context.
+    /// </summary>
     [TestMethod]
     [DataRow("Module-1-Introduction.md", "Module 1 Introduction", null)]
     [DataRow("Lesson-2-Details.md", null, "Lesson 2 Details")]
@@ -297,6 +322,9 @@ public class CourseStructureExtractorTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson extracts number-only module values from directory structure when processing content files.
+    /// </summary>
     [TestMethod]
     [DataRow("Module-1-Introduction.mp4", "01_module-introduction", null, "01", null)]
     [DataRow("Module1BasicConcepts.mp4", "01_module-basic-concepts", null, "01", null)]
@@ -359,6 +387,10 @@ public class CourseStructureExtractorTests
             }
         }
     }
+
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson correctly handles enhanced directory patterns like Week/Session and Unit/Class structures.
+    /// </summary>
     [TestMethod]
     [DataRow("Week 1", "Session 2", "material.pdf", "Week 1", "Session 2")]
     [DataRow("Unit-3", "Class-1", "notes.md", "Unit 3", "Class 1")]
@@ -409,6 +441,9 @@ public class CourseStructureExtractorTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson correctly handles Case Studies directories without extracting lesson metadata.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_CaseStudiesPattern_HandlesCorrectly()
     {
@@ -442,6 +477,9 @@ public class CourseStructureExtractorTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson employs multiple fallback strategies for extraction when primary methods don't apply.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_FallbackStrategies_WorksCorrectly()
     {
@@ -486,6 +524,9 @@ public class CourseStructureExtractorTests
         Assert.IsTrue(metadata3.ContainsKey("lesson"), "Should extract lesson from enhanced patterns");
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson extracts only numeric module values for content files like videos and PDFs.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_ContentFiles_ExtractsNumericModuleOnly()
     {
@@ -524,6 +565,9 @@ public class CourseStructureExtractorTests
         Assert.AreEqual("Lesson Basics", metadata1["lesson"]);
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson extracts friendly module titles for non-content files like index and overview documents.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_NonContentFiles_ExtractsFriendlyModuleTitle()
     {
@@ -557,6 +601,9 @@ public class CourseStructureExtractorTests
         Assert.AreEqual("Module Introduction", metadata2["module"], "Overview file should have friendly module title");
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson correctly extracts module and lesson hierarchy from deeply nested content file structures.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_NestedContentFiles_ExtractsCorrectHierarchy()
     {
@@ -586,6 +633,9 @@ public class CourseStructureExtractorTests
         Assert.AreEqual("Lesson Logistics", metadata["lesson"], "Should extract friendly lesson name");
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleNumber correctly extracts module numbers from "Module N - Description" directory name pattern.
+    /// </summary>
     [TestMethod]
     [DataRow("Module 1 - Money and Finance", "1")]
     [DataRow("Module 2 - Modern Banking", "2")]
@@ -599,6 +649,9 @@ public class CourseStructureExtractorTests
         // Assert        Assert.AreEqual(expectedNumber, result, $"Should extract '{expectedNumber}' from '{dirName}'");
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleNumber correctly extracts module numbers from complex directory names with numeric prefixes.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleNumber_QuantitativeFundamentalsPattern_ReturnsCorrectNumber()
     {
@@ -613,6 +666,9 @@ public class CourseStructureExtractorTests
         Assert.AreEqual(expected, result, $"Should extract '{expected}' from '{dirName}'");
     }
 
+    /// <summary>
+    /// Verifies that IsContentFile returns true for instruction files which should be treated as content files.
+    /// </summary>
     [TestMethod]
     public void IsContentFile_InstructionsFile_ReturnsTrue()
     {
@@ -631,6 +687,9 @@ public class CourseStructureExtractorTests
         Assert.IsTrue(result, $"IsContentFile should return true for {filePath}");
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleNumberFromParentDirectories correctly extracts module numbers from parent directory structures.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleNumberFromParentDirectories_QuantitativePattern_ReturnsCorrectNumber()
     {
@@ -652,6 +711,9 @@ public class CourseStructureExtractorTests
         Assert.AreEqual("03", result, $"ExtractModuleNumberFromParentDirectories should return '03' for {filePath}");
     }
 
+    /// <summary>
+    /// Verifies that FindModuleDirectory correctly identifies the module directory from an array of directory path parts.
+    /// </summary>
     [TestMethod]
     public void FindModuleDirectory_QuantitativePattern_ReturnsCorrectDirectory()
     {
@@ -668,6 +730,9 @@ public class CourseStructureExtractorTests
             $"FindModuleDirectory should return the module directory from parts: [{string.Join(", ", directoryParts)}]");
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson extracts number-only module values for content files using "Module N - Description" pattern.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_ModuleSpacePattern_ContentFile_ExtractsNumberOnlyModule()
     {
@@ -692,6 +757,10 @@ public class CourseStructureExtractorTests
         Assert.IsTrue(metadata.ContainsKey("module"), "Should extract module from directory hierarchy");
         Assert.AreEqual("1", metadata["module"], "Should extract numeric-only module '1' for content file in 'Module 1 - Money and Finance'");
     }
+
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson correctly handles all different module directory naming patterns discovered in vault analysis.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_MixedPatterns_VaultScan_HandlesAllDiscoveredPatterns()
     {
@@ -728,6 +797,9 @@ public class CourseStructureExtractorTests
         }
     }
 
+    /// <summary>
+    /// Verifies that IsContentFile treats case studies under module folders as content files for module extraction.
+    /// </summary>
     [TestMethod]
     public void IsContentFile_CaseStudyUnderModule_TreatsAsContentFile()
     {
@@ -754,6 +826,9 @@ public class CourseStructureExtractorTests
         Assert.IsTrue(result, "Case study under module folder should be treated as content file for module extraction");
     }
 
+    /// <summary>
+    /// Verifies that IsContentFile does not treat case studies at class level as content files.
+    /// </summary>
     [TestMethod]
     public void IsContentFile_CaseStudyAtClassLevel_DoesNotTreatAsContentFile()
     {
@@ -779,6 +854,9 @@ public class CourseStructureExtractorTests
         Assert.IsFalse(result, "Case study at class level should NOT be treated as content file (no module extraction)");
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson extracts module number when processing case studies located under module folders.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_CaseStudyUnderModule_ExtractsModule()
     {
@@ -805,6 +883,9 @@ public class CourseStructureExtractorTests
         Assert.AreEqual("3", metadata["module"], "Should extract module number '3' from '03_module-fundamentals'");
     }
 
+    /// <summary>
+    /// Verifies that ExtractModuleAndLesson does not extract module metadata when processing case studies at class level.
+    /// </summary>
     [TestMethod]
     public void ExtractModuleAndLesson_CaseStudyAtClassLevel_DoesNotExtractModule()
     {

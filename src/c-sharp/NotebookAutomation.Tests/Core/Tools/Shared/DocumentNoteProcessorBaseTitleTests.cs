@@ -46,6 +46,9 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.AreEqual("Test Heading", result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractFirstHeading returns null when markdown contains no headings.
+    /// </summary>
     [TestMethod]
     public void ExtractFirstHeading_WithNoHeading_ReturnsNull()
     {
@@ -59,6 +62,9 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.IsNull(result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractFirstHeading returns the first H1 heading when multiple H1 headings exist.
+    /// </summary>
     [TestMethod]
     public void ExtractFirstHeading_WithMultipleH1_ReturnsFirst()
     {
@@ -72,6 +78,9 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.AreEqual("First Heading", result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractAndNormalizeTitle applies FriendlyTitleHelper to markdown body headings.
+    /// </summary>
     [TestMethod]
     public void ExtractAndNormalizeTitle_WithBodyHeading_UsesFriendlyVersionOfHeading()
     {
@@ -87,6 +96,9 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.AreEqual("Introduction Strategic Management", result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractAndNormalizeTitle applies FriendlyTitleHelper to frontmatter title values.
+    /// </summary>
     [TestMethod]
     public void ExtractAndNormalizeTitle_WithFrontmatterTitle_UsesFriendlyVersionOfTitle()
     {
@@ -103,6 +115,9 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.AreEqual("MBA Strategy", result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractAndNormalizeTitle generates friendly title from source filename when no explicit title exists.
+    /// </summary>
     [TestMethod]
     public void ExtractAndNormalizeTitle_WithSourceFilename_GeneratesFriendlyTitle()
     {
@@ -121,6 +136,9 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.AreEqual("Marketing Analysis", result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractAndNormalizeTitle uses note type as fallback when no valid title source exists.
+    /// </summary>
     [TestMethod]
     public void ExtractAndNormalizeTitle_WithNoValidTitle_UsesNoteTypeFallback()
     {
@@ -136,6 +154,9 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.AreEqual("Video Note", result);
     }
 
+    /// <summary>
+    /// Verifies that GenerateMarkdownNote ensures consistent normalized titles in both frontmatter and heading.
+    /// </summary>
     [TestMethod]
     public void GenerateMarkdownNote_EnsuresTitleConsistency()
     {
@@ -156,6 +177,9 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.IsTrue(result.Contains("# Strategic Planning"), "Should contain normalized title as heading");
         Assert.IsTrue(result.Contains("author: Test Author"), "Should preserve other metadata");
     }
+    /// <summary>
+    /// Verifies that ExtractFirstHeading applies FriendlyTitleHelper to filename-based headings.
+    /// </summary>
     [TestMethod]
     public void ExtractFirstHeading_WithFilenameBasedHeading_AppliesFriendlyTitleHelper()
     {
@@ -171,6 +195,9 @@ public class DocumentNoteProcessorBaseTitleTests
         Assert.AreEqual("BAMD 567 MOOC 1 3 Word Transcript", result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractAndNormalizeTitle applies FriendlyTitleHelper to AI-generated filename headings.
+    /// </summary>
     [TestMethod]
     public void ExtractAndNormalizeTitle_WithAIGeneratedFilenameHeading_UsesFriendlyVersion()
     {

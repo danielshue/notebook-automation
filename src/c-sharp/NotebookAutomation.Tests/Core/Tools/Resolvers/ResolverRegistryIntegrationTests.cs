@@ -50,6 +50,9 @@ public class ResolverRegistryIntegrationTests
         Assert.AreEqual(4, _registry.GetAllFileTypeResolvers().Count);
     }
 
+    /// <summary>
+    /// Verifies that resolver registry supports dynamic registration of resolvers at runtime.
+    /// </summary>
     [TestMethod]
     public void Registry_Should_Support_Dynamic_Registration()
     {
@@ -71,6 +74,9 @@ public class ResolverRegistryIntegrationTests
         Assert.AreSame(markdownResolver, fileTypeResolver);
     }
 
+    /// <summary>
+    /// Verifies that resolver registry supports composing multiple resolvers to extract comprehensive metadata.
+    /// </summary>
     [TestMethod]
     public void Registry_Should_Support_Resolver_Composition()
     {
@@ -129,6 +135,9 @@ This is a test document with some content.";
         }
     }
 
+    /// <summary>
+    /// Verifies that resolver registry can be extended at runtime with new resolvers and replace existing ones.
+    /// </summary>
     [TestMethod]
     public void Registry_Should_Handle_Runtime_Extension()
     {
@@ -157,6 +166,9 @@ This is a test document with some content.";
         Assert.AreSame(newTagResolver, _registry.GetFileTypeResolver("tag"));
     }
 
+    /// <summary>
+    /// Verifies that resolver registry supports combining metadata from different resolvers for comprehensive analysis.
+    /// </summary>
     [TestMethod]
     public void Registry_Should_Support_Cross_Resolver_Metadata_Enhancement()
     {
@@ -219,6 +231,9 @@ This is a test document.";
         }
     }
 
+    /// <summary>
+    /// Verifies that resolver registry handles resolver errors gracefully without affecting registry functionality.
+    /// </summary>
     [TestMethod]
     public void Registry_Should_Handle_Resolver_Errors_Gracefully()
     {

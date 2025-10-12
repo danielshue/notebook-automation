@@ -86,6 +86,9 @@ public class VideoNoteProcessorMetadataTests
 
         // No temp metadata file to clean up in schema-first tests
     }
+    /// <summary>
+    /// Verifies that GenerateMarkdownNote correctly applies hierarchy detection based on file path.
+    /// </summary>
     [TestMethod]
     public void GenerateMarkdownNote_WithPathBasedMetadata_AppliesHierarchyDetection()
     {
@@ -135,6 +138,9 @@ public class VideoNoteProcessorMetadataTests
         Assert.IsTrue(markdownNote.Contains("course: Supply Chain"));
         Assert.IsTrue(markdownNote.Contains("class: Class 1"));
     }
+    /// <summary>
+    /// Verifies that GenerateMarkdownNote correctly applies template metadata to generated notes.
+    /// </summary>
     [TestMethod]
     public void GenerateMarkdownNote_WithTemplate_AppliesTemplateMetadata()
     {
@@ -177,6 +183,9 @@ public class VideoNoteProcessorMetadataTests
         // Assert that the note body is present (not suppressed)
         Assert.IsTrue(markdownNote.Contains("This is a test summary."), "Missing summary body");
     }
+    /// <summary>
+    /// Verifies that GenerateMarkdownNote correctly applies both template metadata and hierarchy detection.
+    /// </summary>
     [TestMethod]
     public void GenerateMarkdownNote_WithTemplateAndHierarchy_AppliesBoth()
     {
@@ -230,6 +239,9 @@ public class VideoNoteProcessorMetadataTests
         // Assert that the note body is present (not suppressed)
         Assert.IsTrue(markdownNote.Contains("This is a test summary."), "Missing summary body");
     }
+    /// <summary>
+    /// Verifies that ProcessVideoAsync correctly applies both path-based metadata and template metadata.
+    /// </summary>
     [TestMethod]
     public async Task ProcessVideoAsync_AppliesPathBasedMetadataAndTemplate()
     {
@@ -279,6 +291,9 @@ public class VideoNoteProcessorMetadataTests
         // Assert that the note body is present (not suppressed)
         Assert.IsTrue(markdown.Contains("AI summary of the video content"), "Missing summary body");
     }
+    /// <summary>
+    /// Verifies that GenerateVideoNoteAsync suppresses AI summary body content when noSummary flag is true.
+    /// </summary>
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithNoSummary_SuppressesBodyOutputsOnlyFrontmatter()
     {
@@ -329,6 +344,9 @@ public class VideoNoteProcessorMetadataTests
         Assert.IsFalse(markdown.EndsWith("---\n\n"), "Should have body content after frontmatter");
     }
 
+    /// <summary>
+    /// Verifies that GenerateVideoNoteAsync adds References section with share link when OneDrive service provides a link.
+    /// </summary>
     [TestMethod]
     public async Task GenerateVideoNoteAsync_WithMockedShareLink_AddsReferencesSection()
     {

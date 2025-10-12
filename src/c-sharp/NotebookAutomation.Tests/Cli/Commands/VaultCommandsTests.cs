@@ -80,6 +80,9 @@ public class VaultCommandsTests
         Assert.IsTrue(output.Contains("Usage"), "Should print usage/help when no args provided.");
     }
 
+    /// <summary>
+    /// Verifies that VaultCommand can be initialized successfully.
+    /// </summary>
     [TestMethod]
     public void VaultCommand_Initialization_ShouldSucceed()
     {
@@ -89,6 +92,10 @@ public class VaultCommandsTests
         // Act & Assert
         Assert.IsNotNull(command);
     }
+
+    /// <summary>
+    /// Verifies that Register adds vault command and subcommands to root command.
+    /// </summary>
     [TestMethod]
     public void Register_AddsVaultCommandToRoot()
     {
@@ -114,12 +121,19 @@ public class VaultCommandsTests
         Assert.IsNotNull(vaultCleanIndexCommand, "clean-index command should be registered under vault command.");
     }
 
+    /// <summary>
+    /// Verifies that logger extensions are available and can be called.
+    /// </summary>
     [TestMethod]
     public void LoggerExtensions_AreCalled()
     {
         // Arrange
         // No logger method setups; just pass the mock to the command.
     }
+
+    /// <summary>
+    /// Verifies that CleanIndexCommand displays an info message when executed.
+    /// </summary>
     [TestMethod]
     public async Task CleanIndexCommand_ShowsInfoMessage()
     {
@@ -169,6 +183,9 @@ public class VaultCommandsTests
         }
     }
 
+    /// <summary>
+    /// Verifies that VaultSyncCommand executes successfully when invoked with no arguments.
+    /// </summary>
     [TestMethod]
     public async Task VaultSyncCommand_ExecutesSuccessfully_WithNoArguments()
     {
@@ -210,6 +227,9 @@ public class VaultCommandsTests
         }
     }
 
+    /// <summary>
+    /// Verifies that VaultSyncCommand executes successfully using the default vault root from configuration.
+    /// </summary>
     [TestMethod]
     public async Task VaultSyncCommand_ExecutesSuccessfully_WithDefaultVaultRoot()
     {
@@ -270,6 +290,9 @@ public class VaultCommandsTests
         }
     }
 
+    /// <summary>
+    /// Verifies that VaultSyncCommand executes successfully when provided with a specific vault path.
+    /// </summary>
     [TestMethod]
     public async Task VaultSyncCommand_ExecutesSuccessfully_WithVaultPath()
     {
@@ -334,6 +357,9 @@ public class VaultCommandsTests
         }
     }
 
+    /// <summary>
+    /// Verifies that VaultSyncCommand executes bidirectional sync by default.
+    /// </summary>
     [TestMethod]
     public async Task VaultSyncCommand_ExecutesBidirectional_WithBidirectionalFlag()
     {
@@ -401,6 +427,9 @@ public class VaultCommandsTests
         }
     }
 
+    /// <summary>
+    /// Verifies that VaultSyncCommand executes unidirectional sync when --unidirectional flag is provided.
+    /// </summary>
     [TestMethod]
     public async Task VaultSyncCommand_ExecutesSuccessfully_WithUnidirectionalFlag()
     {

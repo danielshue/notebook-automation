@@ -30,6 +30,9 @@ public class MarkdownMetadataResolverTests
         Assert.AreEqual("markdown", fileType);
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns true for all supported markdown metadata field names when context contains filePath.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_True_For_Supported_Fields_With_Valid_Context()
     {
@@ -44,6 +47,9 @@ public class MarkdownMetadataResolverTests
         Assert.IsTrue(_resolver.CanResolve("heading-count", context));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false for unsupported field names.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_For_Unsupported_Fields()
     {
@@ -54,15 +60,21 @@ public class MarkdownMetadataResolverTests
         Assert.IsFalse(_resolver.CanResolve("unsupported-field", context));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false when context is null.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_For_Null_Context()
     {
         // Act & Assert
-        Assert.IsFalse(_resolver.CanResolve("title", null));
+        Assert.IsFalse(_resolver.CanResolve("markdown-title", null));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false when context does not contain filePath.
+    /// </summary>
     [TestMethod]
-    public void CanResolve_Should_Return_False_Without_FilePath_Or_Content()
+    public void CanResolve_Should_Return_False_Without_FilePath()
     {
         // Arrange
         var context = new Dictionary<string, object> { ["other"] = "value" };
@@ -71,6 +83,9 @@ public class MarkdownMetadataResolverTests
         Assert.IsFalse(_resolver.CanResolve("title", context));
     }
 
+    /// <summary>
+    /// Verifies that Resolve extracts title from markdown frontmatter metadata.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Extract_Title_From_Frontmatter()
     {
@@ -92,6 +107,9 @@ This is the body content.";
         Assert.AreEqual("My Test Document", result);
     }
 
+    /// <summary>
+    /// Verifies that Resolve extracts title from first heading when frontmatter is not present.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Extract_Title_From_First_Heading_When_No_Frontmatter()
     {
@@ -110,6 +128,9 @@ This is the body content.
         Assert.AreEqual("Main Title", result);
     }
 
+    /// <summary>
+    /// Verifies that Resolve counts words in markdown content excluding frontmatter section.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Count_Words_Excluding_Frontmatter()
     {
@@ -129,6 +150,9 @@ This is a test document with exactly ten words here.";
         Assert.AreEqual(10, result);
     }
 
+    /// <summary>
+    /// Verifies that Resolve counts all headings in markdown content.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Count_Headings()
     {
@@ -151,6 +175,9 @@ Content here.";
         Assert.AreEqual(4, result);
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns null when context is invalid or missing required fields.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Null_For_Invalid_Context()
     {
@@ -164,6 +191,9 @@ Content here.";
         Assert.IsNull(result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns comprehensive markdown analysis including frontmatter, word count, and headings.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Comprehensive_Metadata()
     {
@@ -198,6 +228,9 @@ More content here.";
         Assert.IsTrue((int)metadata["word-count"] > 0);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns empty dictionary when context is null.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Empty_Dictionary_For_Null_Context()
     {
@@ -209,6 +242,9 @@ More content here.";
         Assert.AreEqual(0, metadata.Count);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns empty dictionary when content is empty.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Empty_Dictionary_For_Empty_Content()
     {
@@ -223,6 +259,9 @@ More content here.";
         Assert.AreEqual(0, metadata.Count);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata handles malformed frontmatter sections gracefully and continues with content-based metadata extraction.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Handle_Malformed_Frontmatter()
     {
@@ -248,6 +287,9 @@ Content here.";
         Assert.IsTrue(metadata.ContainsKey("heading-count"));
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata includes file system metadata when filePath is provided in context.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Include_File_System_Metadata_When_FilePath_Provided()
     {

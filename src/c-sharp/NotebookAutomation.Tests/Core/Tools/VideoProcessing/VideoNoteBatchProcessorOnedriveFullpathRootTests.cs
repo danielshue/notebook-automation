@@ -5,6 +5,9 @@ using NotebookAutomation.Tests.Core.TestDoubles;
 
 namespace NotebookAutomation.Tests.Core.Tools.VideoProcessing;
 
+/// <summary>
+/// Tests for VideoNoteBatchProcessor OneDrive fullpath root parameter override functionality.
+/// </summary>
 [TestClass]
 public class VideoNoteBatchProcessorOnedriveFullpathRootTests
 {
@@ -141,6 +144,9 @@ public class VideoNoteBatchProcessorOnedriveFullpathRootTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ProcessVideosAsync onedriveFullpathRoot parameter overrides the configuration value.
+    /// </summary>
     [TestMethod]
     public async Task ProcessVideosAsync_OnedriveFullpathRoot_OverridesConfigValue()
     {

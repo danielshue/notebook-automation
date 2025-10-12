@@ -1,9 +1,15 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 namespace NotebookAutomation.Tests.Core.TestDoubles;
 
+/// <summary>
+/// Debug tests for PromptTemplateService directory search and template loading functionality.
+/// </summary>
 [TestClass]
 public class DebugPromptTemplateServiceTests
 {
+    /// <summary>
+    /// Verifies that PromptTemplateService correctly searches for and locates the prompts directory across various potential search paths.
+    /// </summary>
     [TestMethod]
     public void Debug_PromptsDirectorySearch()
     {

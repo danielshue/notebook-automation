@@ -24,6 +24,9 @@ public class MetadataTemplateManagerTests
         // No cleanup required
     }
 
+    /// <summary>
+    /// Verifies that LoadTemplates loads all template types from a valid schema.
+    /// </summary>
     [TestMethod]
     public void LoadTemplates_ValidSchema_LoadsAllTemplates()
     {
@@ -40,6 +43,9 @@ public class MetadataTemplateManagerTests
         Assert.IsTrue(templateTypes.Contains("resource-reading"));
         Assert.IsTrue(templateTypes.Contains("note/instruction"));
     }
+    /// <summary>
+    /// Verifies that GetTemplate returns the correct template when requested type exists.
+    /// </summary>
     [TestMethod]
     public void GetTemplate_ExistingType_ReturnsTemplate()
     {
@@ -56,6 +62,9 @@ public class MetadataTemplateManagerTests
         Assert.IsTrue(template.ContainsKey("title"));
         Assert.IsInstanceOfType<string>(template["title"]);
     }
+    /// <summary>
+    /// Verifies that GetTemplate returns null when requested template type does not exist.
+    /// </summary>
     [TestMethod]
     public void GetTemplate_NonExistentType_ReturnsNull()
     {
@@ -69,6 +78,9 @@ public class MetadataTemplateManagerTests
         Assert.IsNull(template);
     }
 
+    /// <summary>
+    /// Verifies that GetFilledTemplate correctly replaces placeholders with provided values.
+    /// </summary>
     [TestMethod]
     public void GetFilledTemplate_ProvidesValues_ReplacesPlaceholders()
     {
@@ -90,6 +102,9 @@ public class MetadataTemplateManagerTests
         Assert.AreEqual("video-reference", filledTemplate["template-type"]);
     }
 
+    /// <summary>
+    /// Verifies that EnhanceMetadataWithTemplate applies video-reference template for video notes.
+    /// </summary>
     [TestMethod]
     public void EnhanceMetadataWithTemplate_VideoNote_AppliesVideoTemplate()
     {
@@ -118,6 +133,9 @@ public class MetadataTemplateManagerTests
         Assert.AreEqual("reference", tags[1]);
     }
 
+    /// <summary>
+    /// Verifies that EnhanceMetadataWithTemplate applies pdf-reference template for PDF notes.
+    /// </summary>
     [TestMethod]
     public void EnhanceMetadataWithTemplate_PdfNote_AppliesPdfTemplate()
     {
@@ -148,6 +166,9 @@ public class MetadataTemplateManagerTests
         Assert.AreEqual("reference", tags[1]);
     }
 
+    /// <summary>
+    /// Verifies that EnhanceMetadataWithTemplate applies universal fields from schema when using schema loader.
+    /// </summary>
     [TestMethod]
     public void EnhanceMetadataWithTemplate_WithSchemaLoader_AppliesUniversalFields()
     {
@@ -168,6 +189,9 @@ public class MetadataTemplateManagerTests
         Assert.IsTrue(enhanced.ContainsKey("publisher"), "Universal field 'publisher' should be present");
     }
 
+    /// <summary>
+    /// Verifies that EnhanceMetadataWithTemplate applies reserved tags from schema when using schema loader.
+    /// </summary>
     [TestMethod]
     public void EnhanceMetadataWithTemplate_WithSchemaLoader_AppliesReservedTags()
     {
@@ -192,6 +216,9 @@ public class MetadataTemplateManagerTests
         Assert.IsTrue(tags.Contains("video"), "Reserved tag 'video' should be present");
     }
 
+    /// <summary>
+    /// Verifies that GetTemplate returns schema-based templates when using schema loader.
+    /// </summary>
     [TestMethod]
     public void GetTemplate_WithSchemaLoader_ReturnsSchemaBasedTemplate()
     {
@@ -207,6 +234,9 @@ public class MetadataTemplateManagerTests
         Assert.AreEqual("pdf-reference", template["template-type"], "Template-type should match schema");
     }
 
+    /// <summary>
+    /// Verifies that GetTemplateTypes returns all schema-defined template types when using schema loader.
+    /// </summary>
     [TestMethod]
     public void GetTemplateTypes_WithSchemaLoader_ReturnsSchemaTypes()
     {
@@ -222,6 +252,9 @@ public class MetadataTemplateManagerTests
         Assert.IsTrue(templateTypes.Contains("resource-reading"), "Schema template type 'resource-reading' should be available");
     }
 
+    /// <summary>
+    /// Verifies that GetFilledTemplate uses schema loader's resolver integration when filling templates.
+    /// </summary>
     [TestMethod]
     public void GetFilledTemplate_WithSchemaLoader_UsesResolvers()
     {
@@ -241,6 +274,9 @@ public class MetadataTemplateManagerTests
         Assert.IsTrue(filledTemplate.ContainsKey("date-created"), "Should have date-created field from schema");
     }
 
+    /// <summary>
+    /// Verifies that EnhanceMetadataWithTemplate preserves existing metadata fields when applying templates with schema loader.
+    /// </summary>
     [TestMethod]
     public void EnhanceMetadataWithTemplate_WithSchemaLoader_PreservesExistingMetadata()
     {
@@ -262,6 +298,9 @@ public class MetadataTemplateManagerTests
         Assert.AreEqual("custom_value", enhanced["custom_field"], "Custom field should be preserved");
     }
 
+    /// <summary>
+    /// Verifies that EnhanceMetadataWithTemplate correctly integrates with type mapping when using schema loader.
+    /// </summary>
     [TestMethod]
     public void EnhanceMetadataWithTemplate_WithSchemaLoader_IntegratesWithTypeMapping()
     {

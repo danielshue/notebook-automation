@@ -14,6 +14,9 @@ internal class MockAISummarizer
     public string GenerateAiSummary(string text) => PredefinedSummary;
 }
 
+/// <summary>
+/// Unit tests for VideoNoteProcessor dependency injection and AI summarization functionality.
+/// </summary>
 [TestClass]
 public class VideoNoteProcessorDITests
 {
@@ -29,6 +32,9 @@ public class VideoNoteProcessorDITests
         // No cleanup required
     }
 
+    /// <summary>
+    /// Verifies that VideoNoteProcessor uses the injected mock AISummarizer and returns a simulated summary when provided with test text.
+    /// </summary>
     [TestMethod]
     public async Task GenerateAiSummaryAsync_WithMockAISummarizer_ReturnsSimulatedSummary()
     {
@@ -74,6 +80,9 @@ public class VideoNoteProcessorDITests
         Assert.AreEqual("[Simulated AI summary]", result);
     }
 
+    /// <summary>
+    /// Verifies that VideoNoteProcessor returns simulated summary when OpenAI key is null.
+    /// </summary>
     [TestMethod]
     public async Task GenerateAiSummaryAsync_WithNullOpenAIKey_ReturnsSimulatedSummary()
     {        // Arrange

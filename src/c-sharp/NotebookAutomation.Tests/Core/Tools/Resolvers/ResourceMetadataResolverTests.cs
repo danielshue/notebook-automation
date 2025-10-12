@@ -30,6 +30,9 @@ public class ResourceMetadataResolverTests
         Assert.AreEqual("resource", fileType);
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns true for all supported field names when context contains a valid filePath.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_True_For_Supported_Fields_With_Valid_Context()
     {
@@ -46,6 +49,9 @@ public class ResourceMetadataResolverTests
         Assert.IsTrue(_resolver.CanResolve("mime-type", context));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false for unsupported field names.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_For_Unsupported_Fields()
     {
@@ -56,6 +62,9 @@ public class ResourceMetadataResolverTests
         Assert.IsFalse(_resolver.CanResolve("unsupported-field", context));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false when context is null.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_For_Null_Context()
     {
@@ -63,6 +72,9 @@ public class ResourceMetadataResolverTests
         Assert.IsFalse(_resolver.CanResolve("file-name", null));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false when context does not contain filePath.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_Without_FilePath()
     {
@@ -73,6 +85,9 @@ public class ResourceMetadataResolverTests
         Assert.IsFalse(_resolver.CanResolve("file-name", context));
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns the file name when resolving 'file-name' field.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_File_Name()
     {
@@ -95,6 +110,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns the file extension when resolving 'file-extension' field.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_File_Extension()
     {
@@ -123,6 +141,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns the file size in bytes when resolving 'file-size' field.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_File_Size()
     {
@@ -147,6 +168,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns 'document' resource type for PDF files.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Resource_Type_For_Pdf()
     {
@@ -175,6 +199,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns 'image' resource type for image files.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Resource_Type_For_Image()
     {
@@ -203,6 +230,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns 'media' resource type for video/audio files.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Resource_Type_For_Media()
     {
@@ -231,6 +261,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns 'unknown' resource type for unrecognized file extensions.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Unknown_For_Unrecognized_Extension()
     {
@@ -259,6 +292,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns the correct MIME type for files based on their extension.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Correct_Mime_Type()
     {
@@ -287,6 +323,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns valid creation and modification dates for files.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Dates()
     {
@@ -313,6 +352,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns null when attempting to resolve metadata for a nonexistent file.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Null_For_Nonexistent_File()
     {
@@ -326,6 +368,9 @@ public class ResourceMetadataResolverTests
         Assert.IsNull(result);
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns null when context is invalid or missing required fields.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Null_For_Invalid_Context()
     {
@@ -339,6 +384,9 @@ public class ResourceMetadataResolverTests
         Assert.IsNull(result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns comprehensive file analysis including name, size, type, and dates.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Comprehensive_File_Analysis()
     {
@@ -382,6 +430,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns empty dictionary when context is null.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Empty_Dictionary_For_Null_Context()
     {
@@ -393,6 +444,9 @@ public class ResourceMetadataResolverTests
         Assert.AreEqual(0, metadata.Count);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns empty dictionary when context lacks filePath.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Empty_Dictionary_For_Missing_FilePath()
     {
@@ -407,6 +461,9 @@ public class ResourceMetadataResolverTests
         Assert.AreEqual(0, metadata.Count);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns empty dictionary when file does not exist.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Empty_Dictionary_For_Nonexistent_File()
     {
@@ -421,6 +478,9 @@ public class ResourceMetadataResolverTests
         Assert.AreEqual(0, metadata.Count);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata skips image-specific metadata when extractImageMetadata flag is false.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Skip_Image_Metadata_When_Configured()
     {
@@ -456,6 +516,9 @@ public class ResourceMetadataResolverTests
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata correctly identifies resource types and MIME types for various file extensions.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Handle_Various_File_Extensions()
     {

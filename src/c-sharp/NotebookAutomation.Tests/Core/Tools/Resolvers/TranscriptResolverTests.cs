@@ -30,6 +30,9 @@ public class TranscriptResolverTests
         Assert.AreEqual("transcript", fileType);
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns true for all supported transcript field names when context contains a filePath.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_True_For_Supported_Fields_With_Valid_Context()
     {
@@ -45,6 +48,9 @@ public class TranscriptResolverTests
         Assert.IsTrue(_resolver.CanResolve("transcript-content", context));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false for unsupported field names.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_For_Unsupported_Fields()
     {
@@ -55,6 +61,9 @@ public class TranscriptResolverTests
         Assert.IsFalse(_resolver.CanResolve("unsupported-field", context));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false when context is null.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_For_Null_Context()
     {
@@ -62,6 +71,9 @@ public class TranscriptResolverTests
         Assert.IsFalse(_resolver.CanResolve("transcript-path", null));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false when context does not contain filePath.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_Without_FilePath()
     {
@@ -72,6 +84,9 @@ public class TranscriptResolverTests
         Assert.IsFalse(_resolver.CanResolve("transcript-path", context));
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns true for transcript-exists when transcript file is explicitly specified and exists.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_True_For_Transcript_Exists_With_Explicit_Path()
     {
@@ -108,6 +123,9 @@ This is the second line of the transcript.
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns false for transcript-exists when no transcript file exists.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_False_For_Transcript_Exists_Without_File()
     {
@@ -124,6 +142,9 @@ This is the second line of the transcript.
         Assert.AreEqual(false, result);
     }
 
+    /// <summary>
+    /// Verifies that Resolve identifies SRT format for .srt transcript files.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Srt_Format_For_Srt_File()
     {
@@ -156,6 +177,9 @@ Hello world, this is a test transcript.
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve correctly counts words in transcript content.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Count_Words_In_Transcript()
     {
@@ -192,6 +216,9 @@ This is the second line of the transcript.
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve extracts plain text content from SRT transcript files.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Extract_Plain_Text_From_Srt()
     {
@@ -231,6 +258,9 @@ This is the second line.
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve calculates total duration from SRT transcript timestamps.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Calculate_Duration_From_Srt()
     {
@@ -268,6 +298,9 @@ This is the second line.
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve extracts individual segments from SRT transcript files.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Extract_Segments_From_Srt()
     {
@@ -306,6 +339,9 @@ This is the second line.
         }
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns null when context is invalid or missing required fields.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Null_For_Invalid_Context()
     {
@@ -319,6 +355,9 @@ This is the second line.
         Assert.IsNull(result);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns comprehensive transcript analysis including format, duration, and content.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Comprehensive_Transcript_Analysis()
     {
@@ -368,6 +407,9 @@ This is the second line of the transcript.
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns empty dictionary when context is null.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Empty_Dictionary_For_Null_Context()
     {
@@ -379,6 +421,9 @@ This is the second line of the transcript.
         Assert.AreEqual(0, metadata.Count);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata handles missing transcript files gracefully.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Handle_Missing_Transcript_File()
     {
@@ -394,6 +439,9 @@ This is the second line of the transcript.
         Assert.AreEqual(1, metadata.Count); // Should only contain transcript-exists
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata correctly processes plain text transcript files.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Handle_Plain_Text_Transcript()
     {
@@ -431,6 +479,9 @@ This is the second line of the transcript.
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata skips content extraction when extractContent flag is false.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Skip_Content_When_Configured()
     {
@@ -465,6 +516,9 @@ This is the second line of the transcript.
         }
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata skips timing/segment extraction when extractTimings flag is false.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Skip_Timing_When_Configured()
     {

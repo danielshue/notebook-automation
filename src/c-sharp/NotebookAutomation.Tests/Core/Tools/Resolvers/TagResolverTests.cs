@@ -30,6 +30,9 @@ public class TagResolverTests
         Assert.AreEqual("tag", fileType);
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns true for all supported tag field names when context contains tags.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_True_For_Supported_Fields_With_Valid_Context()
     {
@@ -43,6 +46,9 @@ public class TagResolverTests
         Assert.IsTrue(_resolver.CanResolve("hierarchical-tags", context));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false for unsupported field names.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_For_Unsupported_Fields()
     {
@@ -53,6 +59,9 @@ public class TagResolverTests
         Assert.IsFalse(_resolver.CanResolve("unsupported-field", context));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false when context is null.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_For_Null_Context()
     {
@@ -60,6 +69,9 @@ public class TagResolverTests
         Assert.IsFalse(_resolver.CanResolve("normalized-tags", null));
     }
 
+    /// <summary>
+    /// Verifies that CanResolve returns false when context does not contain tags.
+    /// </summary>
     [TestMethod]
     public void CanResolve_Should_Return_False_Without_Tags()
     {
@@ -70,6 +82,9 @@ public class TagResolverTests
         Assert.IsFalse(_resolver.CanResolve("normalized-tags", context));
     }
 
+    /// <summary>
+    /// Verifies that Resolve normalizes tags to lowercase with hyphens.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Normalize_Tags()
     {
@@ -89,6 +104,9 @@ public class TagResolverTests
         Assert.IsTrue(result.Contains("python-programming"));
     }
 
+    /// <summary>
+    /// Verifies that Resolve correctly counts the number of tags in the context.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Count_Tags()
     {
@@ -105,6 +123,9 @@ public class TagResolverTests
         Assert.AreEqual(3, result);
     }
 
+    /// <summary>
+    /// Verifies that Resolve identifies tags that conflict with reserved tag names.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Identify_Invalid_Tags()
     {
@@ -124,6 +145,9 @@ public class TagResolverTests
         Assert.IsTrue(result.Contains("reserved-tag"));
     }
 
+    /// <summary>
+    /// Verifies that Resolve creates a hierarchical structure from tags containing separators.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Create_Hierarchical_Structure()
     {
@@ -142,6 +166,9 @@ public class TagResolverTests
         Assert.IsTrue(result.ContainsKey("programming"));
     }
 
+    /// <summary>
+    /// Verifies that Resolve calculates the maximum hierarchy depth from all tags.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Calculate_Hierarchy_Depth()
     {
@@ -158,6 +185,9 @@ public class TagResolverTests
         Assert.AreEqual(3, result);
     }
 
+    /// <summary>
+    /// Verifies that Resolve returns null when context is invalid or missing required fields.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Return_Null_For_Invalid_Context()
     {
@@ -171,6 +201,9 @@ public class TagResolverTests
         Assert.IsNull(result);
     }
 
+    /// <summary>
+    /// Verifies that Resolve generates suggested tags based on content analysis.
+    /// </summary>
     [TestMethod]
     public void Resolve_Should_Generate_Suggested_Tags_From_Content()
     {
@@ -190,6 +223,9 @@ public class TagResolverTests
         // Should contain some suggested tags based on content
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns comprehensive tag analysis including normalization, counts, and validation.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Comprehensive_Tag_Analysis()
     {
@@ -220,6 +256,9 @@ public class TagResolverTests
         Assert.IsTrue(invalidTags.Contains("reserved-tag"));
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata returns empty dictionary when context is null.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Return_Empty_Dictionary_For_Null_Context()
     {
@@ -231,6 +270,9 @@ public class TagResolverTests
         Assert.AreEqual(0, metadata.Count);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata correctly handles empty tag arrays.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Handle_Empty_Tags()
     {
@@ -246,6 +288,9 @@ public class TagResolverTests
         Assert.IsTrue(metadata.ContainsKey("normalized-tags"));
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata removes duplicate tags with different casing.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Remove_Duplicate_Tags()
     {
@@ -266,6 +311,9 @@ public class TagResolverTests
         Assert.IsTrue(normalizedTags.Contains("other-tag"));
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata correctly handles custom tag hierarchy separators.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Handle_Different_Tag_Separators()
     {
@@ -284,6 +332,9 @@ public class TagResolverTests
         Assert.AreEqual(3, hierarchyDepth);
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata preserves original tag casing when normalizeCase is false.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Preserve_Case_When_Configured()
     {
@@ -304,6 +355,9 @@ public class TagResolverTests
         Assert.IsTrue(normalizedTags.Contains("PascalCase"));
     }
 
+    /// <summary>
+    /// Verifies that ExtractMetadata skips reserved tag validation when validateReserved is false.
+    /// </summary>
     [TestMethod]
     public void ExtractMetadata_Should_Skip_Reserved_Validation_When_Configured()
     {

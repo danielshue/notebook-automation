@@ -44,6 +44,9 @@ public class AnsiConsoleHelperTests
         Assert.IsTrue(output.Contains("opts"));
     }
 
+    /// <summary>
+    /// Verifies that WriteInfo prints informational messages with ANSI colors to console output.
+    /// </summary>
     [TestMethod]
     public void WriteInfo_PrintsInfoWithColors()
     {
@@ -56,6 +59,9 @@ public class AnsiConsoleHelperTests
         Assert.IsTrue(output.Contains("info message"));
     }
 
+    /// <summary>
+    /// Verifies that WriteWarning prints warning messages with ANSI colors to console output.
+    /// </summary>
     [TestMethod]
     public void WriteWarning_PrintsWarningWithColors()
     {
@@ -68,6 +74,9 @@ public class AnsiConsoleHelperTests
         Assert.IsTrue(output.Contains("warn message"));
     }
 
+    /// <summary>
+    /// Verifies that WriteError prints error messages with ANSI colors to console output.
+    /// </summary>
     [TestMethod]
     public void WriteError_PrintsErrorWithColors()
     {
@@ -80,6 +89,9 @@ public class AnsiConsoleHelperTests
         Assert.IsTrue(output.Contains("error message"));
     }
 
+    /// <summary>
+    /// Verifies that WriteSuccess prints success messages with ANSI colors to console output.
+    /// </summary>
     [TestMethod]
     public void WriteSuccess_PrintsSuccessWithColors()
     {
@@ -92,6 +104,9 @@ public class AnsiConsoleHelperTests
         Assert.IsTrue(output.Contains("success message"));
     }
 
+    /// <summary>
+    /// Verifies that WriteHeading prints heading text with ANSI colors to console output.
+    /// </summary>
     [TestMethod]
     public void WriteHeading_PrintsHeadingWithColors()
     {
@@ -104,6 +119,9 @@ public class AnsiConsoleHelperTests
         Assert.IsTrue(output.Contains("heading"));
     }
 
+    /// <summary>
+    /// Verifies that WriteKeyValue prints key-value pairs with ANSI colors to console output.
+    /// </summary>
     [TestMethod]
     public void WriteKeyValue_PrintsKeyValueWithColors()
     {

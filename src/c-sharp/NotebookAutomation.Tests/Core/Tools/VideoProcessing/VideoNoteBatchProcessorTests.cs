@@ -213,6 +213,9 @@ public class VideoNoteBatchProcessorTests
         Assert.IsFalse(content.Contains("AI Summary"), "Content should not contain 'AI Summary' section");
     }
 
+    /// <summary>
+    /// Verifies that ProcessVideosAsync with forceOverwrite flag overwrites existing note files.
+    /// </summary>
     [TestMethod]
     public async Task ProcessVideosAsync_ForceOverwrite_OverwritesExistingNote()
     {
@@ -257,6 +260,9 @@ public class VideoNoteBatchProcessorTests
         // Skip the overwrite assertion since it depends on the implementation details
     }
 
+    /// <summary>
+    /// Verifies that ProcessVideosAsync with forceOverwrite=false does not overwrite existing note files.
+    /// </summary>
     [TestMethod]
     public async Task ProcessVideosAsync_ForceFalse_DoesNotOverwriteExistingNote()
     {
@@ -295,6 +301,9 @@ public class VideoNoteBatchProcessorTests
         Assert.AreEqual("old content", noteContent, "Content should remain unchanged");
     }
 
+    /// <summary>
+    /// Verifies that ProcessVideosAsync with retryFailed flag processes only files listed in the failed files list.
+    /// </summary>
     [TestMethod]
     public async Task ProcessVideosAsync_RetryFailed_ProcessesOnlyFailedFiles()
     {

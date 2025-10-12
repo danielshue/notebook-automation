@@ -17,6 +17,9 @@ public class OneDriveCliOptionsTests
         Assert.IsFalse(options.Retry);
     }
 
+    /// <summary>
+    /// Verifies that OneDriveCliOptions properties can be set and retrieved correctly.
+    /// </summary>
     [TestMethod]
     public void Properties_CanBeSetAndGet()
     {
@@ -33,6 +36,9 @@ public class OneDriveCliOptionsTests
         Assert.IsTrue(options.Retry);
     }
 
+    /// <summary>
+    /// Verifies that OneDriveCliOptions properties can be changed individually after object initialization.
+    /// </summary>
     [TestMethod]
     public void Properties_CanBeChangedIndividually()
     {

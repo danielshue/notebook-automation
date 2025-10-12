@@ -93,6 +93,9 @@ public class VaultIndexProcessorTests
         Assert.IsFalse(result);
     }
 
+    /// <summary>
+    /// Verifies that GenerateIndexAsync returns false when the template for the index is not found.
+    /// </summary>
     [TestMethod]
     public async Task GenerateIndexAsync_ReturnsFalse_WhenTemplateNotFound()
     {        // Arrange
@@ -104,6 +107,9 @@ public class VaultIndexProcessorTests
         // Assert
         Assert.IsFalse(result);
     }
+    /// <summary>
+    /// Verifies that GenerateIndexAsync returns false when index file already exists and forceOverwrite is false.
+    /// </summary>
     [TestMethod]
     public async Task GenerateIndexAsync_ReturnsFalse_WhenFileExistsAndNotForce()
     {
@@ -137,6 +143,9 @@ public class VaultIndexProcessorTests
         }
     }
 
+    /// <summary>
+    /// Verifies that GenerateIndexAsync returns true when running in dry-run mode without actually creating files.
+    /// </summary>
     [TestMethod]
     public async Task GenerateIndexAsync_ReturnsTrue_WhenDryRun()
     {
@@ -150,6 +159,9 @@ public class VaultIndexProcessorTests
         Assert.IsTrue(result);
     }
 
+    /// <summary>
+    /// Verifies that DetermineTemplateType returns 'main' template type for level 1 vault hierarchy.
+    /// </summary>
     [TestMethod]
     public void DetermineTemplateType_Level1_ReturnsMain()
     {
@@ -163,6 +175,9 @@ public class VaultIndexProcessorTests
         Assert.AreEqual("main", result);
     }
 
+    /// <summary>
+    /// Verifies that DetermineTemplateType returns 'program' template type for level 2 vault hierarchy.
+    /// </summary>
     [TestMethod]
     public void DetermineTemplateType_Level2_ReturnsProgram()
     {
@@ -176,6 +191,9 @@ public class VaultIndexProcessorTests
         Assert.AreEqual("program", result);
     }
 
+    /// <summary>
+    /// Verifies that DetermineTemplateType returns 'lesson' template type for level 5 with lesson-named folder.
+    /// </summary>
     [TestMethod]
     public void DetermineTemplateType_Level5WithLessonFolder_ReturnsLesson()
     {
@@ -189,6 +207,9 @@ public class VaultIndexProcessorTests
         Assert.AreEqual("lesson", result);
     }
 
+    /// <summary>
+    /// Verifies that DetermineTemplateType returns 'module' template type for level 4 with module-named folder.
+    /// </summary>
     [TestMethod]
     public void DetermineTemplateType_Level4WithModuleFolder_ReturnsModule()
     {

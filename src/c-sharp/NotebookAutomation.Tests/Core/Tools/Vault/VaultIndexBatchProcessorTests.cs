@@ -84,6 +84,9 @@ public class VaultIndexBatchProcessorTests
         Assert.AreEqual(0, processor.Queue.Count);
     }
 
+    /// <summary>
+    /// Verifies that VaultIndexBatchProcessor constructor allows null processor parameter.
+    /// </summary>
     [TestMethod]
     public void Constructor_NullProcessor_AllowsNull()
     {
@@ -93,6 +96,9 @@ public class VaultIndexBatchProcessorTests
         Assert.AreEqual(0, processor.Queue.Count);
     }
 
+    /// <summary>
+    /// Verifies that VaultIndexBatchProcessor constructor allows null hierarchy detector parameter.
+    /// </summary>
     [TestMethod]
     public void Constructor_NullHierarchyDetector_AllowsNull()
     {

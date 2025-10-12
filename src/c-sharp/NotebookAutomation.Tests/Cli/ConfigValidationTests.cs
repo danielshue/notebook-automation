@@ -38,6 +38,9 @@ public class ConfigValidationTests
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", original);
     }
 
+    /// <summary>
+    /// Verifies that RequireOpenAi returns true when the OpenAI API key is present.
+    /// </summary>
     [TestMethod]
     public async Task RequireOpenAi_ReturnsTrue_WhenApiKeyPresent()
     {
@@ -61,6 +64,10 @@ public class ConfigValidationTests
         // Cleanup
         Environment.SetEnvironmentVariable("OPENAI_API_KEY", original);
     }
+
+    /// <summary>
+    /// Verifies that RequireAllPaths returns false when Paths configuration is null.
+    /// </summary>
     [TestMethod]
     public void RequireAllPaths_ReturnsFalse_WhenPathsIsNull()
     {
@@ -70,6 +77,9 @@ public class ConfigValidationTests
         Assert.IsTrue(missing.Count > 0);
     }
 
+    /// <summary>
+    /// Verifies that RequireAllPaths returns false when all path fields are missing or whitespace.
+    /// </summary>
     [TestMethod]
     public void RequireAllPaths_ReturnsFalse_WhenAllFieldsMissingOrWhitespace()
     {
@@ -88,6 +98,10 @@ public class ConfigValidationTests
         Assert.IsFalse(result);
         Assert.AreEqual(5, missing.Count);
     }
+
+    /// <summary>
+    /// Verifies that RequireMicrosoftGraph returns false when MicrosoftGraph configuration is null.
+    /// </summary>
     [TestMethod]
     public async Task RequireMicrosoftGraph_ReturnsFalse_WhenMicrosoftGraphIsNull()
     {
@@ -95,6 +109,10 @@ public class ConfigValidationTests
         var result = await ConfigValidation.RequireMicrosoftGraph(config);
         Assert.IsFalse(result);
     }
+
+    /// <summary>
+    /// Verifies that RequireMicrosoftGraph returns false when Scopes is null or empty.
+    /// </summary>
     [TestMethod]
     public async Task RequireMicrosoftGraph_ReturnsFalse_WhenScopesIsNullOrEmpty()
     {
@@ -103,6 +121,10 @@ public class ConfigValidationTests
         Assert.IsFalse(await ConfigValidation.RequireMicrosoftGraph(config1));
         Assert.IsFalse(await ConfigValidation.RequireMicrosoftGraph(config2));
     }
+
+    /// <summary>
+    /// Verifies that RequireOpenAi returns false when AiService configuration is null.
+    /// </summary>
     [TestMethod]
     public async Task RequireOpenAi_ReturnsFalse_WhenAiServiceIsNull()
     {
@@ -111,6 +133,9 @@ public class ConfigValidationTests
         Assert.IsFalse(result);
     }
 
+    /// <summary>
+    /// Verifies that RequireAllPaths returns true when all required paths are present.
+    /// </summary>
     [TestMethod]
     public void RequireAllPaths_ReturnsTrue_WhenAllPathsPresent()
     {
@@ -130,6 +155,9 @@ public class ConfigValidationTests
         Assert.AreEqual(0, missing.Count);
     }
 
+    /// <summary>
+    /// Verifies that RequireAllPaths returns false and lists missing paths when some paths are missing.
+    /// </summary>
     [TestMethod]
     public void RequireAllPaths_ReturnsFalse_AndListsMissing_WhenSomePathsMissing()
     {
@@ -153,6 +181,9 @@ public class ConfigValidationTests
         CollectionAssert.DoesNotContain(missing, "paths.onedrive_resources_basepath");
     }
 
+    /// <summary>
+    /// Verifies that RequireMicrosoftGraph returns false when required values are missing.
+    /// </summary>
     [TestMethod]
     public async Task RequireMicrosoftGraph_ReturnsFalse_WhenMissingValues()
     {
@@ -170,6 +201,9 @@ public class ConfigValidationTests
         Assert.IsFalse(result);
     }
 
+    /// <summary>
+    /// Verifies that RequireMicrosoftGraph returns true when all required values are present.
+    /// </summary>
     [TestMethod]
     public async Task RequireMicrosoftGraph_ReturnsTrue_WhenAllValuesPresent()
     {

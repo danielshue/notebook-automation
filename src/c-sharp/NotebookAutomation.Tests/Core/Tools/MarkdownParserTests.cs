@@ -232,6 +232,9 @@ public class MarkdownParserTests
         Assert.IsFalse(sanitized.Any(char.IsUpper), "Result should not contain any uppercase letters");
     }
 
+    /// <summary>
+    /// Verifies that SanitizeForFilename returns "unnamed" when provided with an empty string.
+    /// </summary>
     [TestMethod]
     public void SanitizeForFilename_Empty_ReturnsUnnamed()
     {

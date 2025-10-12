@@ -168,8 +168,9 @@ public class TextChunkingServiceTests
         Assert.AreEqual(new string('A', 100), result[1]);
     }
 
-    // Tests token estimation for normal text.
-    // </summary>
+    /// <summary>
+    /// Verifies that EstimateTokenCount returns expected token count for normal text using 4-character-per-token estimation.
+    /// </summary>
     [TestMethod]
     public void EstimateTokenCount_NormalText_ReturnsExpectedCount()
     {

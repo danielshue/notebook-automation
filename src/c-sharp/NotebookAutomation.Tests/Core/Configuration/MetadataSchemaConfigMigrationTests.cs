@@ -11,9 +11,15 @@ using NotebookAutomation.Core.Tools;
 
 namespace NotebookAutomation.Tests.Core.Configuration;
 
+/// <summary>
+/// Tests for metadata schema configuration migration and loading functionality.
+/// </summary>
 [TestClass]
 public class MetadataSchemaConfigMigrationTests
 {
+    /// <summary>
+    /// Verifies that AppConfig loads MetadataSchemaFile from configuration settings.
+    /// </summary>
     [TestMethod]
     public void AppConfig_Should_Load_MetadataSchemaFile_From_Configuration()
     {
@@ -34,6 +40,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual("/test/vault", appConfig.Paths.NotebookVaultFullpathRoot);
     }
 
+    /// <summary>
+    /// Verifies that PathsConfig correctly serializes and deserializes MetadataSchemaFile property.
+    /// </summary>
     [TestMethod]
     public void PathsConfig_Should_Serialize_And_Deserialize_MetadataSchemaFile()
     {
@@ -51,6 +60,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(originalConfig.MetadataSchemaFile, deserializedConfig.MetadataSchemaFile);
     }
 
+    /// <summary>
+    /// Verifies that service registration uses MetadataSchemaFile from configuration when configuring services.
+    /// </summary>
     [TestMethod]
     public void ServiceRegistration_Should_Use_MetadataSchemaFile_From_Configuration()
     {
@@ -76,6 +88,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual("config/test-schema.yml", config.Paths.MetadataSchemaFile);
     }
 
+    /// <summary>
+    /// Verifies that AppConfig loads NotebookVaultResourcesBasepath from configuration settings.
+    /// </summary>
     [TestMethod]
     public void AppConfig_Should_Load_NotebookVaultResourcesBasepath_From_Configuration()
     {
@@ -96,6 +111,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual("/test/vault", appConfig.Paths.NotebookVaultFullpathRoot);
     }
 
+    /// <summary>
+    /// Verifies that PathsConfig correctly serializes and deserializes NotebookVaultResourcesBasepath property.
+    /// </summary>
     [TestMethod]
     public void PathsConfig_Should_Serialize_And_Deserialize_NotebookVaultResourcesBasepath()
     {
@@ -123,6 +141,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(originalConfig.OnedriveResourcesBasepath, deserializedConfig.OnedriveResourcesBasepath);
     }
 
+    /// <summary>
+    /// Verifies that PathsConfig correctly maps JSON property name for NotebookVaultResourcesBasepath.
+    /// </summary>
     [TestMethod]
     public void PathsConfig_Should_Map_Json_Property_Name_For_NotebookVaultResourcesBasepath()
     {
@@ -148,6 +169,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual("Education\\MBA-Resources", deserializedConfig.OnedriveResourcesBasepath);
     }
 
+    /// <summary>
+    /// Verifies that AppConfig loads NotebookVaultResourcesBasepath from JSON configuration file.
+    /// </summary>
     [TestMethod]
     public void AppConfig_Should_Load_NotebookVaultResourcesBasepath_From_JsonFile()
     {
@@ -194,6 +218,9 @@ public class MetadataSchemaConfigMigrationTests
 
     #region GetEffectiveVaultRoot Tests
 
+    /// <summary>
+    /// Verifies that GetEffectiveVaultRoot returns vault root when resources base path is not specified.
+    /// </summary>
     [TestMethod]
     public void GetEffectiveVaultRoot_Should_Return_VaultRoot_When_No_ResourcesBasePath()
     {
@@ -208,6 +235,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(tempVaultRoot, result);
     }
 
+    /// <summary>
+    /// Verifies that GetEffectiveVaultRoot correctly combines vault root and resources base path.
+    /// </summary>
     [TestMethod]
     public void GetEffectiveVaultRoot_Should_Combine_VaultRoot_And_ResourcesBasePath()
     {
@@ -223,6 +253,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(expected, result);
     }
 
+    /// <summary>
+    /// Verifies that GetEffectiveVaultRoot returns empty string when vault root is empty.
+    /// </summary>
     [TestMethod]
     public void GetEffectiveVaultRoot_Should_Return_Empty_When_VaultRoot_Empty()
     {
@@ -236,6 +269,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(string.Empty, result);
     }
 
+    /// <summary>
+    /// Verifies that GetEffectiveVaultRoot returns empty string when vault root is null.
+    /// </summary>
     [TestMethod]
     public void GetEffectiveVaultRoot_Should_Return_Empty_When_VaultRoot_Null()
     {
@@ -249,6 +285,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(string.Empty, result);
     }
 
+    /// <summary>
+    /// Verifies that GetEffectiveVaultRoot correctly handles leading path separators in resources base path.
+    /// </summary>
     [TestMethod]
     public void GetEffectiveVaultRoot_Should_Handle_Leading_Separators_In_ResourcesBasePath()
     {
@@ -264,6 +303,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(expected, result);
     }
 
+    /// <summary>
+    /// Verifies that GetEffectiveVaultRoot correctly handles forward slashes in resources base path.
+    /// </summary>
     [TestMethod]
     public void GetEffectiveVaultRoot_Should_Handle_Forward_Slashes_In_ResourcesBasePath()
     {
@@ -279,6 +321,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(expected, result);
     }
 
+    /// <summary>
+    /// Verifies that GetEffectiveVaultRoot correctly handles mixed path separators in resources base path.
+    /// </summary>
     [TestMethod]
     public void GetEffectiveVaultRoot_Should_Handle_Mixed_Separators_In_ResourcesBasePath()
     {
@@ -294,6 +339,9 @@ public class MetadataSchemaConfigMigrationTests
         Assert.AreEqual(expected, result);
     }
 
+    /// <summary>
+    /// Verifies that GetEffectiveVaultRoot returns vault root when resources base path is null.
+    /// </summary>
     [TestMethod]
     public void GetEffectiveVaultRoot_Should_Return_VaultRoot_When_ResourcesBasePath_Null()
     {

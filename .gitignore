@@ -247,3 +247,4 @@ src/obsidian-plugin/na-macos-arm64
 src/obsidian-plugin/na-macos-x64
 coverage-report/*
 Copilot-Processing.md
+scripts/temp_publish_test/*

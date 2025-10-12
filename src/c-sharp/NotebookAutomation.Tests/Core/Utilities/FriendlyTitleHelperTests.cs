@@ -20,6 +20,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Introduction Finance", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName preserves numbers appearing after words when formatting filenames.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_PreservesNumbersAfterWords()
     {
@@ -33,6 +36,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("4 ROI Analysis Part 2", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName removes multiple leading numbers from filenames.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_HandlesMultipleLeadingNumbers()
     {
@@ -44,6 +50,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Introduction Concept Overview", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName preserves acronyms in filenames when formatting.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_PreservesAcronyms()
     {
@@ -57,6 +66,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("ROI Analysis For MBA Students", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly handles and formats Roman numerals in filenames.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_HandlesRomanNumerals()
     {
@@ -70,6 +82,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Part II Advanced Topics", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName returns default title when provided with empty input.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_HandlesEmptyInput()
     {
@@ -83,6 +98,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Title", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName properly handles filenames with dashes and underscores.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_HandlesDashesAndUnderscores()
     {
@@ -96,6 +114,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Financial Planning Basics 101", result);
     } // Real-world MBA-Resources filename test cases
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world operations management course titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_OperationsManagementTitle()
     {
@@ -109,6 +130,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("1.3 Operations Management BADM 567 Live Session", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world course orientation titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_CourseOrientationTitle()
     {
@@ -120,6 +144,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Welcome Operations Management Organization Analysis", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world professor introduction titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_ProfessorIntroduction()
     {
@@ -133,6 +160,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Meet Professor Gopesh Anand", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world process arrangements course titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_ProcessArrangements()
     {
@@ -144,6 +174,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Process Arrangements Operations Strategy", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world inventory management course titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_InventoryManagement()
     {
@@ -155,6 +188,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Inventory Process Cash Cycle Inventory Metrics", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world quality management course titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_QualityManagement()
     {
@@ -166,6 +202,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("One Shot Inventory Decisions Newsvendor Model", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world supply chain management course titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_SupplyChainManagement()
     {
@@ -179,6 +218,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Supplier Selection Development Monitoring", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world statistical process control course titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_StatisticalProcessControl()
     {
@@ -190,6 +232,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("X Bar R Charts For Measurement Data", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world technical course filenames.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_TechFilenames()
     {
@@ -203,6 +248,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("The Importance Market Research", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world cost framework example titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_CostFrameworkExample()
     {
@@ -216,6 +264,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Cost Framework 2 Behavior Example", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world multi-part market research titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_MarketResearchParts()
     {
@@ -229,6 +280,9 @@ public class FriendlyTitleHelperTests
         Assert.AreEqual("Conducting Market Research Part 1", result);
     }
 
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName correctly formats real-world complex hyphenated course titles.
+    /// </summary>
     [TestMethod]
     public void GetFriendlyTitleFromFileName_RealWorld_ComplexHyphenatedTitle()
     {
