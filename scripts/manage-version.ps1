@@ -1480,7 +1480,38 @@ try {
         catch { Write-Warning "Exception during delete: $($_.Exception.Message)" }
 
         Write-Host "🚀 Creating replacement release $reTag" -ForegroundColor Green
-        $notes = "Reissued assets for $reTag on $(Get-Date -Format o)"
+        
+        # Generate AI-powered release notes for reissue
+        $notes = $null
+        if (Get-Command New-AIGeneratedReleaseNotes -ErrorAction SilentlyContinue) {
+            try {
+                Write-Host "🤖 Generating AI-powered release notes for reissue..." -ForegroundColor Cyan
+                $notes = New-AIGeneratedReleaseNotes `
+                    -Version $ReissueVersion `
+                    -Type $Type `
+                    -PromptTemplatePath $PromptTemplatePath `
+                    -ChecksumsJsonPath $checksumsPath `
+                    -ThrowOnFailure:$false
+                
+                if ($notes) {
+                    Write-Host "✅ AI release notes generated successfully" -ForegroundColor Green
+                }
+                else {
+                    Write-Warning "AI release notes generation returned empty, using fallback"
+                    $notes = $null
+                }
+            }
+            catch {
+                Write-Warning "AI release notes generation failed: $($_.Exception.Message)"
+                $notes = $null
+            }
+        }
+        
+        # Fallback to simple reissue message if AI generation not available or failed
+        if (-not $notes) {
+            $notes = "Reissued assets for $reTag on $(Get-Date -Format o)"
+        }
+        
         # Write notes to temporary file to avoid parameter parsing issues
         $tempNotesFile = Join-Path $env:TEMP "reissue-notes-$(Get-Random).txt"
         $notes | Out-File -FilePath $tempNotesFile -Encoding utf8NoBOM
