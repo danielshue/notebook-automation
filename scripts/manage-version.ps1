@@ -1503,7 +1503,8 @@ try {
         Write-Host "✅ Prepared $($releaseAssets.Count) total release assets ($($assetManifest.files.Count) plugin + $foundExecutables executables + checksums)"
 
         # Generate AI-powered release notes using GitHub Copilot CLI
-        $aiGeneratedNotes = New-AIGeneratedReleaseNotes -Version $Version -ReleaseType $Type -RepoRoot $RepoRoot
+        $promptPath = Join-Path $RepoRoot "scripts\release-notes-prompt.md"
+        $aiGeneratedNotes = New-AIGeneratedReleaseNotes -Version $Version -Type $Type -PromptTemplatePath $promptPath
 
         # Create release notes based on type
         $releaseNotes = switch ($Type) {
