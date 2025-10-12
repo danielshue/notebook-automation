@@ -1611,8 +1611,11 @@ try {
             throw "Asset manifest not found: $assetManifestPath. Run plugin build first."
         }
     
-        # Add executables separately (NOT in asset-manifest.json - these are for manual platform-specific download)
-        Write-Host "   📦 Adding platform executables (separate from plugin files)..."
+        # Note: Executables are already included in asset-manifest.json (for BRAT auto-download)
+        # No need to add them separately - they're already in $releaseAssets from the manifest
+        Write-Host "   ℹ️  Executables already included via asset-manifest.json"
+        
+        # Verify executables are present in the asset list
         $expectedExecutables = @(
             'na-win-x64.exe', 'na-win-arm64.exe',
             'na-linux-x64', 'na-linux-arm64',
@@ -1623,8 +1626,6 @@ try {
         foreach ($exeName in $expectedExecutables) {
             $exePath = Join-Path $pluginDistDir $exeName
             if (Test-Path $exePath) {
-                $releaseAssets += $exePath
-                Write-Host "   📎 Executable: $exeName"
                 $foundExecutables++
             }
             else {
@@ -1633,7 +1634,7 @@ try {
         }
         
         if ($foundExecutables -eq $expectedExecutables.Count) {
-            Write-Host "   ✅ All $foundExecutables executables found"
+            Write-Host "   ✅ All $foundExecutables executables verified"
         }
         else {
             Write-Warning "   ⚠️  Found $foundExecutables of $($expectedExecutables.Count) expected executables"
@@ -1649,7 +1650,7 @@ try {
             Write-Warning "   ⚠️  checksums.json not found"
         }
     
-        Write-Host "✅ Prepared $($releaseAssets.Count) total release assets ($($assetManifest.files.Count) plugin + $foundExecutables executables + checksums)"
+        Write-Host "✅ Prepared $($releaseAssets.Count) total release assets from manifest (includes $foundExecutables executables)"
 
         # Generate AI-powered release notes using centralized function
         $releaseNotes = Invoke-ReleaseNotesGeneration -Version $Version -Type $Type
