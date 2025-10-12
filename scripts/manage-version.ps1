@@ -1448,6 +1448,13 @@ try {
             Write-Host "   📋 Plugin files from asset-manifest.json: $($assetManifest.files.Count) files"
         
             foreach ($fileName in $assetManifest.files) {
+                # Skip zip files - they should never be in the manifest or uploaded to releases
+                # Zip files are for local distribution only (e.g., manual installation)
+                if ($fileName -like "*.zip") {
+                    Write-Warning "   ⚠️  Skipping zip file in manifest (should not be uploaded): $fileName"
+                    continue
+                }
+                
                 $filePath = Join-Path $pluginDistDir $fileName
                 if (Test-Path $filePath) {
                     $releaseAssets += $filePath

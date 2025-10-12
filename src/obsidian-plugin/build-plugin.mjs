@@ -195,7 +195,8 @@ if (allPresent) {
         const distFiles = readdirSync(distRoot);
         const executables = distFiles.filter(f => 
             f.startsWith('na-') && 
-            (f.endsWith('.exe') || (!f.includes('.') && f.includes('-')))
+            (f.endsWith('.exe') || (!f.includes('.') && f.includes('-'))) &&
+            !f.endsWith('.zip') // Explicitly exclude zip files
         );
         filesToManifest.push(...executables);
         
