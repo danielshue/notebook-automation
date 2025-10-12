@@ -53,8 +53,15 @@ param(
 # Set error action preference
 $ErrorActionPreference = "Stop"
 
-# Get script directory and solution path
+# Import required modules
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ModulesDir = Join-Path $ScriptDir "modules"
+Import-Module (Join-Path $ModulesDir "Core\Logging.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Core\Prerequisites.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Build\DotNetBuild.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Build\PluginBuild.psm1") -Force
+
+# Get repository root and solution path
 $RepositoryRoot = Split-Path -Parent $ScriptDir
 $SolutionPath = Join-Path $RepositoryRoot "src\c-sharp\NotebookAutomation.sln"
 $TestProjectPath = Join-Path $RepositoryRoot "src\c-sharp\NotebookAutomation.Core.Tests"
@@ -68,26 +75,6 @@ $Red = [System.ConsoleColor]::Red
 $Yellow = [System.ConsoleColor]::Yellow
 $Cyan = [System.ConsoleColor]::Cyan
 $Magenta = [System.ConsoleColor]::Magenta
-
-function Write-Step {
-    param([string]$Message)
-    Write-Host "`n=== $Message ===" -ForegroundColor $Cyan
-}
-
-function Write-Success {
-    param([string]$Message)
-    Write-Host "✅ $Message" -ForegroundColor $Green
-}
-
-function Write-Warning {
-    param([string]$Message)
-    Write-Host "⚠️  $Message" -ForegroundColor $Yellow
-}
-
-function Write-Error {
-    param([string]$Message)
-    Write-Host "❌ $Message" -ForegroundColor $Red
-}
 
 # Update pluginDistPath to point to the obsidian plugin's dist directory
 $pluginDistPath = Join-Path $RepositoryRoot "src\obsidian-plugin\dist"
@@ -113,37 +100,11 @@ try {
         if (Test-Path $obsidianPluginDir) {
             Push-Location $obsidianPluginDir
             try {
-                # Check if Node.js is available
-                try {
-                    $nodeVersion = node --version 2>$null
-                    Write-Host "Found Node.js version: $nodeVersion" -ForegroundColor $Yellow
-                }
-                catch {
-                    throw "Node.js is required for plugin builds. Please install Node.js 18+ and npm."
-                }
+                # Validate Node.js dependency
+                Test-NodeJS -ThrowOnFailure | Out-Null
 
-                # Check if npm is available
-                try {
-                    $npmVersion = npm --version 2>$null
-                    Write-Host "Found npm version: $npmVersion" -ForegroundColor $Yellow
-                }
-                catch {
-                    throw "npm is required for plugin builds. Please install npm."
-                }
-
-                # Install dependencies
-                Write-Host "Installing Obsidian plugin dependencies..." -ForegroundColor $Yellow
-                npm install
-                if ($LASTEXITCODE -ne 0) {
-                    throw "npm install failed with exit code $LASTEXITCODE"
-                }
-
-                # Build the plugin
-                Write-Host "Building Obsidian plugin..." -ForegroundColor $Yellow
-                npm run build
-                if ($LASTEXITCODE -ne 0) {
-                    throw "Plugin build failed with exit code $LASTEXITCODE"
-                }
+                # Install dependencies and build using module
+                Invoke-PluginInstallAndBuild -PluginPath $obsidianPluginDir -ThrowOnFailure
 
 
                 # Verify build outputs
@@ -312,10 +273,7 @@ try {
     # Step 1: Clean (if not skipped)
     if (-not $SkipClean) {
         Write-Step "Step 1: Clean Solution"
-        dotnet clean $SolutionPath --configuration $Configuration
-        if ($LASTEXITCODE -ne 0) {
-            throw "Clean failed with exit code $LASTEXITCODE"
-        }
+        Invoke-DotNetClean -Path $SolutionPath -Configuration $Configuration -ThrowOnFailure
         Write-Success "Clean completed successfully"
     }
     else {
@@ -324,10 +282,8 @@ try {
 
     # Step 2: Restore Dependencies (mirrors CI)
     Write-Step "Step 2: Restore Dependencies"
-    dotnet restore $SolutionPath
-    if ($LASTEXITCODE -ne 0) {
-        throw "Restore failed with exit code $LASTEXITCODE"
-    }    Write-Success "Dependencies restored successfully"
+    Invoke-DotNetRestore -Path $SolutionPath -ThrowOnFailure
+    Write-Success "Dependencies restored successfully"
 
     # Step 3: Code Formatting (mirrors CI preparation)
     if (-not $SkipFormat) {
@@ -353,29 +309,21 @@ try {
                 Write-Warning "Advanced C# formatting script not found at: $advancedFormatScript"
                 Write-Host "Falling back to standard dotnet format..." -ForegroundColor $Yellow
                 
-                if ($VerboseOutput) {
-                    dotnet format $SolutionPath --verbosity normal
-                }
-                else {
-                    dotnet format $SolutionPath
-                }
+                $verbosity = if ($VerboseOutput) { "normal" } else { "quiet" }
+                Invoke-DotNetFormat -Path $SolutionPath -Verbosity $verbosity
             }
         }
         else {
             Write-Host "Applying standard code formatting..." -ForegroundColor $Yellow
 
-            if ($VerboseOutput) {
-                dotnet format $SolutionPath --verbosity normal
+            $verbosity = if ($VerboseOutput) { "normal" } else { "quiet" }
+            try {
+                Invoke-DotNetFormat -Path $SolutionPath -Verbosity $verbosity
+                Write-Success "Code formatting completed successfully"
             }
-            else {
-                dotnet format $SolutionPath
-            }
-            if ($LASTEXITCODE -ne 0) {
+            catch {
                 Write-Warning "Code formatting encountered issues but continuing..."
                 Write-Host "You may want to review the changes and commit them." -ForegroundColor $Yellow
-            }
-            else {
-                Write-Success "Code formatting completed successfully"
             }
         }
     }
@@ -420,7 +368,8 @@ try {
 
     # Step 5: Build Solution (mirrors CI)
     Write-Step "Step 5: Build Solution"
-    Write-Host "Build command: dotnet build `"$SolutionPath`" --configuration $Configuration --no-restore" -ForegroundColor $Yellow
+    Write-Host "Building solution with configuration $Configuration" -ForegroundColor $Yellow
+    
     $buildParams = @(
         "build",
         "$SolutionPath",
@@ -441,6 +390,7 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Build failed with exit code $LASTEXITCODE"
     }
+    
     Write-Success "Build completed successfully with version $fileVersion"
 
     # Step 6: Run Tests (mirrors CI)

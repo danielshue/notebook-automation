@@ -48,37 +48,18 @@ if (-not $ListOnly) {
     Get-ChildItem -Path $DistPath -Recurse | Remove-Item -Recurse -Force
 }
 
+# Import required modules
+$ModulesDir = Join-Path $ScriptDir "modules"
+Import-Module (Join-Path $ModulesDir "Core\Prerequisites.psm1") -Force
+
 # Check prerequisites
 Write-Host "Checking prerequisites..." -ForegroundColor Yellow
 
 # Check if we're in a git repository
-try {
-    $branch = git rev-parse --abbrev-ref HEAD
-    Write-Host "✓ Git repository found, current branch: $branch"
-}
-catch {
-    Write-Host "✗ Error: Not in a git repository or git not available" -ForegroundColor Red
-    Write-Host "Please run this script from within the repository directory."
-    exit 1
-}
+$branch = Test-GitRepository -GetBranch -ThrowOnFailure
 
 # Check if GitHub CLI is available and authenticated
-try {
-    $authStatus = gh auth status 2>&1
-    if ($LASTEXITCODE -eq 0) {
-        Write-Host "✓ GitHub CLI authenticated"
-    }
-    else {
-        Write-Host "✗ GitHub CLI not authenticated" -ForegroundColor Red
-        Write-Host "Please run 'gh auth login' first."
-        exit 1
-    }
-}
-catch {
-    Write-Host "✗ GitHub CLI not available" -ForegroundColor Red
-    Write-Host "Please install GitHub CLI: https://cli.github.com/"
-    exit 1
-}
+Test-GitHubCLI -ThrowOnFailure | Out-Null
 
 Write-Host ""
 
