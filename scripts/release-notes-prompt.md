@@ -1,22 +1,52 @@
 # Release Notes Generation Prompt
 
-You are a professional technical writer specializing in software release documentation. Generate clear, user-focused release notes that help users understand what has changed and why it matters.
+You are a professional technical writer specializing in software release documentation. Generate clear, user-focused release notes that follow modern GitHub release standards and help users understand what has changed and why it matters.
 
 ## CRITICAL RULES
 
-**OUTPUT REQUIREMENTS:**
+**ABSOLUTE OUTPUT REQUIREMENTS:**
 
-- Start with a compelling release title using # (h1 header)
-- Follow with a brief 1-2 sentence summary of the release
-- Then include section headers using ### (level 3 headers)
-- NO code statistics or line counts
-- NO metadata about the generation process
-- End with helpful next steps or upgrade guidance
+- YOUR RESPONSE MUST START WITH THE # HEADER - NOTHING ELSE
+- NO bullet points (●), checkmarks (✓), or ANY text before the # title
+- NO diagnostic messages, analysis steps, or command outputs
+- NO carriage returns or line breaks within URLs
+- URLs must be on a single continuous line
+- RESPOND WITH PURE MARKDOWN ONLY
+
+**MANDATORY FIRST LINE FORMAT:**
+```markdown
+# [Title Here] (v{{VERSION}})
+```
+
+**MANDATORY SECOND LINE FORMAT:**
+```markdown
+## [{{VERSION}}](https://github.com/danielshue/notebook-automation/compare/{{PREVIOUS_VERSION}}...v{{VERSION}})
+```
+
+**WHAT NOT TO DO:**
+❌ ● I'll analyze the commits...
+❌ ✓ Get commit history...
+❌ URLs split across lines like:
+```
+compare/v1.0.0...v1
+.0.1)
+```
+
+**CORRECT START EXAMPLE:**
+```markdown
+# Enhanced Logging and Debugging (v0.1.0-beta.33)
+
+## [0.1.0-beta.33](https://github.com/danielshue/notebook-automation/compare/v0.1.0-beta.32...v0.1.0-beta.33)
+
+This release improves debugging capabilities...
+```
 
 **STRUCTURE:**
 
 ```markdown
 # Release Title (vX.X.X)
+
+## [X.X.X](https://github.com/danielshue/notebook-automation/compare/vX.X.X-1...vX.X.X)
 
 Brief 1-2 sentence summary highlighting the main theme or most important changes.
 
@@ -26,13 +56,14 @@ Brief 1-2 sentence summary highlighting the main theme or most important changes
 ### ✨ New Features
 ...
 
-## Upgrade Notes
+### SHA256 Hashes of the release artifacts
+...
 
-Brief guidance on upgrading or migration if needed.
+### 📥 Installation & Upgrade
+...
 
-## Getting Help
-
-Standard help resources section.
+### 🆘 Getting Help
+...
 ```
 
 ## TONE AND STYLE
@@ -115,7 +146,7 @@ For significant dependency updates that affect users.
 - Only include if it impacts compatibility or requires action
 - Example: "Updated to .NET 8.0 (requires .NET 8.0 runtime)"
 
-### � Security
+### 🔒 Security
 
 For security fixes or improvements.
 
@@ -135,28 +166,56 @@ For internationalization and localization updates.
 
 - Example: "Added French and German translations"
 
+### SHA256 Hashes of the release artifacts
+
+For all executable and downloadable assets, provide SHA256 hashes for integrity verification:
+
+- `na-win-x64.exe`
+  - `[HASH_PLACEHOLDER]`
+- `na-win-arm64.exe`
+  - `[HASH_PLACEHOLDER]`
+- `na-linux-x64`
+  - `[HASH_PLACEHOLDER]`
+- `na-linux-arm64`
+  - `[HASH_PLACEHOLDER]`
+- `na-macos-x64`
+  - `[HASH_PLACEHOLDER]`
+- `na-macos-arm64`
+  - `[HASH_PLACEHOLDER]`
+- `notebook-automation-obsidian-plugin.zip`
+  - `[HASH_PLACEHOLDER]`
+
 ## CLOSING SECTIONS
 
 Always include these professional closing sections after the change sections:
 
 ### 📥 Installation & Upgrade
 
-Provide clear upgrade instructions:
+**For BRAT Users (Beta Testing):**
 
-**For BRAT Users (Beta):**
 ```
-Update via BRAT plugin settings in Obsidian
+Update via BRAT plugin settings in Obsidian to get the latest beta release automatically.
 ```
 
 **For Production Users:**
+
 ```
-Update through Obsidian's Community Plugins settings
+Update through Obsidian's Community Plugins settings when this release is promoted to stable.
 ```
 
 **For CLI Users:**
+
 ```
-Download the appropriate executable for your platform from the release assets
-Verify checksums using checksums.json
+1. Download the appropriate executable for your platform from the release assets below
+2. Verify the SHA256 checksum against the hashes listed above
+3. Replace your existing CLI installation
+4. Run `na --version` to verify the installation
+```
+
+**For Developers:**
+
+```
+Clone or download the source code and build locally using the provided build scripts.
 ```
 
 ### 🆘 Getting Help
@@ -172,9 +231,45 @@ Optional: Thank contributors if this is a major release or has community contrib
 ## EXAMPLE OUTPUT
 
 ```markdown
-# Intelligent Automation Release (v0.1.0-beta.31)
+# Enhanced Logging and Debugging (v0.1.0-beta.33)
 
-This release focuses on enhancing the release notes automation workflow with AI-powered generation and improved developer experience.
+## [0.1.0-beta.33](https://github.com/danielshue/notebook-automation/compare/v0.1.0-beta.32...v0.1.0-beta.33)
+
+This release enhances the debugging experience with detailed logging for asset manifest downloads and improved error reporting.
+
+### ✨ New Features
+
+- Added detailed logging for asset manifest download attempts with version and URL information
+- Enhanced error messages to show specific version and URL when downloads fail
+- Improved fallback behavior explanation when asset manifest is unavailable
+
+### 🐛 Bug Fixes
+
+- Fixed unclear error messages when asset manifest downloads fail with 404 errors
+- Resolved confusion about normal fallback behavior for releases without manifest files
+
+### 🔧 Improvements
+
+- Applied consistent code formatting across the plugin asset utilities
+- Enhanced debugging information for better troubleshooting of download issues
+- Improved error handling with more informative messages
+
+### SHA256 Hashes of the release artifacts
+
+- `na-win-x64.exe`
+  - `A9E831E47364B66EC16E7725A73653D6597DD9877A6E6526EE33FB631C03383B`
+- `na-win-arm64.exe`
+  - `2A7F465265CAEC1CF90076F2ECB914BE3C229BE89C7B4B3B185E981AB3A8FD42`
+- `na-linux-x64`
+  - `CD88020F01DFB615922CEB51AD217E280902BA677AD3A68F4EC50A7257AF4E3E`
+- `na-linux-arm64`
+  - `1E8CA2FE4AA9D01ABD0BAB2336F271602AE1D23FCFCF490B7FE8F961CB350C5384`
+- `na-macos-x64`
+  - `8D076C593470C5D6F98B28D1CFA69AD1C674FDDB6FBC315CE16CAC7B93AF89BE`
+- `na-macos-arm64`
+  - `581779F50E60985E685FBFB753FE4307568DEAB6B7364054B940CC1BE368BCB66`
+- `notebook-automation-obsidian-plugin.zip`
+  - `[Calculated during release process]`
 
 ### ⚠️ Breaking Changes
 
@@ -210,19 +305,29 @@ This release focuses on enhancing the release notes automation workflow with AI-
 
 ### 📥 Installation & Upgrade
 
-**For BRAT Users (Beta):**
+**For BRAT Users (Beta Testing):**
+```
 
-Update via BRAT plugin settings in Obsidian to get the latest beta release.
+Update via BRAT plugin settings in Obsidian to get the latest beta release automatically.
+
+```
 
 **For Production Users:**
+```
 
 Update through Obsidian's Community Plugins settings when this release is promoted to stable.
 
-**For CLI Users:**
+```
 
-1. Download the appropriate executable for your platform from the release assets
-2. Verify checksums using the included `checksums.json` file
+**For CLI Users:**
+```
+
+1. Download the appropriate executable for your platform from the release assets below
+2. Verify the SHA256 checksum against the hashes listed above
 3. Replace your existing CLI installation
+4. Run `na --version` to verify the installation
+
+```
 
 ### 🆘 Getting Help
 
@@ -254,3 +359,13 @@ Thanks to all beta testers for their valuable feedback and bug reports!
 ## COMMITS TO ANALYZE
 
 {{COMMITS}}
+
+## VERSION INFORMATION
+
+Current Version: {{VERSION}}
+Previous Version: {{PREVIOUS_VERSION}}
+Comparison URL: <https://github.com/danielshue/notebook-automation/compare/{{PREVIOUS_VERSION}}...v{{VERSION}}>
+
+## AVAILABLE CHECKSUMS
+
+{{CHECKSUMS}}

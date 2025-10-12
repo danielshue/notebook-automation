@@ -60,6 +60,10 @@ function New-AIGeneratedReleaseNotes {
         
         [string]$CommitRange = "",
         
+        [string]$PreviousVersion = "",
+        
+        [string]$ChecksumsJsonPath = "",
+        
         [int]$MaxCommits = 50,
         
         [int]$Timeout = 60,
@@ -73,17 +77,29 @@ function New-AIGeneratedReleaseNotes {
     $copilotAvailable = $null -ne (Get-Command "copilot" -ErrorAction SilentlyContinue)
     
     if (-not $copilotAvailable) {
-        $message = "GitHub Copilot CLI is not installed. Install with: npm install -g @github/copilot"
+        $message = @"
+GitHub Copilot CLI is not installed or not available in PATH.
+
+To install GitHub Copilot CLI:
+1. Install via npm: npm install -g @githubnext/github-copilot-cli
+2. Or install via GitHub CLI: gh extension install github/gh-copilot
+3. Authenticate: gh auth login (if using gh extension)
+
+For more information: https://docs.github.com/en/copilot/github-copilot-in-the-cli
+"@
         if ($ThrowOnFailure) {
             throw $message
         }
-        Write-Host "✗ $message" -ForegroundColor Red
+        Write-Host "✗ GitHub Copilot CLI not available" -ForegroundColor Red
+        Write-Host $message -ForegroundColor Yellow
         return $null
     }
     
     # Determine commit range if not specified
     if (-not $CommitRange) {
-        $CommitRange = Get-CommitRangeSinceLastRelease -Version $Version -Type $Type
+        $rangeResult = Get-CommitRangeSinceLastRelease -Version $Version -Type $Type
+        $CommitRange = $rangeResult.Range
+        $PreviousVersion = $rangeResult.PreviousVersion
     }
     
     if (-not $CommitRange) {
@@ -136,9 +152,31 @@ function New-AIGeneratedReleaseNotes {
     
     $promptTemplate = Get-Content $PromptTemplatePath -Raw
     $prompt = $promptTemplate -replace '\{\{COMMITS\}\}', $commitLog
+    $prompt = $prompt -replace '\{\{VERSION\}\}', $Version
+    $prompt = $prompt -replace '\{\{PREVIOUS_VERSION\}\}', $PreviousVersion
+    
+    # Add checksum information if available
+    if ($ChecksumsJsonPath -and (Test-Path $ChecksumsJsonPath)) {
+        try {
+            $checksums = Get-Content $ChecksumsJsonPath | ConvertFrom-Json
+            $checksumText = "SHA256 Checksums from build:`n"
+            foreach ($file in $checksums.files.PSObject.Properties) {
+                $checksumText += "- $($file.Name): $($file.Value)`n"
+            }
+            $prompt = $prompt -replace '\{\{CHECKSUMS\}\}', $checksumText
+        }
+        catch {
+            Write-Host "   ⚠️  Could not read checksums file: $($_.Exception.Message)" -ForegroundColor Yellow
+            $prompt = $prompt -replace '\{\{CHECKSUMS\}\}', "Checksums will be available in the release"
+        }
+    }
+    else {
+        $prompt = $prompt -replace '\{\{CHECKSUMS\}\}', "Checksums will be available in the release"
+    }
     
     # Create temporary file for prompt
-    $tempPrompt = Join-Path $env:TEMP "copilot-prompt-$(Get-Random).txt"
+    $tempDir = if ($env:TEMP) { $env:TEMP } elseif ($env:TMPDIR) { $env:TMPDIR } else { "/tmp" }
+    $tempPrompt = Join-Path $tempDir "copilot-prompt-$(Get-Random).txt"
     $prompt | Out-File -FilePath $tempPrompt -Encoding UTF8
     
     try {
@@ -147,18 +185,37 @@ function New-AIGeneratedReleaseNotes {
         # Execute Copilot CLI with timeout
         $job = Start-Job -ScriptBlock {
             param($TempFile)
-            $input = Get-Content $TempFile -Raw
-            $input | copilot
+            try {
+                $input = Get-Content $TempFile -Raw
+                $output = $input | copilot
+                return $output
+            }
+            catch {
+                return "ERROR: $($_.Exception.Message)"
+            }
         } -ArgumentList $tempPrompt
         
         $completed = Wait-Job -Job $job -Timeout $Timeout
         
         if ($completed) {
-            $output = Receive-Job -Job $job
+            $output = Receive-Job -Job $job -ErrorAction SilentlyContinue
             Remove-Job -Job $job
             
-            # Clean output
-            $releaseNotes = Clean-CopilotOutput -RawOutput $output
+            # Handle different output types
+            if ($output -is [System.Object[]]) {
+                $outputString = ($output | Where-Object { $_ -ne $null }) -join "`n"
+            } elseif ($output) {
+                $outputString = $output.ToString()
+            } else {
+                $outputString = ""
+            }
+            
+            # Format output  
+            $releaseNotes = Format-CopilotOutput -RawOutput $outputString
+            
+            if ([string]::IsNullOrWhiteSpace($releaseNotes)) {
+                throw "Copilot CLI returned empty output"
+            }
             
             Write-Host "   ✅ AI release notes generated successfully" -ForegroundColor Green
             return $releaseNotes
@@ -240,54 +297,76 @@ function Get-CommitRangeSinceLastRelease {
         
         if (-not $previousTag) {
             Write-Host "   ℹ️  No previous $Type release found - comparing last 10 commits" -ForegroundColor Yellow
-            return "HEAD~10..HEAD"
+            return @{
+                Range           = "HEAD~10..HEAD"
+                PreviousVersion = "HEAD~10"
+            }
         }
         else {
             Write-Host "   📊 Comparing changes since $previousTag (last $Type release)" -ForegroundColor Green
-            return "$previousTag..HEAD"
+            return @{
+                Range           = "$previousTag..HEAD"
+                PreviousVersion = $previousTag
+            }
         }
     }
     catch {
         Write-Host "   ⚠️  Failed to get previous release tag: $($_.Exception.Message)" -ForegroundColor Yellow
-        return "HEAD~10..HEAD"  # Fallback
+        return @{
+            Range           = "HEAD~10..HEAD"
+            PreviousVersion = "HEAD~10"
+        }
     }
 }
 
 <#
 .SYNOPSIS
-    Cleans Copilot CLI output to remove formatting artifacts.
+    Formats Copilot CLI output to remove formatting artifacts.
 
 .PARAMETER RawOutput
     The raw output from Copilot CLI.
 
 .EXAMPLE
-    $cleaned = Clean-CopilotOutput -RawOutput $output
+<#
+.SYNOPSIS
+    Formats Copilot CLI output to remove formatting artifacts.
+
+.PARAMETER RawOutput
+    The raw output from Copilot CLI.
+
+.EXAMPLE
+    $formatted = Format-CopilotOutput -RawOutput $output
 
 .OUTPUTS
-    String - Cleaned release notes.
+    String - Formatted release notes.
 #>
-function Clean-CopilotOutput {
+function Format-CopilotOutput {
     param(
         [Parameter(Mandatory = $true)]
         [string]$RawOutput
     )
     
     # Remove ANSI escape codes
-    $cleaned = $RawOutput -replace '\x1b\[[0-9;]*m', ''
+    $formatted = $RawOutput -replace '\x1b\[[0-9;]*m', ''
     
-    # Remove common CLI artifacts
-    $cleaned = $cleaned -replace '^\s*copilot>\s*', '', 'Multiline'
-    $cleaned = $cleaned -replace '^\s*\|.*?\|?\s*$', '', 'Multiline'
+    # Find the first # character and remove everything before it
+    $hashIndex = $formatted.IndexOf('#')
+    if ($hashIndex -gt 0) {
+        $formatted = $formatted.Substring($hashIndex)
+    }
+    
+    # Fix broken URLs by joining lines that were split
+    $formatted = $formatted -replace '(?m)compare/([^\s]+)\s*\r?\n\s*\.([^)]+)\)', 'compare/$1.$2)'
     
     # Trim whitespace
-    $cleaned = $cleaned.Trim()
+    $formatted = $formatted.Trim()
     
-    return $cleaned
+    return $formatted
 }
 
 # Export all public functions
 Export-ModuleMember -Function @(
     'New-AIGeneratedReleaseNotes',
     'Get-CommitRangeSinceLastRelease',
-    'Clean-CopilotOutput'
+    'Format-CopilotOutput'
 )

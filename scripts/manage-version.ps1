@@ -39,6 +39,9 @@
 .PARAMETER ReissueVersion
     The semantic version (without leading 'v') of the existing tag to reissue (e.g. 0.1.0-beta.16)
 
+.PARAMETER GenerateReleaseNotes
+    Generate AI-powered release notes for a specific version without performing any other release tasks
+
 .PARAMETER SyncOnly
     Only synchronize versions between CLI and plugin components (no releases)
 
@@ -103,6 +106,10 @@
     .\scripts\manage-version.ps1 -Version "0.2.0-beta.1" -Type "beta" -CreateRelease -PreRelease -UseArtifacts
 
 .EXAMPLE
+    # Generate release notes for a specific version
+    .\scripts\manage-version.ps1 -Version "0.1.0-beta.33" -Type "beta" -GenerateReleaseNotes
+
+.EXAMPLE
     # Show help and usage examples
     .\scripts\manage-version.ps1 -Help
 
@@ -147,6 +154,9 @@ param(
 
     # Version to reissue (semantic part only, tag assumed to be v<version>)
     [string]$ReissueVersion,
+
+    # Generate AI-powered release notes for a specific version (no other release tasks)
+    [switch]$GenerateReleaseNotes,
 
     # UTILITY MODES - mutually exclusive with version management
     
@@ -275,6 +285,9 @@ function Show-Help {
     Write-Host "   # Synchronize versions between components" -ForegroundColor Yellow
     Write-Host "   .\scripts\manage-version.ps1 -SyncOnly -Version `"0.1.0-beta.18`"" -ForegroundColor White
     Write-Host ""
+    Write-Host "🤖 Generate release notes:" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -Version `"0.1.0-beta.33`" -Type `"beta`" -GenerateReleaseNotes" -ForegroundColor White
+    Write-Host ""
     Write-Host "   # Create a new beta version with GitHub release" -ForegroundColor Yellow
     Write-Host "   .\scripts\manage-version.ps1 -Version `"0.1.0-beta.18`" -Type beta -CreateRelease -PreRelease" -ForegroundColor White
     Write-Host ""
@@ -298,6 +311,7 @@ function Show-Help {
     Write-Host "⚙️  UTILITY MODES:" -ForegroundColor Blue
     Write-Host "   • -StatusOnly    - Show version status across all components" -ForegroundColor Gray
     Write-Host "   • -SyncOnly      - Synchronize versions without creating releases" -ForegroundColor Gray  
+    Write-Host "   • -GenerateReleaseNotes - Generate AI release notes for a version" -ForegroundColor Gray
     Write-Host "   • -RebuildOnly   - Rebuild executables without version changes" -ForegroundColor Gray
     Write-Host "   • -Reissue       - Recreate an existing GitHub release" -ForegroundColor Gray
     Write-Host ""
@@ -435,6 +449,118 @@ function Invoke-CommitAndWaitForCI {
 # Function to download CI-built executables from GitHub Actions
 # Function to generate AI-powered release notes using GitHub Copilot CLI
 # New-AIReleaseNotes is now New-AIGeneratedReleaseNotes in Quality/ReleaseNotes.psm1
+
+<#
+.SYNOPSIS
+    Generates AI-powered release notes for a version.
+
+.DESCRIPTION
+    Centralized function to generate release notes using the Quality.ReleaseNotes module.
+    Handles module import, path validation, and error handling consistently.
+
+.PARAMETER Version
+    The version to generate release notes for.
+
+.PARAMETER Type
+    The release type: "beta", "stable", or "patch".
+
+.PARAMETER OutputToConsole
+    If true, displays the generated release notes to the console.
+
+.PARAMETER SaveToFile
+    If true, saves the release notes to a file named RELEASE_NOTES_[VERSION].md.
+
+.OUTPUTS
+    String - The generated release notes, or $null if generation fails.
+#>
+function Invoke-ReleaseNotesGeneration {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Version,
+        
+        [Parameter(Mandatory = $true)]
+        [ValidateSet("beta", "stable", "patch")]
+        [string]$Type,
+        
+        [switch]$OutputToConsole,
+        
+        [switch]$SaveToFile
+    )
+    
+    Write-Host "🤖 Generating AI-Powered Release Notes" -ForegroundColor Green
+    
+    # Validate that the Quality.ReleaseNotes module is available
+    $moduleDir = Join-Path $RepoRoot "scripts" "modules" "Quality"
+    $moduleFile = Join-Path $moduleDir "ReleaseNotes.psm1"
+    
+    if (-not (Test-Path $moduleFile)) {
+        throw "ReleaseNotes module not found at: $moduleFile"
+    }
+    
+    # Import the module
+    Import-Module $moduleFile -Force
+    
+    # Set up paths
+    $promptPath = Join-Path $RepoRoot "scripts" "release-notes-prompt.md"
+    $distDir = Join-Path $RepoRoot "dist"
+    $checksumsPath = Join-Path $distDir "checksums.json"
+    
+    # Verify prompt template exists
+    if (-not (Test-Path $promptPath)) {
+        throw "Release notes prompt template not found at: $promptPath"
+    }
+    
+    Write-Host "   📝 Using prompt template: $promptPath" -ForegroundColor Gray
+    Write-Host "   📊 Analyzing version: $Version ($Type)" -ForegroundColor Gray
+    
+    # Check for checksums file
+    if (Test-Path $checksumsPath) {
+        Write-Host "   🔐 Using checksums from: $checksumsPath" -ForegroundColor Gray
+    }
+    else {
+        Write-Host "   ⚠️  Checksums file not found at: $checksumsPath" -ForegroundColor Yellow
+        Write-Host "   💡 Consider running a build first to generate checksums" -ForegroundColor Gray
+    }
+    
+    try {
+        # Generate release notes
+        $releaseNotes = New-AIGeneratedReleaseNotes `
+            -Version $Version `
+            -Type $Type `
+            -PromptTemplatePath $promptPath `
+            -ChecksumsJsonPath $checksumsPath `
+            -ThrowOnFailure
+            
+        if ($releaseNotes) {
+            if ($OutputToConsole) {
+                Write-Host ""
+                Write-Host "=" * 80 -ForegroundColor Cyan
+                Write-Host "GENERATED RELEASE NOTES" -ForegroundColor Cyan
+                Write-Host "=" * 80 -ForegroundColor Cyan
+                Write-Host ""
+                Write-Host $releaseNotes
+                Write-Host ""
+                Write-Host "=" * 80 -ForegroundColor Cyan
+            }
+            
+            if ($SaveToFile) {
+                $outputFile = Join-Path $RepoRoot "RELEASE_NOTES_$Version.md"
+                $releaseNotes | Out-File -FilePath $outputFile -Encoding UTF8
+                Write-Host "✅ Release notes saved to: $outputFile" -ForegroundColor Green
+            }
+            
+            return $releaseNotes
+        }
+        else {
+            Write-Host "❌ Failed to generate release notes" -ForegroundColor Red
+            return $null
+        }
+    }
+    catch {
+        Write-Host "❌ Error generating release notes: $($_.Exception.Message)" -ForegroundColor Red
+        throw
+    }
+}
 
 # Invoke-ArtifactDownload is now Invoke-CIArtifactDownload in GitHub/Artifacts.psm1
 
@@ -776,6 +902,22 @@ try {
             Write-Host "✅ Build complete!" -ForegroundColor Green
         }
 
+        exit 0
+    }
+
+    if ($GenerateReleaseNotes) {
+        if (-not $Version) {
+            throw "Version parameter is required when using -GenerateReleaseNotes"
+        }
+        
+        try {
+            Invoke-ReleaseNotesGeneration -Version $Version -Type $Type -OutputToConsole -SaveToFile
+        }
+        catch {
+            Write-Host "❌ Error generating release notes: $($_.Exception.Message)" -ForegroundColor Red
+            exit 1
+        }
+        
         exit 0
     }
 
@@ -1502,21 +1644,12 @@ try {
     
         Write-Host "✅ Prepared $($releaseAssets.Count) total release assets ($($assetManifest.files.Count) plugin + $foundExecutables executables + checksums)"
 
-        # Generate AI-powered release notes using GitHub Copilot CLI
-        $promptPath = Join-Path $RepoRoot "scripts\release-notes-prompt.md"
-        $aiGeneratedNotes = New-AIGeneratedReleaseNotes -Version $Version -Type $Type -PromptTemplatePath $promptPath
-
-        # Create release notes based on type
-        $releaseNotes = switch ($Type) {
-            "beta" { 
-                $aiGeneratedNotes
-            }
-            "stable" { 
-                $aiGeneratedNotes
-            }
-            "patch" { 
-                $aiGeneratedNotes
-            }
+        # Generate AI-powered release notes using centralized function
+        $releaseNotes = Invoke-ReleaseNotesGeneration -Version $Version -Type $Type
+        
+        if (-not $releaseNotes) {
+            Write-Host "⚠️  Failed to generate AI release notes, using fallback" -ForegroundColor Yellow
+            $releaseNotes = "Release notes for v$Version`n`nThis is an automated release. See the commit history for detailed changes."
         }        # Write release notes to temporary file to avoid parameter parsing issues
         $tempNotesFile = Join-Path $env:TEMP "release-notes-$(Get-Random).md"
         $releaseNotes | Out-File -FilePath $tempNotesFile -Encoding UTF8
