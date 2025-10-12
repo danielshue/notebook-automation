@@ -177,17 +177,22 @@ For more information: https://docs.github.com/en/copilot/github-copilot-in-the-c
     # Create temporary file for prompt
     $tempDir = if ($env:TEMP) { $env:TEMP } elseif ($env:TMPDIR) { $env:TMPDIR } else { "/tmp" }
     $tempPrompt = Join-Path $tempDir "copilot-prompt-$(Get-Random).txt"
-    $prompt | Out-File -FilePath $tempPrompt -Encoding UTF8
+    $prompt | Out-File -FilePath $tempPrompt -Encoding utf8NoBOM
     
     try {
         Write-Host "   ⏱️  Calling Copilot CLI ($Timeout second timeout)..." -ForegroundColor Gray
         
-        # Execute Copilot CLI with timeout
+        # Execute Copilot CLI with timeout and proper UTF-8 encoding
         $job = Start-Job -ScriptBlock {
             param($TempFile)
             try {
-                $input = Get-Content $TempFile -Raw
-                $output = $input | copilot
+                # Set console encoding to UTF-8 to properly handle emoji output
+                [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+                [Console]::InputEncoding = [System.Text.Encoding]::UTF8
+                $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+                
+                $promptContent = Get-Content $TempFile -Raw -Encoding UTF8
+                $output = $promptContent | copilot
                 return $output
             }
             catch {
