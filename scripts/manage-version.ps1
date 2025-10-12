@@ -184,288 +184,7 @@ param(
 # GLOBAL ERROR HANDLING AND ROLLBACK SYSTEM
 # ============================================
 
-# Rollback state tracking
-$script:rollbackState = @{
-    InitialCommitHash = $null
-    Phase             = "Initialization"  # Initialization, PreCommit, PostCommit, Completed
-    ModifiedFiles     = @()
-    CommitCreated     = $false
-    CommitHash        = $null
-    TagCreated        = $false
-    TagName           = $null
-    ReleaseCreated    = $false
-    NeedsRollback     = $false
-}
-
-# Also initialize global state for Ctrl-C handler access
-$global:ManageVersionRollbackState = $script:rollbackState
-
-function Initialize-RollbackSystem {
-    """Initialize rollback tracking system"""
-    
-    Write-ConditionalHost "🔍 Initializing rollback tracking system..." -ForegroundColor Cyan
-    
-    # Capture current commit hash
-    try {
-        $script:rollbackState.InitialCommitHash = & git rev-parse HEAD 2>$null
-        if ($LASTEXITCODE -ne 0) {
-            throw "Failed to get current commit hash"
-        }
-    }
-    catch {
-        Write-Host "⚠️  Warning: Could not capture initial commit hash - rollback may be limited" -ForegroundColor Yellow
-    }
-    
-    # Check if workspace is clean
-    $currentStatus = & git status --porcelain 2>$null
-    if ($currentStatus) {
-        Write-Host "⚠️  WARNING: Workspace has uncommitted changes:" -ForegroundColor Yellow
-        $currentStatus | ForEach-Object { Write-Host "   $_" -ForegroundColor Gray }
-        Write-Host ""
-        
-        $response = Read-Host "Continue anyway? These changes may interfere with rollback [y/N]"
-        if ($response -ne 'y' -and $response -ne 'Y') {
-            Write-Host "❌ Aborted by user" -ForegroundColor Red
-            exit 1
-        }
-    }
-    
-    $script:rollbackState.Phase = "PreCommit"
-    
-    # Also set in global scope for Ctrl-C handler access
-    $global:ManageVersionRollbackState = $script:rollbackState
-    
-    Write-ConditionalHost "✅ Rollback system initialized - Phase: PreCommit" -ForegroundColor DarkGreen
-}
-
-function Set-RollbackPhase {
-    param(
-        [ValidateSet("Initialization", "PreCommit", "PostCommit", "Completed")]
-        [string]$Phase
-    )
-    
-    $script:rollbackState.Phase = $Phase
-    Write-ConditionalHost "📍 Rollback phase: $Phase" -ForegroundColor DarkCyan
-}
-
-function Register-ModifiedFile {
-    param([string]$FilePath)
-    
-    if ($FilePath -and $FilePath -notin $script:rollbackState.ModifiedFiles) {
-        $script:rollbackState.ModifiedFiles += $FilePath
-        $script:rollbackState.NeedsRollback = $true
-        Write-ConditionalHost "📝 Registered for rollback: $FilePath" -ForegroundColor DarkGray
-    }
-}
-
-function Register-CommitCreated {
-    param([string]$CommitHash, [string]$TagName = $null)
-    
-    $script:rollbackState.CommitCreated = $true
-    $script:rollbackState.CommitHash = $CommitHash
-    $script:rollbackState.NeedsRollback = $true
-    
-    if ($TagName) {
-        $script:rollbackState.TagCreated = $true
-        $script:rollbackState.TagName = $TagName
-    }
-    
-    Set-RollbackPhase -Phase "PostCommit"
-    Write-ConditionalHost "📍 Commit created: $CommitHash $(if($TagName){"(Tag: $TagName)"})" -ForegroundColor DarkCyan
-}
-
-function Register-ReleaseCreated {
-    $script:rollbackState.ReleaseCreated = $true
-    Write-ConditionalHost "📍 GitHub release created" -ForegroundColor DarkCyan
-}
-
-function Clear-RollbackRequirement {
-    """Mark that rollback is no longer needed (successful completion)"""
-    $script:rollbackState.NeedsRollback = $false
-    Set-RollbackPhase -Phase "Completed"
-    Write-ConditionalHost "✅ Script completed successfully - rollback not needed" -ForegroundColor DarkGreen
-}
-
-function Invoke-PreCommitRollback {
-    """Rollback Strategy 1: Uncommitted local changes"""
-    
-    Write-Host "🔄 STRATEGY 1: Rolling back uncommitted changes..." -ForegroundColor Yellow
-    
-    try {
-        # Check what files are currently modified
-        $modifiedFiles = & git status --porcelain 2>$null
-        
-        if ($modifiedFiles) {
-            Write-Host "📋 Uncommitted changes to rollback:" -ForegroundColor Cyan
-            $modifiedFiles | ForEach-Object { Write-Host "   $_" -ForegroundColor Gray }
-            
-            # Reset all modified tracked files
-            Write-Host "🔄 Resetting modified files..." -ForegroundColor Cyan
-            & git checkout -- . 2>&1 | Out-Null
-            
-            # Remove untracked files that were created during script execution
-            $untrackedFiles = & git status --porcelain 2>$null | Where-Object { $_.StartsWith("??") }
-            if ($untrackedFiles) {
-                Write-Host "🗑️  Removing untracked files..." -ForegroundColor Cyan
-                $untrackedFiles | ForEach-Object {
-                    $file = $_.Substring(3).Trim()
-                    if (Test-Path $file) {
-                        Remove-Item $file -Force -ErrorAction SilentlyContinue
-                        Write-Host "   Removed: $file" -ForegroundColor Gray
-                    }
-                }
-            }
-            
-            # Verify rollback success
-            $remainingChanges = & git status --porcelain 2>$null
-            if (-not $remainingChanges) {
-                Write-Host "✅ Pre-commit rollback successful - workspace is clean" -ForegroundColor Green
-                return $true
-            }
-            else {
-                Write-Host "⚠️  Some changes remain after rollback:" -ForegroundColor Yellow
-                $remainingChanges | ForEach-Object { Write-Host "   $_" -ForegroundColor Gray }
-                return $false
-            }
-        }
-        else {
-            Write-Host "ℹ️  No uncommitted changes found" -ForegroundColor Gray
-            return $true
-        }
-    }
-    catch {
-        Write-Host "❌ Error during pre-commit rollback: $($_.Exception.Message)" -ForegroundColor Red
-        return $false
-    }
-}
-
-function Invoke-PostCommitRollback {
-    """Rollback Strategy 2: Committed changes and releases"""
-    
-    Write-Host "🔄 STRATEGY 2: Rolling back committed changes..." -ForegroundColor Yellow
-    
-    $rollbackSuccess = $true
-    
-    try {
-        # Step 1: Delete GitHub release if created
-        if ($script:rollbackState.ReleaseCreated -and $script:rollbackState.TagName) {
-            Write-Host "🗑️  Deleting GitHub release..." -ForegroundColor Cyan
-            try {
-                & gh release delete $script:rollbackState.TagName --yes 2>&1 | Out-Null
-                if ($LASTEXITCODE -eq 0) {
-                    Write-Host "   ✅ GitHub release deleted" -ForegroundColor Green
-                }
-                else {
-                    Write-Host "   ⚠️  Could not delete GitHub release (may not exist)" -ForegroundColor Yellow
-                }
-            }
-            catch {
-                Write-Host "   ⚠️  Error deleting GitHub release: $($_.Exception.Message)" -ForegroundColor Yellow
-                $rollbackSuccess = $false
-            }
-        }
-        
-        # Step 2: Delete Git tag if created
-        if ($script:rollbackState.TagCreated -and $script:rollbackState.TagName) {
-            Write-Host "🗑️  Deleting Git tag..." -ForegroundColor Cyan
-            try {
-                # Delete local tag
-                & git tag -d $script:rollbackState.TagName 2>&1 | Out-Null
-                # Delete remote tag
-                & git push origin --delete $script:rollbackState.TagName 2>&1 | Out-Null
-                Write-Host "   ✅ Git tag deleted (local and remote)" -ForegroundColor Green
-            }
-            catch {
-                Write-Host "   ⚠️  Error deleting Git tag: $($_.Exception.Message)" -ForegroundColor Yellow
-                $rollbackSuccess = $false
-            }
-        }
-        
-        # Step 3: Reset to previous commit if we created a version bump commit
-        if ($script:rollbackState.CommitCreated -and $script:rollbackState.InitialCommitHash) {
-            Write-Host "🔄 Resetting to previous commit..." -ForegroundColor Cyan
-            try {
-                # Reset to the initial commit (hard reset)
-                & git reset --hard $script:rollbackState.InitialCommitHash 2>&1 | Out-Null
-                if ($LASTEXITCODE -eq 0) {
-                    Write-Host "   ✅ Reset to commit: $($script:rollbackState.InitialCommitHash.Substring(0,8))" -ForegroundColor Green
-                    
-                    # Force push to update remote (if we had pushed)
-                    $response = Read-Host "   Force push to remote to update origin? [y/N]"
-                    if ($response -eq 'y' -or $response -eq 'Y') {
-                        & git push --force-with-lease 2>&1 | Out-Null
-                        if ($LASTEXITCODE -eq 0) {
-                            Write-Host "   ✅ Remote updated" -ForegroundColor Green
-                        }
-                        else {
-                            Write-Host "   ⚠️  Could not update remote - manual push may be needed" -ForegroundColor Yellow
-                            $rollbackSuccess = $false
-                        }
-                    }
-                }
-                else {
-                    Write-Host "   ❌ Failed to reset commit" -ForegroundColor Red
-                    $rollbackSuccess = $false
-                }
-            }
-            catch {
-                Write-Host "   ❌ Error resetting commit: $($_.Exception.Message)" -ForegroundColor Red
-                $rollbackSuccess = $false
-            }
-        }
-        
-        return $rollbackSuccess
-    }
-    catch {
-        Write-Host "❌ Error during post-commit rollback: $($_.Exception.Message)" -ForegroundColor Red
-        return $false
-    }
-}
-
-function Invoke-RollbackStrategy {
-    param([string]$Reason = "Script failure")
-    
-    if (-not $script:rollbackState.NeedsRollback) {
-        Write-ConditionalHost "ℹ️  No rollback needed" -ForegroundColor Gray
-        return
-    }
-    
-    Write-Host ""
-    Write-Host "🚨 EXECUTING ROLLBACK: $Reason" -ForegroundColor Red
-    Write-Host "================================================" -ForegroundColor Red
-    Write-Host "Phase: $($script:rollbackState.Phase)" -ForegroundColor Yellow
-    Write-Host ""
-    
-    $success = $false
-    
-    switch ($script:rollbackState.Phase) {
-        "PreCommit" {
-            $success = Invoke-PreCommitRollback
-        }
-        "PostCommit" {
-            # Try both strategies - first post-commit, then pre-commit for any remaining changes
-            $postCommitSuccess = Invoke-PostCommitRollback
-            $preCommitSuccess = Invoke-PreCommitRollback
-            $success = $postCommitSuccess -and $preCommitSuccess
-        }
-        default {
-            Write-Host "⚠️  Unknown phase: $($script:rollbackState.Phase) - attempting pre-commit rollback" -ForegroundColor Yellow
-            $success = Invoke-PreCommitRollback
-        }
-    }
-    
-    Write-Host ""
-    if ($success) {
-        Write-Host "✅ ROLLBACK COMPLETED SUCCESSFULLY" -ForegroundColor Green
-        Write-Host "   Workspace has been restored to its previous state" -ForegroundColor Green
-    }
-    else {
-        Write-Host "⚠️  ROLLBACK PARTIALLY FAILED" -ForegroundColor Yellow
-        Write-Host "   Some manual cleanup may be required" -ForegroundColor Yellow
-        Write-Host "   Check git status and remote repository state" -ForegroundColor Yellow
-    }
-    Write-Host ""
-}
+# Rollback state tracking - initialized after module imports
 
 # SCRIPT-LEVEL ERROR HANDLER
 trap {
@@ -476,7 +195,7 @@ trap {
     Write-Host "Location: Line $($_.InvocationInfo.ScriptLineNumber)" -ForegroundColor Red
     Write-Host ""
     
-    Invoke-RollbackStrategy -Reason "Unhandled script error"
+    Invoke-RollbackStrategy -RollbackState $script:rollbackState -Reason "Unhandled script error"
     
     Write-Host "❌ Script execution failed and rollback attempted" -ForegroundColor Red
     exit 1
@@ -507,7 +226,7 @@ Register-EngineEvent -SourceIdentifier PowerShell.Exiting -Action {
         try {
             # Try to call rollback function if available
             if (Get-Command Invoke-RollbackStrategy -ErrorAction SilentlyContinue) {
-                Invoke-RollbackStrategy -Reason "User cancellation (Ctrl-C)"
+                Invoke-RollbackStrategy -RollbackState $script:rollbackState -Reason "User cancellation (Ctrl-C)"
                 Write-Host "✅ Rollback completed successfully" -ForegroundColor Green
             }
             else {
@@ -612,6 +331,20 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ModulesDir = Join-Path $ScriptDir "modules"
 Import-Module (Join-Path $ModulesDir "Core\Logging.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Core\Platform.psm1") -Force
+Import-Module (Join-Path $ModulesDir "GitHub\CLI.psm1") -Force
+Import-Module (Join-Path $ModulesDir "GitHub\Artifacts.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Version\Management.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Safety\Rollback.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Quality\ReleaseNotes.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Quality\Dependencies.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Quality\Checksums.psm1") -Force
+
+# Initialize rollback tracking after modules are loaded
+# Don't check for uncommitted changes during initialization as this may be run during development
+$script:rollbackState = Initialize-RollbackTracking
+
+# Also set in global scope for Ctrl-C handler access  
+$global:ManageVersionRollbackState = $script:rollbackState
 
 #
 # CROSS-PLATFORM COMPATIBILITY - Platform detection now handled by Core.Platform module
@@ -873,7 +606,7 @@ function Invoke-CommitAndWaitForCI {
     # Get the commit SHA and register for rollback tracking
     $commitSha = git rev-parse HEAD
     Write-VerboseHost "Committed with SHA: $commitSha"
-    Register-CommitCreated -CommitHash $commitSha
+    Register-CommitCreation -RollbackState $script:rollbackState -CommitHash $commitSha
     
     # Push to trigger CI (only if needed)
     if ($needsPush) {
@@ -1338,102 +1071,34 @@ function Write-VerboseHost {
 }
 
 #
-# DEPENDENCY VALIDATION - Check required tools and directory
+# DEPENDENCY VALIDATION - Custom implementation for manage-version.ps1
 #
 
-function Test-Dependency {
-    param(
-        [string]$CommandName,
-        [string]$DisplayName,
-        [string]$InstallPrompt,
-        [bool]$Required = $true
-    )
-    
-    try {
-        $command = Get-Command $CommandName -ErrorAction Stop
-        Write-ConditionalHost "✅ $DisplayName found: $($command.Source)" -ForegroundColor Green
-        Write-VerboseHost "Dependency $DisplayName validated at $($command.Source)"
-        return $true
-    }
-    catch {
-        if ($Required) {
-            Write-ConditionalHost "❌ $DisplayName not found in PATH" -ForegroundColor Red
-            Write-ConditionalHost "   $InstallPrompt" -ForegroundColor Yellow
-            Write-ConditionalHost ""
-            
-            if (-not $Quiet) {
-                $response = Read-Host "Would you like to continue anyway? This may cause the script to fail later (y/N)"
-                if ($response -notmatch '^[yY]') {
-                    throw "$DisplayName is required but not installed. Install it and try again."
-                }
-            }
-            Write-ConditionalHost "⚠️  Continuing without $DisplayName - expect failures if this tool is needed" -ForegroundColor Yellow
-            return $false
-        }
-        else {
-            Write-ConditionalHost "⚠️  $DisplayName not found (optional)" -ForegroundColor Yellow
-            return $false
-        }
-    }
-}
-
-function Test-RepositoryDirectory {
-    Write-ConditionalHost "📁 Validating repository directory..." -ForegroundColor Cyan
-    
-    # Check if we're in a git repository
-    try {
-        git rev-parse --git-dir | Out-Null
-        Write-VerboseHost "Git repository validation passed"
-    }
-    catch {
-        throw "❌ Not running in a git repository. Please run this script from the repository root."
-    }
-    
-    # Check for key project files that should exist in the repo root
-    $requiredFiles = @(
-        "GitVersion.yml",
-        (Join-CrossPlatformPath @("src", "obsidian-plugin", "package.json")),
-        (Join-CrossPlatformPath @("src", "obsidian-plugin", "manifest.json")),
-        (Join-CrossPlatformPath @("src", "c-sharp", "NotebookAutomation.sln"))
-    )
-    
-    $missingFiles = @()
-    foreach ($file in $requiredFiles) {
-        $fullPath = Join-Path $RepoRoot $file
-        if (-not (Test-Path $fullPath)) {
-            $missingFiles += $file
-            Write-VerboseHost "Missing required file: $file"
-        }
-        else {
-            Write-VerboseHost "Found required file: $file"
-        }
-    }
-    
-    if ($missingFiles.Count -gt 0) {
-        Write-ConditionalHost "❌ Missing required project files:" -ForegroundColor Red -Force
-        $missingFiles | ForEach-Object { Write-ConditionalHost "   - $_" -ForegroundColor Red -Force }
-        throw "Please run this script from the repository root directory."
-    }
-    
-    Write-ConditionalHost "✅ Repository directory validation passed" -ForegroundColor Green
-}
-
 function Test-AllDependencies {
+    # Custom dependency validation for this script
+    $needsGitHub = $CreateRelease -or $Reissue -or ($UseArtifacts -and -not $ForceLocalBuild)
+    
     Write-Host "🔍 Checking dependencies..." -ForegroundColor Cyan
     Write-Host ""
     
-    # Test repository directory first
-    Test-RepositoryDirectory
+    # Test repository structure
+    Test-RepositoryStructure -RepoRoot $RepoRoot -ThrowOnFailure | Out-Null
     Write-Host ""
     
-    # Core dependencies (always required)
-    $gitAvailable = Test-Dependency -CommandName "git" -DisplayName "Git" -InstallPrompt "Install Git from: https://git-scm.com/downloads"
-    $dotnetAvailable = Test-Dependency -CommandName "dotnet" -DisplayName ".NET SDK" -InstallPrompt "Install .NET SDK from: https://dotnet.microsoft.com/download"
-    $nodeAvailable = Test-Dependency -CommandName "node" -DisplayName "Node.js" -InstallPrompt "Install Node.js from: https://nodejs.org/"
-    $npmAvailable = Test-Dependency -CommandName "npm" -DisplayName "npm" -InstallPrompt "npm should be included with Node.js installation"
+    # Test individual dependencies
+    $gitAvailable = Test-CommandDependency -CommandName "git" -DisplayName "Git" `
+        -InstallPrompt "Install Git from: https://git-scm.com/downloads" -Required $true
     
-    # Conditional dependencies (only required for certain operations)
-    $needsGitHub = $CreateRelease -or $Reissue -or ($UseArtifacts -and -not $ForceLocalBuild)
+    $dotnetAvailable = Test-CommandDependency -CommandName "dotnet" -DisplayName ".NET SDK" `
+        -InstallPrompt "Install .NET SDK from: https://dotnet.microsoft.com/download" -Required $true
+    
+    $nodeAvailable = Test-CommandDependency -CommandName "node" -DisplayName "Node.js" `
+        -InstallPrompt "Install Node.js from: https://nodejs.org/" -Required $true
+    
+    $npmAvailable = Test-CommandDependency -CommandName "npm" -DisplayName "npm" `
+        -InstallPrompt "npm should be included with Node.js installation" -Required $true
+    
+    # GitHub CLI if needed
     $ghAvailable = $true
     if ($needsGitHub) {
         Write-Host ""
@@ -1443,10 +1108,12 @@ function Test-AllDependencies {
         else {
             Write-Host "🔗 GitHub operations requested - checking GitHub CLI..." -ForegroundColor Cyan
         }
-        $ghAvailable = Test-Dependency -CommandName "gh" -DisplayName "GitHub CLI" -InstallPrompt "Install GitHub CLI from: https://cli.github.com/ or run: winget install GitHub.cli"
+        
+        $ghAvailable = Test-CommandDependency -CommandName "gh" -DisplayName "GitHub CLI" `
+            -InstallPrompt "Install GitHub CLI from: https://cli.github.com/ or run: winget install GitHub.cli" -Required $true
         
         if ($ghAvailable) {
-            # Test GitHub CLI authentication
+            # Check authentication
             try {
                 gh auth status 2>&1 | Out-Null
                 if ($LASTEXITCODE -eq 0) {
@@ -1469,32 +1136,14 @@ function Test-AllDependencies {
     }
     
     Write-Host ""
-    Write-Host "📋 Dependency Summary:" -ForegroundColor Blue
-    Write-Host "   Git: $(if($gitAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($gitAvailable) { 'Green' }else { 'Red' })
-    Write-Host "   .NET SDK: $(if($dotnetAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($dotnetAvailable) { 'Green' }else { 'Red' })
-    Write-Host "   Node.js: $(if($nodeAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($nodeAvailable) { 'Green' }else { 'Red' })
-    Write-Host "   npm: $(if($npmAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($npmAvailable) { 'Green' }else { 'Red' })
-    if ($needsGitHub) {
-        Write-Host "   GitHub CLI: $(if($ghAvailable){'✅'}else{'❌'})" -ForegroundColor $(if ($ghAvailable) { 'Green' }else { 'Red' })
-    }
-    
-    Write-Host ""
-    if ($gitAvailable -and $dotnetAvailable -and $nodeAvailable -and $npmAvailable -and ($ghAvailable -or -not $needsGitHub)) {
-        Write-Host "✅ All dependencies satisfied" -ForegroundColor Green
-    }
-    else {
-        Write-Host "⚠️  Some dependencies missing - script may fail during execution" -ForegroundColor Yellow
-    }
-    Write-Host ""
 }
 
 # MAIN SCRIPT EXECUTION WITH ROLLBACK PROTECTION
 # ===============================================
 
 try {
-    # Initialize rollback system
-    Initialize-RollbackSystem
-
+    # Rollback system already initialized at script start
+    
     # Run dependency validation before any operations
     Test-AllDependencies
 
@@ -1805,7 +1454,7 @@ try {
             try {
                 npm version $Version --no-git-tag-version
                 if ($LASTEXITCODE -ne 0) { throw "Failed to update package.json version" }
-                Register-ModifiedFile -FilePath $PackageJsonPath
+                Register-FileModification -RollbackState $script:rollbackState -FilePath $PackageJsonPath
             }
             finally { Pop-Location }
         }
@@ -1816,7 +1465,7 @@ try {
         try {
             npm run version
             if ($LASTEXITCODE -ne 0) { throw "Failed to run version bump script" }
-            Register-ModifiedFile -FilePath $ManifestJsonPath
+            Register-FileModification -RollbackState $script:rollbackState -FilePath $ManifestJsonPath
         }
         finally { Pop-Location }
 
@@ -2012,7 +1661,7 @@ try {
             # Copy manifest.json to repository root for BRAT compatibility
             $repoRootManifest = Join-Path $RepoRoot "manifest.json"
             Copy-Item -Path $ManifestJsonPath -Destination $repoRootManifest -Force
-            Register-ModifiedFile -FilePath $repoRootManifest
+            Register-FileModification -RollbackState $script:rollbackState -FilePath $repoRootManifest
             Write-Host "✅ Copied manifest.json to repository root for BRAT compatibility"
 
             # Copy checksums.json into plugin dist & ensure asset-manifest includes it
@@ -2098,7 +1747,7 @@ try {
             git commit -m $commitMessage
             if ($LASTEXITCODE -eq 0) {
                 $commitHash = git rev-parse HEAD
-                Register-CommitCreated -CommitHash $commitHash
+                Register-CommitCreation -RollbackState $script:rollbackState -CommitHash $commitHash
             }
             else {
                 throw "Failed to commit version changes"
@@ -2111,7 +1760,7 @@ try {
         git tag $tagName
     
         if ($LASTEXITCODE -eq 0) {
-            Register-CommitCreated -CommitHash (git rev-parse HEAD) -TagName $tagName
+            Register-CommitCreation -RollbackState $script:rollbackState -CommitHash (git rev-parse HEAD) -TagName $tagName
             git push origin $tagName
         }
         else {
@@ -2421,7 +2070,7 @@ try {
             }
         
             Write-Host "✅ GitHub release created successfully"
-            Register-ReleaseCreated
+            Register-ReleaseCreation -RollbackState $script:rollbackState
         }
         finally {
             # Clean up temporary file
@@ -2462,7 +2111,7 @@ try {
     Write-Host "GitHub Release: https://github.com/danielshue/notebook-automation/releases/tag/$tagName" -ForegroundColor Cyan
 
     # Mark successful completion
-    Clear-RollbackRequirement
+    Clear-RollbackRequirement -RollbackState $script:rollbackState
 
 }
 catch {
@@ -2474,7 +2123,7 @@ catch {
     Write-Host ""
     
     # Execute appropriate rollback strategy
-    Invoke-RollbackStrategy -Reason $_.Exception.Message
+    Invoke-RollbackStrategy -RollbackState $script:rollbackState -Reason $_.Exception.Message
     
     Write-Host ""
     Write-Host "❌ Script failed - rollback completed" -ForegroundColor Red
