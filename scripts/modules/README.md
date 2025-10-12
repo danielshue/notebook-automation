@@ -24,10 +24,19 @@ modules/
 │   └── PluginBuild.psm1    # Obsidian plugin npm operations and deployment
 │
 ├── GitHub/
-│   └── CLI.psm1            # GitHub CLI wrappers (releases, workflows, artifacts)
+│   ├── CLI.psm1            # GitHub CLI wrappers (releases, workflows, artifacts)
+│   └── Artifacts.psm1      # Artifact download and management
 │
 ├── Version/
 │   └── Management.psm1     # Version synchronization and Git tag management
+│
+├── Safety/
+│   └── Rollback.psm1       # Rollback tracking and error recovery
+│
+├── Quality/
+│   ├── ReleaseNotes.psm1   # AI-powered release notes generation
+│   ├── Checksums.psm1      # Checksum generation and validation
+│   └── Dependencies.psm1   # Dependency testing and repository validation
 │
 └── README.md               # This file
 ```
@@ -414,17 +423,64 @@ When adding new modules or functions:
 - **Platform.psm1** - 183 lines
 - **Prerequisites.psm1** - 270 lines
 
-### Build Modules (735 lines)
-- **DotNetBuild.psm1** - 381 lines
-- **PluginBuild.psm1** - 354 lines
+### Build Modules (810 lines)
+- **DotNetBuild.psm1** - 432 lines
+- **PluginBuild.psm1** - 378 lines
 
-### GitHub Modules (370 lines)
-- **CLI.psm1** - 370 lines
+### GitHub Modules (712 lines)
+- **CLI.psm1** - 400 lines
+- **Artifacts.psm1** - 312 lines
 
-### Version Modules (328 lines)
-- **Management.psm1** - 328 lines
+### Version Modules (378 lines)
+- **Management.psm1** - 378 lines
 
-**Total Module Code: 2,062 lines of reusable functionality**
+### Safety Modules (444 lines)
+- **Rollback.psm1** - 444 lines
+
+### Quality Modules (888 lines)
+- **ReleaseNotes.psm1** - 293 lines
+- **Checksums.psm1** - 285 lines
+- **Dependencies.psm1** - 310 lines
+
+**Total Module Code: 3,861 lines of reusable functionality across 12 modules**
 
 All modules include comprehensive PowerShell help documentation, error handling with both throwing and non-throwing modes, and cross-platform compatibility.
+
+## New Modules (Phase 3)
+
+### Safety/Rollback Module
+
+Provides rollback tracking and error recovery:
+- `Initialize-RollbackTracking` - Sets up rollback state
+- `Register-FileModification` - Tracks file changes
+- `Register-CommitCreation` - Tracks commits and tags
+- `Invoke-RollbackStrategy` - Executes appropriate rollback
+
+### Quality/ReleaseNotes Module
+
+AI-powered release notes generation:
+- `New-AIGeneratedReleaseNotes` - Generates release notes using GitHub Copilot CLI
+- `Get-CommitRangeSinceLastRelease` - Determines commit range
+- `Clean-CopilotOutput` - Cleans Copilot output
+
+### GitHub/Artifacts Module
+
+Artifact download and management:
+- `Invoke-CIArtifactDownload` - Downloads CI-built executables
+- `Find-DownloadedExecutables` - Locates executables
+- `Copy-DownloadedExecutables` - Copies with permission setting
+
+### Quality/Checksums Module
+
+Checksum generation and validation:
+- `New-OrValidateChecksumsFile` - Generates/validates checksums.json
+- `Test-ChecksumsFile` - Validates files against checksums
+- `Get-FileChecksum` - Generates SHA256 checksums
+
+### Quality/Dependencies Module
+
+Dependency validation and repository verification:
+- `Test-CommandDependency` - Tests command availability
+- `Test-RepositoryStructure` - Validates repository structure
+- `Test-AllDependencies` - Tests all required dependencies
 

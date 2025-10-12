@@ -181,6 +181,98 @@ catch {
 }
 Write-Host ""
 
+# Test 8: Import Safety/Rollback module
+Write-Host "Test 8: Importing Safety/Rollback.psm1..." -ForegroundColor Yellow
+try {
+    Import-Module (Join-Path $ModulesDir "Safety\Rollback.psm1") -Force
+    Write-Host "✓ Rollback module imported successfully" -ForegroundColor Green
+    
+    # Test function availability
+    Get-Command Initialize-RollbackTracking -ErrorAction Stop | Out-Null
+    Get-Command Invoke-RollbackStrategy -ErrorAction Stop | Out-Null
+    
+    Write-Host "✓ All Rollback functions available" -ForegroundColor Green
+}
+catch {
+    Write-Host "✗ Failed to import or test Rollback module: $_" -ForegroundColor Red
+    exit 1
+}
+Write-Host ""
+
+# Test 9: Import Quality/ReleaseNotes module
+Write-Host "Test 9: Importing Quality/ReleaseNotes.psm1..." -ForegroundColor Yellow
+try {
+    Import-Module (Join-Path $ModulesDir "Quality\ReleaseNotes.psm1") -Force
+    Write-Host "✓ ReleaseNotes module imported successfully" -ForegroundColor Green
+    
+    # Test function availability
+    Get-Command New-AIGeneratedReleaseNotes -ErrorAction Stop | Out-Null
+    Get-Command Get-CommitRangeSinceLastRelease -ErrorAction Stop | Out-Null
+    
+    Write-Host "✓ All ReleaseNotes functions available" -ForegroundColor Green
+}
+catch {
+    Write-Host "✗ Failed to import or test ReleaseNotes module: $_" -ForegroundColor Red
+    exit 1
+}
+Write-Host ""
+
+# Test 10: Import GitHub/Artifacts module
+Write-Host "Test 10: Importing GitHub/Artifacts.psm1..." -ForegroundColor Yellow
+try {
+    Import-Module (Join-Path $ModulesDir "GitHub\Artifacts.psm1") -Force
+    Write-Host "✓ Artifacts module imported successfully" -ForegroundColor Green
+    
+    # Test function availability
+    Get-Command Invoke-CIArtifactDownload -ErrorAction Stop | Out-Null
+    Get-Command Find-DownloadedExecutables -ErrorAction Stop | Out-Null
+    
+    Write-Host "✓ All Artifacts functions available" -ForegroundColor Green
+}
+catch {
+    Write-Host "✗ Failed to import or test Artifacts module: $_" -ForegroundColor Red
+    exit 1
+}
+Write-Host ""
+
+# Test 11: Import Quality/Checksums module
+Write-Host "Test 11: Importing Quality/Checksums.psm1..." -ForegroundColor Yellow
+try {
+    Import-Module (Join-Path $ModulesDir "Quality\Checksums.psm1") -Force
+    Write-Host "✓ Checksums module imported successfully" -ForegroundColor Green
+    
+    # Test function availability
+    Get-Command New-OrValidateChecksumsFile -ErrorAction Stop | Out-Null
+    Get-Command Test-ChecksumsFile -ErrorAction Stop | Out-Null
+    Get-Command Get-FileChecksum -ErrorAction Stop | Out-Null
+    
+    Write-Host "✓ All Checksums functions available" -ForegroundColor Green
+}
+catch {
+    Write-Host "✗ Failed to import or test Checksums module: $_" -ForegroundColor Red
+    exit 1
+}
+Write-Host ""
+
+# Test 12: Import Quality/Dependencies module
+Write-Host "Test 12: Importing Quality/Dependencies.psm1..." -ForegroundColor Yellow
+try {
+    Import-Module (Join-Path $ModulesDir "Quality\Dependencies.psm1") -Force
+    Write-Host "✓ Dependencies module imported successfully" -ForegroundColor Green
+    
+    # Test function availability
+    Get-Command Test-CommandDependency -ErrorAction Stop | Out-Null
+    Get-Command Test-RepositoryStructure -ErrorAction Stop | Out-Null
+    Get-Command Test-AllDependencies -ErrorAction Stop | Out-Null
+    
+    Write-Host "✓ All Dependencies functions available" -ForegroundColor Green
+}
+catch {
+    Write-Host "✗ Failed to import or test Dependencies module: $_" -ForegroundColor Red
+    exit 1
+}
+Write-Host ""
+
 Write-Host "================================" -ForegroundColor Green
 Write-Host "All module tests passed! ✓" -ForegroundColor Green
 Write-Host "================================" -ForegroundColor Green
