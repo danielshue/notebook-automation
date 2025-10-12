@@ -2735,16 +2735,19 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
               const { exec } = child_process;
               return new Promise((resolve) => {
                 exec(`"${naPath}" --version`, { timeout: 5000 }, (error: any, stdout: string, stderr: string) => {
+                  const releaseUrl = `https://github.com/danielshue/notebook-automation/releases/tag/v${manifestVersion}`;
+                  const releaseLink = `<br><a href="${releaseUrl}" class="external-link" target="_blank">View Release Notes</a>`;
+                  
                   if (error) {
                     // Fallback to manifest version if CLI fails
-                    resolve(`${manifestVersion} (Plugin)`);
+                    resolve(`${manifestVersion} (Plugin)${releaseLink}`);
                     return;
                   }
                   const cliVersion = stdout.trim() || stderr.trim();
                   if (cliVersion && cliVersion !== 'Unknown') {
-                    resolve(`${cliVersion} (CLI)`);
+                    resolve(`${cliVersion} (CLI)${releaseLink}`);
                   } else {
-                    resolve(`${manifestVersion} (Plugin)`);
+                    resolve(`${manifestVersion} (Plugin)${releaseLink}`);
                   }
                 });
               });
@@ -2754,11 +2757,13 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           console.warn('[Notebook Automation] CLI version check failed, using manifest version:', cliError);
         }
         
-        // Return manifest version as fallback
-        return `${manifestVersion} (Plugin)`;
+        // Return manifest version as fallback with release link
+        const releaseUrl = `https://github.com/danielshue/notebook-automation/releases/tag/v${manifestVersion}`;
+        const releaseLink = `<br><a href="${releaseUrl}" class="external-link" target="_blank">View Release Notes</a>`;
+        return `${manifestVersion} (Plugin)${releaseLink}`;
       }
       
-      // Fallback if no manifest version available
+      // Fallback if no manifest version available (no link in this case)
       return "Unknown (No manifest version)";
     } catch (error) {
       console.error('[Notebook Automation] Error in getNaVersion:', error);
