@@ -352,204 +352,7 @@ $global:ManageVersionRollbackState = $script:rollbackState
 #
 
 # Function to wait for GitHub Actions workflows to complete
-function Wait-GitHubActionsComplete {
-    param(
-        [string]$CommitSha,
-        [string]$ExpectedVersion,
-        [int]$TimeoutMinutes = 45,  # Increased from 20 to 45 minutes for cross-platform builds
-        [int]$PollIntervalSeconds = 15  # Poll every 15 seconds for fast build completion detection
-    )
-    
-    $shortSha = $CommitSha.Substring(0, 8)
-    Write-ConditionalHost "⏳ Waiting for GitHub Actions to complete for version $ExpectedVersion (commit $shortSha)..." -ForegroundColor Yellow
-    Write-ConditionalHost "   This ensures CI builds executables with the correct version before download" -ForegroundColor Gray
-    Write-ConditionalHost "   Timeout: $TimeoutMinutes minutes, checking every $([Math]::Round($PollIntervalSeconds/60.0, 1)) minutes" -ForegroundColor Gray
-    
-    $timeoutTime = (Get-Date).AddMinutes($TimeoutMinutes)
-    $workflowsCompleted = $false
-    $initialWaitTime = 15  # Reduced from 60 to 15 seconds - workflows often start quickly
-    
-    Write-ConditionalHost "⏸️  Initial wait of $initialWaitTime seconds for workflows to start..." -ForegroundColor Gray
-    Start-Sleep -Seconds $initialWaitTime
-    
-    # Do an immediate check first - workflows might already be running or completed
-    Write-ConditionalHost "🔍 Performing initial workflow check..." -ForegroundColor Gray
-
-    # Helper to run gh run list and return parsed JSON or throw with stderr
-    function Invoke-GhRunListJson {
-        param(
-            [int]$Limit = 20,
-            [string[]]$Fields = @('status', 'conclusion', 'name', 'headSha')
-        )
-
-        $fieldsArg = ($Fields -join ',')
-        $cmd = @('run', 'list', '--json', $fieldsArg, '--limit', $Limit)
-        $psi = New-Object System.Diagnostics.ProcessStartInfo
-        $psi.FileName = (Get-Command gh).Source
-        $psi.Arguments = $cmd -join ' '
-        $psi.RedirectStandardOutput = $true
-        $psi.RedirectStandardError = $true
-        $psi.UseShellExecute = $false
-        $psi.CreateNoWindow = $true
-
-        $proc = New-Object System.Diagnostics.Process
-        $proc.StartInfo = $psi
-        $proc.Start() | Out-Null
-        $stdout = $proc.StandardOutput.ReadToEnd()
-        $stderr = $proc.StandardError.ReadToEnd()
-        $proc.WaitForExit()
-
-        if ($proc.ExitCode -ne 0) {
-            # Pass along stderr for debugging
-            throw "gh run list failed (exit $($proc.ExitCode)): $stderr"
-        }
-
-        if ($stdout.Trim() -eq '') { return @() }
-        try {
-            return $stdout | ConvertFrom-Json
-        }
-        catch {
-            throw "Failed to parse gh output: $($_.Exception.Message). Raw output: $stdout`nStdErr: $stderr"
-        }
-    }
-    
-    # Quick check to see if workflows are already running or completed
-    try {
-        Write-ConditionalHost "   Running: gh run list --json status,conclusion,name,headSha --limit 20" -ForegroundColor DarkGray
-        $allQuickWorkflows = Invoke-GhRunListJson -Limit 20 -Fields @('status', 'conclusion', 'name', 'headSha')
-        $quickWorkflows = $allQuickWorkflows | Where-Object { $_.headSha -eq $CommitSha }
-        Write-ConditionalHost "   ✅ GitHub CLI call successful, found $($quickWorkflows.Count) workflows for commit" -ForegroundColor DarkGray
-        if ($quickWorkflows.Count -gt 0) {
-            $quickCompleted = $quickWorkflows | Where-Object { $_.status -eq "completed" }
-            $quickInProgress = $quickWorkflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
-            Write-ConditionalHost "📋 Quick check: Found $($quickWorkflows.Count) workflow(s) - $($quickCompleted.Count) completed, $($quickInProgress.Count) in progress" -ForegroundColor Cyan
-        }
-        else {
-            Write-ConditionalHost "📋 Quick check: No workflows found yet for commit $shortSha, will start polling..." -ForegroundColor Yellow
-        }
-    }
-    catch {
-        Write-ConditionalHost "⚠️  Quick check failed, proceeding with normal polling..." -ForegroundColor Yellow
-        Write-ConditionalHost "   Error: $($_.Exception.Message)" -ForegroundColor Gray
-    }
-    
-    while ((Get-Date) -lt $timeoutTime -and -not $workflowsCompleted) {
-        $currentTime = Get-Date -Format "HH:mm:ss"
-        Write-ConditionalHost "🔍 [$currentTime] Checking workflows for commit $shortSha..." -ForegroundColor Gray
-        
-        try {
-            # Get workflow runs for the commit (use general list and filter, as --commit can be unreliable)
-            Write-ConditionalHost "   Running: gh run list --json status,conclusion,name,url,headSha --limit 50" -ForegroundColor DarkGray
-            $allWorkflows = Invoke-GhRunListJson -Limit 50 -Fields @('status', 'conclusion', 'name', 'url', 'headSha')
-            if ($null -ne $allWorkflows) {
-                # ensure $allWorkflows is an array
-                if ($allWorkflows -isnot [System.Array]) { $allWorkflows = @($allWorkflows) }
-                # Filter to workflows for our specific commit
-                $workflows = $allWorkflows | Where-Object { $_.headSha -eq $CommitSha }
-                Write-ConditionalHost "   ✅ Found $($allWorkflows.Count) total workflows, $($workflows.Count) for commit $shortSha" -ForegroundColor DarkGray
-                
-                if ($workflows.Count -eq 0) {
-                    Write-ConditionalHost "⏳ No workflows found yet for commit $shortSha, waiting..." -ForegroundColor Yellow
-                }
-                else {
-                    $inProgress = $workflows | Where-Object { $_.status -eq "in_progress" -or $_.status -eq "queued" }
-                    $failed = $workflows | Where-Object { $_.conclusion -eq "failure" -or $_.conclusion -eq "cancelled" }
-                    $completed = $workflows | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "success" }
-                    $skipped = $workflows | Where-Object { $_.status -eq "completed" -and $_.conclusion -eq "skipped" }
-                    $allCompleted = $workflows | Where-Object { $_.status -eq "completed" }
-                    
-                    $timestamp = Get-Date -Format "HH:mm:ss"
-                    Write-ConditionalHost "📊 [$timestamp] Workflow Status - Total: $($workflows.Count), Completed: $($allCompleted.Count), Success: $($completed.Count), Skipped: $($skipped.Count), In Progress: $($inProgress.Count), Failed: $($failed.Count)" -ForegroundColor Cyan
-                    
-                    # Show workflow details (always show during polling)
-                    $workflows | ForEach-Object {
-                        $status = if ($_.status -eq "completed") { "✅ $($_.conclusion)" } else { "⏳ $($_.status)" }
-                        Write-ConditionalHost "   $($_.name): $status" -ForegroundColor Gray
-                    }
-                    
-                    # Debug: Show detailed workflow categorization
-                    Write-ConditionalHost "   📋 Workflow breakdown:" -ForegroundColor DarkGray
-                    Write-ConditionalHost "      • In Progress/Queued: $($inProgress.Count)" -ForegroundColor DarkGray
-                    Write-ConditionalHost "      • Completed+Success: $($completed.Count)" -ForegroundColor DarkGray  
-                    Write-ConditionalHost "      • Completed+Skipped: $($skipped.Count)" -ForegroundColor DarkGray
-                    Write-ConditionalHost "      • Failed/Cancelled: $($failed.Count)" -ForegroundColor DarkGray
-                    
-                    # Additional debug info when not quiet
-                    if (-not $Quiet) {
-                        Write-VerboseHost "Debug: Total workflows found for commit: $($workflows.Count)"
-                        Write-VerboseHost "Debug: Workflows by conclusion: Success=$($completed.Count), Skipped=$($skipped.Count), Failed=$($failed.Count), InProgress=$($inProgress.Count)"
-                    }
-                    
-                    if ($failed.Count -gt 0) {
-                        $failedNames = ($failed | ForEach-Object { $_.name }) -join ", "
-                        Write-Host "❌ Failed workflows:" -ForegroundColor Red
-                        $failed | ForEach-Object {
-                            Write-Host "   $($_.name): $($_.url)" -ForegroundColor Red
-                        }
-                        throw "GitHub Actions workflows failed: $failedNames"
-                    }
-                    
-                    # Check if all workflows are completed (regardless of count)
-                    if ($workflows.Count -gt 0 -and $inProgress.Count -eq 0) {
-                        # All workflows finished - check if they're successful
-                        if ($failed.Count -eq 0) {
-                            # Success if we have successful or skipped workflows (no failures)
-                            if ($completed.Count -gt 0 -or $skipped.Count -gt 0) {
-                                Write-ConditionalHost "✅ All GitHub Actions workflows completed successfully!" -ForegroundColor Green
-                                Write-ConditionalHost "   Successful workflows: $($completed.Count), Skipped: $($skipped.Count)" -ForegroundColor Green
-                                $workflowsCompleted = $true
-                                break
-                            }
-                            else {
-                                Write-Host "⚠️  All workflows completed but none were successful or skipped" -ForegroundColor Yellow
-                                Write-Host "   This is unusual - check workflow status manually" -ForegroundColor Yellow
-                            }
-                        }
-                        else {
-                            Write-Host "⚠️  Workflows completed but some failed" -ForegroundColor Yellow
-                            Write-Host "   Total completed: $($allCompleted.Count), Successful: $($completed.Count), Failed: $($failed.Count)" -ForegroundColor Yellow
-                        }
-                    }
-                    
-                    if ($inProgress.Count -gt 0) {
-                        $inProgressNames = ($inProgress | ForEach-Object { $_.name }) -join ", "
-                        Write-ConditionalHost "⏳ Still waiting for: $inProgressNames" -ForegroundColor Yellow
-                    }
-                }
-            }
-            else {
-                Write-ConditionalHost "⚠️  GitHub CLI command failed (exit code: $LASTEXITCODE), retrying..." -ForegroundColor Yellow
-                Write-ConditionalHost "   Command: gh run list --json status,conclusion,name,url,headSha --limit 50" -ForegroundColor Gray
-            }
-        }
-        catch {
-            Write-ConditionalHost "❌ Error checking workflow status: $($_.Exception.Message)" -ForegroundColor Red
-        }
-        
-        if (-not $workflowsCompleted) {
-            $elapsed = [Math]::Round(((Get-Date) - (Get-Date).AddMinutes(-$TimeoutMinutes + (($timeoutTime - (Get-Date)).TotalMinutes))).TotalMinutes, 1)
-            $remaining = [Math]::Round(($timeoutTime - (Get-Date)).TotalMinutes, 1)
-            Write-ConditionalHost "⏳ Sleeping $PollIntervalSeconds seconds before next check... (Elapsed: ${elapsed}m, Remaining: ${remaining}m)" -ForegroundColor Gray
-            
-            # Interruptible sleep - break into smaller chunks to allow Ctrl-C detection
-            $sleepChunks = [Math]::Max(1, [Math]::Floor($PollIntervalSeconds / 3))
-            for ($i = 0; $i -lt 3; $i++) {
-                Start-Sleep -Seconds $sleepChunks
-            }
-            # Sleep any remainder
-            $remainder = $PollIntervalSeconds - ($sleepChunks * 3)
-            if ($remainder -gt 0) {
-                Start-Sleep -Seconds $remainder
-            }
-        }
-    }
-    
-    if (-not $workflowsCompleted) {
-        throw "Timeout: GitHub Actions workflows did not complete within $TimeoutMinutes minutes. The builds may still be running - check GitHub Actions manually. Consider using -CITimeoutMinutes to increase the timeout for complex cross-platform builds."
-    }
-    
-    Write-ConditionalHost "✅ GitHub Actions monitoring completed successfully" -ForegroundColor Green
-}
+# Wait-GitHubActionsComplete is now provided by GitHub/CLI module
 
 
 
@@ -562,7 +365,9 @@ function Invoke-CommitAndWaitForCI {
         [string]$ManifestJsonPath,
         [string]$VersionConstantsPath,
         [string]$ScriptPath
-    )    Write-ConditionalHost "📝 Committing version changes and waiting for CI..." -ForegroundColor Cyan
+    )
+    
+    Write-ConditionalHost "📝 Committing version changes and waiting for CI..." -ForegroundColor Cyan
     
     # Create commit message
     $commitMessage = switch ($Type) {
@@ -617,8 +422,8 @@ function Invoke-CommitAndWaitForCI {
             throw "Failed to push changes to origin"
         }
         
-        # Wait for CI to complete with correct version
-        Wait-GitHubActionsComplete -CommitSha $commitSha -ExpectedVersion $Version -TimeoutMinutes $CITimeoutMinutes
+        # Wait for CI to complete with correct version using module function
+        Wait-GitHubActionsComplete -CommitSha $commitSha -TimeoutMinutes $CITimeoutMinutes -PollIntervalSeconds 15
     }
     else {
         Write-ConditionalHost "ℹ️  Skipping CI build - no changes and tag already exists" -ForegroundColor Yellow
@@ -629,299 +434,9 @@ function Invoke-CommitAndWaitForCI {
 
 # Function to download CI-built executables from GitHub Actions
 # Function to generate AI-powered release notes using GitHub Copilot CLI
-function New-AIReleaseNotes {
-    param(
-        [string]$Version,
-        [string]$Type,
-        [string]$RepoRoot
-    )
-    
-    Write-Host "🤖 Generating AI-powered release notes with GitHub Copilot..." -ForegroundColor Cyan
-    
-    # Check if GitHub Copilot CLI is available
-    $ghCopilotAvailable = $null -ne (Get-Command "gh" -ErrorAction SilentlyContinue)
-    if (-not $ghCopilotAvailable) {
-        Write-Warning "GitHub CLI not found - falling back to standard release notes"
-        return $null
-    }
-    
-    # Get the previous release tag of the same type (beta vs stable)
-    try {
-        $tags = git tag --sort=-version:refname
-        $currentTag = "v$Version"
-        
-        # Determine if we're looking for beta or stable releases
-        $isBeta = $Version -match "-beta\."
-        
-        # Filter tags by type and find the most recent one before current
-        $previousTag = $null
-        foreach ($tag in $tags) {
-            if ($tag -eq $currentTag) { continue }  # Skip current tag if it exists
-            
-            $tagIsBeta = $tag -match "-beta\."
-            
-            # Match release types (beta with beta, stable with stable)
-            if ($isBeta -eq $tagIsBeta) {
-                $previousTag = $tag
-                break
-            }
-        }
-        
-        if (-not $previousTag) {
-            Write-Host "   ℹ️  No previous $Type release found - comparing last 10 commits" -ForegroundColor Yellow
-            $commitRange = "HEAD~10..HEAD"
-        }
-        else {
-            Write-Host "   📊 Comparing changes since $previousTag (last $Type release)" -ForegroundColor Green
-            $commitRange = "$previousTag..HEAD"
-        }
-    }
-    catch {
-        Write-Warning "Failed to get previous release tag: $($_.Exception.Message)"
-        $commitRange = "HEAD~10..HEAD"  # Fallback to last 10 commits
-    }
-    
-    # Get commit log for the range
-    try {
-        $commitLog = git log $commitRange --pretty=format:"%h - %s" --no-merges
-        
-        if ([string]::IsNullOrWhiteSpace($commitLog)) {
-            Write-Host "   ℹ️  No commits found in range $commitRange" -ForegroundColor Yellow
-            return $null
-        }
-        
-        $commitCount = @($commitLog -split "`n").Count
-        Write-Host "   📝 Found $commitCount commits to analyze" -ForegroundColor Green
-        
-        # If too many commits, limit to recent ones to avoid hanging
-        if ($commitCount -gt 50) {
-            Write-Host "   ⚠️  Too many commits ($commitCount), limiting to last 50 for performance" -ForegroundColor Yellow
-            $commitLog = git log $commitRange --pretty=format:"%h - %s" --no-merges -50
-        }
-    }
-    catch {
-        Write-Warning "Failed to get commit log: $($_.Exception.Message)"
-        return $null
-    }
-    
-    # Use GitHub Copilot CLI to generate release notes
-    $copilotAvailable = $null -ne (Get-Command "copilot" -ErrorAction SilentlyContinue)
-    
-    if (-not $copilotAvailable) {
-        Write-Error "GitHub Copilot CLI is not installed. Install with: npm install -g @github/copilot"
-        throw "GitHub Copilot CLI is required for release notes generation"
-    }
-    
-    Write-Host "   🚀 Using GitHub Copilot CLI to generate release notes..." -ForegroundColor Cyan
-    
-    try {
-        # Load prompt template from scripts folder
-        $promptTemplatePath = Join-Path $RepoRoot "scripts" "release-notes-prompt.md"
-        if (-not (Test-Path $promptTemplatePath)) {
-            Write-Error "Prompt template not found at $promptTemplatePath"
-            throw "Release notes prompt template is required: scripts/release-notes-prompt.md"
-        }
-        
-        $promptTemplate = Get-Content $promptTemplatePath -Raw
-        $prompt = $promptTemplate -replace '\{\{COMMITS\}\}', $commitLog
-        
-        # Create temporary file for prompt (avoid command-line length limits)
-        $tempPrompt = Join-Path $env:TEMP "copilot-prompt-$(Get-Random).txt"
-        $prompt | Out-File -FilePath $tempPrompt -Encoding UTF8
-        
-        # Execute Copilot CLI with timeout
-        Write-Host "   ⏱️  Calling Copilot CLI (60 second timeout)..." -ForegroundColor Gray
-        
-        $copilotJob = Start-Job -ScriptBlock {
-            param($PromptFile)
-            # Set output encoding to UTF-8 for proper emoji handling
-            [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-            $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
-            
-            $content = Get-Content $PromptFile -Raw
-            # Use programmatic mode - no tool approval needed for text generation
-            & copilot -p $content 2>&1
-        } -ArgumentList $tempPrompt
-        
-        # Wait for job with timeout
-        $completed = Wait-Job $copilotJob -Timeout 60
-        
-        if ($completed) {
-            $copilotOutput = Receive-Job $copilotJob
-            Stop-Job $copilotJob -ErrorAction SilentlyContinue
-            Remove-Job $copilotJob -ErrorAction SilentlyContinue
-            
-            # Clean up temp file
-            Remove-Item $tempPrompt -ErrorAction SilentlyContinue
-            
-            # Parse output - filter out non-markdown content
-            $outputText = ($copilotOutput | Out-String).Trim()
-            
-            # Remove Copilot CLI statistics and metadata (always added by CLI)
-            # Pattern 1: Remove bullet prefix (●) that CLI adds
-            $outputText = $outputText -replace "(?m)^●\s*", ""
-            
-            # Pattern 2: Remove CLI command output markers
-            $outputText = $outputText -replace "(?m)^✓.*$", ""
-            $outputText = $outputText -replace "(?m)^↪.*$", ""
-            $outputText = $outputText -replace "(?m)^\$.*$", ""
-            
-            # Pattern 3: Remove all statistics lines at the end
-            $outputText = $outputText -replace "(?m)^Total usage.*$", ""
-            $outputText = $outputText -replace "(?m)^Total duration.*$", ""
-            $outputText = $outputText -replace "(?m)^Total code changes.*$", ""
-            $outputText = $outputText -replace "(?m)^Usage by model.*$", ""
-            
-            # Pattern 4: Remove lines with cache statistics
-            $outputText = $outputText -replace "(?m)^.*cache read.*$", ""
-            $outputText = $outputText -replace "(?m)^.*cache write.*$", ""
-            
-            # Pattern 5: Remove authentication/premium warnings
-            $outputText = $outputText -replace "(?m)^.*authenticat.*$", ""
-            $outputText = $outputText -replace "(?m)^.*premium request.*$", ""
-            $outputText = $outputText -replace "(?m)^.*quota.*$", ""
-            
-            # Pattern 6: Remove preamble text that sometimes appears before title (# header)
-            $outputText = $outputText -replace "(?s)^.*?(?=#\s)", ""
-            
-            # Pattern 7: Remove leading whitespace before section headers and bullet points
-            $outputText = $outputText -replace "(?m)^\s+(###)", '$1'
-            $outputText = $outputText -replace "(?m)^\s+(-)", '$1'
-            
-            # Pattern 8: Clean up multiple blank lines
-            $outputText = $outputText -replace "(?m)^\s*$\n", "`n"
-            $outputText = $outputText -replace "\n{3,}", "`n`n"
-            
-            $outputText = $outputText.Trim()
-            
-            if (-not [string]::IsNullOrWhiteSpace($outputText) -and $outputText.Length -gt 50) {
-                Write-Host "   ✅ Release notes generated by GitHub Copilot CLI" -ForegroundColor Green
-                return $outputText
-            }
-            else {
-                Write-Error "Copilot CLI returned empty or invalid output"
-                throw "Failed to generate release notes - output was too short or empty"
-            }
-        }
-        else {
-            Stop-Job $copilotJob -ErrorAction SilentlyContinue
-            Remove-Job $copilotJob -ErrorAction SilentlyContinue
-            Remove-Item $tempPrompt -ErrorAction SilentlyContinue
-            Write-Error "Copilot CLI timed out after 60 seconds"
-            throw "Failed to generate release notes - Copilot CLI timeout"
-        }
-    }
-    catch {
-        Write-Error "Failed to generate release notes: $($_.Exception.Message)"
-        throw
-    }
-}
+# New-AIReleaseNotes is now New-AIGeneratedReleaseNotes in Quality/ReleaseNotes.psm1
 
-function Invoke-ArtifactDownload {
-    param(
-        [string]$RepoRoot,
-        [string]$TargetPath
-    )
-    
-    Write-ConditionalHost "📦 Downloading CI-built executables from GitHub Actions..." -ForegroundColor Cyan
-    
-    $downloadScript = Join-Path $RepoRoot "scripts" "download-latest-artifact.ps1"
-    if (-not (Test-Path $downloadScript)) {
-        throw "Artifact download script not found: $downloadScript"
-    }
-    
-    # Target directory for CI artifacts should be RepoRoot/dist (cross-platform)
-    $artifactDistPath = Join-Path $RepoRoot "dist"
-    
-    # Clear the dist directory before downloading (ensures clean state)
-    if (Test-Path $artifactDistPath) {
-        Write-ConditionalHost "🗑️  Clearing existing dist directory for clean CI artifact download..." -ForegroundColor Yellow
-        Remove-Item -Path $artifactDistPath -Recurse -Force
-    }
-    
-    # Ensure target directory exists
-    New-Item -ItemType Directory -Path $artifactDistPath -Force | Out-Null
-    
-    # Run the download script
-    try {
-        Write-VerboseHost "Running artifact download script: $downloadScript"
-        $originalLocation = Get-Location
-        Set-Location $RepoRoot
-        
-        & pwsh -ExecutionPolicy Bypass -File $downloadScript
-        if ($LASTEXITCODE -ne 0) {
-            throw "Artifact download script failed with exit code $LASTEXITCODE"
-        }
-        
-        # Check for downloaded executables in the dist directory
-        $pluginArtifactPath = Join-Path $artifactDistPath "notebook-automation"
-        
-        # Check both possible locations for executables (cross-platform compatible)
-        $sourceExecutablePath = $null
-        if (Test-Path $pluginArtifactPath) {
-            $executables = Get-ChildItem -Path $pluginArtifactPath -File | Where-Object { $_.Name -like "na-*" }
-            if ($executables.Count -gt 0) {
-                $sourceExecutablePath = $pluginArtifactPath
-                Write-VerboseHost "Found executables in plugin artifact path: $pluginArtifactPath"
-            }
-        }
-        
-        if (-not $sourceExecutablePath -and (Test-Path $artifactDistPath)) {
-            $executables = Get-ChildItem -Path $artifactDistPath -File | Where-Object { $_.Name -like "na-*" }
-            if ($executables.Count -gt 0) {
-                $sourceExecutablePath = $artifactDistPath
-                Write-VerboseHost "Found executables in dist path: $artifactDistPath"
-            }
-        }
-        
-        if (-not $sourceExecutablePath) {
-            # Use cross-platform compatible path display
-            $expectedPath1 = $pluginArtifactPath -replace '\\', '/'
-            $expectedPath2 = $artifactDistPath -replace '\\', '/'
-            throw "No executables found in downloaded artifacts. Expected location: $expectedPath1 or $expectedPath2"
-        }
-        
-        # Copy executables to target location (only if different from source)
-        $executables = Get-ChildItem -Path $sourceExecutablePath -File | Where-Object { $_.Name -like "na-*" }
-        Write-ConditionalHost "✅ Found $($executables.Count) executables in CI artifacts" -ForegroundColor Green
-        
-        # Check if source and target are the same directory
-        $normalizedSource = [System.IO.Path]::GetFullPath($sourceExecutablePath)
-        $normalizedTarget = [System.IO.Path]::GetFullPath($TargetPath)
-        
-        if ($normalizedSource -eq $normalizedTarget) {
-            Write-ConditionalHost "✅ Executables already in target location - no copy needed" -ForegroundColor Green
-            # Still need to set executable permissions for Unix systems
-            foreach ($exe in $executables) {
-                Set-ExecutablePermission -FilePath $exe.FullName
-            }
-        }
-        else {
-            Write-ConditionalHost "📋 Copying executables from $sourceExecutablePath to $TargetPath" -ForegroundColor Cyan
-            foreach ($exe in $executables) {
-                $targetFile = Join-Path $TargetPath $exe.Name
-                Copy-Item $exe.FullName $targetFile -Force
-                
-                # Set executable permissions for Unix systems
-                Set-ExecutablePermission -FilePath $targetFile
-                
-                Write-VerboseHost "Copied $($exe.Name) to $targetFile"
-            }
-        }
-        
-        Write-ConditionalHost "✅ Successfully downloaded and installed CI-built executables" -ForegroundColor Green
-        return $true
-    }
-    catch {
-        Write-ConditionalHost "❌ Failed to download CI artifacts: $($_.Exception.Message)" -ForegroundColor Red -Force
-        return $false
-    }
-    finally {
-        if ($originalLocation) {
-            Set-Location $originalLocation
-        }
-    }
-}
+# Invoke-ArtifactDownload is now Invoke-CIArtifactDownload in GitHub/Artifacts.psm1
 
 # Define paths
 $RepoRoot = Get-Location
@@ -933,42 +448,7 @@ $ManifestJsonPath = Join-Path $PluginDir "manifest.json"
 # HELPER FUNCTIONS - Eliminate redundancy
 #
 
-function Get-VersionData {
-    param([string]$Type = "all")
-    
-    $data = @{
-        ManifestExists  = Test-Path $ManifestJsonPath
-        PackageExists   = Test-Path $PackageJsonPath
-        ManifestData    = $null
-        PackageData     = $null
-        ManifestVersion = $null
-        PackageVersion  = $null
-        GitVersion      = $null
-    }
-    
-    if ($data.ManifestExists) {
-        $data.ManifestData = Get-Content $ManifestJsonPath | ConvertFrom-Json
-        $data.ManifestVersion = $data.ManifestData.version
-    }
-    
-    if ($data.PackageExists) {
-        $data.PackageData = Get-Content $PackageJsonPath | ConvertFrom-Json  
-        $data.PackageVersion = $data.PackageData.version
-    }
-    
-    # Get Git version if needed
-    if ($Type -eq "all" -or $Type -eq "git") {
-        $GitVersionPath = Join-Path $RepoRoot "GitVersion.yml"
-        if (Test-Path $GitVersionPath) {
-            $gitVersionContent = Get-Content $GitVersionPath -Raw
-            if ($gitVersionContent -match "next-version:\s*([^\r\n]+)") {
-                $data.GitVersion = $matches[1].Trim()
-            }
-        }
-    }
-    
-    return $data
-}
+# Get-VersionData is now available in Version/Management.psm1
 
 function Write-VersionStatus {
     param(
@@ -1207,7 +687,7 @@ try {
     #
 
     if ($StatusOnly) {
-        $versionData = Get-VersionData
+        $versionData = Get-VersionData -PluginPath $PluginDir
         Write-VersionStatus -VersionData $versionData -Detailed:$Detailed
         exit 0
     }
@@ -1218,7 +698,7 @@ try {
         # Get target version
         $targetVersion = $Version
         if (-not $targetVersion) {
-            $versionData = Get-VersionData
+            $versionData = Get-VersionData -PluginPath $PluginDir
             if ($versionData.ManifestExists) {
                 $targetVersion = $versionData.ManifestVersion
                 Write-Host "📖 Using version from manifest.json: $targetVersion"
@@ -1301,7 +781,7 @@ try {
 
     if (-not $Reissue -and $RebuildOnly -and -not $Version) {
         # Infer version from manifest if not provided
-        $versionData = Get-VersionData
+        $versionData = Get-VersionData -PluginPath $PluginDir
         if ($versionData.ManifestExists) {
             $Version = $versionData.ManifestVersion
             Write-Host "ℹ️  Inferred current version from manifest: $Version" -ForegroundColor Cyan
@@ -1369,14 +849,9 @@ try {
         if ($UseArtifacts -and -not $ForceLocalBuild) {
             Write-ConditionalHost "🎯 Using CI-built executables from GitHub Actions (recommended for releases)" -ForegroundColor Green
         
-            $success = Invoke-ArtifactDownload -RepoRoot $RepoRoot -TargetPath $PublishRoot
-            if ($success) {
-                Write-ConditionalHost "✅ CI artifacts successfully integrated" -ForegroundColor Green
-                return
-            }
-            else {
-                Write-ConditionalHost "⚠️  CI artifact download failed, falling back to local build" -ForegroundColor Yellow
-            }
+            Invoke-CIArtifactDownload -RepoRoot $RepoRoot -TargetPath $PublishRoot -ThrowOnFailure
+            Write-ConditionalHost "✅ CI artifacts successfully integrated" -ForegroundColor Green
+            return
         }
 
         # Fall back to local build or if ForceLocalBuild is specified
@@ -1444,7 +919,7 @@ try {
     if (-not $Reissue) {
         # Step 1: Update package.json version
         # Check if the specified version is already set in package.json
-        $versionData = Get-VersionData
+        $versionData = Get-VersionData -PluginPath $PluginDir
         if ($versionData.PackageVersion -eq $Version) {
             Write-Host "⚠️  Specified version ($Version) is already set in package.json. Skipping version update." -ForegroundColor Yellow
         }
@@ -1471,7 +946,7 @@ try {
 
         # Step 3: Verify versions are synchronized
         Write-Host "✅ Verifying version synchronization"
-        $versionData = Get-VersionData
+        $versionData = Get-VersionData -PluginPath $PluginDir
         $packageVersion = $versionData.PackageVersion
         $manifestVersion = $versionData.ManifestVersion
         Write-Host "   package.json: $packageVersion"
@@ -1723,10 +1198,7 @@ try {
             # Download CI-built executables (skip local build entirely)
             Write-Host "📦 Downloading CI-built executables now that build is complete..." -ForegroundColor Yellow
             $distPath = Join-Path $RepoRoot 'dist'
-            $success = Invoke-ArtifactDownload -RepoRoot $RepoRoot -TargetPath $distPath
-            if (-not $success) {
-                throw "Failed to download CI artifacts after waiting for build completion"
-            }
+            Invoke-CIArtifactDownload -RepoRoot $RepoRoot -TargetPath $distPath -ThrowOnFailure
         }
         else {
             # Traditional workflow: build locally then commit
@@ -1806,7 +1278,7 @@ try {
             Write-Host "[RC2] Missing executables detected: $($missingExec -join ', ') -> publishing" -ForegroundColor Yellow
             $cliProject = Join-Path $RepoRoot "src/c-sharp/NotebookAutomation.Cli/NotebookAutomation.Cli.csproj"
             if (-not (Test-Path $cliProject)) { throw "CLI project not found for completeness publish: $cliProject" }
-            $versionData = Get-VersionData
+            $versionData = Get-VersionData -PluginPath $PluginDir
             $semanticVersion = if ($versionData.ManifestExists) { $versionData.ManifestVersion } else { $ReissueVersion }
             Invoke-DotnetPublishMatrix -CliProject $cliProject -PublishRoot $rootDist -SemanticVersion $semanticVersion
         }
@@ -2031,7 +1503,7 @@ try {
         Write-Host "✅ Prepared $($releaseAssets.Count) total release assets ($($assetManifest.files.Count) plugin + $foundExecutables executables + checksums)"
 
         # Generate AI-powered release notes using GitHub Copilot CLI
-        $aiGeneratedNotes = New-AIReleaseNotes -Version $Version -Type $Type -RepoRoot $RepoRoot
+        $aiGeneratedNotes = New-AIGeneratedReleaseNotes -Version $Version -ReleaseType $Type -RepoRoot $RepoRoot
 
         # Create release notes based on type
         $releaseNotes = switch ($Type) {
