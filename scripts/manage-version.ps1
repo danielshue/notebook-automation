@@ -1486,10 +1486,14 @@ try {
         if (Get-Command New-AIGeneratedReleaseNotes -ErrorAction SilentlyContinue) {
             try {
                 Write-Host "🤖 Generating AI-powered release notes for reissue..." -ForegroundColor Cyan
+                
+                # Set default prompt template path if not provided
+                $promptPath = if ($PromptTemplatePath) { $PromptTemplatePath } else { Join-Path $RepoRoot "scripts/release-notes-prompt.md" }
+                
                 $notes = New-AIGeneratedReleaseNotes `
                     -Version $ReissueVersion `
                     -Type $Type `
-                    -PromptTemplatePath $PromptTemplatePath `
+                    -PromptTemplatePath $promptPath `
                     -ChecksumsJsonPath $checksumsPath `
                     -ThrowOnFailure:$false
                 
