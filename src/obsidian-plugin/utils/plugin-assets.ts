@@ -240,13 +240,25 @@ export async function ensureExecutableExists(plugin: Plugin, progressCallback?: 
       if (checksumMap && checksumMap[execName] && fs && fs.existsSync(finalPath)) {
         const verified = await verifyFileChecksum(fs, finalPath, checksumMap[execName]);
         if (!verified) {
+          console.warn('[Notebook Automation] Executable checksum mismatch detected - file may be corrupted. Attempting re-download...');
           // Corrupt or mismatch: remove and force re-download once
           try { fs.unlinkSync(finalPath); } catch { /* ignore */ }
           const redownloaded = await downloadExecutableFromGitHub(plugin, progressCallback);
           if (checksumMap[execName]) {
             const recheck = await verifyFileChecksum(fs, redownloaded, checksumMap[execName]);
             if (!recheck) {
-              console.warn('[Notebook Automation] Executable checksum mismatch after re-download; proceeding without guarantee.');
+              console.error('[Notebook Automation] Executable checksum mismatch after re-download.');
+              console.error('[Notebook Automation] This may indicate:');
+              console.error('[Notebook Automation]   1. Network issues during download');
+              console.error('[Notebook Automation]   2. Incompatible executable for your platform');
+              console.error('[Notebook Automation]   3. GitHub release assets are corrupted');
+              console.error('[Notebook Automation] The executable may not work correctly. Try:');
+              console.error('[Notebook Automation]   - Reload Obsidian completely');
+              console.error('[Notebook Automation]   - Check your internet connection');
+              console.error('[Notebook Automation]   - Report this issue on GitHub');
+              // Still proceed, but user has been warned extensively
+            } else {
+              console.log('[Notebook Automation] Executable re-download successful, checksum verified.');
             }
           }
           finalPath = redownloaded;
@@ -670,7 +682,15 @@ export async function isExecutableCurrent(plugin: Plugin, execPath: string, expe
     if (!childProcess || !fs) return false;
     if (!fs.existsSync(execPath)) return false;
     // Run with --version (short timeout)
-    const output: string = childProcess.execSync(`"${execPath}" --version`, { timeout: 4000, windowsHide: true }).toString();
+    let output: string;
+    try {
+      output = childProcess.execSync(`"${execPath}" --version`, { timeout: 4000, windowsHide: true }).toString();
+    } catch (execError: any) {
+      // Executable failed to run - may be corrupted or incompatible
+      console.warn(`[Notebook Automation] Failed to check executable version: ${execError.message}`);
+      console.warn('[Notebook Automation] The executable may be corrupted or incompatible with your system.');
+      return false;
+    }
     // Look for line starting with 'Notebook Automation version '
     const line = output.split(/\r?\n/).find(l => l.toLowerCase().startsWith('notebook automation version')) || '';
     if (!line) return false;

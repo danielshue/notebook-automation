@@ -1,59 +1,89 @@
-# Active Context: Intelligent Force Flag Enhancement - Complete
+# Active Context: Plugin Error Handling Enhancement - Complete
 
 ## Current Focus
 
-**Status**: ✅ **COMPLETED** - Intelligent force flag enhancement successfully implemented and ready for production
+**Status**: ✅ **COMPLETED** - Enhanced error handling for corrupted executables and process crashes
 
-## Recent Implementation: Smart Force Flag Handling
+## Recent Implementation: Robust Error Handling for Executable Failures
 
 ### What Was Accomplished
 
-The system now intelligently handles the `--force` flag by automatically detecting whether existing markdown files contain AI-generated content. This eliminates the need for users to manually specify `--force` when processing files that don't already have AI summaries.
+Fixed critical issues in the Obsidian plugin where corrupted or incompatible executables would cause crashes with unhelpful "code null" errors. The system now properly handles:
+
+1. **Null Exit Codes**: Process termination by signals (crashes) now properly detected and reported
+2. **Checksum Validation**: Better error messaging when executable checksums don't match
+3. **Version Checking**: Graceful handling of executable failures during version detection
 
 ### Key Enhancement Details
 
 **Files Modified:**
-- `DocumentNoteBatchProcessor.cs` - Added `HasAiContentAsync` method and enhanced skip logic
-- `DocumentNoteProcessorBase.cs` - Added `GetYamlHelper()` public accessor
-- `ServiceRegistration.cs` - Fixed parameter order for `VideoNoteProcessor`
 
-**Behavior Matrix:**
-| Force Flag | AI Content Detected | Action | User Experience |
-|------------|-------------------|--------|----------------|
-| `true` | Any | Process | Force override works |
-| `false` | `true` | Skip | Smart skip - no force needed |
-| `false` | `false` | Process | Smart process - no force needed |
+- `commands.ts` - Enhanced child process error handling for null exit codes
+- `plugin-assets.ts` - Improved checksum validation error messages and version check error handling
 
-### AI Content Detection Strategy
+**Error Handling Improvements:**
 
-The `HasAiContentAsync` method detects AI content through:
+| Scenario | Old Behavior | New Behavior |
+|----------|-------------|--------------|
+| Process crashes | "failed with code null" | Clear message: "terminated unexpectedly, executable may be corrupted" |
+| Checksum mismatch | Single warning line | Detailed troubleshooting steps and root cause analysis |
+| Version check fails | Silent failure, re-download | Logged warning with corruption detection |
 
-1. **Frontmatter Fields**: `auto-generated-state`, `ai-summary-date`, `ai-processing-date`, `summary-generated`
-2. **Template Types**: `video-reference`, `pdf-reference`, `resource-reading`
-3. **Legacy Support**: Handles old `status: placeholder` field
+### Root Cause Analysis
+
+The user's issue was caused by a corrupted executable (checksum mismatch after download). The sequence was:
+
+1. Executable downloaded but had checksum mismatch
+2. System attempted re-download, still had mismatch
+3. Plugin logged warning but proceeded anyway
+4. User tried to run command `video-notes --reprocess`
+5. Executable crashed (exit code null) due to corruption
+6. Plugin error message was confusing ("failed with code null")
+
+### Fix Strategy
+
+**Three-Layer Defense:**
+
+1. **Prevention**: Better checksum validation with detailed logging
+2. **Detection**: Version check now catches corrupt executables before use
+3. **Recovery**: Clear error messages guide users to reload plugin for fresh download
+
+**Error Message Improvements:**
+
+```typescript
+// Old message
+"Reprocess Video Summary failed with code null"
+
+// New message
+"Reprocess Video Summary terminated unexpectedly. The executable may be 
+corrupted. Try reloading the plugin."
+```
 
 ### Implementation Quality
 
-- ✅ **Error Handling**: Comprehensive try/catch with safe fallback behavior
-- ✅ **Logging**: Detailed debug logging for transparency
-- ✅ **Backward Compatibility**: Existing workflows unchanged
-- ✅ **Build Status**: All builds successful (Debug, Release, Cross-platform)
-- ✅ **Plugin Integration**: Obsidian plugin builds and deploys successfully
+- ✅ **Type Safety**: Fixed TypeScript type for exit code (number | null)
+- ✅ **Error Logging**: Comprehensive diagnostic information in console
+- ✅ **User Guidance**: Clear next steps for recovery
+- ✅ **Build Status**: Plugin builds successfully
+- ✅ **Backward Compatibility**: Existing error paths unchanged
 
 ## Next Steps
 
 ### Immediate Actions
-1. **User Testing**: Validate the enhanced workflow with real content
-2. **Documentation Update**: Update user documentation to reflect intelligent behavior
-3. **Performance Monitoring**: Monitor processing times with new detection logic
+
+1. **User Testing**: Verify the improved error messages help users diagnose issues
+2. **Documentation Update**: Add troubleshooting section for checksum mismatches
+3. **Monitoring**: Track how often checksum mismatches occur in the wild
 
 ### Future Enhancements
-1. **Unit Tests**: Consider adding tests for the `HasAiContentAsync` method
-2. **Configuration Options**: Potential settings for AI detection sensitivity
-3. **Metrics Collection**: Track usage patterns of intelligent skip behavior
+
+1. **Auto-Recovery**: Automatically reload plugin when checksum fails repeatedly
+2. **Health Check**: Add plugin setting to verify executable health on demand
+3. **Download Verification**: Add retry logic with exponential backoff for downloads
+4. **Platform Detection**: Warn users if platform detection might be incorrect
 
 ## Current State Summary
 
-The intelligent force flag enhancement represents a significant user experience improvement. Users can now process markdown files that contain only base metadata without needing to specify `--force`, while files with AI content are automatically skipped. This creates a more intuitive and efficient workflow for both CLI and plugin users.
+The plugin now provides much better diagnostic information when executables fail, helping users quickly identify and resolve issues related to corrupted downloads or incompatible binaries. The enhanced error handling significantly improves the debugging experience for both users and developers.
 
 **Technical Status**: All systems operational, builds successful, ready for production use.
