@@ -188,7 +188,18 @@ param(
     [switch]$UseArtifacts,
     
     # Force local build even when UseArtifacts is specified
-    [switch]$ForceLocalBuild
+    [switch]$ForceLocalBuild,
+    
+    # RELEASE MANAGEMENT - Prune old beta releases
+    
+    # Prune old beta releases keeping recent and milestone versions
+    [switch]$PruneOldBetas,
+    
+    # Number of recent beta releases to keep when pruning (default: 5)
+    [int]$KeepRecentCount = 5,
+    
+    # Fix beta releases marked incorrectly as stable
+    [switch]$FixBetaPrerelease
 )
 
 # GLOBAL ERROR HANDLING AND ROLLBACK SYSTEM
@@ -300,6 +311,12 @@ function Show-Help {
     Write-Host "   # Reissue an existing GitHub release with current assets" -ForegroundColor Yellow
     Write-Host "   .\scripts\manage-version.ps1 -Reissue -ReissueVersion `"0.1.0-beta.17`"" -ForegroundColor White
     Write-Host ""
+    Write-Host "   # Prune old beta releases (keeps last 5 + milestones)" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -PruneOldBetas" -ForegroundColor White
+    Write-Host ""
+    Write-Host "   # Fix beta releases marked as stable" -ForegroundColor Yellow
+    Write-Host "   .\scripts\manage-version.ps1 -FixBetaPrerelease" -ForegroundColor White
+    Write-Host ""
     Write-Host "🏷️  VERSION TYPES:" -ForegroundColor Blue
     Write-Host "   • beta    - Development releases (e.g., 0.1.0-beta.1)" -ForegroundColor Gray
     Write-Host "   • stable  - Production releases (e.g., 0.1.0)" -ForegroundColor Gray
@@ -328,7 +345,7 @@ function Show-Help {
 }
 
 # Check if no meaningful arguments were provided or help requested - show help
-$noArgumentsProvided = (-not $Version -and -not $StatusOnly -and -not $SyncOnly -and -not $RebuildOnly -and -not $Reissue)
+$noArgumentsProvided = (-not $Version -and -not $StatusOnly -and -not $SyncOnly -and -not $RebuildOnly -and -not $Reissue -and -not $PruneOldBetas -and -not $FixBetaPrerelease -and -not $GenerateReleaseNotes)
 if ($noArgumentsProvided -or $Help) {
     Show-Help
     exit 0
@@ -349,6 +366,7 @@ Import-Module (Join-Path $ModulesDir "Safety\Rollback.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Quality\ReleaseNotes.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Quality\Dependencies.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Quality\Checksums.psm1") -Force
+Import-Module (Join-Path $ModulesDir "Release\ReleaseManagement.psm1") -Force
 
 # Initialize rollback tracking after modules are loaded
 # Don't check for uncommitted changes during initialization as this may be run during development
@@ -906,15 +924,70 @@ try {
         if (-not $Version) {
             throw "Version parameter is required when using -GenerateReleaseNotes"
         }
+
+        $tag = if ($Version.StartsWith("v")) { $Version } else { "v$Version" }
+        Write-Host "🤖 Generating AI-powered release notes for $tag..." -ForegroundColor Cyan
         
-        try {
-            Invoke-ReleaseNotesGeneration -Version $Version -Type $Type -OutputToConsole -SaveToFile
+        $PromptTemplatePath = Join-Path $RepoRoot "scripts/release-notes-prompt.md"
+        $releaseNotes = New-AIGeneratedReleaseNotes -Version $Version -Type $Type -PromptTemplatePath $PromptTemplatePath
+        
+        if ($releaseNotes) {
+            Write-Host "✅ Release notes generated successfully!" -ForegroundColor Green
+            Write-Host ""
+            Write-Host $releaseNotes
         }
-        catch {
-            Write-Host "❌ Error generating release notes: $($_.Exception.Message)" -ForegroundColor Red
+        else {
+            Write-Host "❌ Failed to generate release notes" -ForegroundColor Red
             exit 1
         }
         
+        exit 0
+    }
+
+    if ($PruneOldBetas) {
+        Write-Host "🗑️  Pruning Old Beta Releases" -ForegroundColor Cyan
+        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
+        Write-Host ""
+        
+        $result = Remove-OldBetaReleases -KeepCount $KeepRecentCount -WhatIf:$false
+        
+        if ($result.Deleted -gt 0) {
+            Write-Host "✅ Successfully pruned $($result.Deleted) old beta releases" -ForegroundColor Green
+        }
+        exit 0
+    }
+
+    if ($FixBetaPrerelease) {
+        Write-Host "🔧 Fixing Beta Release Prerelease Flags" -ForegroundColor Cyan
+        Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor DarkGray
+        Write-Host ""
+        
+        # Get statistics first
+        Get-BetaReleaseStats
+        
+        # Get all releases and find betas marked as stable
+        $releases = gh release list --limit 100 --json tagName, isPrerelease | ConvertFrom-Json
+        $betasMarkedStable = $releases | Where-Object { 
+            $_.tagName -match '^v\d+\.\d+\.\d+-beta\.\d+$' -and -not $_.isPrerelease 
+        }
+        
+        if ($betasMarkedStable.Count -eq 0) {
+            Write-Host "✅ All beta releases are correctly marked as pre-release!" -ForegroundColor Green
+            exit 0
+        }
+        
+        Write-Host "Found $($betasMarkedStable.Count) beta release(s) incorrectly marked as stable" -ForegroundColor Yellow
+        Write-Host ""
+        
+        foreach ($release in $betasMarkedStable) {
+            $success = Set-ReleasePrerelease -Tag $release.tagName -Prerelease $true
+            if (-not $success) {
+                Write-Host "❌ Failed to update $($release.tagName)" -ForegroundColor Red
+            }
+        }
+        
+        Write-Host ""
+        Write-Host "✅ Fixed prerelease flags for beta releases" -ForegroundColor Green
         exit 0
     }
 
