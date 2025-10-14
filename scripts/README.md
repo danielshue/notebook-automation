@@ -2,6 +2,19 @@
 
 This directory contains various scripts for building, testing, and maintaining the Notebook Automation project.
 
+## PowerShell Module System
+
+The scripts in this directory utilize a comprehensive library of reusable PowerShell modules located in the `modules/` subdirectory. These modules provide common functionality for:
+
+- **Core utilities** - Logging, platform detection, and prerequisite validation
+- **Build operations** - .NET and Obsidian plugin build automation
+- **GitHub integration** - CLI wrappers, workflow management, and artifact handling
+- **Release management** - Version control, release pruning, and API synchronization
+- **Quality assurance** - AI-powered release notes, checksums, and dependency checking
+- **Safety features** - Rollback tracking and error recovery
+
+For detailed module documentation, see [modules/README.md](modules/README.md).
+
 ## Build Scripts
 
 ### `build-ci-local.ps1` (PowerShell - Cross-Platform)
@@ -55,11 +68,13 @@ A comprehensive local CI build script that mirrors the GitHub Actions CI pipelin
 9. Static Code Analysis
 
 **Plugin Development Mode:**
+
 - Use `-PluginOnly` for rapid plugin development (skips .NET solution build)
 - Use `-DeployPlugin` to automatically deploy to test vault after building
 - Plugin-only builds are significantly faster (~10-30 seconds vs 2-5 minutes)
 
 **Cross-Platform Support:**
+
 - Publishes executables for all platforms: Windows, Linux, macOS
 - Supports both x64 and ARM64 architectures
 - Uses the same naming convention as CI: `na-win-x64.exe`, `na-linux-arm64`, `na-macos-x64`, etc.
@@ -68,6 +83,7 @@ A comprehensive local CI build script that mirrors the GitHub Actions CI pipelin
 ### When to Use `build-ci-local.ps1`
 
 **For all development scenarios:**
+
 - 🔍 **Before committing** - Full CI validation (`.\scripts\build-ci-local.ps1`)
 - ⚡ **Plugin development** - Fast iteration (`.\scripts\build-ci-local.ps1 -PluginOnly -DeployPlugin`)
 - 🐛 **Debugging builds** - Mirrors CI exactly
@@ -77,6 +93,7 @@ A comprehensive local CI build script that mirrors the GitHub Actions CI pipelin
 - 🔄 **Quick deployment** - One-command build and deploy to test vault
 
 **Key advantages of the unified approach:**
+
 - **Single script to maintain** - No duplicate logic or inconsistencies
 - **Consistent behavior** - Same build process for all scenarios
 - **VS Code integration** - Full task support with `Ctrl+Shift+P`
@@ -103,6 +120,7 @@ Advanced C# code formatting script that goes beyond basic `dotnet format` with c
 ```
 
 **Features:**
+
 - **XML Documentation Spacing**: Enforces proper blank lines around XML docs
 - **StyleCop Integration**: Runs StyleCop analysis and reports violations
 - **Method Spacing**: Ensures proper spacing between methods and classes
@@ -110,6 +128,7 @@ Advanced C# code formatting script that goes beyond basic `dotnet format` with c
 - **Fix/Verify Modes**: Can both apply fixes or just verify compliance
 
 **When to use:**
+
 - Before committing code changes for consistent formatting
 - When setting up new development environments
 - For enforcing project-specific formatting standards beyond basic tools
@@ -129,12 +148,14 @@ C# test documentation coverage checker that scans test methods for missing XML d
 ```
 
 **Features:**
+
 - **Test Method Detection**: Finds all `[TestMethod]` attributed methods
 - **Documentation Coverage**: Reports missing XML documentation
 - **File-by-File Analysis**: Shows which files need documentation
 - **Summary Statistics**: Provides coverage percentages and totals
 
 **When to use:**
+
 - Before committing test changes to ensure documentation standards
 - During code reviews to validate test documentation
 - As part of automated quality checks in CI/CD pipelines
@@ -175,7 +196,21 @@ C# test documentation coverage checker that scans test methods for missing XML d
 .\scripts\manage-version.ps1 -StatusOnly -Detailed
 ```
 
+**Release Management:**
+
+```powershell
+# Prune old beta releases (keep last 5 + milestones)
+.\scripts\manage-version.ps1 -PruneOldBetas
+
+# Prune with custom retention (keep last 10)
+.\scripts\manage-version.ps1 -PruneOldBetas -KeepRecentCount 10
+
+# Fix beta releases incorrectly marked as stable (for API sync)
+.\scripts\manage-version.ps1 -FixBetaPrerelease
+```
+
 **Features:**
+
 - **🎯 Complete Solution**: Single script for all version management needs
 - **🔄 Version Synchronization**: Syncs versions between CLI and plugin components  
 - **📊 Status Checking**: Shows version alignment across all components
@@ -183,23 +218,29 @@ C# test documentation coverage checker that scans test methods for missing XML d
 - **🔧 BRAT Compatibility**: Ensures proper versioning for Obsidian plugin testing
 - **✅ Build Integration**: Validates builds and preserves cross-platform executables
 - **📋 Detailed Reporting**: Comprehensive status and diagnostic information
+- **🗑️ Release Management**: Prunes old beta releases and fixes API sync issues
 
 **Release Types:**
+
 - **Beta** (`-Type "beta"`): Creates pre-release for BRAT testing
 - **Stable** (`-Type "stable"`): Creates production release
 - **Patch** (`-Type "patch"`): Creates patch release for bug fixes
 
 **BRAT Integration:**
+
 - Automatically formats releases for BRAT compatibility
 - Includes installation instructions in release notes
 - Maintains proper semantic versioning for beta tracking
 - Ensures all required plugin files are included in releases
 
 **When to use:**
+
 - Before releasing new plugin versions for beta testing
 - When preparing stable releases for general availability
 - For automated version management in CI/CD pipelines
 - To ensure consistent versioning across all plugin files
+- To maintain release hygiene by pruning old beta versions
+- To fix API sync issues with incorrectly marked releases
 
 ### `test-brat-workflow.ps1`
 
@@ -213,6 +254,7 @@ Comprehensive BRAT (Beta Reviewer's Auto-update Tool) compatibility testing scri
 ```
 
 **Features:**
+
 - **Prerequisites Check**: Verifies npm dependencies and development environment
 - **Build Validation**: Runs complete plugin build and verifies success
 - **BRAT File Verification**: Ensures all required files (main.js, manifest.json, styles.css) are present
@@ -223,6 +265,7 @@ Comprehensive BRAT (Beta Reviewer's Auto-update Tool) compatibility testing scri
 - **Release Readiness**: Provides complete readiness assessment for BRAT releases
 
 **Process Steps:**
+
 1. **Environment Check**: Validates plugin directory and npm dependencies
 2. **Build Process**: Runs `npm run build` with full validation
 3. **File Verification**: Checks all BRAT-required files are present and valid
@@ -233,6 +276,7 @@ Comprehensive BRAT (Beta Reviewer's Auto-update Tool) compatibility testing scri
 8. **Summary Report**: Provides detailed readiness assessment and next steps
 
 **When to use:**
+
 - Before creating any plugin releases (beta or stable)
 - After making changes to plugin configuration or build process
 - To troubleshoot BRAT installation issues
@@ -257,6 +301,7 @@ Downloads the latest notebook-automation artifact from GitHub Actions, which inc
 ```
 
 **Output Structure:**
+
 - Downloads to `../dist/notebook-automation/`
 - Contains plugin files: `main.js`, `manifest.json`, `styles.css`
 - Contains all platform executables: `na-win-x64.exe`, `na-linux-arm64`, `na-macos-arm64`, etc.
