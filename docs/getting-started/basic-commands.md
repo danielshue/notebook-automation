@@ -357,9 +357,11 @@ na vault vault-sync "vault/"
 
 ## Next Steps
 
+- **[Quick Start Guide](quick-start.md)** - Get started in 5 minutes
 - [Configuration Guide](../configuration/index.md) - Set up AI services and customize behavior
 - [User Guide](../user-guide/index.md) - Advanced usage scenarios
 - [Tag Management](../user-guide/tag-management.md) - Maintain consistent tagging
 - [Vault Synchronization](../user-guide/vault-synchronization.md) - OneDrive integration
 - [Troubleshooting](../troubleshooting/index.md) - Common issues and solutions
-- [CLI Reference](../cli-reference.md) - Complete command reference (coming soon)
+- [CLI Reference](../cli-reference.md) - Complete command reference
+- [Command Cheat Sheet](../cli-cheat-sheet.md) - Quick reference
