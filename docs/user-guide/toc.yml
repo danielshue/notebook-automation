@@ -1,4 +1,8 @@
 - name: User Guide
   href: index.md
+- name: Tag Management
+  href: tag-management.md
+- name: Vault Synchronization
+  href: vault-synchronization.md
 - name: File Processing
   href: file-processing.md

@@ -5,6 +5,8 @@
   items:
     - name: Overview
       href: getting-started/index.md
+    - name: Quick Start
+      href: getting-started/quick-start.md
     - name: Installation
       href: getting-started/installation.md
     - name: Basic Commands
@@ -16,8 +18,18 @@
   items:
     - name: Overview
       href: user-guide/index.md
+    - name: Tag Management
+      href: user-guide/tag-management.md
+    - name: Vault Synchronization
+      href: user-guide/vault-synchronization.md
     - name: File Processing
       href: user-guide/file-processing.md
+- name: CLI Reference
+  href: cli-reference.md
+- name: Command Cheat Sheet
+  href: cli-cheat-sheet.md
+- name: Deprecated Commands
+  href: DEPRECATED-COMMANDS.md
 - name: Configuration
   href: configuration/
   items:
