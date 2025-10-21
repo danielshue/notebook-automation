@@ -20,38 +20,50 @@ Notebook Automation processes various types of educational content and transform
 Process a single PDF document:
 
 ```bash
-dotnet run --project src/c-sharp/NotebookAutomation.Console -- process-pdf "path/to/document.pdf"
+na pdf-notes -p "path/to/document.pdf"
 ```
 
-Options:
-- `--output-path`: Specify custom output directory
-- `--summarize`: Generate AI-powered summary
-- `--extract-metadata`: Extract document metadata
+Common options:
+- `-p, --path`: Path to PDF file or directory (required)
+- `--extract-images`: Extract images from PDFs
+- `--no-summary`: Skip AI-powered summary generation
+- `--force`: Overwrite existing notes
+- `--verbose`: Enable verbose logging
 
 #### Video Processing
 
 Process video files with transcription:
 
 ```bash
-dotnet run --project src/c-sharp/NotebookAutomation.Console -- process-video "path/to/video.mp4"
+na video-notes -p "path/to/video.mp4"
 ```
 
+Common options:
+- `-p, --path`: Path to video file or directory (required)
+- `--no-summary`: Skip AI-powered summary generation
+- `--force`: Overwrite existing notes
+- `--verbose`: Enable verbose logging
+
 Requirements:
-- FFmpeg installed for audio extraction
-- AI service configured for transcription
+- AI service configured for transcription and summarization
 
 ### Batch Processing
 
-Process multiple files in a directory:
+Both `video-notes` and `pdf-notes` commands automatically handle batch processing when you provide a directory path:
 
 ```bash
-dotnet run --project src/c-sharp/NotebookAutomation.Console -- batch-process "path/to/directory"
+# Process all PDFs in a directory
+na pdf-notes -p "path/to/directory" --verbose
+
+# Process all videos in a directory
+na video-notes -p "path/to/directory" --verbose
 ```
 
-Options:
-- `--recursive`: Include subdirectories
-- `--filter`: File type filter (pdf, mp4, etc.)
-- `--max-files`: Limit number of files to process
+Tips for batch processing:
+- Use `--dry-run` to preview what will be processed
+- Use `--retry-failed` to reprocess only failed files
+- Use `--verbose` to see detailed progress
+- The tool automatically detects and processes all supported files in the directory
 
 ### OneDrive Integration
 
@@ -61,16 +73,27 @@ Options:
 2. Authenticate with OneDrive:
 
 ```bash
-dotnet run --project src/c-sharp/NotebookAutomation.Console -- onedrive-auth
+na refresh-token
 ```
 
-#### Synchronize Content
+This command opens a browser window for authentication and stores the refresh token securely.
 
-Download and process files from OneDrive:
+#### Synchronize Vault Structure
+
+Synchronize your vault directory structure with OneDrive:
 
 ```bash
-dotnet run --project src/c-sharp/NotebookAutomation.Console -- onedrive-sync --folder "Course Materials"
+na vault vault-sync "path/to/vault"
 ```
+
+This creates a bidirectional sync of folder structures (not file contents) between your Obsidian vault and OneDrive, enabling:
+- Document placeholder creation for OneDrive files
+- Consistent organization across devices
+- Seamless integration between local and cloud content
+
+Options:
+- `--verbose`: Show detailed sync progress
+- `--dry-run`: Preview sync actions without making changes
 
 ## Generated Note Structure
 

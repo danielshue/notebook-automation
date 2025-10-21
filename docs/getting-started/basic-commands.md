@@ -6,116 +6,289 @@ Learn the essential commands for using Notebook Automation effectively.
 
 All commands follow this basic structure:
 
-```powershell
-.\na.exe [command] [options] [arguments]
+```bash
+na [command] [options] [arguments]
 ```
+
+**Note:** On Windows, you may need to use `.\na.exe` or the full path to the executable. The examples below use `na` for brevity, but both forms work.
+
+**Available Commands:**
+- `video-notes` - Process video files
+- `pdf-notes` - Process PDF files
+- `generate-markdown` - Convert HTML/TXT/EPUB to markdown
+- `tag` - Tag management operations
+- `vault` - Vault management and synchronization
+- `config` - Configuration management
+- `refresh-token` - OneDrive authentication
+
+**Global Options:**
+- `--config, -c <path>`: Path to configuration file
+- `--debug, -d`: Enable debug output
+- `--verbose, -v`: Enable verbose output
+- `--dry-run`: Simulate actions without making changes
+- `--help, -h`: Show help information
 
 ## Core Commands
 
-### Process Command
+### Video Processing
 
-Process files or directories to extract metadata and generate summaries.
+Process video files to extract transcripts, generate summaries, and create structured notes.
 
 **Basic syntax:**
 
 ```powershell
-.\na.exe process <path> [options]
+na video-notes -p <path> [options]
 ```
 
 **Examples:**
 
-Process a single file:
+Process a single video file:
 
 ```powershell
-.\na.exe process "documents/lecture-notes.md"
+na video-notes -p "documents/lecture-video.mp4"
 ```
 
-Process a directory recursively:
+Process all videos in a directory:
 
 ```powershell
-.\na.exe process "documents/" --recursive
+na video-notes -p "documents/videos/" --verbose
 ```
 
 Process with custom output directory:
 
 ```powershell
-.\na.exe process "documents/" --output "results/"
+na video-notes -p "lecture.mp4" --overwrite-output-dir "results/"
 ```
 
-**Options:**
+**Common Options:**
 
-- `--recursive, -r`: Process directories recursively
-- `--output, -o <path>`: Specify output directory
-- `--config, -c <path>`: Use custom configuration file
+- `-p, --path <path>`: Path to video file or directory (required)
+- `--no-summary`: Skip AI summary generation
+- `--force`: Overwrite existing notes
+- `--retry-failed`: Retry only failed files from previous run
 - `--verbose, -v`: Enable verbose logging
 - `--dry-run`: Preview operations without executing
+- `--config, -c <path>`: Use custom configuration file
 
-### Configuration Commands
+### PDF Processing
+
+Process PDF files to extract text, annotations, and generate structured notes.
+
+**Basic syntax:**
+
+```powershell
+na pdf-notes -p <path> [options]
+```
+
+**Examples:**
+
+Process a single PDF file:
+
+```powershell
+na pdf-notes -p "documents/textbook-chapter.pdf"
+```
+
+Process all PDFs in a directory:
+
+```powershell
+na pdf-notes -p "documents/pdfs/" --verbose
+```
+
+Extract images from PDFs:
+
+```powershell
+na pdf-notes -p "document.pdf" --extract-images
+```
+
+**Common Options:**
+
+- `-p, --path <path>`: Path to PDF file or directory (required)
+- `--extract-images`: Extract images from PDFs
+- `--no-summary`: Skip AI summary generation
+- `--force`: Overwrite existing notes
+- `--retry-failed`: Retry only failed files from previous run
+- `--verbose, -v`: Enable verbose logging
+- `--dry-run`: Preview operations without executing
+- `--config, -c <path>`: Use custom configuration file
+
+### Configuration Management
 
 Manage application configuration and settings.
 
-**Initialize configuration:**
+**View current configuration:**
 
 ```powershell
-.\na.exe config init
+na config view
 ```
 
-**Validate configuration:**
+**Update configuration values:**
 
 ```powershell
-.\na.exe config validate
+na config update <key> <value>
 ```
 
-**Show current configuration:**
+**Examples:**
 
 ```powershell
-.\na.exe config show
+na config update "AIService.Provider" "OpenAI"
+na config update "Paths.NotebookVaultFullpathRoot" "C:\MyVault"
 ```
 
-**Set configuration values:**
+**List available configuration keys:**
 
 ```powershell
-.\na.exe config set <key> <value>
+na config list-keys
 ```
 
-Examples:
+**View user secrets status:**
 
 ```powershell
-.\na.exe config set "AIService.Provider" "OpenAI"
-.\na.exe config set "Output.BasePath" "./results"
+na config secrets
 ```
 
-### Info Commands
+**Note:** Configuration files are typically located in the `config/` directory. You can specify a custom config file with `--config` or `-c` flag.
 
-Get information about the application and processed files.
+### General Commands
+
+Get information about the application.
 
 **Show version:**
 
 ```powershell
-.\na.exe --version
+na --version
 ```
 
 **Show help:**
 
 ```powershell
-.\na.exe --help
-.\na.exe process --help  # Command-specific help
+na --help
+na [command] --help  # Command-specific help
 ```
 
-**Show processing statistics:**
+**Examples:**
 
 ```powershell
-.\na.exe info stats --path "output/"
+na --help
+na video-notes --help
+na config --help
 ```
+
+### Tag Management
+
+Manage tags in markdown files and ensure consistency across your vault.
+
+**Add nested tags:**
+
+```powershell
+na tag add-nested <path>
+```
+
+**Consolidate duplicate tags:**
+
+```powershell
+na tag consolidate <path>
+```
+
+**Check metadata consistency:**
+
+```powershell
+na tag metadata-check <path>
+```
+
+**Update frontmatter:**
+
+```powershell
+na tag update-frontmatter <path> <key> <value>
+```
+
+**Examples:**
+
+```powershell
+na tag add-nested "vault/projects"
+na tag consolidate "vault/notes/document.md"
+na tag metadata-check "vault/" --verbose
+```
+
+For complete tag management documentation, see the [Tag Management Guide](../user-guide/tag-management.md).
+
+### Vault Management
+
+Manage your Obsidian vault structure and synchronization.
+
+**Generate index files:**
+
+```powershell
+na vault generate-index <path>
+```
+
+**Ensure metadata consistency:**
+
+```powershell
+na vault ensure-metadata <path>
+```
+
+**Synchronize with OneDrive:**
+
+```powershell
+na vault vault-sync <vault-path>
+```
+
+**Examples:**
+
+```powershell
+na vault generate-index "vault/courses" --recursive
+na vault ensure-metadata "vault/projects"
+na vault vault-sync "C:\MyVault" --verbose
+```
+
+For complete vault management documentation, see the [Vault Synchronization Guide](../user-guide/vault-synchronization.md).
+
+### Markdown Generation
+
+Generate markdown files from HTML, TXT, and EPUB sources.
+
+**Basic syntax:**
+
+```powershell
+na generate-markdown -p <path> [options]
+```
+
+**Examples:**
+
+```powershell
+na generate-markdown -p "articles/web-content.html"
+na generate-markdown -p "books/textbook.epub"
+na generate-markdown -p "notes/" --verbose
+```
+
+**Common Options:**
+
+- `-p, --path <path>`: Path to source file or directory
+- `--extract-from-markdown`: Extract HTML from OneDrive path in frontmatter
+- `--no-share-links`: Disable OneDrive share link generation
+- `--verbose, -v`: Enable verbose logging
+
+### OneDrive Authentication
+
+Refresh OneDrive authentication token for Microsoft Graph API access.
+
+**Refresh token:**
+
+```powershell
+na refresh-token
+```
+
+This command is used to authenticate with OneDrive and refresh expired tokens. Run this if you encounter authentication errors when using features that access OneDrive.
 
 ## Common Usage Patterns
 
-### Processing Academic Notebooks
+### Processing Course Content
 
-Process a semester's worth of notes:
+Process videos and PDFs for a course:
 
 ```powershell
-.\na.exe process "semester-notes/" --recursive --output "processed-notes/" --verbose
+na video-notes -p "courses/MBA/lectures/" --verbose
+na pdf-notes -p "courses/MBA/readings/" --extract-images
 ```
 
 ### Batch Processing with Custom Config
@@ -123,8 +296,8 @@ Process a semester's worth of notes:
 Process multiple directories with specific settings:
 
 ```powershell
-.\na.exe process "course1/" --config "academic-config.json" --output "results/course1/"
-.\na.exe process "course2/" --config "academic-config.json" --output "results/course2/"
+na video-notes -p "course1/videos/" --config "academic-config.json"
+na pdf-notes -p "course1/pdfs/" --config "academic-config.json"
 ```
 
 ### Preview Operations
@@ -132,7 +305,23 @@ Process multiple directories with specific settings:
 Check what will be processed without executing:
 
 ```powershell
-.\na.exe process "documents/" --recursive --dry-run
+na video-notes -p "lectures/" --dry-run
+na pdf-notes -p "documents/" --dry-run --verbose
+```
+
+### Organize and Sync Vault
+
+Generate indexes and sync with OneDrive:
+
+```powershell
+# Generate index files for navigation
+na vault generate-index "vault/projects" --recursive
+
+# Ensure metadata consistency
+na vault ensure-metadata "vault/projects"
+
+# Sync vault structure with OneDrive
+na vault vault-sync "vault/"
 ```
 
 ## Tips and Best Practices
@@ -146,17 +335,19 @@ Check what will be processed without executing:
 ### Output Organization
 
 - Use descriptive output directory names
-- Include timestamps in output paths for version control:
+- The CLI automatically uses configured vault paths
+- Override output directory with `--overwrite-output-dir` when needed:
 
-  ```powershell
-  .\na.exe process "notes/" --output "results/$(Get-Date -Format 'yyyy-MM-dd-HHmm')/"
+  ```bash
+  na video-notes -p "video.mp4" --overwrite-output-dir "custom-output/"
   ```
 
 ### Configuration Management
 
 - Keep different configuration files for different use cases
 - Use version control to track configuration changes
-- Validate configuration before large batch operations
+- View current configuration with `na config view` before making changes
+- Use `na config list-keys` to see all available configuration options
 
 ### Performance Optimization
 
@@ -168,4 +359,7 @@ Check what will be processed without executing:
 
 - [Configuration Guide](../configuration/index.md) - Set up AI services and customize behavior
 - [User Guide](../user-guide/index.md) - Advanced usage scenarios
+- [Tag Management](../user-guide/tag-management.md) - Maintain consistent tagging
+- [Vault Synchronization](../user-guide/vault-synchronization.md) - OneDrive integration
 - [Troubleshooting](../troubleshooting/index.md) - Common issues and solutions
+- [CLI Reference](../cli-reference.md) - Complete command reference (coming soon)
