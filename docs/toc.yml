@@ -22,6 +22,10 @@
       href: user-guide/tag-management.md
     - name: Vault Synchronization
       href: user-guide/vault-synchronization.md
+    - name: Markdown Generation
+      href: user-guide/markdown-generation.md
+    - name: Authentication
+      href: user-guide/authentication.md
     - name: File Processing
       href: user-guide/file-processing.md
 - name: CLI Reference
