@@ -538,13 +538,13 @@ function Invoke-ReleaseNotesGeneration {
     }
     
     try {
-        # Generate release notes
+        # Generate release notes without throwing on failure (graceful fallback)
         $releaseNotes = New-AIGeneratedReleaseNotes `
             -Version $Version `
             -Type $Type `
             -PromptTemplatePath $promptPath `
             -ChecksumsJsonPath $checksumsPath `
-            -ThrowOnFailure
+            -ThrowOnFailure:$false
             
         if ($releaseNotes) {
             if ($OutputToConsole) {
@@ -567,13 +567,13 @@ function Invoke-ReleaseNotesGeneration {
             return $releaseNotes
         }
         else {
-            Write-Host "❌ Failed to generate release notes" -ForegroundColor Red
+            Write-Host "⚠️  AI release notes not available" -ForegroundColor Yellow
             return $null
         }
     }
     catch {
-        Write-Host "❌ Error generating release notes: $($_.Exception.Message)" -ForegroundColor Red
-        throw
+        Write-Host "⚠️  Error generating release notes: $($_.Exception.Message)" -ForegroundColor Yellow
+        return $null
     }
 }
 

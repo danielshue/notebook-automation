@@ -200,16 +200,19 @@ For more information: https://docs.github.com/en/copilot/github-copilot-in-the-c
             }
         } -ArgumentList $tempPrompt
         
-        # Check job state before waiting - if blocked, fail immediately
-        Start-Sleep -Milliseconds 500  # Give job a moment to start
-        $jobState = (Get-Job -Id $job.Id).State
-        if ($jobState -eq 'Blocked') {
-            Stop-Job -Job $job
-            Remove-Job -Job $job
-            throw "Copilot CLI is waiting for user interaction (blocked state)"
+        # Wait for job completion with error handling for blocked state
+        try {
+            $completed = Wait-Job -Job $job -Timeout $Timeout -ErrorAction Stop
         }
-        
-        $completed = Wait-Job -Job $job -Timeout $Timeout -ErrorAction SilentlyContinue
+        catch {
+            # Handle case where job is blocked waiting for user interaction
+            if ($_.Exception.Message -match "blocked waiting for user interaction") {
+                Stop-Job -Job $job -ErrorAction SilentlyContinue
+                Remove-Job -Job $job -ErrorAction SilentlyContinue
+                throw "Copilot CLI is waiting for user interaction (interactive mode not supported)"
+            }
+            throw
+        }
         
         if ($completed) {
             $output = Receive-Job -Job $job -ErrorAction SilentlyContinue
