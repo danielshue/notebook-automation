@@ -71,7 +71,7 @@ jobs:
   build-and-test:
     runs-on: ${{ matrix.os }}
     outputs:
-      informational-version: ${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}
+      informational-version: ${{ steps.gitversion.outputs.semVer }}
     strategy:
       matrix:
         os: [windows-latest, ubuntu-latest, macos-latest]
@@ -149,42 +149,17 @@ jobs:
 
       # Install GitVersion for semantic versioning
 
-      - name: Install GitVersion tool
-        run: dotnet tool install --global GitVersion.Tool
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v3.0.3
+        with:
+          versionSpec: '6.x'
 
-      # Get version info for each OS
-
-      - name: Get version from GitVersion (Windows)
-        if: runner.os == 'Windows'
-        id: gitversion-win
-        run: |
-          echo "Running GitVersion on Windows..."
-          $VERSION_JSON = dotnet gitversion /output json
-          if ($LASTEXITCODE -ne 0) { 
-            Write-Host "GitVersion failed, exit code: $LASTEXITCODE"
-            Write-Host "Trying with /showvariable parameter..."
-            $SEMVER = dotnet gitversion /showvariable SemVer
-            if ($LASTEXITCODE -ne 0) {
-              Write-Host "GitVersion /showvariable also failed"
-              exit 1
-            }
-          } else {
-            $SEMVER = ($VERSION_JSON | ConvertFrom-Json).SemVer
-          }
-          echo "semver=$SEMVER" >> $env:GITHUB_OUTPUT
-          Write-Host "GitVersion SemVer: $SEMVER"
-        shell: pwsh
-
-      - name: Get version from GitVersion (Non-Windows)
-        if: runner.os != 'Windows'
-        id: gitversion-nix
-        run: |
-          echo "Running GitVersion on ${{ runner.os }}..."
-          VERSION_JSON=$(dotnet gitversion /output json)
-          SEMVER=$(echo $VERSION_JSON | jq -r '.SemVer')
-          echo "semver=$SEMVER" >> $GITHUB_OUTPUT
-          echo "GitVersion SemVer: $SEMVER"
-        shell: bash
+      - name: Determine Version
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v3.0.3
+        with:
+          useConfigFile: true
+          configFilePath: GitVersion.yml
 
       # Restore and build solution
 
@@ -246,13 +221,13 @@ jobs:
           filefilters: "+*"
           verbosity: "Info"
           title: "Notebook Automation Code Coverage Report (${{ runner.os }})"
-          tag: "${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}_${{ github.run_id }}_${{ runner.os }}"
+          tag: "${{ steps.gitversion.outputs.semVer }}_${{ github.run_id }}_${{ runner.os }}"
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ runner.os }}-${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}
+          name: test-results-${{ runner.os }}-${{ steps.gitversion.outputs.semVer }}
           path: TestResults/*.trx
           retention-days: 7 # Keep test results for 7 days
 
@@ -260,7 +235,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report-${{ runner.os }}-${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}
+          name: coverage-report-${{ runner.os }}-${{ steps.gitversion.outputs.semVer }}
           path: CoverageReport/
           retention-days: 7 # Keep coverage reports for 7 days
 
@@ -268,7 +243,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-raw-${{ runner.os }}-${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}
+          name: coverage-raw-${{ runner.os }}-${{ steps.gitversion.outputs.semVer }}
           path: TestResults/**/coverage.cobertura.xml
           retention-days: 7 # Keep raw coverage files for 7 days
 
@@ -462,7 +437,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: executables-${{ matrix.platform-name }}-${{ steps.gitversion-win.outputs.semver || steps.gitversion-nix.outputs.semver }}
+          name: executables-${{ matrix.platform-name }}-${{ steps.gitversion.outputs.semVer }}
           path: publish/executables/
           retention-days: 7
 
