@@ -24,4 +24,4 @@ branches:
     mode: ContinuousDelivery
     label: "PullRequest"
     increment: Inherit
-    label-number-pattern: '[/-](?<number>\d+)'
+    tag-number-pattern: '[/-](?<number>\d+)'
