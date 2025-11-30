@@ -2691,7 +2691,8 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
    */
   async checkForLatestVersion(currentVersion: string): Promise<{ version: string, url: string } | null> {
     try {
-      const response = await fetch('https://api.github.com/repos/danielshue/notebook-automation/releases/latest', {
+      // Fetch all releases (including pre-releases) to find the latest
+      const response = await fetch('https://api.github.com/repos/danielshue/notebook-automation/releases', {
         headers: { 'Accept': 'application/vnd.github.v3+json' }
       });
       
@@ -2700,8 +2701,15 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         return null;
       }
       
-      const data = await response.json();
-      const latestVersion = data.tag_name?.replace(/^v/, '') || null;
+      const releases = await response.json();
+      
+      if (!Array.isArray(releases) || releases.length === 0) {
+        return null;
+      }
+      
+      // Get the most recent release (first in the list)
+      const latestRelease = releases[0];
+      const latestVersion = latestRelease.tag_name?.replace(/^v/, '') || null;
       
       if (!latestVersion) {
         return null;
@@ -2711,7 +2719,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       if (latestVersion !== currentVersion && this.isNewerVersion(latestVersion, currentVersion)) {
         return {
           version: latestVersion,
-          url: data.html_url
+          url: latestRelease.html_url
         };
       }
       
