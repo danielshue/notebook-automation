@@ -222,9 +222,11 @@ For more information: https://docs.github.com/en/copilot/github-copilot-in-the-c
             # Handle different output types
             if ($output -is [System.Object[]]) {
                 $outputString = ($output | Where-Object { $_ -ne $null }) -join "`n"
-            } elseif ($output) {
+            }
+            elseif ($output) {
                 $outputString = $output.ToString()
-            } else {
+            }
+            else {
                 $outputString = ""
             }
             
