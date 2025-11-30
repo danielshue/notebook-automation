@@ -2770,32 +2770,50 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
       // First, try to get version from plugin manifest (always available via BRAT)
       const manifestVersion = this.plugin.manifest?.version;
       if (manifestVersion) {
-        // Update status if element provided
-        if (versionElement) {
-          versionElement.innerHTML = "📥 Ensuring plugin assets are available...";
-        }
+        // @ts-ignore
+        const fs = window.require ? window.require('fs') : null;
+        // @ts-ignore
+        const child_process = window.require ? window.require('child_process') : null;
+        const naPath = getNaExecutablePath(this.plugin);
         
-        // Try to ensure assets are downloaded (non-blocking)
-        try {
-          const progressCallback: DownloadProgressCallback | undefined = versionElement 
-            ? (current: number, total: number, fileName: string) => {
-                if (versionElement) {
-                  versionElement.innerHTML = `📥 Downloading ${current} of ${total} plugin files: ${fileName}`;
-                }
-              }
-            : undefined;
-          
-          await ensureExecutableExists(this.plugin, progressCallback);
-          
+        // Check if executable already exists before trying to download
+        const executableExists = fs && fs.existsSync && fs.existsSync(naPath);
+        
+        // Only download if executable doesn't exist
+        if (!executableExists) {
           if (versionElement) {
-            versionElement.innerHTML = "⚙️ Loading configuration...";
+            versionElement.innerHTML = "📥 Downloading CLI executable...";
           }
           
-          // Load and apply configuration after files are downloaded
-          await this.loadAndApplyConfig();
-          
-        } catch (downloadError) {
-          console.warn('[Notebook Automation] Asset download failed, continuing with manifest version:', downloadError);
+          try {
+            const progressCallback: DownloadProgressCallback | undefined = versionElement 
+              ? (current: number, total: number, fileName: string) => {
+                  if (versionElement) {
+                    versionElement.innerHTML = `📥 Downloading ${current} of ${total} plugin files: ${fileName}`;
+                  }
+                }
+              : undefined;
+            
+            await ensureExecutableExists(this.plugin, progressCallback);
+            
+            if (versionElement) {
+              versionElement.innerHTML = "⚙️ Loading configuration...";
+            }
+            
+            // Load and apply configuration after files are downloaded
+            await this.loadAndApplyConfig();
+            
+          } catch (downloadError) {
+            console.warn('[Notebook Automation] Asset download failed, continuing with manifest version:', downloadError);
+          }
+        } else {
+          // Executable exists - silently verify it's current (non-blocking, no UI updates)
+          try {
+            await ensureExecutableExists(this.plugin);
+            await this.loadAndApplyConfig();
+          } catch (verifyError) {
+            console.warn('[Notebook Automation] Executable verification failed:', verifyError);
+          }
         }
         
         // Check for updates (non-blocking)
@@ -2811,44 +2829,35 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         
         // Try to get detailed CLI version if executable is available
         try {
-          // @ts-ignore
-          const child_process = window.require ? window.require('child_process') : null;
-          if (child_process) {
-            const naPath = getNaExecutablePath(this.plugin);
-            // @ts-ignore
-            const fs = window.require ? window.require('fs') : null;
-            
-            // Only try CLI version if executable exists
-            if (fs && fs.existsSync && fs.existsSync(naPath)) {
-              if (versionElement) {
-                versionElement.innerHTML = "🔍 Getting detailed CLI version information...";
-              }
-              
-              const { exec } = child_process;
-              return new Promise((resolve) => {
-                exec(`"${naPath}" --version`, { timeout: 5000 }, (error: any, stdout: string, stderr: string) => {
-                  const releaseUrl = `https://github.com/danielshue/notebook-automation/releases/tag/v${manifestVersion}`;
-                  const releaseLink = `<br><a href="${releaseUrl}" class="external-link" target="_blank">View Release Notes (v${manifestVersion})</a>`;
-                  
-                  // Add update notification if available
-                  const updateNotice = updateInfo 
-                    ? `<br><span style="color: var(--text-accent); font-weight: bold;">🎉 New version available: v${updateInfo.version}</span><br><a href="${updateInfo.url}" class="external-link" target="_blank">View v${updateInfo.version} Release Notes</a>`
-                    : '';
-                  
-                  if (error) {
-                    // Fallback to manifest version if CLI fails
-                    resolve(`${manifestVersion} (Plugin)${releaseLink}${updateNotice}`);
-                    return;
-                  }
-                  const cliVersion = stdout.trim() || stderr.trim();
-                  if (cliVersion && cliVersion !== 'Unknown') {
-                    resolve(`${cliVersion} (CLI)${releaseLink}${updateNotice}`);
-                  } else {
-                    resolve(`${manifestVersion} (Plugin)${releaseLink}${updateNotice}`);
-                  }
-                });
-              });
+          if (child_process && fs && fs.existsSync && fs.existsSync(naPath)) {
+            if (versionElement) {
+              versionElement.innerHTML = "🔍 Getting CLI version information...";
             }
+            
+            const { exec } = child_process;
+            return new Promise((resolve) => {
+              exec(`"${naPath}" --version`, { timeout: 5000 }, (error: any, stdout: string, stderr: string) => {
+                const releaseUrl = `https://github.com/danielshue/notebook-automation/releases/tag/v${manifestVersion}`;
+                const releaseLink = `<br><a href="${releaseUrl}" class="external-link" target="_blank">View Release Notes (v${manifestVersion})</a>`;
+                
+                // Add update notification if available
+                const updateNotice = updateInfo 
+                  ? `<br><span style="color: var(--text-accent); font-weight: bold;">🎉 New version available: v${updateInfo.version}</span><br><a href="${updateInfo.url}" class="external-link" target="_blank">View v${updateInfo.version} Release Notes</a>`
+                  : '';
+                
+                if (error) {
+                  // Fallback to manifest version if CLI fails
+                  resolve(`${manifestVersion} (Plugin)${releaseLink}${updateNotice}`);
+                  return;
+                }
+                const cliVersion = stdout.trim() || stderr.trim();
+                if (cliVersion && cliVersion !== 'Unknown') {
+                  resolve(`${cliVersion} (CLI)${releaseLink}${updateNotice}`);
+                } else {
+                  resolve(`${manifestVersion} (Plugin)${releaseLink}${updateNotice}`);
+                }
+              });
+            });
           }
         } catch (cliError) {
           console.warn('[Notebook Automation] CLI version check failed, using manifest version:', cliError);
