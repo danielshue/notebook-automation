@@ -1,5 +1,6 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using NotebookAutomation.Core.Configuration.Validation;
 using NotebookAutomation.Core.Tools;
 using NotebookAutomation.Core.Tools.Resolvers;
 
@@ -595,6 +596,8 @@ public static class ServiceRegistration
 
             return appConfig;
         });
+
+        services.AddSingleton<IConfigurationValidationService, ConfigurationValidationService>();
 
         // Register UserSecretsHelper
         services.AddSingleton<UserSecretsHelper>();

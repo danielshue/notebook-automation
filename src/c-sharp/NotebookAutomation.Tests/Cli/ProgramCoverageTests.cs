@@ -13,6 +13,7 @@ public class ProgramCoverageTests
     private TextWriter _originalOut = null!;
     private StringWriter _consoleError = null!;
     private TextWriter _originalError = null!;
+    private string? _previousSkipValidationEnv;
 
     [TestInitialize]
     public void Setup()
@@ -25,6 +26,9 @@ public class ProgramCoverageTests
         _originalError = Console.Error;
         _consoleError = new StringWriter();
         Console.SetError(_consoleError);
+
+        _previousSkipValidationEnv = Environment.GetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION");
+        Environment.SetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION", "true");
     }
 
     [TestCleanup]
@@ -34,6 +38,8 @@ public class ProgramCoverageTests
         Console.SetError(_originalError);
         _consoleOutput?.Dispose();
         _consoleError?.Dispose();
+
+        Environment.SetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION", _previousSkipValidationEnv);
     }
 
     /// <summary>

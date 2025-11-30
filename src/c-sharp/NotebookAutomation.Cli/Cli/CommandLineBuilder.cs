@@ -42,7 +42,11 @@ internal class CommandLineBuilder
             aliases: ["--dry-run"],
             description: "Simulate actions without making changes");
 
-        return new CommandLineOptions(configOption, debugOption, verboseOption, dryRunOption);
+        var skipValidationOption = new Option<bool>(
+            aliases: ["--skip-config-validation"],
+            description: "Skip configuration validation preflight checks");
+
+        return new CommandLineOptions(configOption, debugOption, verboseOption, dryRunOption, skipValidationOption);
     }
 
     /// <summary>
@@ -62,6 +66,7 @@ internal class CommandLineBuilder
         rootCommand.AddGlobalOption(options.DebugOption);
         rootCommand.AddGlobalOption(options.VerboseOption);
         rootCommand.AddGlobalOption(options.DryRunOption);
+        rootCommand.AddGlobalOption(options.SkipValidationOption);
 
         // Get logger factory for command creation
         var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();

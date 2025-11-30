@@ -3,6 +3,57 @@ import { TFolder, TFile, Notice } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
 import { getRelativeVaultResourcePath, ensureExecutableExists, ensureConfigFilesExist } from '../utils/plugin-assets';
 
+async function resolveConfigPath(plugin: NotebookAutomationPlugin): Promise<string> {
+  // @ts-ignore
+  const fs = window.require ? window.require('fs') : null;
+  // @ts-ignore
+  const path = window.require ? window.require('path') : null;
+
+  if (!fs || !path) {
+    throw new Error('File system access not available to resolve configuration path.');
+  }
+
+  const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
+  if (envConfigPath && fs.existsSync(envConfigPath) && fs.statSync(envConfigPath).isFile()) {
+    return envConfigPath;
+  }
+
+  if (plugin.settings.configPath && fs.existsSync(plugin.settings.configPath) && fs.statSync(plugin.settings.configPath).isFile()) {
+    return plugin.settings.configPath;
+  }
+
+  const loadedConfigPath = (window as any).notebookAutomationLoadedConfigPath;
+  if (loadedConfigPath && fs.existsSync(loadedConfigPath) && fs.statSync(loadedConfigPath).isFile()) {
+    return loadedConfigPath;
+  }
+
+  let pluginDir = plugin.manifest?.dir;
+  if (pluginDir) {
+    const adapter = plugin.app?.vault?.adapter;
+    // @ts-ignore
+    if (adapter && typeof adapter.getBasePath === 'function') {
+      try {
+        // @ts-ignore
+        const vaultRoot = adapter.getBasePath();
+        if (vaultRoot && !path.isAbsolute(pluginDir)) {
+          pluginDir = path.join(vaultRoot, pluginDir);
+        }
+      } catch {
+        // Ignore and continue with existing pluginDir
+      }
+    }
+
+    if (pluginDir) {
+      const defaultConfigPath = path.join(pluginDir, 'default-config.json');
+      if (fs.existsSync(defaultConfigPath) && fs.statSync(defaultConfigPath).isFile()) {
+        return defaultConfigPath;
+      }
+    }
+  }
+
+  throw new Error('No configuration file available. Configure a config path in settings or set NOTEBOOKAUTOMATION_CONFIG.');
+}
+
 /**
  * Handles notebook automation commands for a given file or folder and action.
  *
@@ -248,98 +299,8 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
 
   const naPath = await ensureExecutableExists(plugin);
 
-  // Use same priority logic as startup: env variable, user settings, loaded config, then default-config.json
-  let configPath = '';
-
-  // First priority: Environment variable NOTEBOOKAUTOMATION_CONFIG
-  const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
-  if (envConfigPath) {
-    try {
-      // @ts-ignore
-      const fs = window.require ? window.require('fs') : null;
-      if (fs && fs.existsSync(envConfigPath)) {
-        configPath = envConfigPath;
-        console.log('[Notebook Automation] Using config from environment variable NOTEBOOKAUTOMATION_CONFIG:', configPath);
-      }
-    } catch (err) {
-      console.log('[Notebook Automation] Error checking environment config path:', err);
-    }
-  }
-
-  // Second priority: User-configured path from plugin settings
-  if (!configPath && plugin.settings.configPath) {
-    const userConfigPath = plugin.settings.configPath;
-    try {
-      // @ts-ignore
-      const fs = window.require ? window.require('fs') : null;
-      if (fs && fs.existsSync(userConfigPath)) {
-        configPath = userConfigPath;
-        console.log('[Notebook Automation] Using config from user plugin settings:', configPath);
-      } else {
-        console.log('[Notebook Automation] User-configured config path does not exist:', userConfigPath);
-      }
-    } catch (err) {
-      console.log('[Notebook Automation] Error checking user-configured config path:', err);
-    }
-  }
-
-  // Third priority: Use loaded config path from window (fallback for when settings aren't available)
-  if (!configPath) {
-    const loadedConfigPath = (window as any).notebookAutomationLoadedConfigPath;
-    if (loadedConfigPath) {
-      try {
-        // @ts-ignore
-        const fs = window.require ? window.require('fs') : null;
-        if (fs && fs.existsSync(loadedConfigPath)) {
-          configPath = loadedConfigPath;
-          console.log('[Notebook Automation] Using loaded config path from startup:', configPath);
-        }
-      } catch (err) {
-        console.log('[Notebook Automation] Error checking loaded config path:', err);
-      }
-    }
-  }
-
-  // Fourth priority: Use default-config.json from plugin directory
-  if (!configPath) {
-    try {
-      // @ts-ignore
-      const path = window.require ? window.require('path') : null;
-      // @ts-ignore
-      const fs = window.require ? window.require('fs') : null;
-      if (path && fs) {
-        // Get plugin directory
-        let pluginDir = plugin.manifest?.dir;
-        if (pluginDir) {
-          // Resolve plugin directory path
-          const adapter = plugin.app?.vault?.adapter;
-          // @ts-ignore
-          if (adapter && typeof adapter.getBasePath === 'function') {
-            try {
-              // @ts-ignore
-              const vaultRoot = adapter.getBasePath();
-              if (vaultRoot && !path.isAbsolute(pluginDir)) {
-                pluginDir = path.join(vaultRoot, pluginDir);
-              }
-            } catch (err) {
-              console.log('[Notebook Automation] Error getting vault root for config path:', err);
-            }
-          }
-          const defaultConfigPath = path.join(pluginDir, 'default-config.json');
-          if (fs.existsSync(defaultConfigPath)) {
-            configPath = defaultConfigPath;
-            console.log('[Notebook Automation] Using default-config.json from plugin directory:', configPath);
-          }
-        }
-      }
-    } catch (err) {
-      console.log('[Notebook Automation] Error constructing default config path:', err);
-    }
-  }
-
-  if (!configPath) {
-    throw new Error("No configuration file available. Please set up configuration in plugin settings.");
-  }
+  const configPath = await resolveConfigPath(plugin);
+  console.log('[Notebook Automation] Using configuration file:', configPath);
 
   // Build command arguments based on action
   let args: string[] = [];
@@ -556,54 +517,111 @@ async function loadConfigForValidation(plugin: NotebookAutomationPlugin): Promis
   try {
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
-    // @ts-ignore
-    const path = window.require ? window.require('path') : null;
-
-    if (!fs || !path) {
+    if (!fs) {
       return null;
     }
-
-    let configPath = '';
-
-    // Use same priority logic as executeNotebookAutomationCommand
-    const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
-    if (envConfigPath && fs.existsSync(envConfigPath)) {
-      configPath = envConfigPath;
-    } else {
-      // Check for default-config.json
-      let pluginDir = plugin.manifest?.dir;
-      if (pluginDir) {
-        const adapter = plugin.app?.vault?.adapter;
-        // @ts-ignore
-        if (adapter && typeof adapter.getBasePath === 'function') {
-          try {
-            // @ts-ignore
-            const vaultRoot = adapter.getBasePath();
-            if (vaultRoot && !path.isAbsolute(pluginDir)) {
-              pluginDir = path.join(vaultRoot, pluginDir);
-            }
-          } catch (err) {
-            // Continue with original pluginDir
-          }
-        }
-        const defaultConfigPath = path.join(pluginDir, 'default-config.json');
-        if (fs.existsSync(defaultConfigPath)) {
-          configPath = defaultConfigPath;
-        } else if (plugin.settings.configPath && fs.existsSync(plugin.settings.configPath)) {
-          configPath = plugin.settings.configPath;
-        }
-      }
-    }
-
-    if (configPath) {
-      const content = fs.readFileSync(configPath, 'utf8');
-      return JSON.parse(content);
-    }
-
-    return null;
+    const configPath = await resolveConfigPath(plugin);
+    const content = fs.readFileSync(configPath, 'utf8');
+    return JSON.parse(content);
   } catch (error) {
     console.error('[Notebook Automation] Error loading config for validation:', error);
     return null;
+  }
+}
+
+export async function runConfigurationValidation(plugin: NotebookAutomationPlugin): Promise<void> {
+  try {
+    // @ts-ignore
+    const child_process = window.require ? window.require('child_process') : null;
+    if (!child_process) {
+      throw new Error('Child process module not available for configuration validation.');
+    }
+
+    await ensureConfigFilesExist(plugin);
+    const naPath = await ensureExecutableExists(plugin);
+    const configPath = await resolveConfigPath(plugin);
+
+    const args = ["config", "validate", "--json", "--config", configPath];
+    console.log('[Notebook Automation] Executing configuration validation:', naPath, args.join(' '));
+
+    const notice = new Notice('🔍 Validating configuration...', 4000);
+
+    await new Promise<void>((resolve) => {
+      const process = child_process.spawn(naPath, args, {
+        stdio: ['pipe', 'pipe', 'pipe'],
+        shell: false
+      });
+
+      let stdout = '';
+      let stderr = '';
+
+      process.stdout.on('data', (data: any) => {
+        stdout += data.toString();
+      });
+
+      process.stderr.on('data', (data: any) => {
+        stderr += data.toString();
+      });
+
+      process.on('error', (error: any) => {
+        console.error('[Notebook Automation] Failed to start configuration validation:', error);
+        new Notice(`❌ Validation failed to start: ${error.message}`);
+        resolve();
+      });
+
+      process.on('close', (code: number | null) => {
+        const trimmed = stdout.trim();
+        let payload: any = null;
+
+        if (trimmed) {
+          try {
+            payload = JSON.parse(trimmed);
+          } catch (err) {
+            console.warn('[Notebook Automation] Unable to parse validation JSON output:', err, trimmed);
+          }
+        }
+
+        if (!payload) {
+          console.warn('[Notebook Automation] Validation output missing JSON payload. StdErr:', stderr);
+          new Notice(`⚠️ Validation completed with unexpected output.${stderr ? ` Details: ${stderr}` : ''}`, 8000);
+          resolve();
+          return;
+        }
+
+        const issues: Array<any> = Array.isArray(payload.issues) ? payload.issues : [];
+        const errorCount = issues.filter(issue => String(issue.severity).toLowerCase() === 'error').length;
+        const warningCount = issues.filter(issue => String(issue.severity).toLowerCase() === 'warning').length;
+
+        if (!payload.isValid) {
+          const topErrors = issues
+            .filter(issue => String(issue.severity).toLowerCase() === 'error')
+            .slice(0, 3)
+            .map(issue => `• ${issue.key}: ${issue.message}`)
+            .join('\n');
+
+          new Notice(`❌ Configuration invalid (${errorCount} error(s), ${warningCount} warning(s))\n${topErrors}`, 10000);
+        } else if (warningCount > 0 || payload.hasWarnings) {
+          new Notice(`⚠️ Configuration valid with ${warningCount} warning(s). Run CLI 'config validate' for details.`, 8000);
+        } else {
+          new Notice('✅ Configuration validated successfully.', 5000);
+        }
+
+        if (stderr) {
+          console.log('[Notebook Automation] Validation stderr:', stderr);
+        }
+
+        if (code !== 0 && payload.isValid) {
+          console.warn('[Notebook Automation] Validation exited with code', code);
+        }
+
+        resolve();
+      });
+    });
+
+    notice.hide();
+  } catch (error: any) {
+    console.error('[Notebook Automation] Error running configuration validation command:', error);
+    new Notice(`❌ Configuration validation failed: ${error?.message ?? error}`);
   }
 }
 

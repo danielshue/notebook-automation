@@ -1,5 +1,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using NotebookAutomation.Core.Configuration.Validation;
+
 namespace NotebookAutomation.Cli.Commands;
 
 /// <summary>
@@ -179,7 +181,69 @@ internal class ConfigCommands
         {
             PrintAvailableConfigKeys(context);
         });
-        configCommand.AddCommand(listKeysCommand);        // config view
+        configCommand.AddCommand(listKeysCommand);
+
+        // config validate
+        var validateCommand = new Command("validate", "Validate configuration files and required directories");
+        var jsonOption = new Option<bool>("--json", "Output validation results as JSON");
+        validateCommand.AddOption(jsonOption);
+        validateCommand.SetHandler(async context =>
+        {
+            try
+            {
+                if (Program.ServiceProvider.GetService(typeof(IConfigurationValidationService)) is not IConfigurationValidationService validator)
+                {
+                    AnsiConsoleHelper.WriteError("Configuration validation service is not available.");
+                    context.ExitCode = 1;
+                    return;
+                }
+
+                var cancellationToken = context.GetCancellationToken();
+                var result = await validator.ValidateAsync(cancellationToken);
+                var asJson = context.ParseResult.GetValueForOption(jsonOption);
+
+                if (asJson)
+                {
+                    var payload = new
+                    {
+                        configurationPath = result.ConfigurationPath,
+                        isValid = result.IsValid,
+                        hasWarnings = result.HasWarnings,
+                        issues = result.Issues.Select(issue => new
+                        {
+                            severity = issue.Severity.ToString(),
+                            issue.Key,
+                            issue.Message,
+                            issue.Suggestion
+                        })
+                    };
+
+                    Console.WriteLine(JsonSerializer.Serialize(payload, new JsonSerializerOptions
+                    {
+                        WriteIndented = true
+                    }));
+                }
+                else
+                {
+                    PrintValidationSummary(result);
+                }
+
+                context.ExitCode = result.IsValid ? 0 : 1;
+            }
+            catch (OperationCanceledException)
+            {
+                AnsiConsoleHelper.WriteWarning("Configuration validation cancelled.");
+                context.ExitCode = 1;
+            }
+            catch (Exception ex)
+            {
+                ExceptionHandler.HandleException(ex, "Validating configuration");
+                context.ExitCode = 1;
+            }
+        });
+        configCommand.AddCommand(validateCommand);
+
+        // config view
         var viewCommand = new Command("view", "Show the current configuration");
         viewCommand.SetHandler(async context =>
         {
@@ -396,6 +460,59 @@ internal class ConfigCommands
             }
 
             Program.SetupDependencyInjection(configPath, debug);
+        }
+    }
+
+    internal static void PrintValidationSummary(ConfigurationValidationResult result)
+    {
+        AnsiConsoleHelper.WriteHeading("Configuration Validation");
+
+        if (!string.IsNullOrWhiteSpace(result.ConfigurationPath))
+        {
+            AnsiConsoleHelper.WriteKeyValue("Configuration", result.ConfigurationPath!);
+            Console.WriteLine();
+        }
+
+        if (result.Issues.Count == 0)
+        {
+            AnsiConsoleHelper.WriteSuccess("All configuration checks passed.");
+            return;
+        }
+
+        var table = new Table()
+            .RoundedBorder()
+            .BorderColor(Color.Grey53)
+            .AddColumn(new TableColumn("Severity").Centered())
+            .AddColumn(new TableColumn("Key"))
+            .AddColumn(new TableColumn("Message"))
+            .AddColumn(new TableColumn("Suggestion"));
+
+        foreach (var issue in result.Issues)
+        {
+            var severityText = issue.Severity == ConfigurationValidationIssueSeverity.Error
+                ? "[red]Error[/]"
+                : "[yellow]Warning[/]";
+            table.AddRow(
+                severityText,
+                issue.Key,
+                issue.Message,
+                string.IsNullOrWhiteSpace(issue.Suggestion) ? "-" : issue.Suggestion!);
+        }
+
+        AnsiConsole.Write(table);
+
+        Console.WriteLine();
+
+        var errorCount = result.Issues.Count(issue => issue.Severity == ConfigurationValidationIssueSeverity.Error);
+        var warningCount = result.Issues.Count(issue => issue.Severity == ConfigurationValidationIssueSeverity.Warning);
+
+        if (errorCount == 0)
+        {
+            AnsiConsoleHelper.WriteWarning($"Validation completed with {warningCount} warning(s).");
+        }
+        else
+        {
+            AnsiConsoleHelper.WriteError($"Validation failed with {errorCount} error(s) and {warningCount} warning(s).");
         }
     }
 

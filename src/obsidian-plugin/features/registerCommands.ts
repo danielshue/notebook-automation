@@ -1,7 +1,7 @@
 
 import { TFolder } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
-import { handleNotebookAutomationCommand } from './commands';
+import { handleNotebookAutomationCommand, runConfigurationValidation } from './commands';
 
 /**
  * Registers all Notebook Automation commands with the Obsidian Command Palette.
@@ -15,6 +15,14 @@ import { handleNotebookAutomationCommand } from './commands';
  */
 export function registerCommands(plugin: NotebookAutomationPlugin) {
   // Register Command Palette commands for selected files/folders
+  plugin.addCommand({
+    id: 'validate-configuration',
+    name: 'Validate Notebook Automation Configuration',
+    callback: async () => {
+      await runConfigurationValidation(plugin);
+    }
+  });
+
   plugin.addCommand({
     id: 'sync-directory',
     name: 'Vault Sync with OneDrive',

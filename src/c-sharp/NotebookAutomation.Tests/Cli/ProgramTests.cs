@@ -16,6 +16,7 @@ public class ProgramTests
 {
     private StringWriter consoleOutput = null!;
     private TextWriter originalOut = null!;
+    private string? previousSkipValidationEnv;
 
     /// <summary>
     /// Initializes test dependencies before each test.
@@ -27,6 +28,9 @@ public class ProgramTests
         originalOut = Console.Out;
         consoleOutput = new StringWriter();
         Console.SetOut(consoleOutput);
+
+        previousSkipValidationEnv = Environment.GetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION");
+        Environment.SetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION", "true");
     }
 
     /// <summary>
@@ -37,6 +41,8 @@ public class ProgramTests
     {
         Console.SetOut(originalOut);
         consoleOutput?.Dispose();
+
+        Environment.SetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION", previousSkipValidationEnv);
     }
 
     /// <summary>

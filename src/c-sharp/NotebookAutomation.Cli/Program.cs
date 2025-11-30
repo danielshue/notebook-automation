@@ -1,5 +1,9 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using System.Linq;
+
+using NotebookAutomation.Core.Configuration.Validation;
+
 namespace NotebookAutomation.Cli;
 
 /// <summary>
@@ -147,7 +151,42 @@ internal class Program
         logger.LogDebug("Application started");
 
         // Register commands with the command line builder
-        commandLineBuilder.RegisterCommands(rootCommand, options, serviceProvider);        // Check for help display scenarios
+        commandLineBuilder.RegisterCommands(rootCommand, options, serviceProvider);
+
+        // Run preflight configuration validation unless skipped or explicitly validating configuration.
+        var skipValidation = args.Any(arg => string.Equals(arg, "--skip-config-validation", StringComparison.OrdinalIgnoreCase));
+        var envSkip = Environment.GetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION");
+        if (!skipValidation && !string.IsNullOrWhiteSpace(envSkip))
+        {
+            if (string.Equals(envSkip, "1", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(envSkip, "true", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(envSkip, "yes", StringComparison.OrdinalIgnoreCase))
+            {
+                skipValidation = true;
+            }
+        }
+        var isValidationCommand = IsConfigValidateCommand(args);
+        if (!skipValidation && !isValidationCommand)
+        {
+            if (serviceProvider.GetService<IConfigurationValidationService>() is IConfigurationValidationService validator)
+            {
+                var validationResult = await validator.ValidateAsync().ConfigureAwait(false);
+                if (!validationResult.IsValid)
+                {
+                    ConfigCommands.PrintValidationSummary(validationResult);
+                    AnsiConsoleHelper.WriteError("Configuration validation failed. Resolve the issues above or rerun with --skip-config-validation to bypass.");
+                    return 1;
+                }
+
+                if (validationResult.HasWarnings)
+                {
+                    var warningCount = validationResult.Issues.Count(issue => issue.Severity == ConfigurationValidationIssueSeverity.Warning);
+                    AnsiConsoleHelper.WriteWarning($"Configuration validation completed with {warningCount} warning(s). Run 'notebookautomation.exe config validate' for details.");
+                }
+            }
+        }
+
+        // Check for help display scenarios
         var isRootHelp = IsRootLevelHelp(args);
         var isNoArgs = args.Length == 0;
         var isConfigOnly = args.Length == 1 && (args[0] == "--config" || args[0] == "-c");
@@ -198,6 +237,29 @@ internal class Program
         var serviceProvider = bootstrapper.SetupDependencyInjection(configPath, debug);
         Program.serviceProvider = serviceProvider; // Set the static field
         return serviceProvider;
+    }
+
+    /// <summary>
+    /// Determines if the help flag is being used at the root level (not for a subcommand).
+    /// </summary>
+    /// <param name="args">Command-line arguments.</param>
+    /// <returns>True if this is root-level help, false if it's subcommand help.</returns>
+    private static bool IsConfigValidateCommand(string[] args)
+    {
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (!string.Equals(args[i], "config", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (i + 1 < args.Length && string.Equals(args[i + 1], "validate", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

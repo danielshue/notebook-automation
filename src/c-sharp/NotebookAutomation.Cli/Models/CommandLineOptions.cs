@@ -9,6 +9,7 @@ namespace NotebookAutomation.Cli.Models;
 /// <param name="DebugOption">Option for enabling debug output.</param>
 /// <param name="VerboseOption">Option for enabling verbose output.</param>
 /// <param name="DryRunOption">Option for simulating actions without making changes.</param>
+/// <param name="SkipValidationOption">Option for skipping configuration validation preflight checks.</param>
 /// <remarks>
 /// This record encapsulates all global command line options that are available
 /// across all commands in the CLI application, providing a type-safe way to
@@ -18,5 +19,6 @@ internal record CommandLineOptions(
     Option<string> ConfigOption,
     Option<bool> DebugOption,
     Option<bool> VerboseOption,
-    Option<bool> DryRunOption
+    Option<bool> DryRunOption,
+    Option<bool> SkipValidationOption
 );
