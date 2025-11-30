@@ -5,10 +5,10 @@
     "onedrive_resources_basepath": "Education\\MBA-Resources",
     "notebook_vault_fullpath_root": "C:\\Users\\danshue.REDMOND\\Vault",
     "notebook_vault_resources_basepath": "01_Projects\\MBA",
-    "metadata_schema_file": "Z:\\source\\notebook-automation\\config\\metadata-schema.yml",
-    "logging_dir": "Z:\\source\\notebook-automation\\logs",
-    "prompts_path": "Z:\\source\\notebook-automation\\prompts",
-    "base_block_template_filename": "Z:\\source\\notebook-automation\\config\\BaseBlockTemplate.yml"
+    "metadata_schema_file": "config/metadata-schema.yml",
+    "logging_dir": "logs",
+    "prompts_path": "prompts",
+    "base_block_template_filename": "config/BaseBlockTemplate.yml"
   },
   "microsoft_graph": {
     "client_id": "489ad055-e4b0-4898-af27-53506ce83db7",

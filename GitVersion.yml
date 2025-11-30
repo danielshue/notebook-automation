@@ -4,14 +4,23 @@ branches:
   master:
     regex: ^master$
     mode: ContinuousDelivery
-    label: ''
+    label: ""
   main:
     regex: ^main$
     mode: ContinuousDelivery
-    label: ''
+    label: ""
   develop:
     regex: ^develop$
     mode: ContinuousDelivery
-    label: 'beta'
-
-
+    label: "beta"
+  feature:
+    regex: ^feature?[/-]
+    mode: ContinuousDelivery
+    label: "{BranchName}"
+    increment: Inherit
+    source-branches: ["master", "main", "develop"]
+  pull-request:
+    regex: ^(pull|pull\-requests|pr)[/-]
+    mode: ContinuousDelivery
+    label: pr
+    increment: Inherit
