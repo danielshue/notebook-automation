@@ -216,9 +216,21 @@ export async function ensureExecutableExists(plugin: Plugin, progressCallback?: 
     }
 
     if (fs && fs.existsSync(actualFilePath)) {
-      // Validate existing executable
-      const currentOk = await isExecutableCurrent(plugin, actualFilePath, expectedVersion);
-      if (currentOk) {
+      // Validate existing executable - check both version AND checksum
+      const versionOk = await isExecutableCurrent(plugin, actualFilePath, expectedVersion);
+      
+      // If version is ok, also verify checksum if available
+      let checksumOk = true;
+      if (versionOk && checksumMap && checksumMap[execName]) {
+        checksumOk = await verifyFileChecksum(fs, actualFilePath, checksumMap[execName]);
+        if (!checksumOk) {
+          console.log(`[Notebook Automation] Executable exists with correct version but checksum mismatch - will redownload`);
+        } else {
+          console.log(`[Notebook Automation] Executable exists with correct version and valid checksum - skipping download`);
+        }
+      }
+      
+      if (versionOk && checksumOk) {
         needsDownload = false;
         finalPath = actualFilePath;
       } else {
@@ -234,13 +246,12 @@ export async function ensureExecutableExists(plugin: Plugin, progressCallback?: 
       finalPath = await downloadExecutableFromGitHub(plugin, progressCallback);
       // Refresh checksum map after download if previously null or missing entry
       try { if (!checksumMap || (checksumMap && !checksumMap[execName])) { checksumMap = await getOrDownloadChecksums(plugin); } } catch { /* ignore */ }
-    }
-    // Perform integrity verification if checksum data is available
-    try {
+      
+      // Verify integrity of newly downloaded executable
       if (checksumMap && checksumMap[execName] && fs && fs.existsSync(finalPath)) {
         const verified = await verifyFileChecksum(fs, finalPath, checksumMap[execName]);
         if (!verified) {
-          console.warn('[Notebook Automation] Executable checksum mismatch detected - file may be corrupted. Attempting re-download...');
+          console.warn('[Notebook Automation] Executable checksum mismatch after download - file may be corrupted. Attempting re-download...');
           // Corrupt or mismatch: remove and force re-download once
           try { fs.unlinkSync(finalPath); } catch { /* ignore */ }
           const redownloaded = await downloadExecutableFromGitHub(plugin, progressCallback);
@@ -262,9 +273,11 @@ export async function ensureExecutableExists(plugin: Plugin, progressCallback?: 
             }
           }
           finalPath = redownloaded;
+        } else {
+          console.log('[Notebook Automation] Downloaded executable checksum verified successfully.');
         }
       }
-    } catch { /* non-fatal */ }
+    }
     return finalPath;
   } catch {
     return existingPath;
