@@ -13,5 +13,17 @@ branches:
     regex: ^develop$
     mode: ContinuousDelivery
     label: 'beta'
+  feature:
+    regex: ^feature?[/-]
+    mode: ContinuousDelivery
+    label: '{BranchName}'
+    increment: Inherit
+    source-branches: ['master', 'main', 'develop']
+  pull-request:
+    regex: ^(pull|pull\-requests|pr)[/-]
+    mode: ContinuousDelivery
+    label: 'PullRequest'
+    increment: Inherit
+    label-number-pattern: '[/-](?<number>\d+)'
 
 
