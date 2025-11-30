@@ -1,32 +1,33 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>12</LangVersion>
+        <LangVersion>14</LangVersion>
         <UserSecretsId>c6a8ab21-82a5-4993-bea2-7db0b10724ea</UserSecretsId>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Azure.Identity" Version="1.14.0" />
-        <PackageReference Include="Microsoft.Extensions.AI" Version="9.5.0" />
-        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="9.5.0-preview.1.25265.7" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
+        <PackageReference Include="Azure.Identity" Version="1.17.1" />
+        <PackageReference Include="Microsoft.Extensions.AI" Version="10.0.1" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI"
+            Version="9.10.0-preview.1.25513.3" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables"
-            Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Primitives" Version="9.0.5" />
+            Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Primitives" Version="10.0.0" />
         <PackageReference Include="Microsoft.Graph" Version="5.80.0" />
-        <PackageReference Include="Microsoft.Identity.Client" Version="4.72.1" />
-        <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.72.1" />
-        <PackageReference Include="Microsoft.SemanticKernel" Version="1.55.0" />
-        <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.54.0" />
+        <PackageReference Include="Microsoft.Identity.Client" Version="4.78.0" />
+        <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.78.0" />
+        <PackageReference Include="Microsoft.SemanticKernel" Version="1.67.1" />
+        <PackageReference Include="Microsoft.SemanticKernel.Agents.Core" Version="1.67.1" />
         <PackageReference Include="Microsoft.SemanticKernel.PromptTemplates.Handlebars"
-            Version="1.54.0" />
+            Version="1.67.1" />
         <PackageReference Include="OpenTelemetry" Version="1.10.0" />
         <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.10.0" />
         <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.10.0" />
