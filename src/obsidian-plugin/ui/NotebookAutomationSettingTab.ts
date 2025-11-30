@@ -2684,6 +2684,79 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
    * @param versionElement Optional element to update with download progress.
    * @returns Promise resolving to the version string.
    */
+  /**
+   * Checks if a newer version is available on GitHub.
+   * @param currentVersion - Current plugin version
+   * @returns Latest version info or null if check fails
+   */
+  async checkForLatestVersion(currentVersion: string): Promise<{ version: string, url: string } | null> {
+    try {
+      const response = await fetch('https://api.github.com/repos/danielshue/notebook-automation/releases/latest', {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      });
+      
+      if (!response.ok) {
+        console.warn('[Notebook Automation] Failed to check for updates:', response.status);
+        return null;
+      }
+      
+      const data = await response.json();
+      const latestVersion = data.tag_name?.replace(/^v/, '') || null;
+      
+      if (!latestVersion) {
+        return null;
+      }
+      
+      // Compare versions (simple string comparison works for semantic versions)
+      if (latestVersion !== currentVersion && this.isNewerVersion(latestVersion, currentVersion)) {
+        return {
+          version: latestVersion,
+          url: data.html_url
+        };
+      }
+      
+      return null;
+    } catch (error) {
+      console.warn('[Notebook Automation] Error checking for updates:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Compares two semantic versions to determine if first is newer.
+   * @param v1 - First version (e.g., "0.1.0-beta.36")
+   * @param v2 - Second version (e.g., "0.1.0-beta.35")
+   * @returns true if v1 is newer than v2
+   */
+  isNewerVersion(v1: string, v2: string): boolean {
+    const parseVersion = (v: string) => {
+      const parts = v.split(/[.-]/);
+      return {
+        major: parseInt(parts[0]) || 0,
+        minor: parseInt(parts[1]) || 0,
+        patch: parseInt(parts[2]) || 0,
+        prerelease: parts[3] || '',
+        build: parseInt(parts[4]) || 0
+      };
+    };
+    
+    const ver1 = parseVersion(v1);
+    const ver2 = parseVersion(v2);
+    
+    if (ver1.major !== ver2.major) return ver1.major > ver2.major;
+    if (ver1.minor !== ver2.minor) return ver1.minor > ver2.minor;
+    if (ver1.patch !== ver2.patch) return ver1.patch > ver2.patch;
+    
+    // Handle prerelease: stable is newer than prerelease
+    if (ver1.prerelease && !ver2.prerelease) return false;
+    if (!ver1.prerelease && ver2.prerelease) return true;
+    if (ver1.prerelease && ver2.prerelease) {
+      return ver1.build > ver2.build;
+    }
+    
+    return false;
+  }
+
   async getNaVersion(versionElement?: HTMLElement): Promise<string> {
     try {
       // First, try to get version from plugin manifest (always available via BRAT)
@@ -2717,6 +2790,17 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           console.warn('[Notebook Automation] Asset download failed, continuing with manifest version:', downloadError);
         }
         
+        // Check for updates (non-blocking)
+        let updateInfo: { version: string, url: string } | null = null;
+        try {
+          if (versionElement) {
+            versionElement.innerHTML = "🔍 Checking for updates...";
+          }
+          updateInfo = await this.checkForLatestVersion(manifestVersion);
+        } catch (updateError) {
+          console.warn('[Notebook Automation] Update check failed:', updateError);
+        }
+        
         // Try to get detailed CLI version if executable is available
         try {
           // @ts-ignore
@@ -2736,18 +2820,23 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
               return new Promise((resolve) => {
                 exec(`"${naPath}" --version`, { timeout: 5000 }, (error: any, stdout: string, stderr: string) => {
                   const releaseUrl = `https://github.com/danielshue/notebook-automation/releases/tag/v${manifestVersion}`;
-                  const releaseLink = `<br><a href="${releaseUrl}" class="external-link" target="_blank">View Release Notes</a>`;
+                  const releaseLink = `<br><a href="${releaseUrl}" class="external-link" target="_blank">View Release Notes (v${manifestVersion})</a>`;
+                  
+                  // Add update notification if available
+                  const updateNotice = updateInfo 
+                    ? `<br><span style="color: var(--text-accent); font-weight: bold;">🎉 New version available: v${updateInfo.version}</span><br><a href="${updateInfo.url}" class="external-link" target="_blank">View v${updateInfo.version} Release Notes</a>`
+                    : '';
                   
                   if (error) {
                     // Fallback to manifest version if CLI fails
-                    resolve(`${manifestVersion} (Plugin)${releaseLink}`);
+                    resolve(`${manifestVersion} (Plugin)${releaseLink}${updateNotice}`);
                     return;
                   }
                   const cliVersion = stdout.trim() || stderr.trim();
                   if (cliVersion && cliVersion !== 'Unknown') {
-                    resolve(`${cliVersion} (CLI)${releaseLink}`);
+                    resolve(`${cliVersion} (CLI)${releaseLink}${updateNotice}`);
                   } else {
-                    resolve(`${manifestVersion} (Plugin)${releaseLink}`);
+                    resolve(`${manifestVersion} (Plugin)${releaseLink}${updateNotice}`);
                   }
                 });
               });
@@ -2759,8 +2848,14 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
         
         // Return manifest version as fallback with release link
         const releaseUrl = `https://github.com/danielshue/notebook-automation/releases/tag/v${manifestVersion}`;
-        const releaseLink = `<br><a href="${releaseUrl}" class="external-link" target="_blank">View Release Notes</a>`;
-        return `${manifestVersion} (Plugin)${releaseLink}`;
+        const releaseLink = `<br><a href="${releaseUrl}" class="external-link" target="_blank">View Release Notes (v${manifestVersion})</a>`;
+        
+        // Add update notification if available
+        const updateNotice = updateInfo 
+          ? `<br><span style="color: var(--text-accent); font-weight: bold;">🎉 New version available: v${updateInfo.version}</span><br><a href="${updateInfo.url}" class="external-link" target="_blank">View v${updateInfo.version} Release Notes</a>`
+          : '';
+        
+        return `${manifestVersion} (Plugin)${releaseLink}${updateNotice}`;
       }
       
       // Fallback if no manifest version available (no link in this case)
