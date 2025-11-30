@@ -183,22 +183,23 @@ For more information: https://docs.github.com/en/copilot/github-copilot-in-the-c
         Write-Host "   ⏱️  Calling Copilot CLI ($Timeout second timeout)..." -ForegroundColor Gray
         
         # Execute Copilot CLI with timeout and proper UTF-8 encoding
+        # Use -p parameter instead of piping to avoid interactive stdin blocking
         $job = Start-Job -ScriptBlock {
-            param($TempFile)
+            param($PromptText)
             try {
                 # Set console encoding to UTF-8 to properly handle emoji output
                 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
                 [Console]::InputEncoding = [System.Text.Encoding]::UTF8
                 $PSDefaultParameterValues['*:Encoding'] = 'utf8'
                 
-                $promptContent = Get-Content $TempFile -Raw -Encoding UTF8
-                $output = $promptContent | copilot
+                # Use copilot -p to pass prompt as argument (not stdin) to avoid blocking
+                $output = copilot -p $PromptText 2>&1
                 return $output
             }
             catch {
                 return "ERROR: $($_.Exception.Message)"
             }
-        } -ArgumentList $tempPrompt
+        } -ArgumentList $prompt
         
         # Wait for job completion with error handling for blocked state
         try {
