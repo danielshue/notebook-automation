@@ -1095,7 +1095,7 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
 
     // Add version information at the very bottom
     const versionDiv = versionContainer.createDiv({ cls: "notebook-automation-version" });
-    versionDiv.setText("Notebook Automation version: Verifying plugin files...");
+    versionDiv.setText("Verifying plugin files...");
     
     this.getNaVersion(versionDiv).then(ver => {
       // Convert line feeds to HTML breaks for proper display
