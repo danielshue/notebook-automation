@@ -366,14 +366,27 @@ function Format-CopilotOutput {
         [string]$RawOutput
     )
     
-    # Remove ANSI escape codes
-    $formatted = $RawOutput -replace '\x1b\[[0-9;]*m', ''
+    # Apply comprehensive output cleaning (matching test-ai-release-notes.ps1)
+    $formatted = $RawOutput `
+        -replace "(?m)^●\s*", "" `
+        -replace "(?m)^✓.*$", "" `
+        -replace "(?m)^↪.*$", "" `
+        -replace "(?m)^\$.*$", "" `
+        -replace "(?m)^Total usage.*$", "" `
+        -replace "(?m)^Total duration.*$", "" `
+        -replace "(?m)^Total code changes.*$", "" `
+        -replace "(?m)^Usage by model.*$", "" `
+        -replace "(?m)^.*cache read.*$", "" `
+        -replace "(?m)^.*cache write.*$", "" `
+        -replace "(?m)^System\.Management\.Automation\.RemoteException.*$", "" `
+        -replace "(?s)^.*?(?=#\s)", "" `
+        -replace "(?m)^\s+(###)", '$1' `
+        -replace "(?m)^\s+(-)", '$1' `
+        -replace "(?m)^\s*$\n", "`n" `
+        -replace "\n{3,}", "`n`n"
     
-    # Find the first # character and remove everything before it
-    $hashIndex = $formatted.IndexOf('#')
-    if ($hashIndex -gt 0) {
-        $formatted = $formatted.Substring($hashIndex)
-    }
+    # Remove ANSI escape codes
+    $formatted = $formatted -replace '\x1b\[[0-9;]*m', ''
     
     # Fix broken URLs by joining lines that were split
     $formatted = $formatted -replace '(?m)compare/([^\s]+)\s*\r?\n\s*\.([^)]+)\)', 'compare/$1.$2)'
