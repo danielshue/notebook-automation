@@ -22,4 +22,5 @@ branches:
   pull-request:
     regex: ^(pull|pull\-requests|pr)[/-]
     mode: ContinuousDelivery
+    label: pr
     increment: Inherit
