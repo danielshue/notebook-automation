@@ -22,6 +22,4 @@ branches:
   pull-request:
     regex: ^(pull|pull\-requests|pr)[/-]
     mode: ContinuousDelivery
-    label: "PullRequest"
     increment: Inherit
-    tag-number-pattern: '[/-](?<number>\d+)'
