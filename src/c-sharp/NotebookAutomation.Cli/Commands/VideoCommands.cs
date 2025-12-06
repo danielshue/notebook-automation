@@ -382,9 +382,29 @@ internal class VideoCommands
                     }
                     catch (Exception ex)
                     {
-                        logger.LogWarning(ex, $"Failed to extract onedrive_relative_path from markdown file '{actualMarkdownFilePath ?? input}', using original path");
+                        logger.LogError(ex, $"Failed to extract onedrive_relative_path from markdown file '{actualMarkdownFilePath ?? input}'");
+                        AnsiConsoleHelper.WriteError($"Failed to extract video path from markdown file '{input}'. The file must have 'onedrive_relative_path' in its frontmatter.");
+                        context.ExitCode = 1;
+                        return;
                     }
                 }
+                else if (input.EndsWith(".md", StringComparison.OrdinalIgnoreCase))
+                {
+                    // Markdown file specified but not found in vault
+                    logger.LogError($"Markdown file not found: '{input}' (searched in vault root: {effectiveVaultRoot})");
+                    AnsiConsoleHelper.WriteError($"Markdown file not found: '{input}'");
+                    context.ExitCode = 1;
+                    return;
+                }
+            }
+
+            // If input was a markdown file but no onedrive_relative_path was extracted, fail with clear error
+            if (input.EndsWith(".md", StringComparison.OrdinalIgnoreCase) && inputForProcessing == input)
+            {
+                logger.LogError($"Markdown file '{input}' does not contain 'onedrive_relative_path' in its frontmatter. Cannot determine which video file to process.");
+                AnsiConsoleHelper.WriteError($"The markdown file '{input}' must have 'onedrive_relative_path' field in its frontmatter to specify which video to process.");
+                context.ExitCode = 1;
+                return;
             }
 
             // Resolve input path - prioritize vault root for relative paths, fall back to OneDrive root
