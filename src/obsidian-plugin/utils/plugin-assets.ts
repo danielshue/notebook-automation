@@ -329,7 +329,7 @@ async function verifyFileChecksum(fs: any, filePath: string, expectedHash: strin
  * @returns The path to the downloaded file.
  * @throws If required Node.js modules are not available or download fails.
  */
-async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExecutable: boolean = false, progressCallback?: DownloadProgressCallback): Promise<string> {
+async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExecutable: boolean = false, progressCallback?: DownloadProgressCallback, forceDownload: boolean = false): Promise<string> {
   // @ts-ignore
   const fs = window.require ? window.require('fs') : null;
   // @ts-ignore
@@ -361,8 +361,8 @@ async function downloadFileFromGitHub(plugin: Plugin, fileName: string, makeExec
 
   const filePath = path.join(pluginDir, fileName);
 
-  // Check if file already exists
-  if (fs.existsSync(filePath)) {
+  // Check if file already exists (skip if force download requested)
+  if (!forceDownload && fs.existsSync(filePath)) {
     return filePath;
   }
 
@@ -535,11 +535,12 @@ function purgeLegacyOsxExecutables(plugin: Plugin): void {
  */
 async function downloadAssetManifest(plugin: Plugin): Promise<{ version: string; files: string[] } | null> {
   try {
-    const version = plugin.manifest?.version || '0.1.0-beta.2';
-    const expectedUrl = `https://github.com/danielshue/notebook-automation/releases/download/v${version}/asset-manifest.json`;
-    console.log(`[Notebook Automation] Attempting to download asset manifest for version ${version} from: ${expectedUrl}`);
+    const expectedVersion = plugin.manifest?.version || '0.1.0-beta.2';
+    const expectedUrl = `https://github.com/danielshue/notebook-automation/releases/download/v${expectedVersion}/asset-manifest.json`;
+    console.log(`[Notebook Automation] Attempting to download asset manifest for version ${expectedVersion} from: ${expectedUrl}`);
 
-    const manifestPath = await downloadFileFromGitHub(plugin, 'asset-manifest.json', false);
+    // Force download of manifest to ensure we get the correct version
+    const manifestPath = await downloadFileFromGitHub(plugin, 'asset-manifest.json', false, undefined, true);
 
     // @ts-ignore
     const fs = window.require ? window.require('fs') : null;
@@ -549,6 +550,22 @@ async function downloadAssetManifest(plugin: Plugin): Promise<{ version: string;
 
     const manifestContent = fs.readFileSync(manifestPath, 'utf8');
     const manifest = JSON.parse(manifestContent);
+
+    // Validate that the downloaded manifest matches the expected version
+    if (manifest.version !== expectedVersion) {
+      console.warn(`[Notebook Automation] Manifest version mismatch: expected ${expectedVersion}, got ${manifest.version}. Re-downloading...`);
+      // Delete the mismatched manifest and try once more
+      try { fs.unlinkSync(manifestPath); } catch { }
+      const retryPath = await downloadFileFromGitHub(plugin, 'asset-manifest.json', false, undefined, true);
+      const retryContent = fs.readFileSync(retryPath, 'utf8');
+      const retryManifest = JSON.parse(retryContent);
+      if (retryManifest.version !== expectedVersion) {
+        console.error(`[Notebook Automation] Manifest version still incorrect after retry. Using fallback.`);
+        return null;
+      }
+      console.log(`[Notebook Automation] Downloaded asset manifest for version ${retryManifest.version} with ${retryManifest.files?.length || 0} files`);
+      return retryManifest;
+    }
 
     console.log(`[Notebook Automation] Downloaded asset manifest for version ${manifest.version} with ${manifest.files?.length || 0} files`);
     return manifest;
