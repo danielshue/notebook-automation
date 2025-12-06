@@ -10,5 +10,5 @@ internal static class VersionConstants
     /// <summary>
     /// The current plugin release (semantic) version synchronized with manifest.json.
     /// </summary>
-    public const string PluginReleaseVersion = "0.1.0-beta.42";
+    public const string PluginReleaseVersion = "0.1.0-beta.43";
 }
