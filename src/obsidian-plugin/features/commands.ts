@@ -336,11 +336,11 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
       commandDescription = "Build Indexes (Recursive)";
       break;
     case "reprocess-summary-video":
-      args = ["video-notes", "--path", relativePath, "--reprocess", "--config", configPath];
+      args = ["video-notes", "--path", relativePath, "--force", "--config", configPath];
       commandDescription = "Reprocess Video Summary";
       break;
     case "reprocess-summary-pdf":
-      args = ["pdf-notes", "--path", relativePath, "--reprocess", "--config", configPath];
+      args = ["pdf-notes", "--path", relativePath, "--force", "--config", configPath];
       commandDescription = "Reprocess PDF Summary";
       break;
     case "reprocess-summary-html-epub-txt":
