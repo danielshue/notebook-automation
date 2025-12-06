@@ -1738,6 +1738,12 @@ try {
             Write-Warning "   ⚠️  Found $foundExecutables of $($expectedExecutables.Count) expected executables"
         }
         
+        # Add the asset-manifest.json itself to the release (for BRAT to download)
+        if (Test-Path $assetManifestPath) {
+            $releaseAssets += $assetManifestPath
+            Write-Host "   📎 Manifest: asset-manifest.json"
+        }
+        
         # Add checksums.json separately (for executable verification)
         $checksumsPath = Join-Path $pluginDistDir "checksums.json"
         if (Test-Path $checksumsPath) {
