@@ -83,6 +83,9 @@ internal class CommandLineBuilder
         var videoCommands = new VideoCommands(loggerFactory.CreateLogger<VideoCommands>());
         videoCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
 
+        var videoTranscriptCommands = new VideoTranscriptCommands(loggerFactory.CreateLogger<VideoTranscriptCommands>(), serviceProvider);
+        videoTranscriptCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);
+
         // Register PDF commands
         var pdfCommands = new PdfCommands(loggerFactory.CreateLogger<PdfCommands>());
         pdfCommands.Register(rootCommand, options.ConfigOption, options.DebugOption, options.VerboseOption, options.DryRunOption);

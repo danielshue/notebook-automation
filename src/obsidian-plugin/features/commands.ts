@@ -3,6 +3,121 @@ import { TFolder, TFile, Notice } from 'obsidian';
 import type NotebookAutomationPlugin from '../main';
 import { getRelativeVaultResourcePath, ensureExecutableExists, ensureConfigFilesExist } from '../utils/plugin-assets';
 
+function normalizeVaultPathSegment(value: string): string {
+  if (!value) {
+    return '';
+  }
+
+  const normalized = value
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+    .replace(/\/+$/, '');
+
+  return normalized;
+}
+
+function isPathWithinVaultBase(obsidianPath: string, vaultBase: string): boolean {
+  const normalizedBase = normalizeVaultPathSegment(vaultBase);
+  if (!normalizedBase) {
+    return true;
+  }
+
+  const normalizedTarget = normalizeVaultPathSegment(obsidianPath);
+  if (!normalizedTarget) {
+    return false;
+  }
+
+  const baseLower = normalizedBase.toLocaleLowerCase();
+  const targetLower = normalizedTarget.toLocaleLowerCase();
+
+  return targetLower === baseLower || targetLower.startsWith(`${baseLower}/`);
+}
+
+export function getVaultRootAndBase(plugin: NotebookAutomationPlugin): { vaultRoot: string; vaultBase: string; isConfigured: boolean } {
+  let vaultRoot = '';
+  let vaultBase = '';
+  let isConfigured = false;
+  let configOrigin: 'window' | 'env' | 'default' | 'user' | '' = '';
+
+  try {
+    const loaded = (window as any).notebookAutomationLoadedConfig;
+    if (loaded?.paths?.notebook_vault_fullpath_root) {
+      vaultRoot = loaded.paths.notebook_vault_fullpath_root;
+      vaultBase = loaded.paths?.notebook_vault_resources_basepath || '';
+      configOrigin = 'window';
+      isConfigured = !!vaultBase;
+    } else {
+      // @ts-ignore
+      const fs = window.require ? window.require('fs') : null;
+      // @ts-ignore
+      const path = window.require ? window.require('path') : null;
+      let configPath = '';
+
+      const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
+      if (envConfigPath && fs && fs.existsSync(envConfigPath) && fs.statSync(envConfigPath).isFile()) {
+        configPath = envConfigPath;
+        configOrigin = 'env';
+      }
+
+      if (!configPath && path && fs) {
+        let pluginDir = plugin.manifest?.dir;
+        if (pluginDir) {
+          const adapter = plugin.app?.vault?.adapter;
+          // @ts-ignore
+          if (adapter && typeof adapter.getBasePath === 'function') {
+            try {
+              // @ts-ignore
+              const vaultRootPath = adapter.getBasePath();
+              if (vaultRootPath && !path.isAbsolute(pluginDir)) {
+                pluginDir = path.join(vaultRootPath, pluginDir);
+              }
+            } catch {
+              // Ignore errors resolving vault root
+            }
+          }
+          if (pluginDir) {
+            const defaultConfigPath = path.join(pluginDir, 'default-config.json');
+            if (fs.existsSync(defaultConfigPath) && fs.statSync(defaultConfigPath).isFile()) {
+              configPath = defaultConfigPath;
+              configOrigin = 'default';
+            }
+          }
+        }
+      }
+
+      if (!configPath && plugin.settings.configPath) {
+        configPath = plugin.settings.configPath;
+        configOrigin = 'user';
+      }
+
+      if (configPath && fs && fs.existsSync(configPath)) {
+        try {
+          const content = fs.readFileSync(configPath, 'utf8');
+          const config = JSON.parse(content);
+          vaultRoot = config.paths?.notebook_vault_fullpath_root || '';
+          vaultBase = config.paths?.notebook_vault_resources_basepath || '';
+          isConfigured = configOrigin !== 'default' && !!vaultBase;
+        } catch (error) {
+          console.log('[Notebook Automation] Unable to parse config for vault base resolution:', error);
+        }
+      }
+    }
+  } catch (err) {
+    console.log('[Notebook Automation] Error loading config for path processing:', err);
+  }
+
+  return { vaultRoot, vaultBase, isConfigured };
+}
+
+export function isPathWithinConfiguredVault(plugin: NotebookAutomationPlugin, obsidianPath: string): boolean {
+  const { vaultBase, isConfigured } = getVaultRootAndBase(plugin);
+  if (!isConfigured) {
+    return true;
+  }
+
+  return isPathWithinVaultBase(obsidianPath, vaultBase);
+}
+
 async function resolveConfigPath(plugin: NotebookAutomationPlugin): Promise<string> {
   // @ts-ignore
   const fs = window.require ? window.require('fs') : null;
@@ -69,79 +184,17 @@ async function resolveConfigPath(plugin: NotebookAutomationPlugin): Promise<stri
  * @param action The action to perform (e.g., 'sync-dir', 'import-summarize-videos').
  */
 export async function handleNotebookAutomationCommand(plugin: NotebookAutomationPlugin, file: TFile | TFolder, action: string) {
-  // Get config for vault root and base using same priority logic as executeNotebookAutomationCommand
-  let vaultRoot = "";
-  let vaultBase = "";
-  try {
-    // Try to get loaded config from settings tab
-    const loaded = (window as any).notebookAutomationLoadedConfig;
-    console.log('[Notebook Automation] [DEBUG] loaded config from window:', loaded);
-    if (loaded?.paths?.notebook_vault_fullpath_root) {
-      vaultRoot = loaded.paths.notebook_vault_fullpath_root;
-      vaultBase = loaded.paths?.notebook_vault_resources_basepath || "";
-      console.log('[Notebook Automation] [DEBUG] Using loaded config - vaultRoot:', vaultRoot, 'vaultBase:', vaultBase);
-    } else {
-      // Use same priority logic as executeNotebookAutomationCommand
-      // @ts-ignore
-      const fs = window.require ? window.require('fs') : null;
-      // @ts-ignore
-      const path = window.require ? window.require('path') : null;
-      let configPath = '';
-      console.log('[Notebook Automation] [DEBUG] fs available:', !!fs, 'path available:', !!path);
-      // First priority: Environment variable NOTEBOOKAUTOMATION_CONFIG
-      const envConfigPath = process.env.NOTEBOOKAUTOMATION_CONFIG;
-      console.log('[Notebook Automation] [DEBUG] envConfigPath:', envConfigPath);
-      if (envConfigPath && fs && fs.existsSync(envConfigPath)) {
-        configPath = envConfigPath;
-        console.log('[Notebook Automation] [DEBUG] Using env config path:', configPath);
-      }
-      // Second priority: Use default-config.json from plugin directory
-      if (!configPath && path && fs) {
-        let pluginDir = plugin.manifest?.dir;
-        console.log('[Notebook Automation] [DEBUG] pluginDir:', pluginDir);
-        if (pluginDir) {
-          const adapter = plugin.app?.vault?.adapter;
-          // @ts-ignore
-          if (adapter && typeof adapter.getBasePath === 'function') {
-            try {
-              // @ts-ignore
-              const vaultRootPath = adapter.getBasePath();
-              if (vaultRootPath && !path.isAbsolute(pluginDir)) {
-                pluginDir = path.join(vaultRootPath, pluginDir);
-              }
-            } catch (err) {
-              // Continue with original pluginDir
-            }
-          }
-          const defaultConfigPath = path.join(pluginDir, 'default-config.json');
-          console.log('[Notebook Automation] [DEBUG] checking defaultConfigPath:', defaultConfigPath);
-          if (fs.existsSync(defaultConfigPath)) {
-            configPath = defaultConfigPath;
-            console.log('[Notebook Automation] [DEBUG] Using default config path:', configPath);
-          }
-        }
-      }
-      // Third priority: Fallback to user-configured path
-      if (!configPath && plugin.settings.configPath) {
-        configPath = plugin.settings.configPath;
-        console.log('[Notebook Automation] [DEBUG] Using user config path:', configPath);
-      }
-      // Load config if we found a path
-      if (configPath && fs && fs.existsSync(configPath)) {
-        console.log('[Notebook Automation] [DEBUG] Loading config from:', configPath);
-        const content = fs.readFileSync(configPath, 'utf8');
-        const config = JSON.parse(content);
-        console.log('[Notebook Automation] [DEBUG] Parsed config:', config);
-        vaultRoot = config.paths?.notebook_vault_fullpath_root || "";
-        vaultBase = config.paths?.notebook_vault_resources_basepath || "";
-        console.log('[Notebook Automation] [DEBUG] Extracted - vaultRoot:', vaultRoot, 'vaultBase:', vaultBase);
-      } else {
-        console.log('[Notebook Automation] [DEBUG] No valid config path found. configPath:', configPath, 'fs available:', !!fs, 'file exists:', configPath ? fs?.existsSync?.(configPath) : 'N/A');
-      }
-    }
-  } catch (err) {
-    console.log('[Notebook Automation] Error loading config for path processing:', err);
+  const { vaultRoot, vaultBase } = getVaultRootAndBase(plugin);
+  const normalizedBase = normalizeVaultPathSegment(vaultBase);
+
+  if (!isPathWithinVaultBase(file.path, vaultBase)) {
+    const displayBase = normalizedBase || vaultBase || '(configured vault resources path)';
+    new Notice(`Notebook Automation commands require the selection to be inside "${displayBase}".`);
+    console.warn(`[Notebook Automation] Blocked action '${action}' for "${file.path}" because it falls outside the configured base path "${vaultBase}".`);
+    return;
   }
+
+  console.log(`[Notebook Automation] [DEBUG] Command '${action}' resolved vault paths - root: ${vaultRoot}, base: ${vaultBase}`);
 
   // Calculate the relative path based on action type
   let relPath: string;
@@ -330,6 +383,13 @@ export async function executeNotebookAutomationCommand(plugin: NotebookAutomatio
     case "build-indexes":
       args = ["vault", "generate-index", relativePath, "--config", configPath];
       commandDescription = "Build Index";
+      break;
+    case "consolidate-transcripts":
+      args = ["video-transcripts", "consolidate", "--path", relativePath, "--config", configPath];
+      commandDescription = "Create Consolidated Video Transcript(s)";
+      if (plugin.settings.recursiveTranscriptConsolidation) {
+        args.push("--recursive");
+      }
       break;
     case "build-index-recursive":
       args = ["vault", "generate-index", relativePath, "--config", configPath, "--recursive"];

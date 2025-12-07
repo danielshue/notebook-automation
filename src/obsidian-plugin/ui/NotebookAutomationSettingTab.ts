@@ -494,6 +494,18 @@ export class NotebookAutomationSettingTab extends PluginSettingTab {
           });
       });
 
+    // Recursive Transcript Consolidation flag
+    new Setting(flagsGroup)
+      .setName("Recursive Transcript Consolidation")
+      .setDesc("Enable recursive processing when creating consolidated video transcripts. When enabled, the command will include transcripts from all nested subfolders when invoked from the UI. Disable this to restrict consolidation to the selected folder only.")
+      .addToggle(toggle => {
+        toggle.setValue(this.plugin.settings.recursiveTranscriptConsolidation ?? false)
+          .onChange(async (value) => {
+            this.plugin.settings.recursiveTranscriptConsolidation = value;
+            await this.plugin.saveSettings();
+          });
+      });
+
     // Recursive Index Build flag
     new Setting(flagsGroup)
       .setName("Recursive Index Build")

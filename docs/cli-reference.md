@@ -7,6 +7,7 @@ Complete reference for all Notebook Automation CLI commands.
 - [Global Options](#global-options)
 - [video-notes](#video-notes-command) - Process video files
 - [pdf-notes](#pdf-notes-command) - Process PDF files
+- [video-transcripts](#video-transcripts-command) - Consolidate existing transcripts
 - [generate-markdown](#generate-markdown-command) - Convert HTML/TXT/EPUB to markdown
 - [tag](#tag-command) - Tag management
 - [vault](#vault-command) - Vault management
@@ -154,6 +155,51 @@ na video-notes -p "video.mp4" --no-share-links
 ```bash
 na video-notes -p "videos/" --dry-run --verbose
 ```
+
+---
+
+## video-transcripts Command
+
+Consolidate existing video transcript notes into a single markdown summary for a course, module, or lesson folder.
+
+### Syntax
+
+```bash
+na video-transcripts consolidate --path <folder> [--recursive] [--force]
+```
+
+### Subcommands
+
+- `consolidate` *(default)* – Scan the specified folder for transcript notes and generate a consolidated markdown file that links to each original note.
+
+### Arguments
+
+- `-p, --path <folder>` **(REQUIRED)** – Vault-relative folder containing the transcript notes you want to aggregate. The path must reside under the configured `notebook_vault_resources_basepath`.
+
+### Options
+
+- `--recursive` – Include transcript notes found in nested subdirectories.
+- `--force` – Overwrite the consolidated markdown even when the previously generated note already matches the current transcript set.
+- Global options such as `--config`, `--dry-run`, `--verbose`, and `--debug` are also supported.
+
+### Examples
+
+**Consolidate transcripts for a single class:**
+```bash
+na video-transcripts consolidate --path "01_Projects/MBA/Course/Module"
+```
+
+**Include nested lessons/modules:**
+```bash
+na video-transcripts consolidate --path "01_Projects/MBA/Course" --recursive
+```
+
+**Force regeneration even if nothing changed:**
+```bash
+na video-transcripts consolidate --path "01_Projects/MBA/Course" --force
+```
+
+If no transcript notes are discovered, the command exits gracefully with a warning. When run with `--dry-run`, the CLI lists the transcripts that would be merged without writing any files.
 
 ---
 

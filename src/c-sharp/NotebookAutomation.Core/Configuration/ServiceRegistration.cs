@@ -3,6 +3,7 @@
 using NotebookAutomation.Core.Configuration.Validation;
 using NotebookAutomation.Core.Tools;
 using NotebookAutomation.Core.Tools.Resolvers;
+using NotebookAutomation.Core.Tools.VideoTranscriptProcessing;
 
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -688,6 +689,8 @@ public static class ServiceRegistration
                 registry.Register("PdfOneDriveRelativePathResolver", oneDrivePathResolver);
                 registry.Register("VideoOneDriveRelativePathResolver", oneDrivePathResolver);
                 registry.Register("PdfTextOneDriveRelativePathResolver", oneDrivePathResolver);
+
+                registry.Register("VideoSourcesResolver", new VideoSourcesResolver(loggingService.GetLogger<VideoSourcesResolver>()));
             }
             catch (Exception ex)
             {
@@ -767,6 +770,8 @@ public static class ServiceRegistration
             var config = provider.GetRequiredService<AppConfig>();
             return new MetadataPipeline(logger, yaml, templateMgr, hierarchy, config);
         });
+
+        services.AddScoped<VideoTranscriptConsolidationService>();
 
         return services;
     }

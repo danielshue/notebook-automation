@@ -24,6 +24,7 @@ Inspired by these projects but needing broader functionality beyond just downloa
 - **❓ Question Generation** - AI-powered Q&A creation for study materials
 - **📚 Anki Integration** - Export flashcards for spaced repetition learning
 - **🎥 Video Transcript Processing** - Generate summaries from video content
+- **🎬 Transcript Consolidation** - Merge lesson transcripts into class-level notes with automatic links and metadata
 - **📄 PDF Annotation Extraction** - Preserve highlights and comments from documents
 - **📝 Vocabulary Management** - Extract and organize key terms and definitions
 - **📁 Batch Operations** - Process multiple content for note efficiently
@@ -172,6 +173,8 @@ The Obsidian plugin provides a comprehensive settings interface that allows you 
 #### Contextual Menu Integration
 
 The plugin seamlessly integrates with Obsidian's native interface through context menus, providing instant access to powerful automation features directly from your file explorer. Right-click on any folder or file to access processing options like AI summarization, index generation, and OneDrive synchronization—bringing professional-grade automation tools directly into your daily workflow.
+
+- **Create Consolidated Video Transcript(s)** gathers every existing transcript in the selected folder, generates section headings with friendly titles, and produces a single class-level note. When the new **Recursive Transcript Consolidation** toggle is enabled in plugin settings, the command also scans nested lessons (shown in the menu as “(Recursive)”). The CLI enforces your configured `notebook_vault_resources_basepath`, so even though the menu is available everywhere, consolidation only executes inside the approved vault scope.
 
 ![Obsidian Plugin Integration - Contextual Menu](docs/images/ObsidianContextualMenuOptions.png)
 

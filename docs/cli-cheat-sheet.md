@@ -10,6 +10,7 @@ Quick reference for Notebook Automation CLI commands.
 |---------|---------|---------|
 | `na video-notes -p <path>` | Process video files | `na video-notes -p "lecture.mp4"` |
 | `na pdf-notes -p <path>` | Process PDF files | `na pdf-notes -p "document.pdf"` |
+| `na video-transcripts consolidate --path <folder>` | Combine transcript notes into a single markdown file | `na video-transcripts consolidate --path "Course/Module"` |
 | `na generate-markdown -p <path>` | Convert HTML/TXT/EPUB | `na generate-markdown -p "article.html"` |
 | `na vault generate-index <path>` | Generate indexes | `na vault generate-index "vault/"` |
 | `na vault vault-sync <path>` | Sync with OneDrive | `na vault vault-sync "vault/"` |
@@ -31,6 +32,9 @@ na video-notes -p "video.mp4"
 
 # Process all videos in directory
 na video-notes -p "lectures/" --verbose
+
+# Consolidate lesson transcripts into a class note
+na video-transcripts consolidate --path "MBA/Finance/Module"
 
 # Process single PDF
 na pdf-notes -p "document.pdf"

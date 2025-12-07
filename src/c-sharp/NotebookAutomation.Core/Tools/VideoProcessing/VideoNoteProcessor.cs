@@ -395,6 +395,13 @@ public class VideoNoteProcessor : DocumentNoteProcessorBase
     }
 
     /// <summary>
+    /// Gets the resolved transcript path for a given video without reading the contents.
+    /// </summary>
+    /// <param name="videoPath">The path to the video file.</param>
+    /// <returns>The first transcript path discovered following the standard search precedence, or <c>null</c> if none found.</returns>
+    public string? GetTranscriptPath(string videoPath) => FindTranscriptPath(videoPath);
+
+    /// <summary>
     /// Finds the path to the transcript file for a video without loading its content.
     /// </summary>
     /// <param name="videoPath">The path to the video file.</param>
