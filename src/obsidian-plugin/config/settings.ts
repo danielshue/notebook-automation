@@ -16,6 +16,7 @@ export interface NotebookAutomationSettings {
   enableDocumentPlaceholders?: boolean;
   unidirectionalSync?: boolean;
   recursiveDirectorySync?: boolean;
+  recursiveTranscriptConsolidation?: boolean;
   recursiveIndexBuild?: boolean;
   advancedConfiguration?: boolean;
   baseBlockTemplateFilename?: string;
@@ -39,6 +40,7 @@ export const DEFAULT_SETTINGS: NotebookAutomationSettings = {
   enableDocumentPlaceholders: true,
   unidirectionalSync: true,
   recursiveDirectorySync: true,
+  recursiveTranscriptConsolidation: false,
   recursiveIndexBuild: false,
   advancedConfiguration: false,
   baseBlockTemplateFilename: "BaseBlockTemplate.yml",

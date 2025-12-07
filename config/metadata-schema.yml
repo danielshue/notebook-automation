@@ -90,6 +90,40 @@ TemplateTypes:
         Resolver: OneDriveShareLinkResolver
       auto-generated-state:
         Default: writable
+  video_transcript_consolidation:
+    BaseTypes:
+      - universal-fields
+    Type: note/video-transcript
+    RequiredFields:
+      - status
+      - tags
+      - auto-generated-state
+      - video-onedrive-relative-path
+    Fields:
+      status:
+        Default: compiled
+      tags:
+        Default: [transcript, consolidated]
+      date-created:
+        Resolver: DateCreatedResolver
+      program:
+        Resolver: ProgramResolver
+      course:
+        Resolver: CourseResolver
+      class:
+        Resolver: ClassResolver
+      module:
+        Resolver: ModuleResolver
+      lesson:
+        Resolver: LessonResolver
+      title:
+        Resolver: TitleResolver
+      video-onedrive-relative-path:
+        Resolver: VideoSourcesResolver
+      share-link:
+        Resolver: OneDriveShareLinkResolver
+      auto-generated-state:
+        Default: writable
   resource-reading:
     BaseTypes:
       - universal-fields
@@ -142,6 +176,7 @@ UniversalFields:
 TypeMapping:
   pdf-reference: note/case-study
   video-reference: note/video-note
+  video_transcript_consolidation: note/video-transcript
   resource-reading: note/reading
   note/instruction: note/instruction
 ReservedTags:

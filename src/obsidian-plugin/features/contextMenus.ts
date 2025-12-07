@@ -46,8 +46,7 @@ function getFileContextOptions(fileName: string) {
     showPdfSummary: false,
     showHtmlEpubTxtSummary: false
   };
-  
-  // Highest priority: File type specific endings
+
   if (normalizedFileName.endsWith("-video")) {
     options.showVideoSummary = true;
   } else if (normalizedFileName.endsWith("-pdf") || normalizedFileName.includes("pdf")) {
@@ -59,7 +58,7 @@ function getFileContextOptions(fileName: string) {
     options.showHtmlExtraction = true;
     options.showHtmlEpubTxtSummary = true;
   }
-  
+
   return options;
 }
 
@@ -94,6 +93,14 @@ export function registerContextMenus(plugin: NotebookAutomationPlugin) {
               .onClick(() => handleNotebookAutomationCommand(plugin, file, "import-summarize-videos"));
           });
         }
+        menu.addItem((item) => {
+          const transcriptTitle = plugin.settings.recursiveTranscriptConsolidation
+            ? "Notebook Automation: Create Consolidated Video Transcript(s) (Recursive)"
+            : "Notebook Automation: Create Consolidated Video Transcript(s)";
+          item.setTitle(transcriptTitle)
+            .setIcon("file-text")
+            .onClick(() => handleNotebookAutomationCommand(plugin, file, "consolidate-transcripts"));
+        });
         // AI PDF Summary - only if enabled
         if (plugin.settings.enablePdfSummary) {
           menu.addItem((item) => {

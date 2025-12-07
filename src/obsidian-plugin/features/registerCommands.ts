@@ -76,6 +76,28 @@ export function registerCommands(plugin: NotebookAutomationPlugin) {
   });
 
   plugin.addCommand({
+    id: 'create-consolidated-video-transcripts',
+    name: plugin.settings.recursiveTranscriptConsolidation
+      ? 'Create Consolidated Video Transcript(s) (Recursive)'
+      : 'Create Consolidated Video Transcript(s)',
+    checkCallback: (checking: boolean) => {
+      const file = plugin.app.workspace.getActiveFile();
+      const selectedFiles = (plugin.app as any).workspace.activeLeaf?.view?.file;
+      const activeFile = file || selectedFiles;
+      if (activeFile) {
+        const folder = activeFile instanceof TFolder ? activeFile : activeFile.parent;
+        if (folder) {
+          if (!checking) {
+            handleNotebookAutomationCommand(plugin, folder, "consolidate-transcripts");
+          }
+          return true;
+        }
+      }
+      return false;
+    }
+  });
+
+  plugin.addCommand({
     id: 'import-summarize-pdfs',
     name: 'Import & AI Summarize All PDFs',
     /**

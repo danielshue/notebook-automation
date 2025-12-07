@@ -46,6 +46,15 @@ See the `config/` directory for example configurations:
 - `config.json` - Basic configuration
 - `example-config-with-timeout.json` - Configuration with timeout settings
 
+## Obsidian Plugin Settings
+
+The Obsidian plugin exposes several automation flags in the **Notebook Automation → Automation Flags** panel. Two settings now work together to control transcript consolidation:
+
+- **Recursive Directory Sync** – Determines whether vault → OneDrive sync traverses nested folders when creating document placeholders. (Existing behavior.)
+- **Recursive Transcript Consolidation** *(new)* – When enabled, the **Create Consolidated Video Transcript(s)** context menu appends `--recursive` to the CLI call, allowing nested lessons to be merged into the class-level note. The toggle defaults to **Off** so you can opt in to cross-module aggregation when needed.
+
+Even with the toggle disabled, the CLI command remains accessible in Obsidian and through the terminal. The CLI enforces your configured `notebook_vault_resources_basepath`, ensuring consolidation only runs for folders inside the approved vault scope regardless of where the menu is triggered.
+
 ### Metadata Schema Configuration
 
 The metadata system is configured using the unified `metadata-schema.yml` file, which defines template types, universal fields, type mappings, and reserved tags:

@@ -51,6 +51,54 @@ public class FriendlyTitleHelperTests
     }
 
     /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName preserves contractions like "we've" when creating friendly titles.
+    /// </summary>
+    [TestMethod]
+    public void GetFriendlyTitleFromFileName_PreservesContractions()
+    {
+        // Arrange
+        string fileName = "we've-got-this";
+
+        // Act
+        string result = FriendlyTitleHelper.GetFriendlyTitleFromFileName(fileName);
+
+        // Assert
+        Assert.AreEqual("We've Got This", result);
+    }
+
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName removes sequential standalone numbers that remain after structural keywords are stripped.
+    /// </summary>
+    [TestMethod]
+    public void GetFriendlyTitleFromFileName_RemovesResidualSequentialNumbers()
+    {
+        // Arrange
+        string fileName = "03_lesson-1-2-investments-toolkit";
+
+        // Act
+        string result = FriendlyTitleHelper.GetFriendlyTitleFromFileName(fileName);
+
+        // Assert
+        Assert.AreEqual("Investments Toolkit", result);
+    }
+
+    /// <summary>
+    /// Verifies that GetFriendlyTitleFromFileName removes residual single numeric tokens after structural words are stripped.
+    /// </summary>
+    [TestMethod]
+    public void GetFriendlyTitleFromFileName_RemovesLeadingSingleNumberTokens()
+    {
+        // Arrange
+        string fileName = "module-1-investments-toolkit";
+
+        // Act
+        string result = FriendlyTitleHelper.GetFriendlyTitleFromFileName(fileName);
+
+        // Assert
+        Assert.AreEqual("Investments Toolkit", result);
+    }
+
+    /// <summary>
     /// Verifies that GetFriendlyTitleFromFileName preserves acronyms in filenames when formatting.
     /// </summary>
     [TestMethod]

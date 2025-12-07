@@ -95,6 +95,28 @@ Options:
 - `--verbose`: Show detailed sync progress
 - `--dry-run`: Preview sync actions without making changes
 
+### Consolidated Video Transcripts
+
+Combine individual lesson transcripts into a single class-level markdown note:
+
+```bash
+# Consolidate transcripts for a folder
+na video-transcripts consolidate --path "01_Projects/MBA/Course/Module/Lesson"
+
+# Include nested modules or lessons
+na video-transcripts consolidate --path "01_Projects/MBA/Course" --recursive
+
+# Force regeneration even if nothing changed
+na video-transcripts consolidate --path "01_Projects/MBA/Course" --force
+```
+
+Key details:
+
+- The command inspects existing transcript notes, creates a consolidated markdown file with friendly section headings, and logs how many notes were merged versus skipped.
+- Paths are interpreted relative to the configured `notebook_vault_resources_basepath`. The CLI refuses consolidation when the target folder sits outside your vault scope, even if the Obsidian menu is visible everywhere.
+- Use `--recursive` to include nested lessons and `--force` to overwrite an unchanged consolidated note. Pair with `--dry-run` to preview the transcript list without writing files.
+- In Obsidian, the **Create Consolidated Video Transcript(s)** context menu triggers the same command. When the **Recursive Transcript Consolidation** toggle is enabled in plugin settings, the menu label displays “(Recursive)” to confirm the recursive mode that will be passed to the CLI.
+
 ## Generated Note Structure
 
 Notebook Automation generates structured notes with consistent formatting:
