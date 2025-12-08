@@ -6,7 +6,7 @@ Instructions for building, testing, and packaging Notebook Automation.
 
 ### Required Software
 
-- **.NET 9.0 SDK** - Download from [Microsoft .NET](https://dotnet.microsoft.com/download)
+- **.NET 10.0 SDK** - Download from [Microsoft .NET](https://dotnet.microsoft.com/download/dotnet/10.0)
 - **Git** - For version control
 - **PowerShell** - For build scripts (included with Windows)
 
@@ -107,7 +107,7 @@ dotnet build --configuration Release --no-restore
 ### Target Frameworks
 
 The project targets multiple frameworks:
-- **.NET 9.0** - Primary target
+- **.NET 10.0** - Primary target
 - **.NET Standard 2.1** - For library compatibility
 
 ## Testing
@@ -256,7 +256,7 @@ dotnet restore --verbosity detailed
 dotnet test --logger "console;verbosity=detailed"
 
 # Run tests for specific framework
-dotnet test --framework net9.0
+dotnet test --framework net10.0
 ```
 
 **Format issues:**

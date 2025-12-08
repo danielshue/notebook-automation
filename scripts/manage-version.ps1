@@ -372,6 +372,9 @@ Import-Module (Join-Path $ModulesDir "Release\ReleaseManagement.psm1") -Force
 # Don't check for uncommitted changes during initialization as this may be run during development
 $script:rollbackState = Initialize-RollbackTracking
 
+# Path to artifact download helper script for CI-built binaries
+$DownloadArtifactsScript = Join-Path $ScriptDir "download-latest-artifact.ps1"
+
 # Also set in global scope for Ctrl-C handler access  
 $global:ManageVersionRollbackState = $script:rollbackState
 
@@ -1061,7 +1064,7 @@ try {
         if ($UseArtifacts -and -not $ForceLocalBuild) {
             Write-ConditionalHost "🎯 Using CI-built executables from GitHub Actions (recommended for releases)" -ForegroundColor Green
         
-            Invoke-CIArtifactDownload -RepoRoot $RepoRoot -TargetPath $PublishRoot -ThrowOnFailure
+            Invoke-CIArtifactDownload -DownloadScriptPath $DownloadArtifactsScript -TargetPath $PublishRoot -ThrowOnFailure
             Write-ConditionalHost "✅ CI artifacts successfully integrated" -ForegroundColor Green
             return
         }
@@ -1410,7 +1413,7 @@ try {
             # Download CI-built executables (skip local build entirely)
             Write-Host "📦 Downloading CI-built executables now that build is complete..." -ForegroundColor Yellow
             $distPath = Join-Path $RepoRoot 'dist'
-            Invoke-CIArtifactDownload -RepoRoot $RepoRoot -TargetPath $distPath -ThrowOnFailure
+            Invoke-CIArtifactDownload -DownloadScriptPath $DownloadArtifactsScript -TargetPath $distPath -ThrowOnFailure
         }
         else {
             # Traditional workflow: build locally then commit

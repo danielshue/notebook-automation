@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **.NET 10 Upgrade**: Migrated CLI, core library, and test suite to target `net10.0`, enabling C# 14 features and improved runtime performance across all platforms
 - **Document Placeholder System**: Enhanced placeholder creation with automatic content type suffixes
   - Video placeholders: `filename-video.md` (e.g., `03_01_defining-operations-management-video.md`)
   - PDF placeholders: `filename-pdf.md` (e.g., `case-study-analysis-pdf.md`)

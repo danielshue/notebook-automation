@@ -588,7 +588,7 @@ Package plugins as NuGet packages or standalone DLLs:
 ```xml
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <PackageId>NotebookAutomation.CustomResolvers</PackageId>
     <Version>1.0.0</Version>
     <Authors>Your Name</Authors>
