@@ -1,9 +1,10 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
+using System.Linq;
+
+using NotebookAutomation.Core.Tools.Shared;
 using NotebookAutomation.Core.Tools.VideoProcessing;
 using NotebookAutomation.Core.Utils;
-using NotebookAutomation.Core.Tools.Shared;
-using System.Linq;
 
 namespace NotebookAutomation.Core.Tools.VideoTranscriptProcessing;
 
