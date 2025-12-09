@@ -274,7 +274,13 @@ jobs:
           if (Test-Path "CoverageReport/SummaryGithub.md") {
             Get-Content "CoverageReport/SummaryGithub.md" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           } else {
-            echo "Coverage markdown summary not found, skipping build summary"
+            Write-Host "Coverage markdown summary not found, adding fallback note to build summary"
+            $fallback = @(
+              "### Coverage Summary (Windows)",
+              "",
+              "> Coverage markdown summary was not generated for this run. Review test and coverage steps for additional diagnostics."
+            )
+            $fallback | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
           }
         shell: pwsh
 
@@ -284,7 +290,12 @@ jobs:
           if [ -f "CoverageReport/SummaryGithub.md" ]; then
             cat CoverageReport/SummaryGithub.md >> $GITHUB_STEP_SUMMARY
           else
-            echo "Coverage markdown summary not found, skipping build summary"
+            echo "Coverage markdown summary not found, adding fallback note to build summary"
+            {
+              echo "### Coverage Summary (${RUNNER_OS})"
+              echo
+              echo "> Coverage markdown summary was not generated for this run. Review test and coverage steps for additional diagnostics."
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
         shell: bash
 
@@ -415,18 +426,22 @@ jobs:
           fi
 
           # Count executables starting with na- and ensure only expected ones exist
+          shopt -s nullglob
           unexpected_count=0
           for exe in publish/executables/na-*; do
             if [ -f "$exe" ]; then
               basename_exe=$(basename "$exe")
               if [ "$basename_exe" != "$expected_x64" ] && [ "$basename_exe" != "$expected_arm64" ]; then
                 echo "❌ Unexpected executable present: $basename_exe"
-                unexpected_count=
+                unexpected_count=$((unexpected_count + 1))
               fi
             fi
           done
 
-          if [  -gt 0 ]; then
+          shopt -u nullglob || true
+
+          if [ "${unexpected_count:-0}" -gt 0 ]; then
+            echo "❌ Found $unexpected_count unexpected executable(s)."
             exit 1
           fi
 
