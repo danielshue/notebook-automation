@@ -9,13 +9,15 @@
       href: getting-started/quick-start.md
     - name: Installation
       href: getting-started/installation.md
-    - name: Basic Commands
-      href: getting-started/basic-commands.md
     - name: FAQ
       href: getting-started/faq.md
 - name: User Guide
   href: user-guide/
   items:
+    - name: Academic Workflows
+      href: user-guide/academic-workflows.md
+    - name: Productivity Workflows
+      href: user-guide/productivity-workflows.md
     - name: Overview
       href: user-guide/index.md
     - name: Tag Management
@@ -32,8 +34,19 @@
   href: cli-reference.md
 - name: Command Cheat Sheet
   href: cli-cheat-sheet.md
-- name: Deprecated Commands
-  href: DEPRECATED-COMMANDS.md
+- name: Architecture
+  href: architecture/
+  items:
+    - name: System Overview
+      href: architecture/system-overview.md
+    - name: Processing Pipeline
+      href: architecture/processing-pipeline.md
+    - name: Architecture Diagrams
+      href: architecture/architecture-diagrams.md
+    - name: Location Agnostic Design
+      href: architecture/location-agnostic-design.md
+    - name: User Secrets
+      href: UserSecrets.md
 - name: Configuration
   href: configuration/
   items:
@@ -41,8 +54,6 @@
       href: configuration/index.md
     - name: Metadata Schema
       href: metadata-schema-configuration.md
-    - name: User Secrets
-      href: UserSecrets.md
 - name: Versioning
   href: versioning.md
 - name: Tutorials
@@ -60,6 +71,8 @@
   items:
     - name: Overview
       href: troubleshooting/index.md
+    - name: CLI Errors
+      href: troubleshooting/cli-errors.md
 - name: API Reference
   href: api/
   items:

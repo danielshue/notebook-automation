@@ -236,6 +236,21 @@ na video-notes -p "course/week2/"
 na video-notes -p "course/" --retry-failed
 ```
 
+### 6. File Path Best Practices
+
+- **Use quotes** around paths containing spaces or special characters.
+- **Use standard separators**: Forward slashes (`/`) work on all platforms. On Windows, double backslashes (`\\`) are also supported.
+- **Relative paths** are resolved from where you run the command.
+
+### 7. Output Organization
+
+- The CLI automatically uses your configured vault paths.
+- **Override output** for specific items if needed:
+
+```bash
+na video-notes -p "video.mp4" --overwrite-output-dir "custom-output/"
+```
+
 ---
 
 ## Troubleshooting Quick Fixes
@@ -288,7 +303,6 @@ na refresh-token
 
 ### Learn More
 
-- **[Basic Commands](basic-commands.md)** - Detailed command guide
 - **[CLI Reference](../cli-reference.md)** - Complete command reference
 - **[Configuration Guide](../configuration/index.md)** - Configuration options
 - **[User Guide](../user-guide/index.md)** - Advanced workflows

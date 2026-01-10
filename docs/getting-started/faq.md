@@ -69,9 +69,9 @@ Best practices for large-scale processing:
 Example:
 
 ```powershell
-# Process subdirectories separately
-.\na.exe process "notes/week1/" --output "results/week1/"
-.\na.exe process "notes/week2/" --output "results/week2/"
+# Process subdirectories using type-specific commands
+.\na.exe video-notes -p "notes/week1/lectures/" --output "results/week1/"
+.\na.exe pdf-notes -p "notes/week2/readings/" --output "results/week2/"
 ```
 
 ### Can I customize the output format?
@@ -105,7 +105,7 @@ Check these steps:
 
 1. **Verify API key** is set in configuration
 2. **Check environment variables** if using them
-3. **Validate configuration** with `.\na.exe config validate`
+3. **Validate configuration** with `.\na.exe config view`
 4. **Test connectivity** to the AI service
 
 ### The tool is running slowly. How can I speed it up?
@@ -151,8 +151,8 @@ Update your configuration file:
 Yes! Use the `--config` parameter:
 
 ```powershell
-.\na.exe process "docs/" --config "openai-config.json"
-.\na.exe process "docs/" --config "azure-config.json"
+.\na.exe video-notes -p "docs/" --config "openai-config.json"
+.\na.exe video-notes -p "docs/" --config "azure-config.json"
 ```
 
 ### How do I secure my API keys?
@@ -173,7 +173,7 @@ Yes! Example GitHub Actions workflow:
 ```yaml
 - name: Process Documentation
   run: |
-    .\na.exe process "docs/" --config "ci-config.json" --output "processed-docs/"
+    .\na.exe pdf-notes -p "docs/" --config "ci-config.json" --output "processed-docs/"
   env:
     OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 ```

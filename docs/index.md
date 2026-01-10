@@ -17,24 +17,6 @@ Welcome to the Notebook Automation documentation! This site provides comprehensi
 - **[Developer Guide](developer-guide/building.md)** - Development setup and contributing
 - **[API Reference](api/index.md)** - Complete API documentation
 
-## What is Notebook Automation?
-
-Notebook Automation is a powerful C# toolkit that transforms educational content from various sources (PDFs, videos, OneDrive) into structured, AI-enhanced Obsidian notes. It's designed for students, educators, and knowledge workers who want to streamline their note-taking workflow.
-
-## Key Features
-
-- **Multi-format processing** - PDFs, videos, and OneDrive content
-- **AI-powered enhancement** - Smart summarization and metadata extraction
-- **Obsidian integration** - Generate properly formatted notes with frontmatter
-- **Batch processing** - Handle multiple documents efficiently
-- **Flexible configuration** - JSON-based settings with environment variable support
-
-## Getting Help
-
-- Check the [Troubleshooting Guide](troubleshooting/index.md) for common issues
-- Visit our [GitHub Issues](https://github.com/danielshue/notebook-automation/issues) for bug reports
-- Join the discussion at [GitHub Discussions](https://github.com/danielshue/notebook-automation/discussions)
-
 ## 🌟 What is Notebook Automation?
 
 Notebook Automation transforms the way you manage course materials, whether for MBA programs, online courses, or any structured educational content. It automates the tedious tasks of organizing files, extracting metadata, generating summaries, and maintaining consistency across your knowledge base.
@@ -110,12 +92,12 @@ This ensures your knowledge base remains fast and navigable while keeping all re
 
 ## 📖 Documentation Sections
 
-| Section | Description |
-|---------|-------------|
-| [Getting Started](getting-started/index.md) | Installation, initial setup, and first steps |
-| [User Guide](user-guide/index.md) | Complete usage documentation and examples |
-| [Configuration](configuration/index.md) | System configuration, AI services, and integrations |
-| [Migration Guide](migration-guide.md) | **NEW**: Upgrade from legacy metadata.yaml to new schema |
+| Section                                     | Description                                         |
+| ------------------------------------------- | --------------------------------------------------- |
+| [Getting Started](getting-started/index.md) | Installation, initial setup, and first steps        |
+| [User Guide](user-guide/index.md)           | Complete usage documentation and examples           |
+| [Configuration](configuration/index.md)     | System configuration, AI services, and integrations |
+
 | [Metadata Schema](metadata-schema-configuration.md) | **NEW**: Complete metadata-schema.yml configuration reference |
 | [Plugin Development](plugin-development.md) | **NEW**: Extensible resolver development and registry usage |
 | [Developer Guide](developer-guide/index.md) | Building from source, contributing, and architecture |

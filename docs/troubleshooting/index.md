@@ -195,10 +195,10 @@ Add to `config/config.json`:
 
 ```bash
 # Run with verbose logging
-NotebookAutomation.exe --log-level Trace --log-file debug.log
+na --log-level Trace --log-file debug.log
 
 # Enable console logging
-NotebookAutomation.exe --log-console
+na --log-console
 ```
 
 #### Debug Configuration Loading

@@ -6,19 +6,19 @@ Quick reference for Notebook Automation CLI commands.
 
 ## 📋 Quick Command Reference
 
-| Command | Purpose | Example |
-|---------|---------|---------|
-| `na video-notes -p <path>` | Process video files | `na video-notes -p "lecture.mp4"` |
-| `na pdf-notes -p <path>` | Process PDF files | `na pdf-notes -p "document.pdf"` |
+| Command                                            | Purpose                                              | Example                                                   |
+| -------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------- |
+| `na video-notes -p <path>`                         | Process video files                                  | `na video-notes -p "lecture.mp4"`                         |
+| `na pdf-notes -p <path>`                           | Process PDF files                                    | `na pdf-notes -p "document.pdf"`                          |
 | `na video-transcripts consolidate --path <folder>` | Combine transcript notes into a single markdown file | `na video-transcripts consolidate --path "Course/Module"` |
-| `na generate-markdown -p <path>` | Convert HTML/TXT/EPUB | `na generate-markdown -p "article.html"` |
-| `na vault generate-index <path>` | Generate indexes | `na vault generate-index "vault/"` |
-| `na vault vault-sync <path>` | Sync with OneDrive | `na vault vault-sync "vault/"` |
-| `na tag add-nested <path>` | Add hierarchical tags | `na tag add-nested "vault/"` |
-| `na tag consolidate <path>` | Consolidate tags | `na tag consolidate "vault/"` |
-| `na config view` | View configuration | `na config view` |
-| `na config update <key> <val>` | Update config | `na config update "key" "value"` |
-| `na refresh-token` | Authenticate OneDrive | `na refresh-token` |
+| `na generate-markdown -p <path>`                   | Convert HTML/TXT/EPUB                                | `na generate-markdown -p "article.html"`                  |
+| `na vault generate-index <path>`                   | Generate indexes                                     | `na vault generate-index "vault/"`                        |
+| `na vault vault-sync <path>`                       | Sync with OneDrive                                   | `na vault vault-sync "vault/"`                            |
+| `na tag add-nested <path>`                         | Add hierarchical tags                                | `na tag add-nested "vault/"`                              |
+| `na tag consolidate <path>`                        | Consolidate tags                                     | `na tag consolidate "vault/"`                             |
+| `na config view`                                   | View configuration                                   | `na config view`                                          |
+| `na config update <key> <val>`                     | Update config                                        | `na config update "key" "value"`                          |
+| `na refresh-token`                                 | Authenticate OneDrive                                | `na refresh-token`                                        |
 
 ---
 
@@ -153,14 +153,14 @@ na vault ensure-metadata "vault/"
 
 ## ⚙️ Global Options
 
-| Option | Alias | Description |
-|--------|-------|-------------|
-| `--config <path>` | `-c` | Use custom config file |
-| `--debug` | `-d` | Enable debug output |
-| `--verbose` | `-v` | Enable verbose output |
-| `--dry-run` | | Preview without changes |
-| `--help` | `-h` | Show help |
-| `--version` | | Show version |
+| Option            | Alias | Description             |
+| ----------------- | ----- | ----------------------- |
+| `--config <path>` | `-c`  | Use custom config file  |
+| `--debug`         | `-d`  | Enable debug output     |
+| `--verbose`       | `-v`  | Enable verbose output   |
+| `--dry-run`       |       | Preview without changes |
+| `--help`          | `-h`  | Show help               |
+| `--version`       |       | Show version            |
 
 ### Usage Examples
 
@@ -182,15 +182,15 @@ na video-notes -p "video.mp4" --debug
 
 ## 📁 video-notes Options
 
-| Option | Description |
-|--------|-------------|
-| `-p, --path` | Path to video or directory (required) |
-| `--no-summary` | Skip AI summary generation |
-| `--force` | Overwrite existing notes |
-| `--retry-failed` | Retry failed files only |
-| `--timeout <sec>` | Set API timeout |
-| `--refresh-auth` | Refresh OneDrive authentication |
-| `--no-share-links` | Skip OneDrive share links |
+| Option             | Description                           |
+| ------------------ | ------------------------------------- |
+| `-p, --path`       | Path to video or directory (required) |
+| `--no-summary`     | Skip AI summary generation            |
+| `--force`          | Overwrite existing notes              |
+| `--retry-failed`   | Retry failed files only               |
+| `--timeout <sec>`  | Set API timeout                       |
+| `--refresh-auth`   | Refresh OneDrive authentication       |
+| `--no-share-links` | Skip OneDrive share links             |
 
 **Example:**
 ```bash
@@ -201,14 +201,14 @@ na video-notes -p "lectures/" --no-summary --force --verbose
 
 ## 📄 pdf-notes Options
 
-| Option | Description |
-|--------|-------------|
-| `-p, --path` | Path to PDF or directory (required) |
-| `--extract-images` | Extract images from PDFs |
-| `--no-summary` | Skip AI summary generation |
-| `--force` | Overwrite existing notes |
-| `--retry-failed` | Retry failed files only |
-| `--timeout <sec>` | Set API timeout |
+| Option             | Description                         |
+| ------------------ | ----------------------------------- |
+| `-p, --path`       | Path to PDF or directory (required) |
+| `--extract-images` | Extract images from PDFs            |
+| `--no-summary`     | Skip AI summary generation          |
+| `--force`          | Overwrite existing notes            |
+| `--retry-failed`   | Retry failed files only             |
+| `--timeout <sec>`  | Set API timeout                     |
 
 **Example:**
 ```bash
@@ -219,27 +219,27 @@ na pdf-notes -p "readings/" --extract-images --verbose
 
 ## 🏷️ tag Subcommands
 
-| Subcommand | Purpose |
-|------------|---------|
-| `add-nested <path>` | Add hierarchical tags from folder structure |
-| `clean-index <path>` | Remove tags from index files |
-| `consolidate <path>` | Merge duplicate tags |
-| `restructure <path>` | Standardize tag format |
-| `add-example <path>` | Add example tags |
-| `metadata-check <path>` | Validate metadata consistency |
-| `update-frontmatter <path> <key> <val>` | Update frontmatter field |
-| `diagnose-yaml <path>` | Find YAML syntax errors |
+| Subcommand                              | Purpose                                     |
+| --------------------------------------- | ------------------------------------------- |
+| `add-nested <path>`                     | Add hierarchical tags from folder structure |
+| `clean-index <path>`                    | Remove tags from index files                |
+| `consolidate <path>`                    | Merge duplicate tags                        |
+| `restructure <path>`                    | Standardize tag format                      |
+| `add-example <path>`                    | Add example tags                            |
+| `metadata-check <path>`                 | Validate metadata consistency               |
+| `update-frontmatter <path> <key> <val>` | Update frontmatter field                    |
+| `diagnose-yaml <path>`                  | Find YAML syntax errors                     |
 
 ---
 
 ## 🗄️ vault Subcommands
 
-| Subcommand | Purpose |
-|------------|---------|
-| `generate-index <path>` | Generate index files |
+| Subcommand               | Purpose                     |
+| ------------------------ | --------------------------- |
+| `generate-index <path>`  | Generate index files        |
 | `ensure-metadata <path>` | Ensure metadata consistency |
-| `clean-index <path>` | Delete all index files |
-| `vault-sync <path>` | Sync with OneDrive |
+| `clean-index <path>`     | Delete all index files      |
+| `vault-sync <path>`      | Sync with OneDrive          |
 
 ### vault generate-index Options
 
@@ -350,7 +350,6 @@ na refresh-token
 ## 📚 Documentation Links
 
 - **[Quick Start](getting-started/quick-start.md)** - Get started in 5 minutes
-- **[Basic Commands](getting-started/basic-commands.md)** - Essential commands
 - **[CLI Reference](cli-reference.md)** - Complete reference
 - **[Tag Management](user-guide/tag-management.md)** - Tag organization
 - **[Vault Sync](user-guide/vault-synchronization.md)** - OneDrive integration

@@ -147,16 +147,16 @@ The application supports the following log levels:
 **Production Mode (Default)**:
 ```powershell
 # Only warnings, errors, and critical messages are shown in console
-NotebookAutomation.exe process-pdfs --input "Documents/"
+na process-pdfs --input "Documents/"
 
 # Enable verbose mode for detailed console output
-NotebookAutomation.exe process-pdfs --input "Documents/" --verbose
+na process-pdfs --input "Documents/" --verbose
 ```
 
 **Debug Mode**:
 ```powershell
 # Shows all log levels including debug information in console
-NotebookAutomation.exe process-pdfs --input "Documents/" --debug
+na process-pdfs --input "Documents/" --debug
 ```
 
 ### Rolling Log Files
@@ -183,11 +183,11 @@ Add to your `config.json`:
 }
 ```
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `max_file_size_mb` | Maximum size of each log file before rolling | 50 MB |
-| `retained_file_count` | Number of old log files to keep | 7 |
-| `logging_dir` | Directory where log files are stored | `./logs` |
+| Setting               | Description                                  | Default  |
+| --------------------- | -------------------------------------------- | -------- |
+| `max_file_size_mb`    | Maximum size of each log file before rolling | 50 MB    |
+| `retained_file_count` | Number of old log files to keep              | 7        |
+| `logging_dir`         | Directory where log files are stored         | `./logs` |
 
 ### Example Log Files
 
@@ -232,10 +232,10 @@ Override any configuration setting from the command line:
 
 ```powershell
 # Basic usage with config overrides
-NotebookAutomation.exe --input "C:\Notes" --output "C:\Processed" --log-level Debug
+na --input "C:\Notes" --output "C:\Processed" --log-level Debug
 
 # Processing options
-NotebookAutomation.exe --enable-metadata --disable-tags --parallel
+na --enable-metadata --disable-tags --parallel
 ```
 
 ## Configuration Hierarchy
@@ -316,13 +316,13 @@ Configure custom banners for generated markdown files using the `banners` sectio
 
 ### Banner Configuration Options
 
-| Setting | Description | Default |
-|---------|-------------|---------|
-| `enabled` | Global enable/disable for banner functionality | `true` |
-| `default` | Default banner content when no specific match is found | `"gies-banner.png"` |
-| `format` | Banner format type: `image`, `text`, `markdown`, `html` | `"image"` |
-| `template_banners` | Banner content by template type | See defaults |
-| `filename_patterns` | Banner content by filename patterns (wildcards supported) | `{}` |
+| Setting             | Description                                               | Default             |
+| ------------------- | --------------------------------------------------------- | ------------------- |
+| `enabled`           | Global enable/disable for banner functionality            | `true`              |
+| `default`           | Default banner content when no specific match is found    | `"gies-banner.png"` |
+| `format`            | Banner format type: `image`, `text`, `markdown`, `html`   | `"image"`           |
+| `template_banners`  | Banner content by template type                           | See defaults        |
+| `filename_patterns` | Banner content by filename patterns (wildcards supported) | `{}`                |
 
 ### Banner Selection Priority
 
