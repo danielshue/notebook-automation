@@ -174,9 +174,17 @@ public class LoggingService(
     /// <param name="builder">The logging builder to configure.</param>
     public void ConfigureLogging(ILoggingBuilder builder)
     {
-        if (!Directory.Exists(loggingDir))
+        try
         {
-            Directory.CreateDirectory(loggingDir);
+            if (!Directory.Exists(loggingDir))
+            {
+                Directory.CreateDirectory(loggingDir);
+            }
+        }
+        catch
+        {
+            // If the configured path is invalid (e.g., a non-existent drive in CI),
+            // don't fail application startup or unit tests.
         }
 
         // Ensure loggers are initialized
