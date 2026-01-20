@@ -361,12 +361,12 @@ Import-Module (Join-Path $ModulesDir "Core\Logging.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Core\Platform.psm1") -Force
 Import-Module (Join-Path $ModulesDir "GitHub\CLI.psm1") -Force
 Import-Module (Join-Path $ModulesDir "GitHub\Artifacts.psm1") -Force
+Import-Module (Join-Path $ModulesDir "GitHub\ReleaseManagement.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Version\Management.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Safety\Rollback.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Quality\ReleaseNotes.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Quality\Dependencies.psm1") -Force
 Import-Module (Join-Path $ModulesDir "Quality\Checksums.psm1") -Force
-Import-Module (Join-Path $ModulesDir "Release\ReleaseManagement.psm1") -Force
 
 # Initialize rollback tracking after modules are loaded
 # Don't check for uncommitted changes during initialization as this may be run during development
@@ -657,10 +657,10 @@ function Write-VersionStatus {
     Write-Host ""
     Write-Host "🔍 Alignment Check:" -ForegroundColor Blue
     $versions = @()
-    if ($VersionData.ManifestVersion) { $versions += $VersionData.ManifestVersion }
-    if ($VersionData.PackageVersion) { $versions += $VersionData.PackageVersion }
+    if ($VersionData.ManifestVersion) { $versions += [string]$VersionData.ManifestVersion }
+    if ($VersionData.PackageVersion) { $versions += [string]$VersionData.PackageVersion }
 
-    $uniqueVersions = $versions | Sort-Object -Unique
+    $uniqueVersions = $versions | Select-Object -Unique
     if ($uniqueVersions.Count -eq 1) {
         Write-Host "  ✅ All components aligned at version: $($uniqueVersions[0])" -ForegroundColor Green
     }
