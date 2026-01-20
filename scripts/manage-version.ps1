@@ -660,7 +660,7 @@ function Write-VersionStatus {
     if ($VersionData.ManifestVersion) { $versions += [string]$VersionData.ManifestVersion }
     if ($VersionData.PackageVersion) { $versions += [string]$VersionData.PackageVersion }
 
-    $uniqueVersions = $versions | Select-Object -Unique
+    $uniqueVersions = @($versions | Select-Object -Unique)
     if ($uniqueVersions.Count -eq 1) {
         Write-Host "  ✅ All components aligned at version: $($uniqueVersions[0])" -ForegroundColor Green
     }
