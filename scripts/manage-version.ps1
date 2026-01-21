@@ -1110,7 +1110,15 @@ try {
 
         Write-Host "🔍 Validating semantic version in host executables" -ForegroundColor Green
         $hostExecutables = Get-ChildItem -Path $PublishRoot -File | Where-Object { $_.Name -like 'na-*' -and ( ($IsWindows -and $_.Extension -eq '.exe') -or ($IsLinux -and $_.Name -match 'linux') -or ($IsMacOS -and $_.Name -match 'macos') ) }
+        $hostOsArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
         foreach ($exe in $hostExecutables) {
+            $exeNameLower = $exe.Name.ToLowerInvariant()
+            $archMismatch = ($hostOsArch -eq [System.Runtime.InteropServices.Architecture]::X64 -and $exeNameLower -match '(win|linux|macos)-arm64') -or
+            ($hostOsArch -eq [System.Runtime.InteropServices.Architecture]::Arm64 -and $exeNameLower -match '(win|linux|macos)-x64')
+            if ($archMismatch) {
+                Write-Host "    ↷ Skipping $($exe.Name) (not runnable on host architecture: $hostOsArch)" -ForegroundColor DarkYellow
+                continue
+            }
             try {
                 $raw = & $exe.FullName --version 2>$null
                 if ($LASTEXITCODE -ne 0) { throw "Non-zero exit" }
