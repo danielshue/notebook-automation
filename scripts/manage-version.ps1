@@ -1240,17 +1240,41 @@ try {
 
         # Semantic version validation (best-effort) – only attempt to execute binaries runnable on the current host
         $hostPlatform = if ($IsWindows) { 'windows' } elseif ($IsLinux) { 'linux' } elseif ($IsMacOS) { 'macos' } else { 'unknown' }
+        $hostArch = 'unknown'
+        try {
+            $hostArch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
+        }
+        catch {
+            $hostArch = 'unknown'
+        }
+
+        function Get-NaExecutableArchitecture {
+            param([string]$Name)
+
+            if ($Name -match 'arm64') { return 'arm64' }
+            if ($Name -match 'x64') { return 'x64' }
+            return 'unknown'
+        }
 
         foreach ($exe in $executables) {
+            $exeArch = Get-NaExecutableArchitecture -Name $exe.Name
             $canRun = switch ($hostPlatform) {
-                'windows' { $exe.Extension -eq '.exe' }
+                'windows' { ($exe.Extension -eq '.exe') -and ($exe.Name -like 'na-win-*') }
                 'linux' { $exe.Name -like 'na-linux-*' }
                 'macos' { $exe.Name -like 'na-macos-*' }
                 default { $false }
             }
 
+            if ($canRun -and ($hostArch -ne 'unknown') -and ($exeArch -ne 'unknown')) {
+                # Only run executables that match the host OS architecture.
+                # (e.g., win-arm64 binaries cannot be executed on Windows x64)
+                if ($exeArch -ne $hostArch) {
+                    $canRun = $false
+                }
+            }
+
             if (-not $canRun) {
-                Write-Host "   ↺ Skipping version validation for non-host binary $($exe.Name)" -ForegroundColor DarkYellow
+                Write-Host "   ↺ Skipping version validation for non-runnable binary $($exe.Name) (host=$hostPlatform/$hostArch)" -ForegroundColor DarkYellow
                 continue
             }
 
