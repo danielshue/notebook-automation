@@ -37,12 +37,17 @@ public class MetadataTemplateManagerTests
         List<string> templateTypes = templateManager.GetTemplateTypes();
 
         // Assert
-        Assert.AreEqual(5, templateTypes.Count);
+        // Updated to include new base types and generic template types
+        Assert.AreEqual(9, templateTypes.Count);
         Assert.IsTrue(templateTypes.Contains("video-reference"));
         Assert.IsTrue(templateTypes.Contains("pdf-reference"));
         Assert.IsTrue(templateTypes.Contains("resource-reading"));
         Assert.IsTrue(templateTypes.Contains("note/instruction"));
         Assert.IsTrue(templateTypes.Contains("video_transcript_consolidation"));
+        Assert.IsTrue(templateTypes.Contains("base-template"));
+        Assert.IsTrue(templateTypes.Contains("base-generic"));
+        Assert.IsTrue(templateTypes.Contains("generic-video"));
+        Assert.IsTrue(templateTypes.Contains("generic-pdf"));
     }
     /// <summary>
     /// Verifies that GetTemplate returns the correct template when requested type exists.

@@ -598,6 +598,138 @@ public class PromptTemplateServiceTests
         // Assert
         Assert.AreEqual("你好, João! Welkom bij onze cursus! Здравствуйте!", result);
     }
+
+    /// <summary>
+    /// Tests that LoadPromptForTemplateTypeAsync uses CLI override when provided.
+    /// </summary>
+    [TestMethod]
+    public async Task LoadPromptForTemplateTypeAsync_WithPromptOverride_UsesOverride()
+    {
+        // Arrange
+        var promptsDir = Path.Combine(_testFolder, "Prompts");
+        var customPromptPath = Path.Combine(promptsDir, "custom_prompt.md");
+        File.WriteAllText(customPromptPath, "Custom prompt content");
+
+        var config = new AppConfig { Paths = new PathsConfig { PromptsPath = promptsDir } };
+        var service = new PromptTemplateService(_loggerMock.Object, _yamlHelperMock.Object, config);
+
+        var templateType = new NotebookAutomation.Core.Tools.TemplateTypeSchema { Prompt = "ignored" };
+
+        // Act
+        var result = await service.LoadPromptForTemplateTypeAsync("custom_prompt", templateType);
+
+        // Assert
+        Assert.AreEqual("Custom prompt content", result);
+    }
+
+    /// <summary>
+    /// Tests that LoadPromptForTemplateTypeAsync uses template type's prompt when no override.
+    /// </summary>
+    [TestMethod]
+    public async Task LoadPromptForTemplateTypeAsync_WithoutOverride_UsesTemplateTypePrompt()
+    {
+        // Arrange
+        var promptsDir = Path.Combine(_testFolder, "Prompts");
+        var templatePromptPath = Path.Combine(promptsDir, "video-reference.md");
+        File.WriteAllText(templatePromptPath, "Video reference prompt");
+
+        var config = new AppConfig { Paths = new PathsConfig { PromptsPath = promptsDir } };
+        var service = new PromptTemplateService(_loggerMock.Object, _yamlHelperMock.Object, config);
+
+        var templateType = new NotebookAutomation.Core.Tools.TemplateTypeSchema { Prompt = "video-reference" };
+
+        // Act
+        var result = await service.LoadPromptForTemplateTypeAsync(null, templateType);
+
+        // Assert
+        Assert.AreEqual("Video reference prompt", result);
+    }
+
+    /// <summary>
+    /// Tests that LoadPromptForTemplateTypeAsync falls back to default when neither override nor template type prompt.
+    /// </summary>
+    [TestMethod]
+    public async Task LoadPromptForTemplateTypeAsync_NoOverrideOrTemplatePrompt_UsesDefault()
+    {
+        // Arrange
+        var promptsDir = Path.Combine(_testFolder, "Prompts");
+        var defaultPromptPath = Path.Combine(promptsDir, "final_summary_prompt.md");
+        File.WriteAllText(defaultPromptPath, "Default final summary prompt");
+
+        var config = new AppConfig { Paths = new PathsConfig { PromptsPath = promptsDir } };
+        var service = new PromptTemplateService(_loggerMock.Object, _yamlHelperMock.Object, config);
+
+        var templateType = new NotebookAutomation.Core.Tools.TemplateTypeSchema(); // No Prompt property set
+
+        // Act
+        var result = await service.LoadPromptForTemplateTypeAsync(null, templateType);
+
+        // Assert
+        Assert.AreEqual("Default final summary prompt", result);
+    }
+
+    /// <summary>
+    /// Tests that LoadPromptForTemplateTypeAsync can load from full file path.
+    /// </summary>
+    [TestMethod]
+    public async Task LoadPromptForTemplateTypeAsync_WithFullPath_LoadsFromPath()
+    {
+        // Arrange
+        var fullPath = Path.Combine(_testFolder, "external_prompt.md");
+        File.WriteAllText(fullPath, "External prompt content");
+
+        var config = new AppConfig { Paths = new PathsConfig { PromptsPath = Path.Combine(_testFolder, "Prompts") } };
+        var service = new PromptTemplateService(_loggerMock.Object, _yamlHelperMock.Object, config);
+
+        // Act
+        var result = await service.LoadPromptForTemplateTypeAsync(fullPath, null);
+
+        // Assert
+        Assert.AreEqual("External prompt content", result);
+    }
+
+    /// <summary>
+    /// Tests that LoadPromptForTemplateTypeAsync handles missing full path file gracefully.
+    /// </summary>
+    [TestMethod]
+    public async Task LoadPromptForTemplateTypeAsync_WithMissingFullPath_FallsBackToDefault()
+    {
+        // Arrange
+        var promptsDir = Path.Combine(_testFolder, "Prompts");
+        var defaultPromptPath = Path.Combine(promptsDir, "final_summary_prompt.md");
+        File.WriteAllText(defaultPromptPath, "Default prompt");
+
+        var nonExistentPath = Path.Combine(_testFolder, "nonexistent.md");
+        var config = new AppConfig { Paths = new PathsConfig { PromptsPath = promptsDir } };
+        var service = new PromptTemplateService(_loggerMock.Object, _yamlHelperMock.Object, config);
+
+        // Act
+        var result = await service.LoadPromptForTemplateTypeAsync(nonExistentPath, null);
+
+        // Assert
+        Assert.AreEqual("Default prompt", result);
+    }
+
+    /// <summary>
+    /// Tests that LoadPromptForTemplateTypeAsync strips frontmatter from loaded prompts.
+    /// </summary>
+    [TestMethod]
+    public async Task LoadPromptForTemplateTypeAsync_StripsFrontmatter()
+    {
+        // Arrange
+        var promptsDir = Path.Combine(_testFolder, "Prompts");
+        var promptPath = Path.Combine(promptsDir, "test_prompt.md");
+        File.WriteAllText(promptPath, "---\nname: test\n---\nPrompt content");
+
+        var config = new AppConfig { Paths = new PathsConfig { PromptsPath = promptsDir } };
+        var service = new PromptTemplateService(_loggerMock.Object, _yamlHelperMock.Object, config);
+
+        // Act
+        var result = await service.LoadPromptForTemplateTypeAsync("test_prompt", null);
+
+        // Assert
+        Assert.AreEqual("Prompt content", result);
+    }
 }
 
 /// <summary>

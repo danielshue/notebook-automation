@@ -110,8 +110,15 @@ public class PathResolver
             "vault" => config.Paths.GetEffectiveVaultRoot(),
             "onedrive" => config.Paths.GetEffectiveOneDriveRoot(),
             "cwd" => Directory.GetCurrentDirectory(),
-            "input" => Path.GetDirectoryName(inputFilePath) ?? Directory.GetCurrentDirectory(),
+            "input" => GetInputDirectory(inputFilePath),
             _ => config.Paths.GetEffectiveVaultRoot()
         };
+    }
+
+    private static string GetInputDirectory(string inputFilePath)
+    {
+        var directory = Path.GetDirectoryName(inputFilePath);
+        // Path.GetDirectoryName returns empty string or null for filenames without directory
+        return string.IsNullOrEmpty(directory) ? Directory.GetCurrentDirectory() : directory;
     }
 }
