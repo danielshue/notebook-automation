@@ -1,201 +1,99 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
-using System.Diagnostics;
-
 namespace NotebookAutomation.Cli.Services.Copilot;
 
 /// <summary>
-/// Utility to check if GitHub Copilot CLI is installed and authenticated.
+/// Utility to check if AI Copilot service is available with proper configuration.
 /// </summary>
-public class CopilotAvailabilityChecker
+public class CopilotAvailabilityChecker(
+    ILogger<CopilotAvailabilityChecker> logger,
+    AppConfig appConfig)
 {
-    private readonly ILogger<CopilotAvailabilityChecker> logger;
+    private readonly ILogger<CopilotAvailabilityChecker> logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    private readonly AppConfig appConfig = appConfig ?? throw new ArgumentNullException(nameof(appConfig));
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CopilotAvailabilityChecker"/> class.
-    /// </summary>
-    /// <param name="logger">Logger instance.</param>
-    public CopilotAvailabilityChecker(ILogger<CopilotAvailabilityChecker> logger)
-    {
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
-
-    /// <summary>
-    /// Check if Copilot CLI is available and authenticated.
+    /// Check if AI Copilot service is properly configured and available.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Availability result with details.</returns>
-    public async Task<CopilotAvailabilityResult> CheckAvailabilityAsync(
+    public Task<CopilotAvailabilityResult> CheckAvailabilityAsync(
         CancellationToken cancellationToken = default)
     {
         try
         {
-            // Check if CLI is installed
-            var isInstalled = await IsCliInstalledAsync(cancellationToken);
-            if (!isInstalled)
+            // Check if Copilot is enabled in configuration
+            if (!appConfig.Copilot.Enabled)
             {
-                logger.LogDebug("GitHub Copilot CLI is not installed or not in PATH");
-                return new CopilotAvailabilityResult(
+                logger.LogDebug("Copilot is disabled in configuration");
+                return Task.FromResult(new CopilotAvailabilityResult(
                     IsAvailable: false,
                     IsCliInstalled: false,
                     IsAuthenticated: false,
                     CliVersion: null,
-                    ErrorMessage: "GitHub Copilot CLI is not installed. Install with: 'gh extension install github/gh-copilot'");
+                    ErrorMessage: "Copilot is disabled in configuration. Set 'copilot.enabled' to true in config.json."));
             }
 
-            // Get CLI version
-            var version = await GetCliVersionAsync(cancellationToken);
-
-            // Check authentication status
-            var isAuthenticated = await IsAuthenticatedAsync(cancellationToken);
-            if (!isAuthenticated)
+            // Check if AI service is configured
+            if (appConfig.AiService == null)
             {
-                logger.LogDebug("GitHub Copilot CLI is not authenticated");
-                return new CopilotAvailabilityResult(
+                logger.LogDebug("AI service configuration is missing");
+                return Task.FromResult(new CopilotAvailabilityResult(
                     IsAvailable: false,
-                    IsCliInstalled: true,
+                    IsCliInstalled: false,
                     IsAuthenticated: false,
-                    CliVersion: version,
-                    ErrorMessage: "GitHub Copilot CLI is not authenticated. Run 'gh auth login' to authenticate.");
+                    CliVersion: null,
+                    ErrorMessage: "AI service not configured. Add 'aiservice' section to config.json."));
             }
 
-            logger.LogInformation("GitHub Copilot CLI is available (version: {Version})", version);
-            return new CopilotAvailabilityResult(
+            // Check if API key is available
+            var apiKey = appConfig.AiService.GetApiKey();
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                logger.LogDebug("No AI API key configured");
+                return Task.FromResult(new CopilotAvailabilityResult(
+                    IsAvailable: false,
+                    IsCliInstalled: false,
+                    IsAuthenticated: false,
+                    CliVersion: null,
+                    ErrorMessage: "No AI API key configured. Set AZURE_OPENAI_KEY, OPENAI_API_KEY, or FOUNDRY_API_KEY environment variable."));
+            }
+
+            // Check provider configuration
+            var provider = appConfig.AiService.Provider?.ToLowerInvariant() ?? "openai";
+            var version = GetProviderVersion(provider);
+
+            logger.LogInformation("AI Copilot is available with {Provider} provider", provider);
+            return Task.FromResult(new CopilotAvailabilityResult(
                 IsAvailable: true,
                 IsCliInstalled: true,
                 IsAuthenticated: true,
                 CliVersion: version,
-                ErrorMessage: null);
+                ErrorMessage: null));
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error checking Copilot availability");
-            return new CopilotAvailabilityResult(
+            return Task.FromResult(new CopilotAvailabilityResult(
                 IsAvailable: false,
                 IsCliInstalled: false,
                 IsAuthenticated: false,
                 CliVersion: null,
-                ErrorMessage: $"Error checking Copilot availability: {ex.Message}");
+                ErrorMessage: $"Error checking Copilot availability: {ex.Message}"));
         }
     }
 
     /// <summary>
-    /// Check if the Copilot CLI is installed and accessible.
+    /// Get the provider version information.
     /// </summary>
-    private async Task<bool> IsCliInstalledAsync(CancellationToken cancellationToken)
+    private string GetProviderVersion(string provider)
     {
-        try
+        return provider switch
         {
-            var psi = new ProcessStartInfo
-            {
-                FileName = GetCopilotCommand(),
-                Arguments = "--version",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using var process = Process.Start(psi);
-            if (process == null)
-            {
-                return false;
-            }
-
-            await process.WaitForExitAsync(cancellationToken);
-            return process.ExitCode == 0;
-        }
-        catch (Exception ex)
-        {
-            logger.LogDebug(ex, "Failed to check if Copilot CLI is installed");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Get the version of the installed Copilot CLI.
-    /// </summary>
-    private async Task<string?> GetCliVersionAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            var psi = new ProcessStartInfo
-            {
-                FileName = GetCopilotCommand(),
-                Arguments = "--version",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using var process = Process.Start(psi);
-            if (process == null)
-            {
-                return null;
-            }
-
-            var output = await process.StandardOutput.ReadToEndAsync(cancellationToken);
-            await process.WaitForExitAsync(cancellationToken);
-
-            if (process.ExitCode == 0 && !string.IsNullOrWhiteSpace(output))
-            {
-                // Extract version from output (format may vary)
-                return output.Trim().Split('\n')[0];
-            }
-
-            return null;
-        }
-        catch (Exception ex)
-        {
-            logger.LogDebug(ex, "Failed to get Copilot CLI version");
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Check if the user is authenticated with GitHub Copilot.
-    /// </summary>
-    private async Task<bool> IsAuthenticatedAsync(CancellationToken cancellationToken)
-    {
-        try
-        {
-            // Try running a simple Copilot command that requires authentication
-            var psi = new ProcessStartInfo
-            {
-                FileName = GetCopilotCommand(),
-                Arguments = "config list",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-
-            using var process = Process.Start(psi);
-            if (process == null)
-            {
-                return false;
-            }
-
-            await process.WaitForExitAsync(cancellationToken);
-            
-            // If the command succeeds, the user is authenticated
-            return process.ExitCode == 0;
-        }
-        catch (Exception ex)
-        {
-            logger.LogDebug(ex, "Failed to check Copilot authentication status");
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Get the Copilot CLI command based on the operating system.
-    /// </summary>
-    private static string GetCopilotCommand()
-    {
-        // The Copilot CLI is typically installed as a GitHub CLI extension
-        // Command could be 'gh copilot' or just 'copilot' depending on installation
-        return OperatingSystem.IsWindows() ? "gh" : "gh";
+            "azure" => $"Azure OpenAI ({appConfig.AiService?.Azure?.Deployment ?? "default"})",
+            "openai" => $"OpenAI ({appConfig.AiService?.OpenAI?.Model ?? "gpt-4"})",
+            "foundry" => $"Foundry ({appConfig.AiService?.Foundry?.Model ?? "default"})",
+            _ => $"Unknown provider: {provider}"
+        };
     }
 }

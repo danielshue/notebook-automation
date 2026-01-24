@@ -1,7 +1,9 @@
-// Licensed under the MIT License. See LICENSE file in the project root for full license information.
+// Licensed to the MIT License. See LICENSE file in the project root for full license information.
 
 using Moq;
+
 using NotebookAutomation.Cli.Services.Copilot;
+using NotebookAutomation.Core.Configuration;
 
 namespace NotebookAutomation.Tests.Cli.Services.Copilot;
 
@@ -25,13 +27,26 @@ public class CopilotServiceTests
     {
         loggerMock = new Mock<ILogger<CopilotService>>();
         checkerLoggerMock = new Mock<ILogger<CopilotAvailabilityChecker>>();
-        availabilityChecker = new CopilotAvailabilityChecker(checkerLoggerMock.Object);
+
+        appConfig = new AppConfig
+        {
+            Copilot = new CopilotConfig
+            {
+                Enabled = true,
+                AutoChatMode = false
+            },
+            AiService = new AIServiceConfig
+            {
+                Provider = "openai"
+            }
+        };
+
+        availabilityChecker = new CopilotAvailabilityChecker(checkerLoggerMock.Object, appConfig);
         sessionManagerMock = new Mock<ISessionManager>();
         notebookToolsMock = new Mock<INotebookTools>();
         systemMessageBuilderMock = new Mock<ISystemMessageBuilder>();
         loggerFactoryMock = new Mock<ILoggerFactory>();
-        appConfig = new AppConfig();
-        
+
         // Setup logger factory to return a logger mock
         var sessionLoggerMock = new Mock<ILogger<CopilotSession>>();
         loggerFactoryMock

@@ -43,14 +43,14 @@ Be helpful, concise, and accurate. Provide step-by-step explanations when needed
     public string BuildSystemMessageWithTools(IReadOnlyList<string> availableTools)
     {
         var baseMessage = BuildDefaultSystemMessage();
-        
+
         if (availableTools == null || availableTools.Count == 0)
         {
             return baseMessage;
         }
 
         var toolList = string.Join("\n", availableTools.Select(t => $"  - {t}"));
-        
+
         return $@"{baseMessage}
 
 Available tools:

@@ -35,7 +35,7 @@ public class CopilotCommands
 
         // Create 'chat' command
         var chatCommand = new Command("chat", "Enter interactive AI chat mode");
-        
+
         var resumeOption = new Option<bool>(
             "--resume",
             "Resume the last chat session");
@@ -82,7 +82,7 @@ public class CopilotCommands
 
         // Create 'ask' command
         var askCommand = new Command("ask", "Ask a one-shot question to the AI");
-        
+
         var questionArgument = new Argument<string>(
             "question",
             "The question to ask");
@@ -142,7 +142,7 @@ public class CopilotCommands
             var builtInCommands = new ChatBuiltInCommands(
                 serviceProvider.GetRequiredService<ILogger<ChatBuiltInCommands>>(),
                 copilotService);
-            
+
             var chatUI = new ChatModeUI(
                 serviceProvider.GetRequiredService<ILogger<ChatModeUI>>(),
                 copilotService,
@@ -191,12 +191,12 @@ public class CopilotCommands
             if (!availability.IsAvailable)
             {
                 AnsiConsole.MarkupLine("[red]GitHub Copilot is not available[/]");
-                
+
                 if (availability.ErrorMessage != null)
                 {
                     AnsiConsole.MarkupLine($"[yellow]{availability.ErrorMessage.EscapeMarkup()}[/]");
                 }
-                
+
                 Environment.ExitCode = 1;
                 return;
             }
@@ -214,7 +214,7 @@ public class CopilotCommands
                 };
 
                 var response = await copilotService.AskAsync(question, options, cancellationToken);
-                
+
                 if (json)
                 {
                     Console.WriteLine(response);

@@ -20,11 +20,11 @@ public class UserPreferencesService : IUserPreferencesService
     public UserPreferencesService(ILogger<UserPreferencesService> logger)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        
+
         var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var configDir = Path.Combine(homeDir, ".notebookautomation");
         Directory.CreateDirectory(configDir);
-        
+
         preferencesFilePath = Path.Combine(configDir, "preferences.json");
         firstRunMarkerPath = Path.Combine(configDir, ".firstrun");
     }

@@ -30,12 +30,12 @@ public class WelcomeBanner
         }
 
         AnsiConsole.Clear();
-        
+
         // ASCII Art Banner
         var banner = new FigletText("Notebook AI")
             .Centered()
             .Color(Color.Blue);
-        
+
         AnsiConsole.Write(banner);
         AnsiConsole.WriteLine();
 

@@ -135,7 +135,7 @@ public class ChatModeUI
             {
                 // Get user input
                 var input = ReadUserInput();
-                
+
                 if (string.IsNullOrWhiteSpace(input))
                 {
                     continue;
@@ -148,12 +148,12 @@ public class ChatModeUI
                         input,
                         session,
                         cancellationToken);
-                    
+
                     if (shouldExit)
                     {
                         break;
                     }
-                    
+
                     continue;
                 }
 
@@ -214,7 +214,7 @@ public class ChatModeUI
             await foreach (var chunk in session.SendMessageStreamAsync(message, cancellationToken))
             {
                 responseBuilder.Append(chunk);
-                
+
                 if (highContrast)
                 {
                     Console.Write(chunk);

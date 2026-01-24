@@ -73,9 +73,10 @@ public class CopilotService : ICopilotService
 
             if (string.IsNullOrWhiteSpace(apiKey))
             {
-                logger.LogWarning("No AI API key configured. Service cannot start.");
-                throw new InvalidOperationException(
-                    "No AI API key configured. Set AZURE_OPENAI_KEY, OPENAI_API_KEY, or FOUNDRY_API_KEY environment variable.");
+                logger.LogWarning("No AI API key configured. Service will remain stopped.");
+                logger.LogInformation("Set AZURE_OPENAI_KEY, OPENAI_API_KEY, or FOUNDRY_API_KEY environment variable to enable AI features.");
+                isRunning = false;
+                return Task.CompletedTask;
             }
 
             // Create chat client based on provider
@@ -92,7 +93,9 @@ public class CopilotService : ICopilotService
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to start Copilot service");
-            throw;
+            isRunning = false;
+            // Don't rethrow - allow graceful degradation
+            logger.LogWarning("Copilot service will remain unavailable due to startup failure");
         }
 
         return Task.CompletedTask;

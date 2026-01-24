@@ -1,6 +1,7 @@
 // Licensed under the MIT License. See LICENSE file in the project root for full license information.
 
 using System.ComponentModel;
+
 using Microsoft.Extensions.AI;
 
 namespace NotebookAutomation.Cli.Services.Copilot;
@@ -92,7 +93,7 @@ public class NotebookTools : INotebookTools
         RegisterOneDriveTools();
 
         isRegistered = true;
-        logger.LogInformation("Registered {Count} tools across {Categories} categories", 
+        logger.LogInformation("Registered {Count} tools across {Categories} categories",
             tools.Count, categorizedTools.Count);
     }
 

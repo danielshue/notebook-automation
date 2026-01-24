@@ -127,7 +127,7 @@ public class ChatBuiltInCommands
     private async Task ShowHelpAsync(string command)
     {
         var parts = command.Split(' ', 2);
-        
+
         if (parts.Length == 1)
         {
             // General help
@@ -180,7 +180,7 @@ public class ChatBuiltInCommands
         try
         {
             var history = await session.GetHistoryAsync(cancellationToken);
-            
+
             if (history.Count == 0)
             {
                 AnsiConsole.MarkupLine("[dim]No conversation history yet[/]");
@@ -197,10 +197,10 @@ public class ChatBuiltInCommands
             foreach (var message in history)
             {
                 var roleColor = message.Role == "user" ? "cyan" : "green";
-                var content = message.Content.Length > 100 
-                    ? message.Content[..100] + "..." 
+                var content = message.Content.Length > 100
+                    ? message.Content[..100] + "..."
                     : message.Content;
-                
+
                 table.AddRow(
                     message.Timestamp.ToString("HH:mm:ss"),
                     $"[{roleColor}]{message.Role}[/]",
@@ -221,7 +221,7 @@ public class ChatBuiltInCommands
     private async Task HandleModelCommandAsync(string command, CancellationToken cancellationToken)
     {
         var parts = command.Split(' ', 2);
-        
+
         if (parts.Length == 1)
         {
             // Show current model
@@ -243,7 +243,7 @@ public class ChatBuiltInCommands
     private async Task HandleSessionCommandAsync(string command, CancellationToken cancellationToken)
     {
         var parts = command.Split(' ', 2);
-        
+
         if (parts.Length == 1)
         {
             // Show session info

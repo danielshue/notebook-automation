@@ -198,7 +198,7 @@ internal class Program
         if (isNoArgs)
         {
             var appConfig = serviceProvider.GetRequiredService<AppConfig>();
-            
+
             // Check if auto-chat mode is enabled and Copilot is available
             if (appConfig.Copilot.Enabled && appConfig.Copilot.AutoChatMode)
             {
@@ -209,7 +209,7 @@ internal class Program
                     if (availability.IsAvailable)
                     {
                         logger.LogInformation("Entering chat mode (no arguments provided)");
-                        
+
                         // Create chat mode UI components
                         var welcomeBanner = new WelcomeBanner(appConfig.Copilot);
                         var builtInCommands = new ChatBuiltInCommands(
@@ -236,7 +236,7 @@ internal class Program
                     }
                 }
             }
-            
+
             // Fallback to help display if Copilot is not available or disabled
         }
 

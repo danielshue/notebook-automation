@@ -20,11 +20,11 @@ public class SessionManager : ISessionManager
     public SessionManager(ILogger<SessionManager> logger)
     {
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        
+
         var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         sessionsDirectory = Path.Combine(homeDir, ".notebookautomation", "sessions");
         indexFilePath = Path.Combine(sessionsDirectory, "index.json");
-        
+
         Directory.CreateDirectory(sessionsDirectory);
     }
 
@@ -36,7 +36,7 @@ public class SessionManager : ISessionManager
             var sessionPath = Path.Combine(sessionsDirectory, $"{session.SessionId}.json");
             var json = JsonSerializer.Serialize(session, new JsonSerializerOptions { WriteIndented = true });
             await File.WriteAllTextAsync(sessionPath, json, cancellationToken);
-            
+
             await UpdateIndexAsync(session, cancellationToken);
             logger.LogInformation("Saved session {SessionId}", session.SessionId);
         }
@@ -145,14 +145,14 @@ public class SessionManager : ISessionManager
     {
         var sessions = (await ListSessionsAsync(cancellationToken)).ToList();
         var existing = sessions.FirstOrDefault(s => s.SessionId == session.SessionId);
-        
+
         if (existing != null)
         {
             sessions.Remove(existing);
         }
-        
+
         sessions.Add(session);
-        
+
         var json = JsonSerializer.Serialize(sessions, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(indexFilePath, json, cancellationToken);
     }
@@ -161,7 +161,7 @@ public class SessionManager : ISessionManager
     {
         var sessions = (await ListSessionsAsync(cancellationToken)).ToList();
         sessions.RemoveAll(s => s.SessionId == sessionId);
-        
+
         var json = JsonSerializer.Serialize(sessions, new JsonSerializerOptions { WriteIndented = true });
         await File.WriteAllTextAsync(indexFilePath, json, cancellationToken);
     }

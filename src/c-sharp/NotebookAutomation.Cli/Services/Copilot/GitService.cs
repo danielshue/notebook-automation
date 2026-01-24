@@ -33,7 +33,7 @@ public class GitService : IGitService
         try
         {
             var workingDir = path ?? Directory.GetCurrentDirectory();
-            
+
             var psi = new ProcessStartInfo
             {
                 FileName = "git",
@@ -74,7 +74,7 @@ public class GitService : IGitService
         try
         {
             var workingDir = path ?? Directory.GetCurrentDirectory();
-            
+
             var psi = new ProcessStartInfo
             {
                 FileName = "git",
