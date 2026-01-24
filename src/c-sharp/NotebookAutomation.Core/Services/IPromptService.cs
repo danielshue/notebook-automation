@@ -103,4 +103,45 @@ public interface IPromptService
     /// </code>
     /// </example>
     Task<string> ProcessTemplateAsync(string template, Dictionary<string, string>? variables);
+
+    /// <summary>
+    /// Loads a prompt template based on template type configuration with support for CLI overrides.
+    /// </summary>
+    /// <param name="promptOverride">Optional CLI prompt override (name or full path). Takes precedence over template type settings.</param>
+    /// <param name="templateType">Optional template type schema containing prompt configuration.</param>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>The loaded prompt template content.</returns>
+    /// <remarks>
+    /// <para>
+    /// This method implements the prompt resolution order:
+    /// <list type="number">
+    ///   <item><description>CLI override (if provided)</description></item>
+    ///   <item><description>Template type's Prompt property (inherited from base types)</description></item>
+    ///   <item><description>System default prompt</description></item>
+    /// </list>
+    /// </para>
+    /// <para>
+    /// The prompt parameter can be either:
+    /// <list type="bullet">
+    ///   <item><description>A prompt name (e.g., "video-reference") - loaded from prompts directory</description></item>
+    ///   <item><description>A full file path (e.g., "C:\prompts\custom.md") - loaded directly</description></item>
+    /// </list>
+    /// </para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// // Use template type's prompt
+    /// var prompt = await promptService.LoadPromptForTemplateTypeAsync(null, templateType);
+    /// 
+    /// // Override with custom prompt name
+    /// var prompt = await promptService.LoadPromptForTemplateTypeAsync("research-summary", templateType);
+    /// 
+    /// // Override with full path
+    /// var prompt = await promptService.LoadPromptForTemplateTypeAsync("D:\\prompts\\custom.md", templateType);
+    /// </code>
+    /// </example>
+    Task<string> LoadPromptForTemplateTypeAsync(
+        string? promptOverride,
+        Tools.TemplateTypeSchema? templateType,
+        CancellationToken cancellationToken = default);
 }
