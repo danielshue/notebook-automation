@@ -31,6 +31,10 @@ public static class CopilotServiceRegistration
         // Register built-in commands handler
         services.AddSingleton<ChatBuiltInCommands>();
 
+        // Register tool management
+        services.AddSingleton<INotebookTools, NotebookTools>();
+        services.AddSingleton<ISystemMessageBuilder, SystemMessageBuilder>();
+
         return services;
     }
 }
