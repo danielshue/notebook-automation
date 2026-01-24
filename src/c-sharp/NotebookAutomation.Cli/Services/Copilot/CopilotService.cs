@@ -140,18 +140,18 @@ public class CopilotService : ICopilotService
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyList<CopilotSessionMetadata>> ListSessionsAsync(
+    public Task<IReadOnlyList<CopilotSessionMetadata>> ListSessionsAsync(
         CancellationToken cancellationToken = default)
     {
-        return await sessionManager.ListSessionsAsync(cancellationToken);
+        return sessionManager.ListSessionsAsync(cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task DeleteSessionAsync(
+    public Task DeleteSessionAsync(
         string sessionId,
         CancellationToken cancellationToken = default)
     {
-        await sessionManager.DeleteSessionAsync(sessionId, cancellationToken);
+        return sessionManager.DeleteSessionAsync(sessionId, cancellationToken);
     }
 
     /// <inheritdoc/>
