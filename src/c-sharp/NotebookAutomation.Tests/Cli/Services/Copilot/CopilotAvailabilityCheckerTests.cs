@@ -15,11 +15,19 @@ public class CopilotAvailabilityCheckerTests
 {
     private Mock<ILogger<CopilotAvailabilityChecker>> loggerMock = null!;
     private AppConfig appConfig = null!;
+    private string? savedAzureKey;
+    private string? savedOpenAIKey;
+    private string? savedFoundryKey;
 
     [TestInitialize]
     public void Initialize()
     {
         loggerMock = new Mock<ILogger<CopilotAvailabilityChecker>>();
+
+        // Save existing environment variables
+        savedAzureKey = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY");
+        savedOpenAIKey = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
+        savedFoundryKey = Environment.GetEnvironmentVariable("FOUNDRY_API_KEY");
 
         // Create a basic AppConfig with Copilot enabled but no API key
         appConfig = new AppConfig
@@ -34,6 +42,15 @@ public class CopilotAvailabilityCheckerTests
                 Provider = "openai"
             }
         };
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        // Restore environment variables
+        Environment.SetEnvironmentVariable("AZURE_OPENAI_KEY", savedAzureKey);
+        Environment.SetEnvironmentVariable("OPENAI_API_KEY", savedOpenAIKey);
+        Environment.SetEnvironmentVariable("FOUNDRY_API_KEY", savedFoundryKey);
     }
 
     /// <summary>
@@ -67,6 +84,11 @@ public class CopilotAvailabilityCheckerTests
     public async Task CheckAvailabilityAsync_WithoutApiKey_ReturnsUnavailable()
     {
         // Arrange
+        // Clear environment variables for this test
+        Environment.SetEnvironmentVariable("AZURE_OPENAI_KEY", null);
+        Environment.SetEnvironmentVariable("OPENAI_API_KEY", null);
+        Environment.SetEnvironmentVariable("FOUNDRY_API_KEY", null);
+
         var checker = new CopilotAvailabilityChecker(loggerMock.Object, appConfig);
 
         // Act
@@ -74,8 +96,8 @@ public class CopilotAvailabilityCheckerTests
 
         // Assert
         Assert.IsNotNull(result);
-        Assert.IsFalse(result.IsAvailable);
-        Assert.IsTrue(result.ErrorMessage?.Contains("API key") == true);
+        Assert.IsFalse(result.IsAvailable, "Should be unavailable without API key");
+        Assert.IsTrue(result.ErrorMessage?.Contains("API key") == true, "Error message should mention API key");
     }
 
     /// <summary>

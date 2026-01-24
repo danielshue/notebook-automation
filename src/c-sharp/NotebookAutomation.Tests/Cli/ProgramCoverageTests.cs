@@ -14,6 +14,7 @@ public class ProgramCoverageTests
     private StringWriter _consoleError = null!;
     private TextWriter _originalError = null!;
     private string? _previousSkipValidationEnv;
+    private string? _previousCopilotEnabledEnv;
 
     [TestInitialize]
     public void Setup()
@@ -29,6 +30,11 @@ public class ProgramCoverageTests
 
         _previousSkipValidationEnv = Environment.GetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION");
         Environment.SetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION", "true");
+
+        // Disable Copilot to prevent auto-chat mode from interfering with tests
+        // Use standard .NET Configuration naming: Section__Property
+        _previousCopilotEnabledEnv = Environment.GetEnvironmentVariable("copilot__enabled");
+        Environment.SetEnvironmentVariable("copilot__enabled", "false");
     }
 
     [TestCleanup]
@@ -40,6 +46,7 @@ public class ProgramCoverageTests
         _consoleError?.Dispose();
 
         Environment.SetEnvironmentVariable("NOTEBOOKAUTOMATION_SKIP_CONFIG_VALIDATION", _previousSkipValidationEnv);
+        Environment.SetEnvironmentVariable("copilot__enabled", _previousCopilotEnabledEnv);
     }
 
     /// <summary>
@@ -160,10 +167,18 @@ public class ProgramCoverageTests
         // Act
         var exitCode = await Program.Main(args);
 
-        // Assert
-        Assert.AreEqual(0, exitCode, "Help should return exit code 0");
-
+        // Debug output
         var output = _consoleOutput.ToString();
+        var error = _consoleError.ToString();
+        Console.WriteLine($"====== CONSOLE OUTPUT ======");
+        Console.WriteLine(output);
+        Console.WriteLine($"====== ERROR OUTPUT ======");
+        Console.WriteLine(error);
+        Console.WriteLine($"====== EXIT CODE: {exitCode} ======");
+
+        // Assert
+        Assert.AreEqual(0, exitCode, $"Help should return exit code 0. Output: {output}. Error: {error}");
+
         Assert.IsTrue(output.Contains("Usage:") || output.Contains("Commands:"),
             "Should display help information");
     }

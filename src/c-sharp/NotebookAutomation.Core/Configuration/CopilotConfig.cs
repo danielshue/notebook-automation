@@ -26,7 +26,7 @@ public class CopilotConfig
     /// <summary>
     /// Gets or sets a value indicating whether to auto-enter chat mode when no args provided.
     /// </summary>
-    public bool AutoChatMode { get; set; } = true;
+    public bool AutoChatMode { get; set; } = false;
 
     /// <summary>
     /// Gets or sets a value indicating whether to show the welcome banner in chat mode.

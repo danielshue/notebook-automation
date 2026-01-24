@@ -80,7 +80,7 @@
   },
   "copilot": {
     "enabled": true,
-    "autoChatMode": true,
+    "autoChatMode": false,
     "showWelcomeBanner": true,
     "enableStreaming": true,
     "sessionRetentionDays": 30,
