@@ -1109,7 +1109,7 @@ public partial class DocumentNoteBatchProcessor<TProcessor>
         // Resolve prompt name based on template type and prompt override
         // Resolution order: promptOverride → templateTypeName-based prompt → default
         string? resolvedPromptName = null;
-        
+
         if (!string.IsNullOrEmpty(promptOverride))
         {
             // CLI prompt override takes highest priority

@@ -26,6 +26,11 @@ public class PathResolverTests
         };
     }
 
+    /// <summary>
+    /// Normalizes a path to use forward slashes for cross-platform comparison.
+    /// </summary>
+    private static string NormalizePath(string path) => path.Replace('\\', '/');
+
     [TestMethod]
     public void Constructor_NullConfig_ThrowsArgumentNullException()
     {
@@ -44,7 +49,7 @@ public class PathResolverTests
         var result = resolver.ResolveInputRoot(pathConfig);
 
         // Assert
-        Assert.AreEqual("/home/user/OneDrive/Education/MBA", result);
+        Assert.AreEqual("/home/user/OneDrive/Education/MBA", NormalizePath(result));
     }
 
     [TestMethod]
@@ -58,7 +63,7 @@ public class PathResolverTests
         var result = resolver.ResolveInputRoot(pathConfig);
 
         // Assert
-        Assert.AreEqual("/home/user/Vault/Projects/MBA", result);
+        Assert.AreEqual("/home/user/Vault/Projects/MBA", NormalizePath(result));
     }
 
     [TestMethod]
@@ -86,7 +91,7 @@ public class PathResolverTests
         var result = resolver.ResolveInputRoot(null);
 
         // Assert
-        Assert.AreEqual("/home/user/OneDrive/Education/MBA", result);
+        Assert.AreEqual("/home/user/OneDrive/Education/MBA", NormalizePath(result));
     }
 
     [TestMethod]
@@ -100,7 +105,7 @@ public class PathResolverTests
         var result = resolver.ResolveInputRoot(pathConfig);
 
         // Assert
-        Assert.AreEqual("/home/user/OneDrive/Education/MBA", result);
+        Assert.AreEqual("/home/user/OneDrive/Education/MBA", NormalizePath(result));
     }
 
     [TestMethod]
@@ -114,7 +119,7 @@ public class PathResolverTests
         var result = resolver.ResolveOutputRoot(pathConfig, "/some/input/file.txt");
 
         // Assert
-        Assert.AreEqual("/home/user/Vault/Projects/MBA", result);
+        Assert.AreEqual("/home/user/Vault/Projects/MBA", NormalizePath(result));
     }
 
     [TestMethod]
@@ -128,7 +133,7 @@ public class PathResolverTests
         var result = resolver.ResolveOutputRoot(pathConfig, "/some/input/file.txt");
 
         // Assert
-        Assert.AreEqual("/home/user/OneDrive/Education/MBA", result);
+        Assert.AreEqual("/home/user/OneDrive/Education/MBA", NormalizePath(result));
     }
 
     [TestMethod]
@@ -158,7 +163,7 @@ public class PathResolverTests
         var result = resolver.ResolveOutputRoot(pathConfig, inputPath);
 
         // Assert
-        Assert.AreEqual("/home/user/Documents", result);
+        Assert.AreEqual("/home/user/Documents", NormalizePath(result));
     }
 
     [TestMethod]
@@ -188,7 +193,7 @@ public class PathResolverTests
         var result = resolver.ResolveOutputRoot(null, "/some/input/file.txt");
 
         // Assert
-        Assert.AreEqual("/home/user/Vault/Projects/MBA", result);
+        Assert.AreEqual("/home/user/Vault/Projects/MBA", NormalizePath(result));
     }
 
     [TestMethod]
@@ -202,7 +207,7 @@ public class PathResolverTests
         var result = resolver.ResolveOutputRoot(pathConfig, "/some/input/file.txt");
 
         // Assert
-        Assert.AreEqual("/home/user/Vault/Projects/MBA", result);
+        Assert.AreEqual("/home/user/Vault/Projects/MBA", NormalizePath(result));
     }
 
     [TestMethod]
@@ -216,7 +221,7 @@ public class PathResolverTests
         var result = resolver.ResolveInputRoot(pathConfig);
 
         // Assert
-        Assert.AreEqual("/home/user/OneDrive/Education/MBA", result);
+        Assert.AreEqual("/home/user/OneDrive/Education/MBA", NormalizePath(result));
     }
 
     [TestMethod]
@@ -231,6 +236,6 @@ public class PathResolverTests
         var result = resolver.ResolveOutputRoot(pathConfig, inputPath);
 
         // Assert
-        Assert.AreEqual("/home/user/Documents", result);
+        Assert.AreEqual("/home/user/Documents", NormalizePath(result));
     }
 }

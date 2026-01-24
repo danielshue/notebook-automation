@@ -357,14 +357,14 @@ public partial class PromptTemplateService : IPromptService
     }
 
     /// <summary>
-         /// Generates a regular expression to match template variables enclosed in double curly braces.
-         /// </summary>
-         /// <returns>
-         /// A <see cref="Regex"/> instance that matches placeholders in the format {{variable_name}}.
-         /// </returns>
-         /// <remarks>
-         /// This method uses the <see cref="GeneratedRegexAttribute"/> to define a compile-time constant regex.
-         /// </remarks>
+    /// Generates a regular expression to match template variables enclosed in double curly braces.
+    /// </summary>
+    /// <returns>
+    /// A <see cref="Regex"/> instance that matches placeholders in the format {{variable_name}}.
+    /// </returns>
+    /// <remarks>
+    /// This method uses the <see cref="GeneratedRegexAttribute"/> to define a compile-time constant regex.
+    /// </remarks>
     [GeneratedRegex("{{(.*?)}}")]
     internal static partial Regex TemplateVariableRegex();
 }
